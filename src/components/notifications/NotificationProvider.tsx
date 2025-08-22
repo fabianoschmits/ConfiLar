@@ -249,7 +249,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
-  const addNotification = async (notification: Omit<Notification, 'id' | 'timestamp' | 'read' | 'created_at'>) => {
+  const addNotification = async (notification: Omit<Notification, 'id' | 'timestamp' | 'is_read' | 'created_at'>) => {
     if (!user) return;
 
     try {
