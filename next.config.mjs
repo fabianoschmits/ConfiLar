@@ -7,9 +7,6 @@ const nextConfig = {
   
   // Configuração para Render
   output: 'standalone',
-  
-  // Otimizações
-  swcMinify: true,
 }
 
 export default nextConfig
