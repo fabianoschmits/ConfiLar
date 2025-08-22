@@ -23,7 +23,7 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read' | 'created_at'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'is_read' | 'created_at'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
