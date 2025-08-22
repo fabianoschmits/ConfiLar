@@ -123,10 +123,10 @@ export const NotificationBell: React.FC = () => {
                   <DropdownMenuItem
                     className={cn(
                       "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
-                      !notification.read && "bg-blue-50 dark:bg-blue-950/20"
+                      !notification.is_read && "bg-blue-50 dark:bg-blue-950/20"
                     )}
                     onClick={() => {
-                      if (!notification.read) {
+                      if (!notification.is_read) {
                         handleMarkAsRead(notification.id);
                       }
                       if (notification.action_url) {
@@ -142,7 +142,7 @@ export const NotificationBell: React.FC = () => {
                         <div className="flex items-start justify-between gap-2">
                           <h4 className={cn(
                             "text-sm font-medium line-clamp-2",
-                            !notification.read && "font-semibold"
+                            !notification.is_read && "font-semibold"
                           )}>
                             {notification.title}
                           </h4>
@@ -157,7 +157,7 @@ export const NotificationBell: React.FC = () => {
                       </div>
                     </div>
 
-                    {!notification.read && (
+                    {!notification.is_read && (
                       <Button
                         variant="ghost"
                         size="sm"

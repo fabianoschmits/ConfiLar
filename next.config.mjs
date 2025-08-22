@@ -20,9 +20,9 @@ const nextConfig = {
   },
   
   // Configurações adicionais
-  experimental: {
-    appDir: true,
-  },
+  // experimental: {
+  //   appDir: true, // Removido - não é mais necessário no Next.js 15
+  // },
   
   // Configuração de imagens
   images: {
