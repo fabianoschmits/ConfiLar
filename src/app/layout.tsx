@@ -13,8 +13,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
   description: "Encontre os melhores profissionais para seus serviços ou ofereça seus serviços profissionais",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  themeColor: "#0f172a",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
