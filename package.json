@@ -5,8 +5,15 @@
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0",
     "build": "next build",
+    "build:clean": "rm -rf .next && npm run build",
+    "build:production": "NODE_ENV=production next build",
     "start": "next start",
-    "lint": "next lint"
+    "start:production": "NODE_ENV=production next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next out build dist",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -76,5 +83,9 @@
     "eslint-config-next": "15.4.6",
     "supabase": "^2.34.3",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
