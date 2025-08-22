@@ -17,6 +17,13 @@ import { ptBR } from 'date-fns/locale'
 import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare } from 'lucide-react'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 
+// Função necessária para exportação estática no Netlify
+export async function generateStaticParams() {
+  // Retorna um array vazio para permitir que todas as rotas sejam geradas dinamicamente
+  // Como não sabemos todos os IDs de usuário antecipadamente, retornamos vazio
+  return []
+}
+
 interface PublicProfile {
     id: string
     full_name: string
