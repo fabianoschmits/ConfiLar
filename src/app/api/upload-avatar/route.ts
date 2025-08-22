@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Validação das variáveis de ambiente
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Variáveis de ambiente do Supabase não configuradas');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function POST(request: NextRequest) {
   try {
     console.log('🚀 API de upload iniciada...');
+    
+    // Verificar variáveis de ambiente em runtime
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('❌ Variáveis de ambiente não configuradas');
+      return NextResponse.json(
+        { error: 'Configuração do servidor incompleta' }, 
+        { status: 500 }
+      );
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
     
     const formData = await request.formData();
     const file = formData.get('file') as File;
