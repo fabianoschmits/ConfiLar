@@ -1,0 +1,39 @@
+'use client'
+
+import React from 'react';
+import { Sidebar } from './Sidebar';
+import { FloatingProfile } from './FloatingProfile';
+import { useAuthContext } from '@/contexts/AuthContext';
+
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const { user, profile, loading } = useAuthContext();
+  const isLoggedIn = user && profile;
+  
+  // Debug em desenvolvimento
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🏗️ MainLayout:', { hasUser: !!user, hasProfile: !!profile, loading });
+  }
+  
+  return (
+    <>
+      <Sidebar />
+      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''}`}>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground">Carregando...</p>
+            </div>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
+      <FloatingProfile />
+    </>
+  );
+};

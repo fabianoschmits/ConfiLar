@@ -1,0 +1,88 @@
+{
+  "name": "ConfiLar - Marketplace de Serviços",
+  "short_name": "ConfiLar",
+  "description": "Conecte-se diretamente com profissionais de confiança. Sem intermediários, sem taxas ocultas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#9CA3AF",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities", "social"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "Buscar Profissionais",
+      "short_name": "Buscar",
+      "description": "Encontre profissionais em sua região",
+      "url": "/buscar",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Mensagens",
+      "short_name": "Chat",
+      "description": "Veja suas conversas",
+      "url": "/mensagens",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Classificados",
+      "short_name": "Anúncios",
+      "description": "Veja anúncios de serviços",
+      "url": "/classificados",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "platform": "wide"
+    }
+  ]
+}

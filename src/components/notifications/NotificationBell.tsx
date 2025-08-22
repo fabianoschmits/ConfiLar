@@ -1,0 +1,209 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Bell, Check, Trash2, Settings } from 'lucide-react';
+import { useNotifications } from './NotificationProvider';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'message':
+      return <div className="w-2 h-2 bg-blue-500 rounded-full" />;
+    case 'review':
+      return <div className="w-2 h-2 bg-yellow-500 rounded-full" />;
+    case 'booking':
+      return <div className="w-2 h-2 bg-green-500 rounded-full" />;
+    case 'verification':
+      return <div className="w-2 h-2 bg-purple-500 rounded-full" />;
+    case 'achievement':
+      return <div className="w-2 h-2 bg-orange-500 rounded-full" />;
+    default:
+      return <div className="w-2 h-2 bg-gray-500 rounded-full" />;
+  }
+};
+
+const formatTimestamp = (timestamp: Date) => {
+  const now = new Date();
+  const diff = now.getTime() - timestamp.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+
+  if (minutes < 1) return 'Agora';
+  if (minutes < 60) return `${minutes}m`;
+  if (hours < 24) return `${hours}h`;
+  
+  return timestamp.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit'
+  });
+};
+
+export const NotificationBell: React.FC = () => {
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead,
+    // isConnected removido - não existe no contexto 
+  } = useNotifications();
+  
+  const [isOpen, setIsOpen] = useState(false);
+
+  const recentNotifications = notifications.slice(0, 5);
+
+  const handleMarkAsRead = async (id: string) => {
+    await markAsRead(id);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
+  };
+
+  return (
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent 
+        align="end" 
+        className="w-80 max-h-96 overflow-y-auto"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Notificações</CardTitle>
+            <div className="flex items-center gap-2">
+              {/* Status de conexão removido temporariamente */}
+              {unreadCount > 0 && (
+                <Badge variant="secondary" className="text-xs">
+                  {unreadCount} não lidas
+                </Badge>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          {recentNotifications.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Bell className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              <p className="text-sm">Nenhuma notificação</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {recentNotifications.map((notification, index) => (
+                <div key={notification.id}>
+                  <DropdownMenuItem
+                    className={cn(
+                      "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
+                      !notification.read && "bg-blue-50 dark:bg-blue-950/20"
+                    )}
+                    onClick={() => {
+                      if (!notification.read) {
+                        handleMarkAsRead(notification.id);
+                      }
+                      if (notification.action_url) {
+                        window.open(notification.action_url, '_blank');
+                      }
+                      setIsOpen(false);
+                    }}
+                  >
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      {getNotificationIcon(notification.type)}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className={cn(
+                            "text-sm font-medium line-clamp-2",
+                            !notification.read && "font-semibold"
+                          )}>
+                            {notification.title}
+                          </h4>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                            {formatTimestamp(notification.timestamp)}
+                          </span>
+                        </div>
+                        
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!notification.read && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 ml-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAsRead(notification.id);
+                        }}
+                      >
+                        <Check className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </DropdownMenuItem>
+                  
+                  {index < recentNotifications.length - 1 && (
+                    <Separator className="mx-3" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+
+        <div className="p-3 border-t">
+          <div className="flex items-center justify-between gap-2">
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleMarkAllAsRead}
+                className="text-xs h-8"
+              >
+                <Check className="h-3 w-3 mr-1" />
+                Marcar todas como lidas
+              </Button>
+            )}
+            
+            <Link href="/notificacoes" className="ml-auto">
+              <Button variant="outline" size="sm" className="text-xs h-8">
+                <Settings className="h-3 w-3 mr-1" />
+                Ver todas
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
