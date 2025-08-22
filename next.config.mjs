@@ -5,7 +5,7 @@ const nextConfig = {
     domains: ['oolqodaehouaidxuowtw.supabase.co'],
   },
   
-  // Configuração para Render (suporta APIs)
+  // Configuração para Render
   output: 'standalone',
   
   // Otimizações
