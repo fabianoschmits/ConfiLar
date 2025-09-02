@@ -2,17 +2,13 @@ const CACHE_NAME = 'confilar-v1.0.0'
 const STATIC_CACHE_NAME = 'confilar-static-v1.0.0'
 const DYNAMIC_CACHE_NAME = 'confilar-dynamic-v1.0.0'
 
-// Arquivos essenciais para cache
+// Arquivos essenciais para cache (apenas arquivos que sempre existem)
 const STATIC_FILES = [
   '/',
-  '/auth',
-  '/buscar',
-  '/classificados',
-  '/perfil',
-  '/mensagens',
   '/manifest.json',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/favicon.ico'
 ]
 
 // Instalar Service Worker
@@ -23,14 +19,22 @@ self.addEventListener('install', (event) => {
     caches.open(STATIC_CACHE_NAME)
       .then((cache) => {
         console.log('Service Worker: Cache aberto')
-        return cache.addAll(STATIC_FILES)
+        // Adicionar arquivos um por um para evitar falhas
+        return Promise.allSettled(
+          STATIC_FILES.map(url => 
+            cache.add(url).catch(error => {
+              console.warn(`Service Worker: Falha ao cachear ${url}:`, error)
+              return null
+            })
+          )
+        )
       })
       .then(() => {
-        console.log('Service Worker: Arquivos em cache')
+        console.log('Service Worker: Instalação concluída')
         return self.skipWaiting()
       })
       .catch((error) => {
-        console.error('Service Worker: Erro no cache', error)
+        console.error('Service Worker: Erro na instalação', error)
       })
   )
 })
@@ -68,8 +72,20 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Ignorar requisições de extensões do navegador
+  if (request.url.includes('chrome-extension') || 
+      request.url.includes('moz-extension') || 
+      request.url.includes('evmAsk.js')) {
+    return
+  }
+
+  // Ignorar requisições de API
+  if (request.url.includes('/api/')) {
+    return
+  }
+
   // Estratégia Network First para páginas HTML
-  if (request.headers.get('accept').includes('text/html')) {
+  if (request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -79,6 +95,9 @@ self.addEventListener('fetch', (event) => {
             caches.open(DYNAMIC_CACHE_NAME)
               .then((cache) => {
                 cache.put(request, responseClone)
+              })
+              .catch(error => {
+                console.warn('Service Worker: Erro ao cachear resposta dinâmica:', error)
               })
           }
           return response
@@ -115,8 +134,16 @@ self.addEventListener('fetch', (event) => {
                 .then((cache) => {
                   cache.put(request, responseClone)
                 })
+                .catch(error => {
+                  console.warn('Service Worker: Erro ao cachear recurso:', error)
+                })
             }
             return response
+          })
+          .catch(error => {
+            console.warn('Service Worker: Falha na requisição:', error)
+            // Retornar uma resposta vazia em vez de erro 500
+            return new Response('', { status: 404 })
           })
       })
   )
