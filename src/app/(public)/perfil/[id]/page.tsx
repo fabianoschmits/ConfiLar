@@ -16,6 +16,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare } from 'lucide-react'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
+import { MainLayout } from '@/components/layout/MainLayout'
 
 interface PublicProfile {
     id: string
@@ -264,8 +265,9 @@ export default function PublicProfilePage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-6 md:py-8">
-            <div className="max-w-6xl mx-auto">
+        <MainLayout>
+            <div className="container mx-auto px-4 py-6 md:py-8">
+                <div className="max-w-6xl mx-auto">
                 {/* Header do Perfil */}
                 <Card className="mb-6 md:mb-8 border-0 shadow-sm">
                     <CardHeader className="text-center pb-4 md:pb-6 px-4 md:px-6">
@@ -710,5 +712,6 @@ export default function PublicProfilePage() {
                 )}
             </div>
         </div>
-    )
+    </MainLayout>
+  )
 }

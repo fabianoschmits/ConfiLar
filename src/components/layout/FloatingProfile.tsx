@@ -23,13 +23,80 @@ import {
   Home,
   MessageCircle,
   Briefcase,
-  TrendingUp
+  TrendingUp,
+  Shield,
+  Zap,
+  Globe,
+  BookOpen,
+  Award,
+  Clock,
+  Wallet,
+  Edit3,
+  Eye,
+  Crown,
+  Activity,
+  Target,
+  Bookmark,
+  Download,
+  Share2,
+  Lock,
+  Unlock,
+  CheckCircle,
+  AlertCircle,
+  Info
 } from 'lucide-react';
+
+// Phosphor Icons Light
+import {
+  User as UserPhosphor,
+  Gear,
+  SignOut,
+  CaretDown,
+  CaretUp,
+  ChatTeardrop,
+  FileText as FileTextPhosphor,
+  ChartLine,
+  Heart as HeartPhosphor,
+  Calendar as CalendarPhosphor,
+  CreditCard as CreditCardPhosphor,
+  Bell as BellPhosphor,
+  Question,
+  Phone as PhonePhosphor,
+  Buildings,
+  MagnifyingGlass,
+  Users as UsersPhosphor,
+  Star as StarPhosphor,
+  House,
+  ChatTeardrop as ChatTeardropPhosphor,
+  Briefcase as BriefcasePhosphor,
+  TrendUp,
+  Shield as ShieldPhosphor,
+  Lightning,
+  Globe as GlobePhosphor,
+  BookOpen as BookOpenPhosphor,
+  Trophy,
+  Clock as ClockPhosphor,
+  Wallet as WalletPhosphor,
+  PencilSimple,
+  Eye as EyePhosphor,
+  Crown as CrownPhosphor,
+  Activity as ActivityPhosphor,
+  Target as TargetPhosphor,
+  Bookmark as BookmarkPhosphor,
+  Download as DownloadPhosphor,
+  Share as SharePhosphor,
+  Lock as LockPhosphor,
+  LockKeyOpen,
+  CheckCircle as CheckCirclePhosphor,
+  WarningCircle,
+  Info as InfoPhosphor
+} from '@phosphor-icons/react';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { Card, CardContent } from '@/components/ui/card';
 
 import Link from 'next/link';
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
@@ -64,6 +131,31 @@ export const FloatingProfile: React.FC = () => {
     }
   };
 
+  // Dados mockados para demonstração
+  const accountStats = {
+    totalServices: profile?.user_type === 'professional' ? 45 : 12,
+    completedServices: profile?.user_type === 'professional' ? 38 : 10,
+    rating: 4.8,
+    totalEarnings: profile?.user_type === 'professional' ? 15420.50 : 0,
+    memberSince: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024',
+    verificationStatus: profile?.user_type === 'professional' ? 'verified' : 'basic',
+    premiumStatus: false
+  }
+
+  const getVerificationBadge = () => {
+    if (accountStats.verificationStatus === 'verified') {
+      return <Badge className="bg-green-100 text-green-800 text-xs">✓ Verificado</Badge>
+    }
+    return <Badge variant="outline" className="text-xs">Básico</Badge>
+  }
+
+  const getPremiumBadge = () => {
+    if (accountStats.premiumStatus) {
+      return <Badge className="bg-yellow-100 text-yellow-800 text-xs">👑 Premium</Badge>
+    }
+    return null
+  }
+
   return (
     <div className="fixed top-4 right-4 z-[9999]">
       <div className="relative">
@@ -74,7 +166,7 @@ export const FloatingProfile: React.FC = () => {
           
           {/* Avatar e Nome - Toda a área é clicável */}
           <div 
-            className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:shadow-xl transition-all duration-200"
+            className="flex items-center gap-2 bg-white rounded-full shadow-lg border border-gray-200 px-3 py-2 cursor-pointer hover:shadow-xl transition-all duration-200"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <UserAvatar 
@@ -85,209 +177,215 @@ export const FloatingProfile: React.FC = () => {
             />
             
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-24">
+              <p className="text-sm font-medium text-gray-900 truncate max-w-24">
                 {profile?.full_name || 'Usuário'}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500">
                 {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
               </p>
             </div>
             
             <div className="p-1 h-6 w-6 flex items-center justify-center">
-              {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />}
+              {isExpanded ? <CaretUp size={16} weight="light" className="text-gray-500" /> : <CaretDown size={16} weight="light" className="text-gray-500" />}
             </div>
           </div>
         </div>
 
         {/* Menu Expandido */}
         {isExpanded && (
-          <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-[80vh] overflow-y-auto z-[9999]">
-            <div className="p-4 space-y-4">
-              {/* Navegação Principal */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                  <Home className="h-4 w-4 mr-2" />
-                  Navegação Principal
+          <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[85vh] overflow-y-auto z-[9999]">
+            <div className="p-6 space-y-6">
+              {/* Header do Perfil */}
+              <div className="text-center pb-4 border-b border-gray-100">
+                <div className="flex justify-center mb-3">
+                  <UserAvatar 
+                    src={profile?.avatar_url}
+                    alt={profile?.full_name || 'Usuário'}
+                    fallback={profile?.full_name?.charAt(0) || 'U'}
+                    size="lg"
+                  />
+                </div>
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  {profile?.full_name || 'Usuário'}
                 </h3>
-                <div className="space-y-1">
-                  <Link
-                    href="/"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Home className="h-4 w-4" />
-                    <span>Início</span>
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
+                <p className="text-sm text-gray-600 mb-2">
+                  {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                </p>
+                <div className="flex items-center justify-center gap-2">
+                  {getVerificationBadge()}
+                  {getPremiumBadge()}
                 </div>
               </div>
 
-              {/* Serviços */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                  <Search className="h-4 w-4 mr-2" />
-                  Serviços
-                </h3>
-                <div className="space-y-1">
-                  <Link
-                    href="/buscar"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Search className="h-4 w-4" />
-                    <span>Buscar Profissionais</span>
-                  </Link>
-                  <Link
-                    href="/classificados"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Briefcase className="h-4 w-4" />
-                    <span>Classificados</span>
-                  </Link>
-                  <Link
-                    href="/feed"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Users className="h-4 w-4" />
-                    <span>Feed Social</span>
-                  </Link>
-                </div>
-              </div>
+              {/* Estatísticas Rápidas */}
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{accountStats.totalServices}</div>
+                      <div className="text-xs text-gray-600">Serviços</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{accountStats.rating}</div>
+                      <div className="text-xs text-gray-600">Avaliação</div>
+                    </div>
+                  </div>
+                  {profile?.user_type === 'professional' && (
+                    <div className="mt-3 pt-3 border-t border-blue-200 text-center">
+                      <div className="text-lg font-bold text-green-600">
+                        R$ {accountStats.totalEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-xs text-gray-600">Ganhos Totais</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              {/* Comunicação */}
+              {/* Ações Rápidas */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Comunicação
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <Lightning size={16} weight="light" className="mr-2 text-yellow-500" />
+                  Ações Rápidas
                 </h3>
-                <div className="space-y-1">
+                <div className="grid grid-cols-2 gap-2">
                   <Link
                     href="/mensagens"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Mensagens</span>
+                    <ChatTeardrop size={20} weight="light" className="text-blue-600 mb-1" />
+                    <span className="text-xs font-medium">Mensagens</span>
                     {unreadCount > 0 && (
-                      <Badge className="ml-auto bg-red-500 text-white text-xs">
+                      <Badge className="mt-1 bg-red-500 text-white text-xs">
                         {unreadCount}
                       </Badge>
                     )}
                   </Link>
                   <Link
                     href="/notificacoes"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Bell className="h-4 w-4" />
-                    <span>Notificações</span>
+                    <BellPhosphor size={20} weight="light" className="text-purple-600 mb-1" />
+                    <span className="text-xs font-medium">Notificações</span>
                     {unreadCount > 0 && (
-                      <Badge className="ml-auto bg-blue-500 text-white text-xs">
+                      <Badge className="mt-1 bg-blue-500 text-white text-xs">
                         {unreadCount}
                       </Badge>
                     )}
                   </Link>
-                </div>
-              </div>
-
-              {/* Gestão */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Gestão
-                </h3>
-                <div className="space-y-1">
-                  <Link
-                    href="/agendamentos"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Calendar className="h-4 w-4" />
-                    <span>Agendamentos</span>
-                  </Link>
-                  <Link
-                    href="/agenda"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <Calendar className="h-4 w-4" />
-                    <span>Agenda Profissional</span>
-                  </Link>
                   <Link
                     href="/favoritos"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Heart className="h-4 w-4" />
-                    <span>Favoritos</span>
+                    <HeartPhosphor size={20} weight="light" className="text-red-600 mb-1" />
+                    <span className="text-xs font-medium">Favoritos</span>
+                  </Link>
+                  <Link
+                    href="/agendamentos"
+                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <CalendarPhosphor size={20} weight="light" className="text-green-600 mb-1" />
+                    <span className="text-xs font-medium">Agendamentos</span>
                   </Link>
                 </div>
               </div>
 
-              {/* Profissional */}
-              {profile?.user_type === 'professional' && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Profissional
-                  </h3>
-                  <div className="space-y-1">
-                    <Link
-                      href="/portfolio"
-                      className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      onClick={() => setIsExpanded(false)}
-                    >
-                      <Briefcase className="h-4 w-4" />
-                      <span>Meu Portfólio</span>
-                    </Link>
-                    <Link
-                      href="/ganhos"
-                      className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
-                      onClick={() => setIsExpanded(false)}
-                    >
-                      <TrendingUp className="h-4 w-4" />
-                      <span>Ganhos</span>
-                    </Link>
-                  </div>
-                </div>
-              )}
-
-              {/* Perfil e Ações */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <div className="space-y-1">
+              {/* Conta e Perfil */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <UserPhosphor size={16} weight="light" className="mr-2 text-blue-500" />
+                  Minha Conta
+                </h3>
+                <div className="space-y-2">
                   <Link
                     href={`/perfil/${profile?.id}`}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <User className="h-4 w-4" />
+                    <EyePhosphor size={16} weight="light" className="text-blue-600" />
                     <span>Ver Meu Perfil</span>
                   </Link>
                   <Link
                     href="/perfil"
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Settings className="h-4 w-4" />
-                    <span>Editar Meu Perfil</span>
+                    <PencilSimple size={16} weight="light" className="text-green-600" />
+                    <span>Editar Perfil</span>
                   </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors w-full text-left"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sair</span>
-                  </button>
+                  {profile?.user_type === 'professional' && (
+                    <>
+                      <Link
+                        href="/portfolio"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsExpanded(false)}
+                      >
+                        <BriefcasePhosphor size={16} weight="light" className="text-purple-600" />
+                        <span>Meu Portfólio</span>
+                      </Link>
+                      <Link
+                        href="/ganhos"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsExpanded(false)}
+                      >
+                        <TrendUp size={16} weight="light" className="text-green-600" />
+                        <span>Meus Ganhos</span>
+                      </Link>
+                    </>
+                  )}
                 </div>
+              </div>
+
+              {/* Configurações e Segurança */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <Gear size={16} weight="light" className="mr-2 text-gray-500" />
+                  Configurações
+                </h3>
+                <div className="space-y-2">
+                  <Link
+                    href="/ajuda"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <Question size={16} weight="light" className="text-blue-600" />
+                    <span>Central de Ajuda</span>
+                  </Link>
+                  <Link
+                    href="/contato"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <PhonePhosphor size={16} weight="light" className="text-green-600" />
+                    <span>Contato</span>
+                  </Link>
+                  <Link
+                    href="/sobre"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <InfoPhosphor size={16} weight="light" className="text-purple-600" />
+                    <span>Sobre a ConfiLar</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                  <span>Membro desde {accountStats.memberSince}</span>
+                  <span>v5.0</span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
+                >
+                  <SignOut size={16} weight="light" />
+                  <span>Sair da Conta</span>
+                </button>
               </div>
             </div>
           </div>

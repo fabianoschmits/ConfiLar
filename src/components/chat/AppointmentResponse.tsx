@@ -160,8 +160,8 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
       <CardContent className="space-y-6">
         {/* Detalhes da Solicitação */}
-        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             Detalhes da Solicitação
           </h4>
@@ -201,7 +201,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
           <div className="mt-4 space-y-2">
             <div>
               <span className="font-medium">Serviço Solicitado:</span>
-              <p className="text-sm mt-1 bg-white dark:bg-gray-800 p-2 rounded border">
+              <p className="text-sm mt-1 bg-white p-2 rounded border">
                 {appointmentRequest.serviceDescription}
               </p>
             </div>
@@ -209,7 +209,7 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
             {appointmentRequest.specialRequirements && (
               <div>
                 <span className="font-medium">Requisitos Especiais:</span>
-                <p className="text-sm mt-1 bg-white dark:bg-gray-800 p-2 rounded border">
+                <p className="text-sm mt-1 bg-white p-2 rounded border">
                   {appointmentRequest.specialRequirements}
                 </p>
               </div>
@@ -323,10 +323,10 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
         </div>
 
         {/* Informações Importantes */}
-        <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
-            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+            <div className="text-sm text-yellow-800">
               <p className="font-medium mb-1">Lembre-se:</p>
               <ul className="space-y-1 text-xs">
                 <li>• Responda em até 24h para manter a qualidade do serviço</li>

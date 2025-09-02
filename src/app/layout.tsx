@@ -5,7 +5,6 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { PWAInitializer } from "@/components/pwa/PWAInitializer"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -32,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR">
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -43,22 +42,15 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <ErrorBoundary>
-            <NotificationProvider>
-              <AuthProvider>
-                <PWAInitializer />
-                {children}
-                <Toaster position="top-right" richColors />
-              </AuthProvider>
-            </NotificationProvider>
-          </ErrorBoundary>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <NotificationProvider>
+            <AuthProvider>
+              <PWAInitializer />
+              {children}
+              <Toaster position="top-right" richColors />
+            </AuthProvider>
+          </NotificationProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

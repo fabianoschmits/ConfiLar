@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { MainLayout } from '@/components/layout/MainLayout'
 import { Separator } from '@/components/ui/separator'
 import { 
   AlertTriangle, 
@@ -143,8 +144,9 @@ export default function DenunciasPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">🚨 Sistema de Denúncias</h1>
           <p className="text-gray-600">
@@ -319,7 +321,8 @@ export default function DenunciasPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </MainLayout>
   )
 }

@@ -257,12 +257,12 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
 
         {/* Resumo da Solicitação */}
         {date && time && (
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
               <Check className="h-4 w-4" />
               Resumo da Solicitação
             </h4>
-            <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
+            <div className="space-y-1 text-sm text-blue-800">
               <p><strong>Data:</strong> {format(date, 'PPP', { locale: ptBR })}</p>
               <p><strong>Horário:</strong> {time}</p>
               <p><strong>Duração:</strong> {durationOptions.find(d => d.value === duration)?.label}</p>
@@ -302,10 +302,10 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
         </div>
 
         {/* Informações Importantes */}
-        <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
-            <div className="text-sm text-yellow-800 dark:text-yellow-200">
+            <div className="text-sm text-yellow-800">
               <p className="font-medium mb-1">Informações Importantes:</p>
               <ul className="space-y-1 text-xs">
                 <li>• O profissional receberá sua solicitação e responderá em até 24h</li>

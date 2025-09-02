@@ -57,23 +57,23 @@ const getNotificationIcon = (type: string) => {
 const getNotificationColor = (type: string) => {
   switch (type) {
     case 'message':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+      return 'bg-blue-100 text-blue-800';
     case 'review':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      return 'bg-yellow-100 text-yellow-800';
     case 'booking':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      return 'bg-green-100 text-green-800';
     case 'verification':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
+      return 'bg-purple-100 text-purple-800';
     case 'achievement':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
+      return 'bg-orange-100 text-orange-800';
     case 'success':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      return 'bg-green-100 text-green-800';
     case 'warning':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      return 'bg-yellow-100 text-yellow-800';
     case 'error':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      return 'bg-red-100 text-red-800';
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
@@ -182,10 +182,10 @@ export const NotificationList: React.FC = () => {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Bell className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             Nenhuma notificação
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-gray-500 text-center">
             Você está em dia! Quando houver novas notificações, elas aparecerão aqui.
           </p>
         </CardContent>
@@ -289,7 +289,7 @@ export const NotificationList: React.FC = () => {
             key={notification.id} 
             className={cn(
               "transition-all duration-200 hover:shadow-md",
-              !notification.is_read && "border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+              !notification.is_read && "border-l-4 border-l-blue-500 bg-blue-50/50"
             )}
           >
             <CardContent className="p-4">
@@ -312,7 +312,7 @@ export const NotificationList: React.FC = () => {
                       )}>
                         {notification.title}
                       </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-600 mt-1">
                         {notification.message}
                       </p>
                       
@@ -329,7 +329,7 @@ export const NotificationList: React.FC = () => {
                     </div>
 
                     {/* Timestamp */}
-                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
                       {formatTimestamp(notification.timestamp)}
                     </span>
                   </div>
