@@ -106,6 +106,7 @@ export function useAuth() {
 					// Buscar perfil de forma simplificada
 					console.log('🔍 Buscando perfil do usuário...')
 					try {
+						// Tentar buscar perfil com tratamento de erro mais robusto
 						const { data, error } = await supabase
 							.from('profiles')
 							.select('*')
@@ -113,6 +114,14 @@ export function useAuth() {
 							.single()
 						
 						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
+						
+						if (error) {
+							console.error('❌ Erro ao buscar perfil:', error)
+							// Se houver erro 406 (Not Acceptable), criar perfil padrão
+							if (error.code === '406' || error.message?.includes('406')) {
+								console.log('⚠️ Erro 406 detectado, criando perfil padrão')
+							}
+						}
 						
 						if (data) {
 							setProfile(data as Profile)
