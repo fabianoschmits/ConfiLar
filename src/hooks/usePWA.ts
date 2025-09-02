@@ -41,8 +41,10 @@ export function usePWA() {
       setDeferredPrompt(null)
     }
 
-    // Registrar Service Worker
+    // Service Worker temporariamente desabilitado
     const registerSW = async () => {
+      console.log('🚫 Service Worker desabilitado temporariamente no usePWA')
+      /*
       if ('serviceWorker' in navigator) {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -72,6 +74,7 @@ export function usePWA() {
           console.error('Erro ao registrar Service Worker:', error)
         }
       }
+      */
     }
 
     // Inicializar
