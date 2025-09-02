@@ -99,7 +99,7 @@ npm run dev
 src/
 ├── app/                 # Next.js App Router
 │   ├── (auth)/         # Páginas de autenticação
-│   ├── (public)/       # Páginas públicas
+│   ├── _public/       # Páginas públicas
 │   └── api/            # API Routes
 ├── components/         # Componentes React
 │   ├── ui/            # Componentes base UI
