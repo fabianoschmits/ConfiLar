@@ -93,7 +93,7 @@ export const AppointmentMessage: React.FC<AppointmentMessageProps> = ({
           "max-w-md",
           isOwnMessage 
             ? "bg-blue-600 text-white border-blue-600" 
-            : "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            : "bg-gray-100 border-gray-200
         )}>
           <CardContent className="p-4">
             {/* Header */}
@@ -195,7 +195,7 @@ export const AppointmentMessage: React.FC<AppointmentMessageProps> = ({
           "max-w-md",
           isOwnMessage 
             ? "bg-green-600 text-white border-green-600" 
-            : "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+            : "bg-gray-100 border-gray-200
         )}>
           <CardContent className="p-4">
             {/* Header */}

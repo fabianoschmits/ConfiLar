@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Bell, Check, Trash2, Settings } from 'lucide-react';
+import { Bell as BellPhosphor, Check as CheckPhosphor, Trash as TrashPhosphor, Gear } from '@phosphor-icons/react';
 import { useNotifications } from './NotificationProvider';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,9 +78,9 @@ export const NotificationBell: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="relative p-2 hover:bg-gray-100"
         >
-          <Bell className="h-5 w-5" />
+          <BellPhosphor size={20} weight="light" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
@@ -121,10 +122,10 @@ export const NotificationBell: React.FC = () => {
               {recentNotifications.map((notification, index) => (
                 <div key={notification.id}>
                   <DropdownMenuItem
-                    className={cn(
-                      "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800",
-                      !notification.is_read && "bg-blue-50 dark:bg-blue-950/20"
-                    )}
+                            className={cn(
+          "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50",
+          !notification.is_read && "bg-blue-50"
+        )}
                     onClick={() => {
                       if (!notification.is_read) {
                         handleMarkAsRead(notification.id);
@@ -151,7 +152,7 @@ export const NotificationBell: React.FC = () => {
                           </span>
                         </div>
                         
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                           {notification.message}
                         </p>
                       </div>

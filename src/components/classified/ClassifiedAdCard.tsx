@@ -103,14 +103,14 @@ export function ClassifiedAdCard({
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-4 flex-1">
             {/* Ícone da categoria */}
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-2xl">{getCategoryIcon(ad.category)}</span>
             </div>
             
             <div className="flex-1 min-w-0">
               {/* Título e tipo de usuário */}
               <div className="flex items-center space-x-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                <h3 className="text-lg font-semibold text-gray-900 truncate">
                   {ad.title}
                 </h3>
                 <Badge variant={ad.user_type === 'professional' ? 'default' : 'secondary'}>
@@ -119,12 +119,12 @@ export function ClassifiedAdCard({
               </div>
               
               {/* Descrição */}
-              <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+              <p className="text-gray-600 mb-3 line-clamp-2">
                 {ad.description}
               </p>
               
               {/* Informações do anúncio */}
-              <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center space-x-1">
                   <User className="h-4 w-4" />
                   <span>{ad.user_name}</span>

@@ -287,68 +287,68 @@ function HomeContent() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-          <Card className="border-0 shadow-none bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+          <Card className="border-0 shadow-none bg-gradient-to-br from-green-50 to-emerald-50">
             <CardHeader>
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
-              <CardTitle className="text-xl text-green-800 dark:text-green-200">
+              <CardTitle className="text-xl text-green-800">
                 Economia Real
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-base text-green-700 dark:text-green-300">
+              <CardDescription className="text-base text-green-700">
                 <strong>Sem taxas de plataforma.</strong> Você paga apenas o que o profissional cobra. 
                 Compare preços diretamente e escolha o melhor custo-benefício para seu orçamento.
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-none bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+          <Card className="border-0 shadow-none bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                 <UserCheck className="h-6 w-6 text-blue-600" />
               </div>
-              <CardTitle className="text-xl text-blue-800 dark:text-blue-200">
+              <CardTitle className="text-xl text-blue-800">
                 Profissionais Verificados
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-base text-blue-700 dark:text-blue-300">
+              <CardDescription className="text-base text-blue-700">
                 <strong>Identidade confirmada</strong> e histórico de trabalho transparente. 
                 Veja fotos, documentos e recomendações reais antes de contratar.
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-none bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+          <Card className="border-0 shadow-none bg-gradient-to-br from-purple-50 to-violet-50">
             <CardHeader>
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                 <MessageSquare className="h-6 w-6 text-purple-600" />
               </div>
-              <CardTitle className="text-xl text-purple-800 dark:text-purple-200">
+              <CardTitle className="text-xl text-purple-800">
                 Comunicação Direta
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-base text-purple-700 dark:text-purple-300">
+              <CardDescription className="text-base text-purple-700">
                 <strong>Chat integrado</strong> para combinar detalhes, prazos e valores. 
                 Sem intermediários, sem mal-entendidos. Conversa clara e objetiva.
               </CardDescription>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-none bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20">
+          <Card className="border-0 shadow-none bg-gradient-to-br from-orange-50 to-amber-50">
             <CardHeader>
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
                 <Star className="h-6 w-6 text-orange-600" />
               </div>
-              <CardTitle className="text-xl text-orange-800 dark:text-orange-200">
+              <CardTitle className="text-xl text-orange-800">
                 Sistema de Reputação
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <CardDescription className="text-base text-orange-700 dark:text-orange-300">
+              <CardDescription className="text-base text-orange-700">
                 <strong>Recomendações autênticas</strong> de quem realmente contratou. 
                 Avaliações detalhadas e sistema de pontuação transparente para sua segurança.
               </CardDescription>

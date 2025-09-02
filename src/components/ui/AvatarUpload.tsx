@@ -114,7 +114,7 @@ export function AvatarUpload({
           )}
         </div>
         
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+        <p className="text-sm text-gray-600 text-center">
           Avatar atual
         </p>
       </div>
@@ -147,7 +147,7 @@ export function AvatarUpload({
                 <img
                   src={previewUrl!}
                   alt="Preview"
-                  className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
                 />
                 <Button
                   onClick={handleRemoveFile}
@@ -158,7 +158,7 @@ export function AvatarUpload({
                   <X className="w-3 h-3" />
                 </Button>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              <p className="text-xs text-gray-500 text-center">
                 {selectedFile.name}
               </p>
             </div>
@@ -189,23 +189,23 @@ export function AvatarUpload({
 
       {/* Mensagens de Status */}
       {uploadError && (
-        <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
           <AlertCircle className="w-4 h-4 text-red-500" />
-          <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+          <p className="text-sm text-red-600">{uploadError}</p>
         </div>
       )}
 
       {uploadSuccess && (
-        <div className="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
           <Check className="w-4 h-4 text-green-500" />
-          <p className="text-sm text-green-600 dark:text-green-400">
+          <p className="text-sm text-green-600">
             Avatar atualizado com sucesso!
           </p>
         </div>
       )}
 
       {/* Informações */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 text-center space-y-1">
+      <div className="text-xs text-gray-500 text-center space-y-1">
         <p>Formatos suportados: JPEG, PNG, WebP</p>
         <p>Tamanho máximo: 5MB</p>
       </div>
