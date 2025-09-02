@@ -80,7 +80,7 @@ import {
   PencilSimple,
   Eye as EyePhosphor,
   Crown as CrownPhosphor,
-  Activity as ActivityPhosphor,
+  ChartLine as ActivityPhosphor,
   Target as TargetPhosphor,
   Bookmark as BookmarkPhosphor,
   Download as DownloadPhosphor,

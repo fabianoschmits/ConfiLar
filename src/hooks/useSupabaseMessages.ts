@@ -177,7 +177,7 @@ export function useSupabaseMessages() {
 
       // Filtrar conversas válidas e remover duplicatas
       const validConversations = conversationsWithParticipants
-        .filter(Boolean) as ConversationWithParticipant[]
+        .filter(Boolean) as unknown as ConversationWithParticipant[]
       
       // Remover duplicatas baseado no ID da conversa
       const uniqueConversations = validConversations.filter((conversation, index, self) => 
@@ -389,16 +389,20 @@ export function useSupabaseMessages() {
     
     try {
       // Buscar conversas em comum
+      const { data: otherUserConversations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('profile_id', otherUserId)
+
+      if (!otherUserConversations?.length) return null
+
+      const conversationIds = otherUserConversations.map(c => c.conversation_id)
+
       const { data: commonConversations } = await supabase
         .from('conversation_participants')
         .select('conversation_id')
         .eq('profile_id', profile.id)
-        .in('conversation_id', 
-          supabase
-            .from('conversation_participants')
-            .select('conversation_id')
-            .eq('profile_id', otherUserId)
-        )
+        .in('conversation_id', conversationIds)
 
       return commonConversations?.[0]?.conversation_id || null
     } catch (error) {
