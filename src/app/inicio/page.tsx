@@ -13,6 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { MainLayout } from '@/components/layout/MainLayout'
 
 export default function InicioPage() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function InicioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <MainLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-8">
           {/* Header */}
@@ -184,6 +185,6 @@ export default function InicioPage() {
           </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   )
 }
