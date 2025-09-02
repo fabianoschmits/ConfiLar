@@ -19,6 +19,7 @@ export default function InicioPage() {
   const router = useRouter()
 
   const handleNavigateTo = (path: string) => {
+    console.log('🔄 Navegando para:', path)
     router.push(path)
   }
 
