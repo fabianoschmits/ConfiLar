@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useSupabase } from '@/contexts/SupabaseContext'
+import { supabase } from '@/lib/supabase'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface ChatMessage {
   id: string
   sender_id: string
   receiver_id: string
+  conversation_id: string
   content: string
   message_type: 'text' | 'image' | 'file' | 'audio'
   created_at: string
@@ -34,7 +35,6 @@ export interface ChatConversation {
 }
 
 export function useChat(userId: string) {
-  const { supabase } = useSupabase()
   const [conversations, setConversations] = useState<ChatConversation[]>([])
   const [currentConversation, setCurrentConversation] = useState<ChatConversation | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
