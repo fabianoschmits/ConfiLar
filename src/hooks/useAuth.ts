@@ -149,12 +149,17 @@ export function useAuth() {
 								total_reviews: 0,
 								is_available: true,
 								profile_completed: false,
-								profile_completion_score: 25,
+								profile_completion_score: 0,
 								avatar_url: null,
 								whatsapp: '',
-								created_at: new Date().toISOString(),
-								updated_at: new Date().toISOString()
-								// REMOVIDO: emergency_service, insurance_coverage
+								professional_certifications: [],
+								professional_portfolio_url: null,
+								profile_photo_url: null,
+								selfie_document_url: null,
+								residence_proof_url: null,
+								client_verification_document: null
+								// REMOVIDO: created_at, updated_at (têm padrão now())
+								// REMOVIDO: emergency_service, insurance_coverage (não existem)
 							} as Profile
 							setProfile(defaultProfile)
 						}
@@ -182,12 +187,17 @@ export function useAuth() {
 							total_reviews: 0,
 							is_available: true,
 							profile_completed: false,
-							profile_completion_score: 25,
+							profile_completion_score: 0,
 							avatar_url: null,
 							whatsapp: '',
-							created_at: new Date().toISOString(),
-							updated_at: new Date().toISOString()
-							// REMOVIDO: emergency_service, insurance_coverage
+							professional_certifications: [],
+							professional_portfolio_url: null,
+							profile_photo_url: null,
+							selfie_document_url: null,
+							residence_proof_url: null,
+							client_verification_document: null
+							// REMOVIDO: created_at, updated_at (têm padrão now())
+							// REMOVIDO: emergency_service, insurance_coverage (não existem)
 						} as Profile
 						setProfile(defaultProfile)
 					}
@@ -250,13 +260,17 @@ export function useAuth() {
 								total_reviews: 0,
 								is_available: true,
 								profile_completed: false,
-								profile_completion_score: 25,
+								profile_completion_score: 0,
 								avatar_url: null,
 								whatsapp: '',
-								emergency_service: false,
-								insurance_coverage: false,
-								created_at: new Date().toISOString(),
-								updated_at: new Date().toISOString()
+								professional_certifications: [],
+								professional_portfolio_url: null,
+								profile_photo_url: null,
+								selfie_document_url: null,
+								residence_proof_url: null,
+								client_verification_document: null
+								// REMOVIDO: created_at, updated_at (têm padrão now())
+								// REMOVIDO: emergency_service, insurance_coverage (não existem)
 							} as Profile
 							setProfile(defaultProfile)
 						}
@@ -284,13 +298,17 @@ export function useAuth() {
 							total_reviews: 0,
 							is_available: true,
 							profile_completed: false,
-							profile_completion_score: 25,
+							profile_completion_score: 0,
 							avatar_url: null,
 							whatsapp: '',
-							emergency_service: false,
-							insurance_coverage: false,
-							created_at: new Date().toISOString(),
-							updated_at: new Date().toISOString()
+							professional_certifications: [],
+							professional_portfolio_url: null,
+							profile_photo_url: null,
+							selfie_document_url: null,
+							residence_proof_url: null,
+							client_verification_document: null
+							// REMOVIDO: created_at, updated_at (têm padrão now())
+							// REMOVIDO: emergency_service, insurance_coverage (não existem)
 						} as Profile
 						setProfile(defaultProfile)
 					}
@@ -442,19 +460,23 @@ export function useAuth() {
 				bio: additionalData?.bio || '',
 				professional_services: additionalData?.services_offered || [],
 				professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) : 0,
-				emergency_service: additionalData?.emergency_service || false,
-				insurance_coverage: additionalData?.insurance_coverage || false,
 				is_verified: false,
 				badge: 'bronze',
 				rating: 0,
 				total_reviews: 0,
 				is_available: true,
 				profile_completed: false,
-				profile_completion_score: 25,
+				profile_completion_score: 0,
 				avatar_url: null,
 				whatsapp: additionalData?.phone || '',
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString()
+				professional_certifications: [],
+				professional_portfolio_url: null,
+				profile_photo_url: null,
+				selfie_document_url: null,
+				residence_proof_url: null,
+				client_verification_document: null
+				// REMOVIDO: emergency_service, insurance_coverage (não existem na tabela)
+				// REMOVIDO: created_at, updated_at (têm padrão now())
 			}
 
 			// Salvar no localStorage
@@ -514,11 +536,16 @@ export function useAuth() {
 					total_reviews: 0,
 					is_available: true,
 					profile_completed: false,
-					profile_completion_score: 25, // Score inicial
+					profile_completion_score: 0, // Score inicial
 					avatar_url: null,
 					whatsapp: additionalData?.phone || '', // Usar telefone como WhatsApp padrão
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString()
+					professional_certifications: [],
+					professional_portfolio_url: null,
+					profile_photo_url: null,
+					selfie_document_url: null,
+					residence_proof_url: null,
+					client_verification_document: null
+					// REMOVIDO: created_at, updated_at (têm padrão now())
 					// REMOVIDO: emergency_service e insurance_coverage (não existem na tabela)
 				}
 
@@ -670,7 +697,10 @@ export function useAuth() {
 				'location_city', 'address', 'cpf_cnpj', 'birth_date', 'neighborhood',
 				'user_type', 'is_verified', 'badge', 'rating', 'total_reviews',
 				'is_available', 'profile_completed', 'profile_completion_score',
-				'whatsapp', 'professional_services', 'professional_experience_years'
+				'whatsapp', 'professional_services', 'professional_experience_years',
+				'professional_certifications', 'professional_portfolio_url',
+				'profile_photo_url', 'selfie_document_url', 'residence_proof_url',
+				'client_verification_document'
 				// REMOVIDO: 'emergency_service', 'insurance_coverage' (não existem na tabela)
 			]
 
@@ -707,13 +737,14 @@ export function useAuth() {
 					user_type: 'client',
 					location_state: 'SP',
 					location_city: 'São Paulo',
-					profile_completion_score: 25,
+					profile_completion_score: 0,
 					badge: 'bronze',
 					rating: 0,
 					total_reviews: 0,
 					is_available: true,
 					profile_completed: false,
-					created_at: new Date().toISOString(),
+					professional_services: [],
+					professional_certifications: [],
 					...validUpdates
 				}
 
