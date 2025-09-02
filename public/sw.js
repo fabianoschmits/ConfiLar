@@ -1,14 +1,13 @@
-const CACHE_NAME = 'confilar-v1.0.0'
-const STATIC_CACHE_NAME = 'confilar-static-v1.0.0'
-const DYNAMIC_CACHE_NAME = 'confilar-dynamic-v1.0.0'
+const CACHE_NAME = 'confilar-v1.0.1'
+const STATIC_CACHE_NAME = 'confilar-static-v1.0.1'
+const DYNAMIC_CACHE_NAME = 'confilar-dynamic-v1.0.1'
 
 // Arquivos essenciais para cache (apenas arquivos que sempre existem)
 const STATIC_FILES = [
   '/',
   '/manifest.json',
   '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/favicon.ico'
+  '/icon-512x512.png'
 ]
 
 // Instalar Service Worker
