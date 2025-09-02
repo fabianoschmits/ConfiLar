@@ -4,6 +4,11 @@ import { useEffect } from 'react'
 
 export function PWAInitializer() {
   useEffect(() => {
+    // Service Worker temporariamente desabilitado
+    console.log('🚫 Service Worker desabilitado temporariamente')
+    
+    // Código original comentado:
+    /*
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
@@ -47,6 +52,7 @@ export function PWAInitializer() {
         }
       })
     }
+    */
 
     // Listener para mudanças de conectividade
     const handleOnline = () => {
