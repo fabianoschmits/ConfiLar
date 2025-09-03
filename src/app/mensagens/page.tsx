@@ -504,44 +504,36 @@ function MensagensContent() {
   // Remover verificação de login - permitir acesso para todos
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-6xl bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="mb-4 p-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span>Mensagens</span>
-                  <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                    {totalUnread > 0 ? `${totalUnread} não lidas` : 'Todas lidas'}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600">
-                  Gerencie suas conversas e mensagens com outros usuários da plataforma.
-                </p>
-              </CardContent>
-            </Card>
+      <div className="min-h-screen bg-gray-50 lg:p-4">
+        <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen lg:h-[600px]">
+          {/* Header Mobile */}
+          <div className="lg:hidden p-4 border-b border-gray-200 bg-white">
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-bold text-gray-900">Mensagens</h1>
+              <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                {totalUnread > 0 ? `${totalUnread} não lidas` : 'Todas lidas'}
+              </Badge>
+            </div>
           </div>
 
-          <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="flex flex-col lg:flex-row h-full">
             {/* Lista de Conversas */}
-            <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+            <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col h-1/2 lg:h-full">
               <div className="p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-gray-900">Conversas</h2>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                  <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Conversas</h2>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
                     {conversations.length} conversas
                   </Badge>
                 </div>
                 
                 <div className="relative">
-                  <MagnifyingGlass size={20} weight="light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <MagnifyingGlass size={18} weight="light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Buscar conversas..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                   />
                 </div>
               </div>
@@ -551,7 +543,7 @@ function MensagensContent() {
                   <div
                     key={conversation.id}
                     onClick={() => setSelectedConversation(conversation.id)}
-                    className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    className={`p-3 lg:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                       selectedConversation === conversation.id ? 'bg-blue-50 border-blue-200' : ''
                     }`}
                   >
@@ -560,9 +552,9 @@ function MensagensContent() {
                         <UserAvatar
                           src={conversation.participant?.avatar_url}
                           alt={conversation.participant?.full_name || 'Usuário'}
-                          className="w-10 h-10"
+                          className="w-8 h-8 lg:w-10 lg:h-10"
                         />
-                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${getStatusColor('online')}`} />
+                        <div className={`absolute bottom-0 right-0 w-2 h-2 lg:w-3 lg:h-3 rounded-full border-2 border-white ${getStatusColor('online')}`} />
                       </div>
                       
                       <div className="flex-1 min-w-0">
@@ -576,7 +568,7 @@ function MensagensContent() {
                         </div>
                         
                         <div className="flex items-center justify-between mt-1">
-                          <p className="text-sm text-gray-600 truncate">
+                          <p className="text-xs lg:text-sm text-gray-600 truncate">
                             {typeof conversation.last_message === 'string' ? conversation.last_message : 'Nenhuma mensagem'}
                           </p>
                           {conversation.unread_count && conversation.unread_count > 0 && (
@@ -593,11 +585,11 @@ function MensagensContent() {
             </div>
 
             {/* Área do Chat */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col h-1/2 lg:h-full">
               {selectedConversation ? (
                 <>
                   {/* Header do Chat */}
-                  <div className="bg-white border-b border-gray-200 p-4">
+                  <div className="bg-white border-b border-gray-200 p-3 lg:p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         {(() => {
