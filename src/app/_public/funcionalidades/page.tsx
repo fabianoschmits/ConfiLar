@@ -31,7 +31,7 @@ export default function FuncionalidadesPage() {
       categoria: 'Navegação Principal',
       icon: <Home className="h-6 w-6 text-blue-600" />,
       items: [
-        { nome: 'Home', descricao: 'Página principal com informações sobre o ConfiLar', rota: '/' },
+        { nome: 'Home', descricao: 'Página principal com informações sobre o ConfiLar', rota: '/home' },
         { nome: 'Feed Social', descricao: 'Timeline de trabalhos dos profissionais', rota: '/feed' },
         { nome: 'Buscar Profissionais', descricao: 'Sistema de busca inteligente', rota: '/buscar' },
       ]

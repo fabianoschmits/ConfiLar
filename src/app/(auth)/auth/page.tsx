@@ -63,11 +63,11 @@ export default function AuthPage() {
           
           <Button 
             variant="ghost" 
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/home')}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-                            <span>Voltar ao Home</span>
+            <span>Voltar ao Home</span>
           </Button>
         </div>
       </header>
