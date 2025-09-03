@@ -8,6 +8,8 @@ Este projeto está configurado com deploy automático na Vercel. Qualquer push p
 
 **Teste de Webhook:** Verificando se o deploy automático está funcionando corretamente.
 
+**✅ Webhook Confirmado:** A conexão entre GitHub e Vercel está ativa e funcionando!
+
 ## 🚀 Sobre o Projeto
 
 ConfiLar é uma plataforma moderna desenvolvida com Next.js 14 que conecta profissionais qualificados com clientes que precisam de serviços. Oferece funcionalidades completas de gestão de perfis, classificados, notificações, agendamentos e sistema de reputação.
