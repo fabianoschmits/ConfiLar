@@ -115,7 +115,7 @@ export function Sidebar() {
         {
           id: 'home',
           title: 'Home',
-          href: '/',
+          href: '/home',
           icon: <House size={16} weight="light" />,
           description: 'Página inicial'
         },

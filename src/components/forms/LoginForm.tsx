@@ -50,7 +50,7 @@ export function LoginForm() {
         // Aguardar um momento para garantir que o contexto seja atualizado
         setTimeout(() => {
           // Forçar redirecionamento para a página de início
-          const redirectUrl = '/'
+          const redirectUrl = '/home'
           router.push(redirectUrl)
         }, 1000)
       }

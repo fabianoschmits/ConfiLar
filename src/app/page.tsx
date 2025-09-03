@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { MobileNavigation } from '@/components/layout/MobileNavigation'
-import { MainLayout } from '@/components/layout/MainLayout'
 import { 
   Search, 
   Users, 
@@ -31,198 +30,34 @@ import {
 } from 'lucide-react'
 import { serviceCategories } from '@/data/serviceCategories'
 
-// Componente para a página Home (usuários logados)
-function HomePage() {
+export default function Page() {
   const router = useRouter()
+  const { user, loading } = useAuthContext()
 
-  const handleNavigateTo = (path: string) => {
-    console.log('🔄 Navegando para:', path)
-    router.push(path)
+  useEffect(() => {
+    if (user && !loading) {
+      router.replace('/home')
+    }
+  }, [user, loading, router])
+
+  // Se usuário está logado, não mostrar nada (será redirecionado)
+  if (user) {
+    return null
   }
 
-  // Renderização condicional para evitar problemas de hidratação
-  if (typeof window === 'undefined') {
+  // Se ainda está carregando, mostrar loading
+  if (loading) {
     return (
-      <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold">Carregando...</h1>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
-      </MainLayout>
+      </div>
     )
   }
 
-  return (
-    <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600/10 via-blue-500/5 to-blue-600/10 rounded-xl p-8 border">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold tracking-tight">
-                Como Funciona o ConfiLar
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Conectamos clientes e profissionais de forma segura e confiável. 
-                Aprenda como usar nossa plataforma para encontrar os melhores profissionais ou oferecer seus serviços.
-              </p>
-            </div>
-          </div>
-
-          {/* Seção: Para Clientes */}
-          <section>
-            <div className="text-center mb-8">
-              <Badge variant="outline" className="mb-4">
-                <Users className="h-4 w-4 mr-2" />
-                Para Clientes
-              </Badge>
-              <h2 className="text-3xl font-bold mb-4">Como Encontrar um Profissional</h2>
-              <p className="text-lg text-gray-600">
-                Siga estes passos para encontrar o profissional ideal para seu projeto
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {/* Passo 1 */}
-              <Card className="relative overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <UserCheck className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">1. Complete seu Perfil</CardTitle>
-                      <Badge variant="secondary" className="text-xs">Essencial</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Acesse <strong>Editar Perfil</strong> e mantenha todos seus dados atualizados:
-                  </p>
-                  <ul className="text-sm space-y-2 text-gray-600">
-                    <li>• Informações pessoais completas</li>
-                    <li>• Foto de perfil profissional</li>
-                    <li>• Localização e contatos</li>
-                    <li>• Preferências de serviço</li>
-                  </ul>
-                  <Button 
-                    onClick={() => handleNavigateTo('/perfil')}
-                    className="w-full"
-                    size="sm"
-                  >
-                    Editar Perfil
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Passo 2 */}
-              <Card className="relative overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <Search className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">2. Busque Profissionais</CardTitle>
-                      <Badge variant="secondary" className="text-xs">Encontrar</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Use nossa <strong>Busca Avançada</strong> para encontrar profissionais:
-                  </p>
-                  <ul className="text-sm space-y-2 text-gray-600">
-                    <li>• Filtre por categoria de serviço</li>
-                    <li>• Defina sua localização</li>
-                    <li>• Veja avaliações e portfólios</li>
-                    <li>• Compare preços e disponibilidade</li>
-                  </ul>
-                  <Button 
-                    onClick={() => handleNavigateTo('/buscar')}
-                    className="w-full"
-                    size="sm"
-                  >
-                    Buscar Profissionais
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Passo 3 */}
-              <Card className="relative overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <MessageSquare className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">3. Entre em Contato</CardTitle>
-                      <Badge variant="secondary" className="text-xs">Comunicar</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    <strong>Converse diretamente</strong> com os profissionais:
-                  </p>
-                  <ul className="text-sm space-y-2 text-gray-600">
-                    <li>• Envie mensagens privadas</li>
-                    <li>• Solicite orçamentos detalhados</li>
-                    <li>• Agende reuniões ou visitas</li>
-                    <li>• Negocie prazos e condições</li>
-                  </ul>
-                  <Button 
-                    onClick={() => handleNavigateTo('/mensagens')}
-                    className="w-full"
-                    size="sm"
-                  >
-                    Ver Mensagens
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* CTA Final */}
-          <div className="text-center bg-gradient-to-r from-blue-500/5 to-blue-600/10 rounded-xl p-8 border">
-            <h2 className="text-2xl font-bold mb-4">Pronto para Começar?</h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Junte-se à comunidade ConfiLar e descubra como podemos ajudar você
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={() => handleNavigateTo('/buscar')}
-                size="lg"
-                className="min-w-[200px]"
-              >
-                Buscar Profissionais
-                <Search className="h-5 w-5 ml-2" />
-              </Button>
-              <Button 
-                onClick={() => handleNavigateTo('/perfil')}
-                variant="outline"
-                size="lg"
-                className="min-w-[200px]"
-              >
-                Criar Perfil
-                <UserCheck className="h-5 w-5 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </MainLayout>
-  )
-}
-
-// Componente para a landing page (usuários não logados)
-function LandingPage() {
-  const router = useRouter()
+  // Landing page para usuários não logados
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -373,9 +208,9 @@ function LandingPage() {
                         <p className="text-sm text-muted-foreground">Pedreiro • 4.9 ⭐</p>
                       </div>
                     </div>
-                                         <p className="text-sm text-muted-foreground">
-                       &quot;Excelente trabalho! Reformou meu banheiro em 3 dias, preço justo e qualidade superior.&quot;
-                     </p>
+                    <p className="text-sm text-muted-foreground">
+                      &quot;Excelente trabalho! Reformou meu banheiro em 3 dias, preço justo e qualidade superior.&quot;
+                    </p>
                     <div className="flex items-center justify-between">
                       <Badge variant="secondary">Reforma • Banheiro</Badge>
                       <span className="text-sm text-muted-foreground">Há 2 dias</span>
@@ -579,45 +414,5 @@ function LandingPage() {
         </div>
       </footer>
     </div>
-  )
-}
-
-// Componente principal que decide qual página mostrar
-function HomeContent() {
-  const router = useRouter()
-  const { user, loading } = useAuthContext()
-
-  // Mostrar loading enquanto verifica autenticação
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Se usuário está logado, mostrar a página Home
-  if (user) {
-    return <HomePage />
-  }
-
-  return <LandingPage />
-}
-
-export default function Page() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    }>
-      <HomeContent />
-    </Suspense>
   )
 }
