@@ -5,7 +5,6 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { PWAInitializer } from "@/components/pwa/PWAInitializer"
 
 // 🧹 LIMPEZA AUTOMÁTICA DO SERVICE WORKER ANTIGO
 // Desregistra todos os Service Workers antigos quando o usuário acessa o site
@@ -23,12 +22,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
   description: "Encontre os melhores profissionais para seus serviços ou ofereça seus serviços profissionais",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "ConfiLar"
-  },
   formatDetection: {
     telephone: false,
     email: false,
@@ -45,10 +38,6 @@ export default function RootLayout({
     <html lang="pt-BR">
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="ConfiLar" />
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
@@ -56,7 +45,6 @@ export default function RootLayout({
         <ErrorBoundary>
           <NotificationProvider>
             <AuthProvider>
-              <PWAInitializer />
               {children}
               <Toaster position="top-right" richColors />
             </AuthProvider>
