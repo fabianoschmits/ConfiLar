@@ -7,6 +7,17 @@ import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { PWAInitializer } from "@/components/pwa/PWAInitializer"
 
+// 🧹 LIMPEZA AUTOMÁTICA DO SERVICE WORKER ANTIGO
+// Desregistra todos os Service Workers antigos quando o usuário acessa o site
+if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((reg) => {
+      reg.unregister();
+      console.log("🧹 Service Worker removido:", reg);
+    });
+  });
+}
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
