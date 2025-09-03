@@ -366,31 +366,32 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Botão Mobile */}
+      {/* Botão Mobile - Melhorado */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="bg-white shadow-lg border-gray-200 hover:bg-gray-50"
+          className="bg-white/95 backdrop-blur-sm shadow-lg border-gray-200 hover:bg-gray-50 h-10 w-10 p-0 rounded-full"
         >
-          {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </div>
 
-      {/* Overlay Mobile */}
+      {/* Overlay Mobile - Melhorado */}
       {isMobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Melhorada para Mobile */}
       <div className={`
-        fixed left-0 top-0 h-full bg-white border-r border-gray-200 shadow-xl z-30
+        fixed left-0 top-0 h-full bg-white/95 backdrop-blur-sm border-r border-gray-200 shadow-2xl z-30
         ${sidebarWidth} ${sidebarTransition}
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
+        lg:bg-white lg:backdrop-blur-none
       `}>
         {/* Header da Sidebar */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">

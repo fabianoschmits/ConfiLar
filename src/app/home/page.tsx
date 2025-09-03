@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { ResponsiveContainer, MobileCard, MobileGrid } from '@/components/layout/ResponsiveLayout'
 import {
   Search,
   Users,
@@ -30,74 +31,71 @@ export default function HomePage() {
   if (typeof window === 'undefined') {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
+        <ResponsiveContainer>
           <div className="text-center">
             <h1 className="text-4xl font-bold">Carregando...</h1>
           </div>
-        </div>
+        </ResponsiveContainer>
       </MainLayout>
     )
   }
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600/10 via-blue-500/5 to-blue-600/10 rounded-xl p-8 border">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold tracking-tight">
-                Como Funciona o ConfiLar
-              </h1>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Conectamos clientes e profissionais de forma segura e confiável. 
-                Aprenda como usar nossa plataforma para encontrar os melhores profissionais ou oferecer seus serviços.
-              </p>
-            </div>
+      <ResponsiveContainer spacing="lg">
+        {/* Header */}
+        <MobileCard className="bg-gradient-to-r from-blue-600/10 via-blue-500/5 to-blue-600/10 border-blue-200">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl lg:text-4xl font-bold tracking-tight">
+              Como Funciona o ConfiLar
+            </h1>
+            <p className="text-base lg:text-xl text-gray-600 max-w-3xl mx-auto">
+              Conectamos clientes e profissionais de forma segura e confiável. 
+              Aprenda como usar nossa plataforma para encontrar os melhores profissionais ou oferecer seus serviços.
+            </p>
+          </div>
+        </MobileCard>
+
+        {/* Seção: Para Clientes */}
+        <section>
+          <div className="text-center mb-6 lg:mb-8">
+            <Badge variant="outline" className="mb-4">
+              <Users className="h-4 w-4 mr-2" />
+              Para Clientes
+            </Badge>
+            <h2 className="text-2xl lg:text-3xl font-bold mb-4">Como Encontrar um Profissional</h2>
+            <p className="text-base lg:text-lg text-gray-600">
+              Siga estes passos para encontrar o profissional ideal para seu projeto
+            </p>
           </div>
 
-          {/* Seção: Para Clientes */}
-          <section>
-            <div className="text-center mb-8">
-              <Badge variant="outline" className="mb-4">
-                <Users className="h-4 w-4 mr-2" />
-                Para Clientes
-              </Badge>
-              <h2 className="text-3xl font-bold mb-4">Como Encontrar um Profissional</h2>
-              <p className="text-lg text-gray-600">
-                Siga estes passos para encontrar o profissional ideal para seu projeto
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {/* Passo 1 */}
-              <Card className="relative overflow-hidden">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 p-2 rounded-lg">
-                      <UserCheck className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">1. Complete seu Perfil</CardTitle>
-                      <Badge variant="secondary" className="text-xs">Essencial</Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-gray-600">
-                    Acesse <strong>Editar Perfil</strong> e mantenha todos seus dados atualizados:
-                  </p>
-                  <ul className="text-sm space-y-2 text-gray-600">
-                    <li>• Informações pessoais completas</li>
-                    <li>• Foto de perfil profissional</li>
-                    <li>• Localização e contatos</li>
-                    <li>• Preferências de serviço</li>
-                  </ul>
-                  <Button 
-                    onClick={() => handleNavigateTo('/perfil')}
-                    className="w-full"
-                    size="sm"
-                  >
+          <MobileGrid cols={1} gap="md">
+            {/* Passo 1 */}
+            <MobileCard>
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="bg-blue-100 p-2 rounded-lg flex-shrink-0">
+                  <UserCheck className="h-6 w-6 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">1. Complete seu Perfil</h3>
+                  <Badge variant="secondary" className="text-xs mt-1">Essencial</Badge>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-gray-600 text-sm">
+                  Acesse <strong>Editar Perfil</strong> e mantenha todos seus dados atualizados:
+                </p>
+                <ul className="text-sm space-y-1 text-gray-600">
+                  <li>• Informações pessoais completas</li>
+                  <li>• Foto de perfil profissional</li>
+                  <li>• Localização e contatos</li>
+                  <li>• Preferências de serviço</li>
+                </ul>
+                <Button 
+                  onClick={() => handleNavigateTo('/perfil')}
+                  className="w-full btn-mobile"
+                  size="sm"
+                >
                     Editar Perfil
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>

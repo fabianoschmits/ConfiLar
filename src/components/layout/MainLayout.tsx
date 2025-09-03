@@ -3,6 +3,9 @@
 import React from 'react';
 import { Sidebar } from './Sidebar';
 import { FloatingProfile } from './FloatingProfile';
+import { MobileBottomNavigation } from './MobileBottomNavigation';
+import { MobileQuickActions } from './MobileQuickActions';
+import { MobileHeader } from './MobileHeader';
 import { useAuthContext } from '@/contexts/AuthContext';
 
 interface MainLayoutProps {
@@ -21,7 +24,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <>
       <Sidebar />
-      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''}`}>
+      <MobileHeader />
+      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''} pb-20 lg:pb-0 pt-16 lg:pt-0`}>
         {loading ? (
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center space-y-4">
@@ -34,6 +38,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         )}
       </main>
       <FloatingProfile />
+      <MobileBottomNavigation />
+      <MobileQuickActions />
     </>
   );
 };
