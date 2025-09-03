@@ -20,6 +20,38 @@ import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { serviceCategories } from '@/data/serviceCategories'
 import { toast } from 'sonner'
 
+// Função para validar CPF
+const validateCPF = (cpf: string): boolean => {
+  // Remove caracteres não numéricos
+  const cleanCPF = cpf.replace(/\D/g, '')
+  
+  // Verifica se tem 11 dígitos
+  if (cleanCPF.length !== 11) return false
+  
+  // Verifica se todos os dígitos são iguais (CPF inválido)
+  if (/^(\d)\1{10}$/.test(cleanCPF)) return false
+  
+  // Validação do primeiro dígito verificador
+  let sum = 0
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
+  }
+  let remainder = (sum * 10) % 11
+  if (remainder === 10 || remainder === 11) remainder = 0
+  if (remainder !== parseInt(cleanCPF.charAt(9))) return false
+  
+  // Validação do segundo dígito verificador
+  sum = 0
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
+  }
+  remainder = (sum * 10) % 11
+  if (remainder === 10 || remainder === 11) remainder = 0
+  if (remainder !== parseInt(cleanCPF.charAt(10))) return false
+  
+  return true
+}
+
 const registrationSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   email: z.string().email('Email inválido'),
@@ -30,7 +62,20 @@ const registrationSchema = z.object({
     .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
     .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
   phone: z.string().min(10, 'Telefone inválido'),
-  cpf_cnpj: z.string().min(11, 'CPF/CNPJ inválido'),
+  cpf_cnpj: z.string()
+    .min(11, 'CPF/CNPJ inválido')
+    .refine((value) => {
+      const cleanValue = value.replace(/\D/g, '')
+      // Se tem 11 dígitos, valida como CPF
+      if (cleanValue.length === 11) {
+        return validateCPF(value)
+      }
+      // Se tem 14 dígitos, assume CNPJ (validação básica)
+      if (cleanValue.length === 14) {
+        return true // Validação básica para CNPJ
+      }
+      return false
+    }, 'CPF/CNPJ inválido'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   user_type: z.enum(['client', 'professional']),
   location_state: z.string().min(1, 'Estado é obrigatório'),
@@ -90,14 +135,9 @@ export function SimpleRegistrationForm() {
     setValue('services_offered', newSelectedServices)
   }
 
-  // Formatação automática para telefone (padrão brasileiro)
+  // Formatação automática para telefone (apenas números)
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 2) return numbers
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`
-    if (numbers.length <= 9) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)}-${numbers.slice(3, 6)}`
-    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 9)}`
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`
+    return value.replace(/\D/g, '')
   }
 
   // Formatação automática para nome (iniciais maiúsculas)
@@ -127,6 +167,15 @@ export function SimpleRegistrationForm() {
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCPF(e.target.value)
     setValue('cpf_cnpj', formatted)
+    
+    // Validação em tempo real
+    const cleanValue = formatted.replace(/\D/g, '')
+    if (cleanValue.length === 11) {
+      const isValid = validateCPF(formatted)
+      if (!isValid) {
+        setValue('cpf_cnpj', formatted, { shouldValidate: true })
+      }
+    }
   }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,46 +255,61 @@ export function SimpleRegistrationForm() {
         <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Dados Básicos</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Nome Completo *
-            </Label>
-            <Input
-              id="name"
-              placeholder="Seu nome completo"
-              {...register('name')}
-              onChange={handleNameChange}
-              onBlur={handleNameBlur}
-              className={errors.name ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+               Nome Completo *
+             </Label>
+             <Input
+               id="name"
+               placeholder=""
+               {...register('name')}
+               onChange={handleNameChange}
+               onBlur={handleNameBlur}
+               className={cn(
+                 errors.name ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.name && watchedValues.name.length >= 2 && !errors.name ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+             {watchedValues.name && watchedValues.name.length >= 2 && !errors.name && (
+               <p className="text-sm text-green-600">✓ Nome válido</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email *
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              {...register('email')}
-              className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+               Email *
+             </Label>
+             <Input
+               id="email"
+               type="email"
+               placeholder=""
+               {...register('email')}
+               className={cn(
+                 errors.email ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+             {watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
+               <p className="text-sm text-green-600">✓ Email válido</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Senha *
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Mínimo 8 caracteres com maiúscula, minúscula, número e caractere especial"
-              {...register('password')}
-              className={errors.password ? 'border-red-500 focus:ring-red-500' : ''}
-            />
+                     <div className="space-y-2">
+             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+               Senha *
+             </Label>
+             <Input
+               id="password"
+               type="password"
+               placeholder=""
+               {...register('password')}
+               className={cn(
+                 errors.password ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
             
             {/* Indicador de força da senha */}
             {watchedValues.password && (
@@ -291,68 +355,98 @@ export function SimpleRegistrationForm() {
               </div>
             )}
             
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
-          </div>
+                         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+             {watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong && (
+               <p className="text-sm text-green-600">✓ Senha forte</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-              Telefone *
-            </Label>
-            <Input
-              id="phone"
-              placeholder="11999999999"
-              {...register('phone')}
-              onChange={handlePhoneChange}
-              className={errors.phone ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+               Telefone *
+             </Label>
+             <Input
+               id="phone"
+               placeholder=""
+               {...register('phone')}
+               onChange={handlePhoneChange}
+               className={cn(
+                 errors.phone ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+             {watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone && (
+               <p className="text-sm text-green-600">✓ Telefone válido</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
-              CPF/CNPJ *
-            </Label>
-            <Input
-              id="cpf_cnpj"
-              placeholder="123.456.789-00"
-              {...register('cpf_cnpj')}
-              onChange={handleCPFChange}
-              className={errors.cpf_cnpj ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
+               CPF/CNPJ *
+             </Label>
+             <Input
+               id="cpf_cnpj"
+               placeholder=""
+               {...register('cpf_cnpj')}
+               onChange={handleCPFChange}
+               className={cn(
+                 errors.cpf_cnpj ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
+             {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
+               <p className="text-sm text-red-500">CPF inválido. Verifique os números digitados.</p>
+             )}
+             {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
+               <p className="text-sm text-green-600">✓ CPF válido</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
-              Data de Nascimento *
-            </Label>
-            <Input
-              id="birth_date"
-              type="date"
-              {...register('birth_date')}
-              className={errors.birth_date ? 'border-red-500 focus:ring-red-500' : ''}
-            />
-            {errors.birth_date && <p className="text-sm text-red-500">{errors.birth_date.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
+               Data de Nascimento *
+             </Label>
+             <Input
+               id="birth_date"
+               type="date"
+               {...register('birth_date')}
+               className={cn(
+                 errors.birth_date ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.birth_date && !errors.birth_date ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.birth_date && <p className="text-sm text-red-500">{errors.birth_date.message}</p>}
+             {watchedValues.birth_date && !errors.birth_date && (
+               <p className="text-sm text-green-600">✓ Data válida</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
-              Tipo de Usuário *
-            </Label>
-            <Select
-              value={watchedValues.user_type}
-              onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}
-            >
-              <SelectTrigger className={errors.user_type ? 'border-red-500 focus:ring-red-500' : ''}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="client">Cliente</SelectItem>
-                <SelectItem value="professional">Profissional</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.user_type && <p className="text-sm text-red-500">{errors.user_type.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
+               Tipo de Usuário *
+             </Label>
+             <Select
+               value={watchedValues.user_type}
+               onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}
+             >
+               <SelectTrigger className={cn(
+                 errors.user_type ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.user_type && !errors.user_type ? 'border-green-500 focus:ring-green-500' : ''
+               )}>
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="client">Cliente</SelectItem>
+                 <SelectItem value="professional">Profissional</SelectItem>
+               </SelectContent>
+             </Select>
+             {errors.user_type && <p className="text-sm text-red-500">{errors.user_type.message}</p>}
+             {watchedValues.user_type && !errors.user_type && (
+               <p className="text-sm text-green-600">✓ Tipo selecionado</p>
+             )}
+           </div>
         </div>
       </div>
 
@@ -367,22 +461,23 @@ export function SimpleRegistrationForm() {
             </Label>
             <Popover open={stateOpen} onOpenChange={setStateOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={stateOpen}
-                  className={cn(
-                    "w-full justify-between h-10",
-                    errors.location_state && "border-red-500 focus:ring-red-500"
-                  )}
-                >
+                                 <Button
+                   variant="outline"
+                   role="combobox"
+                   aria-expanded={stateOpen}
+                   className={cn(
+                     "w-full justify-between h-10",
+                     errors.location_state && "border-red-500 focus:ring-red-500",
+                     watchedValues.location_state && !errors.location_state ? "border-green-500 focus:ring-green-500" : ""
+                   )}
+                 >
                   {watchedValues.location_state
                     ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                    : "Selecione o estado..."}
+                    : "Estado"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
+              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
                 <Command>
                   <CommandInput placeholder="Buscar estado..." />
                   <CommandList>
@@ -412,8 +507,11 @@ export function SimpleRegistrationForm() {
                 </Command>
               </PopoverContent>
             </Popover>
-            {errors.location_state && <p className="text-sm text-red-500">{errors.location_state.message}</p>}
-          </div>
+                         {errors.location_state && <p className="text-sm text-red-500">{errors.location_state.message}</p>}
+             {watchedValues.location_state && !errors.location_state && (
+               <p className="text-sm text-green-600">✓ Estado selecionado</p>
+             )}
+           </div>
 
           <div className="space-y-2">
             <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
@@ -421,25 +519,26 @@ export function SimpleRegistrationForm() {
             </Label>
             <Popover open={cityOpen} onOpenChange={setCityOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={cityOpen}
-                  disabled={!watchedValues.location_state}
-                  className={cn(
-                    "w-full justify-between h-10",
-                    errors.location_city && "border-red-500 focus:ring-red-500"
-                  )}
-                >
+                                 <Button
+                   variant="outline"
+                   role="combobox"
+                   aria-expanded={cityOpen}
+                   disabled={!watchedValues.location_state}
+                   className={cn(
+                     "w-full justify-between h-10",
+                     errors.location_city && "border-red-500 focus:ring-red-500",
+                     watchedValues.location_city && !errors.location_city ? "border-green-500 focus:ring-green-500" : ""
+                   )}
+                 >
                   {watchedValues.location_city
                     ? watchedValues.location_city
                     : watchedValues.location_state
-                    ? "Selecione a cidade..."
-                    : "Selecione o estado primeiro"}
+                    ? "Cidade"
+                    : "Estado primeiro"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
+              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
                 <Command>
                   <CommandInput placeholder="Buscar cidade..." />
                   <CommandList>
@@ -468,24 +567,31 @@ export function SimpleRegistrationForm() {
                 </Command>
               </PopoverContent>
             </Popover>
-            {errors.location_city && <p className="text-sm text-red-500">{errors.location_city.message}</p>}
-          </div>
+                         {errors.location_city && <p className="text-sm text-red-500">{errors.location_city.message}</p>}
+             {watchedValues.location_city && !errors.location_city && (
+               <p className="text-sm text-green-600">✓ Cidade selecionada</p>
+             )}
+           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
-              Bairro *
-            </Label>
-            <Input
-              id="neighborhood"
-              placeholder="Seu bairro"
-              {...register('neighborhood')}
-              className={cn(
-                "h-10",
-                errors.neighborhood ? 'border-red-500 focus:ring-red-500' : ''
-              )}
-            />
-            {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
-          </div>
+                     <div className="space-y-2">
+             <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
+               Bairro *
+             </Label>
+             <Input
+               id="neighborhood"
+               placeholder=""
+               {...register('neighborhood')}
+               className={cn(
+                 "h-10",
+                 errors.neighborhood ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-green-500 focus:ring-green-500' : ''
+               )}
+             />
+             {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
+             {watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood && (
+               <p className="text-sm text-green-600">✓ Bairro válido</p>
+             )}
+           </div>
         </div>
       </div>
 
@@ -546,7 +652,7 @@ export function SimpleRegistrationForm() {
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg">
                   <Command>
                     <CommandInput placeholder="Buscar serviços..." />
                     <CommandList>
