@@ -5,17 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-
-// 🧹 LIMPEZA AUTOMÁTICA DO SERVICE WORKER ANTIGO
-// Desregistra todos os Service Workers antigos quando o usuário acessa o site
-if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((reg) => {
-      reg.unregister();
-      console.log("🧹 Service Worker removido:", reg);
-    });
-  });
-}
+import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -42,6 +32,7 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
       <body className={inter.className}>
+        <ServiceWorkerCleaner />
         <ErrorBoundary>
           <NotificationProvider>
             <AuthProvider>

@@ -157,9 +157,9 @@ export function useAuth() {
 								profile_photo_url: null,
 								selfie_document_url: null,
 								residence_proof_url: null,
-								client_verification_document: null
-								// REMOVIDO: created_at, updated_at (têm padrão now())
-								// REMOVIDO: emergency_service, insurance_coverage (não existem)
+								client_verification_document: null,
+								created_at: new Date().toISOString(),
+								updated_at: new Date().toISOString()
 							} as Profile
 							setProfile(defaultProfile)
 						}
@@ -195,9 +195,9 @@ export function useAuth() {
 							profile_photo_url: null,
 							selfie_document_url: null,
 							residence_proof_url: null,
-							client_verification_document: null
-							// REMOVIDO: created_at, updated_at (têm padrão now())
-							// REMOVIDO: emergency_service, insurance_coverage (não existem)
+							client_verification_document: null,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString()
 						} as Profile
 						setProfile(defaultProfile)
 					}
@@ -268,9 +268,9 @@ export function useAuth() {
 								profile_photo_url: null,
 								selfie_document_url: null,
 								residence_proof_url: null,
-								client_verification_document: null
-								// REMOVIDO: created_at, updated_at (têm padrão now())
-								// REMOVIDO: emergency_service, insurance_coverage (não existem)
+								client_verification_document: null,
+								created_at: new Date().toISOString(),
+								updated_at: new Date().toISOString()
 							} as Profile
 							setProfile(defaultProfile)
 						}
@@ -306,9 +306,9 @@ export function useAuth() {
 							profile_photo_url: null,
 							selfie_document_url: null,
 							residence_proof_url: null,
-							client_verification_document: null
-							// REMOVIDO: created_at, updated_at (têm padrão now())
-							// REMOVIDO: emergency_service, insurance_coverage (não existem)
+							client_verification_document: null,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString()
 						} as Profile
 						setProfile(defaultProfile)
 					}
