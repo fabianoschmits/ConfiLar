@@ -21,8 +21,7 @@ export function Navigation() {
   const router = useRouter()
 
   const handleLogout = async () => {
-    await signOut()
-    router.push('/auth')
+    window.location.href = '/logout'
   }
 
   if (!profile) return null

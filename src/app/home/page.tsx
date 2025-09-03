@@ -11,6 +11,11 @@ import {
   UserCheck,
   MessageSquare,
   ArrowRight,
+  Briefcase,
+  Star,
+  TrendingUp,
+  Calendar,
+  FileText,
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -162,6 +167,124 @@ export default function HomePage() {
                     size="sm"
                   >
                     Ver Mensagens
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Seção: Para Profissionais */}
+          <section>
+            <div className="text-center mb-8">
+              <Badge variant="outline" className="mb-4">
+                <Briefcase className="h-4 w-4 mr-2" />
+                Para Profissionais
+              </Badge>
+              <h2 className="text-3xl font-bold mb-4">Como Oferecer seus Serviços</h2>
+              <p className="text-lg text-gray-600">
+                Siga estes passos para expandir seu negócio e encontrar mais clientes
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Passo 1 */}
+              <Card className="relative overflow-hidden">
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <FileText className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">1. Crie seu Portfólio</CardTitle>
+                      <Badge variant="secondary" className="text-xs">Essencial</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Acesse <strong>Meu Portfólio</strong> e mostre seu trabalho:
+                  </p>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li>• Adicione fotos dos seus trabalhos</li>
+                    <li>• Descreva seus serviços</li>
+                    <li>• Defina seus preços</li>
+                    <li>• Configure sua disponibilidade</li>
+                  </ul>
+                  <Button 
+                    onClick={() => handleNavigateTo('/portfolio')}
+                    className="w-full"
+                    size="sm"
+                  >
+                    Criar Portfólio
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Passo 2 */}
+              <Card className="relative overflow-hidden">
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <Star className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">2. Construa sua Reputação</CardTitle>
+                      <Badge variant="secondary" className="text-xs">Crescimento</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    Use nossa <strong>Sistema de Avaliações</strong> para crescer:
+                  </p>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li>• Receba avaliações dos clientes</li>
+                    <li>• Responda aos comentários</li>
+                    <li>• Melhore seu perfil</li>
+                    <li>• Ganhe destaque na busca</li>
+                  </ul>
+                  <Button 
+                    onClick={() => handleNavigateTo('/reputacao')}
+                    className="w-full"
+                    size="sm"
+                  >
+                    Ver Reputação
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Passo 3 */}
+              <Card className="relative overflow-hidden">
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">3. Gerencie seus Ganhos</CardTitle>
+                      <Badge variant="secondary" className="text-xs">Financeiro</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600">
+                    <strong>Acompanhe seu crescimento</strong> financeiro:
+                  </p>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li>• Veja seus ganhos mensais</li>
+                    <li>• Analise estatísticas</li>
+                    <li>• Gerencie sua agenda</li>
+                    <li>• Planeje seu crescimento</li>
+                  </ul>
+                  <Button 
+                    onClick={() => handleNavigateTo('/ganhos')}
+                    className="w-full"
+                    size="sm"
+                  >
+                    Ver Ganhos
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
