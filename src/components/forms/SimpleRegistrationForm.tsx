@@ -267,7 +267,7 @@ export function SimpleRegistrationForm() {
                onBlur={handleNameBlur}
                className={cn(
                  errors.name ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.name && watchedValues.name.length >= 2 && !errors.name ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.name && watchedValues.name.length >= 2 && !errors.name ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
@@ -287,7 +287,7 @@ export function SimpleRegistrationForm() {
                {...register('email')}
                className={cn(
                  errors.email ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
@@ -307,7 +307,7 @@ export function SimpleRegistrationForm() {
                {...register('password')}
                className={cn(
                  errors.password ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
             
@@ -372,7 +372,7 @@ export function SimpleRegistrationForm() {
                onChange={handlePhoneChange}
                className={cn(
                  errors.phone ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
@@ -392,7 +392,7 @@ export function SimpleRegistrationForm() {
                onChange={handleCPFChange}
                className={cn(
                  errors.cpf_cnpj ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
@@ -414,7 +414,7 @@ export function SimpleRegistrationForm() {
                {...register('birth_date')}
                className={cn(
                  errors.birth_date ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.birth_date && !errors.birth_date ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.birth_date && !errors.birth_date ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.birth_date && <p className="text-sm text-red-500">{errors.birth_date.message}</p>}
@@ -433,7 +433,7 @@ export function SimpleRegistrationForm() {
              >
                <SelectTrigger className={cn(
                  errors.user_type ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.user_type && !errors.user_type ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.user_type && !errors.user_type ? 'border-gray-400 focus:ring-gray-400' : ''
                )}>
                  <SelectValue />
                </SelectTrigger>
@@ -468,7 +468,7 @@ export function SimpleRegistrationForm() {
                    className={cn(
                      "w-full justify-between h-10",
                      errors.location_state && "border-red-500 focus:ring-red-500",
-                     watchedValues.location_state && !errors.location_state ? "border-green-500 focus:ring-green-500" : ""
+                     watchedValues.location_state && !errors.location_state ? "border-gray-400 focus:ring-gray-400" : ""
                    )}
                  >
                   {watchedValues.location_state
@@ -527,7 +527,7 @@ export function SimpleRegistrationForm() {
                    className={cn(
                      "w-full justify-between h-10",
                      errors.location_city && "border-red-500 focus:ring-red-500",
-                     watchedValues.location_city && !errors.location_city ? "border-green-500 focus:ring-green-500" : ""
+                     watchedValues.location_city && !errors.location_city ? "border-gray-400 focus:ring-gray-400" : ""
                    )}
                  >
                   {watchedValues.location_city
@@ -584,7 +584,7 @@ export function SimpleRegistrationForm() {
                className={cn(
                  "h-10",
                  errors.neighborhood ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-green-500 focus:ring-green-500' : ''
+                 watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-gray-400 focus:ring-gray-400' : ''
                )}
              />
              {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}

@@ -115,19 +115,13 @@ export const FloatingProfile: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      const result = await signOut();
-      if (result.error) {
-        console.error('Erro ao sair:', result.error);
-        return;
-      }
-      
       // Fechar o menu expandido
-      setIsExpanded(false);
+      setIsExpanded(false)
       
-      // Redirecionar para a página inicial
-      window.location.href = '/';
+      // Redirecionar para a página de logout
+      window.location.href = '/logout'
     } catch (error) {
-      console.error('Erro ao sair:', error);
+      console.error('Erro ao sair:', error)
     }
   };
 

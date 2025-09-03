@@ -18,9 +18,8 @@ export function MobileNavigation() {
   }
 
   const handleSignOut = async () => {
-    await signOut()
     setIsOpen(false)
-    router.push('/')
+    window.location.href = '/logout'
   }
 
   const navigationItems = [
