@@ -363,41 +363,42 @@ export default function ProfilePage() {
   return (
     <MainLayout>
       <PageTransition>
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <FadeIn>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Perfil</h1>
-              <p className="text-gray-600">
-                Gerencie suas informações pessoais e profissionais
-              </p>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <FadeIn>
+              <div className="text-center mb-8">
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Meu Perfil</h1>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Gerencie suas informações pessoais e profissionais
+                </p>
+              </div>
 
-            {/* Card de Foto do Perfil - Sempre Visível */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>Foto do Perfil</span>
-                </CardTitle>
-                <CardDescription>
-                  Atualize sua foto de perfil
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  {/* Avatar atual */}
-                  <div className="flex-shrink-0">
-                    <Avatar className="w-24 h-24">
-                      <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
-                      <AvatarFallback className="text-2xl">
-                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  
-                  {/* Upload component */}
-                  <div className="flex-1">
-                    <AvatarUpload
+              {/* Card de Foto do Perfil - Sempre Visível */}
+              <Card className="mb-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+                <CardHeader className="text-center">
+                  <CardTitle className="flex items-center justify-center space-x-2 text-xl">
+                    <User className="h-6 w-6" />
+                    <span>Foto do Perfil</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Atualize sua foto de perfil
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Avatar atual */}
+                    <div className="flex-shrink-0">
+                      <Avatar className="w-32 h-32 border-4 border-blue-100">
+                        <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
+                        <AvatarFallback className="text-3xl bg-blue-100 text-blue-600">
+                          {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    
+                    {/* Upload component */}
+                    <div className="w-full max-w-md">
+                      <AvatarUpload
                       currentAvatarUrl={formData.avatar_url || profile.avatar_url}
                       onUpload={handleAvatarUpload}
                       className="w-full"
