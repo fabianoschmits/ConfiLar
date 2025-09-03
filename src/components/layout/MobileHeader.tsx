@@ -16,7 +16,7 @@ import {
   Bell as BellPhosphor,
   User,
   ArrowLeft,
-  Menu,
+  List,
   Plus
 } from '@phosphor-icons/react'
 
@@ -95,7 +95,7 @@ export function MobileHeader({
               onClick={onMenuClick}
               className="p-2 h-10 w-10 rounded-full"
             >
-              <Menu className="h-5 w-5" />
+              <List className="h-5 w-5" />
             </Button>
           )}
         </div>
