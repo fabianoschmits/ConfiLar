@@ -151,7 +151,7 @@ export const FloatingProfile: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-[9999]">
+    <div className="fixed top-4 right-4 z-[9999] lg:block hidden">
       <div className="relative">
         {/* Perfil Colapsado */}
         <div className="flex items-center gap-3">
