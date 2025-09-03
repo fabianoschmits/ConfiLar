@@ -11,6 +11,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { serviceCategories } from '@/data/serviceCategories'
@@ -45,6 +49,9 @@ type RegistrationFormData = z.infer<typeof registrationSchema>
 export function SimpleRegistrationForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
+  const [stateOpen, setStateOpen] = useState(false)
+  const [cityOpen, setCityOpen] = useState(false)
+  const [servicesOpen, setServicesOpen] = useState(false)
   const { signUp } = useAuthContext()
 
   const {
@@ -73,6 +80,12 @@ export function SimpleRegistrationForm() {
       ? selectedServices.filter(s => s !== service)
       : [...selectedServices, service]
     
+    setSelectedServices(newSelectedServices)
+    setValue('services_offered', newSelectedServices)
+  }
+
+  const removeService = (serviceToRemove: string) => {
+    const newSelectedServices = selectedServices.filter(s => s !== serviceToRemove)
     setSelectedServices(newSelectedServices)
     setValue('services_offered', newSelectedServices)
   }
@@ -289,6 +302,7 @@ export function SimpleRegistrationForm() {
               id="phone"
               placeholder="11999999999"
               {...register('phone')}
+              onChange={handlePhoneChange}
               className={errors.phone ? 'border-red-500 focus:ring-red-500' : ''}
             />
             {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
@@ -351,21 +365,53 @@ export function SimpleRegistrationForm() {
             <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
               Estado *
             </Label>
-            <Select
-              value={watchedValues.location_state}
-              onValueChange={(value) => setValue('location_state', value)}
-            >
-              <SelectTrigger className={errors.location_state ? 'border-red-500 focus:ring-red-500' : ''}>
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {estadosBrasil.map((estado) => (
-                  <SelectItem key={estado.sigla} value={estado.sigla}>
-                    {estado.sigla}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={stateOpen} onOpenChange={setStateOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={stateOpen}
+                  className={cn(
+                    "w-full justify-between",
+                    errors.location_state && "border-red-500 focus:ring-red-500"
+                  )}
+                >
+                  {watchedValues.location_state
+                    ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
+                    : "Selecione o estado..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Buscar estado..." />
+                  <CommandList>
+                    <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
+                    <CommandGroup>
+                      {estadosBrasil.map((estado) => (
+                        <CommandItem
+                          key={estado.sigla}
+                          value={estado.nome}
+                          onSelect={() => {
+                            setValue('location_state', estado.sigla)
+                            setValue('location_city', '') // Limpar cidade quando mudar estado
+                            setStateOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {estado.nome} ({estado.sigla})
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {errors.location_state && <p className="text-sm text-red-500">{errors.location_state.message}</p>}
           </div>
 
@@ -373,22 +419,55 @@ export function SimpleRegistrationForm() {
             <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
               Cidade *
             </Label>
-            <Select
-              value={watchedValues.location_city}
-              onValueChange={(value) => setValue('location_city', value)}
-              disabled={!watchedValues.location_state}
-            >
-              <SelectTrigger className={errors.location_city ? 'border-red-500 focus:ring-red-500' : ''}>
-                <SelectValue placeholder={watchedValues.location_state ? "Selecione" : "Estado primeiro"} />
-              </SelectTrigger>
-              <SelectContent>
-                {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
-                  <SelectItem key={cidade} value={cidade}>
-                    {cidade}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={cityOpen} onOpenChange={setCityOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                  disabled={!watchedValues.location_state}
+                  className={cn(
+                    "w-full justify-between",
+                    errors.location_city && "border-red-500 focus:ring-red-500"
+                  )}
+                >
+                  {watchedValues.location_city
+                    ? watchedValues.location_city
+                    : watchedValues.location_state
+                    ? "Selecione a cidade..."
+                    : "Selecione o estado primeiro"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Buscar cidade..." />
+                  <CommandList>
+                    <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                    <CommandGroup>
+                      {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
+                        <CommandItem
+                          key={cidade}
+                          value={cidade}
+                          onSelect={() => {
+                            setValue('location_city', cidade)
+                            setCityOpen(false)
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {cidade}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             {errors.location_city && <p className="text-sm text-red-500">{errors.location_city.message}</p>}
           </div>
 
@@ -450,24 +529,67 @@ export function SimpleRegistrationForm() {
               <Label className="text-sm font-medium text-gray-700">
                 Serviços Oferecidos
               </Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto border rounded-md p-3 bg-gray-50">
-                {serviceCategoryNames.map((service) => (
-                  <div key={service} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={service}
-                      checked={selectedServices.includes(service)}
-                      onCheckedChange={() => handleServiceToggle(service)}
-                    />
-                    <Label htmlFor={service} className="text-sm cursor-pointer">{service}</Label>
-                  </div>
-                ))}
-              </div>
+              <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={servicesOpen}
+                    className="w-full justify-between"
+                  >
+                    {selectedServices.length === 0
+                      ? "Selecione os serviços..."
+                      : `${selectedServices.length} serviço(s) selecionado(s)`}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar serviços..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        {serviceCategoryNames.map((service) => (
+                          <CommandItem
+                            key={service}
+                            value={service}
+                            onSelect={() => handleServiceToggle(service)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedServices.includes(service) ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {service}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              
+              {/* Serviços selecionados */}
               {selectedServices.length > 0 && (
-                <div className="mt-2">
+                <div className="mt-3 space-y-2">
                   <p className="text-sm text-gray-600">Serviços selecionados:</p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-2">
                     {selectedServices.map((service) => (
-                      <Badge key={service} variant="secondary">{service}</Badge>
+                      <Badge 
+                        key={service} 
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {service}
+                        <button
+                          type="button"
+                          onClick={() => removeService(service)}
+                          className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
                     ))}
                   </div>
                 </div>
