@@ -24,7 +24,7 @@ export function MobileNavigation() {
   }
 
   const navigationItems = [
-    { icon: Home, label: 'Início', path: '/inicio' },
+    { icon: Home, label: 'Início', path: '/' },
     { icon: Search, label: 'Buscar', path: '/buscar' },
     { icon: FileText, label: 'Classificados', path: '/classificados' },
     { icon: Star, label: 'Reputação', path: '/reputacao' },
