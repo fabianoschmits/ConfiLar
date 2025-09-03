@@ -360,7 +360,7 @@ export function SimpleRegistrationForm() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Localização</h3>
         
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
               Estado *
@@ -372,7 +372,7 @@ export function SimpleRegistrationForm() {
                   role="combobox"
                   aria-expanded={stateOpen}
                   className={cn(
-                    "w-full justify-between",
+                    "w-full justify-between h-10",
                     errors.location_state && "border-red-500 focus:ring-red-500"
                   )}
                 >
@@ -382,7 +382,7 @@ export function SimpleRegistrationForm() {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="Buscar estado..." />
                   <CommandList>
@@ -427,7 +427,7 @@ export function SimpleRegistrationForm() {
                   aria-expanded={cityOpen}
                   disabled={!watchedValues.location_state}
                   className={cn(
-                    "w-full justify-between",
+                    "w-full justify-between h-10",
                     errors.location_city && "border-red-500 focus:ring-red-500"
                   )}
                 >
@@ -439,7 +439,7 @@ export function SimpleRegistrationForm() {
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent className="w-full p-0" align="start">
                 <Command>
                   <CommandInput placeholder="Buscar cidade..." />
                   <CommandList>
@@ -479,7 +479,10 @@ export function SimpleRegistrationForm() {
               id="neighborhood"
               placeholder="Seu bairro"
               {...register('neighborhood')}
-              className={errors.neighborhood ? 'border-red-500 focus:ring-red-500' : ''}
+              className={cn(
+                "h-10",
+                errors.neighborhood ? 'border-red-500 focus:ring-red-500' : ''
+              )}
             />
             {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
           </div>
