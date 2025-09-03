@@ -23,6 +23,19 @@ export default function InicioPage() {
     router.push(path)
   }
 
+  // Renderização condicional para evitar problemas de hidratação
+  if (typeof window === 'undefined') {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold">Carregando...</h1>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
