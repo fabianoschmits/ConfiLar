@@ -19,7 +19,8 @@ import {
   Calendar as CalendarPhosphor,
   Briefcase as BriefcasePhosphor,
   Star as StarPhosphor,
-  Users as UsersPhosphor
+  Users as UsersPhosphor,
+  Tag
 } from '@phosphor-icons/react'
 
 export function MobileBottomNavigation() {
@@ -48,19 +49,18 @@ export function MobileBottomNavigation() {
       description: 'Encontrar profissionais'
     },
     {
+      id: 'classifieds',
+      label: 'Classificados',
+      href: '/classificados',
+      icon: Tag,
+      description: 'Anúncios classificados'
+    },
+    {
       id: 'messages',
       label: 'Chat',
       href: '/mensagens',
       icon: ChatTeardrop,
       description: 'Mensagens',
-      badge: unreadCount > 0 ? unreadCount.toString() : undefined
-    },
-    {
-      id: 'notifications',
-      label: 'Alertas',
-      href: '/notificacoes',
-      icon: BellPhosphor,
-      description: 'Notificações',
       badge: unreadCount > 0 ? unreadCount.toString() : undefined
     },
     {
@@ -81,7 +81,7 @@ export function MobileBottomNavigation() {
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg safe-area-bottom">
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-1 py-2">
         {navigationItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
@@ -91,7 +91,7 @@ export function MobileBottomNavigation() {
               key={item.id}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 min-w-[60px] relative",
+                "flex flex-col items-center justify-center px-2 py-2 rounded-lg transition-all duration-200 min-w-[56px] relative",
                 active
                   ? "bg-blue-50 text-blue-600"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
