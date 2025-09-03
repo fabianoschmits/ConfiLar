@@ -1,6 +1,10 @@
-# ConfiLar v3.0
+# ConfiLar v5
 
-Plataforma de conexão entre profissionais e clientes - Sistema completo para gestão de serviços e classificados.
+Plataforma de conexão entre clientes e profissionais de confiança.
+
+## 🚀 Deploy Automático
+
+Este projeto está configurado com deploy automático na Vercel. Qualquer push para a branch `master` irá automaticamente atualizar o site em produção.
 
 ## 🚀 Sobre o Projeto
 
