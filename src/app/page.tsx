@@ -33,12 +33,17 @@ import { serviceCategories } from '@/data/serviceCategories'
 export default function Page() {
   const router = useRouter()
   const { user, loading } = useAuthContext()
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     if (user && !loading) {
       router.replace('/home')
     }
   }, [user, loading, router])
+
+  useEffect(() => {
+    setIsVisible(true)
+  }, [])
 
   // Se usuário está logado, não mostrar nada (será redirecionado)
   if (user) {
@@ -56,13 +61,6 @@ export default function Page() {
       </div>
     )
   }
-
-  // Landing page para usuários não logados
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    setIsVisible(true)
-  }, [])
 
   const features = [
     {
