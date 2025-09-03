@@ -8,8 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { MobileNavigation } from '@/components/layout/MobileNavigation'
-import { PWABalloon } from '@/components/pwa/PWABalloon'
-import { PWAStatus } from '@/components/pwa/PWAStatus'
 import { 
   Search, 
   Users, 
@@ -156,7 +154,6 @@ function HomeContent() {
           </nav>
 
           <div className="hidden md:flex items-center space-x-3">
-            <PWAStatus />
             <Button variant="ghost" onClick={() => router.push('/auth')}>
               Entrar
             </Button>
@@ -567,9 +564,6 @@ function HomeContent() {
           </div>
         </div>
       </footer>
-
-      {/* PWA Balloon */}
-      <PWABalloon />
     </div>
   )
 }
