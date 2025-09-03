@@ -40,7 +40,7 @@ export function Navigation() {
 
           {/* Links de Navegação */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/inicio">
+            <Link href="/">
               <Button variant="ghost" size="sm">
                 <Home className="h-4 w-4 mr-2" />
                 Início

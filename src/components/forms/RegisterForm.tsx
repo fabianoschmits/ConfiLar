@@ -57,7 +57,7 @@ export function RegisterForm() {
       } else {
         toast.success('Conta criada com sucesso! Verifique seu email para confirmar.')
         // Redirecionar para a página inicial após registro bem-sucedido
-        window.location.href = '/inicio'
+        window.location.href = '/'
       }
     } catch (error) {
       toast.error('Erro inesperado ao criar conta')

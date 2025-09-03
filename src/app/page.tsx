@@ -40,9 +40,10 @@ function HomeContent() {
     if (!loading && user) {
       // Verificar se estamos no cliente antes de redirecionar
       if (typeof window !== 'undefined') {
-        console.log('🔄 Redirecionando usuário logado para /inicio')
+        console.log('🔄 Redirecionando usuário logado para / (página raiz)')
         // Usar replace em vez de push para evitar problemas de histórico
-        router.replace('/inicio')
+        // Redirecionar para / em vez de /inicio para evitar erro 404 no Vercel
+        router.replace('/')
       }
     }
   }, [user, loading, router])
