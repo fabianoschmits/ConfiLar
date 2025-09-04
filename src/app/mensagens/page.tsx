@@ -508,7 +508,7 @@ function MensagensContent() {
   return (
     <MainLayout>
       <div className="min-h-screen bg-gray-50 lg:p-4">
-        <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen lg:h-[600px]">
+        <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen-mobile lg:h-[600px]">
           {/* Header Mobile */}
           <div className="lg:hidden p-3 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
@@ -519,9 +519,9 @@ function MensagensContent() {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row h-full">
+          <div className="flex flex-col lg:flex-row h-full chat-container">
             {/* Lista de Conversas */}
-            <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col h-1/2 lg:h-full">
+            <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col h-1/3 lg:h-full">
               <div className="p-3 lg:p-4 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-3 lg:mb-4">
                   <h2 className="text-base lg:text-xl font-semibold text-gray-900">Conversas</h2>
@@ -588,7 +588,7 @@ function MensagensContent() {
             </div>
 
             {/* Área do Chat */}
-            <div className="flex-1 flex flex-col h-1/2 lg:h-full">
+            <div className="flex-1 flex flex-col h-2/3 lg:h-full">
               {selectedConversation ? (
                 <>
                   {/* Header do Chat */}
@@ -645,7 +645,7 @@ function MensagensContent() {
                   </div>
 
                   {/* Mensagens */}
-                  <ScrollArea className="flex-1 p-2 lg:p-4 bg-gray-50">
+                  <ScrollArea className="flex-1 p-2 lg:p-4 bg-gray-50 chat-messages">
                     <div className="space-y-3 lg:space-y-4">
                       {messages.map((message) => (
                         <div
@@ -692,7 +692,7 @@ function MensagensContent() {
                   </ScrollArea>
 
                   {/* Input de Mensagem */}
-                  <div className="bg-white border-t border-gray-200 p-2 lg:p-4">
+                  <div className="bg-white border-t border-gray-200 p-2 lg:p-4 pb-safe chat-input">
                     <div className="flex items-end space-x-2 lg:space-x-3">
                       <div className="flex-1">
                         <Textarea
@@ -700,7 +700,7 @@ function MensagensContent() {
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          className="min-h-[50px] lg:min-h-[60px] max-h-[100px] lg:max-h-[120px] resize-none text-sm"
+                          className="min-h-[50px] lg:min-h-[60px] max-h-[100px] lg:max-h-[120px] resize-none text-sm border-gray-300 focus:border-blue-500 chat-textarea"
                           rows={1}
                         />
                       </div>

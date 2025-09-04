@@ -167,6 +167,128 @@ button, a, input, select, textarea {
   }
 }
 
+/* Chat mobile improvements */
+.chat-container {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.chat-input {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Floating chat improvements */
+.floating-chat {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
+  width: 320px;
+  height: 384px;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .floating-chat {
+    width: calc(100vw - 2rem);
+    height: calc(100vh - 2rem);
+    bottom: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+  }
+}
+
+/* Textarea auto-resize */
+.chat-textarea {
+  resize: none;
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* Message bubbles */
+.message-bubble {
+  max-width: 85%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.message-bubble.sent {
+  background: #2563eb;
+  color: white;
+  border-radius: 1rem 1rem 0.25rem 1rem;
+}
+
+.message-bubble.received {
+  background: white;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem 1rem 1rem 0.25rem;
+}
+
+/* Mobile keyboard handling */
+@media (max-width: 768px) {
+  .chat-container {
+    height: 100vh;
+    height: 100dvh;
+  }
+  
+  .chat-input {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Better touch targets */
+  .chat-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+  
+  /* Improve scrolling */
+  .chat-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Safe area utilities */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.mb-safe {
+  margin-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.h-screen-mobile {
+  height: 100vh;
+  height: 100dvh;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

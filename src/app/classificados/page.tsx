@@ -1,7 +1,7 @@
 'use client'
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,13 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { useClassifiedAds, type ProfessionalService } from '@/hooks/useClassifiedAds'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { serviceCategories } from '@/data/serviceCategories'
 import { Plus, MapPin, Calendar, User, Tag, MessageCircle, ArrowRight, Star, DollarSign, Clock, Shield, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Profile } from '@/types/database'
+import { supabase } from '@/lib/supabase'
 
 interface ClassifiedAd {
   id: string
@@ -32,8 +33,29 @@ interface ClassifiedAd {
   user_avatar_url?: string
 }
 
+interface ProfessionalService {
+  id: string
+  professional_id: string
+  professional_name: string
+  professional_avatar_url?: string
+  category_id: string
+  category_name: string
+  category_icon: string
+  title: string
+  description: string | null
+  price_min: number | null
+  price_max: number | null
+  service_type: 'hourly' | 'fixed' | 'negotiable'
+  is_active: boolean
+  created_at: string
+  location_state: string
+  location_city: string
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  insurance_coverage: boolean
+  emergency_service: boolean
+}
+
 export default function ClassificadosPage() {
-  const { ads, professionalServices, loading, createAd, updateAd, deleteAd, searchAds, searchProfessionalServices } = useClassifiedAds()
   const { user, profile } = useAuthContext()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -43,6 +65,13 @@ export default function ClassificadosPage() {
   const [selectedState, setSelectedState] = useState('all')
   const [selectedCity, setSelectedCity] = useState('all')
   const [activeTab, setActiveTab] = useState<'ads' | 'services'>('services')
+  const [loading, setLoading] = useState(true)
+  
+  // Estados para dados carregados do Supabase
+  const [professionals, setProfessionals] = useState<Profile[]>([])
+  const [professionalServices, setProfessionalServices] = useState<ProfessionalService[]>([])
+  const [ads, setAds] = useState<ClassifiedAd[]>([])
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -51,6 +80,147 @@ export default function ClassificadosPage() {
     location_city: '',
     ad_type: 'procurar' as 'procurar' | 'oferecer'
   })
+
+  // Carregar profissionais reais do Supabase (mesmo método da página de busca)
+  useEffect(() => {
+    const loadProfessionals = async () => {
+      try {
+        setLoading(true)
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_type', 'professional')
+          .order('rating', { ascending: false })
+
+        if (!error && data) {
+          console.log('📊 Profissionais carregados para classificados:', data.length)
+          setProfessionals(data as unknown as Profile[])
+        } else {
+          console.error('❌ Erro ao carregar profissionais:', error)
+          setProfessionals([])
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar profissionais:', error)
+        setProfessionals([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfessionals()
+  }, [])
+
+  // Carregar serviços profissionais do Supabase
+  useEffect(() => {
+    const loadProfessionalServices = async () => {
+      try {
+        setLoading(true)
+        
+        const { data, error } = await supabase
+          .from('professional_services')
+          .select(`
+            *,
+            profiles (
+              full_name,
+              avatar_url,
+              location_state,
+              location_city
+            ),
+            service_categories (
+              name,
+              icon
+            )
+          `)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+
+        if (!error && data) {
+          console.log('📊 Serviços profissionais carregados:', data.length)
+          
+          // Transformar os dados para o formato esperado
+          const transformedServices: ProfessionalService[] = (data || []).map((service: {
+            id: string;
+            professional_id: string;
+            profiles?: { full_name?: string; avatar_url?: string; location_state?: string; location_city?: string };
+            category_id: string;
+            service_categories?: { name?: string; icon?: string };
+            title: string;
+            description: string;
+            price_min?: number;
+            price_max?: number;
+            service_type?: string;
+            is_active: boolean;
+            created_at: string;
+            experience_level?: string;
+            insurance_coverage?: boolean;
+            emergency_service?: boolean;
+          }) => ({
+            id: service.id,
+            professional_id: service.professional_id,
+            professional_name: service.profiles?.full_name || 'Profissional',
+            professional_avatar_url: service.profiles?.avatar_url,
+            category_id: service.category_id,
+            category_name: service.service_categories?.name || 'Serviço',
+            category_icon: service.service_categories?.icon || '🔧',
+            title: service.title,
+            description: service.description,
+            price_min: service.price_min,
+            price_max: service.price_max,
+            service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
+            is_active: service.is_active,
+            created_at: service.created_at,
+            location_state: service.profiles?.location_state || '',
+            location_city: service.profiles?.location_city || '',
+            experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
+            insurance_coverage: service.insurance_coverage || false,
+            emergency_service: service.emergency_service || false
+          }))
+
+          setProfessionalServices(transformedServices)
+        } else {
+          console.error('❌ Erro ao carregar serviços profissionais:', error)
+          setProfessionalServices([])
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar serviços profissionais:', error)
+        setProfessionalServices([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfessionalServices()
+  }, [])
+
+  // Carregar anúncios do Supabase
+  useEffect(() => {
+    const loadAds = async () => {
+      try {
+        setLoading(true)
+        
+        const { data, error } = await supabase
+          .from('classified_ads')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+
+        if (!error && data) {
+          console.log('📊 Anúncios carregados:', data.length)
+          setAds(data)
+        } else {
+          console.error('❌ Erro ao carregar anúncios:', error)
+          setAds([])
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar anúncios:', error)
+        setAds([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadAds()
+  }, [])
 
   // Filtrar dados baseado nos filtros selecionados
   const filteredAds = ads.filter((ad: ClassifiedAd) => {
@@ -84,12 +254,31 @@ export default function ClassificadosPage() {
       // Determinar o tipo de usuário baseado na escolha do anúncio
       const userType = formData.ad_type === 'oferecer' ? 'professional' : 'client'
       
-      await createAd(
-        formData,
-        user.id,
-        profile.full_name || 'Usuário',
-        userType
-      )
+      const { data, error } = await supabase
+        .from('classified_ads')
+        .insert({
+          user_id: user.id,
+          user_name: profile.full_name || 'Usuário',
+          user_type: userType,
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          category: formData.category,
+          location_state: formData.location_state,
+          location_city: formData.location_city?.trim() || '',
+          is_active: true,
+          views_count: 0
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Erro ao criar anúncio:', error)
+        toast.error('Erro ao criar anúncio')
+        return
+      }
+
+      // Adicionar o novo anúncio à lista local
+      setAds(prev => [data, ...prev])
       setIsCreateModalOpen(false)
       setFormData({
         title: '',
@@ -116,7 +305,27 @@ export default function ClassificadosPage() {
     }
     
     try {
-      await updateAd(editingAd.id, formData)
+      const { data, error } = await supabase
+        .from('classified_ads')
+        .update({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          location_state: formData.location_state,
+          location_city: formData.location_city
+        })
+        .eq('id', editingAd.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Erro ao atualizar anúncio:', error)
+        toast.error('Erro ao atualizar anúncio')
+        return
+      }
+
+      // Atualizar o anúncio na lista local
+      setAds(prev => prev.map(ad => ad.id === editingAd.id ? data : ad))
       setIsEditModalOpen(false)
       setEditingAd(null)
       setFormData({
@@ -147,7 +356,19 @@ export default function ClassificadosPage() {
     
     if (confirm('Tem certeza que deseja excluir este anúncio?')) {
       try {
-        await deleteAd(adId)
+        const { error } = await supabase
+          .from('classified_ads')
+          .delete()
+          .eq('id', adId)
+
+        if (error) {
+          console.error('❌ Erro ao deletar anúncio:', error)
+          toast.error('Erro ao deletar anúncio')
+          return
+        }
+
+        // Remover o anúncio da lista local
+        setAds(prev => prev.filter(ad => ad.id !== adId))
         toast.success('Anúncio excluído com sucesso!')
       } catch (error) {
         toast.error('Erro ao excluir anúncio')
@@ -406,9 +627,14 @@ export default function ClassificadosPage() {
           <TabsContent value="services" className="mt-0">
           {loading ? (
             <div className="text-center py-8">
-              <p>Carregando serviços...</p>
+              <div className="flex items-center justify-center min-h-[200px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3" style={{ animationDuration: '0.6s' }}></div>
+                  <p className="text-muted-foreground">Carregando serviços...</p>
+                </div>
+              </div>
             </div>
-          ) : (
+          ) : filteredServices.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredServices.map((service: ProfessionalService) => (
                 <Card key={service.id} className="group hover:shadow-lg transition-all duration-200 bg-card hover:bg-accent/50">
@@ -523,15 +749,41 @@ export default function ClassificadosPage() {
                 </Card>
               ))}
             </div>
+          ) : (
+            /* Estado vazio para serviços */
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Tag className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {professionalServices.length === 0 
+                  ? 'Nenhum serviço profissional cadastrado'
+                  : 'Nenhum serviço encontrado'
+                }
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {professionalServices.length === 0 
+                  ? 'Ainda não há serviços profissionais cadastrados no sistema.'
+                  : searchTerm || selectedState !== 'all' || selectedCity !== 'all' || selectedCategory !== 'all'
+                    ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
+                    : 'Comece digitando o que você precisa na barra de busca acima.'
+                }
+              </p>
+            </div>
           )}
         </TabsContent>
 
         <TabsContent value="ads" className="mt-0">
           {loading ? (
             <div className="text-center py-8">
-              <p>Carregando anúncios...</p>
+              <div className="flex items-center justify-center min-h-[200px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3" style={{ animationDuration: '0.6s' }}></div>
+                  <p className="text-muted-foreground">Carregando anúncios...</p>
+                </div>
+              </div>
             </div>
-          ) : (
+          ) : filteredAds.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredAds.map((ad: ClassifiedAd) => (
                 <Card key={ad.id} className={`group hover:shadow-lg transition-all duration-200 ${user && ad.user_id === user.id ? 'ring-1 ring-blue-200 bg-blue-50/50' : 'bg-card hover:bg-accent/50'}`}>
@@ -654,6 +906,35 @@ export default function ClassificadosPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          ) : (
+            /* Estado vazio para anúncios */
+            <div className="text-center py-16">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Tag className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                {ads.length === 0 
+                  ? 'Nenhum anúncio cadastrado'
+                  : 'Nenhum anúncio encontrado'
+                }
+              </h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {ads.length === 0 
+                  ? 'Ainda não há anúncios cadastrados no sistema. Seja o primeiro a criar um!'
+                  : searchTerm || selectedState !== 'all' || selectedCity !== 'all' || selectedCategory !== 'all'
+                    ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
+                    : 'Comece digitando o que você precisa na barra de busca acima.'
+                }
+              </p>
+              {ads.length === 0 && (
+                <Button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Criar Primeiro Anúncio
+                </Button>
+              )}
             </div>
           )}
         </TabsContent>

@@ -6,6 +6,7 @@ import { NotificationProvider } from "@/components/notifications/NotificationPro
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
+import { FloatingChatWrapper } from "@/components/chat/FloatingChatWrapper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -37,6 +38,7 @@ export default function RootLayout({
           <NotificationProvider>
             <AuthProvider>
               {children}
+              <FloatingChatWrapper />
               <Toaster position="top-right" richColors />
             </AuthProvider>
           </NotificationProvider>
