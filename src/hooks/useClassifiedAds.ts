@@ -63,6 +63,8 @@ export function useClassifiedAds() {
       setLoading(true)
       setError(null)
       
+      console.log('🔄 Carregando anúncios...')
+      
       const { data, error: supabaseError } = await supabase
         .from('classified_ads')
         .select('*')
@@ -75,6 +77,9 @@ export function useClassifiedAds() {
         return
       }
 
+      console.log('✅ Anúncios carregados:', data?.length || 0, 'anúncios')
+      console.log('📋 Dados dos anúncios:', data)
+      
       setAds(data || [])
     } catch (err) {
       console.error('💥 Erro crítico ao carregar anúncios:', err)
@@ -90,17 +95,19 @@ export function useClassifiedAds() {
       setLoading(true)
       setError(null)
       
+      console.log('🔄 Carregando serviços profissionais...')
+      
       const { data, error: supabaseError } = await supabase
         .from('professional_services')
         .select(`
           *,
-          profiles!professional_services_professional_id_fkey (
+          profiles (
             full_name,
             avatar_url,
             location_state,
             location_city
           ),
-          service_categories!professional_services_category_id_fkey (
+          service_categories (
             name,
             icon
           )
@@ -113,6 +120,9 @@ export function useClassifiedAds() {
         setError('Erro ao carregar serviços profissionais')
         return
       }
+
+      console.log('✅ Serviços profissionais carregados:', data?.length || 0, 'serviços')
+      console.log('📋 Dados dos serviços:', data)
 
       // Transformar os dados para o formato esperado
       const transformedServices: ProfessionalService[] = (data || []).map((service: {
@@ -161,6 +171,7 @@ export function useClassifiedAds() {
         emergency_service: service.emergency_service || false
       }))
 
+      console.log('🔄 Serviços transformados:', transformedServices)
       setProfessionalServices(transformedServices)
     } catch (err) {
       console.error('💥 Erro crítico ao carregar serviços profissionais:', err)
@@ -345,13 +356,13 @@ export function useClassifiedAds() {
         .from('professional_services')
         .select(`
           *,
-          profiles!professional_services_professional_id_fkey (
+          profiles (
             full_name,
             avatar_url,
             location_state,
             location_city
           ),
-          service_categories!professional_services_category_id_fkey (
+          service_categories (
             name,
             icon
           )
