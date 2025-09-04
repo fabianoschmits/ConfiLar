@@ -166,7 +166,7 @@ export function FloatingChat({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
+    <div className={`fixed bottom-4 right-4 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat ${selectedConversation ? 'has-conversation' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
         <div className="flex items-center space-x-2">
@@ -238,9 +238,9 @@ export function FloatingChat({
               </div>
             </div>
 
-            {/* Mensagens */}
-            <ScrollArea className="flex-1 p-3 bg-gray-50">
-              <div className="space-y-2">
+            {/* Mensagens - Área com espaço suficiente */}
+            <ScrollArea className="flex-1 p-3 bg-gray-50 messages-area">
+              <div className="space-y-2 pb-6">
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -285,8 +285,8 @@ export function FloatingChat({
               </div>
             </ScrollArea>
 
-            {/* Input de mensagem */}
-            <div className="p-3 border-t border-gray-200 bg-white">
+            {/* Input de mensagem - Sempre visível */}
+            <div className="p-3 border-t border-gray-200 bg-white input-area">
               <div className="flex items-end space-x-2">
                 <div className="flex-1">
                   <Textarea
@@ -295,7 +295,7 @@ export function FloatingChat({
                     value={newMessage}
                     onChange={handleTextareaChange}
                     onKeyPress={handleKeyPress}
-                    className="min-h-[40px] max-h-[120px] resize-none text-sm border-gray-300 focus:border-blue-500"
+                    className="min-h-[40px] max-h-[80px] lg:min-h-[45px] lg:max-h-[90px] resize-none text-sm border-gray-300 focus:border-blue-500"
                     rows={1}
                   />
                 </div>

@@ -205,6 +205,40 @@ button, a, input, select, textarea {
   border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease-in-out; /* Animação suave */
+}
+
+/* Desktop: Ajustar posição quando conversa está ativa */
+@media (min-width: 769px) {
+  .floating-chat.has-conversation {
+    bottom: 4rem; /* Subir ainda mais para dar espaço */
+    height: 480px; /* Aumentar altura ainda mais */
+    transform: translateY(-2rem); /* Subir mais */
+  }
+  
+  .floating-chat .messages-area {
+    flex: 1;
+    max-height: calc(100% - 160px); /* Ainda mais espaço para mensagens */
+    overflow-y: auto;
+    padding-bottom: 1.5rem; /* Mais espaço extra no final */
+    scroll-behavior: smooth; /* Scroll suave */
+  }
+  
+  /* Garantir que o scroll automático funcione */
+  .floating-chat .messages-area > div {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .floating-chat .input-area {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    margin-top: auto; /* Empurrar para baixo */
+  }
 }
 
 @media (max-width: 768px) {
@@ -214,6 +248,38 @@ button, a, input, select, textarea {
     bottom: 0.5rem;
     right: 0.5rem;
     left: 0.5rem;
+  }
+  
+  /* Ajuste específico para mobile quando conversa está selecionada */
+  .floating-chat.has-conversation {
+    height: calc(100vh - 2rem);
+  }
+  
+  /* Área de mensagens com espaço generoso no mobile */
+  .floating-chat .messages-area {
+    flex: 1;
+    max-height: calc(100% - 160px); /* Mesmo espaço que desktop */
+    overflow-y: auto;
+    padding-bottom: 1.5rem; /* Espaço extra no final */
+    scroll-behavior: smooth; /* Scroll suave */
+  }
+  
+  /* Garantir que o scroll automático funcione no mobile */
+  .floating-chat .messages-area > div {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Input sempre visível no mobile */
+  .floating-chat .input-area {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    margin-top: auto; /* Empurrar para baixo */
   }
 }
 
