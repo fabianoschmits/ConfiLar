@@ -297,7 +297,7 @@ export function useSupabaseMessages() {
 
          // Criar notificação (não vai falhar se der erro)
          const notificationTitle = `Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'}`
-         const notificationMessage = `Você recebeu uma nova mensagem na conversa sobre seus serviços.`
+         const notificationMessage = content.length > 50 ? `${content.substring(0, 50)}...` : content
          
          // Tentar criar notificação, mas não falhar se der erro
          try {
@@ -308,6 +308,12 @@ export function useSupabaseMessages() {
              conversationId,
              profile.id
            )
+           
+           // Mostrar toast para o remetente também
+           toast.success('Mensagem enviada com sucesso!', {
+             description: 'Sua mensagem foi enviada e notificada.',
+             duration: 3000
+           })
          } catch (notificationError) {
            console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
            // Não vamos falhar o envio da mensagem por causa da notificação
@@ -488,12 +494,83 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id, selectedConversation, fetchConversations])
 
-  // Sincronização em tempo real
+  // Sincronização em tempo real para todas as conversas
+  useEffect(() => {
+    if (!profile?.id) return
+
+    const channel = supabase
+      .channel(`all-messages-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          const newMessage = payload.new
+          
+          // Verificar se a mensagem é para uma conversa do usuário atual
+          if (newMessage.sender_id !== profile.id) {
+            // Buscar informações da conversa para mostrar notificação
+            const checkAndNotify = async () => {
+              try {
+                const { data: conversationData } = await supabase
+                  .from('conversation_participants')
+                  .select('conversation_id')
+                  .eq('conversation_id', newMessage.conversation_id)
+                  .eq('profile_id', profile.id)
+                  .single()
+
+                if (conversationData) {
+                  // Buscar informações do remetente
+                  const { data: senderProfile } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', newMessage.sender_id)
+                    .single()
+
+                  // Mostrar notificação apenas se não estiver na conversa atual
+                  if (selectedConversation !== newMessage.conversation_id) {
+                    toast.info(`Nova mensagem de ${senderProfile?.full_name || 'Usuário'}`, {
+                      description: newMessage.content.length > 50 ? `${newMessage.content.substring(0, 50)}...` : newMessage.content,
+                      duration: 5000,
+                      action: {
+                        label: 'Ver',
+                        onClick: () => {
+                          if (typeof window !== 'undefined') {
+                            window.location.href = '/mensagens'
+                          }
+                        }
+                      }
+                    })
+                  }
+                  
+                  // Recarregar conversas para atualizar contadores
+                  fetchConversations()
+                }
+              } catch (error) {
+                console.error('Erro ao verificar conversa para notificação:', error)
+              }
+            }
+            
+            checkAndNotify()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [profile?.id, selectedConversation, fetchConversations])
+
+  // Sincronização em tempo real para conversa selecionada
   useEffect(() => {
     if (!profile?.id || !selectedConversation) return
 
     const channel = supabase
-      .channel(`messages-${selectedConversation}`)
+      .channel(`selected-conversation-${selectedConversation}`)
       .on(
         'postgres_changes',
         {
@@ -503,7 +580,7 @@ export function useSupabaseMessages() {
           filter: `conversation_id=eq.${selectedConversation}`
         },
         () => {
-          console.log('🔄 Nova mensagem detectada, recarregando...')
+          console.log('🔄 Nova mensagem na conversa selecionada, recarregando...')
           fetchMessages(selectedConversation)
         }
       )

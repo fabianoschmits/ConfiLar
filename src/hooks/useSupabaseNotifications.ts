@@ -188,6 +188,10 @@ export function useSupabaseNotifications() {
                 onClick: () => {
                   // Aqui você pode adicionar lógica para abrir a conversa
                   console.log('Abrindo conversa:', newNotification.action_url)
+                  // Redirecionar para a página de mensagens
+                  if (typeof window !== 'undefined') {
+                    window.location.href = '/mensagens'
+                  }
                 }
               }
             })
