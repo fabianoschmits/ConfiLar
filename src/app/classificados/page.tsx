@@ -372,39 +372,38 @@ export default function ClassificadosPage() {
             <TabsTrigger value="services">Serviços Profissionais ({filteredServices.length})</TabsTrigger>
             <TabsTrigger value="ads">Anúncios ({filteredAds.length})</TabsTrigger>
           </TabsList>
-        </Tabs>
 
-        {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Input
-            placeholder="Buscar..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="md:col-span-2"
-          />
-          <CategoriaCombobox
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-            placeholder="Categoria"
-          />
-          <div className="grid grid-cols-2 gap-2">
-            <EstadoCombobox
-              value={selectedState}
-              onValueChange={setSelectedState}
-              placeholder="Estado"
+          {/* Filtros */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Input
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="md:col-span-2"
             />
-            <CidadeCombobox
-              value={selectedCity}
-              onValueChange={setSelectedCity}
-              estadoSigla={selectedState}
-              placeholder="Cidade"
-              disabled={selectedState === 'all'}
+            <CategoriaCombobox
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+              placeholder="Categoria"
             />
+            <div className="grid grid-cols-2 gap-2">
+              <EstadoCombobox
+                value={selectedState}
+                onValueChange={setSelectedState}
+                placeholder="Estado"
+              />
+              <CidadeCombobox
+                value={selectedCity}
+                onValueChange={setSelectedCity}
+                estadoSigla={selectedState}
+                placeholder="Cidade"
+                disabled={selectedState === 'all'}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Conteúdo dos Tabs */}
-        <TabsContent value="services" className="mt-0">
+          {/* Conteúdo dos Tabs */}
+          <TabsContent value="services" className="mt-0">
           {loading ? (
             <div className="text-center py-8">
               <p>Carregando serviços...</p>
@@ -658,8 +657,9 @@ export default function ClassificadosPage() {
             </div>
           )}
         </TabsContent>
+      </Tabs>
 
-        {/* Modal de Edição */}
+      {/* Modal de Edição */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>

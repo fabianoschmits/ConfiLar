@@ -308,6 +308,8 @@ function MensagensContent() {
   }, [searchTerm, conversations])
 
   const handleConversationSelect = (conversationId: string) => {
+    console.log('🎯 Selecionando conversa:', conversationId)
+    setSelectedConversation(conversationId)
     fetchMessages(conversationId)
   }
 
@@ -508,10 +510,10 @@ function MensagensContent() {
       <div className="min-h-screen bg-gray-50 lg:p-4">
         <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen lg:h-[600px]">
           {/* Header Mobile */}
-          <div className="lg:hidden p-4 border-b border-gray-200 bg-white">
+          <div className="lg:hidden p-3 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-gray-900">Mensagens</h1>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700">
+              <h1 className="text-lg font-bold text-gray-900">Mensagens</h1>
+              <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs">
                 {totalUnread > 0 ? `${totalUnread} não lidas` : 'Todas lidas'}
               </Badge>
             </div>
@@ -520,21 +522,21 @@ function MensagensContent() {
           <div className="flex flex-col lg:flex-row h-full">
             {/* Lista de Conversas */}
             <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col h-1/2 lg:h-full">
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg lg:text-xl font-semibold text-gray-900">Conversas</h2>
+              <div className="p-3 lg:p-4 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <h2 className="text-base lg:text-xl font-semibold text-gray-900">Conversas</h2>
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
                     {conversations.length} conversas
                   </Badge>
                 </div>
                 
                 <div className="relative">
-                  <MagnifyingGlass size={18} weight="light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <MagnifyingGlass size={16} weight="light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Buscar conversas..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 text-sm"
+                    className="pl-9 text-sm h-9"
                   />
                 </div>
               </div>
@@ -543,13 +545,13 @@ function MensagensContent() {
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    onClick={() => setSelectedConversation(conversation.id)}
-                    className={`p-3 lg:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                    onClick={() => handleConversationSelect(conversation.id)}
+                    className={`p-2 lg:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                       selectedConversation === conversation.id ? 'bg-blue-50 border-blue-200' : ''
                     }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
+                    <div className="flex items-center space-x-2 lg:space-x-3">
+                      <div className="relative flex-shrink-0">
                         <UserAvatar
                           src={conversation.participant?.avatar_url}
                           alt={conversation.participant?.full_name || 'Usuário'}
@@ -563,17 +565,17 @@ function MensagensContent() {
                           <h3 className="text-sm font-medium text-gray-900 truncate">
                             {conversation.participant?.full_name || 'Usuário'}
                           </h3>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 ml-2">
                             {conversation.updated_at ? formatTime(new Date(conversation.updated_at)) : ''}
                           </span>
                         </div>
                         
                         <div className="flex items-center justify-between mt-1">
-                          <p className="text-xs lg:text-sm text-gray-600 truncate">
+                          <p className="text-xs text-gray-600 truncate flex-1 mr-2">
                             {typeof conversation.last_message === 'string' ? conversation.last_message : 'Nenhuma mensagem'}
                           </p>
                           {conversation.unread_count && conversation.unread_count > 0 && (
-                            <Badge variant="destructive" className="text-xs">
+                            <Badge variant="destructive" className="text-xs flex-shrink-0">
                               {conversation.unread_count}
                             </Badge>
                           )}
@@ -590,9 +592,9 @@ function MensagensContent() {
               {selectedConversation ? (
                 <>
                   {/* Header do Chat */}
-                  <div className="bg-white border-b border-gray-200 p-3 lg:p-4">
+                  <div className="bg-white border-b border-gray-200 p-2 lg:p-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 lg:space-x-3">
                         {(() => {
                           const selectedConv = conversations.find(c => c.id === selectedConversation)
                           return (
@@ -600,15 +602,15 @@ function MensagensContent() {
                               <UserAvatar
                                 src={selectedConv?.participant?.avatar_url}
                                 alt={selectedConv?.participant?.full_name || 'Usuário'}
-                                className="w-10 h-10"
+                                className="w-8 h-8 lg:w-10 lg:h-10"
                               />
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-base lg:text-lg font-semibold text-gray-900">
                                   {selectedConv?.participant?.full_name || 'Usuário'}
                                 </h3>
                                 <div className="flex items-center space-x-2">
                                   <div className={`w-2 h-2 rounded-full ${getStatusColor('online')}`} />
-                                  <span className="text-sm text-gray-500 capitalize">
+                                  <span className="text-xs lg:text-sm text-gray-500 capitalize">
                                     online
                                   </span>
                                 </div>
@@ -618,17 +620,17 @@ function MensagensContent() {
                         })()}
                       </div>
                       
-                      <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm">
-                          <PhonePhosphor size={20} weight="light" />
+                      <div className="flex items-center space-x-1 lg:space-x-2">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
+                          <PhonePhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
-                        <Button variant="ghost" size="sm">
-                          <VideoCamera size={20} weight="light" />
+                        <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
+                          <VideoCamera size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <DotsThreeVertical size={20} weight="light" />
+                            <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
+                              <DotsThreeVertical size={16} weight="light" className="lg:w-5 lg:h-5" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -643,26 +645,26 @@ function MensagensContent() {
                   </div>
 
                   {/* Mensagens */}
-                  <ScrollArea className="flex-1 p-4 bg-gray-50">
-                    <div className="space-y-4">
+                  <ScrollArea className="flex-1 p-2 lg:p-4 bg-gray-50">
+                    <div className="space-y-3 lg:space-y-4">
                       {messages.map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${message.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                         >
-                          <div className="flex items-end space-x-2 max-w-[70%]">
+                          <div className="flex items-end space-x-1 lg:space-x-2 max-w-[75%] lg:max-w-[70%]">
                             {message.sender_id !== user?.id && (() => {
                               const selectedConv = conversations.find(c => c.id === selectedConversation)
                               return (
                                 <UserAvatar
                                   src={selectedConv?.participant?.avatar_url}
                                   alt={selectedConv?.participant?.full_name || 'Usuário'}
-                                  className="w-8 h-8 flex-shrink-0"
+                                  className="w-6 h-6 lg:w-8 lg:h-8 flex-shrink-0"
                                 />
                               )
                             })()}
                             <div
-                              className={`px-4 py-2 rounded-lg ${
+                              className={`px-3 py-2 lg:px-4 lg:py-2 rounded-lg ${
                                 message.sender_id === user?.id
                                   ? 'bg-blue-600 text-white'
                                   : 'bg-white text-gray-900 border border-gray-200'
@@ -690,27 +692,28 @@ function MensagensContent() {
                   </ScrollArea>
 
                   {/* Input de Mensagem */}
-                  <div className="bg-white border-t border-gray-200 p-4">
-                    <div className="flex items-end space-x-3">
+                  <div className="bg-white border-t border-gray-200 p-2 lg:p-4">
+                    <div className="flex items-end space-x-2 lg:space-x-3">
                       <div className="flex-1">
                         <Textarea
                           placeholder="Digite sua mensagem..."
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          className="min-h-[60px] max-h-[120px] resize-none"
+                          className="min-h-[50px] lg:min-h-[60px] max-h-[100px] lg:max-h-[120px] resize-none text-sm"
                           rows={1}
                         />
                       </div>
                       
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 lg:space-x-2">
                         <div className="relative">
                           <Button 
                             variant="ghost" 
                             size="sm"
+                            className="h-8 w-8 lg:h-10 lg:w-10 p-0"
                             onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
                           >
-                            <PaperclipPhosphor size={20} weight="light" />
+                            <PaperclipPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
                           </Button>
                           {showAttachmentMenu && (
                             <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2">
@@ -738,20 +741,21 @@ function MensagensContent() {
                         <Button 
                           variant="ghost" 
                           size="sm"
+                          className="h-8 w-8 lg:h-10 lg:w-10 p-0"
                           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         >
-                          <Smiley size={20} weight="light" />
+                          <Smiley size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
-                        <Button variant="ghost" size="sm">
-                          <Microphone size={20} weight="light" />
+                        <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
+                          <Microphone size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
                         <Button
                           onClick={handleSendMessage}
                           disabled={!newMessage.trim()}
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 lg:h-10 lg:w-10 p-0"
                         >
-                          <SendPhosphor size={20} weight="light" />
+                          <SendPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
                       </div>
                     </div>
@@ -759,12 +763,12 @@ function MensagensContent() {
                     {/* Seletor de Emojis */}
                     {showEmojiPicker && (
                       <div className="mt-2 p-2 bg-white border border-gray-200 rounded-lg">
-                        <div className="grid grid-cols-8 gap-1 max-h-32 overflow-y-auto">
+                        <div className="grid grid-cols-6 lg:grid-cols-8 gap-1 max-h-24 lg:max-h-32 overflow-y-auto">
                           {emojis.map((emoji, index) => (
                             <button
                               key={index}
                               onClick={() => addEmoji(emoji)}
-                              className="p-1 hover:bg-gray-100 rounded text-lg"
+                              className="p-1 hover:bg-gray-100 rounded text-base lg:text-lg"
                             >
                               {emoji}
                             </button>
