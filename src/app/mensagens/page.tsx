@@ -700,7 +700,7 @@ function MensagensContent() {
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          className="min-h-[50px] lg:min-h-[60px] max-h-[100px] lg:max-h-[120px] resize-none text-sm border-gray-300 focus:border-blue-500 chat-textarea"
+                          className="min-h-[40px] lg:min-h-[45px] max-h-[80px] lg:max-h-[90px] resize-none text-sm border-gray-300 focus:border-blue-500 chat-textarea"
                           rows={1}
                         />
                       </div>
