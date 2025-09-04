@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { PasswordInput } from '@/components/ui/password-input'
 import { cn } from '@/lib/utils'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -300,15 +301,11 @@ export function SimpleRegistrationForm() {
              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                Senha *
              </Label>
-             <Input
+             <PasswordInput
                id="password"
-               type="password"
                placeholder=""
                {...register('password')}
-               className={cn(
-                 errors.password ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}
+               error={!!errors.password}
              />
             
             {/* Indicador de força da senha */}

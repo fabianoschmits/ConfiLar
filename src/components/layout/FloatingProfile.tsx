@@ -1,5 +1,6 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { 
   User, 
@@ -54,41 +55,16 @@ import {
   CaretDown,
   CaretUp,
   ChatTeardrop,
-  FileText as FileTextPhosphor,
-  ChartLine,
   Heart as HeartPhosphor,
   Calendar as CalendarPhosphor,
-  CreditCard as CreditCardPhosphor,
   Bell as BellPhosphor,
   Question,
   Phone as PhonePhosphor,
-  Buildings,
-  MagnifyingGlass,
-  Users as UsersPhosphor,
-  Star as StarPhosphor,
-  House,
-  ChatTeardrop as ChatTeardropPhosphor,
   Briefcase as BriefcasePhosphor,
   TrendUp,
-  Shield as ShieldPhosphor,
   Lightning,
-  Globe as GlobePhosphor,
-  BookOpen as BookOpenPhosphor,
-  Trophy,
-  Clock as ClockPhosphor,
-  Wallet as WalletPhosphor,
-  PencilSimple,
   Eye as EyePhosphor,
-  Crown as CrownPhosphor,
-  ChartLine as ActivityPhosphor,
-  Target as TargetPhosphor,
-  Bookmark as BookmarkPhosphor,
-  Download as DownloadPhosphor,
-  Share as SharePhosphor,
-  Lock as LockPhosphor,
-  LockKeyOpen,
-  CheckCircle as CheckCirclePhosphor,
-  WarningCircle,
+  PencilSimple,
   Info as InfoPhosphor
 } from '@phosphor-icons/react';
 import { useAuthContext } from '@/contexts/AuthContext';
@@ -303,7 +279,7 @@ export const FloatingProfile: React.FC = () => {
                     <span>Ver Meu Perfil</span>
                   </Link>
                   <Link
-                    href="/perfil"
+                    href="/editarperfil"
                     className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >

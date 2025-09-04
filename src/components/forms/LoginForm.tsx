@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PasswordInput } from '@/components/ui/password-input'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
@@ -62,85 +63,97 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Mensagem de sucesso quando a conta for criada */}
-      {accountCreated && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-green-800">
-                Conta criada com sucesso! Faça login para continuar.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+    <Card className="w-full max-w-md mx-auto shadow-lg border-0">
+      <CardHeader className="text-center pb-6">
+        <CardTitle className="text-2xl font-bold text-gray-900">
+          Entrar na sua conta
+        </CardTitle>
+        <CardDescription className="text-gray-600">
+          Digite suas credenciais para acessar a plataforma
+        </CardDescription>
+      </CardHeader>
       
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-          Email
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="seu@email.com"
-          {...register('email')}
-          className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
-        />
-        {errors.email && (
-          <p className="text-sm text-red-500">{errors.email.message}</p>
-        )}
-      </div>
+      <CardContent className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Mensagem de sucesso quando a conta for criada */}
+          {accountCreated && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-800">
+                    Conta criada com sucesso! Faça login para continuar.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              {...register('email')}
+              className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-          Senha
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          {...register('password')}
-          className={errors.password ? 'border-red-500 focus:ring-red-500' : ''}
-        />
-        {errors.password && (
-          <p className="text-sm text-red-500">{errors.password.message}</p>
-        )}
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              Senha
+            </Label>
+            <PasswordInput
+              id="password"
+              placeholder="••••••••"
+              {...register('password')}
+              error={!!errors.password}
+            />
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
+          </div>
 
-             <Button
-               type="submit"
-               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-               disabled={isLoading}
-             >
-               {isLoading ? 'Entrando...' : 'Entrar'}
-             </Button>
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Entrando...' : 'Entrar'}
+          </Button>
 
-             <div className="text-center">
-               <button
-                 type="button"
-                 onClick={() => router.push('/recuperar-senha')}
-                 className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
-               >
-                 Esqueci minha senha
-               </button>
-             </div>
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => router.push('/recuperar-senha')}
+              className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
 
-      <div className="text-center text-sm text-gray-600 pt-2">
-        Não tem uma conta?{' '}
-        <button
-          type="button"
-          onClick={() => router.push('/auth/cadastro')}
-          className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
-        >
-          Cadastre-se
-        </button>
-      </div>
-    </form>
+          <div className="text-center text-sm text-gray-600 pt-2">
+            Não tem uma conta?{' '}
+            <button
+              type="button"
+              onClick={() => router.push('/auth/cadastro')}
+              className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+            >
+              Cadastre-se
+            </button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from '@/components/forms/LoginForm'
 import { SimpleRegistrationForm } from '@/components/forms/SimpleRegistrationForm'
 import { CheckCircle, ArrowLeft } from 'lucide-react'
@@ -23,7 +23,7 @@ export default function AuthPage() {
   if (registrationComplete) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center border-0 shadow-none">
+        <Card className="max-w-md w-full text-center shadow-lg border-0">
           <CardHeader className="pb-6">
             <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
               <CheckCircle className="h-10 w-10 text-primary" />
@@ -75,32 +75,32 @@ export default function AuthPage() {
       {/* Main Content */}
       <div className="container py-24">
         <div className="mx-auto max-w-md">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-3">
-              Bem-vindo ao ConfiLar
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Faça login ou crie sua conta para continuar
-            </p>
-          </div>
+          {/* Header Card */}
+          <Card className="mb-8 shadow-lg border-0">
+            <CardHeader className="text-center pb-6">
+              <CardTitle className="text-3xl font-bold tracking-tight mb-3">
+                Bem-vindo ao ConfiLar
+              </CardTitle>
+              <CardDescription className="text-muted-foreground text-lg">
+                Faça login ou crie sua conta para continuar
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="pt-0">
+              {/* Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Entrar</TabsTrigger>
+                  <TabsTrigger value="register">Criar Conta</TabsTrigger>
+                </TabsList>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">Criar Conta</TabsTrigger>
-            </TabsList>
-
-            {/* Tab de Login */}
-            <TabsContent value="login" className="mt-0">
-              <Card className="border-0 shadow-none">
-                <CardContent className="space-y-6">
+                {/* Tab de Login */}
+                <TabsContent value="login" className="mt-6">
                   <Suspense fallback={<div>Carregando...</div>}>
                     <LoginForm />
                   </Suspense>
                   
-                  <div className="relative">
+                  <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
                       <Separator className="w-full" />
                     </div>
@@ -149,19 +149,15 @@ export default function AuthPage() {
                       Continuar com Instagram
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </TabsContent>
 
-            {/* Tab de Registro */}
-            <TabsContent value="register" className="mt-0">
-              <Card className="border-0 shadow-none">
-                <CardContent className="space-y-6">
+                {/* Tab de Registro */}
+                <TabsContent value="register" className="mt-6">
                   <Suspense fallback={<div>Carregando...</div>}>
                     <SimpleRegistrationForm />
                   </Suspense>
                   
-                  <div className="relative">
+                  <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
                       <Separator className="w-full" />
                     </div>
@@ -210,10 +206,10 @@ export default function AuthPage() {
                       Continuar com Instagram
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
