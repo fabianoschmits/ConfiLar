@@ -19,6 +19,29 @@ export interface ClassifiedAd {
   user_avatar_url?: string
 }
 
+// Tipos para serviços profissionais
+export interface ProfessionalService {
+  id: string
+  professional_id: string
+  professional_name: string
+  professional_avatar_url?: string
+  category_id: string
+  category_name: string
+  category_icon: string
+  title: string
+  description: string | null
+  price_min: number | null
+  price_max: number | null
+  service_type: 'hourly' | 'fixed' | 'negotiable'
+  is_active: boolean
+  created_at: string
+  location_state: string
+  location_city: string
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  insurance_coverage: boolean
+  emergency_service: boolean
+}
+
 export interface CreateAdData {
   title: string
   description: string
@@ -30,6 +53,7 @@ export interface CreateAdData {
 
 export function useClassifiedAds() {
   const [ads, setAds] = useState<ClassifiedAd[]>([])
+  const [professionalServices, setProfessionalServices] = useState<ProfessionalService[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,6 +79,92 @@ export function useClassifiedAds() {
     } catch (err) {
       console.error('💥 Erro crítico ao carregar anúncios:', err)
       setError('Erro inesperado ao carregar anúncios')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Carregar serviços dos profissionais
+  const loadProfessionalServices = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { data, error: supabaseError } = await supabase
+        .from('professional_services')
+        .select(`
+          *,
+          profiles!professional_services_professional_id_fkey (
+            full_name,
+            avatar_url,
+            location_state,
+            location_city
+          ),
+          service_categories!professional_services_category_id_fkey (
+            name,
+            icon
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (supabaseError) {
+        console.error('❌ Erro ao carregar serviços profissionais:', supabaseError)
+        setError('Erro ao carregar serviços profissionais')
+        return
+      }
+
+      // Transformar os dados para o formato esperado
+      const transformedServices: ProfessionalService[] = (data || []).map((service: {
+        id: string
+        professional_id: string
+        category_id: string
+        profiles?: {
+          full_name?: string
+          avatar_url?: string
+          location_state?: string
+          location_city?: string
+        }
+        service_categories?: {
+          name?: string
+          icon?: string
+        }
+        title: string
+        description?: string
+        price_min?: number
+        price_max?: number
+        service_type?: string
+        is_active: boolean
+        created_at: string
+        experience_level?: string
+        insurance_coverage?: boolean
+        emergency_service?: boolean
+      }) => ({
+        id: service.id,
+        professional_id: service.professional_id,
+        professional_name: service.profiles?.full_name || 'Profissional',
+        professional_avatar_url: service.profiles?.avatar_url,
+        category_id: service.category_id,
+        category_name: service.service_categories?.name || 'Serviço',
+        category_icon: service.service_categories?.icon || '🔧',
+        title: service.title,
+        description: service.description,
+        price_min: service.price_min,
+        price_max: service.price_max,
+        service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
+        is_active: service.is_active,
+        created_at: service.created_at,
+        location_state: service.profiles?.location_state || '',
+        location_city: service.profiles?.location_city || '',
+        experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
+        insurance_coverage: service.insurance_coverage || false,
+        emergency_service: service.emergency_service || false
+      }))
+
+      setProfessionalServices(transformedServices)
+    } catch (err) {
+      console.error('💥 Erro crítico ao carregar serviços profissionais:', err)
+      setError('Erro inesperado ao carregar serviços profissionais')
     } finally {
       setLoading(false)
     }
@@ -218,10 +328,131 @@ export function useClassifiedAds() {
     }
   }, [])
 
-  // Carregar anúncios na inicialização
+  // Buscar serviços profissionais com filtros
+  const searchProfessionalServices = useCallback(async (filters: {
+    searchTerm?: string
+    category?: string
+    location_state?: string
+    location_city?: string
+    service_type?: 'hourly' | 'fixed' | 'negotiable'
+    experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+  }) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      let query = supabase
+        .from('professional_services')
+        .select(`
+          *,
+          profiles!professional_services_professional_id_fkey (
+            full_name,
+            avatar_url,
+            location_state,
+            location_city
+          ),
+          service_categories!professional_services_category_id_fkey (
+            name,
+            icon
+          )
+        `)
+        .eq('is_active', true)
+
+      // Aplicar filtros
+      if (filters.category && filters.category !== 'all') {
+        query = query.eq('category_id', filters.category)
+      }
+
+      if (filters.location_state) {
+        query = query.eq('profiles.location_state', filters.location_state)
+      }
+
+      if (filters.location_city) {
+        query = query.eq('profiles.location_city', filters.location_city)
+      }
+
+      if (filters.service_type) {
+        query = query.eq('service_type', filters.service_type)
+      }
+
+      if (filters.experience_level) {
+        query = query.eq('experience_level', filters.experience_level)
+      }
+
+      // Busca por texto (título e descrição)
+      if (filters.searchTerm) {
+        query = query.or(`title.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`)
+      }
+
+      const { data, error: supabaseError } = await query.order('created_at', { ascending: false })
+
+      if (supabaseError) {
+        console.error('❌ Erro na busca de serviços:', supabaseError)
+        setError('Erro na busca de serviços')
+        return
+      }
+
+      // Transformar os dados
+      const transformedServices: ProfessionalService[] = (data || []).map((service: {
+        id: string
+        professional_id: string
+        category_id: string
+        profiles?: {
+          full_name?: string
+          avatar_url?: string
+          location_state?: string
+          location_city?: string
+        }
+        service_categories?: {
+          name?: string
+          icon?: string
+        }
+        title: string
+        description?: string
+        price_min?: number
+        price_max?: number
+        service_type?: string
+        is_active: boolean
+        created_at: string
+        experience_level?: string
+        insurance_coverage?: boolean
+        emergency_service?: boolean
+      }) => ({
+        id: service.id,
+        professional_id: service.professional_id,
+        professional_name: service.profiles?.full_name || 'Profissional',
+        professional_avatar_url: service.profiles?.avatar_url,
+        category_id: service.category_id,
+        category_name: service.service_categories?.name || 'Serviço',
+        category_icon: service.service_categories?.icon || '🔧',
+        title: service.title,
+        description: service.description,
+        price_min: service.price_min,
+        price_max: service.price_max,
+        service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
+        is_active: service.is_active,
+        created_at: service.created_at,
+        location_state: service.profiles?.location_state || '',
+        location_city: service.profiles?.location_city || '',
+        experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
+        insurance_coverage: service.insurance_coverage || false,
+        emergency_service: service.emergency_service || false
+      }))
+
+      setProfessionalServices(transformedServices)
+    } catch (err) {
+      console.error('💥 Erro crítico na busca de serviços:', err)
+      setError('Erro inesperado na busca de serviços')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Carregar dados na inicialização
   useEffect(() => {
     loadAds()
-  }, []) // Remover dependência de loadAds para evitar loop infinito
+    loadProfessionalServices()
+  }, []) // Remover dependências para evitar loop infinito
 
   // Função para buscar foto do usuário
   const getUserAvatar = useCallback(async (userId: string) => {
@@ -241,13 +472,16 @@ export function useClassifiedAds() {
 
   return {
     ads,
+    professionalServices,
     loading,
     error,
     loadAds,
+    loadProfessionalServices,
     createAd,
     updateAd,
     deleteAd,
     searchAds,
+    searchProfessionalServices,
     getUserAvatar
   }
 }
