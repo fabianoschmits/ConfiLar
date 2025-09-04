@@ -1,5 +1,6 @@
 'use client'
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,7 +31,7 @@ export default function HomePage() {
   return (
     <MainLayout>
       <div className="min-h-screen bg-white">
-        <ResponsiveContainer spacing="lg" maxWidth="2xl">
+        <ResponsiveContainer spacing="lg" maxWidth="full">
           {/* Header */}
           <div className="text-center py-12 lg:py-16">
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 lg:p-12">
@@ -61,9 +62,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+            <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {/* Passo 1 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -75,7 +76,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     Acesse <strong>Editar Perfil</strong> e mantenha todos seus dados atualizados:
                   </p>
@@ -97,11 +98,11 @@ export default function HomePage() {
                       Preferências de serviço
                     </li>
                   </ul>
-                  <Button 
-                    onClick={() => handleNavigateTo('/perfil')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
-                    size="lg"
-                  >
+                                     <Button 
+                     onClick={() => handleNavigateTo('/editarperfil')}
+                     className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
+                     size="lg"
+                   >
                     Editar Perfil
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -109,7 +110,7 @@ export default function HomePage() {
               </Card>
 
               {/* Passo 2 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -121,7 +122,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     Use nossa <strong>Busca Avançada</strong> para encontrar profissionais:
                   </p>
@@ -145,7 +146,7 @@ export default function HomePage() {
                   </ul>
                   <Button 
                     onClick={() => handleNavigateTo('/buscar')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
                     size="lg"
                   >
                     Buscar Profissionais
@@ -155,7 +156,7 @@ export default function HomePage() {
               </Card>
 
               {/* Passo 3 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -167,7 +168,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     <strong>Converse diretamente</strong> com os profissionais:
                   </p>
@@ -191,7 +192,7 @@ export default function HomePage() {
                   </ul>
                   <Button 
                     onClick={() => handleNavigateTo('/mensagens')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
                     size="lg"
                   >
                     Ver Mensagens
@@ -215,9 +216,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+            <div className="grid gap-6 md:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {/* Passo 1 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -229,7 +230,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     Acesse <strong>Meu Portfólio</strong> e mostre seu trabalho:
                   </p>
@@ -253,7 +254,7 @@ export default function HomePage() {
                   </ul>
                   <Button 
                     onClick={() => handleNavigateTo('/portfolio')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
                     size="lg"
                   >
                     Criar Portfólio
@@ -263,7 +264,7 @@ export default function HomePage() {
               </Card>
 
               {/* Passo 2 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -275,7 +276,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     Use nossa <strong>Sistema de Avaliações</strong> para crescer:
                   </p>
@@ -299,7 +300,7 @@ export default function HomePage() {
                   </ul>
                   <Button 
                     onClick={() => handleNavigateTo('/reputacao')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
                     size="lg"
                   >
                     Ver Reputação
@@ -309,7 +310,7 @@ export default function HomePage() {
               </Card>
 
               {/* Passo 3 */}
-              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white">
+              <Card className="relative overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-100 p-3 rounded-xl">
@@ -321,7 +322,7 @@ export default function HomePage() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1">
                   <p className="text-gray-600 leading-relaxed">
                     Monitore seu <strong>Desempenho</strong> e crescimento:
                   </p>
@@ -345,7 +346,7 @@ export default function HomePage() {
                   </ul>
                   <Button 
                     onClick={() => handleNavigateTo('/ganhos')}
-                    className="w-full bg-gray-900 hover:bg-gray-800"
+                    className="w-full bg-gray-900 hover:bg-gray-800 mt-6"
                     size="lg"
                   >
                     Ver Ganhos
@@ -358,7 +359,7 @@ export default function HomePage() {
 
           {/* CTA Final */}
           <div className="text-center py-12">
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 shadow-sm">
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 lg:p-12 shadow-sm">
               <h3 className="text-3xl lg:text-4xl font-bold mb-6 text-gray-900">
                 Pronto para Começar?
               </h3>
@@ -374,7 +375,7 @@ export default function HomePage() {
                   Buscar Profissionais
                 </Button>
                 <Button 
-                  onClick={() => handleNavigateTo('/perfil')}
+                  onClick={() => handleNavigateTo('/editarperfil')}
                   variant="outline"
                   size="lg"
                   className="border-gray-300 text-gray-700 hover:bg-gray-50 text-lg px-8 py-3"

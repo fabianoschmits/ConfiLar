@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { useMobileSidebar } from './MobileSidebar'
 
 // Phosphor Icons Light
 import {
@@ -41,6 +41,7 @@ export function MobileHeader({
 }: MobileHeaderProps) {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
+  const { openSidebar } = useMobileSidebar()
 
   // Só renderiza se o usuário estiver logado
   if (!user || !profile) {
@@ -92,7 +93,7 @@ export function MobileHeader({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onMenuClick}
+              onClick={openSidebar}
               className="p-2 h-10 w-10 rounded-full"
             >
               <List className="h-5 w-5" />

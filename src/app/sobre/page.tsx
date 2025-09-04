@@ -171,7 +171,7 @@ export default function SobrePage() {
                   <li><Link href="/sobre" className="hover:text-white">Sobre Nós</Link></li>
                   <li><Link href="/buscar" className="hover:text-white">Buscar Profissionais</Link></li>
                   <li><Link href="/classificados" className="hover:text-white">Classificados</Link></li>
-                  <li><Link href="/perfil" className="hover:text-white">Meu Perfil</Link></li>
+                  <li><Link href="/editarperfil" className="hover:text-white">Meu Perfil</Link></li>
                 </ul>
               </div>
               

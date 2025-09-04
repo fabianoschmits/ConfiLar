@@ -87,7 +87,7 @@ export function Navigation() {
 
           {/* Perfil e Ações */}
           <div className="flex items-center space-x-4">
-            <Link href="/perfil">
+            <Link href="/editarperfil">
               <Button variant="ghost" size="sm">
                 <User className="h-4 w-4 mr-2" />
                 Perfil
