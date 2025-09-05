@@ -29,12 +29,14 @@ html {
 }
 
 /* PatternCraft Soft Warm Pastel Background */
-body {
+html, body {
   background: #fff8f0 !important;
+  background-color: #fff8f0 !important;
   position: relative;
+  min-height: 100vh;
 }
 
-body::before {
+html::before, body::before {
   content: '';
   position: fixed;
   top: 0;
@@ -47,6 +49,15 @@ body::before {
     radial-gradient(circle at 80% 20%, rgba(255, 244, 214, 0.5) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(255, 182, 153, 0.1) 0%, transparent 50%);
   pointer-events: none;
+}
+
+/* Garantir que o fundo seja aplicado em todos os elementos */
+* {
+  background-color: transparent !important;
+}
+
+html, body {
+  background-color: #fff8f0 !important;
 }
 
 /* Better touch targets for mobile */
@@ -350,7 +361,7 @@ button, a, input, select, textarea {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 30 20% 95%; /* Cor creme quente em HSL */
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
