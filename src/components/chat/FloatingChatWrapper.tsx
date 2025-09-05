@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { FloatingChat } from '@/components/chat/FloatingChat'
+import { Envelope } from '@phosphor-icons/react'
 
 export function FloatingChatWrapper() {
   const { user, profile } = useAuthContext()
-  const { isOpen, selectedConversationId, targetUserId, targetUserName, closeChat, selectConversation } = useFloatingChat()
+  const { isOpen, selectedConversationId, targetUserId, targetUserName, closeChat, selectConversation, openChat } = useFloatingChat()
   const [isMinimized, setIsMinimized] = useState(false)
 
   // Não mostrar se não estiver logado
@@ -19,11 +20,8 @@ export function FloatingChatWrapper() {
     if (isOpen) {
       closeChat()
     } else {
-      // Se há um targetUserId, abrir chat direto para essa conversa
-      if (targetUserId) {
-        // Aqui você pode implementar lógica para encontrar/criar conversa com targetUserId
-        // Por enquanto, apenas abre o chat
-      }
+      // Abrir chat normalmente
+      openChat()
     }
     if (isMinimized) {
       setIsMinimized(false)
@@ -50,9 +48,7 @@ export function FloatingChatWrapper() {
           onClick={handleMaximize}
           className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center justify-center"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
-          </svg>
+          <Envelope size={24} weight="light" />
         </button>
       </div>
     )

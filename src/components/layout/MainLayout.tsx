@@ -7,6 +7,7 @@ import { MobileBottomNavigation } from './MobileBottomNavigation';
 import { MobileQuickActions } from './MobileQuickActions';
 import { MobileHeader } from './MobileHeader';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { usePathname } from 'next/navigation';
 
 interface MainLayoutProps {
@@ -17,6 +18,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { user, profile, loading } = useAuthContext();
   const pathname = usePathname();
   const isLoggedIn = user && profile;
+  
+  // Hook para redirecionamento automático
+  useAutoRedirect();
   
   // Debug em desenvolvimento
   if (process.env.NODE_ENV === 'development') {

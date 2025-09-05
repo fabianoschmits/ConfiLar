@@ -208,6 +208,13 @@ export default function ClassificadosPage() {
 
         if (!error && data) {
           console.log('📊 Anúncios carregados:', data.length)
+          console.log('📋 Dados dos anúncios:', data.map(ad => ({
+            id: ad.id,
+            title: ad.title,
+            category: ad.category,
+            user_type: ad.user_type,
+            is_active: ad.is_active
+          })))
           setAds(data)
         } else {
           console.error('❌ Erro ao carregar anúncios:', error)
@@ -231,6 +238,23 @@ export default function ClassificadosPage() {
     const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory
     const matchesState = selectedState === 'all' || ad.location_state === selectedState
     const matchesCity = selectedCity === 'all' || ad.location_city === selectedCity
+    
+    // Debug para verificar filtros
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Filtro anúncio:', {
+        title: ad.title,
+        category: ad.category,
+        selectedCategory,
+        matchesCategory,
+        state: ad.location_state,
+        selectedState,
+        matchesState,
+        city: ad.location_city,
+        selectedCity,
+        matchesCity,
+        final: matchesSearch && matchesCategory && matchesState && matchesCity
+      })
+    }
     
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
