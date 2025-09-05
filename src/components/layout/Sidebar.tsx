@@ -366,17 +366,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Botão Mobile - Melhorado */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="bg-white/95 backdrop-blur-sm shadow-lg border-gray-200 hover:bg-gray-50 h-10 w-10 p-0 rounded-full"
-        >
-          {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
-      </div>
+      {/* Botão Mobile - Removido para evitar conflito com MobileHeader */}
 
       {/* Overlay Mobile - Melhorado */}
       {isMobileOpen && (
