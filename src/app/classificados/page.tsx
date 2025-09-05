@@ -664,107 +664,120 @@ export default function ClassificadosPage() {
                   </div>
                 </div>
               ) : filteredAds.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredAds.map((ad) => (
                     <Card key={ad.id} className={`hover:shadow-lg transition-all duration-200 ${
                       user && ad.user_id === user.id ? 'ring-2 ring-blue-200 bg-blue-50/50' : ''
                     }`}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-12 w-12 border border-gray-200">
-                            <AvatarImage src={ad.user_avatar_url || ''} />
-                            <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
-                              {ad.user_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h3 className="font-semibold text-gray-900 text-base">{ad.user_name}</h3>
-                                <p className="text-xs text-gray-500">
-                                  {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                </p>
-                              </div>
-                              {user && ad.user_id === user.id && (
-                                <Badge variant="outline" className="text-xs text-gray-500 border-gray-200">
-                                  Seu anúncio
-                                </Badge>
-                              )}
+                      <CardContent className="p-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">
+                                {ad.user_type === 'professional' ? '🏗️' : '🔍'}
+                              </span>
+                              <Badge variant="secondary">
+                                {serviceCategories.find(c => c.id === ad.category)?.name || ad.category}
+                              </Badge>
                             </div>
-
-                            <h4 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1">
+                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
                               {ad.title}
-                            </h4>
-                            <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                            </h3>
+                            <p className="text-gray-600 text-sm line-clamp-3 mb-3">
                               {ad.description}
                             </p>
+                          </div>
+                        </div>
 
-                            <div className="space-y-1 mb-3 text-xs text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                                <span>{serviceCategories.find(c => c.id === ad.category)?.name || ad.category}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                <span>{ad.location_city}, {ad.location_state}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full"></div>
-                                <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                                <span>{ad.user_type === 'professional' ? 'Oferecendo serviços' : 'Procurando serviços'}</span>
+                        {/* Informações do anúncio */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span>{ad.location_city}, {ad.location_state}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <User className="h-4 w-4" />
+                            <span>{ad.user_type === 'professional' ? 'Oferecendo serviços' : 'Procurando serviços'}</span>
+                          </div>
+                        </div>
+
+                        {/* Badges */}
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          <Badge variant="outline" className="text-xs">
+                            {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                          </Badge>
+                          {user && ad.user_id === user.id && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              Seu anúncio
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Perfil do usuário */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={ad.user_avatar_url || ''} />
+                                <AvatarFallback className="text-xs">
+                                  {ad.user_name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm text-gray-900">{ad.user_name}</p>
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                                  <span className="text-xs text-gray-500">4.8 (24)</span>
+                                </div>
                               </div>
                             </div>
-
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1">
-                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                <span className="text-xs text-gray-600">4.8 (24)</span>
-                              </div>
-                              
-                              <div className="flex gap-2">
-                                {user && ad.user_id !== user.id && (
-                                  <Button
-                                    size="sm"
-                                    className="h-8 px-3 text-xs"
-                                    onClick={() => handleChat(ad.user_id, ad.user_name)}
-                                  >
-                                    <MessageCircle className="h-3 w-3 mr-1" />
-                                    Mensagem
-                                  </Button>
-                                )}
+                            
+                            <div className="flex gap-1">
+                              {user && ad.user_id !== user.id && (
                                 <Button
                                   size="sm"
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                                  onClick={() => handleViewProfile(ad.user_id)}
+                                  variant="outline"
+                                  onClick={() => handleChat(ad.user_id, ad.user_name)}
+                                  className="h-8 px-2"
                                 >
-                                  <Eye className="h-3 w-3" />
+                                  <MessageCircle className="h-3 w-3" />
                                 </Button>
-                                {user && ad.user_id === user.id && (
-                                  <>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                                      onClick={() => openEditModal(ad)}
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                                      onClick={() => handleDeleteAd(ad.id)}
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
+                              )}
+                              
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleViewProfile(ad.user_id)}
+                                className="h-8 px-2"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              
+                              {user && ad.user_id === user.id && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => openEditModal(ad)}
+                                    className="h-8 px-2 text-gray-500 hover:text-gray-700"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteAd(ad.id)}
+                                    className="h-8 px-2 text-red-500 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
