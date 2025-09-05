@@ -33,16 +33,28 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
       <body className={inter.className}>
-        <ServiceWorkerCleaner />
-        <ErrorBoundary>
-          <NotificationProvider>
-            <AuthProvider>
-              {children}
-              <FloatingChatWrapper />
-              <Toaster position="top-right" richColors />
-            </AuthProvider>
-          </NotificationProvider>
-        </ErrorBoundary>
+        <div 
+          className="min-h-screen w-full relative"
+          style={{
+            backgroundColor: '#fff8f0',
+            backgroundImage: `
+              radial-gradient(circle at 20% 80%, rgba(255, 182, 153, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(255, 244, 214, 0.5) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(255, 182, 153, 0.1) 0%, transparent 50%)
+            `
+          }}
+        >
+          <ServiceWorkerCleaner />
+          <ErrorBoundary>
+            <NotificationProvider>
+              <AuthProvider>
+                {children}
+                <FloatingChatWrapper />
+                <Toaster position="top-right" richColors />
+              </AuthProvider>
+            </NotificationProvider>
+          </ErrorBoundary>
+        </div>
       </body>
     </html>
   )
