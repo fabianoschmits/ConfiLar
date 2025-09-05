@@ -1,24 +1,40 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import { MainLayout } from '@/components/layout/MainLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
-import { MainLayout } from '@/components/layout/MainLayout'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { serviceCategories } from '@/data/serviceCategories'
-import { Plus, MapPin, Calendar, User, Tag, MessageCircle, ArrowRight, Star, DollarSign, Clock, Shield, Zap } from 'lucide-react'
-import { toast } from 'sonner'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  MapPin, 
+  Calendar, 
+  User, 
+  MessageCircle, 
+  Star,
+  DollarSign,
+  Clock,
+  Shield,
+  Zap,
+  Tag,
+  ArrowRight,
+  Edit,
+  Trash2,
+  Eye
+} from 'lucide-react'
+import { serviceCategories } from '@/data/serviceCategories'
 
 interface ClassifiedAd {
   id: string
@@ -29,8 +45,10 @@ interface ClassifiedAd {
   location_state: string
   location_city: string
   user_name: string
-  user_type: string
+  user_type: 'client' | 'professional'
   created_at: string
+  is_active: boolean
+  views_count?: number
   user_avatar_url?: string
 }
 
@@ -59,21 +77,25 @@ interface ProfessionalService {
 export default function ClassificadosPage() {
   const { user, profile } = useAuthContext()
   const { openChat } = useFloatingChat()
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingAd, setEditingAd] = useState<ClassifiedAd | null>(null)
+  
+  // Estados principais
+  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('ads')
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedState, setSelectedState] = useState('all')
   const [selectedCity, setSelectedCity] = useState('all')
-  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('services')
-  const [loading, setLoading] = useState(true)
   
-  // Estados para dados carregados do Supabase
-  const [professionals, setProfessionals] = useState<Profile[]>([])
-  const [professionalServices, setProfessionalServices] = useState<ProfessionalService[]>([])
+  // Estados para dados
   const [ads, setAds] = useState<ClassifiedAd[]>([])
+  const [services, setServices] = useState<ProfessionalService[]>([])
   
+  // Estados para modais
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingAd, setEditingAd] = useState<ClassifiedAd | null>(null)
+  
+  // Estados para formulário
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -83,44 +105,47 @@ export default function ClassificadosPage() {
     ad_type: 'procurar' as 'procurar' | 'oferecer'
   })
 
-  // Carregar profissionais reais do Supabase (mesmo método da página de busca)
+  // Carregar anúncios
   useEffect(() => {
-    const loadProfessionals = async () => {
+    const loadAds = async () => {
       try {
         setLoading(true)
+        console.log('🔍 Carregando anúncios...')
+        
         const { data, error } = await supabase
-          .from('profiles')
+          .from('classified_ads')
           .select('*')
-          .eq('user_type', 'professional')
-          .order('rating', { ascending: false })
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
 
-        if (!error && data) {
-          console.log('📊 Profissionais carregados para classificados:', data.length)
-          console.log('🔍 IDs dos profissionais:', data.map(p => ({ id: p.id, name: p.full_name })))
-          setProfessionals(data as unknown as Profile[])
-        } else {
-          console.error('❌ Erro ao carregar profissionais:', error)
-          setProfessionals([])
+        if (error) {
+          console.error('❌ Erro ao carregar anúncios:', error)
+          if (error.code === 'PGRST116') {
+            console.log('⚠️ Tabela classified_ads não existe')
+            toast.info('Tabela de anúncios não encontrada. Execute o script SQL para criá-la.')
+          }
+          setAds([])
+          return
         }
+
+        console.log('✅ Anúncios carregados:', data?.length || 0)
+        setAds(data || [])
       } catch (error) {
-        console.error('❌ Erro ao carregar profissionais:', error)
-        setProfessionals([])
+        console.error('❌ Erro geral:', error)
+        setAds([])
       } finally {
         setLoading(false)
       }
     }
 
-    loadProfessionals()
+    loadAds()
   }, [])
 
-  // Verificar e carregar serviços profissionais do Supabase
+  // Carregar serviços profissionais
   useEffect(() => {
-    const checkAndLoadServices = async () => {
+    const loadServices = async () => {
       try {
-        setLoading(true)
-        
-        // Primeiro, verificar se a tabela professional_services existe
-        console.log('🔍 Verificando se a tabela professional_services existe...')
+        console.log('🔍 Carregando serviços profissionais...')
         
         const { data, error } = await supabase
           .from('professional_services')
@@ -141,313 +166,69 @@ export default function ClassificadosPage() {
           .order('created_at', { ascending: false })
 
         if (error) {
-          console.error('❌ Erro ao acessar professional_services:', error)
-          console.log('📋 Detalhes do erro:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          })
-          
-          // Se a tabela não existe, mostrar mensagem específica
-          if (error.code === 'PGRST116' || error.message.includes('relation "professional_services" does not exist')) {
-            console.log('⚠️ Tabela professional_services não existe. Execute o script SQL para criá-la.')
-            setProfessionalServices([])
-            return
+          console.error('❌ Erro ao carregar serviços:', error)
+          if (error.code === 'PGRST116') {
+            console.log('⚠️ Tabela professional_services não existe')
+            toast.info('Tabela de serviços profissionais não encontrada.')
           }
-          
-          setProfessionalServices([])
+          setServices([])
           return
         }
 
-        if (data) {
-          console.log('✅ Tabela professional_services existe!')
-          console.log('📊 Serviços profissionais carregados:', data.length)
-          
-          // Transformar os dados para o formato esperado
-          const transformedServices: ProfessionalService[] = (data || []).map((service: {
-            id: string;
-            professional_id: string;
-            profiles?: { full_name?: string; avatar_url?: string; location_state?: string; location_city?: string };
-            category_id: string;
-            service_categories?: { name?: string; icon?: string };
-            title: string;
-            description: string;
-            price_min?: number;
-            price_max?: number;
-            service_type?: string;
-            is_active: boolean;
-            created_at: string;
-            experience_level?: string;
-            insurance_coverage?: boolean;
-            emergency_service?: boolean;
-          }) => ({
-            id: service.id,
-            professional_id: service.professional_id,
-            professional_name: service.profiles?.full_name || 'Profissional',
-            professional_avatar_url: service.profiles?.avatar_url,
-            category_id: service.category_id,
-            category_name: service.service_categories?.name || 'Serviço',
-            category_icon: service.service_categories?.icon || '🔧',
-            title: service.title,
-            description: service.description,
-            price_min: service.price_min,
-            price_max: service.price_max,
-            service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
-            is_active: service.is_active,
-            created_at: service.created_at,
-            location_state: service.profiles?.location_state || '',
-            location_city: service.profiles?.location_city || '',
-            experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
-            insurance_coverage: service.insurance_coverage || false,
-            emergency_service: service.emergency_service || false
-          }))
+        // Transformar dados
+        const transformedServices: ProfessionalService[] = (data || []).map((service: any) => ({
+          id: service.id,
+          professional_id: service.professional_id,
+          professional_name: service.profiles?.full_name || 'Profissional',
+          professional_avatar_url: service.profiles?.avatar_url,
+          category_id: service.category_id,
+          category_name: service.service_categories?.name || 'Serviço',
+          category_icon: service.service_categories?.icon || '🔧',
+          title: service.title,
+          description: service.description,
+          price_min: service.price_min,
+          price_max: service.price_max,
+          service_type: service.service_type || 'fixed',
+          is_active: service.is_active,
+          created_at: service.created_at,
+          location_state: service.profiles?.location_state || '',
+          location_city: service.profiles?.location_city || '',
+          experience_level: service.experience_level || 'intermediate',
+          insurance_coverage: service.insurance_coverage || false,
+          emergency_service: service.emergency_service || false
+        }))
 
-          setProfessionalServices(transformedServices)
-
-          // Só configurar Realtime se a tabela existe
-          console.log('🔗 Configurando Realtime para professional_services...')
-          const servicesChannel = supabase
-            .channel('professional_services_changes')
-            .on(
-              'postgres_changes',
-              {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'professional_services',
-                filter: 'is_active=eq.true'
-              },
-              async (payload) => {
-                console.log('🆕 Novo serviço profissional criado:', payload.new)
-                // Recarregar serviços para obter dados relacionados
-                const { data, error } = await supabase
-                  .from('professional_services')
-                  .select(`
-                    *,
-                    profiles (
-                      full_name,
-                      avatar_url,
-                      location_state,
-                      location_city
-                    ),
-                    service_categories (
-                      name,
-                      icon
-                    )
-                  `)
-                  .eq('id', payload.new.id)
-                  .single()
-
-                if (!error && data) {
-                  const transformedService: ProfessionalService = {
-                    id: data.id,
-                    professional_id: data.professional_id,
-                    professional_name: data.profiles?.full_name || 'Profissional',
-                    professional_avatar_url: data.profiles?.avatar_url,
-                    category_id: data.category_id,
-                    category_name: data.service_categories?.name || 'Serviço',
-                    category_icon: data.service_categories?.icon || '🔧',
-                    title: data.title,
-                    description: data.description,
-                    price_min: data.price_min,
-                    price_max: data.price_max,
-                    service_type: data.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
-                    is_active: data.is_active,
-                    created_at: data.created_at,
-                    location_state: data.profiles?.location_state || '',
-                    location_city: data.profiles?.location_city || '',
-                    experience_level: data.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
-                    insurance_coverage: data.insurance_coverage || false,
-                    emergency_service: data.emergency_service || false
-                  }
-                  setProfessionalServices(prev => [transformedService, ...prev])
-                }
-              }
-            )
-            .on(
-              'postgres_changes',
-              {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'professional_services'
-              },
-              (payload) => {
-                console.log('🔄 Serviço profissional atualizado:', payload.new)
-                setProfessionalServices(prev => prev.map(service => 
-                  service.id === payload.new.id ? { ...service, ...payload.new } : service
-                ))
-              }
-            )
-            .on(
-              'postgres_changes',
-              {
-                event: 'DELETE',
-                schema: 'public',
-                table: 'professional_services'
-              },
-              (payload) => {
-                console.log('🗑️ Serviço profissional excluído:', payload.old)
-                setProfessionalServices(prev => prev.filter(service => service.id !== payload.old.id))
-              }
-            )
-            .subscribe()
-
-          // Cleanup
-          return () => {
-            supabase.removeChannel(servicesChannel)
-          }
-        }
+        console.log('✅ Serviços carregados:', transformedServices.length)
+        setServices(transformedServices)
       } catch (error) {
-        console.error('❌ Erro geral ao carregar serviços profissionais:', error)
-        setProfessionalServices([])
-      } finally {
-        setLoading(false)
+        console.error('❌ Erro geral:', error)
+        setServices([])
       }
     }
 
-    checkAndLoadServices()
+    loadServices()
   }, [])
 
-  // Verificar e carregar anúncios do Supabase
-  useEffect(() => {
-    const checkAndLoadAds = async () => {
-      try {
-        setLoading(true)
-        
-        // Primeiro, verificar se a tabela classified_ads existe
-        console.log('🔍 Verificando se a tabela classified_ads existe...')
-        
-        const { data, error } = await supabase
-          .from('classified_ads')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('❌ Erro ao acessar classified_ads:', error)
-          console.log('📋 Detalhes do erro:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          })
-          
-          // Se a tabela não existe, mostrar mensagem específica
-          if (error.code === 'PGRST116' || error.message.includes('relation "classified_ads" does not exist')) {
-            console.log('⚠️ Tabela classified_ads não existe. Execute o script SQL para criá-la.')
-            setAds([])
-            return
-          }
-          
-          setAds([])
-          return
-        }
-
-        if (data) {
-          console.log('✅ Tabela classified_ads existe!')
-          console.log('📊 Anúncios carregados:', data.length)
-          console.log('📋 Dados dos anúncios:', data.map(ad => ({
-            id: ad.id,
-            title: ad.title,
-            category: ad.category,
-            user_type: ad.user_type,
-            is_active: ad.is_active
-          })))
-          setAds(data)
-
-          // Só configurar Realtime se a tabela existe e tem dados
-          console.log('🔗 Configurando Realtime para classified_ads...')
-          const channel = supabase
-            .channel('classified_ads_changes')
-            .on(
-              'postgres_changes',
-              {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'classified_ads',
-                filter: 'is_active=eq.true'
-              },
-              (payload) => {
-                console.log('🆕 Novo anúncio criado:', payload.new)
-                setAds(prev => [payload.new as ClassifiedAd, ...prev])
-              }
-            )
-            .on(
-              'postgres_changes',
-              {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'classified_ads'
-              },
-              (payload) => {
-                console.log('🔄 Anúncio atualizado:', payload.new)
-                setAds(prev => prev.map(ad => 
-                  ad.id === payload.new.id ? payload.new as ClassifiedAd : ad
-                ))
-              }
-            )
-            .on(
-              'postgres_changes',
-              {
-                event: 'DELETE',
-                schema: 'public',
-                table: 'classified_ads'
-              },
-              (payload) => {
-                console.log('🗑️ Anúncio excluído:', payload.old)
-                setAds(prev => prev.filter(ad => ad.id !== payload.old.id))
-              }
-            )
-            .subscribe()
-
-          // Cleanup
-          return () => {
-            supabase.removeChannel(channel)
-          }
-        }
-      } catch (error) {
-        console.error('❌ Erro geral ao carregar anúncios:', error)
-        setAds([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkAndLoadAds()
-  }, [])
-
-  // Filtrar dados baseado nos filtros selecionados
-  const filteredAds = ads.filter((ad: ClassifiedAd) => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filtrar anúncios
+  const filteredAds = ads.filter(ad => {
+    const matchesSearch = !searchTerm || 
+      ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ad.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
     const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory
     const matchesState = selectedState === 'all' || ad.location_state === selectedState
     const matchesCity = selectedCity === 'all' || ad.location_city === selectedCity
     
-    // Debug para verificar filtros
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 Filtro anúncio:', {
-        title: ad.title,
-        category: ad.category,
-        selectedCategory,
-        matchesCategory,
-        state: ad.location_state,
-        selectedState,
-        matchesState,
-        city: ad.location_city,
-        selectedCity,
-        matchesCity,
-        final: matchesSearch && matchesCategory && matchesState && matchesCity
-      })
-    }
-    
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
 
-  const filteredServices = professionalServices.filter((service: ProfessionalService) => {
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.category_name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filtrar serviços
+  const filteredServices = services.filter(service => {
+    const matchesSearch = !searchTerm || 
+      service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      service.category_name.toLowerCase().includes(searchTerm.toLowerCase())
+    
     const matchesCategory = selectedCategory === 'all' || service.category_id === selectedCategory
     const matchesState = selectedState === 'all' || service.location_state === selectedState
     const matchesCity = selectedCity === 'all' || service.location_city === selectedCity
@@ -455,7 +236,7 @@ export default function ClassificadosPage() {
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
 
-
+  // Criar anúncio
   const handleCreateAd = async () => {
     if (!user || !profile) {
       toast.error('Você precisa estar logado para criar um anúncio')
@@ -463,7 +244,6 @@ export default function ClassificadosPage() {
     }
 
     try {
-      // Determinar o tipo de usuário baseado na escolha do anúncio
       const userType = formData.ad_type === 'oferecer' ? 'professional' : 'client'
       
       const { data, error } = await supabase
@@ -489,7 +269,6 @@ export default function ClassificadosPage() {
         return
       }
 
-      // Adicionar o novo anúncio à lista local
       setAds(prev => [data, ...prev])
       setIsCreateModalOpen(false)
       setFormData({
@@ -503,14 +282,14 @@ export default function ClassificadosPage() {
       toast.success('Anúncio criado com sucesso!')
     } catch (error) {
       toast.error('Erro ao criar anúncio')
-      console.error('Erro ao criar anúncio:', error)
+      console.error('Erro:', error)
     }
   }
 
+  // Editar anúncio
   const handleEditAd = async () => {
     if (!editingAd || !user) return
     
-    // Verificar se o usuário é o dono do anúncio
     if (editingAd.user_id !== user.id) {
       toast.error('Você só pode editar seus próprios anúncios')
       return
@@ -536,7 +315,6 @@ export default function ClassificadosPage() {
         return
       }
 
-      // Atualizar o anúncio na lista local
       setAds(prev => prev.map(ad => ad.id === editingAd.id ? data : ad))
       setIsEditModalOpen(false)
       setEditingAd(null)
@@ -551,16 +329,15 @@ export default function ClassificadosPage() {
       toast.success('Anúncio atualizado com sucesso!')
     } catch (error) {
       toast.error('Erro ao atualizar anúncio')
-      console.error('Erro ao atualizar anúncio:', error)
+      console.error('Erro:', error)
     }
   }
 
+  // Excluir anúncio
   const handleDeleteAd = async (adId: string) => {
-    // Encontrar o anúncio para verificar a propriedade
     const ad = ads.find(a => a.id === adId)
     if (!ad || !user) return
     
-    // Verificar se o usuário é o dono do anúncio
     if (ad.user_id !== user.id) {
       toast.error('Você só pode excluir seus próprios anúncios')
       return
@@ -579,16 +356,16 @@ export default function ClassificadosPage() {
           return
         }
 
-        // Remover o anúncio da lista local
         setAds(prev => prev.filter(ad => ad.id !== adId))
         toast.success('Anúncio excluído com sucesso!')
       } catch (error) {
         toast.error('Erro ao excluir anúncio')
-        console.error('Erro ao excluir anúncio:', error)
+        console.error('Erro:', error)
       }
     }
   }
 
+  // Abrir modal de edição
   const openEditModal = (ad: ClassifiedAd) => {
     setEditingAd(ad)
     setFormData({
@@ -602,46 +379,27 @@ export default function ClassificadosPage() {
     setIsEditModalOpen(true)
   }
 
-  const handleChat = (ad: ClassifiedAd) => {
+  // Iniciar chat
+  const handleChat = (userId: string, userName: string) => {
     if (!user) {
       toast.error('Você precisa estar logado para iniciar um chat')
       return
     }
     
-    if (ad.user_id === user.id) {
+    if (userId === user.id) {
       toast.error('Você não pode iniciar um chat consigo mesmo')
       return
     }
     
-    // Abrir chat flutuante com o usuário
-    openChat(ad.user_id, ad.user_name)
+    openChat(userId, userName)
   }
 
+  // Ver perfil
   const handleViewProfile = (userId: string) => {
-    // Redirecionar para o perfil do usuário
     window.location.href = `/perfil/${userId}`
   }
 
-  const handleServiceChat = (service: ProfessionalService) => {
-    if (!user) {
-      toast.error('Você precisa estar logado para iniciar um chat')
-      return
-    }
-    
-    if (service.professional_id === user.id) {
-      toast.error('Você não pode iniciar um chat consigo mesmo')
-      return
-    }
-    
-    // Abrir chat flutuante com o profissional
-    openChat(service.professional_id, service.professional_name)
-  }
-
-  const handleServiceViewProfile = (professionalId: string) => {
-    // Redirecionar para o perfil do profissional
-    window.location.href = `/perfil/${professionalId}`
-  }
-
+  // Formatar preço
   const formatPrice = (min: number | null, max: number | null, type: string) => {
     if (!min && !max) return 'Preço a combinar'
     
@@ -655,6 +413,7 @@ export default function ClassificadosPage() {
     return 'Preço a combinar'
   }
 
+  // Obter texto do nível de experiência
   const getExperienceLevelText = (level: string) => {
     switch (level) {
       case 'beginner': return 'Iniciante'
@@ -665,6 +424,7 @@ export default function ClassificadosPage() {
     }
   }
 
+  // Obter texto do tipo de serviço
   const getServiceTypeText = (type: string) => {
     switch (type) {
       case 'hourly': return 'Por hora'
@@ -677,14 +437,15 @@ export default function ClassificadosPage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="p-6 text-center">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-8 text-center">
+              <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-4">Classificados</h1>
-              <p className="text-gray-600 mb-4">
-                Faça login para acessar os classificados.
+              <p className="text-gray-600 mb-6">
+                Faça login para acessar os classificados e criar anúncios.
               </p>
-              <Button onClick={() => window.location.href = '/auth'}>
+              <Button onClick={() => window.location.href = '/auth'} className="w-full">
                 Fazer Login
               </Button>
             </CardContent>
@@ -696,506 +457,523 @@ export default function ClassificadosPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Classificados</h1>
-            <p className="text-gray-600">Encontre serviços profissionais e publique anúncios</p>
-          </div>
-          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Criar Anúncio
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Criar Novo Anúncio</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                {/* Seleção do tipo de anúncio */}
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Tipo de Anúncio
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, ad_type: 'procurar' })}
-                      className={`p-3 rounded-lg border-2 transition-all ${
-                        formData.ad_type === 'procurar'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">🔍</div>
-                        <div className="font-medium">Procurar Serviço</div>
-                        <div className="text-xs text-gray-500">Você precisa de ajuda</div>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white border-b">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Classificados</h1>
+                <p className="text-gray-600">
+                  Encontre serviços profissionais e publique seus anúncios
+                </p>
+              </div>
+              
+              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4" />
+                    Criar Anúncio
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Criar Novo Anúncio</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {/* Tipo de anúncio */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Tipo de Anúncio
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, ad_type: 'procurar' })}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            formData.ad_type === 'procurar'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-center">
+                            <div className="text-2xl mb-1">🔍</div>
+                            <div className="font-medium">Procurar</div>
+                            <div className="text-xs text-gray-500">Preciso de ajuda</div>
+                          </div>
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, ad_type: 'oferecer' })}
+                          className={`p-3 rounded-lg border-2 transition-all ${
+                            formData.ad_type === 'oferecer'
+                              ? 'border-green-500 bg-green-50 text-green-700'
+                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="text-center">
+                            <div className="text-2xl mb-1">🏗️</div>
+                            <div className="font-medium">Oferecer</div>
+                            <div className="text-xs text-gray-500">Tenho habilidades</div>
+                          </div>
+                        </button>
                       </div>
-                    </button>
+                    </div>
                     
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, ad_type: 'oferecer' })}
-                      className={`p-3 rounded-lg border-2 transition-all ${
-                        formData.ad_type === 'oferecer'
-                          ? 'border-green-500 bg-green-50 text-green-700'
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">🏗️</div>
-                        <div className="font-medium">Oferecer Serviço</div>
-                        <div className="text-xs text-gray-500">Você tem habilidades</div>
-                      </div>
-                    </button>
+                    <Input
+                      placeholder="Título do anúncio"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                    
+                    <Textarea
+                      placeholder="Descrição (máx. 500 caracteres)"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      maxLength={500}
+                      rows={3}
+                    />
+                    
+                    <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {serviceCategories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Select value={formData.location_state} onValueChange={(value) => setFormData({ ...formData, location_state: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SP">São Paulo</SelectItem>
+                          <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                          <SelectItem value="MG">Minas Gerais</SelectItem>
+                          <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Input
+                        placeholder="Cidade"
+                        value={formData.location_city}
+                        onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                      />
+                    </div>
+                    
+                    <Button onClick={handleCreateAd} className="w-full">
+                      Criar Anúncio
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </div>
+
+        {/* Conteúdo Principal */}
+        <div className="container mx-auto px-4 py-6">
+          {/* Filtros */}
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar anúncios e serviços..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
                 </div>
                 
-                <div>
-                  <Input
-                    placeholder="Título do anúncio"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Textarea
-                    placeholder="Descrição (máx. 144 caracteres)"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    maxLength={144}
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <CategoriaCombobox
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                    placeholder="Selecione a categoria"
-                  />
-                </div>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as categorias</SelectItem>
+                    {serviceCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.icon} {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
                 <div className="grid grid-cols-2 gap-2">
-                  <EstadoCombobox
-                    value={formData.location_state}
-                    onValueChange={(state: string) => setFormData({ ...formData, location_state: state })}
-                    placeholder="Estado"
-                  />
-                  <CidadeCombobox
-                    value={formData.location_city}
-                    onValueChange={(city: string) => setFormData({ ...formData, location_city: city })}
-                    estadoSigla={formData.location_state}
+                  <Select value={selectedState} onValueChange={setSelectedState}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="SP">São Paulo</SelectItem>
+                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Input
                     placeholder="Cidade"
-                    disabled={!formData.location_state}
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
                   />
                 </div>
-                <Button onClick={handleCreateAd} className="w-full">
-                  Criar Anúncio
-                </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+            </CardContent>
+          </Card>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="ads">
+                Anúncios ({filteredAds.length})
+              </TabsTrigger>
+              <TabsTrigger value="services">
+                Serviços ({filteredServices.length})
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Conteúdo dos Anúncios */}
+            <TabsContent value="ads">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                    <p className="text-gray-600">Carregando anúncios...</p>
+                  </div>
+                </div>
+              ) : filteredAds.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAds.map((ad) => (
+                    <Card key={ad.id} className={`hover:shadow-lg transition-all duration-200 ${
+                      user && ad.user_id === user.id ? 'ring-2 ring-blue-200 bg-blue-50/50' : ''
+                    }`}>
+                      <CardContent className="p-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant={ad.user_type === 'professional' ? 'default' : 'secondary'}>
+                                {ad.user_type === 'professional' ? '🏗️ Oferecendo' : '🔍 Procurando'}
+                              </Badge>
+                              {user && ad.user_id === user.id && (
+                                <Badge variant="outline" className="text-xs">
+                                  Seu anúncio
+                                </Badge>
+                              )}
+                            </div>
+                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
+                              {ad.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+                              {ad.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Informações */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Tag className="h-4 w-4" />
+                            <span>{serviceCategories.find(c => c.id === ad.category)?.name || ad.category}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span>{ad.location_city}, {ad.location_state}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                        </div>
+
+                        {/* Perfil do usuário */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={ad.user_avatar_url || ''} />
+                                <AvatarFallback className="text-xs">
+                                  {ad.user_name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm text-gray-900">{ad.user_name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-1">
+                              {user && ad.user_id !== user.id && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleChat(ad.user_id, ad.user_name)}
+                                  className="h-8 px-2"
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                </Button>
+                              )}
+                              
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleViewProfile(ad.user_id)}
+                                className="h-8 px-2"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              
+                              {user && ad.user_id === user.id && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => openEditModal(ad)}
+                                    className="h-8 px-2"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteAd(ad.id)}
+                                    className="h-8 px-2 text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {ads.length === 0 ? 'Nenhum anúncio cadastrado' : 'Nenhum anúncio encontrado'}
+                    </h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {ads.length === 0 
+                        ? 'Seja o primeiro a criar um anúncio!'
+                        : 'Tente ajustar os filtros de busca.'
+                      }
+                    </p>
+                    {ads.length === 0 && (
+                      <Button onClick={() => setIsCreateModalOpen(true)}>
+                        Criar Primeiro Anúncio
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Conteúdo dos Serviços */}
+            <TabsContent value="services">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                    <p className="text-gray-600">Carregando serviços...</p>
+                  </div>
+                </div>
+              ) : filteredServices.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredServices.map((service) => (
+                    <Card key={service.id} className="hover:shadow-lg transition-all duration-200">
+                      <CardContent className="p-6">
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">{service.category_icon}</span>
+                              <Badge variant="secondary">{service.category_name}</Badge>
+                            </div>
+                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
+                              {service.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+                              {service.description || 'Sem descrição'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Informações do serviço */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <DollarSign className="h-4 w-4" />
+                            <span className="font-medium">
+                              {formatPrice(service.price_min, service.price_max, service.service_type)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Clock className="h-4 w-4" />
+                            <span>{getServiceTypeText(service.service_type)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span>{service.location_city}, {service.location_state}</span>
+                          </div>
+                        </div>
+
+                        {/* Badges */}
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          <Badge variant="outline" className="text-xs">
+                            {getExperienceLevelText(service.experience_level)}
+                          </Badge>
+                          {service.insurance_coverage && (
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Seguro
+                            </Badge>
+                          )}
+                          {service.emergency_service && (
+                            <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                              <Zap className="h-3 w-3 mr-1" />
+                              Emergência
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Perfil do profissional */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={service.professional_avatar_url || ''} />
+                                <AvatarFallback className="text-xs">
+                                  {service.professional_name.charAt(0).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm text-gray-900">{service.professional_name}</p>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(service.created_at).toLocaleDateString('pt-BR')}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-1">
+                              {user && service.professional_id !== user.id && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleChat(service.professional_id, service.professional_name)}
+                                  className="h-8 px-2"
+                                >
+                                  <MessageCircle className="h-3 w-3" />
+                                </Button>
+                              )}
+                              
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleViewProfile(service.professional_id)}
+                                className="h-8 px-2"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {services.length === 0 ? 'Nenhum serviço cadastrado' : 'Nenhum serviço encontrado'}
+                    </h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {services.length === 0 
+                        ? 'Ainda não há serviços profissionais cadastrados.'
+                        : 'Tente ajustar os filtros de busca.'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
-        {/* Tabs para alternar entre serviços e anúncios */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')} className="mb-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="services">Serviços Profissionais ({filteredServices.length})</TabsTrigger>
-            <TabsTrigger value="ads">Anúncios ({filteredAds.length})</TabsTrigger>
-          </TabsList>
-
-          {/* Filtros */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Input
-              placeholder="Buscar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="md:col-span-2"
-            />
-            <CategoriaCombobox
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-              placeholder="Categoria"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <EstadoCombobox
-                value={selectedState}
-                onValueChange={setSelectedState}
-                placeholder="Estado"
-              />
-              <CidadeCombobox
-                value={selectedCity}
-                onValueChange={setSelectedCity}
-                estadoSigla={selectedState}
-                placeholder="Cidade"
-                disabled={selectedState === 'all'}
-              />
-            </div>
-          </div>
-
-          {/* Conteúdo dos Tabs */}
-          <TabsContent value="services" className="mt-0">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="flex items-center justify-center min-h-[200px]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3" style={{ animationDuration: '0.6s' }}></div>
-                  <p className="text-muted-foreground">Carregando serviços...</p>
-                </div>
-              </div>
-            </div>
-          ) : filteredServices.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredServices.map((service: ProfessionalService) => (
-                <Card key={service.id} className="group hover:shadow-lg transition-all duration-200 bg-card hover:bg-accent/50">
-                  <CardContent className="p-4">
-                    {/* Header do serviço */}
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        {/* Categoria */}
-                        <div className="flex items-center gap-1 mb-2">
-                          <span className="text-lg">{service.category_icon}</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {service.category_name}
-                          </Badge>
-                        </div>
-                        
-                        {/* Título e descrição */}
-                        <h3 className="font-bold text-base mb-1 text-foreground group-hover:text-primary transition-colors">
-                          {service.title}
-                        </h3>
-                        <p className="text-muted-foreground text-xs leading-tight mb-2 line-clamp-2">
-                          {service.description || 'Sem descrição'}
-                        </p>
-                      </div>
-                      
-                      {/* Botões de ação */}
-                      <div className="flex flex-col gap-1 ml-2">
-                        {user && service.professional_id !== user.id && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full h-7 text-xs"
-                            onClick={() => handleServiceChat(service)}
-                          >
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            Contatar
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Informações do serviço */}
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <DollarSign className="h-3 w-3" />
-                        <span className="font-medium">{formatPrice(service.price_min, service.price_max, service.service_type)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span className="font-medium">{getServiceTypeText(service.service_type)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        <span className="font-medium">{service.location_city}, {service.location_state}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Badges de experiência e recursos */}
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      <Badge variant="outline" className="text-xs">
-                        {getExperienceLevelText(service.experience_level)}
-                      </Badge>
-                      {service.insurance_coverage && (
-                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                          <Shield className="h-3 w-3 mr-1" />
-                          Seguro
-                        </Badge>
-                      )}
-                      {service.emergency_service && (
-                        <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                          <Zap className="h-3 w-3 mr-1" />
-                          Emergência
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {/* Perfil do profissional */}
-                    <div className="border-t border-border pt-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {service.professional_avatar_url ? (
-                            <img 
-                              src={service.professional_avatar_url} 
-                              alt={service.professional_name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xs">
-                              {service.professional_name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-xs text-foreground">{service.professional_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(service.created_at).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Link para perfil */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs text-primary hover:text-primary hover:bg-accent"
-                          onClick={() => handleServiceViewProfile(service.professional_id)}
-                        >
-                          Ver Perfil
-                          <ArrowRight className="h-3 w-3 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            /* Estado vazio para serviços */
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Tag className="h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {professionalServices.length === 0 
-                  ? 'Nenhum serviço profissional cadastrado'
-                  : 'Nenhum serviço encontrado'
-                }
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {professionalServices.length === 0 
-                  ? 'Ainda não há serviços profissionais cadastrados no sistema.'
-                  : searchTerm || selectedState !== 'all' || selectedCity !== 'all' || selectedCategory !== 'all'
-                    ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
-                    : 'Comece digitando o que você precisa na barra de busca acima.'
-                }
-              </p>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="ads" className="mt-0">
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="flex items-center justify-center min-h-[200px]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3" style={{ animationDuration: '0.6s' }}></div>
-                  <p className="text-muted-foreground">Carregando anúncios...</p>
-                </div>
-              </div>
-            </div>
-          ) : filteredAds.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {filteredAds.map((ad: ClassifiedAd) => (
-                <Card key={ad.id} className={`group hover:shadow-lg transition-all duration-200 ${user && ad.user_id === user.id ? 'ring-1 ring-blue-200 bg-blue-50/50' : 'bg-card hover:bg-accent/50'}`}>
-                  <CardContent className="p-3">
-                    {/* Header do anúncio */}
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        {/* Tipo do anúncio */}
-                        <div className="flex items-center gap-1 mb-1">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            ad.user_type === 'professional' 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                              : 'bg-sky-50 text-sky-700 border border-sky-200'
-                          }`}>
-                            {ad.user_type === 'professional' ? '🏗️ Oferecendo' : '🔍 Procurando'}
-                          </span>
-                          {user && ad.user_id === user.id && (
-                            <span className="inline-block px-2 py-1 text-xs bg-muted text-muted-foreground rounded-full border border-border">
-                              Seu anúncio
-                            </span>
-                          )}
-                        </div>
-                        
-                        {/* Título e descrição */}
-                        <h3 className="font-bold text-base mb-1 text-foreground group-hover:text-primary transition-colors">
-                          {ad.title}
-                        </h3>
-                        <p className="text-muted-foreground text-xs leading-tight mb-2 line-clamp-2">
-                          {ad.description}
-                        </p>
-                      </div>
-                      
-                      {/* Botões de ação */}
-                      <div className="flex flex-col gap-1 ml-2">
-                        {/* Botão de chat (apenas para anúncios de outros usuários) */}
-                        {user && ad.user_id !== user.id && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full h-7 text-xs"
-                            onClick={() => handleChat(ad)}
-                          >
-                            <MessageCircle className="h-3 w-3 mr-1" />
-                            Chat
-                          </Button>
-                        )}
-                        
-                        {/* Botões de edição (apenas para o dono) */}
-                        {user && ad.user_id === user.id && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditModal(ad)}
-                              className="w-full h-7 text-xs"
-                            >
-                              Editar
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeleteAd(ad.id)}
-                              className="w-full h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300"
-                            >
-                              Excluir
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Informações do anúncio */}
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Tag className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">{serviceCategories.find(c => c.id === ad.category)?.name || ad.category}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">{ad.location_city}, {ad.location_state}</span>
-                      </div>
-                    </div>
-                    
-                    {/* Perfil do usuário */}
-                    <div className="border-t border-border pt-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {ad.user_avatar_url ? (
-                            <img 
-                              src={ad.user_avatar_url} 
-                              alt={ad.user_name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xs">
-                              {ad.user_name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-xs text-foreground">{ad.user_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'} • 
-                              {new Date(ad.created_at).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        {/* Link para perfil */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs text-primary hover:text-primary hover:bg-accent"
-                          onClick={() => handleViewProfile(ad.user_id)}
-                        >
-                          Ver Perfil
-                          <ArrowRight className="h-3 w-3 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            /* Estado vazio para anúncios */
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Tag className="h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {ads.length === 0 
-                  ? 'Nenhum anúncio cadastrado'
-                  : 'Nenhum anúncio encontrado'
-                }
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {ads.length === 0 
-                  ? 'Ainda não há anúncios cadastrados no sistema. Seja o primeiro a criar um!'
-                  : searchTerm || selectedState !== 'all' || selectedCity !== 'all' || selectedCategory !== 'all'
-                    ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
-                    : 'Comece digitando o que você precisa na barra de busca acima.'
-                }
-              </p>
-              {ads.length === 0 && (
-                <Button
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Criar Primeiro Anúncio
-                </Button>
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Modal de Edição */}
+        {/* Modal de Edição */}
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Editar Anúncio</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Título do anúncio"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
-              </div>
-              <div>
-                <Textarea
-                  placeholder="Descrição (máx. 144 caracteres)"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  maxLength={144}
-                  rows={3}
-                />
-              </div>
-              <div>
-                <CategoriaCombobox
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                  placeholder="Selecione a categoria"
-                />
-              </div>
+              <Input
+                placeholder="Título do anúncio"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+              
+              <Textarea
+                placeholder="Descrição (máx. 500 caracteres)"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                maxLength={500}
+                rows={3}
+              />
+              
+              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {serviceCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.icon} {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
               <div className="grid grid-cols-2 gap-2">
-                <EstadoCombobox
-                  value={formData.location_state}
-                  onValueChange={(state: string) => setFormData({ ...formData, location_state: state })}
-                  placeholder="Estado"
-                />
-                <CidadeCombobox
-                  value={formData.location_city}
-                  onValueChange={(city: string) => setFormData({ ...formData, location_city: city })}
-                  estadoSigla={formData.location_state}
+                <Select value={formData.location_state} onValueChange={(value) => setFormData({ ...formData, location_state: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SP">São Paulo</SelectItem>
+                    <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                    <SelectItem value="MG">Minas Gerais</SelectItem>
+                    <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Input
                   placeholder="Cidade"
-                  disabled={!formData.location_state}
+                  value={formData.location_city}
+                  onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
                 />
               </div>
+              
               <Button onClick={handleEditAd} className="w-full">
                 Atualizar Anúncio
               </Button>
