@@ -96,6 +96,7 @@ export default function ClassificadosPage() {
 
         if (!error && data) {
           console.log('📊 Profissionais carregados para classificados:', data.length)
+          console.log('🔍 IDs dos profissionais:', data.map(p => ({ id: p.id, name: p.full_name })))
           setProfessionals(data as unknown as Profile[])
         } else {
           console.error('❌ Erro ao carregar profissionais:', error)
@@ -112,7 +113,7 @@ export default function ClassificadosPage() {
     loadProfessionals()
   }, [])
 
-  // Carregar serviços profissionais do Supabase
+  // Carregar serviços profissionais do Supabase com Realtime
   useEffect(() => {
     const loadProfessionalServices = async () => {
       try {
@@ -192,9 +193,100 @@ export default function ClassificadosPage() {
     }
 
     loadProfessionalServices()
+
+    // Configurar Realtime para serviços profissionais
+    const servicesChannel = supabase
+      .channel('professional_services_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'professional_services',
+          filter: 'is_active=eq.true'
+        },
+        async (payload) => {
+          console.log('🆕 Novo serviço profissional criado:', payload.new)
+          // Recarregar serviços para obter dados relacionados
+          const { data, error } = await supabase
+            .from('professional_services')
+            .select(`
+              *,
+              profiles (
+                full_name,
+                avatar_url,
+                location_state,
+                location_city
+              ),
+              service_categories (
+                name,
+                icon
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single()
+
+          if (!error && data) {
+            const transformedService: ProfessionalService = {
+              id: data.id,
+              professional_id: data.professional_id,
+              professional_name: data.profiles?.full_name || 'Profissional',
+              professional_avatar_url: data.profiles?.avatar_url,
+              category_id: data.category_id,
+              category_name: data.service_categories?.name || 'Serviço',
+              category_icon: data.service_categories?.icon || '🔧',
+              title: data.title,
+              description: data.description,
+              price_min: data.price_min,
+              price_max: data.price_max,
+              service_type: data.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
+              is_active: data.is_active,
+              created_at: data.created_at,
+              location_state: data.profiles?.location_state || '',
+              location_city: data.profiles?.location_city || '',
+              experience_level: data.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
+              insurance_coverage: data.insurance_coverage || false,
+              emergency_service: data.emergency_service || false
+            }
+            setProfessionalServices(prev => [transformedService, ...prev])
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'professional_services'
+        },
+        (payload) => {
+          console.log('🔄 Serviço profissional atualizado:', payload.new)
+          setProfessionalServices(prev => prev.map(service => 
+            service.id === payload.new.id ? { ...service, ...payload.new } : service
+          ))
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'professional_services'
+        },
+        (payload) => {
+          console.log('🗑️ Serviço profissional excluído:', payload.old)
+          setProfessionalServices(prev => prev.filter(service => service.id !== payload.old.id))
+        }
+      )
+      .subscribe()
+
+    // Cleanup
+    return () => {
+      supabase.removeChannel(servicesChannel)
+    }
   }, [])
 
-  // Carregar anúncios do Supabase
+  // Carregar anúncios do Supabase com Realtime
   useEffect(() => {
     const loadAds = async () => {
       try {
@@ -229,6 +321,55 @@ export default function ClassificadosPage() {
     }
 
     loadAds()
+
+    // Configurar Realtime para anúncios
+    const channel = supabase
+      .channel('classified_ads_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'classified_ads',
+          filter: 'is_active=eq.true'
+        },
+        (payload) => {
+          console.log('🆕 Novo anúncio criado:', payload.new)
+          setAds(prev => [payload.new as ClassifiedAd, ...prev])
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'classified_ads'
+        },
+        (payload) => {
+          console.log('🔄 Anúncio atualizado:', payload.new)
+          setAds(prev => prev.map(ad => 
+            ad.id === payload.new.id ? payload.new as ClassifiedAd : ad
+          ))
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'classified_ads'
+        },
+        (payload) => {
+          console.log('🗑️ Anúncio excluído:', payload.old)
+          setAds(prev => prev.filter(ad => ad.id !== payload.old.id))
+        }
+      )
+      .subscribe()
+
+    // Cleanup
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   // Filtrar dados baseado nos filtros selecionados
@@ -269,6 +410,7 @@ export default function ClassificadosPage() {
     
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
+
 
   const handleCreateAd = async () => {
     if (!user || !profile) {
