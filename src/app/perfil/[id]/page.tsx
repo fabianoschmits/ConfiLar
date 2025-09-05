@@ -15,9 +15,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare } from 'lucide-react'
+import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare, Eye, Image as ImageIcon, Calendar, DollarSign, Heart } from 'lucide-react'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { usePortfolio } from '@/hooks/usePortfolio'
+import { FavoriteButton } from '@/components/ui/FavoriteButton'
 
 interface PublicProfile {
     id: string
@@ -80,6 +82,9 @@ export default function PublicProfilePage() {
     const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
     const [calendarDate, setCalendarDate] = useState<Date>(new Date())
     const [showContactInfo, setShowContactInfo] = useState(false)
+
+    // Hook do portfólio
+    const { projects: portfolioProjects, loading: portfolioLoading, incrementViews } = usePortfolio(userId)
 
     useEffect(() => {
         fetchProfile()
@@ -221,6 +226,10 @@ export default function PublicProfilePage() {
         openChat(userId, profile?.full_name || 'Usuário')
     }
 
+    const handleViewPortfolioProject = async (projectId: string) => {
+        await incrementViews(projectId)
+    }
+
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }, (_, i) => (
             <Star
@@ -343,6 +352,18 @@ export default function PublicProfilePage() {
                                 <MessageSquare className="w-4 h-4 mr-2" />
                                 {user ? 'Iniciar Conversa' : 'Fazer Login para Conversar'}
                             </Button>
+                            
+                            {/* Botão de Favorito */}
+                            {user && user.id !== userId && (
+                                <FavoriteButton
+                                    userId={userId}
+                                    userName={profile?.full_name || 'Usuário'}
+                                    size="lg"
+                                    variant="outline"
+                                    showText={true}
+                                    className="w-full"
+                                />
+                            )}
                             
                             {/* Botão de Recomendação */}
                             {user && user.id !== userId && (
@@ -470,6 +491,115 @@ export default function PublicProfilePage() {
                                                     Ver portfolio
                                                 </a>
                                             </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Portfólio */}
+                        {profile.user_type === 'professional' && (
+                            <Card className="border-0 shadow-sm">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-xl">
+                                        <Briefcase className="w-5 h-5" />
+                                        Portfólio de Trabalhos
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Projetos realizados pelo profissional
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {portfolioLoading ? (
+                                        <div className="text-center py-8">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                            <p className="text-gray-600">Carregando portfólio...</p>
+                                        </div>
+                                    ) : portfolioProjects.length > 0 ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {portfolioProjects.slice(0, 4).map((project) => (
+                                                <div 
+                                                    key={project.id} 
+                                                    className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                                                    onClick={() => handleViewPortfolioProject(project.id)}
+                                                >
+                                                    {/* Imagem do Projeto */}
+                                                    <div className="h-32 bg-gray-200 flex items-center justify-center">
+                                                        {project.images && project.images.length > 0 ? (
+                                                            <img
+                                                                src={project.images[0]}
+                                                                alt={project.title}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <ImageIcon className="h-8 w-8 text-gray-400" />
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Conteúdo */}
+                                                    <div className="p-3">
+                                                        <div className="flex items-start justify-between mb-2">
+                                                            <h4 className="font-semibold text-gray-900 text-sm line-clamp-1">
+                                                                {project.title}
+                                                            </h4>
+                                                            {project.is_featured && (
+                                                                <Badge className="bg-yellow-500 text-white text-xs">
+                                                                    Destaque
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        
+                                                        <p className="text-gray-600 text-xs line-clamp-2 mb-2">
+                                                            {project.description || 'Sem descrição'}
+                                                        </p>
+                                                        
+                                                        <div className="flex items-center justify-between text-xs text-gray-500">
+                                                            <div className="flex items-center gap-3">
+                                                                {project.location && (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <MapPin className="h-3 w-3" />
+                                                                        <span className="truncate max-w-20">{project.location}</span>
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex items-center gap-1">
+                                                                    <Calendar className="h-3 w-3" />
+                                                                    <span>{new Date(project.created_at).toLocaleDateString('pt-BR')}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <Eye className="h-3 w-3" />
+                                                                <span>{project.views_count}</span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {project.budget_range && (
+                                                            <div className="flex items-center gap-1 mt-2 text-xs text-green-600">
+                                                                <DollarSign className="h-3 w-3" />
+                                                                <span>{project.budget_range}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-gray-500">
+                                            <Briefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                            <p className="text-lg font-medium mb-2">Nenhum projeto ainda</p>
+                                            <p className="text-sm">Este profissional ainda não adicionou projetos ao seu portfólio.</p>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Link para ver mais projetos */}
+                                    {portfolioProjects.length > 4 && (
+                                        <div className="mt-4 text-center">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => router.push(`/portfolio/${userId}`)}
+                                            >
+                                                Ver Todos os Projetos ({portfolioProjects.length})
+                                            </Button>
                                         </div>
                                     )}
                                 </CardContent>

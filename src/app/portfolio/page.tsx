@@ -20,105 +20,182 @@ import {
   Image as ImageIcon,
   Calendar,
   MapPin,
-  DollarSign
+  DollarSign,
+  Loader2,
+  AlertCircle
 } from 'lucide-react'
 import { PageTransition } from '@/components/animations/PageTransition'
 import { FadeIn } from '@/components/animations/FadeIn'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePortfolio } from '@/hooks/usePortfolio'
+import { useAuth } from '@/hooks/useAuth'
+import { ImageUpload } from '@/components/forms/ImageUpload'
+import { toast } from 'sonner'
 
-// Dados mockados para demonstração
-const mockPortfolio = [
-  {
-    id: 1,
-    title: 'Reforma Completa Residencial',
-    description: 'Reforma completa de uma casa de 120m², incluindo cozinha, banheiros e sala de estar.',
-    category: 'Reforma',
-    location: 'São Paulo, SP',
-    date: '2024-01-15',
-    budget: 'R$ 45.000',
-    images: ['/api/placeholder/400/300'],
-    rating: 4.9,
-    views: 156,
-    isFeatured: true
-  },
-  {
-    id: 2,
-    title: 'Instalação Elétrica Comercial',
-    description: 'Instalação completa do sistema elétrico para uma loja de 200m².',
-    category: 'Elétrica',
-    location: 'Campinas, SP',
-    date: '2024-01-10',
-    budget: 'R$ 18.000',
-    images: ['/api/placeholder/400/300'],
-    rating: 4.8,
-    views: 89,
-    isFeatured: false
-  },
-  {
-    id: 3,
-    title: 'Pintura Residencial Premium',
-    description: 'Pintura interna e externa com acabamento premium e texturas especiais.',
-    category: 'Pintura',
-    location: 'Santos, SP',
-    date: '2024-01-05',
-    budget: 'R$ 12.000',
-    images: ['/api/placeholder/400/300'],
-    rating: 4.7,
-    views: 234,
-    isFeatured: true
-  }
-]
 
 const categories = [
   'Reforma', 'Elétrica', 'Pintura', 'Limpeza', 'Jardinagem', 'Encanamento',
-  'Alvenaria', 'Acabamento', 'Decoração', 'Manutenção'
+  'Alvenaria', 'Acabamento', 'Decoração', 'Manutenção', 'Instalação', 'Reparo'
 ]
 
 export default function PortfolioPage() {
+  const { user, profile } = useAuth()
+  const { 
+    projects, 
+    loading, 
+    error, 
+    addProject, 
+    updateProject, 
+    deleteProject, 
+    toggleFeatured,
+    incrementViews,
+    getPortfolioStats 
+  } = usePortfolio(user?.id)
+
   const [isAddingProject, setIsAddingProject] = useState(false)
-  const [editingProject, setEditingProject] = useState<number | null>(null)
+  const [editingProject, setEditingProject] = useState<string | null>(null)
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
     category: '',
     location: '',
-    budget: '',
-    images: ['']
+    budget_range: '',
+    images: [] as string[]
   })
+  const [saving, setSaving] = useState(false)
 
-  const handleAddProject = () => {
-    // Aqui você implementaria a lógica para adicionar o projeto
-    console.log('Adicionando projeto:', newProject)
-    setIsAddingProject(false)
-    setNewProject({ title: '', description: '', category: '', location: '', budget: '', images: [''] })
-  }
+  // Verificar se é profissional
+  const isProfessional = profile?.user_type === 'professional'
 
-  const handleEditProject = (id: number) => {
-    const project = mockPortfolio.find(p => p.id === id)
-    if (project) {
-      setNewProject({
-        title: project.title,
-        description: project.description,
-        category: project.category,
-        location: project.location,
-        budget: project.budget,
-        images: project.images
+  const handleAddProject = async () => {
+    if (!newProject.title.trim()) {
+      toast.error('Título é obrigatório')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await addProject({
+        title: newProject.title,
+        description: newProject.description || null,
+        category: newProject.category || null,
+        location: newProject.location || null,
+        budget_range: newProject.budget_range || null,
+        images: newProject.images.length > 0 ? newProject.images : null
       })
-      setEditingProject(id)
+      
+      toast.success('Projeto adicionado com sucesso!')
+      setIsAddingProject(false)
+      setNewProject({ title: '', description: '', category: '', location: '', budget_range: '', images: [] })
+    } catch (error) {
+      console.error('Erro ao adicionar projeto:', error)
+      toast.error('Erro ao adicionar projeto')
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleSaveEdit = () => {
-    // Aqui você implementaria a lógica para salvar as edições
-    console.log('Salvando edição:', editingProject, newProject)
-    setEditingProject(null)
-    setNewProject({ title: '', description: '', category: '', location: '', budget: '', images: [''] })
+  const handleEditProject = (projectId: string) => {
+    const project = projects.find(p => p.id === projectId)
+    if (project) {
+      setNewProject({
+        title: project.title,
+        description: project.description || '',
+        category: project.category || '',
+        location: project.location || '',
+        budget_range: project.budget_range || '',
+        images: project.images || []
+      })
+      setEditingProject(projectId)
+    }
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingProject || !newProject.title.trim()) {
+      toast.error('Título é obrigatório')
+      return
+    }
+
+    setSaving(true)
+    try {
+      await updateProject(editingProject, {
+        title: newProject.title,
+        description: newProject.description || null,
+        category: newProject.category || null,
+        location: newProject.location || null,
+        budget_range: newProject.budget_range || null,
+        images: newProject.images.length > 0 ? newProject.images : null
+      })
+      
+      toast.success('Projeto atualizado com sucesso!')
+      setEditingProject(null)
+      setNewProject({ title: '', description: '', category: '', location: '', budget_range: '', images: [] })
+    } catch (error) {
+      console.error('Erro ao atualizar projeto:', error)
+      toast.error('Erro ao atualizar projeto')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    if (!confirm('Tem certeza que deseja excluir este projeto?')) return
+
+    try {
+      await deleteProject(projectId)
+      toast.success('Projeto excluído com sucesso!')
+    } catch (error) {
+      console.error('Erro ao excluir projeto:', error)
+      toast.error('Erro ao excluir projeto')
+    }
+  }
+
+  const handleToggleFeatured = async (projectId: string, isFeatured: boolean) => {
+    try {
+      await toggleFeatured(projectId, isFeatured)
+      toast.success(isFeatured ? 'Projeto destacado!' : 'Destaque removido!')
+    } catch (error) {
+      console.error('Erro ao alterar destaque:', error)
+      toast.error('Erro ao alterar destaque')
+    }
   }
 
   const handleCancel = () => {
     setIsAddingProject(false)
     setEditingProject(null)
-    setNewProject({ title: '', description: '', category: '', location: '', budget: '', images: [''] })
+    setNewProject({ title: '', description: '', category: '', location: '', budget_range: '', images: [] })
+  }
+
+  const handleViewProject = async (projectId: string) => {
+    await incrementViews(projectId)
+  }
+
+  // Se não for profissional, mostrar mensagem
+  if (!isProfessional) {
+    return (
+      <MainLayout>
+        <PageTransition>
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <FadeIn>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Briefcase className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Portfólio Disponível Apenas para Profissionais
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Esta funcionalidade é exclusiva para profissionais cadastrados na plataforma.
+                  </p>
+                  <Button asChild>
+                    <a href="/cadastro">Tornar-se Profissional</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          </div>
+        </PageTransition>
+      </MainLayout>
+    )
   }
 
   return (
@@ -207,32 +284,57 @@ export default function PortfolioPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="budget">Orçamento</Label>
+                      <Label htmlFor="budget_range">Faixa de Orçamento</Label>
                       <Input
-                        id="budget"
-                        value={newProject.budget}
-                        onChange={(e) => setNewProject({ ...newProject, budget: e.target.value })}
-                        placeholder="Ex: R$ 25.000"
+                        id="budget_range"
+                        value={newProject.budget_range}
+                        onChange={(e) => setNewProject({ ...newProject, budget_range: e.target.value })}
+                        placeholder="Ex: R$ 15.000 - R$ 25.000"
                       />
                     </div>
+                  </div>
+
+                  {/* Upload de Imagens */}
+                  <div>
+                    <Label>Imagens do Projeto</Label>
+                    <ImageUpload
+                      images={newProject.images}
+                      onImagesChange={(images) => setNewProject({ ...newProject, images })}
+                      maxImages={5}
+                      className="mt-2"
+                    />
                   </div>
 
                   <div className="flex space-x-2">
                     {editingProject ? (
                       <>
-                        <Button onClick={handleSaveEdit}>
-                          Salvar Alterações
+                        <Button onClick={handleSaveEdit} disabled={saving}>
+                          {saving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Salvando...
+                            </>
+                          ) : (
+                            'Salvar Alterações'
+                          )}
                         </Button>
-                        <Button variant="outline" onClick={handleCancel}>
+                        <Button variant="outline" onClick={handleCancel} disabled={saving}>
                           Cancelar
                         </Button>
                       </>
                     ) : (
                       <>
-                        <Button onClick={handleAddProject}>
-                          Adicionar Projeto
+                        <Button onClick={handleAddProject} disabled={saving}>
+                          {saving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Adicionando...
+                            </>
+                          ) : (
+                            'Adicionar Projeto'
+                          )}
                         </Button>
-                        <Button variant="outline" onClick={handleCancel}>
+                        <Button variant="outline" onClick={handleCancel} disabled={saving}>
                           Cancelar
                         </Button>
                       </>
@@ -243,137 +345,212 @@ export default function PortfolioPage() {
             </FadeIn>
           )}
 
+          {/* Estados de Loading e Erro */}
+          {loading && (
+            <FadeIn>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Loader2 className="h-8 w-8 mx-auto animate-spin text-blue-600 mb-4" />
+                  <p className="text-gray-600">Carregando projetos do portfólio...</p>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          )}
+
+          {error && (
+            <FadeIn>
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-4" />
+                  <p className="text-red-600 mb-4">{error}</p>
+                  <Button onClick={() => window.location.reload()}>
+                    Tentar Novamente
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+          )}
+
           {/* Lista de Projetos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {mockPortfolio.map((project, index) => (
-              <FadeIn key={project.id} delay={index * 0.1}>
-                <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative">
-                    {/* Imagem do Projeto */}
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
-                      <ImageIcon className="h-12 w-12 text-gray-400" />
-                    </div>
-                    
-                    {/* Badge de Destaque */}
-                    {project.isFeatured && (
-                      <div className="absolute top-3 left-3">
-                        <Badge className="bg-yellow-500 text-white">
-                          Destaque
-                        </Badge>
-                      </div>
-                    )}
-
-                    {/* Ações */}
-                    <div className="absolute top-3 right-3 flex space-x-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleEditProject(project.id)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-6">
-                    <div className="mb-4">
+          {!loading && !error && (
+            <>
+              {projects.length === 0 ? (
+                <FadeIn>
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Briefcase className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {project.title}
+                        Nenhum projeto ainda
                       </h3>
-                      <p className="text-gray-600 text-sm mb-3">
-                        {project.description}
+                      <p className="text-gray-600 mb-6">
+                        Comece adicionando seu primeiro projeto para mostrar seu trabalho aos clientes.
                       </p>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{project.location}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{new Date(project.date).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <DollarSign className="h-4 w-4" />
-                          <span>{project.budget}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-yellow-500" />
-                          <span>{project.rating}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Eye className="h-4 w-4" />
-                          <span>{project.views} visualizações</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Compartilhar
+                      <Button onClick={() => setIsAddingProject(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar Primeiro Projeto
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
-                        <Download className="h-4 w-4 mr-2" />
-                        Baixar
-                      </Button>
+                    </CardContent>
+                  </Card>
+                </FadeIn>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {projects.map((project, index) => (
+                    <FadeIn key={project.id} delay={index * 0.1}>
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+                        <div className="relative">
+                          {/* Imagem do Projeto */}
+                          <div className="h-48 bg-gray-200 flex items-center justify-center">
+                            {project.images && project.images.length > 0 ? (
+                              <img
+                                src={project.images[0]}
+                                alt={project.title}
+                                className="w-full h-full object-cover"
+                                onClick={() => handleViewProject(project.id)}
+                              />
+                            ) : (
+                              <ImageIcon className="h-12 w-12 text-gray-400" />
+                            )}
+                          </div>
+                          
+                          {/* Badge de Destaque */}
+                          {project.is_featured && (
+                            <div className="absolute top-3 left-3">
+                              <Badge className="bg-yellow-500 text-white">
+                                Destaque
+                              </Badge>
+                            </div>
+                          )}
+
+                          {/* Ações */}
+                          <div className="absolute top-3 right-3 flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleEditProject(project.id)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDeleteProject(project.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <CardContent className="p-6">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                              {project.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm mb-3">
+                              {project.description || 'Sem descrição'}
+                            </p>
+                            
+                            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                              {project.location && (
+                                <div className="flex items-center space-x-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{project.location}</span>
+                                </div>
+                              )}
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date(project.created_at).toLocaleDateString('pt-BR')}</span>
+                              </div>
+                              {project.budget_range && (
+                                <div className="flex items-center space-x-1">
+                                  <DollarSign className="h-4 w-4" />
+                                  <span>{project.budget_range}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <div className="flex items-center space-x-1">
+                                <Star className="h-4 w-4 text-yellow-500" />
+                                <span>{project.rating.toFixed(1)}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Eye className="h-4 w-4" />
+                                <span>{project.views_count} visualizações</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => handleToggleFeatured(project.id, !project.is_featured)}
+                            >
+                              {project.is_featured ? 'Remover Destaque' : 'Destacar'}
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => handleViewProject(project.id)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              Visualizar
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </FadeIn>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Estatísticas */}
+          {!loading && !error && projects.length > 0 && (
+            <div className="mt-12">
+              <FadeIn delay={0.5}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Briefcase className="h-5 w-5" />
+                      <span>Estatísticas do Portfólio</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">{getPortfolioStats().totalProjects}</p>
+                        <p className="text-sm text-gray-600">Total de Projetos</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">
+                          {getPortfolioStats().featuredProjects}
+                        </p>
+                        <p className="text-sm text-gray-600">Em Destaque</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {getPortfolioStats().totalViews}
+                        </p>
+                        <p className="text-sm text-gray-600">Total de Visualizações</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-purple-600">
+                          {getPortfolioStats().averageRating}
+                        </p>
+                        <p className="text-sm text-gray-600">Avaliação Média</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </FadeIn>
-            ))}
-          </div>
-
-          {/* Estatísticas */}
-          <div className="mt-12">
-            <FadeIn delay={0.5}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Briefcase className="h-5 w-5" />
-                    <span>Estatísticas do Portfólio</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-600">{mockPortfolio.length}</p>
-                      <p className="text-sm text-gray-600">Total de Projetos</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">
-                        {mockPortfolio.filter(p => p.isFeatured).length}
-                      </p>
-                      <p className="text-sm text-gray-600">Em Destaque</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {mockPortfolio.reduce((sum, p) => sum + p.views, 0)}
-                      </p>
-                      <p className="text-sm text-gray-600">Total de Visualizações</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {(mockPortfolio.reduce((sum, p) => sum + p.rating, 0) / mockPortfolio.length).toFixed(1)}
-                      </p>
-                      <p className="text-sm text-gray-600">Avaliação Média</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </FadeIn>
-          </div>
+            </div>
+          )}
         </div>
       </PageTransition>
     </MainLayout>
