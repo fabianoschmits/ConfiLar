@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,25 @@ import {
 
 export default function HomePage() {
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Redirecionar para dashboard mobile em dispositivos móveis
+  useEffect(() => {
+    if (isMobile) {
+      router.push('/dashboard-mobile')
+    }
+  }, [isMobile, router])
 
   const handleNavigateTo = (path: string) => {
     console.log('🔄 Navegando para:', path)

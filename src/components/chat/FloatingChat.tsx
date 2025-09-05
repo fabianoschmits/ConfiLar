@@ -68,7 +68,9 @@ export function FloatingChat({
 
   // Scroll automático quando mensagens mudam
   useEffect(() => {
-    scrollToBottom(true)
+    if (messages.length > 0) {
+      scrollToBottom(true) // Rolagem instantânea para a última mensagem
+    }
   }, [messages, scrollToBottom])
 
   // Selecionar conversa quando prop mudar
@@ -76,8 +78,9 @@ export function FloatingChat({
     if (selectedConversationId && selectedConversationId !== selectedConversation) {
       setSelectedConversation(selectedConversationId)
       fetchMessages(selectedConversationId)
+      scrollToBottom(true) // Rolagem ao mudar de conversa
     }
-  }, [selectedConversationId, selectedConversation, setSelectedConversation, fetchMessages])
+  }, [selectedConversationId, selectedConversation, setSelectedConversation, fetchMessages, scrollToBottom])
 
   // Enviar mensagem
   const handleSendMessage = useCallback(async () => {
@@ -87,15 +90,11 @@ export function FloatingChat({
       await sendMessage(selectedConversation, newMessage.trim())
       setNewMessage('')
       
-      // Auto-resize textarea
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
       }
       
-      // Scroll instantâneo
-      setTimeout(() => {
-        scrollToBottom(true)
-      }, 100)
+      scrollToBottom(true)
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
       toast.error('Erro ao enviar mensagem')
@@ -114,7 +113,6 @@ export function FloatingChat({
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value)
     
-    // Auto-resize
     const textarea = e.target
     textarea.style.height = 'auto'
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
@@ -142,7 +140,6 @@ export function FloatingChat({
     }
   }
 
-  // Se não estiver aberto, mostrar apenas o botão flutuante
   if (!isOpen) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
@@ -166,7 +163,7 @@ export function FloatingChat({
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat ${selectedConversation ? 'has-conversation' : ''}`}>
+    <div className="fixed bottom-16 right-4 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat lg:w-80 lg:h-96">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
         <div className="flex items-center space-x-2">
@@ -208,11 +205,11 @@ export function FloatingChat({
       </div>
 
       {/* Conteúdo */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {selectedConversation ? (
           <>
-            {/* Header da conversa */}
-            <div className="p-3 border-b border-gray-200 bg-white">
+                          {/* Header da conversa */}
+              <div className="p-3 border-b border-gray-200 bg-white">
               <div className="flex items-center space-x-2">
                 {(() => {
                   const selectedConv = conversations.find(c => c.id === selectedConversation)
@@ -239,8 +236,8 @@ export function FloatingChat({
             </div>
 
             {/* Mensagens - Área com espaço suficiente */}
-            <ScrollArea className="flex-1 p-3 bg-gray-50 messages-area">
-              <div className="space-y-2 pb-6">
+            <ScrollArea className="flex-1 bg-gray-50 messages-area">
+              <div className="space-y-2 p-3">
                 {messages.map((message) => (
                   <div
                     key={message.id}
