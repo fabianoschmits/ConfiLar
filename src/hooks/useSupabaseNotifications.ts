@@ -89,6 +89,58 @@ export function useSupabaseNotifications() {
     }
   }
 
+  // Marcar notificações de mensagens como lidas
+  const markMessageNotificationsAsRead = async () => {
+    if (!profile?.id) return
+
+    try {
+      console.log('🔔 Marcando notificações de mensagens como lidas')
+      
+      // Buscar notificações não lidas relacionadas a mensagens
+      const { data: messageNotifications, error: fetchError } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', profile.id)
+        .eq('is_read', false)
+        .or('title.ilike.%mensagem%,message.ilike.%mensagem%')
+
+      if (fetchError) {
+        console.error('❌ Erro ao buscar notificações de mensagens:', fetchError)
+        return
+      }
+
+      if (messageNotifications && messageNotifications.length > 0) {
+        // Marcar notificações de mensagens como lidas
+        const { error: updateError } = await supabase
+          .from('notifications')
+          .update({ is_read: true })
+          .eq('user_id', profile.id)
+          .eq('is_read', false)
+          .in('id', messageNotifications.map(n => n.id))
+
+        if (updateError) {
+          console.error('❌ Erro ao marcar notificações de mensagens como lidas:', updateError)
+        } else {
+          console.log('✅ Notificações de mensagens marcadas como lidas:', messageNotifications.length)
+          
+          // Atualizar estado local
+          setNotifications(prev =>
+            prev.map(n => 
+              messageNotifications.some(mn => mn.id === n.id) 
+                ? { ...n, is_read: true } 
+                : n
+            )
+          )
+          
+          // Atualizar contador
+          setUnreadCount(prev => Math.max(0, prev - messageNotifications.length))
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erro geral ao marcar notificações de mensagens:', error)
+    }
+  }
+
   // Remover notificação
   const removeNotification = async (notificationId: string) => {
     try {
@@ -236,6 +288,7 @@ export function useSupabaseNotifications() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    markMessageNotificationsAsRead,
     removeNotification,
     clearAll,
     addTestNotification
