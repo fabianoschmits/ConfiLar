@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 interface FavoriteButtonProps {
   userId: string
   userName?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'default' | 'lg'
   variant?: 'default' | 'outline' | 'ghost'
   showText?: boolean
   className?: string
@@ -19,7 +19,7 @@ interface FavoriteButtonProps {
 export function FavoriteButton({ 
   userId, 
   userName = 'usuário',
-  size = 'md',
+  size = 'default',
   variant = 'outline',
   showText = false,
   className 

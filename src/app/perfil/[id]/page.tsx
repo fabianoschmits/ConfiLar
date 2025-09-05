@@ -9,13 +9,12 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar as CalendarIcon } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare, Eye, Image as ImageIcon, Calendar, DollarSign, Heart } from 'lucide-react'
+import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare, Eye, Image as ImageIcon, Calendar as CalendarIcon, DollarSign, Heart } from 'lucide-react'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { usePortfolio } from '@/hooks/usePortfolio'
@@ -562,7 +561,7 @@ export default function PublicProfilePage() {
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center gap-1">
-                                                                    <Calendar className="h-3 w-3" />
+                                                                    <CalendarIcon className="h-3 w-3" />
                                                                     <span>{new Date(project.created_at).toLocaleDateString('pt-BR')}</span>
                                                                 </div>
                                                             </div>
