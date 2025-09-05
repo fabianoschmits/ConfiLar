@@ -113,11 +113,14 @@ export default function ClassificadosPage() {
     loadProfessionals()
   }, [])
 
-  // Carregar serviços profissionais do Supabase com Realtime
+  // Verificar e carregar serviços profissionais do Supabase
   useEffect(() => {
-    const loadProfessionalServices = async () => {
+    const checkAndLoadServices = async () => {
       try {
         setLoading(true)
+        
+        // Primeiro, verificar se a tabela professional_services existe
+        console.log('🔍 Verificando se a tabela professional_services existe...')
         
         const { data, error } = await supabase
           .from('professional_services')
@@ -137,7 +140,28 @@ export default function ClassificadosPage() {
           .eq('is_active', true)
           .order('created_at', { ascending: false })
 
-        if (!error && data) {
+        if (error) {
+          console.error('❌ Erro ao acessar professional_services:', error)
+          console.log('📋 Detalhes do erro:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          })
+          
+          // Se a tabela não existe, mostrar mensagem específica
+          if (error.code === 'PGRST116' || error.message.includes('relation "professional_services" does not exist')) {
+            console.log('⚠️ Tabela professional_services não existe. Execute o script SQL para criá-la.')
+            setProfessionalServices([])
+            return
+          }
+          
+          setProfessionalServices([])
+          return
+        }
+
+        if (data) {
+          console.log('✅ Tabela professional_services existe!')
           console.log('📊 Serviços profissionais carregados:', data.length)
           
           // Transformar os dados para o formato esperado
@@ -180,117 +204,118 @@ export default function ClassificadosPage() {
           }))
 
           setProfessionalServices(transformedServices)
-        } else {
-          console.error('❌ Erro ao carregar serviços profissionais:', error)
-          setProfessionalServices([])
+
+          // Só configurar Realtime se a tabela existe
+          console.log('🔗 Configurando Realtime para professional_services...')
+          const servicesChannel = supabase
+            .channel('professional_services_changes')
+            .on(
+              'postgres_changes',
+              {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'professional_services',
+                filter: 'is_active=eq.true'
+              },
+              async (payload) => {
+                console.log('🆕 Novo serviço profissional criado:', payload.new)
+                // Recarregar serviços para obter dados relacionados
+                const { data, error } = await supabase
+                  .from('professional_services')
+                  .select(`
+                    *,
+                    profiles (
+                      full_name,
+                      avatar_url,
+                      location_state,
+                      location_city
+                    ),
+                    service_categories (
+                      name,
+                      icon
+                    )
+                  `)
+                  .eq('id', payload.new.id)
+                  .single()
+
+                if (!error && data) {
+                  const transformedService: ProfessionalService = {
+                    id: data.id,
+                    professional_id: data.professional_id,
+                    professional_name: data.profiles?.full_name || 'Profissional',
+                    professional_avatar_url: data.profiles?.avatar_url,
+                    category_id: data.category_id,
+                    category_name: data.service_categories?.name || 'Serviço',
+                    category_icon: data.service_categories?.icon || '🔧',
+                    title: data.title,
+                    description: data.description,
+                    price_min: data.price_min,
+                    price_max: data.price_max,
+                    service_type: data.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
+                    is_active: data.is_active,
+                    created_at: data.created_at,
+                    location_state: data.profiles?.location_state || '',
+                    location_city: data.profiles?.location_city || '',
+                    experience_level: data.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
+                    insurance_coverage: data.insurance_coverage || false,
+                    emergency_service: data.emergency_service || false
+                  }
+                  setProfessionalServices(prev => [transformedService, ...prev])
+                }
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'professional_services'
+              },
+              (payload) => {
+                console.log('🔄 Serviço profissional atualizado:', payload.new)
+                setProfessionalServices(prev => prev.map(service => 
+                  service.id === payload.new.id ? { ...service, ...payload.new } : service
+                ))
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'professional_services'
+              },
+              (payload) => {
+                console.log('🗑️ Serviço profissional excluído:', payload.old)
+                setProfessionalServices(prev => prev.filter(service => service.id !== payload.old.id))
+              }
+            )
+            .subscribe()
+
+          // Cleanup
+          return () => {
+            supabase.removeChannel(servicesChannel)
+          }
         }
       } catch (error) {
-        console.error('❌ Erro ao carregar serviços profissionais:', error)
+        console.error('❌ Erro geral ao carregar serviços profissionais:', error)
         setProfessionalServices([])
       } finally {
         setLoading(false)
       }
     }
 
-    loadProfessionalServices()
-
-    // Configurar Realtime para serviços profissionais
-    const servicesChannel = supabase
-      .channel('professional_services_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'professional_services',
-          filter: 'is_active=eq.true'
-        },
-        async (payload) => {
-          console.log('🆕 Novo serviço profissional criado:', payload.new)
-          // Recarregar serviços para obter dados relacionados
-          const { data, error } = await supabase
-            .from('professional_services')
-            .select(`
-              *,
-              profiles (
-                full_name,
-                avatar_url,
-                location_state,
-                location_city
-              ),
-              service_categories (
-                name,
-                icon
-              )
-            `)
-            .eq('id', payload.new.id)
-            .single()
-
-          if (!error && data) {
-            const transformedService: ProfessionalService = {
-              id: data.id,
-              professional_id: data.professional_id,
-              professional_name: data.profiles?.full_name || 'Profissional',
-              professional_avatar_url: data.profiles?.avatar_url,
-              category_id: data.category_id,
-              category_name: data.service_categories?.name || 'Serviço',
-              category_icon: data.service_categories?.icon || '🔧',
-              title: data.title,
-              description: data.description,
-              price_min: data.price_min,
-              price_max: data.price_max,
-              service_type: data.service_type as 'hourly' | 'fixed' | 'negotiable' || 'fixed',
-              is_active: data.is_active,
-              created_at: data.created_at,
-              location_state: data.profiles?.location_state || '',
-              location_city: data.profiles?.location_city || '',
-              experience_level: data.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert' || 'intermediate',
-              insurance_coverage: data.insurance_coverage || false,
-              emergency_service: data.emergency_service || false
-            }
-            setProfessionalServices(prev => [transformedService, ...prev])
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'professional_services'
-        },
-        (payload) => {
-          console.log('🔄 Serviço profissional atualizado:', payload.new)
-          setProfessionalServices(prev => prev.map(service => 
-            service.id === payload.new.id ? { ...service, ...payload.new } : service
-          ))
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'professional_services'
-        },
-        (payload) => {
-          console.log('🗑️ Serviço profissional excluído:', payload.old)
-          setProfessionalServices(prev => prev.filter(service => service.id !== payload.old.id))
-        }
-      )
-      .subscribe()
-
-    // Cleanup
-    return () => {
-      supabase.removeChannel(servicesChannel)
-    }
+    checkAndLoadServices()
   }, [])
 
-  // Carregar anúncios do Supabase com Realtime
+  // Verificar e carregar anúncios do Supabase
   useEffect(() => {
-    const loadAds = async () => {
+    const checkAndLoadAds = async () => {
       try {
         setLoading(true)
+        
+        // Primeiro, verificar se a tabela classified_ads existe
+        console.log('🔍 Verificando se a tabela classified_ads existe...')
         
         const { data, error } = await supabase
           .from('classified_ads')
@@ -298,7 +323,28 @@ export default function ClassificadosPage() {
           .eq('is_active', true)
           .order('created_at', { ascending: false })
 
-        if (!error && data) {
+        if (error) {
+          console.error('❌ Erro ao acessar classified_ads:', error)
+          console.log('📋 Detalhes do erro:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          })
+          
+          // Se a tabela não existe, mostrar mensagem específica
+          if (error.code === 'PGRST116' || error.message.includes('relation "classified_ads" does not exist')) {
+            console.log('⚠️ Tabela classified_ads não existe. Execute o script SQL para criá-la.')
+            setAds([])
+            return
+          }
+          
+          setAds([])
+          return
+        }
+
+        if (data) {
+          console.log('✅ Tabela classified_ads existe!')
           console.log('📊 Anúncios carregados:', data.length)
           console.log('📋 Dados dos anúncios:', data.map(ad => ({
             id: ad.id,
@@ -308,68 +354,66 @@ export default function ClassificadosPage() {
             is_active: ad.is_active
           })))
           setAds(data)
-        } else {
-          console.error('❌ Erro ao carregar anúncios:', error)
-          setAds([])
+
+          // Só configurar Realtime se a tabela existe e tem dados
+          console.log('🔗 Configurando Realtime para classified_ads...')
+          const channel = supabase
+            .channel('classified_ads_changes')
+            .on(
+              'postgres_changes',
+              {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'classified_ads',
+                filter: 'is_active=eq.true'
+              },
+              (payload) => {
+                console.log('🆕 Novo anúncio criado:', payload.new)
+                setAds(prev => [payload.new as ClassifiedAd, ...prev])
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'classified_ads'
+              },
+              (payload) => {
+                console.log('🔄 Anúncio atualizado:', payload.new)
+                setAds(prev => prev.map(ad => 
+                  ad.id === payload.new.id ? payload.new as ClassifiedAd : ad
+                ))
+              }
+            )
+            .on(
+              'postgres_changes',
+              {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'classified_ads'
+              },
+              (payload) => {
+                console.log('🗑️ Anúncio excluído:', payload.old)
+                setAds(prev => prev.filter(ad => ad.id !== payload.old.id))
+              }
+            )
+            .subscribe()
+
+          // Cleanup
+          return () => {
+            supabase.removeChannel(channel)
+          }
         }
       } catch (error) {
-        console.error('❌ Erro ao carregar anúncios:', error)
+        console.error('❌ Erro geral ao carregar anúncios:', error)
         setAds([])
       } finally {
         setLoading(false)
       }
     }
 
-    loadAds()
-
-    // Configurar Realtime para anúncios
-    const channel = supabase
-      .channel('classified_ads_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'classified_ads',
-          filter: 'is_active=eq.true'
-        },
-        (payload) => {
-          console.log('🆕 Novo anúncio criado:', payload.new)
-          setAds(prev => [payload.new as ClassifiedAd, ...prev])
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'classified_ads'
-        },
-        (payload) => {
-          console.log('🔄 Anúncio atualizado:', payload.new)
-          setAds(prev => prev.map(ad => 
-            ad.id === payload.new.id ? payload.new as ClassifiedAd : ad
-          ))
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'classified_ads'
-        },
-        (payload) => {
-          console.log('🗑️ Anúncio excluído:', payload.old)
-          setAds(prev => prev.filter(ad => ad.id !== payload.old.id))
-        }
-      )
-      .subscribe()
-
-    // Cleanup
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    checkAndLoadAds()
   }, [])
 
   // Filtrar dados baseado nos filtros selecionados
