@@ -51,6 +51,7 @@ export interface SupabaseMessage {
   sender_id: string
   content: string
   created_at: string
+  read_at?: string | null
 }
 
 export interface SupabaseConversation {
@@ -234,7 +235,7 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id])
 
-  // Enviar mensagem - VERSÃO CORRIGIDA
+  // Enviar mensagem - VERSÃO CORRIGIDA COM REALTIME
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
     if (!profile?.id || !content.trim()) {
       console.error('❌ Dados inválidos para envio de mensagem')
@@ -244,7 +245,20 @@ export function useSupabaseMessages() {
     try {
       console.log('📤 Enviando mensagem:', { conversationId, content: content.substring(0, 50) + '...' })
 
-      // Enviar mensagem
+      // Criar mensagem temporária para feedback imediato
+      const tempMessage: SupabaseMessage = {
+        id: `temp-${Date.now()}`,
+        conversation_id: conversationId,
+        sender_id: profile.id,
+        content: content.trim(),
+        created_at: new Date().toISOString(),
+        read_at: null
+      }
+
+      // Adicionar mensagem temporária à lista local (otimistic update)
+      setMessages(prev => [...prev, tempMessage])
+
+      // Enviar mensagem para o servidor
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -257,13 +271,19 @@ export function useSupabaseMessages() {
 
       if (error) {
         console.error('❌ Erro ao enviar mensagem:', error)
+        // Remover mensagem temporária em caso de erro
+        setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id))
         throw error
       }
 
       console.log('✅ Mensagem enviada:', data.id)
 
-      // Adicionar mensagem à lista local
-      setMessages(prev => [...prev, data])
+      // Substituir mensagem temporária pela real
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === tempMessage.id ? data : msg
+        )
+      )
 
       // Atualizar updated_at da conversa
       await supabase
@@ -565,31 +585,102 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id, selectedConversation, fetchConversations])
 
-  // Sincronização em tempo real para conversa selecionada
+  // Sincronização em tempo real para conversas
   useEffect(() => {
-    if (!profile?.id || !selectedConversation) return
+    if (!profile?.id) return
+
+    console.log('🔔 Configurando Realtime para conversas')
 
     const channel = supabase
-      .channel(`selected-conversation-${selectedConversation}`)
+      .channel('conversations-updates')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${selectedConversation}`
+          table: 'conversations'
         },
-        () => {
-          console.log('🔄 Nova mensagem na conversa selecionada, recarregando...')
-          fetchMessages(selectedConversation)
+        (payload) => {
+          console.log('📝 Conversa atualizada:', payload.new)
+          const updatedConversation = payload.new as ConversationWithParticipant
+          
+          // Atualizar conversa na lista local
+          setConversations(prev => 
+            prev.map(conv => 
+              conv.id === updatedConversation.id ? updatedConversation : conv
+            )
+          )
         }
       )
       .subscribe()
 
     return () => {
+      console.log('🔕 Removendo subscription de conversas')
       supabase.removeChannel(channel)
     }
-  }, [profile?.id, selectedConversation, fetchMessages])
+  }, [profile?.id])
+
+  // Sincronização em tempo real para conversa selecionada
+  useEffect(() => {
+    if (!profile?.id || !selectedConversation) return
+
+    console.log('🔔 Configurando Realtime para conversa:', selectedConversation)
+
+    const channel = supabase
+      .channel(`messages:${selectedConversation}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation}`
+        },
+        (payload) => {
+          console.log('📨 Nova mensagem recebida:', payload.new)
+          const newMessage = payload.new as SupabaseMessage
+          
+          // Adicionar mensagem apenas se não for do usuário atual (para evitar duplicação)
+          if (newMessage.sender_id !== profile.id) {
+            setMessages(prev => [...prev, newMessage])
+            
+            // Marcar como lida automaticamente
+            supabase
+              .from('messages')
+              .update({ read_at: new Date().toISOString() })
+              .eq('id', newMessage.id)
+              .then(() => {
+                console.log('✅ Mensagem marcada como lida')
+              })
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${selectedConversation}`
+        },
+        (payload) => {
+          console.log('📝 Mensagem atualizada:', payload.new)
+          const updatedMessage = payload.new as SupabaseMessage
+          
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === updatedMessage.id ? updatedMessage : msg
+            )
+          )
+        }
+      )
+      .subscribe()
+
+    return () => {
+      console.log('🔕 Removendo subscription Realtime')
+      supabase.removeChannel(channel)
+    }
+  }, [profile?.id, selectedConversation])
 
   // Carregar conversas iniciais
   useEffect(() => {
