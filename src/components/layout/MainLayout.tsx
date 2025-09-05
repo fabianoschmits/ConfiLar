@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Sidebar } from './Sidebar';
-import { MobileSidebar } from './MobileSidebar';
 import { FloatingProfile } from './FloatingProfile';
 import { MobileBottomNavigation } from './MobileBottomNavigation';
 import { MobileQuickActions } from './MobileQuickActions';
@@ -29,24 +28,22 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Sidebar apenas para desktop */}
       <Sidebar />
       
-      <MobileSidebar>
-        <MobileHeader />
-        <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''} pb-20 lg:pb-0 pt-16 lg:pt-0`}>
-          {loading ? (
-            <div className="flex items-center justify-center min-h-screen">
-              <div className="text-center space-y-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground">Carregando...</p>
-              </div>
+      <MobileHeader />
+      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''} pb-20 lg:pb-0 pt-16 lg:pt-0`}>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground">Carregando...</p>
             </div>
-          ) : (
-            children
-          )}
-        </main>
-        <FloatingProfile />
-        <MobileBottomNavigation />
-        <MobileQuickActions />
-      </MobileSidebar>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
+      <FloatingProfile />
+      <MobileBottomNavigation />
+      <MobileQuickActions />
     </>
   );
 };

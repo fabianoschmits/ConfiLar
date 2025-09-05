@@ -50,36 +50,6 @@ export function MobileBottomNavigation() {
       description: 'Encontrar profissionais'
     },
     {
-      id: 'messages',
-      label: 'Mensagens',
-      href: '/mensagens',
-      icon: ChatTeardrop,
-      description: 'Mensagens',
-      badge: unreadCount > 0 ? unreadCount.toString() : undefined
-    },
-    {
-      id: 'notifications',
-      label: 'Notificações',
-      href: '/notificacoes',
-      icon: BellPhosphor,
-      description: 'Notificações',
-      badge: unreadCount > 0 ? unreadCount.toString() : undefined
-    },
-    {
-      id: 'favorites',
-      label: 'Favoritos',
-      href: '/favoritos',
-      icon: HeartPhosphor,
-      description: 'Favoritos'
-    },
-    {
-      id: 'appointments',
-      label: 'Agendamentos',
-      href: '/agendamentos',
-      icon: CalendarPhosphor,
-      description: 'Agendamentos'
-    },
-    {
       id: 'classifieds',
       label: 'Classificados',
       href: '/classificados',
