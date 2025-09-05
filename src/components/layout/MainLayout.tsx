@@ -4,7 +4,6 @@ import React from 'react';
 import { Sidebar } from './Sidebar';
 import { FloatingProfile } from './FloatingProfile';
 import { MobileBottomNavigation } from './MobileBottomNavigation';
-import { MobileQuickActions } from './MobileQuickActions';
 import { MobileHeader } from './MobileHeader';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { usePathname } from 'next/navigation';
@@ -43,7 +42,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </main>
       <FloatingProfile />
       <MobileBottomNavigation />
-      <MobileQuickActions />
     </>
   );
 };
