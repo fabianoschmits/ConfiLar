@@ -6,6 +6,7 @@ import { FloatingProfile } from './FloatingProfile';
 import { MobileBottomNavigation } from './MobileBottomNavigation';
 import { MobileQuickActions } from './MobileQuickActions';
 import { MobileHeader } from './MobileHeader';
+import { LoginPrompt } from './LoginPrompt';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { usePathname } from 'next/navigation';
@@ -48,6 +49,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <FloatingProfile />
       <MobileBottomNavigation />
       <MobileQuickActions />
+      <LoginPrompt />
     </>
   );
 };
