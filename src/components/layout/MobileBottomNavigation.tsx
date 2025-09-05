@@ -38,7 +38,7 @@ export function MobileBottomNavigation() {
     {
       id: 'home',
       label: 'Home',
-      href: '/dashboard-mobile',
+      href: '/home',
       icon: House,
       description: 'Página inicial'
     },

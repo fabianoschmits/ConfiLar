@@ -24,17 +24,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     console.log('🏗️ MainLayout:', { hasUser: !!user, hasProfile: !!profile, loading });
   }
   
-  // Se for a página de dashboard mobile, não renderizar sidebar
-  const isMobileDashboard = pathname === '/dashboard-mobile';
-  
   return (
     <>
-      {/* Sidebar apenas para desktop e páginas que não sejam dashboard mobile */}
-      {!isMobileDashboard && <Sidebar />}
+      {/* Sidebar apenas para desktop */}
+      <Sidebar />
       
       <MobileSidebar>
         <MobileHeader />
-        <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn && !isMobileDashboard ? 'lg:ml-16' : ''} pb-20 lg:pb-0 pt-16 lg:pt-0`}>
+        <main className={`min-h-screen bg-gray-50 transition-colors duration-200 ${isLoggedIn ? 'lg:ml-16' : ''} pb-20 lg:pb-0 pt-16 lg:pt-0`}>
           {loading ? (
             <div className="flex items-center justify-center min-h-screen">
               <div className="text-center space-y-4">
