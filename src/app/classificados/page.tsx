@@ -35,6 +35,7 @@ import {
   Eye
 } from 'lucide-react'
 import { serviceCategories } from '@/data/serviceCategories'
+import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 
 interface ClassifiedAd {
   id: string
@@ -83,8 +84,8 @@ export default function ClassificadosPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedState, setSelectedState] = useState('all')
-  const [selectedCity, setSelectedCity] = useState('all')
+  const [selectedState, setSelectedState] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
   
   // Estados para dados
   const [ads, setAds] = useState<ClassifiedAd[]>([])
@@ -216,8 +217,8 @@ export default function ClassificadosPage() {
       ad.description.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory
-    const matchesState = selectedState === 'all' || ad.location_state === selectedState
-    const matchesCity = selectedCity === 'all' || ad.location_city === selectedCity
+    const matchesState = !selectedState || ad.location_state === selectedState
+    const matchesCity = !selectedCity || ad.location_city === selectedCity
     
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
@@ -230,8 +231,8 @@ export default function ClassificadosPage() {
       service.category_name.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesCategory = selectedCategory === 'all' || service.category_id === selectedCategory
-    const matchesState = selectedState === 'all' || service.location_state === selectedState
-    const matchesCity = selectedCity === 'all' || service.location_city === selectedCity
+    const matchesState = !selectedState || service.location_state === selectedState
+    const matchesCity = !selectedCity || service.location_city === selectedCity
     
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
@@ -535,36 +536,27 @@ export default function ClassificadosPage() {
                       rows={3}
                     />
                     
-                    <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {serviceCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <CategoriaCombobox 
+                      value={formData.category} 
+                      onValueChange={(value) => setFormData({ ...formData, category: value })}
+                      placeholder="Selecione a categoria"
+                    />
                     
                     <div className="grid grid-cols-2 gap-2">
-                      <Select value={formData.location_state} onValueChange={(value) => setFormData({ ...formData, location_state: value })}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Estado" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="SP">São Paulo</SelectItem>
-                          <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                          <SelectItem value="MG">Minas Gerais</SelectItem>
-                          <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <EstadoCombobox 
+                        value={formData.location_state} 
+                        onValueChange={(value) => {
+                          setFormData({ ...formData, location_state: value, location_city: '' })
+                        }}
+                        placeholder="Estado"
+                      />
                       
-                      <Input
+                      <CidadeCombobox 
+                        value={formData.location_city} 
+                        onValueChange={(value) => setFormData({ ...formData, location_city: value })}
+                        estadoSigla={formData.location_state}
                         placeholder="Cidade"
-                        value={formData.location_city}
-                        onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                        disabled={!formData.location_state}
                       />
                     </div>
                     
@@ -596,38 +588,28 @@ export default function ClassificadosPage() {
                   </div>
                 </div>
                 
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
-                    {serviceCategories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CategoriaCombobox 
+                  value={selectedCategory} 
+                  onValueChange={setSelectedCategory}
+                  placeholder="Categoria"
+                />
                 
                 <div className="grid grid-cols-2 gap-2">
-                  <Select value={selectedState} onValueChange={setSelectedState}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="SP">São Paulo</SelectItem>
-                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                      <SelectItem value="MG">Minas Gerais</SelectItem>
-                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <EstadoCombobox 
+                    value={selectedState} 
+                    onValueChange={(value) => {
+                      setSelectedState(value)
+                      setSelectedCity('') // Limpar cidade quando estado muda
+                    }}
+                    placeholder="Estado"
+                  />
                   
-                  <Input
+                  <CidadeCombobox 
+                    value={selectedCity} 
+                    onValueChange={setSelectedCity}
+                    estadoSigla={selectedState}
                     placeholder="Cidade"
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={!selectedState}
                   />
                 </div>
               </div>
@@ -941,36 +923,27 @@ export default function ClassificadosPage() {
                 rows={3}
               />
               
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.icon} {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CategoriaCombobox 
+                value={formData.category} 
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                placeholder="Selecione a categoria"
+              />
               
               <div className="grid grid-cols-2 gap-2">
-                <Select value={formData.location_state} onValueChange={(value) => setFormData({ ...formData, location_state: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SP">São Paulo</SelectItem>
-                    <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                    <SelectItem value="MG">Minas Gerais</SelectItem>
-                    <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                  </SelectContent>
-                </Select>
+                <EstadoCombobox 
+                  value={formData.location_state} 
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, location_state: value, location_city: '' })
+                  }}
+                  placeholder="Estado"
+                />
                 
-                <Input
+                <CidadeCombobox 
+                  value={formData.location_city} 
+                  onValueChange={(value) => setFormData({ ...formData, location_city: value })}
+                  estadoSigla={formData.location_state}
                   placeholder="Cidade"
-                  value={formData.location_city}
-                  onChange={(e) => setFormData({ ...formData, location_city: e.target.value })}
+                  disabled={!formData.location_state}
                 />
               </div>
               
