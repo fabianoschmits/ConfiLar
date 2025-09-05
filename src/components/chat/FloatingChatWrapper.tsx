@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { FloatingChat } from '@/components/chat/FloatingChat'
 
 export function FloatingChatWrapper() {
   const { user, profile } = useAuthContext()
-  const [isOpen, setIsOpen] = useState(false)
+  const { isOpen, selectedConversationId, targetUserId, targetUserName, closeChat, selectConversation } = useFloatingChat()
   const [isMinimized, setIsMinimized] = useState(false)
-  const [selectedConversationId, setSelectedConversationId] = useState<string>()
 
   // Não mostrar se não estiver logado
   if (!user || !profile) {
@@ -16,7 +16,15 @@ export function FloatingChatWrapper() {
   }
 
   const handleToggle = () => {
-    setIsOpen(!isOpen)
+    if (isOpen) {
+      closeChat()
+    } else {
+      // Se há um targetUserId, abrir chat direto para essa conversa
+      if (targetUserId) {
+        // Aqui você pode implementar lógica para encontrar/criar conversa com targetUserId
+        // Por enquanto, apenas abre o chat
+      }
+    }
     if (isMinimized) {
       setIsMinimized(false)
     }
@@ -24,16 +32,14 @@ export function FloatingChatWrapper() {
 
   const handleMinimize = () => {
     setIsMinimized(true)
-    setIsOpen(false)
   }
 
   const handleMaximize = () => {
     setIsMinimized(false)
-    setIsOpen(true)
   }
 
-  const handleSelectConversation = (conversationId: string) => {
-    setSelectedConversationId(conversationId)
+  const handleSelectConversation = (conversationId?: string) => {
+    selectConversation(conversationId)
   }
 
   // Se estiver minimizado, mostrar apenas o botão
@@ -53,13 +59,25 @@ export function FloatingChatWrapper() {
   }
 
   return (
-    <FloatingChat
-      isOpen={isOpen}
-      onToggle={handleToggle}
-      onMinimize={handleMinimize}
-      onMaximize={handleMaximize}
-      selectedConversationId={selectedConversationId}
-      onSelectConversation={handleSelectConversation}
-    />
+    <>
+      {/* Overlay para fechar ao clicar fora */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={closeChat}
+        />
+      )}
+      
+      <FloatingChat
+        isOpen={isOpen}
+        onToggle={handleToggle}
+        onMinimize={handleMinimize}
+        onMaximize={handleMaximize}
+        selectedConversationId={selectedConversationId}
+        onSelectConversation={handleSelectConversation}
+        targetUserId={targetUserId}
+        targetUserName={targetUserName}
+      />
+    </>
   )
 }

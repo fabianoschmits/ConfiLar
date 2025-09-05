@@ -21,6 +21,7 @@ import {
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useSearchHistory } from '@/hooks/useSearchHistory'
 import { SearchHistory as SearchHistoryComponent } from '@/components/features/SearchHistory'
 import { CidadeCombobox } from '@/components/ui/LocationComboboxes'
@@ -40,6 +41,7 @@ export default function BuscarPage() {
 
   // Hook para gerenciar histórico de busca
   const { saveSearch } = useSearchHistory()
+  const { openChat } = useFloatingChat()
 
   // Carregar profissionais reais do Supabase
   useEffect(() => {
@@ -186,9 +188,9 @@ export default function BuscarPage() {
       name: professional.full_name,
       email: professional.email
     })
-    // Redirecionar para página de mensagens com o ID do profissional para iniciar conversa
-    window.location.href = `/mensagens?professional=${professional.id}&name=${encodeURIComponent(professional.full_name || 'Profissional')}`
-  }, [])
+    // Abrir chat flutuante com o profissional
+    openChat(professional.id, professional.full_name || 'Profissional')
+  }, [openChat])
 
   if (loading) {
     return (

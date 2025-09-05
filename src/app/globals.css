@@ -195,11 +195,11 @@ button, a, input, select, textarea {
 /* Floating chat improvements */
 .floating-chat {
   position: fixed;
-  bottom: 1rem;
+  bottom: 6rem;
   right: 1rem;
   z-index: 50;
-  width: 320px;
-  height: 384px;
+  width: 256px;
+  height: 480px;
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -207,13 +207,15 @@ button, a, input, select, textarea {
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease-in-out; /* Animação suave */
+  font-size: 0.875rem; /* Reduzir fonte em ~30% */
 }
 
 /* Desktop: Ajustar posição quando conversa está ativa */
 @media (min-width: 769px) {
   .floating-chat {
     bottom: 1rem;
-    height: 400px;
+    height: 480px;
+    width: 256px;
   }
   
   .floating-chat .messages-area {
@@ -232,11 +234,11 @@ button, a, input, select, textarea {
 
 @media (max-width: 768px) {
   .floating-chat {
-    width: calc(100vw - 2rem) !important;
-    height: calc(100vh - 2rem) !important;
-    bottom: 0.5rem !important;
-    right: 0.5rem !important;
-    left: 0.5rem !important;
+    width: 256px !important;
+    height: 480px !important;
+    bottom: 6rem !important;
+    right: 1rem !important;
+    left: auto !important;
   }
   
   /* Área de mensagens otimizada para mobile */
