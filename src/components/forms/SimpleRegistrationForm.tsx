@@ -21,36 +21,57 @@ import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { serviceCategories } from '@/data/serviceCategories'
 import { toast } from 'sonner'
 
-// Função para validar CPF
+// Função para validar CPF com validação rigorosa
 const validateCPF = (cpf: string): boolean => {
   // Remove caracteres não numéricos
-  const cleanCPF = cpf.replace(/\D/g, '')
-  
-  // Verifica se tem 11 dígitos
-  if (cleanCPF.length !== 11) return false
-  
-  // Verifica se todos os dígitos são iguais (CPF inválido)
-  if (/^(\d)\1{10}$/.test(cleanCPF)) return false
-  
+  cpf = cpf.replace(/[^\d]+/g, '');
+
+  // Verifica se tem exatamente 11 dígitos
+  if (cpf.length !== 11) return false;
+
+  // Lista de CPFs inválidos conhecidos
+  const invalidCPFs = [
+    '00000000000',
+    '11111111111',
+    '22222222222',
+    '33333333333',
+    '44444444444',
+    '55555555555',
+    '66666666666',
+    '77777777777',
+    '88888888888',
+    '99999999999',
+    '12345678901',
+    '12345678909'
+  ];
+
+  // Verifica se é um CPF inválido conhecido
+  if (invalidCPFs.includes(cpf)) return false;
+
+  // Rejeita sequências repetidas
+  if (/^(\d)\1+$/.test(cpf)) return false;
+
   // Validação do primeiro dígito verificador
-  let sum = 0
+  let soma = 0;
   for (let i = 0; i < 9; i++) {
-    sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
+    soma += parseInt(cpf.charAt(i)) * (10 - i);
   }
-  let remainder = (sum * 10) % 11
-  if (remainder === 10 || remainder === 11) remainder = 0
-  if (remainder !== parseInt(cleanCPF.charAt(9))) return false
+  let resto = soma % 11;
+  let primeiroDigito = resto < 2 ? 0 : 11 - resto;
   
+  if (primeiroDigito !== parseInt(cpf.charAt(9))) return false;
+
   // Validação do segundo dígito verificador
-  sum = 0
+  soma = 0;
   for (let i = 0; i < 10; i++) {
-    sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
+    soma += parseInt(cpf.charAt(i)) * (11 - i);
   }
-  remainder = (sum * 10) % 11
-  if (remainder === 10 || remainder === 11) remainder = 0
-  if (remainder !== parseInt(cleanCPF.charAt(10))) return false
+  resto = soma % 11;
+  let segundoDigito = resto < 2 ? 0 : 11 - resto;
   
-  return true
+  if (segundoDigito !== parseInt(cpf.charAt(10))) return false;
+
+  return true;
 }
 
 const registrationSchema = z.object({
@@ -64,7 +85,7 @@ const registrationSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
   phone: z.string().min(10, 'Telefone inválido'),
   cpf_cnpj: z.string()
-    .min(11, 'CPF/CNPJ inválido')
+    .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
     .refine((value) => {
       const cleanValue = value.replace(/\D/g, '')
       // Se tem 11 dígitos, valida como CPF
@@ -76,7 +97,7 @@ const registrationSchema = z.object({
         return true // Validação básica para CNPJ
       }
       return false
-    }, 'CPF/CNPJ inválido'),
+    }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   user_type: z.enum(['client', 'professional']),
   location_state: z.string().min(1, 'Estado é obrigatório'),
@@ -169,12 +190,16 @@ export function SimpleRegistrationForm() {
     const formatted = formatCPF(e.target.value)
     setValue('cpf_cnpj', formatted)
     
-    // Validação em tempo real
+    // Validação em tempo real mais rigorosa
     const cleanValue = formatted.replace(/\D/g, '')
     if (cleanValue.length === 11) {
       const isValid = validateCPF(formatted)
       if (!isValid) {
-        setValue('cpf_cnpj', formatted, { shouldValidate: true })
+        // Força validação imediata para mostrar erro
+        setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
+      } else {
+        // Limpa erros se CPF for válido
+        setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
       }
     }
   }
@@ -394,10 +419,10 @@ export function SimpleRegistrationForm() {
              />
              {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-red-500">CPF inválido. Verifique os números digitados.</p>
+               <p className="text-sm text-red-500">❌ CPF inválido. Este CPF não é válido ou está na lista de CPFs bloqueados.</p>
              )}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-green-600">✓ CPF válido</p>
+               <p className="text-sm text-green-600">✅ CPF válido</p>
              )}
            </div>
 
