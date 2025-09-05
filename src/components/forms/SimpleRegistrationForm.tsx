@@ -26,8 +26,14 @@ const validateCPF = (cpf: string): boolean => {
   // Remove caracteres não numéricos
   cpf = cpf.replace(/[^\d]+/g, '');
 
+  // Debug: log do CPF
+  console.log('Validando CPF:', cpf);
+
   // Verifica se tem exatamente 11 dígitos
-  if (cpf.length !== 11) return false;
+  if (cpf.length !== 11) {
+    console.log('CPF não tem 11 dígitos:', cpf.length);
+    return false;
+  }
 
   // Lista de CPFs inválidos conhecidos
   const invalidCPFs = [
@@ -46,10 +52,16 @@ const validateCPF = (cpf: string): boolean => {
   ];
 
   // Verifica se é um CPF inválido conhecido
-  if (invalidCPFs.includes(cpf)) return false;
+  if (invalidCPFs.includes(cpf)) {
+    console.log('CPF está na lista de inválidos:', cpf);
+    return false;
+  }
 
   // Rejeita sequências repetidas
-  if (/^(\d)\1+$/.test(cpf)) return false;
+  if (/^(\d)\1+$/.test(cpf)) {
+    console.log('CPF tem sequência repetida:', cpf);
+    return false;
+  }
 
   // Validação do primeiro dígito verificador
   let soma = 0;
@@ -59,7 +71,12 @@ const validateCPF = (cpf: string): boolean => {
   let resto = soma % 11;
   let primeiroDigito = resto < 2 ? 0 : 11 - resto;
   
-  if (primeiroDigito !== parseInt(cpf.charAt(9))) return false;
+  console.log('Primeiro dígito calculado:', primeiroDigito, 'Dígito no CPF:', parseInt(cpf.charAt(9)));
+  
+  if (primeiroDigito !== parseInt(cpf.charAt(9))) {
+    console.log('Primeiro dígito verificador inválido');
+    return false;
+  }
 
   // Validação do segundo dígito verificador
   soma = 0;
@@ -69,8 +86,14 @@ const validateCPF = (cpf: string): boolean => {
   resto = soma % 11;
   let segundoDigito = resto < 2 ? 0 : 11 - resto;
   
-  if (segundoDigito !== parseInt(cpf.charAt(10))) return false;
+  console.log('Segundo dígito calculado:', segundoDigito, 'Dígito no CPF:', parseInt(cpf.charAt(10)));
+  
+  if (segundoDigito !== parseInt(cpf.charAt(10))) {
+    console.log('Segundo dígito verificador inválido');
+    return false;
+  }
 
+  console.log('CPF válido:', cpf);
   return true;
 }
 
@@ -419,10 +442,10 @@ export function SimpleRegistrationForm() {
              />
              {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-red-500">❌ CPF inválido. Este CPF não é válido ou está na lista de CPFs bloqueados.</p>
+               <p className="text-sm text-red-500">❌ CPF inválido. Debug: {watchedValues.cpf_cnpj} - {watchedValues.cpf_cnpj.replace(/\D/g, '')}</p>
              )}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-green-600">✅ CPF válido</p>
+               <p className="text-sm text-green-600">✅ CPF válido: {watchedValues.cpf_cnpj}</p>
              )}
            </div>
 
