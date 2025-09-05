@@ -70,7 +70,16 @@ export function useFavorites() {
         return
       }
 
-      setFavorites(data || [])
+      // Transformar os dados para o formato correto
+      const formattedData = (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        favorite_user_id: item.favorite_user_id,
+        created_at: item.created_at,
+        favorite_user: Array.isArray(item.favorite_user) ? item.favorite_user[0] : item.favorite_user
+      }))
+
+      setFavorites(formattedData)
     } catch (err) {
       console.error('Erro crítico ao buscar favoritos:', err)
       setError('Erro crítico ao carregar favoritos')
