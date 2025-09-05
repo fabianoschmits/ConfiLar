@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
@@ -37,9 +38,11 @@ export default function RootLayout({
         <ErrorBoundary>
           <NotificationProvider>
             <AuthProvider>
-              {children}
-              <FloatingChatWrapper />
-              <Toaster position="top-right" richColors />
+              <FloatingChatProvider>
+                {children}
+                <FloatingChatWrapper />
+                <Toaster position="top-right" richColors />
+              </FloatingChatProvider>
             </AuthProvider>
           </NotificationProvider>
         </ErrorBoundary>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +71,7 @@ export default function PublicProfilePage() {
     const params = useParams()
     const router = useRouter()
     const { user } = useAuthContext()
+    const { openChat } = useFloatingChat()
     const userId = params.id as string
     const [profile, setProfile] = useState<PublicProfile | null>(null)
     const [loading, setLoading] = useState(true)
@@ -215,8 +217,8 @@ export default function PublicProfilePage() {
             return
         }
         
-        // Redirecionar para mensagens com o usuário específico
-        router.push(`/mensagens?user=${userId}`)
+        // Abrir chat flutuante com o usuário
+        openChat(userId, profile?.full_name || 'Usuário')
     }
 
     const renderStars = (rating: number) => {

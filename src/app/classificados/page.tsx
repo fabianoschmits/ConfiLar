@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 import { MainLayout } from '@/components/layout/MainLayout'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { serviceCategories } from '@/data/serviceCategories'
 import { Plus, MapPin, Calendar, User, Tag, MessageCircle, ArrowRight, Star, DollarSign, Clock, Shield, Zap } from 'lucide-react'
@@ -57,6 +58,7 @@ interface ProfessionalService {
 
 export default function ClassificadosPage() {
   const { user, profile } = useAuthContext()
+  const { openChat } = useFloatingChat()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingAd, setEditingAd] = useState<ClassifiedAd | null>(null)
@@ -401,8 +403,8 @@ export default function ClassificadosPage() {
       return
     }
     
-    // Redirecionar para a conversa direta com o usuário
-    window.location.href = `/mensagens?user=${ad.user_id}&name=${encodeURIComponent(ad.user_name)}&type=direct`
+    // Abrir chat flutuante com o usuário
+    openChat(ad.user_id, ad.user_name)
   }
 
   const handleViewProfile = (userId: string) => {
@@ -421,8 +423,8 @@ export default function ClassificadosPage() {
       return
     }
     
-    // Redirecionar para a conversa direta com o profissional
-    window.location.href = `/mensagens?user=${service.professional_id}&name=${encodeURIComponent(service.professional_name)}&type=direct`
+    // Abrir chat flutuante com o profissional
+    openChat(service.professional_id, service.professional_name)
   }
 
   const handleServiceViewProfile = (professionalId: string) => {

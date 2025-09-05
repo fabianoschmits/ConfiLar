@@ -17,7 +17,9 @@ import {
   CheckCircle,
   Check as CheckPhosphor,
   ArrowsInSimple,
-  ArrowsOutSimple
+  ArrowsOutSimple,
+  ArrowLeft,
+  Envelope
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
@@ -27,7 +29,9 @@ interface FloatingChatProps {
   onMinimize: () => void
   onMaximize: () => void
   selectedConversationId?: string
-  onSelectConversation?: (conversationId: string) => void
+  onSelectConversation?: (conversationId?: string) => void
+  targetUserId?: string
+  targetUserName?: string
 }
 
 export function FloatingChat({ 
@@ -36,7 +40,9 @@ export function FloatingChat({
   onMinimize, 
   onMaximize,
   selectedConversationId,
-  onSelectConversation 
+  onSelectConversation,
+  targetUserId,
+  targetUserName
 }: FloatingChatProps) {
   const { user, profile } = useAuthContext()
   const [newMessage, setNewMessage] = useState('')
@@ -81,6 +87,19 @@ export function FloatingChat({
       scrollToBottom(true) // Rolagem ao mudar de conversa
     }
   }, [selectedConversationId, selectedConversation, setSelectedConversation, fetchMessages, scrollToBottom])
+
+  // Quando há targetUserId, mostrar mensagem inicial
+  useEffect(() => {
+    if (targetUserId && targetUserName && isOpen) {
+      // Se não há conversa selecionada, mostrar mensagem inicial
+      if (!selectedConversationId) {
+        setNewMessage(`Olá ${targetUserName}! `)
+        if (textareaRef.current) {
+          textareaRef.current.focus()
+        }
+      }
+    }
+  }, [targetUserId, targetUserName, isOpen, selectedConversationId])
 
   // Enviar mensagem
   const handleSendMessage = useCallback(async () => {
@@ -142,13 +161,13 @@ export function FloatingChat({
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-24 right-4 z-50">
         <Button
           onClick={onToggle}
           size="lg"
           className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
         >
-          <ChatTeardrop size={24} weight="light" />
+          <Envelope size={24} weight="light" />
           {totalUnread > 0 && (
             <Badge 
               variant="destructive" 
@@ -163,13 +182,27 @@ export function FloatingChat({
   }
 
   return (
-    <div className="fixed bottom-16 right-4 z-50 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat lg:w-80 lg:h-96">
+    <div className="fixed bottom-24 right-4 z-50 w-64 h-72 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat lg:w-64 lg:h-72">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
         <div className="flex items-center space-x-2">
-          <ChatTeardrop size={20} weight="light" className="text-blue-600" />
-          <h3 className="font-semibold text-gray-900">Chat</h3>
-          {totalUnread > 0 && (
+          {selectedConversationId ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelectConversation?.()}
+              className="h-8 w-8 p-0 hover:bg-gray-200"
+              title="Voltar para conversas"
+            >
+              <ArrowLeft size={16} weight="light" className="text-gray-600" />
+            </Button>
+          ) : (
+            <Envelope size={20} weight="light" className="text-blue-600" />
+          )}
+          <h3 className="text-sm font-semibold text-gray-900">
+            {selectedConversationId ? 'Conversa' : targetUserName ? `Chat com ${targetUserName}` : 'Chat'}
+          </h3>
+          {!selectedConversationId && totalUnread > 0 && (
             <Badge variant="destructive" className="text-xs">
               {totalUnread}
             </Badge>
@@ -206,7 +239,7 @@ export function FloatingChat({
 
       {/* Conteúdo */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {selectedConversation ? (
+        {selectedConversationId ? (
           <>
                           {/* Header da conversa */}
               <div className="p-3 border-b border-gray-200 bg-white">
@@ -221,7 +254,7 @@ export function FloatingChat({
                         className="w-8 h-8"
                       />
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 text-sm">
+                        <h4 className="font-medium text-gray-900 text-xs">
                           {selectedConv?.participant?.full_name || 'Usuário'}
                         </h4>
                         <div className="flex items-center space-x-1">
@@ -237,7 +270,7 @@ export function FloatingChat({
 
             {/* Mensagens - Área com espaço suficiente */}
             <ScrollArea className="flex-1 bg-gray-50 messages-area">
-              <div className="space-y-2 p-3">
+              <div className="space-y-2 p-2">
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -261,7 +294,7 @@ export function FloatingChat({
                             : 'bg-white text-gray-900 border border-gray-200'
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">{message.content}</p>
+                        <p className="text-xs leading-relaxed">{message.content}</p>
                         <div className="flex items-center justify-between mt-1">
                           <span className={`text-xs ${
                             message.sender_id === user?.id ? 'text-blue-100' : 'text-gray-500'
@@ -283,7 +316,7 @@ export function FloatingChat({
             </ScrollArea>
 
             {/* Input de mensagem - Sempre visível */}
-            <div className="p-3 border-t border-gray-200 bg-white input-area">
+            <div className="p-2 border-t border-gray-200 bg-white input-area">
               <div className="flex items-end space-x-2">
                 <div className="flex-1">
                   <Textarea
@@ -292,7 +325,7 @@ export function FloatingChat({
                     value={newMessage}
                     onChange={handleTextareaChange}
                     onKeyPress={handleKeyPress}
-                    className="min-h-[40px] max-h-[80px] lg:min-h-[45px] lg:max-h-[90px] resize-none text-sm border-gray-300 focus:border-blue-500"
+                    className="min-h-[40px] max-h-[80px] lg:min-h-[45px] lg:max-h-[90px] resize-none text-xs border-gray-300 focus:border-blue-500 placeholder:text-xs"
                     rows={1}
                   />
                 </div>
@@ -307,11 +340,73 @@ export function FloatingChat({
               </div>
             </div>
           </>
+        ) : targetUserId && targetUserName ? (
+          // Nova conversa com usuário específico
+          <div className="flex-1 flex flex-col">
+            <div className="p-3 border-b border-gray-200 bg-white">
+              <div className="flex items-center space-x-2">
+                <UserAvatar
+                  src={null}
+                  alt={targetUserName}
+                  className="w-8 h-8"
+                />
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900 text-xs">
+                    {targetUserName}
+                  </h4>
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-xs text-gray-500">online</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Área de nova conversa */}
+            <div className="flex-1 bg-gray-50 flex items-center justify-center p-4">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Envelope size={24} weight="light" className="text-blue-600" />
+                </div>
+                <h4 className="font-medium text-gray-900 text-sm mb-2">
+                  Iniciar conversa com {targetUserName}
+                </h4>
+                <p className="text-xs text-gray-500 mb-4">
+                  Digite sua mensagem abaixo para começar a conversa
+                </p>
+              </div>
+            </div>
+
+            {/* Input de mensagem para nova conversa */}
+            <div className="p-2 border-t border-gray-200 bg-white input-area">
+              <div className="flex items-end space-x-2">
+                <div className="flex-1">
+                  <Textarea
+                    ref={textareaRef}
+                    placeholder={`Digite sua mensagem para ${targetUserName}...`}
+                    value={newMessage}
+                    onChange={handleTextareaChange}
+                    onKeyPress={handleKeyPress}
+                    className="min-h-[40px] max-h-[80px] lg:min-h-[45px] lg:max-h-[90px] resize-none text-xs border-gray-300 focus:border-blue-500 placeholder:text-xs"
+                    rows={1}
+                  />
+                </div>
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim()}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white h-10 w-10 p-0 flex-shrink-0"
+                >
+                  <SendPhosphor size={16} weight="light" />
+                </Button>
+              </div>
+            </div>
+          </div>
         ) : (
           // Lista de conversas
           <div className="flex-1 flex flex-col">
             <div className="p-3 border-b border-gray-200">
-              <h4 className="font-medium text-gray-900 text-sm mb-2">Conversas Recentes</h4>
+              <h4 className="font-medium text-gray-900 text-xs mb-2">Conversas Recentes</h4>
             </div>
             
             <ScrollArea className="flex-1">
@@ -334,7 +429,7 @@ export function FloatingChat({
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h5 className="font-medium text-gray-900 text-sm truncate">
+                          <h5 className="font-medium text-gray-900 text-xs truncate">
                             {conversation.participant?.full_name || 'Usuário'}
                           </h5>
                           {conversation.unread_count && conversation.unread_count > 0 && (

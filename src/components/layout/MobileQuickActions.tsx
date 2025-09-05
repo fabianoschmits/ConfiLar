@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
 
 // Phosphor Icons Light
@@ -20,269 +18,297 @@ import {
   Heart as HeartPhosphor,
   Calendar as CalendarPhosphor,
   Briefcase as BriefcasePhosphor,
-  Star as StarPhosphor,
   Users as UsersPhosphor,
-  Plus,
-  List,
   Gear,
   Question,
   Phone as PhonePhosphor,
-  Buildings,
-  Globe as GlobePhosphor,
-  FileText as FileTextPhosphor,
+  Info as InfoPhosphor,
+  SignOut,
+  CaretUp,
+  CaretDown,
+  Eye as EyePhosphor,
+  PencilSimple,
   TrendUp,
-  Trophy,
-  Clock as ClockPhosphor,
-  Wallet as WalletPhosphor,
-  CreditCard as CreditCardPhosphor,
-  Bookmark as BookmarkPhosphor,
-  MapPin as MapPinPhosphor
+  Lightning,
+  Plus
 } from '@phosphor-icons/react'
 
 export function MobileQuickActions() {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
   const { unreadCount } = useSupabaseNotifications()
-  const [isOpen, setIsOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   // Só renderiza se o usuário estiver logado
   if (!user || !profile) {
     return null
   }
 
-  const quickActions = [
-    {
-      id: 'search',
-      label: 'Buscar Profissionais',
-      href: '/buscar',
-      icon: MagnifyingGlass,
-      color: 'bg-blue-500',
-      description: 'Encontre profissionais'
-    },
-    {
-      id: 'classificados',
-      label: 'Classificados',
-      href: '/classificados',
-      icon: BriefcasePhosphor,
-      color: 'bg-green-500',
-      description: 'Anúncios e ofertas'
-    },
-    {
-      id: 'feed',
-      label: 'Feed Social',
-      href: '/feed',
-      icon: UsersPhosphor,
-      color: 'bg-purple-500',
-      description: 'Atualizações da comunidade'
-    },
-    {
-      id: 'appointments',
-      label: 'Agendamentos',
-      href: '/agendamentos',
-      icon: CalendarPhosphor,
-      color: 'bg-orange-500',
-      description: 'Seus compromissos'
-    },
-    {
-      id: 'favorites',
-      label: 'Favoritos',
-      href: '/favoritos',
-      icon: HeartPhosphor,
-      color: 'bg-red-500',
-      description: 'Profissionais favoritos'
-    },
-    {
-      id: 'portfolio',
-      label: 'Meu Portfólio',
-      href: '/portfolio',
-      icon: FileTextPhosphor,
-      color: 'bg-indigo-500',
-      description: 'Mostre seu trabalho'
-    },
-    {
-      id: 'earnings',
-      label: 'Ganhos',
-      href: '/ganhos',
-      icon: TrendUp,
-      color: 'bg-emerald-500',
-      description: 'Acompanhe seus lucros'
-    },
-    {
-      id: 'reputation',
-      label: 'Reputação',
-      href: '/reputacao',
-      icon: Trophy,
-      color: 'bg-yellow-500',
-      description: 'Sua avaliação'
+  const handleSignOut = async () => {
+    try {
+      setIsExpanded(false)
+      window.location.href = '/logout'
+    } catch (error) {
+      console.error('Erro ao sair:', error)
     }
-  ]
+  }
 
-  const supportActions = [
-    {
-      id: 'help',
-      label: 'Central de Ajuda',
-      href: '/ajuda',
-      icon: Question,
-      color: 'bg-gray-500',
-      description: 'Tire suas dúvidas'
-    },
-    {
-      id: 'contact',
-      label: 'Contato',
-      href: '/contato',
-      icon: PhonePhosphor,
-      color: 'bg-teal-500',
-      description: 'Fale conosco'
-    },
-    {
-      id: 'about',
-      label: 'Sobre Nós',
-      href: '/sobre',
-      icon: Buildings,
-      color: 'bg-slate-500',
-      description: 'Conheça a ConfiLar'
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/'
     }
-  ]
-
-  const handleNavigation = (href: string) => {
-    setIsOpen(false)
+    return pathname.startsWith(href)
   }
 
   return (
     <div className="lg:hidden fixed top-4 right-4 z-50">
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white/95 backdrop-blur-sm shadow-lg border-gray-200 hover:bg-gray-50 h-10 w-10 p-0 rounded-full"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
-        
-        <SheetContent side="right" className="w-80 p-0 bg-white/95 backdrop-blur-sm">
-          <SheetHeader className="p-4 border-b border-gray-200">
-            <SheetTitle className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <span className="text-lg font-bold">Ações Rápidas</span>
-            </SheetTitle>
-          </SheetHeader>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
-            {/* Ações Principais */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
-                Navegação Rápida
-              </h3>
-              <div className="grid grid-cols-2 gap-3">
-                {quickActions.map((action) => {
-                  const Icon = action.icon
-                  const active = pathname.startsWith(action.href)
-                  
-                  return (
-                    <Link
-                      key={action.id}
-                      href={action.href}
-                      onClick={() => handleNavigation(action.href)}
-                      className={cn(
-                        "flex flex-col items-center p-4 rounded-xl transition-all duration-200 border",
-                        active
-                          ? "bg-blue-50 border-blue-200 shadow-md"
-                          : "bg-gray-50 border-gray-200 hover:bg-gray-100 hover:shadow-sm"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-10 h-10 rounded-lg flex items-center justify-center mb-2",
-                        action.color
-                      )}>
-                        <Icon size={20} weight="light" className="text-white" />
-                      </div>
-                      <span className={cn(
-                        "text-xs font-medium text-center",
-                        active ? "text-blue-700" : "text-gray-700"
-                      )}>
-                        {action.label}
-                      </span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
+      <div className="relative">
+        {/* Botão Principal - Sempre Visível */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/95 backdrop-blur-sm shadow-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200"
+        >
+          <Plus size={20} weight="light" className="text-gray-700" />
+        </button>
 
-            {/* Suporte */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
-                Suporte
-              </h3>
-              <div className="space-y-2">
-                {supportActions.map((action) => {
-                  const Icon = action.icon
-                  const active = pathname.startsWith(action.href)
-                  
-                  return (
-                    <Link
-                      key={action.id}
-                      href={action.href}
-                      onClick={() => handleNavigation(action.href)}
-                      className={cn(
-                        "flex items-center space-x-3 p-3 rounded-lg transition-all duration-200",
-                        active
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-700 hover:bg-gray-50"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center",
-                        action.color
-                      )}>
-                        <Icon size={16} weight="light" className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{action.label}</span>
-                        <p className="text-xs text-gray-500">{action.description}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Informações do Usuário */}
-            <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs text-gray-600 font-medium">
-                    {profile?.user_type === 'professional' ? 'Profissional Ativo' : 'Cliente Ativo'}
-                  </span>
-                </div>
-                
-                {profile?.location_city && profile?.location_state && (
-                  <div className="flex items-center space-x-2 text-xs text-gray-600">
-                    <MapPinPhosphor size={12} weight="light" />
-                    <span className="truncate">
-                      {profile.location_city}, {profile.location_state}
-                    </span>
+        {/* Menu Expandido */}
+        {isExpanded && (
+          <div className="absolute top-full right-0 mt-2 w-80 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 max-h-[70vh] overflow-y-auto">
+            <div className="p-4 space-y-4">
+              {/* Header */}
+              <div className="text-center pb-3 border-b border-gray-100">
+                <div className="flex items-center justify-center mb-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">C</span>
                   </div>
-                )}
-                
-                <div className="flex items-center space-x-2 text-xs text-gray-600">
-                  <CalendarPhosphor size={12} weight="light" />
-                  <span>
-                    Membro desde {profile?.created_at 
-                      ? new Date(profile.created_at).getFullYear() 
-                      : '2024'
-                    }
-                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Ações Rápidas</h3>
+                <p className="text-xs text-gray-500">
+                  {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'} • 
+                  Membro desde {profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024'}
+                </p>
+              </div>
+
+              {/* Links Principais */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <Lightning size={14} weight="light" className="mr-2 text-yellow-500" />
+                  Navegação Principal
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/home"
+                    className={cn(
+                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
+                      isActive('/home')
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    )}
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <House size={16} weight={isActive('/home') ? "fill" : "light"} className="text-blue-600" />
+                    <span className="text-sm font-medium">Home</span>
+                  </Link>
+                  <Link
+                    href="/buscar"
+                    className={cn(
+                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
+                      isActive('/buscar')
+                        ? "bg-green-50 text-green-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    )}
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <MagnifyingGlass size={16} weight={isActive('/buscar') ? "fill" : "light"} className="text-green-600" />
+                    <span className="text-sm font-medium">Buscar</span>
+                  </Link>
+                  <Link
+                    href="/classificados"
+                    className={cn(
+                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors",
+                      isActive('/classificados')
+                        ? "bg-purple-50 text-purple-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    )}
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <BriefcasePhosphor size={16} weight={isActive('/classificados') ? "fill" : "light"} className="text-purple-600" />
+                    <span className="text-sm font-medium">Classificados</span>
+                  </Link>
+                  <Link
+                    href="/mensagens"
+                    className={cn(
+                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors relative",
+                      isActive('/mensagens')
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-50"
+                    )}
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <ChatTeardrop size={16} weight={isActive('/mensagens') ? "fill" : "light"} className="text-blue-600" />
+                    <span className="text-sm font-medium">Mensagens</span>
+                    {unreadCount > 0 && (
+                      <Badge className="ml-auto bg-red-500 text-white text-xs">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Badge>
+                    )}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Ações Rápidas */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <Lightning size={14} weight="light" className="mr-2 text-yellow-500" />
+                  Ações Rápidas
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/notificacoes"
+                    className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <BellPhosphor size={16} weight="light" className="text-purple-600" />
+                    <span className="text-sm font-medium">Notificações</span>
+                    {unreadCount > 0 && (
+                      <Badge className="ml-auto bg-blue-500 text-white text-xs">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </Link>
+                  <Link
+                    href="/favoritos"
+                    className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <HeartPhosphor size={16} weight="light" className="text-red-600" />
+                    <span className="text-sm font-medium">Favoritos</span>
+                  </Link>
+                  <Link
+                    href="/agendamentos"
+                    className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <CalendarPhosphor size={16} weight="light" className="text-green-600" />
+                    <span className="text-sm font-medium">Agendamentos</span>
+                  </Link>
+                  <Link
+                    href="/feed"
+                    className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <UsersPhosphor size={16} weight="light" className="text-blue-600" />
+                    <span className="text-sm font-medium">Feed Social</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Minha Conta */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <User size={14} weight="light" className="mr-2 text-blue-500" />
+                  Minha Conta
+                </h3>
+                <div className="space-y-1">
+                  <Link
+                    href={`/perfil/${profile?.id}`}
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <EyePhosphor size={14} weight="light" className="text-blue-600" />
+                    <span>Ver Perfil</span>
+                  </Link>
+                  <Link
+                    href="/editarperfil"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <PencilSimple size={14} weight="light" className="text-green-600" />
+                    <span>Editar Perfil</span>
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
+                  >
+                    <SignOut size={14} weight="light" />
+                    <span>Sair da Conta</span>
+                  </button>
+                  {profile?.user_type === 'professional' && (
+                    <>
+                      <Link
+                        href="/portfolio"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsExpanded(false)}
+                      >
+                        <BriefcasePhosphor size={14} weight="light" className="text-purple-600" />
+                        <span>Meu Portfólio</span>
+                      </Link>
+                      <Link
+                        href="/ganhos"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        onClick={() => setIsExpanded(false)}
+                      >
+                        <TrendUp size={14} weight="light" className="text-green-600" />
+                        <span>Meus Ganhos</span>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Configurações */}
+              <div>
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <Gear size={14} weight="light" className="mr-2 text-gray-500" />
+                  Configurações
+                </h3>
+                <div className="space-y-1">
+                  <Link
+                    href="/ajuda"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <Question size={14} weight="light" className="text-blue-600" />
+                    <span>Central de Ajuda</span>
+                  </Link>
+                  <Link
+                    href="/contato"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <PhonePhosphor size={14} weight="light" className="text-green-600" />
+                    <span>Contato</span>
+                  </Link>
+                  <Link
+                    href="/sobre"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    onClick={() => setIsExpanded(false)}
+                  >
+                    <InfoPhosphor size={14} weight="light" className="text-purple-600" />
+                    <span>Sobre a ConfiLar</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <span>v5.0</span>
+                  <span>ConfiLar</span>
                 </div>
               </div>
             </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        )}
+
+        {/* Overlay para fechar ao clicar fora */}
+        {isExpanded && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsExpanded(false)}
+          />
+        )}
+      </div>
     </div>
   )
 }
