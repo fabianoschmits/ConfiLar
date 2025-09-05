@@ -164,8 +164,17 @@ export function useFavorites() {
         throw new Error('Erro ao adicionar aos favoritos')
       }
 
-      setFavorites(prev => [data, ...prev])
-      return data
+      // Transformar os dados para o formato correto antes de adicionar ao estado
+      const formattedData = {
+        id: data.id,
+        user_id: data.user_id,
+        favorite_user_id: data.favorite_user_id,
+        created_at: data.created_at,
+        favorite_user: Array.isArray(data.favorite_user) ? data.favorite_user[0] : data.favorite_user
+      }
+
+      setFavorites(prev => [formattedData, ...prev])
+      return formattedData
     } catch (err) {
       console.error('Erro ao adicionar favorito:', err)
       throw err
