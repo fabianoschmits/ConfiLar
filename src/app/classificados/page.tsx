@@ -177,7 +177,34 @@ export default function ClassificadosPage() {
         }
 
         // Transformar dados
-        const transformedServices: ProfessionalService[] = (data || []).map((service: any) => ({
+        const transformedServices: ProfessionalService[] = (data || []).map((service: {
+          id: string
+          professional_id: string
+          profiles?: {
+            full_name?: string
+            avatar_url?: string
+            location_state?: string
+            location_city?: string
+          }
+          title: string
+          description: string
+          category_id: string
+          service_categories?: {
+            name: string
+            icon: string
+          }
+          price_range: string
+          price_min?: number
+          price_max?: number
+          service_type?: 'hourly' | 'fixed' | 'negotiable'
+          is_active?: boolean
+          location_city: string
+          location_state: string
+          experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+          insurance_coverage?: boolean
+          emergency_service?: boolean
+          created_at: string
+        }) => ({
           id: service.id,
           professional_id: service.professional_id,
           professional_name: service.profiles?.full_name || 'Profissional',
