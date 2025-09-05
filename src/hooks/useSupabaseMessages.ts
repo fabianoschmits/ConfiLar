@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useSupabaseNotifications } from './useSupabaseNotifications'
 import { toast } from 'sonner'
 
 // Função para criar notificação
@@ -73,6 +74,7 @@ export interface ConversationWithParticipant extends SupabaseConversation {
 
 export function useSupabaseMessages() {
   const { profile } = useAuthContext()
+  const { markMessageNotificationsAsRead } = useSupabaseNotifications()
   const [conversations, setConversations] = useState<ConversationWithParticipant[]>([])
   const [messages, setMessages] = useState<SupabaseMessage[]>([])
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
@@ -199,6 +201,20 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id])
 
+  // Marcar notificações como lidas
+  const markNotificationsAsRead = useCallback(async (conversationId: string) => {
+    if (!profile?.id) return
+
+    try {
+      console.log('🔔 Marcando notificações como lidas para conversa:', conversationId)
+      
+      // Usar a função do hook de notificações
+      await markMessageNotificationsAsRead()
+    } catch (error) {
+      console.error('❌ Erro geral ao marcar notificações:', error)
+    }
+  }, [profile?.id, markMessageNotificationsAsRead])
+
   // Buscar mensagens de uma conversa - VERSÃO CORRIGIDA
   const fetchMessages = useCallback(async (conversationId: string) => {
     if (!conversationId) return
@@ -229,11 +245,14 @@ export function useSupabaseMessages() {
         .neq('sender_id', profile?.id)
         .is('read_at', null)
 
+      // Marcar notificações como lidas
+      await markNotificationsAsRead(conversationId)
+
     } catch (error) {
       console.error('❌ Erro ao buscar mensagens:', error)
       toast.error('Erro ao carregar mensagens')
     }
-  }, [profile?.id])
+  }, [profile?.id, markNotificationsAsRead])
 
   // Enviar mensagem - VERSÃO CORRIGIDA COM REALTIME
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
@@ -652,6 +671,9 @@ export function useSupabaseMessages() {
               .then(() => {
                 console.log('✅ Mensagem marcada como lida')
               })
+
+            // Marcar notificações relacionadas como lidas
+            markNotificationsAsRead(selectedConversation)
           }
         }
       )
@@ -700,6 +722,7 @@ export function useSupabaseMessages() {
     sendMessage,
     createConversation,
     deleteConversation,
-    setSelectedConversation
+    setSelectedConversation,
+    markNotificationsAsRead
   }
 }
