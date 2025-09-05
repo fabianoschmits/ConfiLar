@@ -136,18 +136,18 @@ export const FloatingProfile: React.FC = () => {
           
           {/* Avatar e Nome - Toda a área é clicável */}
           <div 
-            className="flex items-center gap-2 bg-white rounded-full shadow-lg border border-gray-200 px-3 py-2 cursor-pointer hover:shadow-xl transition-all duration-200"
+            className="flex items-center gap-1.5 bg-white rounded-full shadow-md border border-gray-200 px-2 py-1.5 cursor-pointer hover:shadow-lg transition-all duration-200"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <UserAvatar 
               src={profile?.avatar_url}
               alt={profile?.full_name || 'Usuário'}
               fallback={profile?.full_name?.charAt(0) || 'U'}
-              size="md"
+              size="sm"
             />
             
             <div className="block">
-              <p className="text-sm font-medium text-gray-900 truncate max-w-24">
+              <p className="text-xs font-medium text-gray-900 truncate max-w-20">
                 {profile?.full_name || 'Usuário'}
               </p>
               <p className="text-xs text-gray-500">
@@ -155,30 +155,30 @@ export const FloatingProfile: React.FC = () => {
               </p>
             </div>
             
-            <div className="p-1 h-6 w-6 flex items-center justify-center">
-              {isExpanded ? <CaretUp size={16} weight="light" className="text-gray-500" /> : <CaretDown size={16} weight="light" className="text-gray-500" />}
+            <div className="p-0.5 h-5 w-5 flex items-center justify-center">
+              {isExpanded ? <CaretUp size={14} weight="light" className="text-gray-500" /> : <CaretDown size={14} weight="light" className="text-gray-500" />}
             </div>
           </div>
         </div>
 
         {/* Menu Expandido */}
         {isExpanded && (
-          <div className="absolute top-full right-0 mt-2 w-96 sm:w-80 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto z-[9999]">
-            <div className="p-6 space-y-6">
+          <div className="absolute top-full right-0 mt-2 w-72 sm:w-64 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[70vh] overflow-y-auto z-[9999]">
+            <div className="p-4 space-y-4">
               {/* Header do Perfil */}
               <div className="text-center pb-4 border-b border-gray-100">
-                <div className="flex justify-center mb-3">
+                <div className="flex justify-center mb-2">
                   <UserAvatar 
                     src={profile?.avatar_url}
                     alt={profile?.full_name || 'Usuário'}
                     fallback={profile?.full_name?.charAt(0) || 'U'}
-                    size="lg"
+                    size="md"
                   />
                 </div>
-                <h3 className="font-semibold text-gray-900 text-lg">
+                <h3 className="font-semibold text-gray-900 text-base">
                   {profile?.full_name || 'Usuário'}
                 </h3>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-xs text-gray-600 mb-2">
                   {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                 </p>
                 <div className="flex items-center justify-center gap-2">
@@ -189,20 +189,20 @@ export const FloatingProfile: React.FC = () => {
 
               {/* Estatísticas Rápidas */}
               <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                <CardContent className="p-4">
-                  <div className="grid grid-cols-2 gap-4 text-center">
+                <CardContent className="p-3">
+                  <div className="grid grid-cols-2 gap-3 text-center">
                     <div>
-                      <div className="text-2xl font-bold text-blue-600">{accountStats.totalServices}</div>
+                      <div className="text-lg font-bold text-blue-600">{accountStats.totalServices}</div>
                       <div className="text-xs text-gray-600">Serviços</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-green-600">{accountStats.rating}</div>
+                      <div className="text-lg font-bold text-green-600">{accountStats.rating}</div>
                       <div className="text-xs text-gray-600">Avaliação</div>
                     </div>
                   </div>
                   {profile?.user_type === 'professional' && (
-                    <div className="mt-3 pt-3 border-t border-blue-200 text-center">
-                      <div className="text-lg font-bold text-green-600">
+                    <div className="mt-2 pt-2 border-t border-blue-200 text-center">
+                      <div className="text-sm font-bold text-green-600">
                         R$ {accountStats.totalEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
                       <div className="text-xs text-gray-600">Ganhos Totais</div>
@@ -213,17 +213,17 @@ export const FloatingProfile: React.FC = () => {
 
               {/* Ações Rápidas */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  <Lightning size={16} weight="light" className="mr-2 text-yellow-500" />
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <Lightning size={14} weight="light" className="mr-1 text-yellow-500" />
                   Ações Rápidas
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   <Link
                     href="/mensagens"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <ChatTeardrop size={20} weight="light" className="text-blue-600 mb-1" />
+                    <ChatTeardrop size={16} weight="light" className="text-blue-600 mb-1" />
                     <span className="text-xs font-medium">Mensagens</span>
                     {unreadCount > 0 && (
                       <Badge className="mt-1 bg-red-500 text-white text-xs">
@@ -233,10 +233,10 @@ export const FloatingProfile: React.FC = () => {
                   </Link>
                   <Link
                     href="/notificacoes"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <BellPhosphor size={20} weight="light" className="text-purple-600 mb-1" />
+                    <BellPhosphor size={16} weight="light" className="text-purple-600 mb-1" />
                     <span className="text-xs font-medium">Notificações</span>
                     {unreadCount > 0 && (
                       <Badge className="mt-1 bg-blue-500 text-white text-xs">
@@ -246,18 +246,18 @@ export const FloatingProfile: React.FC = () => {
                   </Link>
                   <Link
                     href="/favoritos"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <HeartPhosphor size={20} weight="light" className="text-red-600 mb-1" />
+                    <HeartPhosphor size={16} weight="light" className="text-red-600 mb-1" />
                     <span className="text-xs font-medium">Favoritos</span>
                   </Link>
                   <Link
                     href="/agendamentos"
-                    className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <CalendarPhosphor size={20} weight="light" className="text-green-600 mb-1" />
+                    <CalendarPhosphor size={16} weight="light" className="text-green-600 mb-1" />
                     <span className="text-xs font-medium">Agendamentos</span>
                   </Link>
                 </div>
@@ -265,43 +265,43 @@ export const FloatingProfile: React.FC = () => {
 
               {/* Conta e Perfil */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  <UserPhosphor size={16} weight="light" className="mr-2 text-blue-500" />
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <UserPhosphor size={14} weight="light" className="mr-1 text-blue-500" />
                   Minha Conta
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Link
                     href={`/perfil/${profile?.id}`}
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <EyePhosphor size={16} weight="light" className="text-blue-600" />
+                    <EyePhosphor size={14} weight="light" className="text-blue-600" />
                     <span>Ver Meu Perfil</span>
                   </Link>
                   <Link
                     href="/editarperfil"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PencilSimple size={16} weight="light" className="text-green-600" />
+                    <PencilSimple size={14} weight="light" className="text-green-600" />
                     <span>Editar Perfil</span>
                   </Link>
                   {profile?.user_type === 'professional' && (
                     <>
                       <Link
                         href="/portfolio"
-                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                         onClick={() => setIsExpanded(false)}
                       >
-                        <BriefcasePhosphor size={16} weight="light" className="text-purple-600" />
+                        <BriefcasePhosphor size={14} weight="light" className="text-purple-600" />
                         <span>Meu Portfólio</span>
                       </Link>
                       <Link
                         href="/ganhos"
-                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                         onClick={() => setIsExpanded(false)}
                       >
-                        <TrendUp size={16} weight="light" className="text-green-600" />
+                        <TrendUp size={14} weight="light" className="text-green-600" />
                         <span>Meus Ganhos</span>
                       </Link>
                     </>
@@ -311,49 +311,49 @@ export const FloatingProfile: React.FC = () => {
 
               {/* Configurações e Segurança */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                  <Gear size={16} weight="light" className="mr-2 text-gray-500" />
+                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                  <Gear size={14} weight="light" className="mr-1 text-gray-500" />
                   Configurações
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Link
                     href="/ajuda"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Question size={16} weight="light" className="text-blue-600" />
+                    <Question size={14} weight="light" className="text-blue-600" />
                     <span>Central de Ajuda</span>
                   </Link>
                   <Link
                     href="/contato"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PhonePhosphor size={16} weight="light" className="text-green-600" />
+                    <PhonePhosphor size={14} weight="light" className="text-green-600" />
                     <span>Contato</span>
                   </Link>
                   <Link
                     href="/sobre"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <InfoPhosphor size={16} weight="light" className="text-purple-600" />
+                    <InfoPhosphor size={14} weight="light" className="text-purple-600" />
                     <span>Sobre a ConfiLar</span>
                   </Link>
                 </div>
               </div>
 
               {/* Botão de Sair - Mais Destacado */}
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-gray-200 pt-3">
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center justify-center space-x-3 px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors w-full"
+                  className="flex items-center justify-center space-x-2 px-3 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors w-full"
                 >
-                  <SignOut size={18} weight="light" />
+                  <SignOut size={14} weight="light" />
                   <span>Sair da Conta</span>
                 </button>
                 
-                <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
+                <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                   <span>Membro desde {accountStats.memberSince}</span>
                   <span>v5.0</span>
                 </div>
