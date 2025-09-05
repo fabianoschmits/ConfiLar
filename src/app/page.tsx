@@ -41,7 +41,7 @@ function HomeContent() {
   // Redirecionar usuários logados para a página inicial
   useEffect(() => {
     if (!loading && user) {
-      router.push('/inicio')
+      router.push('/home')
       return
     }
   }, [user, loading, router])
