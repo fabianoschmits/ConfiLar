@@ -13,8 +13,21 @@ export function MobileNavigation() {
   const { user, signOut } = useAuthContext()
 
   const handleNavigation = (path: string) => {
-    router.push(path)
-    setIsOpen(false)
+    try {
+      // Fechar o menu primeiro
+      setIsOpen(false)
+      
+      // Aguardar um momento para garantir que o menu feche
+      setTimeout(() => {
+        // Usar window.location para garantir navegação
+        window.location.href = path
+      }, 100)
+    } catch (error) {
+      console.error('Erro na navegação:', error)
+      // Fallback para router.push
+      router.push(path)
+      setIsOpen(false)
+    }
   }
 
   const handleSignOut = async () => {
@@ -32,7 +45,8 @@ export function MobileNavigation() {
 
   const userItems = [
     { icon: User, label: 'Meu Perfil', path: '/perfil' },
-    { icon: Settings, label: 'Configurações', path: '/configuracoes' },
+    { icon: Settings, label: 'Editar Perfil', path: '/editarperfil' },
+    { icon: HelpCircle, label: 'Ajuda', path: '/ajuda' },
   ]
 
   return (

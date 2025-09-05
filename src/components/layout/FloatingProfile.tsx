@@ -127,7 +127,7 @@ export const FloatingProfile: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] lg:block hidden">
+    <div className="fixed top-4 right-4 z-[9999]">
       <div className="relative">
         {/* Perfil Colapsado */}
         <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export const FloatingProfile: React.FC = () => {
               size="md"
             />
             
-            <div className="hidden sm:block">
+            <div className="block">
               <p className="text-sm font-medium text-gray-900 truncate max-w-24">
                 {profile?.full_name || 'Usuário'}
               </p>
@@ -163,7 +163,7 @@ export const FloatingProfile: React.FC = () => {
 
         {/* Menu Expandido */}
         {isExpanded && (
-          <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[85vh] overflow-y-auto z-[9999]">
+          <div className="absolute top-full right-0 mt-2 w-96 sm:w-80 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto z-[9999]">
             <div className="p-6 space-y-6">
               {/* Header do Perfil */}
               <div className="text-center pb-4 border-b border-gray-100">
@@ -343,19 +343,20 @@ export const FloatingProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Footer */}
+              {/* Botão de Sair - Mais Destacado */}
               <div className="border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center justify-center space-x-3 px-4 py-3 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors w-full"
+                >
+                  <SignOut size={18} weight="light" />
+                  <span>Sair da Conta</span>
+                </button>
+                
+                <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
                   <span>Membro desde {accountStats.memberSince}</span>
                   <span>v5.0</span>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
-                >
-                  <SignOut size={16} weight="light" />
-                  <span>Sair da Conta</span>
-                </button>
               </div>
             </div>
           </div>
