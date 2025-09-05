@@ -67,8 +67,8 @@ export function MobileBottomNavigation() {
           <div className="flex items-center justify-between">
             {/* Links Principais */}
             <div className="flex items-center space-x-2">
-              <Link
-                href="/home"
+              <button
+                onClick={() => window.location.href = '/home'}
                 className={cn(
                   "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
                   isActive('/home')
@@ -78,10 +78,10 @@ export function MobileBottomNavigation() {
               >
                 <House size={24} weight={isActive('/home') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Home</span>
-              </Link>
+              </button>
               
-              <Link
-                href="/buscar"
+              <button
+                onClick={() => window.location.href = '/buscar'}
                 className={cn(
                   "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
                   isActive('/buscar')
@@ -91,10 +91,10 @@ export function MobileBottomNavigation() {
               >
                 <MagnifyingGlass size={24} weight={isActive('/buscar') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Buscar</span>
-              </Link>
+              </button>
               
-              <Link
-                href="/classificados"
+              <button
+                onClick={() => window.location.href = '/classificados'}
                 className={cn(
                   "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
                   isActive('/classificados')
@@ -104,7 +104,7 @@ export function MobileBottomNavigation() {
               >
                 <BriefcasePhosphor size={24} weight={isActive('/classificados') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Classificados</span>
-              </Link>
+              </button>
             </div>
 
             {/* Botão de Expansão */}

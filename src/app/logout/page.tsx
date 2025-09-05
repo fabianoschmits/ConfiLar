@@ -13,12 +13,12 @@ export default function LogoutPage() {
     const performLogout = async () => {
       try {
         // Mostrar mensagem de aviso
-        toast.info('Desconectando...', {
-          duration: 2000,
+        toast.info('Desconectando e limpando dados...', {
+          duration: 3000,
         })
 
         // Aguardar um momento para mostrar a mensagem
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 1500))
 
         // Executar logout
         const result = await signOut()
@@ -29,11 +29,26 @@ export default function LogoutPage() {
           return
         }
 
-        // Redirecionar para a página inicial
-        window.location.href = '/'
+        // Aguardar um pouco mais para garantir que a limpeza foi concluída
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // Redirecionar com força para evitar cache
+        toast.success('Logout realizado com sucesso!')
+        
+        // Usar replace para evitar problemas de histórico
+        setTimeout(() => {
+          // Forçar reload completo da página inicial
+          window.location.replace('/')
+        }, 500)
+        
       } catch (error) {
         console.error('Erro ao sair:', error)
         toast.error('Erro ao desconectar. Tente novamente.')
+        
+        // Mesmo com erro, tentar redirecionar após um tempo
+        setTimeout(() => {
+          window.location.replace('/')
+        }, 2000)
       }
     }
 
@@ -44,7 +59,7 @@ export default function LogoutPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="text-muted-foreground">Desconectando...</p>
+        <p className="text-muted-foreground">Desconectando e limpando dados...</p>
       </div>
     </div>
   )

@@ -612,32 +612,24 @@ export function useAuth() {
 	const signOut = async () => {
 		console.log('🚪 Tentando logout...')
 		
-		if (isMockMode) {
-			// Limpar dados mock
-			localStorage.removeItem('mockUser')
-			localStorage.removeItem('mockProfile')
-			
-			// Limpar estado
-			setUser(null)
-			setProfile(null)
-			setSession(null)
-			
-			console.log('✅ Logout mock bem-sucedido')
-			return { error: null }
-		}
-
 		try {
-			const { error } = await supabase.auth.signOut()
-			
-			if (error) {
-				console.error('❌ Erro no logout:', error)
-				return { error }
+			// Executar logout do Supabase primeiro
+			if (!isMockMode) {
+				const { error } = await supabase.auth.signOut()
+				
+				if (error) {
+					console.error('❌ Erro no logout:', error)
+					return { error }
+				}
 			}
 
 			// Limpar estado local
 			setUser(null)
 			setProfile(null)
 			setSession(null)
+			
+			// Limpeza completa de dados persistentes
+			await clearAllUserData()
 			
 			console.log('✅ Logout bem-sucedido')
 			return { error: null }
@@ -648,6 +640,86 @@ export function useAuth() {
 					message: error instanceof Error ? error.message : 'Erro desconhecido' 
 				} 
 			}
+		}
+	}
+
+	// Função para limpeza completa de dados do usuário
+	const clearAllUserData = async () => {
+		console.log('🧹 Iniciando limpeza completa de dados...')
+		
+		try {
+			// 1. Limpar localStorage
+			if (typeof window !== 'undefined') {
+				// Limpar dados específicos do app
+				const keysToRemove = [
+					'mockUser',
+					'mockProfile',
+					'supabase.auth.token',
+					'auth-token',
+					'user-session',
+					'user-profile',
+					'user-preferences',
+					'chat-history',
+					'notification-preferences',
+					'search-history',
+					'recent-searches'
+				]
+				
+				keysToRemove.forEach(key => {
+					localStorage.removeItem(key)
+				})
+				
+				// Limpar todos os dados do localStorage (opcional - mais agressivo)
+				// localStorage.clear()
+				
+				// 2. Limpar sessionStorage
+				sessionStorage.clear()
+				
+				// 3. Limpar cache do Service Worker
+				if ('caches' in window) {
+					const cacheNames = await caches.keys()
+					await Promise.all(
+						cacheNames.map(cacheName => {
+							console.log('🗑️ Removendo cache:', cacheName)
+							return caches.delete(cacheName)
+						})
+					)
+				}
+				
+				// 4. Desregistrar Service Workers
+				if ('serviceWorker' in navigator) {
+					const registrations = await navigator.serviceWorker.getRegistrations()
+					await Promise.all(
+						registrations.map(registration => {
+							console.log('🗑️ Desregistrando Service Worker:', registration.scope)
+							return registration.unregister()
+						})
+					)
+				}
+				
+				// 5. Limpar IndexedDB (se existir)
+				if ('indexedDB' in window) {
+					try {
+						const databases = await indexedDB.databases()
+						await Promise.all(
+							databases.map(db => {
+								console.log('🗑️ Removendo database:', db.name)
+								return new Promise((resolve, reject) => {
+									const deleteReq = indexedDB.deleteDatabase(db.name)
+									deleteReq.onsuccess = () => resolve(true)
+									deleteReq.onerror = () => reject(deleteReq.error)
+								})
+							})
+						)
+					} catch (error) {
+						console.warn('⚠️ Erro ao limpar IndexedDB:', error)
+					}
+				}
+				
+				console.log('✅ Limpeza completa de dados concluída')
+			}
+		} catch (error) {
+			console.error('❌ Erro durante limpeza de dados:', error)
 		}
 	}
 
