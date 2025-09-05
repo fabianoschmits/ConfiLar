@@ -57,7 +57,7 @@ const validateCPF = (cpf: string): boolean => {
     soma += parseInt(cpf.charAt(i)) * (10 - i);
   }
   let resto = soma % 11;
-  let primeiroDigito = resto < 2 ? 0 : 11 - resto;
+  const primeiroDigito = resto < 2 ? 0 : 11 - resto;
   
   if (primeiroDigito !== parseInt(cpf.charAt(9))) return false;
 
@@ -67,7 +67,7 @@ const validateCPF = (cpf: string): boolean => {
     soma += parseInt(cpf.charAt(i)) * (11 - i);
   }
   resto = soma % 11;
-  let segundoDigito = resto < 2 ? 0 : 11 - resto;
+  const segundoDigito = resto < 2 ? 0 : 11 - resto;
   
   if (segundoDigito !== parseInt(cpf.charAt(10))) return false;
 
