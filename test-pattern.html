@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PatternCraft - Soft Warm Pastel</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .pattern-container {
+            min-height: 100vh;
+            width: 100%;
+            background-color: #fff8f0;
+            position: relative;
+        }
+        .pattern-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 182, 153, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 244, 214, 0.5) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 182, 153, 0.1) 0%, transparent 50%);
+        }
+        .content {
+            position: relative;
+            z-index: 10;
+            padding: 2rem;
+            text-align: center;
+        }
+        .test-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="pattern-container">
+        <div class="pattern-bg"></div>
+        <div class="content">
+            <h1>🎨 Teste do Padrão Soft Warm Pastel</h1>
+            <div class="test-box">
+                <h2>ConfiLar - Marketplace de Serviços</h2>
+                <p>Este é um teste do padrão de fundo implementado do PatternCraft.</p>
+                <p>Você deve ver um fundo com tons quentes e suaves (creme, pêssego e dourado).</p>
+                <p>Se você está vendo este fundo, o padrão está funcionando corretamente!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
