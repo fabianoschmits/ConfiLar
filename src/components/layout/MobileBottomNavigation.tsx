@@ -38,7 +38,7 @@ export function MobileBottomNavigation() {
     {
       id: 'home',
       label: 'Home',
-      href: '/home',
+      href: '/dashboard-mobile',
       icon: House,
       description: 'Página inicial'
     },
@@ -50,19 +50,41 @@ export function MobileBottomNavigation() {
       description: 'Encontrar profissionais'
     },
     {
-      id: 'classifieds',
-      label: 'Classificados',
-      href: '/classificados',
-      icon: Tag,
-      description: 'Anúncios classificados'
-    },
-    {
       id: 'messages',
-      label: 'Chat',
+      label: 'Mensagens',
       href: '/mensagens',
       icon: ChatTeardrop,
       description: 'Mensagens',
       badge: unreadCount > 0 ? unreadCount.toString() : undefined
+    },
+    {
+      id: 'notifications',
+      label: 'Notificações',
+      href: '/notificacoes',
+      icon: BellPhosphor,
+      description: 'Notificações',
+      badge: unreadCount > 0 ? unreadCount.toString() : undefined
+    },
+    {
+      id: 'favorites',
+      label: 'Favoritos',
+      href: '/favoritos',
+      icon: HeartPhosphor,
+      description: 'Favoritos'
+    },
+    {
+      id: 'appointments',
+      label: 'Agendamentos',
+      href: '/agendamentos',
+      icon: CalendarPhosphor,
+      description: 'Agendamentos'
+    },
+    {
+      id: 'classifieds',
+      label: 'Classificados',
+      href: '/classificados',
+      icon: BriefcasePhosphor,
+      description: 'Anúncios classificados'
     },
     {
       id: 'profile',
@@ -82,8 +104,54 @@ export function MobileBottomNavigation() {
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg safe-area-bottom">
+      {/* Primeira linha - 4 itens */}
       <div className="flex items-center justify-around px-1 py-2">
-        {navigationItems.map((item) => {
+        {navigationItems.slice(0, 4).map((item) => {
+          const Icon = item.icon
+          const active = isActive(item.href)
+          
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center px-2 py-2 rounded-lg transition-all duration-200 min-w-[56px] relative",
+                active
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              )}
+            >
+              <div className="relative">
+                <Icon 
+                  size={20} 
+                  weight={active ? "fill" : "light"} 
+                  className={cn(
+                    "transition-all duration-200",
+                    active ? "text-blue-600" : "text-gray-500"
+                  )}
+                />
+                {item.badge && (
+                  <Badge 
+                    className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-red-500 text-white border-2 border-white"
+                  >
+                    {item.badge}
+                  </Badge>
+                )}
+              </div>
+              <span className={cn(
+                "text-xs font-medium mt-1 transition-all duration-200",
+                active ? "text-blue-600" : "text-gray-500"
+              )}>
+                {item.label}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+      
+      {/* Segunda linha - 4 itens */}
+      <div className="flex items-center justify-around px-1 py-2 pt-0">
+        {navigationItems.slice(4).map((item) => {
           const Icon = item.icon
           const active = isActive(item.href)
           

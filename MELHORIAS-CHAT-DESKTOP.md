@@ -56,11 +56,12 @@
 - Layout: Lista de conversas recentes
 
 #### **Estado Ativo (Conversa Selecionada)**:
-- Posição: `bottom: 4rem` + `translateY(-2rem)` (total de 96px da borda)
-- Altura: `480px` (aumentada para dar mais espaço)
+- Posição: `bottom: 6rem` + `translateY(-3rem)` (total de 144px da borda)
+- Altura: `600px` (aumentada ainda mais para dar espaço)
 - Layout: Header + Mensagens + Input
 - Animação: Transição suave de 0.3s
-- Espaço para mensagens: `calc(100% - 160px)` + padding extra de 1.5rem
+- Espaço para mensagens: `calc(100% - 220px)` + padding extra de 2.5rem + margin-bottom
+- Scroll automático: Sempre mostra a última mensagem enviada
 
 ### 📊 **Benefícios**
 
