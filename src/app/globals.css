@@ -28,6 +28,27 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
+/* PatternCraft Soft Warm Pastel Background */
+body {
+  background: #fff8f0 !important;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 182, 153, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 244, 214, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 182, 153, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
 /* Better touch targets for mobile */
 button, a, input, select, textarea {
   min-height: 44px;
