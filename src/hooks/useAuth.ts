@@ -69,10 +69,10 @@ export function useAuth() {
 		// Timeout de segurança para evitar loading infinito
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
-				console.log('⚠️ Loading há mais de 15 segundos - possível problema de sessão')
+				console.log('⚠️ Loading há mais de 10 segundos - definindo como não carregando')
 				setLoading(false)
 			}
-		}, 15000)
+		}, 10000)
 		
 		if (isMockMode) {
 			// Modo mock para desenvolvimento
@@ -100,17 +100,11 @@ export function useAuth() {
 			return
 		}
 
-		// Buscar sessão inicial com timeout
+		// Buscar sessão inicial
 		const fetchSession = async () => {
 			console.log('🔄 Buscando sessão inicial...')
 			try {
-				// Timeout de 10 segundos para a busca de sessão
-				const sessionPromise = supabase.auth.getSession()
-				const timeoutPromise = new Promise((_, reject) => 
-					setTimeout(() => reject(new Error('Timeout na busca de sessão')), 10000)
-				)
-				
-				const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: { user: { id: string; email: string } } | null } }
+				const { data: { session } } = await supabase.auth.getSession()
 				console.log('📋 Sessão obtida:', !!session?.user)
 				
 				if (session?.user?.email) {
@@ -118,20 +112,14 @@ export function useAuth() {
 					setSession({ user: { id: session.user.id, email: session.user.email } })
 					setUser({ id: session.user.id, email: session.user.email })
 					
-					// Buscar perfil de forma simplificada com timeout
+					// Buscar perfil de forma simplificada
 					console.log('🔍 Buscando perfil do usuário...')
 					try {
-						const profilePromise = supabase
+						const { data, error } = await supabase
 							.from('profiles')
 							.select('*')
 							.eq('id', session.user.id)
 							.single()
-						
-						const profileTimeoutPromise = new Promise((_, reject) => 
-							setTimeout(() => reject(new Error('Timeout na busca do perfil')), 8000)
-						)
-						
-						const { data, error } = await Promise.race([profilePromise, profileTimeoutPromise]) as { data: Profile | null; error: { code?: string; message?: string } | null }
 						
 						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
 						
