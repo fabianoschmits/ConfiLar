@@ -8,7 +8,7 @@ import { MainLayout } from '@/components/layout/MainLayout'
 
 export default function SobrePage() {
   return (
-    <MainLayout>
+    <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">

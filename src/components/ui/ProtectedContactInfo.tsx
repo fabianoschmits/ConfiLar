@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useContactAgreements } from '@/hooks/useContactAgreements'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import Link from 'next/link'
 
 interface ProtectedContactInfoProps {
@@ -41,6 +42,7 @@ export function ProtectedContactInfo({
   className = ""
 }: ProtectedContactInfoProps) {
   const { profile } = useAuthContext()
+  const { openChat } = useFloatingChat()
   const { areContactsRevealed } = useContactAgreements()
   const [contactsRevealed, setContactsRevealed] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -164,12 +166,14 @@ export function ProtectedContactInfo({
                 
                 {showActions && (
                   <div className="flex gap-2 flex-wrap">
-                    <Link href="/mensagens">
-                      <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Iniciar Conversa
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="sm" 
+                      className="bg-orange-600 hover:bg-orange-700"
+                      onClick={() => openChat(userId, 'Usuário')}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      Iniciar Conversa
+                    </Button>
                     <Button size="sm" variant="outline" className="border-orange-300 text-orange-700">
                       <Handshake className="h-4 w-4 mr-1" />
                       Fazer Proposta

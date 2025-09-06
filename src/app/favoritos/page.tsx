@@ -25,10 +25,12 @@ import { useAuth } from '@/hooks/useAuth'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 
 export default function FavoritesPage() {
   const { user, profile } = useAuth()
   const router = useRouter()
+  const { openChat } = useFloatingChat()
   const { 
     favorites, 
     loading, 
@@ -85,13 +87,13 @@ export default function FavoritesPage() {
       router.push('/auth')
       return
     }
-    // Aqui você pode implementar a lógica de chat
-    router.push(`/mensagens?user=${userId}`)
+    // Usar chat flutuante em vez de redirecionar
+    openChat(userId, userName)
   }
 
   if (!user) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <PageTransition>
           <div className="container mx-auto px-4 py-8 max-w-4xl">
             <FadeIn>
@@ -117,7 +119,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <PageTransition>
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <FadeIn>

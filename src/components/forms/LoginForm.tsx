@@ -28,6 +28,9 @@ export function LoginForm() {
   
   // Verificar se a conta foi criada
   const accountCreated = searchParams.get('message') === 'account_created'
+  
+  // Obter o parâmetro de redirecionamento
+  const redirectPath = searchParams.get('redirect') || '/home'
 
   const {
     register,
@@ -50,9 +53,8 @@ export function LoginForm() {
         
         // Aguardar um momento para garantir que o contexto seja atualizado
         setTimeout(() => {
-          // Forçar redirecionamento para a página de início
-          const redirectUrl = '/home'
-          router.push(redirectUrl)
+          // Redirecionar para a página original ou home
+          router.push(decodeURIComponent(redirectPath))
         }, 1000)
       }
     } catch (error) {

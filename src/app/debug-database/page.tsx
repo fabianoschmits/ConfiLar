@@ -5,7 +5,7 @@ import { DatabaseChecker } from '@/components/debug/DatabaseChecker'
 
 export default function DebugDatabasePage() {
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Debug - Banco de Dados</h1>

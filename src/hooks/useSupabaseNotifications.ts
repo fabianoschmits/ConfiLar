@@ -242,6 +242,7 @@ export function useSupabaseNotifications() {
                   console.log('Abrindo conversa:', newNotification.action_url)
                   // Redirecionar para a página de mensagens
                   if (typeof window !== 'undefined') {
+                    // Redirecionar para página de mensagens
                     window.location.href = '/mensagens'
                   }
                 }

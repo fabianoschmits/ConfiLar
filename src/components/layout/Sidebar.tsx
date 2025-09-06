@@ -68,11 +68,13 @@ import {
   CaretRight,
   CaretLeft,
   Users as UsersPhosphor,
-  SignOut
+  SignOut,
+  PencilSimple
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
+import { useFloatingChat } from '@/contexts/FloatingChatContext';
 
 interface SidebarItem {
   id: string
@@ -82,6 +84,7 @@ interface SidebarItem {
   badge?: string
   badgeColor?: string
   description?: string
+  onClick?: () => void
 }
 
 interface SidebarCategory {
@@ -96,13 +99,12 @@ export function Sidebar() {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
   const { unreadCount } = useSupabaseNotifications()
+  const { openChat } = useFloatingChat()
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
-  // Só renderiza o componente se o usuário estiver logado
-  if (!user || !profile) {
-    return null;
-  }
+  // Sempre renderizar o componente para navegação
+  const isLoggedIn = user && profile
 
   // Categorias principais da sidebar com ícones Phosphor Light
   const sidebarCategories: SidebarCategory[] = [
@@ -119,13 +121,13 @@ export function Sidebar() {
           icon: <House size={16} weight="light" />,
           description: 'Página inicial'
         },
-        {
+        ...(isLoggedIn ? [{
           id: 'dashboard',
           title: 'Dashboard',
           href: '/dashboard',
           icon: <ChartLine size={16} weight="light" />,
           description: 'Visão geral da conta'
-        }
+        }] : [])
       ]
     },
     {
@@ -167,19 +169,19 @@ export function Sidebar() {
     {
       id: 'communication',
       title: 'Comunicação',
-                icon: <ChatTeardrop size={20} weight="light" />,
+      icon: <ChatTeardrop size={20} weight="light" />,
       color: 'purple',
       items: [
-        {
+        ...(isLoggedIn ? [{
           id: 'messages',
           title: 'Mensagens',
-          href: '/mensagens',
+          href: '#',
           icon: <ChatTeardrop size={16} weight="light" />,
           badge: unreadCount > 0 ? unreadCount.toString() : undefined,
           badgeColor: 'bg-red-500',
-          description: 'Chat com profissionais'
-        },
-        {
+          description: 'Chat com profissionais',
+          onClick: () => openChat()
+        }, {
           id: 'notifications',
           title: 'Notificações',
           href: '/notificacoes',
@@ -187,10 +189,16 @@ export function Sidebar() {
           badge: unreadCount > 0 ? unreadCount.toString() : undefined,
           badgeColor: 'bg-blue-500',
           description: 'Alertas e avisos'
-        }
+        }] : [{
+          id: 'login',
+          title: 'Fazer Login',
+          href: '/auth',
+          icon: <UserPhosphor size={16} weight="light" />,
+          description: 'Acesse sua conta'
+        }])
       ]
     },
-    {
+    ...(isLoggedIn ? [{
       id: 'management',
       title: 'Gestão',
       icon: <CalendarPhosphor size={20} weight="light" />,
@@ -225,8 +233,8 @@ export function Sidebar() {
           description: 'Histórico financeiro'
         }
       ]
-    },
-    {
+    }] : []),
+    ...(isLoggedIn && profile?.user_type === 'professional' ? [{
       id: 'professional',
       title: 'Profissional',
       icon: <BriefcasePhosphor size={20} weight="light" />,
@@ -254,7 +262,7 @@ export function Sidebar() {
           description: 'Sua avaliação'
         }
       ]
-    },
+    }] : []),
     {
       id: 'support',
       title: 'Suporte',
@@ -339,7 +347,43 @@ export function Sidebar() {
           description: 'Conheça a ConfiLar'
         }
       ]
-    }
+    },
+    ...(isLoggedIn ? [{
+      id: 'account',
+      title: 'Conta',
+      icon: <UserPhosphor size={20} weight="light" />,
+      color: 'gray',
+      items: [
+        {
+          id: 'profile',
+          title: 'Meu Perfil',
+          href: '/perfil',
+          icon: <UserPhosphor size={16} weight="light" />,
+          description: 'Editar perfil'
+        },
+        {
+          id: 'edit-profile',
+          title: 'Editar Perfil',
+          href: '/editarperfil',
+          icon: <PencilSimple size={16} weight="light" />,
+          description: 'Atualizar informações'
+        },
+        {
+          id: 'verification',
+          title: 'Verificação',
+          href: '/verificacao',
+          icon: <ShieldPhosphor size={16} weight="light" />,
+          description: 'Verificar identidade'
+        },
+        {
+          id: 'logout',
+          title: 'Sair',
+          href: '/logout',
+          icon: <SignOut size={16} weight="light" />,
+          description: 'Desconectar'
+        }
+      ]
+    }] : [])
   ]
 
   const isActive = (href: string) => {
@@ -425,42 +469,83 @@ export function Sidebar() {
                 {/* Itens da Categoria */}
                 <div className="space-y-1">
                   {category.items.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      onClick={() => setIsMobileOpen(false)}
-                      className={`
-                        group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                        ${isActive(item.href)
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:transform hover:scale-105'
-                        }
-                      `}
-                    >
-                      <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}>
-                        {item.icon}
-                      </div>
-                      
-                      {!isCollapsed && (
-                        <div className="flex-1 flex items-center justify-between">
-                          <div className="flex-1">
-                            <span className="block">{item.title}</span>
-                            {item.description && (
-                              <span className="text-xs opacity-70 block mt-0.5">
-                                {item.description}
-                              </span>
+                    item.onClick ? (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          item.onClick?.()
+                          setIsMobileOpen(false)
+                        }}
+                        className={`
+                          group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left
+                          ${isActive(item.href)
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:transform hover:scale-105'
+                          }
+                        `}
+                      >
+                        <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                          {item.icon}
+                        </div>
+                        
+                        {!isCollapsed && (
+                          <div className="flex-1 flex items-center justify-between">
+                            <div className="flex-1">
+                              <span className="block">{item.title}</span>
+                              {item.description && (
+                                <span className="text-xs opacity-70 block mt-0.5">
+                                  {item.description}
+                                </span>
+                              )}
+                            </div>
+                            {item.badge && (
+                              <Badge 
+                                className={`text-xs ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}
+                              >
+                                {item.badge}
+                              </Badge>
                             )}
                           </div>
-                          {item.badge && (
-                            <Badge 
-                              className={`text-xs ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}
-                            >
-                              {item.badge}
-                            </Badge>
-                          )}
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => setIsMobileOpen(false)}
+                        className={`
+                          group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                          ${isActive(item.href)
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:transform hover:scale-105'
+                          }
+                        `}
+                      >
+                        <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                          {item.icon}
                         </div>
-                      )}
-                    </Link>
+                        
+                        {!isCollapsed && (
+                          <div className="flex-1 flex items-center justify-between">
+                            <div className="flex-1">
+                              <span className="block">{item.title}</span>
+                              {item.description && (
+                                <span className="text-xs opacity-70 block mt-0.5">
+                                  {item.description}
+                                </span>
+                              )}
+                            </div>
+                            {item.badge && (
+                              <Badge 
+                                className={`text-xs ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}
+                              >
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </Link>
+                    )
                   ))}
                 </div>
               </div>

@@ -506,7 +506,7 @@ function MensagensContent() {
   
   // Remover verificação de login - permitir acesso para todos
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50 lg:p-4">
         <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen-mobile lg:h-[600px]">
           {/* Header Mobile */}

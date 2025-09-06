@@ -68,6 +68,7 @@ import {
   Info as InfoPhosphor
 } from '@phosphor-icons/react';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useFloatingChat } from '@/contexts/FloatingChatContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';
@@ -82,6 +83,7 @@ export const FloatingProfile: React.FC = () => {
   
   // Agora o componente só é renderizado quando o usuário está logado
   const { profile, signOut, user } = useAuthContext();
+  const { openChat } = useFloatingChat();
   const { unreadCount } = useSupabaseNotifications();
 
   // Só renderiza se tiver usuário e perfil
@@ -218,10 +220,12 @@ export const FloatingProfile: React.FC = () => {
                   Ações Rápidas
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
-                  <Link
-                    href="/mensagens"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-                    onClick={() => setIsExpanded(false)}
+                  <button
+                    onClick={() => {
+                      openChat()
+                      setIsExpanded(false)
+                    }}
+                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors w-full"
                   >
                     <ChatTeardrop size={16} weight="light" className="text-blue-600 mb-1" />
                     <span className="text-xs font-medium">Mensagens</span>
@@ -230,7 +234,7 @@ export const FloatingProfile: React.FC = () => {
                         {unreadCount}
                       </Badge>
                     )}
-                  </Link>
+                  </button>
                   <Link
                     href="/notificacoes"
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"

@@ -488,7 +488,10 @@ export function FloatingChat({
             
             <div className="p-3 border-t border-gray-200">
               <Button
-                onClick={() => window.location.href = '/mensagens'}
+                onClick={() => {
+                  // Não redirecionar, apenas fechar o chat
+                  onToggle()
+                }}
                 variant="outline"
                 size="sm"
                 className="w-full"

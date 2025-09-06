@@ -36,7 +36,7 @@ export default function AgendaPage() {
 
   if (!user) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardContent className="p-6">
@@ -56,7 +56,7 @@ export default function AgendaPage() {
 
   if (!isProfessional) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardContent className="p-6">
@@ -75,7 +75,7 @@ export default function AgendaPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Minha Agenda Profissional</h1>
         <ProfessionalAgenda />

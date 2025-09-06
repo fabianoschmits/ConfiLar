@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
@@ -8,16 +8,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LoginForm } from '@/components/forms/LoginForm'
 import { SimpleRegistrationForm } from '@/components/forms/SimpleRegistrationForm'
 import { CheckCircle, ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function AuthPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('login')
   const [registrationComplete, setRegistrationComplete] = useState(false)
+  const [redirectPath, setRedirectPath] = useState('/home')
+
+  useEffect(() => {
+    // Obter o parâmetro de redirecionamento da URL
+    const redirect = searchParams.get('redirect')
+    if (redirect) {
+      setRedirectPath(decodeURIComponent(redirect))
+    }
+  }, [searchParams])
 
   const handleRegistrationComplete = () => {
     setRegistrationComplete(true)
     setActiveTab('login')
+  }
+
+  const handleBackToHome = () => {
+    router.push(redirectPath)
   }
 
   if (registrationComplete) {
@@ -63,11 +77,11 @@ export default function AuthPage() {
           
           <Button 
             variant="ghost" 
-            onClick={() => router.push('/home')}
+            onClick={handleBackToHome}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Voltar ao Home</span>
+            <span>Voltar</span>
           </Button>
         </div>
       </header>

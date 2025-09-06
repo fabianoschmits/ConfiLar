@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -37,6 +38,7 @@ export function MobileQuickActions() {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
   const { unreadCount } = useSupabaseNotifications()
+  const { openChat } = useFloatingChat()
   const [isExpanded, setIsExpanded] = useState(false)
 
   // Só renderiza se o usuário estiver logado
@@ -135,15 +137,17 @@ export function MobileQuickActions() {
                     <BriefcasePhosphor size={16} weight={isActive('/classificados') ? "fill" : "light"} className="text-purple-600" />
                     <span className="text-sm font-medium">Classificados</span>
                   </Link>
-                  <Link
-                    href="/mensagens"
+                  <button
+                    onClick={() => {
+                      openChat()
+                      setIsExpanded(false)
+                    }}
                     className={cn(
-                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors relative",
+                      "flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors relative w-full text-left",
                       isActive('/mensagens')
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-50"
                     )}
-                    onClick={() => setIsExpanded(false)}
                   >
                     <ChatTeardrop size={16} weight={isActive('/mensagens') ? "fill" : "light"} className="text-blue-600" />
                     <span className="text-sm font-medium">Mensagens</span>
@@ -152,7 +156,7 @@ export function MobileQuickActions() {
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </Badge>
                     )}
-                  </Link>
+                  </button>
                 </div>
               </div>
 
