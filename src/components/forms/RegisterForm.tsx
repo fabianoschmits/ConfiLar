@@ -227,11 +227,11 @@ export function RegisterForm() {
           {/* Termos e Condições */}
           <p className="text-xs text-gray-500 text-center">
             Ao criar uma conta, você concorda com nossos{' '}
-            <a href="/termos" className="text-blue-600 hover:underline">
+            <a href="/ajuda" className="text-blue-600 hover:underline">
               Termos de Uso
             </a>{' '}
             e{' '}
-            <a href="/privacidade" className="text-blue-600 hover:underline">
+            <a href="/ajuda" className="text-blue-600 hover:underline">
               Política de Privacidade
             </a>
           </p>

@@ -75,7 +75,7 @@ export function Navigation() {
                     Agenda
                   </Button>
                 </Link>
-                <Link href="/dashboard-profissional">
+                <Link href="/portfolio">
                   <Button variant="ghost" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Meus Serviços

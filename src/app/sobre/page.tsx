@@ -179,9 +179,9 @@ export default function SobrePage() {
                 <h3 className="font-semibold mb-4">Suporte</h3>
                 <ul className="space-y-2 text-gray-400">
                   <li><Link href="/ajuda" className="hover:text-white">Central de Ajuda</Link></li>
-                  <li><Link href="/contato" className="hover:text-white">Contato</Link></li>
-                  <li><Link href="/termos" className="hover:text-white">Termos de Uso</Link></li>
-                  <li><Link href="/privacidade" className="hover:text-white">Política de Privacidade</Link></li>
+                  <li><Link href="/_public/contato" className="hover:text-white">Contato</Link></li>
+                  <li><Link href="/ajuda" className="hover:text-white">Termos de Uso</Link></li>
+                  <li><Link href="/ajuda" className="hover:text-white">Política de Privacidade</Link></li>
                 </ul>
               </div>
               

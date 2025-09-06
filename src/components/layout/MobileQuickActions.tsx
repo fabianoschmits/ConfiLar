@@ -189,7 +189,7 @@ export function MobileQuickActions() {
                     <span className="text-sm font-medium">Favoritos</span>
                   </Link>
                   <Link
-                    href="/agendamentos"
+                    href="/_public/agendamentos"
                     className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
@@ -248,7 +248,7 @@ export function MobileQuickActions() {
                         <span>Meu Portfólio</span>
                       </Link>
                       <Link
-                        href="/ganhos"
+                        href="/_public/ganhos"
                         className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         onClick={() => setIsExpanded(false)}
                       >
@@ -276,7 +276,7 @@ export function MobileQuickActions() {
                     <span>Central de Ajuda</span>
                   </Link>
                   <Link
-                    href="/contato"
+                    href="/_public/contato"
                     className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
