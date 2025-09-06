@@ -1,48 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
 
 export default function LogoutPage() {
   const { signOut } = useAuthContext()
-  const [isLoggingOut, setIsLoggingOut] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const performLogout = async () => {
       try {
-        console.log('🚪 Iniciando processo de logout...')
+        console.log('🚪 Iniciando logout...')
         
-        // Mostrar mensagem de aviso
-        toast.info('Desconectando e limpando dados...', {
-          duration: 3000,
-        })
-
-        // Aguardar um momento para mostrar a mensagem
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        // Executar logout com timeout
-        const logoutPromise = signOut()
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout no logout')), 10000)
-        )
+        // Executar logout sem mostrar mensagens
+        await signOut()
         
-        const result = await Promise.race([logoutPromise, timeoutPromise]) as { error?: { message: string } }
-        
-        if (result?.error) {
-          console.error('Erro ao sair:', result.error)
-          setError('Erro ao desconectar. Redirecionando...')
-          toast.error('Erro ao desconectar. Redirecionando...')
-        } else {
-          console.log('✅ Logout realizado com sucesso')
-          toast.success('Logout realizado com sucesso!')
-        }
-
-        // Aguardar um pouco mais para garantir que a limpeza foi concluída
-        await new Promise(resolve => setTimeout(resolve, 1500))
-
-        // Forçar limpeza adicional de cache
+        // Limpeza adicional de cache
         if (typeof window !== 'undefined') {
           try {
             // Limpar todos os caches
@@ -67,58 +39,26 @@ export default function LogoutPage() {
             
             sessionStorage.clear()
             
-            console.log('✅ Limpeza adicional de cache concluída')
+            console.log('✅ Limpeza concluída')
           } catch (cleanupError) {
-            console.warn('⚠️ Erro na limpeza adicional:', cleanupError)
+            console.warn('⚠️ Erro na limpeza:', cleanupError)
           }
         }
 
-        setIsLoggingOut(false)
-        
-        // Redirecionar com força para evitar cache
-        setTimeout(() => {
-          console.log('🔄 Redirecionando para página inicial...')
-          // Usar replace para evitar problemas de histórico e forçar reload
-          window.location.replace('/')
-        }, 1000)
+        // Redirecionar diretamente para a página inicial
+        console.log('🔄 Redirecionando para página inicial...')
+        window.location.replace('/')
         
       } catch (error) {
-        console.error('Erro crítico ao sair:', error)
-        setError('Erro ao desconectar. Redirecionando...')
-        toast.error('Erro ao desconectar. Redirecionando...')
-        
-        setIsLoggingOut(false)
-        
-        // Mesmo com erro, tentar redirecionar após um tempo
-        setTimeout(() => {
-          console.log('🔄 Redirecionando após erro...')
-          window.location.replace('/')
-        }, 2000)
+        console.error('Erro ao sair:', error)
+        // Mesmo com erro, redirecionar
+        window.location.replace('/')
       }
     }
 
     performLogout()
   }, [signOut])
 
-  if (!isLoggingOut && error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="text-red-500 text-lg">⚠️</div>
-          <p className="text-muted-foreground">{error}</p>
-          <p className="text-sm text-muted-foreground">Redirecionando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="text-muted-foreground">Desconectando e limpando dados...</p>
-        <p className="text-sm text-muted-foreground">Aguarde um momento...</p>
-      </div>
-    </div>
-  )
+  // Não mostrar nada, apenas executar o logout
+  return null
 }

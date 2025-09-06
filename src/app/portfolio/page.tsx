@@ -173,7 +173,7 @@ export default function PortfolioPage() {
   // Se não for profissional, mostrar mensagem
   if (!isProfessional) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <PageTransition>
           <div className="container mx-auto px-4 py-8 max-w-4xl">
             <FadeIn>
@@ -199,7 +199,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <PageTransition>
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <FadeIn>

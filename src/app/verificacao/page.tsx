@@ -200,7 +200,7 @@ export default function VerificacaoPage() {
 
   if (loading) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={true}>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -213,7 +213,7 @@ export default function VerificacaoPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">

@@ -581,6 +581,7 @@ export function useSupabaseMessages() {
                         label: 'Ver',
                         onClick: () => {
                           if (typeof window !== 'undefined') {
+                            // Redirecionar para página de mensagens
                             window.location.href = '/mensagens'
                           }
                         }

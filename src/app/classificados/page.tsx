@@ -462,7 +462,7 @@ export default function ClassificadosPage() {
 
   if (!user) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
@@ -482,7 +482,7 @@ export default function ClassificadosPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white border-b">

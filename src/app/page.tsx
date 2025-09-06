@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { MobileNavigation } from '@/components/layout/MobileNavigation'
+import { MobileFloatingMenu } from '@/components/layout/MobileFloatingMenu'
 import { PWABalloon } from '@/components/pwa/PWABalloon'
 import { PWAStatus } from '@/components/pwa/PWAStatus'
 import { 
@@ -134,11 +134,6 @@ function HomeContent() {
             <span className="text-xl font-bold">ConfiLar</span>
           </div>
           
-          {/* Menu mobile */}
-          <div className="md:hidden">
-            <MobileNavigation />
-          </div>
-
           {/* Menu desktop */}
           <nav className="hidden md:flex items-center space-x-6">
             <a href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
@@ -504,7 +499,7 @@ function HomeContent() {
                 Buscar Profissionais
               </Button>
               
-              <Button variant="outline" size="lg" className="w-full" onClick={() => router.push('/auth')}>
+              <Button variant="secondary" size="lg" className="w-full" onClick={() => router.push('/auth')}>
                 <Users className="h-4 w-4 mr-2" />
                 Criar Conta
               </Button>
@@ -550,9 +545,9 @@ function HomeContent() {
             <div className="space-y-4 text-center md:text-left">
               <h3 className="font-semibold">Contato</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>contato@confilar.com</li>
-                <li>+55 (11) 99999-9999</li>
-                <li>São Paulo, SP</li>
+                <li>contato@confilar.com.br</li>
+                <li>(51) 98427-6564</li>
+                <li>Venâncio Aires, RS</li>
               </ul>
             </div>
           </div>
@@ -564,6 +559,9 @@ function HomeContent() {
           </div>
         </div>
       </footer>
+
+      {/* Menu flutuante para mobile */}
+      <MobileFloatingMenu />
 
       {/* PWA Balloon */}
       <PWABalloon />

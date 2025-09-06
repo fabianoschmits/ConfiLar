@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -40,6 +41,7 @@ export function MobileHeader({
 }: MobileHeaderProps) {
   const pathname = usePathname()
   const { user, profile } = useAuthContext()
+  const { openChat } = useFloatingChat()
 
   // Só renderiza se o usuário estiver logado
   if (!user || !profile) {
@@ -120,16 +122,15 @@ export function MobileHeader({
           )}
           
           {/* Quick access to messages */}
-          <Link href="/mensagens">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 h-10 w-10 rounded-full relative"
-            >
-              <ChatTeardrop className="h-5 w-5" />
-              {/* Badge for unread messages could be added here */}
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 h-10 w-10 rounded-full relative"
+            onClick={() => openChat()}
+          >
+            <ChatTeardrop className="h-5 w-5" />
+            {/* Badge for unread messages could be added here */}
+          </Button>
         </div>
       </div>
     </div>

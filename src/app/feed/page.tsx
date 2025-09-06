@@ -165,7 +165,7 @@ export default function FeedPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">

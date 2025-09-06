@@ -29,7 +29,7 @@ export default function HomePage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-white">
         <ResponsiveContainer spacing="lg" maxWidth="full">
           {/* Header */}

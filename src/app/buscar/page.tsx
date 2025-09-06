@@ -199,7 +199,7 @@ export default function BuscarPage() {
 
   if (loading) {
     return (
-      <MainLayout>
+      <MainLayout requireAuth={false}>
         <div className="min-h-screen bg-background">
           <div className="container mx-auto px-4 py-8">
             <div className="flex items-center justify-center min-h-[400px]">
@@ -215,7 +215,7 @@ export default function BuscarPage() {
   }
 
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header da Página */}

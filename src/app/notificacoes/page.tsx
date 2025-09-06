@@ -8,7 +8,7 @@ import { Bell, Settings } from 'lucide-react';
 
 export default function NotificacoesPage() {
   return (
-    <MainLayout>
+    <MainLayout requireAuth={true}>
       <PageTransition>
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <FadeIn delay={0.1}>
