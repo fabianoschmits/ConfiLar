@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { ProfilePageLayout, ProfileSection, ProfileInfo, ProfileStats } from '@/components/layout/ProfilePageLayout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,12 +26,8 @@ import {
   Clock,
   BarChart3,
   CheckCircle,
-  ArrowRight,
-  Search,
-  Users,
   Calendar,
-  Award,
-  Shield
+  Award
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
@@ -43,7 +39,7 @@ export default function EditarPerfilPage() {
   const [isEditingProfessional, setIsEditingProfessional] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isSavingLocation, setIsSavingLocation] = useState(false)
-  const [selectedState, setSelectedState] = useState(profile?.location_state || '')
+  const [_selectedState, setSelectedState] = useState(profile?.location_state || '')
   const [formData, setFormData] = useState({
     email: profile?.email || '',
     full_name: profile?.full_name || '',
@@ -124,7 +120,7 @@ export default function EditarPerfilPage() {
         toast.success('Perfil atualizado com sucesso!')
         setIsEditing(false)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro inesperado ao atualizar perfil')
     } finally {
       setIsSaving(false)
@@ -194,7 +190,7 @@ export default function EditarPerfilPage() {
         toast.success('Localização atualizada com sucesso!')
         setIsEditingLocation(false)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro inesperado ao atualizar localização')
     } finally {
       setIsSavingLocation(false)
@@ -234,7 +230,7 @@ export default function EditarPerfilPage() {
         }
         setIsEditingProfessional(false)
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro inesperado ao atualizar dados profissionais')
     }
   }
@@ -282,7 +278,7 @@ export default function EditarPerfilPage() {
         toast.success('Foto do perfil atualizada com sucesso!')
       }
       return result
-    } catch (error) {
+    } catch (_error) {
       toast.error('Erro inesperado ao fazer upload da foto')
       return { data: null, error: { message: 'Erro inesperado' } }
     }
