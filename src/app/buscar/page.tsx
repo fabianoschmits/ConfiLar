@@ -34,8 +34,8 @@ export default function BuscarPage() {
   const [selectedCity, setSelectedCity] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState('rating')
-  const [professionals, setProfessionals] = useState<Profile[]>([])
-  const [filteredProfessionals, setFilteredProfessionals] = useState<Profile[]>([])
+  const [users, setUsers] = useState<Profile[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<Profile[]>([])
   const [showSearchHistory, setShowSearchHistory] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -43,86 +43,89 @@ export default function BuscarPage() {
   const { saveSearch } = useSearchHistory()
   const { openChat } = useFloatingChat()
 
-  // Carregar profissionais reais do Supabase
+  // Carregar todos os usuários (profissionais e clientes) do Supabase
   useEffect(() => {
-    const loadProfessionals = async () => {
+    const loadUsers = async () => {
       try {
         setLoading(true)
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_type', 'professional')
           .order('rating', { ascending: false })
 
         if (!error && data) {
-          console.log('📊 Profissionais carregados:', data.length)
-          console.log('🔍 IDs dos profissionais:', data.map(p => ({ id: p.id, name: p.full_name })))
-          setProfessionals(data as unknown as Profile[])
-          setFilteredProfessionals(data as unknown as Profile[])
+          console.log('📊 Usuários carregados:', data.length)
+          console.log('🔍 Tipos de usuários:', data.map(u => ({ id: u.id, name: u.full_name, type: u.user_type })))
+          setUsers(data as unknown as Profile[])
+          setFilteredUsers(data as unknown as Profile[])
         } else {
-          console.error('❌ Erro ao carregar profissionais:', error)
-          // Fallback para dados de exemplo se não houver profissionais
-          setProfessionals([])
-          setFilteredProfessionals([])
+          console.error('❌ Erro ao carregar usuários:', error)
+          // Fallback para dados de exemplo se não houver usuários
+          setUsers([])
+          setFilteredUsers([])
         }
       } catch (error) {
-        console.error('❌ Erro ao carregar profissionais:', error)
-        setProfessionals([])
-        setFilteredProfessionals([])
+        console.error('❌ Erro ao carregar usuários:', error)
+        setUsers([])
+        setFilteredUsers([])
       } finally {
         setLoading(false)
       }
     }
 
-    loadProfessionals()
+    loadUsers()
   }, [])
 
-  // Filtrar profissionais baseado nos critérios selecionados
+  // Filtrar usuários baseado nos critérios selecionados
   useEffect(() => {
-    let filtered = [...professionals]
+    let filtered = [...users]
 
     // Filtro por termo de busca
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase()
       console.log('🔍 Buscando por:', term)
-      console.log('📊 Total de profissionais antes da busca:', filtered.length)
+      console.log('📊 Total de usuários antes da busca:', filtered.length)
       
-      filtered = filtered.filter(professional => {
+      filtered = filtered.filter(user => {
         // Busca por nome
-        const nameMatch = professional.full_name?.toLowerCase().includes(term)
+        const nameMatch = user.full_name?.toLowerCase().includes(term)
         
         // Busca por bio
-        const bioMatch = professional.bio?.toLowerCase().includes(term)
+        const bioMatch = user.bio?.toLowerCase().includes(term)
         
-        // Busca por serviços profissionais
-        const servicesMatch = professional.professional_services?.some(service => 
-          service.toLowerCase().includes(term)
-        ) || false
+        // Busca por serviços profissionais (apenas para profissionais)
+        const servicesMatch = user.user_type === 'professional' && 
+          user.professional_services?.some(service => 
+            service.toLowerCase().includes(term)
+          ) || false
         
-        // Busca por especialidades/certificações
-        const certificationsMatch = professional.professional_certifications?.some(cert => 
-          cert.toLowerCase().includes(term)
-        ) || false
+        // Busca por especialidades/certificações (apenas para profissionais)
+        const certificationsMatch = user.user_type === 'professional' && 
+          user.professional_certifications?.some(cert => 
+            cert.toLowerCase().includes(term)
+          ) || false
         
         // Log para debug
         if (nameMatch || bioMatch || servicesMatch || certificationsMatch) {
-          console.log('✅ Profissional encontrado:', {
-            name: professional.full_name,
-            services: professional.professional_services,
-            bio: professional.bio?.substring(0, 50)
+          console.log('✅ Usuário encontrado:', {
+            name: user.full_name,
+            type: user.user_type,
+            services: user.professional_services,
+            bio: user.bio?.substring(0, 50)
           })
         }
         
         return nameMatch || bioMatch || servicesMatch || certificationsMatch
       })
       
-      console.log('📊 Total de profissionais após a busca:', filtered.length)
+      console.log('📊 Total de usuários após a busca:', filtered.length)
     }
 
-    // Filtro por categoria
+    // Filtro por categoria (apenas para profissionais)
     if (selectedCategory && selectedCategory !== 'all') {
-      filtered = filtered.filter(professional => 
-        professional.professional_services?.some(service => 
+      filtered = filtered.filter(user => 
+        user.user_type === 'professional' && 
+        user.professional_services?.some(service => 
           service.toLowerCase().includes(selectedCategory.toLowerCase())
         ) || false
       )
@@ -130,15 +133,15 @@ export default function BuscarPage() {
 
     // Filtro por estado
     if (selectedState) {
-      filtered = filtered.filter(professional => 
-        professional.location_state === selectedState
+      filtered = filtered.filter(user => 
+        user.location_state === selectedState
       )
     }
 
     // Filtro por cidade
     if (selectedCity) {
-      filtered = filtered.filter(professional => 
-        professional.location_city === selectedCity
+      filtered = filtered.filter(user => 
+        user.location_city === selectedCity
       )
     }
 
@@ -158,8 +161,8 @@ export default function BuscarPage() {
         break
     }
 
-    setFilteredProfessionals(filtered)
-  }, [professionals, searchTerm, selectedCategory, selectedState, selectedCity, sortBy])
+    setFilteredUsers(filtered)
+  }, [users, searchTerm, selectedCategory, selectedState, selectedCity, sortBy])
 
   const handleClearFilters = useCallback(() => {
     setSearchTerm('')
@@ -216,10 +219,10 @@ export default function BuscarPage() {
           {/* Header da Página */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold tracking-tight mb-4">
-              Encontre o Profissional Ideal
+              Encontre Usuários
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Conectamos você aos melhores profissionais da sua região. 
+              Conectamos você aos melhores profissionais e clientes da sua região. 
               Filtre por localização, categoria e avaliações para encontrar quem você precisa.
             </p>
           </div>
@@ -230,7 +233,7 @@ export default function BuscarPage() {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 type="text"
-                placeholder="Digite o que você precisa (ex: pedreiro, diarista, eletricista)..."
+                placeholder="Digite o nome, profissão ou o que você precisa..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-4 py-4 text-lg rounded-2xl border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
@@ -340,10 +343,10 @@ export default function BuscarPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <p className="text-muted-foreground">
-                      <span className="font-semibold text-primary">{filteredProfessionals.length}</span> profissional{filteredProfessionals.length !== 1 ? 'is' : ''} encontrado{filteredProfessionals.length !== 1 ? 's' : ''}
-                      {professionals.length > 0 && filteredProfessionals.length !== professionals.length && (
+                      <span className="font-semibold text-primary">{filteredUsers.length}</span> usuário{filteredUsers.length !== 1 ? 's' : ''} encontrado{filteredUsers.length !== 1 ? 's' : ''}
+                      {users.length > 0 && filteredUsers.length !== users.length && (
                         <span className="text-muted-foreground ml-2">
-                          de {professionals.length} total
+                          de {users.length} total
                         </span>
                       )}
                     </p>
@@ -368,7 +371,7 @@ export default function BuscarPage() {
                       </div>
                     )}
                   </div>
-                  {filteredProfessionals.length > 0 && (
+                  {filteredUsers.length > 0 && (
                     <p className="text-sm text-muted-foreground">
                       Ordenado por {sortBy === 'rating' ? 'avaliação' : sortBy === 'reviews' ? 'número de avaliações' : sortBy === 'name' ? 'nome' : 'verificação'}
                     </p>
@@ -376,39 +379,49 @@ export default function BuscarPage() {
                 </div>
               </div>
 
-              {/* Lista de Profissionais */}
-              {filteredProfessionals.length > 0 ? (
+              {/* Lista de Usuários */}
+              {filteredUsers.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {filteredProfessionals.map((professional) => (
-                    <Card key={professional.id} className="hover:shadow-md transition-all duration-300 rounded-lg border border-border hover:border-primary/20 overflow-hidden">
+                  {filteredUsers.map((user) => (
+                    <Card key={user.id} className="hover:shadow-md transition-all duration-300 rounded-lg border border-border hover:border-primary/20 overflow-hidden">
                       <CardContent className="p-2">
                         <div className="text-center">
                           {/* Avatar com foto do usuário */}
                           <Avatar className="w-12 h-12 mx-auto mb-2">
-                            <AvatarImage src={professional.avatar_url || ''} alt={professional.full_name || 'Usuário'} />
+                            <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
                             <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                              {(professional.full_name || 'N').charAt(0)}
+                              {(user.full_name || 'N').charAt(0)}
                             </AvatarFallback>
                           </Avatar>
 
                           {/* Nome como link */}
                           <Link 
-                            href={`/perfil/${professional.id}`}
+                            href={`/perfil/${user.id}`}
                             className="text-sm font-medium text-foreground hover:text-primary transition-colors block mb-1 line-clamp-1"
                           >
-                            {professional.full_name || 'Nome não informado'}
+                            {user.full_name || 'Nome não informado'}
                           </Link>
+
+                          {/* Tag de tipo de usuário */}
+                          <div className="mb-1">
+                            <Badge 
+                              variant={user.user_type === 'professional' ? 'default' : 'secondary'} 
+                              className="text-xs px-2 py-1"
+                            >
+                              {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                            </Badge>
+                          </div>
 
                           {/* Localização */}
                           <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-2">
                             <MapPin className="h-2 w-2" />
                             <span className="line-clamp-1 text-xs">
-                              {professional.location_city || 'Cidade'}
+                              {user.location_city || 'Cidade'}
                             </span>
                           </div>
 
                           {/* Badge de verificação */}
-                          {professional.is_verified && (
+                          {user.is_verified && (
                             <div className="flex items-center justify-center gap-1 text-xs text-primary mb-1">
                               <Shield className="h-2 w-2" />
                               <span className="text-xs">Verificado</span>
@@ -419,22 +432,22 @@ export default function BuscarPage() {
                           <div className="flex items-center justify-center gap-1 mb-2">
                             <Star className="h-2 w-2 text-yellow-500 fill-current" />
                             <span className="text-xs font-medium">
-                              {professional.rating ? professional.rating.toFixed(1) : '0.0'}
+                              {user.rating ? user.rating.toFixed(1) : '0.0'}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              ({professional.total_reviews || 0})
+                              ({user.total_reviews || 0})
                             </span>
                           </div>
 
-                          {/* Principal serviço */}
-                          {professional.professional_services && professional.professional_services.length > 0 && (
+                          {/* Principal serviço (apenas para profissionais) */}
+                          {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
                             <div className="mb-2">
-                              <Badge variant="secondary" className="text-xs px-2 py-1">
-                                {professional.professional_services[0]}
+                              <Badge variant="outline" className="text-xs px-2 py-1">
+                                {user.professional_services[0]}
                               </Badge>
-                              {professional.professional_services.length > 1 && (
+                              {user.professional_services.length > 1 && (
                                 <div className="text-xs text-muted-foreground mt-1">
-                                  +{professional.professional_services.length - 1} mais
+                                  +{user.professional_services.length - 1} mais
                                 </div>
                               )}
                             </div>
@@ -443,7 +456,7 @@ export default function BuscarPage() {
                           {/* Ações */}
                           <div className="flex flex-col gap-1">
                             <Button
-                              onClick={() => handleContact(professional)}
+                              onClick={() => handleContact(user)}
                               size="sm"
                               className="px-2 py-1 h-6 text-xs w-full"
                             >
@@ -452,7 +465,7 @@ export default function BuscarPage() {
                             </Button>
                             
                             <RecommendationButton
-                              userId={professional.id}
+                              userId={user.id}
                               size="sm"
                               variant="outline"
                               showCount={true}
@@ -471,25 +484,25 @@ export default function BuscarPage() {
                     <Search className="h-12 w-12 text-gray-400" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {professionals.length === 0 
-                      ? 'Nenhum profissional cadastrado'
-                      : 'Nenhum profissional encontrado'
+                    {users.length === 0 
+                      ? 'Nenhum usuário cadastrado'
+                      : 'Nenhum usuário encontrado'
                     }
                   </h3>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    {professionals.length === 0 
-                      ? 'Ainda não há profissionais cadastrados no sistema. Seja o primeiro!'
+                    {users.length === 0 
+                      ? 'Ainda não há usuários cadastrados no sistema. Seja o primeiro!'
                       : searchTerm || selectedState || selectedCity || selectedCategory !== 'all'
                         ? 'Tente ajustar os filtros ou usar termos de busca diferentes.'
                         : 'Comece digitando o que você precisa na barra de busca acima.'
                     }
                   </p>
-                  {professionals.length === 0 ? (
+                  {users.length === 0 ? (
                     <Button
                       onClick={() => window.location.href = '/auth/cadastro'}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      Cadastrar como Profissional
+                      Cadastrar-se
                     </Button>
                   ) : (
                     <Button
