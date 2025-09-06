@@ -66,13 +66,13 @@ export function useAuth() {
 	useEffect(() => {
 		console.log('🔍 useAuth useEffect iniciado', { isMockMode })
 		
-		// Timeout de segurança para evitar loading infinito
+		// Timeout de segurança mais rápido para melhor UX
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
-				console.log('⚠️ Loading há mais de 10 segundos - definindo como não carregando')
+				console.log('⚠️ Loading há mais de 2 segundos - definindo como não carregando')
 				setLoading(false)
 			}
-		}, 10000)
+		}, 2000)
 		
 		if (isMockMode) {
 			// Modo mock para desenvolvimento
@@ -100,7 +100,7 @@ export function useAuth() {
 			return
 		}
 
-		// Buscar sessão inicial
+		// Buscar sessão inicial de forma otimizada
 		const fetchSession = async () => {
 			console.log('🔄 Buscando sessão inicial...')
 			try {
@@ -109,33 +109,65 @@ export function useAuth() {
 				
 				if (session?.user?.email) {
 					console.log('✅ Usuário encontrado na sessão:', session.user.email)
+					
+					// Definir usuário e sessão imediatamente para melhor UX
 					setSession({ user: { id: session.user.id, email: session.user.email } })
 					setUser({ id: session.user.id, email: session.user.email })
 					
-					// Buscar perfil de forma simplificada
+					// Buscar perfil em paralelo (não bloqueia a interface)
 					console.log('🔍 Buscando perfil do usuário...')
-					try {
-						const { data, error } = await supabase
-							.from('profiles')
-							.select('*')
-							.eq('id', session.user.id)
-							.single()
-						
-						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
-						
-						if (error) {
-							console.error('❌ Erro ao buscar perfil:', error)
-							// Se houver erro 406 (Not Acceptable), criar perfil padrão
-							if (error.code === '406' || error.message?.includes('406')) {
-								console.log('⚠️ Erro 406 detectado, criando perfil padrão')
+					supabase
+						.from('profiles')
+						.select('*')
+						.eq('id', session.user.id)
+						.single()
+						.then(({ data, error }) => {
+							console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
+							
+							if (data) {
+								setProfile(data as Profile)
+							} else {
+								console.log('⚠️ Perfil não encontrado, criando perfil padrão')
+								// Criar perfil padrão simplificado
+								const defaultProfile: Profile = {
+									id: session.user.id,
+									email: session.user.email,
+									full_name: 'Usuário',
+									user_type: 'client',
+									phone: '',
+									cpf_cnpj: '',
+									birth_date: null,
+									location_state: 'SP',
+									location_city: 'São Paulo',
+									neighborhood: '',
+									address: '',
+									bio: '',
+									professional_services: [],
+									professional_experience_years: 0,
+									is_verified: false,
+									badge: 'bronze',
+									rating: 0,
+									total_reviews: 0,
+									is_available: true,
+									profile_completed: false,
+									profile_completion_score: 0,
+									avatar_url: null,
+									whatsapp: '',
+									professional_certifications: [],
+									professional_portfolio_url: null,
+									profile_photo_url: null,
+									selfie_document_url: null,
+									residence_proof_url: null,
+									client_verification_document: null,
+									created_at: new Date().toISOString(),
+									updated_at: new Date().toISOString()
+								} as Profile
+								setProfile(defaultProfile)
 							}
-						}
-						
-						if (data) {
-							setProfile(data as Profile)
-						} else {
-							console.log('⚠️ Perfil não encontrado, criando perfil padrão')
-							// Criar perfil padrão completo
+						})
+						.catch((profileError) => {
+							console.error('Erro ao buscar perfil:', profileError)
+							// Criar perfil padrão em caso de erro
 							const defaultProfile: Profile = {
 								id: session.user.id,
 								email: session.user.email,
@@ -170,45 +202,7 @@ export function useAuth() {
 								updated_at: new Date().toISOString()
 							} as Profile
 							setProfile(defaultProfile)
-						}
-					} catch (profileError) {
-						console.error('Erro ao buscar perfil:', profileError)
-						// Criar perfil padrão completo em caso de erro
-						const defaultProfile: Profile = {
-							id: session.user.id,
-							email: session.user.email,
-							full_name: 'Usuário',
-							user_type: 'client',
-							phone: '',
-							cpf_cnpj: '',
-							birth_date: null,
-							location_state: 'SP',
-							location_city: 'São Paulo',
-							neighborhood: '',
-							address: '',
-							bio: '',
-							professional_services: [],
-							professional_experience_years: 0,
-							is_verified: false,
-							badge: 'bronze',
-							rating: 0,
-							total_reviews: 0,
-							is_available: true,
-							profile_completed: false,
-							profile_completion_score: 0,
-							avatar_url: null,
-							whatsapp: '',
-							professional_certifications: [],
-							professional_portfolio_url: null,
-							profile_photo_url: null,
-							selfie_document_url: null,
-							residence_proof_url: null,
-							client_verification_document: null,
-							created_at: new Date().toISOString(),
-							updated_at: new Date().toISOString()
-						} as Profile
-						setProfile(defaultProfile)
-					}
+						})
 				} else {
 					console.log('❌ Nenhum usuário na sessão')
 					setSession(null)
