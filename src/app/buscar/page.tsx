@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +29,7 @@ import { CidadeCombobox } from '@/components/ui/LocationComboboxes'
 import Link from 'next/link'
 
 export default function BuscarPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedState, setSelectedState] = useState('')
@@ -191,7 +193,7 @@ export default function BuscarPage() {
       name: professional.full_name,
       email: professional.email
     })
-    // Abrir chat flutuante com o profissional
+    // Abrir chat flutuante diretamente
     openChat(professional.id, professional.full_name || 'Profissional')
   }, [openChat])
 

@@ -221,7 +221,7 @@ export default function PublicProfilePage() {
             return
         }
         
-        // Abrir chat flutuante com o usuário
+        // Abrir chat flutuante diretamente
         openChat(userId, profile?.full_name || 'Usuário')
     }
 

@@ -89,18 +89,18 @@ export function useSupabaseMessages() {
     try {
       console.log('🔍 Buscando conversas para usuário:', profile.id)
 
-      // Buscar conversas onde o usuário é participante usando uma query mais eficiente
+      // Buscar conversas onde o usuário é cliente ou profissional
       const { data: conversationsData, error: conversationsError } = await supabase
-        .from('conversation_participants')
+        .from('conversations')
         .select(`
-          conversation_id,
-          conversations!inner(
-            id,
-            created_at,
-            updated_at
-          )
+          id,
+          client_id,
+          professional_id,
+          last_message_at,
+          created_at
         `)
-        .eq('profile_id', profile.id)
+        .or(`client_id.eq.${profile.id},professional_id.eq.${profile.id}`)
+        .order('last_message_at', { ascending: false })
 
       if (conversationsError) {
         console.error('❌ Erro ao buscar conversas:', conversationsError)
@@ -118,81 +118,67 @@ export function useSupabaseMessages() {
 
       // Buscar informações completas das conversas
       const conversationsWithParticipants = await Promise.all(
-        conversationsData.map(async (item) => {
-          const conversationId = item.conversation_id
-          const conversation = item.conversations
-
-          // Buscar o outro participante da conversa
-          const { data: otherParticipant, error: participantError } = await supabase
-            .from('conversation_participants')
-            .select('profile_id')
-            .eq('conversation_id', conversationId)
-            .neq('profile_id', profile.id)
-            .single()
-
-          if (participantError || !otherParticipant) {
-            console.error('❌ Erro ao buscar outro participante:', participantError)
-            return null
-          }
+        conversationsData.map(async (conversation) => {
+          // Determinar o outro participante
+          const otherUserId = conversation.client_id === profile.id 
+            ? conversation.professional_id 
+            : conversation.client_id
 
           // Buscar perfil do outro participante
-          const { data: participantProfile, error: profileError } = await supabase
+          const { data: otherProfile, error: profileError } = await supabase
             .from('profiles')
             .select('id, full_name, avatar_url, user_type')
-            .eq('id', otherParticipant.profile_id)
+            .eq('id', otherUserId)
             .single()
 
-          if (profileError || !participantProfile) {
+          if (profileError || !otherProfile) {
             console.error('❌ Erro ao buscar perfil do participante:', profileError)
             return null
           }
 
-          // Buscar última mensagem
+          // Buscar última mensagem da conversa
           const { data: lastMessage } = await supabase
             .from('messages')
-            .select('id, content, created_at, sender_id')
-            .eq('conversation_id', conversationId)
+            .select('content, created_at, sender_id')
+            .eq('conversation_id', conversation.id)
             .order('created_at', { ascending: false })
             .limit(1)
             .single()
 
-          // Buscar contagem de mensagens não lidas
+          // Contar mensagens não lidas
           const { count: unreadCount } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conversationId)
+            .eq('conversation_id', conversation.id)
             .neq('sender_id', profile.id)
-            .is('read_at', null)
+            .is('is_read', false)
 
           return {
-            ...conversation,
+            id: conversation.id,
             participant: {
-              id: participantProfile.id,
-              full_name: participantProfile.full_name || 'Usuário',
-              avatar_url: participantProfile.avatar_url,
-              user_type: participantProfile.user_type as 'client' | 'professional'
+              id: otherProfile.id,
+              profile_id: otherProfile.id,
+              full_name: otherProfile.full_name,
+              avatar_url: otherProfile.avatar_url,
+              user_type: otherProfile.user_type
             },
-            last_message: lastMessage || undefined,
-            unread_count: unreadCount || 0
+            last_message: lastMessage?.content || '',
+            unread_count: unreadCount || 0,
+            created_at: conversation.created_at,
+            updated_at: conversation.last_message_at
           }
         })
       )
 
-      // Filtrar conversas válidas e remover duplicatas
-      const validConversations = conversationsWithParticipants
-        .filter(Boolean) as unknown as ConversationWithParticipant[]
-      
-      // Remover duplicatas baseado no ID da conversa
-      const uniqueConversations = validConversations.filter((conversation, index, self) => 
-        index === self.findIndex(c => c.id === conversation.id)
-      )
+      // Filtrar conversas válidas
+      const validConversations = conversationsWithParticipants.filter(Boolean) as ConversationWithParticipant[]
 
-      console.log('✅ Conversas carregadas:', uniqueConversations.length)
-      setConversations(uniqueConversations)
+      console.log('✅ Conversas processadas:', validConversations.length)
+      setConversations(validConversations)
       
       // Calcular total de não lidas
-      const totalUnreadCount = uniqueConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
-      setTotalUnread(totalUnreadCount)
+      const totalUnreadMessages = validConversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0)
+      setTotalUnread(totalUnreadMessages)
     } catch (error) {
       console.error('❌ Erro ao buscar conversas:', error)
       toast.error('Erro ao carregar conversas')
@@ -237,13 +223,13 @@ export function useSupabaseMessages() {
       setMessages(data || [])
       setSelectedConversation(conversationId)
 
-      // Marcar mensagens como lidas
+      // Marcar mensagens como lidas (usando campo is_read)
       await supabase
         .from('messages')
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true })
         .eq('conversation_id', conversationId)
         .neq('sender_id', profile?.id)
-        .is('read_at', null)
+        .eq('is_read', false)
 
       // Marcar notificações como lidas
       await markNotificationsAsRead(conversationId)
@@ -257,7 +243,7 @@ export function useSupabaseMessages() {
   // Enviar mensagem - VERSÃO CORRIGIDA COM REALTIME
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
     if (!profile?.id || !content.trim()) {
-      console.error('❌ Dados inválidos para envio de mensagem')
+      console.error('❌ Dados inválidos para envio de mensagem:', { profileId: profile?.id, content: content.trim() })
       return null
     }
 
@@ -304,60 +290,58 @@ export function useSupabaseMessages() {
         )
       )
 
-      // Atualizar updated_at da conversa
+      // Atualizar last_message_at da conversa
       await supabase
         .from('conversations')
-        .update({ updated_at: new Date().toISOString() })
+        .update({ last_message_at: new Date().toISOString() })
         .eq('id', conversationId)
 
-             // Buscar outros participantes para notificação
-       const { data: participants } = await supabase
-         .from('conversation_participants')
-         .select('profile_id')
-         .eq('conversation_id', conversationId)
-         .neq('profile_id', profile.id)
+      // Buscar o outro participante da conversa para notificação
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('client_id, professional_id')
+        .eq('id', conversationId)
+        .single()
 
-       if (participants && participants.length > 0) {
-         const otherParticipant = participants[0]
-         
-         // Buscar informações dos perfis
-         const [senderProfile, recipientProfile] = await Promise.all([
-           supabase
-             .from('profiles')
-             .select('full_name')
-             .eq('id', profile.id)
-             .single(),
-           supabase
-             .from('profiles')
-             .select('full_name')
-             .eq('id', otherParticipant.profile_id)
-             .single()
-         ])
+      if (conversation) {
+        const otherUserId = conversation.client_id === profile.id 
+          ? conversation.professional_id 
+          : conversation.client_id
+        
+        // Buscar informações dos perfis
+        const [senderProfile, recipientProfile] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', profile.id)
+            .single(),
+          supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', otherUserId)
+            .single()
+        ])
 
-         // Criar notificação (não vai falhar se der erro)
-         const notificationTitle = `Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'}`
-         const notificationMessage = content.length > 50 ? `${content.substring(0, 50)}...` : content
-         
-         // Tentar criar notificação, mas não falhar se der erro
-         try {
-           await createNotification(
-             otherParticipant.profile_id,
-             notificationTitle,
-             notificationMessage,
-             conversationId,
-             profile.id
-           )
-           
-           // Mostrar toast para o remetente também
-           toast.success('Mensagem enviada com sucesso!', {
-             description: 'Sua mensagem foi enviada e notificada.',
-             duration: 3000
-           })
-         } catch (notificationError) {
-           console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
-           // Não vamos falhar o envio da mensagem por causa da notificação
-         }
-       }
+        // Criar notificação (não vai falhar se der erro)
+        const notificationTitle = `Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'}`
+        const notificationMessage = content.length > 50 ? `${content.substring(0, 50)}...` : content
+        
+        // Tentar criar notificação, mas não falhar se der erro
+        try {
+          await createNotification(
+            otherUserId,
+            notificationTitle,
+            notificationMessage,
+            conversationId,
+            profile.id
+          )
+          
+          console.log('✅ Notificação enviada para:', otherUserId)
+        } catch (notificationError) {
+          console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
+          // Não vamos falhar o envio da mensagem por causa da notificação
+        }
+      }
 
       // Recarregar conversas para atualizar ordem
       await fetchConversations()
@@ -379,6 +363,7 @@ export function useSupabaseMessages() {
 
     try {
       console.log('🆕 Criando conversa com usuário:', otherUserId)
+      console.log('👤 Usuário atual:', profile.id)
 
       // Verificar se já existe conversa
       const existingConversationId = await checkExistingConversation(otherUserId)
@@ -388,10 +373,47 @@ export function useSupabaseMessages() {
         return existingConversationId
       }
 
-      // Criar nova conversa
+      // Criar nova conversa - determinar client_id e professional_id baseado no tipo de usuário
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', profile.id)
+        .single()
+
+      const { data: otherUserProfile } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', otherUserId)
+        .single()
+
+      // Determinar quem é cliente e quem é profissional
+      let clientId: string
+      let professionalId: string
+
+      if (currentUserProfile?.user_type === 'professional' && otherUserProfile?.user_type === 'client') {
+        // Usuário atual é profissional, outro é cliente
+        clientId = otherUserId
+        professionalId = profile.id
+      } else if (currentUserProfile?.user_type === 'client' && otherUserProfile?.user_type === 'professional') {
+        // Usuário atual é cliente, outro é profissional
+        clientId = profile.id
+        professionalId = otherUserId
+      } else {
+        // Ambos são do mesmo tipo ou tipo indefinido - usar ordem padrão
+        clientId = profile.id
+        professionalId = otherUserId
+      }
+
+      console.log('👥 Definindo participantes:', { clientId, professionalId })
+
       const { data: newConversation, error: convError } = await supabase
         .from('conversations')
-        .insert({})
+        .insert({
+          client_id: clientId,
+          professional_id: professionalId,
+          last_message_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        })
         .select('id')
         .single()
 
@@ -399,24 +421,6 @@ export function useSupabaseMessages() {
         console.error('❌ Erro ao criar conversa:', convError)
         throw convError
       }
-
-      // Adicionar participantes
-      const participantPromises = [
-        supabase
-          .from('conversation_participants')
-          .insert({
-            conversation_id: newConversation.id,
-            profile_id: profile.id
-          }),
-        supabase
-          .from('conversation_participants')
-          .insert({
-            conversation_id: newConversation.id,
-            profile_id: otherUserId
-          })
-      ]
-
-      await Promise.all(participantPromises)
 
       console.log('✅ Conversa criada:', newConversation.id)
       await fetchConversations()
@@ -433,23 +437,22 @@ export function useSupabaseMessages() {
     if (!profile?.id) return null
     
     try {
-      // Buscar conversas em comum
-      const { data: otherUserConversations } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('profile_id', otherUserId)
+      console.log('🔍 Verificando conversa existente entre:', profile.id, 'e', otherUserId)
+      
+      // Buscar conversa existente usando o schema correto
+      const { data: existingConversation, error } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(client_id.eq.${profile.id},professional_id.eq.${otherUserId}),and(client_id.eq.${otherUserId},professional_id.eq.${profile.id})`)
+        .single()
 
-      if (!otherUserConversations?.length) return null
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Erro ao verificar conversa existente:', error)
+        return null
+      }
 
-      const conversationIds = otherUserConversations.map(c => c.conversation_id)
-
-      const { data: commonConversations } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('profile_id', profile.id)
-        .in('conversation_id', conversationIds)
-
-      return commonConversations?.[0]?.conversation_id || null
+      console.log('🔍 Resultado da verificação:', existingConversation?.id || 'Nenhuma conversa encontrada')
+      return existingConversation?.id || null
     } catch (error) {
       console.error('❌ Erro ao verificar conversa existente:', error)
       return null
@@ -721,6 +724,7 @@ export function useSupabaseMessages() {
     fetchMessages,
     sendMessage,
     createConversation,
+    checkExistingConversation,
     deleteConversation,
     setSelectedConversation,
     markNotificationsAsRead
