@@ -4,55 +4,31 @@ import { useEffect } from 'react'
 
 export function PWAInitializer() {
   useEffect(() => {
-    // Service Worker temporariamente desabilitado
-    console.log('🚫 Service Worker desabilitado temporariamente')
+    // Registrar Service Worker vazio para limpeza de cache
+    console.log('🧹 Registrando Service Worker vazio para limpeza...')
     
-    // Código original comentado:
-    /*
-    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
         try {
+          // Registrar o Service Worker vazio
           const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/'
           })
           
-          console.log('✅ Service Worker registrado:', registration.scope)
+          console.log('✅ Service Worker vazio registrado:', registration.scope)
 
-          // Verificar atualizações
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing
-            if (newWorker) {
-              console.log('🔄 Nova versão do Service Worker encontrada')
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('✨ Atualização disponível')
-                  // Aqui você pode mostrar uma notificação para o usuário
-                }
-              })
-            }
-          })
-
-          // Verificar atualizações periodicamente (a cada 5 minutos)
-          setInterval(() => {
-            registration.update()
-          }, 5 * 60 * 1000)
+          // Aguardar um pouco e depois desregistrar
+          setTimeout(async () => {
+            console.log('🗑️ Desregistrando Service Worker vazio após limpeza...')
+            await registration.unregister()
+            console.log('✅ Service Worker vazio desregistrado')
+          }, 5000) // Aguardar 5 segundos para limpeza
 
         } catch (error) {
-          console.error('❌ Erro ao registrar Service Worker:', error)
+          console.error('❌ Erro ao registrar Service Worker vazio:', error)
         }
       })
     }
-
-    // Listener para mensagens do Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-          console.log('📢 Atualização disponível do Service Worker')
-        }
-      })
-    }
-    */
 
     // Listener para mudanças de conectividade
     const handleOnline = () => {
