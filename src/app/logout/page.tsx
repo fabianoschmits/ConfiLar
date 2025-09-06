@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 export default function LogoutPage() {
-  const router = useRouter()
   const { signOut } = useAuthContext()
   const [isLoggingOut, setIsLoggingOut] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +28,7 @@ export default function LogoutPage() {
           setTimeout(() => reject(new Error('Timeout no logout')), 10000)
         )
         
-        const result = await Promise.race([logoutPromise, timeoutPromise]) as any
+        const result = await Promise.race([logoutPromise, timeoutPromise]) as { error?: { message: string } }
         
         if (result?.error) {
           console.error('Erro ao sair:', result.error)

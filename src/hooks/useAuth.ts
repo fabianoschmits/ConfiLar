@@ -110,7 +110,7 @@ export function useAuth() {
 					setTimeout(() => reject(new Error('Timeout na busca de sessão')), 10000)
 				)
 				
-				const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any
+				const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as { data: { session: { user: { id: string; email: string } } | null } }
 				console.log('📋 Sessão obtida:', !!session?.user)
 				
 				if (session?.user?.email) {
@@ -131,7 +131,7 @@ export function useAuth() {
 							setTimeout(() => reject(new Error('Timeout na busca do perfil')), 8000)
 						)
 						
-						const { data, error } = await Promise.race([profilePromise, profileTimeoutPromise]) as any
+						const { data, error } = await Promise.race([profilePromise, profileTimeoutPromise]) as { data: Profile | null; error: { code?: string; message?: string } | null }
 						
 						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
 						
