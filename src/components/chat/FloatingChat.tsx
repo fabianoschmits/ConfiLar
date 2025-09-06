@@ -217,7 +217,7 @@ export function FloatingChat({
   }
 
   return (
-    <div className="fixed bottom-24 right-4 z-50 w-64 h-72 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat lg:w-64 lg:h-72">
+    <div className="fixed bottom-4 right-4 z-50 w-80 h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col floating-chat lg:w-80 lg:h-[600px] lg:bottom-4">
       {/* Header */}
       <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
         <div className="flex items-center space-x-2">

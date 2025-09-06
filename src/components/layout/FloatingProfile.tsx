@@ -257,7 +257,7 @@ export const FloatingProfile: React.FC = () => {
                     <span className="text-xs font-medium">Favoritos</span>
                   </Link>
                   <Link
-                    href="/agendamentos"
+                    href="/_public/agendamentos"
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >
@@ -301,7 +301,7 @@ export const FloatingProfile: React.FC = () => {
                         <span>Meu Portfólio</span>
                       </Link>
                       <Link
-                        href="/ganhos"
+                        href="/_public/ganhos"
                         className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                         onClick={() => setIsExpanded(false)}
                       >
@@ -329,7 +329,7 @@ export const FloatingProfile: React.FC = () => {
                     <span>Central de Ajuda</span>
                   </Link>
                   <Link
-                    href="/contato"
+                    href="/_public/contato"
                     className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
                     onClick={() => setIsExpanded(false)}
                   >

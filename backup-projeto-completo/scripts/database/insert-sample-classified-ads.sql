@@ -1,138 +1,175 @@
--- Script para inserir anúncios de exemplo
--- Execute no SQL Editor do Supabase como usuário postgres
+-- Script para inserir dados de exemplo na tabela classified_ads
+-- Execute este script no Supabase SQL Editor após criar a tabela
 
--- ========================================
--- INSERIR ANÚNCIOS DE EXEMPLO
--- ========================================
-
--- Primeiro, vamos verificar se há profiles disponíveis
-SELECT COUNT(*) as total_profiles FROM profiles;
-
--- Inserir anúncios de exemplo
-INSERT INTO classified_ads (
-  user_id,
-  user_name,
-  user_type,
-  title,
-  description,
-  category,
-  location_state,
-  location_city,
-  contact_info
-) VALUES 
--- Anúncio de profissional de construção
-(
-  (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
-  'João Silva',
-  'professional',
-  'Serviços de Construção e Reforma',
-  'Ofereço serviços de construção, reforma e manutenção residencial. Trabalho com qualidade e pontualidade. Orçamentos gratuitos.',
-  'construction',
-  'SP',
-  'São Paulo',
-  'WhatsApp: (11) 99999-9999'
-),
--- Anúncio de profissional de limpeza
-(
-  (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
-  'Maria Santos',
-  'professional',
-  'Serviços de Limpeza Residencial',
-  'Ofereço serviços de limpeza residencial e comercial. Limpeza geral, organização e higienização. Preços acessíveis.',
-  'cleaning',
-  'SP',
-  'São Paulo',
-  'Telefone: (11) 88888-8888'
-),
--- Anúncio de cliente procurando pedreiro
-(
-  (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
-  'Carlos Oliveira',
-  'client',
-  'Preciso de Pedreiro para Reforma',
-  'Preciso de um pedreiro qualificado para fazer uma pequena reforma no banheiro. Trabalho simples e rápido.',
-  'construction',
-  'SP',
-  'São Paulo',
-  'Contato via plataforma'
-),
--- Anúncio de cliente procurando serviços de limpeza
-(
-  (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
-  'Ana Costa',
-  'client',
-  'Preciso de Serviços de Limpeza',
-  'Preciso de serviços de limpeza para minha casa. Limpeza geral e organização. Preferência para fins de semana.',
-  'cleaning',
-  'SP',
-  'São Paulo',
-  'WhatsApp: (11) 77777-7777'
-),
--- Anúncio de profissional de tecnologia
-(
-  (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
-  'Pedro Tech',
-  'professional',
-  'Serviços de Tecnologia e TI',
-  'Ofereço serviços de suporte técnico, manutenção de computadores, instalação de sistemas e consultoria em TI.',
-  'technology',
-  'SP',
-  'São Paulo',
-  'Email: pedro@tech.com'
-);
-
--- Verificar se os anúncios foram inseridos
-SELECT COUNT(*) as total_ads FROM classified_ads;
-
--- Ver os anúncios inseridos
+-- Primeiro, vamos verificar se existem usuários profissionais no sistema
 SELECT 
-  id,
-  user_name,
-  user_type,
-  title,
-  category,
-  location_state,
-  created_at
-FROM classified_ads 
-ORDER BY created_at DESC;
+    id,
+    full_name,
+    user_type,
+    location_state,
+    location_city
+FROM profiles 
+WHERE user_type = 'professional' 
+LIMIT 5;
 
--- ========================================
--- ALTERNATIVA: INSERIR SEM DEPENDER DE PROFILES
--- ========================================
+-- Inserir anúncios de exemplo (substitua os user_id pelos IDs reais dos usuários)
+-- Você pode executar este script várias vezes para criar mais anúncios
 
--- Se não houver profiles ou der erro, use este comando alternativo:
-/*
 INSERT INTO classified_ads (
-  user_id,
-  user_name,
-  user_type,
-  title,
-  description,
-  category,
-  location_state,
-  location_city,
-  contact_info
+    user_id,
+    user_name,
+    user_type,
+    title,
+    description,
+    category,
+    location_state,
+    location_city,
+    is_active,
+    views_count
 ) VALUES 
+-- Anúncios de profissionais oferecendo serviços
 (
-  gen_random_uuid(),
-  'João Silva',
-  'professional',
-  'Serviços de Construção e Reforma',
-  'Ofereço serviços de construção, reforma e manutenção residencial. Trabalho com qualidade e pontualidade.',
-  'construction',
-  'SP',
-  'São Paulo',
-  'WhatsApp: (11) 99999-9999'
+    (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
+    'João Silva',
+    'professional',
+    'Pedreiro Experiente - Construção e Reformas',
+    'Pedreiro com 15 anos de experiência em construção civil. Especializado em alvenaria, acabamentos e pequenas reformas.',
+    'Construção Civil',
+    'SP',
+    'São Paulo',
+    true,
+    0
 ),
 (
-  gen_random_uuid(),
-  'Maria Santos',
-  'professional',
-  'Serviços de Limpeza Residencial',
-  'Ofereço serviços de limpeza residencial e comercial. Limpeza geral, organização e higienização.',
-  'cleaning',
-  'SP',
-  'São Paulo',
-  'Telefone: (11) 88888-8888'
-);
-*/
+    (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
+    'Maria Santos',
+    'professional',
+    'Diarista Confiável - Limpeza Residencial',
+    'Diarista experiente oferecendo serviços de limpeza residencial. Trabalho com qualidade e pontualidade garantidas.',
+    'Limpeza',
+    'RJ',
+    'Rio de Janeiro',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
+    'Carlos Oliveira',
+    'professional',
+    'Eletricista Técnico - Instalações Elétricas',
+    'Eletricista técnico especializado em instalações elétricas residenciais e comerciais. Trabalho com segurança e qualidade.',
+    'Elétrica',
+    'MG',
+    'Belo Horizonte',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
+    'Ana Costa',
+    'professional',
+    'Encanador Profissional - Hidráulica',
+    'Encanador com experiência em reparos hidráulicos, instalação de tubulações e manutenção de sistemas de água.',
+    'Hidráulica',
+    'RS',
+    'Porto Alegre',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'professional' LIMIT 1),
+    'Pedro Lima',
+    'professional',
+    'Pintor Especializado - Pinturas Residenciais',
+    'Pintor especializado em pinturas residenciais e comerciais. Trabalho com diferentes tipos de tinta e acabamentos.',
+    'Pintura',
+    'PR',
+    'Curitiba',
+    true,
+    0
+),
+-- Anúncios de clientes procurando serviços
+(
+    (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
+    'Roberto Almeida',
+    'client',
+    'Preciso de Pedreiro para Reforma',
+    'Preciso de um pedreiro experiente para reformar meu banheiro. Trabalho pequeno, mas preciso de qualidade.',
+    'Construção Civil',
+    'SP',
+    'São Paulo',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
+    'Fernanda Rocha',
+    'client',
+    'Busco Diarista para Casa',
+    'Preciso de uma diarista confiável para limpeza semanal da minha casa. Preferência para região centro.',
+    'Limpeza',
+    'RJ',
+    'Rio de Janeiro',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
+    'Lucas Mendes',
+    'client',
+    'Eletricista para Instalação',
+    'Preciso de eletricista para instalar novos pontos elétricos na minha casa. Trabalho simples e rápido.',
+    'Elétrica',
+    'MG',
+    'Belo Horizonte',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
+    'Juliana Ferreira',
+    'client',
+    'Encanador para Vazamento',
+    'Tenho um vazamento no banheiro e preciso de um encanador urgente. Problema simples de resolver.',
+    'Hidráulica',
+    'RS',
+    'Porto Alegre',
+    true,
+    0
+),
+(
+    (SELECT id FROM profiles WHERE user_type = 'client' LIMIT 1),
+    'Ricardo Silva',
+    'client',
+    'Pintor para Apartamento',
+    'Preciso de um pintor para pintar meu apartamento de 2 quartos. Preço justo e trabalho bem feito.',
+    'Pintura',
+    'PR',
+    'Curitiba',
+    true,
+    0
+)
+ON CONFLICT DO NOTHING;
+
+-- Verificar os anúncios inseridos
+SELECT 
+    ca.id,
+    ca.title,
+    ca.user_name,
+    ca.user_type,
+    ca.category,
+    ca.location_city,
+    ca.location_state,
+    ca.created_at,
+    ca.views_count
+FROM classified_ads ca
+WHERE ca.is_active = true
+ORDER BY ca.created_at DESC;
+
+-- Contar total de anúncios
+SELECT 
+    COUNT(*) as total_anuncios,
+    COUNT(CASE WHEN user_type = 'professional' THEN 1 END) as anuncios_profissionais,
+    COUNT(CASE WHEN user_type = 'client' THEN 1 END) as anuncios_clientes
+FROM classified_ads 
+WHERE is_active = true;

@@ -121,13 +121,6 @@ export function Sidebar() {
           icon: <House size={16} weight="light" />,
           description: 'Página inicial'
         },
-        ...(isLoggedIn ? [{
-          id: 'dashboard',
-          title: 'Dashboard',
-          href: '/dashboard',
-          icon: <ChartLine size={16} weight="light" />,
-          description: 'Visão geral da conta'
-        }] : [])
       ]
     },
     {
@@ -277,65 +270,9 @@ export function Sidebar() {
           description: 'Tire suas dúvidas'
         },
         {
-          id: 'icon-library',
-          title: 'Biblioteca de Ícones',
-          href: '/icon-library',
-          icon: <GlobePhosphor size={16} weight="light" />,
-          description: 'Explorar ícones disponíveis'
-        },
-                  {
-            id: 'chat-demo',
-            title: 'Chat Demo',
-            href: '/chat-demo',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'Demonstração do chat moderno'
-          },
-          {
-            id: 'chat-demo1',
-            title: 'Chat Demo 1',
-            href: '/chat-demo1',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: '@chatscope/chat-ui-kit-react'
-          },
-          {
-            id: 'chat-demo2',
-            title: 'Chat Demo 2',
-            href: '/chat-demo2',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'react-chat-elements'
-          },
-          {
-            id: 'chat-demo3',
-            title: 'Chat Demo 3',
-            href: '/chat-demo3',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'Shadcn Chat Avançado'
-          },
-          {
-            id: 'chat-demo4',
-            title: 'Chat Demo 4',
-            href: '/chat-demo4',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'Stream Chat Style'
-          },
-          {
-            id: 'chat-demo5',
-            title: 'Chat Demo 5',
-            href: '/chat-demo5',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'WhatsApp Style'
-          },
-          {
-            id: 'chat-widget-demo',
-            title: 'Chat Widget',
-            href: '/chat-widget-demo',
-            icon: <ChatTeardrop size={16} weight="light" />,
-            description: 'Widget de chat flutuante'
-          },
-        {
           id: 'contact',
           title: 'Contato',
-          href: '/contato',
+          href: '/_public/contato',
           icon: <PhonePhosphor size={16} weight="light" />,
           description: 'Fale conosco'
         },
@@ -589,12 +526,6 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Indicador DEV */}
-        <div className="absolute bottom-2 left-2">
-          <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">
-            DEV
-          </Badge>
-        </div>
       </div>
 
       {/* Espaçador para o conteúdo principal */}

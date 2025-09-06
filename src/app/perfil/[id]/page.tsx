@@ -595,7 +595,7 @@ export default function PublicProfilePage() {
                                             <Button 
                                                 variant="outline" 
                                                 size="sm"
-                                                onClick={() => router.push(`/portfolio/${userId}`)}
+                                                onClick={() => router.push(`/portfolio`)}
                                             >
                                                 Ver Todos os Projetos ({portfolioProjects.length})
                                             </Button>
