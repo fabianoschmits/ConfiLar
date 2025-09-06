@@ -89,12 +89,11 @@ export function FloatingChat({
     }
   }, [selectedConversationId, selectedConversation, setSelectedConversation, fetchMessages, scrollToBottom])
 
-  // Quando há targetUserId, mostrar mensagem inicial
+  // Quando há targetUserId, focar no campo de mensagem
   useEffect(() => {
     if (targetUserId && targetUserName && isOpen) {
-      // Se não há conversa selecionada, mostrar mensagem inicial
+      // Se não há conversa selecionada, focar no campo de mensagem
       if (!selectedConversationId) {
-        setNewMessage(`Olá ${targetUserName}! `)
         if (textareaRef.current) {
           textareaRef.current.focus()
         }
@@ -107,12 +106,17 @@ export function FloatingChat({
     if (!newMessage.trim()) return
 
     try {
+      let currentConversationId = selectedConversation
+      let isNewConversation = false
+
       // Se há targetUserId mas não há conversa selecionada, criar uma nova conversa
-      if (targetUserId && !selectedConversation) {
+      if (targetUserId && !currentConversationId) {
         console.log('🆕 Criando nova conversa com:', targetUserId)
         const conversationId = await createConversation(targetUserId)
         
         if (conversationId) {
+          currentConversationId = conversationId
+          isNewConversation = true
           setSelectedConversation(conversationId)
           await fetchMessages(conversationId)
           onSelectConversation?.(conversationId)
@@ -122,13 +126,13 @@ export function FloatingChat({
       }
 
       // Se ainda não há conversa selecionada, não pode enviar
-      if (!selectedConversation) {
+      if (!currentConversationId) {
         console.error('❌ Nenhuma conversa selecionada')
         toast.error('Erro: Nenhuma conversa selecionada')
         return
       }
 
-      await sendMessage(selectedConversation, newMessage.trim())
+      await sendMessage(currentConversationId, newMessage.trim())
       setNewMessage('')
       
       if (textareaRef.current) {
@@ -136,6 +140,15 @@ export function FloatingChat({
       }
       
       scrollToBottom(true)
+      
+      // Se foi uma nova conversa, notificar o contexto para limpar targetUserId
+      if (isNewConversation && targetUserId) {
+        // Após enviar a primeira mensagem, limpar o targetUserId para que o botão de voltar vá para a lista
+        setTimeout(() => {
+          // Chamar onSelectConversation sem parâmetros para limpar o targetUserId
+          onSelectConversation?.()
+        }, 100)
+      }
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
       toast.error('Erro ao enviar mensagem')

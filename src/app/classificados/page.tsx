@@ -416,6 +416,7 @@ export default function ClassificadosPage() {
       return
     }
     
+    // Abrir chat flutuante diretamente
     openChat(userId, userName)
   }
 
