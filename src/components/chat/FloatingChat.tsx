@@ -57,7 +57,8 @@ export function FloatingChat({
     totalUnread,
     sendMessage,
     setSelectedConversation,
-    fetchMessages
+    fetchMessages,
+    createConversation
   } = useSupabaseMessages()
 
   // Auto-scroll para o final das mensagens
@@ -103,9 +104,30 @@ export function FloatingChat({
 
   // Enviar mensagem
   const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim() || !selectedConversation) return
+    if (!newMessage.trim()) return
 
     try {
+      // Se há targetUserId mas não há conversa selecionada, criar uma nova conversa
+      if (targetUserId && !selectedConversation) {
+        console.log('🆕 Criando nova conversa com:', targetUserId)
+        const conversationId = await createConversation(targetUserId)
+        
+        if (conversationId) {
+          setSelectedConversation(conversationId)
+          await fetchMessages(conversationId)
+          onSelectConversation?.(conversationId)
+        } else {
+          throw new Error('Erro ao criar conversa')
+        }
+      }
+
+      // Se ainda não há conversa selecionada, não pode enviar
+      if (!selectedConversation) {
+        console.error('❌ Nenhuma conversa selecionada')
+        toast.error('Erro: Nenhuma conversa selecionada')
+        return
+      }
+
       await sendMessage(selectedConversation, newMessage.trim())
       setNewMessage('')
       
@@ -118,7 +140,7 @@ export function FloatingChat({
       console.error('Erro ao enviar mensagem:', error)
       toast.error('Erro ao enviar mensagem')
     }
-  }, [newMessage, selectedConversation, sendMessage, scrollToBottom])
+  }, [newMessage, selectedConversation, targetUserId, sendMessage, createConversation, setSelectedConversation, fetchMessages, onSelectConversation, scrollToBottom])
 
   // Enviar com Enter
   const handleKeyPress = (e: React.KeyboardEvent) => {
