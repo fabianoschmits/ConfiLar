@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -335,9 +336,11 @@ export default function FeedPage() {
                             post.images!.length === 4 ? 'h-48' : 'h-32'
                           }`}
                         >
-                          <img
+                          <Image
                             src={image}
                             alt={`Imagem ${index + 1} do trabalho`}
+                            width={400}
+                            height={300}
                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
                           />
                           {post.images!.length > 4 && index === 3 && (

@@ -116,58 +116,20 @@ export function useAuth() {
 					
 					// Buscar perfil em paralelo (não bloqueia a interface)
 					console.log('🔍 Buscando perfil do usuário...')
-					supabase
-						.from('profiles')
-						.select('*')
-						.eq('id', session.user.id)
-						.single()
-						.then(({ data, error }) => {
-							console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
-							
-							if (data) {
-								setProfile(data as Profile)
-							} else {
-								console.log('⚠️ Perfil não encontrado, criando perfil padrão')
-								// Criar perfil padrão simplificado
-								const defaultProfile: Profile = {
-									id: session.user.id,
-									email: session.user.email,
-									full_name: 'Usuário',
-									user_type: 'client',
-									phone: '',
-									cpf_cnpj: '',
-									birth_date: null,
-									location_state: 'SP',
-									location_city: 'São Paulo',
-									neighborhood: '',
-									address: '',
-									bio: '',
-									professional_services: [],
-									professional_experience_years: 0,
-									is_verified: false,
-									badge: 'bronze',
-									rating: 0,
-									total_reviews: 0,
-									is_available: true,
-									profile_completed: false,
-									profile_completion_score: 0,
-									avatar_url: null,
-									whatsapp: '',
-									professional_certifications: [],
-									professional_portfolio_url: null,
-									profile_photo_url: null,
-									selfie_document_url: null,
-									residence_proof_url: null,
-									client_verification_document: null,
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString()
-								} as Profile
-								setProfile(defaultProfile)
-							}
-						})
-						.catch((profileError) => {
-							console.error('Erro ao buscar perfil:', profileError)
-							// Criar perfil padrão em caso de erro
+					try {
+						const { data, error } = await supabase
+							.from('profiles')
+							.select('*')
+							.eq('id', session.user.id)
+							.single()
+						
+						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
+						
+						if (data) {
+							setProfile(data as Profile)
+						} else {
+							console.log('⚠️ Perfil não encontrado, criando perfil padrão')
+							// Criar perfil padrão simplificado
 							const defaultProfile: Profile = {
 								id: session.user.id,
 								email: session.user.email,
@@ -202,7 +164,45 @@ export function useAuth() {
 								updated_at: new Date().toISOString()
 							} as Profile
 							setProfile(defaultProfile)
-						})
+						}
+					} catch (profileError) {
+						console.error('Erro ao buscar perfil:', profileError)
+						// Criar perfil padrão em caso de erro
+						const defaultProfile: Profile = {
+							id: session.user.id,
+							email: session.user.email,
+							full_name: 'Usuário',
+							user_type: 'client',
+							phone: '',
+							cpf_cnpj: '',
+							birth_date: null,
+							location_state: 'SP',
+							location_city: 'São Paulo',
+							neighborhood: '',
+							address: '',
+							bio: '',
+							professional_services: [],
+							professional_experience_years: 0,
+							is_verified: false,
+							badge: 'bronze',
+							rating: 0,
+							total_reviews: 0,
+							is_available: true,
+							profile_completed: false,
+							profile_completion_score: 0,
+							avatar_url: null,
+							whatsapp: '',
+							professional_certifications: [],
+							professional_portfolio_url: null,
+							profile_photo_url: null,
+							selfie_document_url: null,
+							residence_proof_url: null,
+							client_verification_document: null,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString()
+						} as Profile
+						setProfile(defaultProfile)
+					}
 				} else {
 					console.log('❌ Nenhum usuário na sessão')
 					setSession(null)
