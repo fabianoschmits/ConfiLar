@@ -66,6 +66,14 @@ export function useAuth() {
 	useEffect(() => {
 		console.log('🔍 useAuth useEffect iniciado', { isMockMode })
 		
+		// Timeout de segurança para evitar loading infinito
+		const safetyTimeout = setTimeout(() => {
+			if (loading) {
+				console.log('⚠️ Loading há mais de 15 segundos - possível problema de sessão')
+				setLoading(false)
+			}
+		}, 15000)
+		
 		if (isMockMode) {
 			// Modo mock para desenvolvimento
 			console.log('🧪 Modo mock ativado')
@@ -88,14 +96,21 @@ export function useAuth() {
 			}
 
 			setLoading(false)
+			clearTimeout(safetyTimeout)
 			return
 		}
 
-		// Buscar sessão inicial
+		// Buscar sessão inicial com timeout
 		const fetchSession = async () => {
 			console.log('🔄 Buscando sessão inicial...')
 			try {
-				const { data: { session } } = await supabase.auth.getSession()
+				// Timeout de 10 segundos para a busca de sessão
+				const sessionPromise = supabase.auth.getSession()
+				const timeoutPromise = new Promise((_, reject) => 
+					setTimeout(() => reject(new Error('Timeout na busca de sessão')), 10000)
+				)
+				
+				const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as any
 				console.log('📋 Sessão obtida:', !!session?.user)
 				
 				if (session?.user?.email) {
@@ -103,15 +118,20 @@ export function useAuth() {
 					setSession({ user: { id: session.user.id, email: session.user.email } })
 					setUser({ id: session.user.id, email: session.user.email })
 					
-					// Buscar perfil de forma simplificada
+					// Buscar perfil de forma simplificada com timeout
 					console.log('🔍 Buscando perfil do usuário...')
 					try {
-						// Tentar buscar perfil com tratamento de erro mais robusto
-						const { data, error } = await supabase
+						const profilePromise = supabase
 							.from('profiles')
 							.select('*')
 							.eq('id', session.user.id)
 							.single()
+						
+						const profileTimeoutPromise = new Promise((_, reject) => 
+							setTimeout(() => reject(new Error('Timeout na busca do perfil')), 8000)
+						)
+						
+						const { data, error } = await Promise.race([profilePromise, profileTimeoutPromise]) as any
 						
 						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
 						
@@ -216,6 +236,7 @@ export function useAuth() {
 			
 			console.log('✅ FetchSession finalizada, definindo loading = false')
 			setLoading(false)
+			clearTimeout(safetyTimeout)
 		}
 
 		fetchSession()
