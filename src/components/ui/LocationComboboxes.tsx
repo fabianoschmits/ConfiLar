@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/popover'
 import { useEstados, useCidades } from '@/hooks/useIBGE'
 import type { Estado, Cidade } from '@/lib/ibge'
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 
 // Combobox para Estados
 interface EstadoComboboxProps {
@@ -244,7 +244,7 @@ interface CategoriaComboboxProps {
 // Adicionar categoria "Todas as Categorias" para filtros
 const categorias = [
   { id: 'all', name: 'Todas as Categorias', icon: '🏠' },
-  ...serviceCategories
+  ...services
 ]
 
 export function CategoriaCombobox({ 

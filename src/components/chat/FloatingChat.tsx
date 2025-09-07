@@ -11,6 +11,12 @@ import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import { 
   PaperPlane as SendPhosphor,
   ChatTeardrop,
   X,
@@ -19,7 +25,9 @@ import {
   ArrowsInSimple,
   ArrowsOutSimple,
   ArrowLeft,
-  Envelope
+  Envelope,
+  DotsThreeVertical,
+  Trash
 } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
@@ -58,7 +66,8 @@ export function FloatingChat({
     sendMessage,
     setSelectedConversation,
     fetchMessages,
-    createConversation
+    createConversation,
+    deleteConversation
   } = useSupabaseMessages()
 
   // Auto-scroll para o final das mensagens
@@ -172,6 +181,28 @@ export function FloatingChat({
     textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
   }
 
+  // Excluir conversa
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation) return
+
+    const selectedConv = conversations.find(c => c.id === selectedConversation)
+    const participantName = selectedConv?.participant?.full_name || 'Usuário'
+
+    if (confirm(`Tem certeza que deseja excluir a conversa com ${participantName}? Esta ação não pode ser desfeita.`)) {
+      try {
+        await deleteConversation(selectedConversation)
+        toast.success('Conversa excluída com sucesso')
+        
+        // Voltar para a lista de conversas
+        onSelectConversation?.()
+        setSelectedConversation(null)
+      } catch (error) {
+        console.error('Erro ao excluir conversa:', error)
+        toast.error('Erro ao excluir conversa')
+      }
+    }
+  }
+
   // Formatar hora
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', {
@@ -278,28 +309,52 @@ export function FloatingChat({
           <>
                           {/* Header da conversa */}
               <div className="p-3 border-b border-gray-200 bg-white">
-              <div className="flex items-center space-x-2">
-                {(() => {
-                  const selectedConv = conversations.find(c => c.id === selectedConversation)
-                  return (
-                    <>
-                      <UserAvatar
-                        src={selectedConv?.participant?.avatar_url}
-                        alt={selectedConv?.participant?.full_name || 'Usuário'}
-                        className="w-8 h-8"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 text-xs">
-                          {selectedConv?.participant?.full_name || 'Usuário'}
-                        </h4>
-                        <div className="flex items-center space-x-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          <span className="text-xs text-gray-500">online</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  {(() => {
+                    const selectedConv = conversations.find(c => c.id === selectedConversation)
+                    return (
+                      <>
+                        <UserAvatar
+                          src={selectedConv?.participant?.avatar_url}
+                          alt={selectedConv?.participant?.full_name || 'Usuário'}
+                          className="w-8 h-8"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 text-xs">
+                            {selectedConv?.participant?.full_name || 'Usuário'}
+                          </h4>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <span className="text-xs text-gray-500">online</span>
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  )
-                })()}
+                      </>
+                    )
+                  })()}
+                </div>
+                
+                {/* Menu de 3 pontos */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-gray-200"
+                    >
+                      <DotsThreeVertical size={16} weight="light" className="text-gray-600" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={handleDeleteConversation}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash size={16} className="mr-2" />
+                      Excluir conversa
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 

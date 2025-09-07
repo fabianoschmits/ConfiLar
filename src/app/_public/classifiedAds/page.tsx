@@ -11,7 +11,7 @@ import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationCombobox
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useClassifiedAds } from '@/hooks/useClassifiedAds'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 import { Plus, Search, MapPin, Calendar, User, Tag } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -189,7 +189,7 @@ export default function ClassificadosPage() {
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    {serviceCategories.map((category) => (
+                    {services.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -233,7 +233,7 @@ export default function ClassificadosPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="">Todas as categorias</SelectItem>
-            {serviceCategories.map((category) => (
+            {services.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
               </SelectItem>
@@ -287,7 +287,7 @@ export default function ClassificadosPage() {
                 <div className="space-y-2 text-sm text-gray-500">
                   <div className="flex items-center gap-2">
                     <Tag className="h-4 w-4" />
-                    <span>{serviceCategories.find(c => c.id === ad.category)?.name || ad.category}</span>
+                    <span>{services.find(c => c.id === ad.category)?.name || ad.category}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
@@ -337,7 +337,7 @@ export default function ClassificadosPage() {
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceCategories.map((category) => (
+                  {services.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>

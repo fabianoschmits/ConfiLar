@@ -31,7 +31,8 @@ import {
   Trash2,
   Eye
 } from 'lucide-react'
-import { serviceCategories } from '@/data/serviceCategories'
+import { services as servicesList, Service } from '@/data/services'
+import { ProfessionalService } from '@/types/database'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 
 interface ClassifiedAd {
@@ -48,28 +49,6 @@ interface ClassifiedAd {
   is_active: boolean
   views_count?: number
   user_avatar_url?: string
-}
-
-interface ProfessionalService {
-  id: string
-  professional_id: string
-  professional_name: string
-  professional_avatar_url?: string
-  category_id: string
-  category_name: string
-  category_icon: string
-  title: string
-  description: string | null
-  price_min: number | null
-  price_max: number | null
-  service_type: 'hourly' | 'fixed' | 'negotiable'
-  is_active: boolean
-  created_at: string
-  location_state: string
-  location_city: string
-  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-  insurance_coverage: boolean
-  emergency_service: boolean
 }
 
 export default function ClassificadosPage() {
@@ -216,6 +195,7 @@ export default function ClassificadosPage() {
           service_type: service.service_type || 'fixed',
           is_active: service.is_active,
           created_at: service.created_at,
+          updated_at: service.created_at, // Usar created_at como fallback
           location_state: service.profiles?.location_state || '',
           location_city: service.profiles?.location_city || '',
           experience_level: service.experience_level || 'intermediate',
@@ -252,11 +232,11 @@ export default function ClassificadosPage() {
     const matchesSearch = !searchTerm || 
       service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       service.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.category_name.toLowerCase().includes(searchTerm.toLowerCase())
+      servicesList.find(s => s.id === service.category_id)?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     
     const matchesCategory = selectedCategory === 'all' || service.category_id === selectedCategory
-    const matchesState = !selectedState || service.location_state === selectedState
-    const matchesCity = !selectedCity || service.location_city === selectedCity
+    const matchesState = !selectedState || (service as ProfessionalService & { location_state?: string }).location_state === selectedState
+    const matchesCity = !selectedCity || (service as ProfessionalService & { location_city?: string }).location_city === selectedCity
     
     return matchesSearch && matchesCategory && matchesState && matchesCity
   })
@@ -488,20 +468,21 @@ export default function ClassificadosPage() {
         <div className="bg-white border-b">
           <div className="container mx-auto px-4 py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Classificados</h1>
                 <p className="text-gray-600">
                   Encontre serviços profissionais e publique seus anúncios
                 </p>
               </div>
               
-              <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4" />
-                    Criar Anúncio
-                  </Button>
-                </DialogTrigger>
+              <div className="flex items-center gap-4">
+                <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4" />
+                      Criar Anúncio
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Criar Novo Anúncio</DialogTitle>
@@ -591,6 +572,7 @@ export default function ClassificadosPage() {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
           </div>
         </div>
@@ -676,7 +658,10 @@ export default function ClassificadosPage() {
                                 {ad.user_type === 'professional' ? '🏗️' : '🔍'}
                               </span>
                               <Badge variant="secondary">
-                                {serviceCategories.find(c => c.id === ad.category)?.name || ad.category}
+                                {typeof ad.category === 'string'
+                                  ? (servicesList.find(c => c.id === ad.category)?.name || ad.category)
+                                  : (ad.category as ProfessionalService).title || 'Serviço'
+                                }
                               </Badge>
                             </div>
                             <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
@@ -824,8 +809,8 @@ export default function ClassificadosPage() {
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="text-lg">{service.category_icon}</span>
-                              <Badge variant="secondary">{service.category_name}</Badge>
+                              <span className="text-lg">{servicesList.find(s => s.id === service.category_id)?.icon || '🔧'}</span>
+                              <Badge variant="secondary">{servicesList.find(s => s.id === service.category_id)?.name || 'Serviço'}</Badge>
                             </div>
                             <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
                               {service.title}
@@ -850,7 +835,7 @@ export default function ClassificadosPage() {
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <MapPin className="h-4 w-4" />
-                            <span>{service.location_city}, {service.location_state}</span>
+                            <span>{(service as ProfessionalService & { location_city?: string; location_state?: string }).location_city || 'N/A'}, {(service as ProfessionalService & { location_state?: string }).location_state || 'N/A'}</span>
                           </div>
                         </div>
 
@@ -878,13 +863,13 @@ export default function ClassificadosPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <Avatar className="h-8 w-8">
-                                <AvatarImage src={service.professional_avatar_url || ''} />
+                                <AvatarImage src={(service as ProfessionalService & { professional_avatar_url?: string }).professional_avatar_url || ''} />
                                 <AvatarFallback className="text-xs">
-                                  {service.professional_name.charAt(0).toUpperCase()}
+                                  {(service as ProfessionalService & { professional_name?: string }).professional_name?.charAt(0).toUpperCase() || 'P'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium text-sm text-gray-900">{service.professional_name}</p>
+                                <p className="font-medium text-sm text-gray-900">{(service as ProfessionalService & { professional_name?: string }).professional_name || 'Profissional'}</p>
                                 <p className="text-xs text-gray-500">
                                   {new Date(service.created_at).toLocaleDateString('pt-BR')}
                                 </p>
@@ -896,7 +881,7 @@ export default function ClassificadosPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleChat(service.professional_id, service.professional_name)}
+                                  onClick={() => handleChat(service.professional_id, (service as ProfessionalService & { professional_name?: string }).professional_name || 'Profissional')}
                                   className="h-8 px-2"
                                 >
                                   <MessageCircle className="h-3 w-3" />

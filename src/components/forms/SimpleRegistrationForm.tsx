@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 import { Check, ChevronsUpDown, X } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 import { toast } from 'sonner'
 
 // Função para validar CPF com validação rigorosa
@@ -140,7 +140,7 @@ export function SimpleRegistrationForm() {
   const isProfessional = watchedValues.user_type === 'professional'
 
   // Converter categorias para formato de string simples
-  const serviceCategoryNames = serviceCategories.map(cat => cat.name)
+  const serviceCategoryNames = services.map(cat => cat.name)
 
   const handleServiceToggle = (service: string) => {
     const newSelectedServices = selectedServices.includes(service) 

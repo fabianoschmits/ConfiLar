@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { Bell, Check, Trash2, Settings } from 'lucide-react';
 import { Bell as BellPhosphor, Check as CheckPhosphor, Trash as TrashPhosphor, Gear } from '@phosphor-icons/react';
-import { useNotifications } from './NotificationProvider';
+import { useNotifications, Notification } from './NotificationProvider';
+import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { NotificationSettingsInline } from './NotificationSettingsInline';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,7 +62,9 @@ export const NotificationBell: React.FC = () => {
     // isConnected removido - não existe no contexto 
   } = useNotifications();
   
+  const { openChat } = useFloatingChat();
   const [isOpen, setIsOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const recentNotifications = notifications.slice(0, 5);
 
@@ -72,8 +76,42 @@ export const NotificationBell: React.FC = () => {
     await markAllAsRead();
   };
 
+  // Marcar todas as notificações como lidas quando abrir o dropdown
+  const handleOpenChange = async (open: boolean) => {
+    setIsOpen(open);
+    if (open && unreadCount > 0) {
+      // Marcar todas as notificações visíveis como lidas quando abrir
+      await markAllAsRead();
+    }
+    // Resetar configurações quando fechar
+    if (!open) {
+      setShowSettings(false);
+    }
+  };
+
+  // Lidar com clique em notificação
+  const handleNotificationClick = async (notification: Notification) => {
+    // Marcar como lida se não estiver lida
+    if (!notification.is_read) {
+      await handleMarkAsRead(notification.id);
+    }
+
+    // Fechar dropdown
+    setIsOpen(false);
+
+    // Se for notificação de mensagem, abrir chat
+    if (notification.type === 'message' && notification.metadata?.sender_id) {
+      const senderId = notification.metadata.sender_id as string;
+      const senderName = (notification.metadata.sender_name as string) || 'Usuário';
+      openChat(senderId, senderName);
+    } else if (notification.action_url) {
+      // Para outros tipos de notificação, usar action_url
+      window.open(notification.action_url, '_blank');
+    }
+  };
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -97,19 +135,30 @@ export const NotificationBell: React.FC = () => {
         className="w-80 max-h-96 overflow-y-auto"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Notificações</CardTitle>
-            <div className="flex items-center gap-2">
-              {/* Status de conexão removido temporariamente */}
-              {unreadCount > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {unreadCount} não lidas
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardHeader>
+        {showSettings ? (
+          <NotificationSettingsInline onBack={() => setShowSettings(false)} />
+        ) : (
+          <>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Notificações</CardTitle>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {unreadCount} não lidas
+                    </Badge>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSettings(true)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Settings size={16} />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
 
         <CardContent className="p-0">
           {recentNotifications.length === 0 ? (
@@ -126,15 +175,7 @@ export const NotificationBell: React.FC = () => {
           "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50",
           !notification.is_read && "bg-blue-50"
         )}
-                    onClick={() => {
-                      if (!notification.is_read) {
-                        handleMarkAsRead(notification.id);
-                      }
-                      if (notification.action_url) {
-                        window.open(notification.action_url, '_blank');
-                      }
-                      setIsOpen(false);
-                    }}
+                    onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       {getNotificationIcon(notification.type)}
@@ -204,6 +245,8 @@ export const NotificationBell: React.FC = () => {
             </Link>
           </div>
         </div>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

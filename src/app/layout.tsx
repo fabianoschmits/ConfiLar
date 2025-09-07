@@ -8,6 +8,7 @@ import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { FloatingChatWrapper } from "@/components/chat/FloatingChatWrapper"
+import { MetaMaskErrorSuppressor } from "@/components/MetaMaskErrorSuppressor"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -33,9 +34,10 @@ export default function RootLayout({
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
-      <body className={inter.className}>
-        <ServiceWorkerCleaner />
-        <ErrorBoundary>
+        <body className={inter.className}>
+          <ServiceWorkerCleaner />
+          <MetaMaskErrorSuppressor />
+          <ErrorBoundary>
           <NotificationProvider>
             <AuthProvider>
               <FloatingChatProvider>

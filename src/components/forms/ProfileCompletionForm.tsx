@@ -65,7 +65,7 @@ const profileCompletionSchema = z.object({
 
 type ProfileCompletionFormData = z.infer<typeof profileCompletionSchema>
 
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 
 interface ProfileCompletionFormProps {
   onComplete: () => void
@@ -339,7 +339,7 @@ export function ProfileCompletionForm({ onComplete }: ProfileCompletionFormProps
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {serviceCategories.map((service) => (
+                {services.map((service) => (
                   <div key={service.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={service.id}
@@ -359,7 +359,7 @@ export function ProfileCompletionForm({ onComplete }: ProfileCompletionFormProps
                   <p className="text-sm font-medium text-gray-700 mb-2">Serviços Selecionados:</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedServices.map((serviceId) => {
-                      const service = serviceCategories.find(s => s.id === serviceId)
+                      const service = services.find(s => s.id === serviceId)
                       return service ? (
                         <Badge key={serviceId} variant="secondary">
                           {service.icon} {service.name}
