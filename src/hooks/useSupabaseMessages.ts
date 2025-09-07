@@ -12,7 +12,8 @@ const createNotification = async (
   title: string,
   message: string,
   conversationId: string,
-  senderId: string
+  senderId: string,
+  senderName: string
 ) => {
   try {
     // Inserir apenas os campos que existem na tabela
@@ -22,13 +23,14 @@ const createNotification = async (
         user_id: recipientId,
         title,
         message,
-        type: 'info',
-        priority: 'normal'
-        // Removendo campos que podem não existir:
-        // related_conversation_id: conversationId,
-        // sender_id: senderId,
-        // created_at: new Date().toISOString(),
-        // read_at: null
+        type: 'message',
+        category: 'messages',
+        priority: 'normal',
+        metadata: {
+          sender_id: senderId,
+          sender_name: senderName,
+          conversation_id: conversationId
+        }
       })
 
     if (error) {
@@ -151,7 +153,7 @@ export function useSupabaseMessages() {
             .select('*', { count: 'exact', head: true })
             .eq('conversation_id', conversation.id)
             .neq('sender_id', profile.id)
-            .is('is_read', false)
+            .is('read_at', null)
 
           return {
             id: conversation.id,
@@ -223,13 +225,13 @@ export function useSupabaseMessages() {
       setMessages(data || [])
       setSelectedConversation(conversationId)
 
-      // Marcar mensagens como lidas (usando campo is_read)
+      // Marcar mensagens como lidas (usando campo read_at)
       await supabase
         .from('messages')
-        .update({ is_read: true })
+        .update({ read_at: new Date().toISOString() })
         .eq('conversation_id', conversationId)
         .neq('sender_id', profile?.id)
-        .eq('is_read', false)
+        .is('read_at', null)
 
       // Marcar notificações como lidas
       await markNotificationsAsRead(conversationId)
@@ -333,7 +335,8 @@ export function useSupabaseMessages() {
             notificationTitle,
             notificationMessage,
             conversationId,
-            profile.id
+            profile.id,
+            senderProfile.data?.full_name || 'Usuário'
           )
           
           console.log('✅ Notificação enviada para:', otherUserId)
@@ -470,18 +473,25 @@ export function useSupabaseMessages() {
       console.log('🗑️ Excluindo conversa:', conversationId)
 
       // Verificar se o usuário é participante da conversa
-      const { data: participantCheck } = await supabase
-        .from('conversation_participants')
-        .select('profile_id')
-        .eq('conversation_id', conversationId)
-        .eq('profile_id', profile.id)
+      const { data: conversationData, error: checkError } = await supabase
+        .from('conversations')
+        .select('client_id, professional_id')
+        .eq('id', conversationId)
         .single()
 
-      if (!participantCheck) {
+      if (checkError) {
+        console.error('❌ Erro ao verificar conversa:', checkError)
+        toast.error('Erro ao verificar conversa')
+        return false
+      }
+
+      if (!conversationData || (conversationData.client_id !== profile.id && conversationData.professional_id !== profile.id)) {
         console.error('❌ Usuário não é participante desta conversa')
         toast.error('Você não tem permissão para excluir esta conversa')
         return false
       }
+
+      console.log('✅ Usuário autorizado a excluir conversa')
 
       // Excluir mensagens da conversa
       const { error: messagesError } = await supabase
@@ -491,18 +501,9 @@ export function useSupabaseMessages() {
 
       if (messagesError) {
         console.error('❌ Erro ao excluir mensagens:', messagesError)
-        throw messagesError
-      }
-
-      // Excluir participantes da conversa
-      const { error: participantsError } = await supabase
-        .from('conversation_participants')
-        .delete()
-        .eq('conversation_id', conversationId)
-
-      if (participantsError) {
-        console.error('❌ Erro ao excluir participantes:', participantsError)
-        throw participantsError
+        // Continuar mesmo com erro nas mensagens
+      } else {
+        console.log('✅ Mensagens excluídas')
       }
 
       // Excluir a conversa
@@ -513,7 +514,8 @@ export function useSupabaseMessages() {
 
       if (conversationError) {
         console.error('❌ Erro ao excluir conversa:', conversationError)
-        throw conversationError
+        toast.error('Erro ao excluir conversa')
+        return false
       }
 
       console.log('✅ Conversa excluída com sucesso')
@@ -558,13 +560,12 @@ export function useSupabaseMessages() {
             const checkAndNotify = async () => {
               try {
                 const { data: conversationData } = await supabase
-                  .from('conversation_participants')
-                  .select('conversation_id')
-                  .eq('conversation_id', newMessage.conversation_id)
-                  .eq('profile_id', profile.id)
+                  .from('conversations')
+                  .select('client_id, professional_id')
+                  .eq('id', newMessage.conversation_id)
                   .single()
 
-                if (conversationData) {
+                if (conversationData && (conversationData.client_id === profile.id || conversationData.professional_id === profile.id)) {
                   // Buscar informações do remetente
                   const { data: senderProfile } = await supabase
                     .from('profiles')

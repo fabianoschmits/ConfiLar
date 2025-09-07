@@ -73,7 +73,7 @@ type ProfessionalCompleteFormData = z.infer<typeof professionalCompleteSchema>
 
 // Dados estáticos removidos - agora usando API do IBGE
 
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 
 interface ProfessionalCompleteFormProps {
   basicData: {
@@ -491,7 +491,7 @@ export function ProfessionalCompleteForm({ basicData, onComplete }: Professional
                   Selecione todos os serviços que você oferece:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {serviceCategories.map((service) => (
+                  {services.map((service) => (
                     <div key={service.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={service.id}
@@ -704,7 +704,7 @@ export function ProfessionalCompleteForm({ basicData, onComplete }: Professional
                   <p className="text-sm font-medium text-gray-700">Serviços Oferecidos</p>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {selectedServices.map((serviceId) => {
-                      const service = serviceCategories.find(s => s.id === serviceId)
+                      const service = services.find(s => s.id === serviceId)
                       return service ? (
                         <Badge key={serviceId} variant="secondary">
                           {service.icon} {service.name}

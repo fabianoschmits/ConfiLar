@@ -24,7 +24,7 @@ interface ClassifiedAdCardProps {
   onContact?: (ad: ClassifiedAd) => void
 }
 
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 
 export function ClassifiedAdCard({ 
   ad, 
@@ -50,13 +50,13 @@ export function ClassifiedAdCard({
 
   // Obter ícone da categoria
   const getCategoryIcon = (categoryId: string) => {
-    const category = serviceCategories.find(cat => cat.id === categoryId)
+    const category = services.find(cat => cat.id === categoryId)
     return category ? category.icon : '📋'
   }
 
   // Obter nome da categoria
   const getCategoryName = (categoryId: string) => {
-    const category = serviceCategories.find(cat => cat.id === categoryId)
+    const category = services.find(cat => cat.id === categoryId)
     return category ? category.name : 'Categoria'
   }
 

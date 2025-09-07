@@ -31,7 +31,7 @@ import {
   Award,
   Sparkles
 } from 'lucide-react'
-import { serviceCategories } from '@/data/serviceCategories'
+import { services } from '@/data/services'
 
 function HomeContent() {
   const router = useRouter()
@@ -116,7 +116,7 @@ function HomeContent() {
   ]
 
   // Selecionar algumas categorias principais para a página inicial
-  const mainCategories = serviceCategories.slice(0, 6).map(cat => ({
+  const mainCategories = services.slice(0, 6).map(cat => ({
     name: cat.name,
     icon: cat.icon,
     count: "1k+" // Placeholder - pode ser dinâmico no futuro
