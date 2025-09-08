@@ -360,11 +360,16 @@ export function useAuth() {
 		}
 	}
 
-	// Função de login
-	const signIn = async (email: string, password: string) => {
-		console.log('🔐 Tentando login para:', email)
+	// Função de login com retry automático
+	const signIn = async (email: string, password: string, retryCount = 0) => {
+		console.log('🔐 Tentando login para:', email, retryCount > 0 ? `(tentativa ${retryCount + 1})` : '')
 		
 		try {
+			// Verificar conectividade antes de tentar login
+			console.log('🌐 Verificando conectividade com Supabase...')
+			const { data: healthCheck } = await supabase.from('profiles').select('count').limit(1)
+			console.log('✅ Conectividade OK:', !!healthCheck)
+			
 			const { data, error } = await supabase.auth.signInWithPassword({
 				email,
 				password
@@ -372,6 +377,11 @@ export function useAuth() {
 
 			if (error) {
 				console.error('❌ Erro no login:', error)
+				console.error('❌ Detalhes do erro:', {
+					message: error.message,
+					status: error.status,
+					name: error.name
+				})
 				return { error }
 			}
 
@@ -416,6 +426,63 @@ export function useAuth() {
 			return { error: null }
 		} catch (error) {
 			console.error('💥 Erro crítico no login:', error)
+			
+			// Verificar se é um erro de rede
+			if (error instanceof TypeError && error.message.includes('fetch')) {
+				console.error('🌐 Erro de rede detectado')
+				return { 
+					error: { 
+						message: 'Erro de conexão. Verifique sua internet e tente novamente.' 
+					} 
+				}
+			}
+			
+			// Verificar se é um erro de timeout
+			if (error instanceof Error && error.message.includes('timeout')) {
+				console.error('⏰ Timeout detectado')
+				return { 
+					error: { 
+						message: 'Tempo limite excedido. Tente novamente.' 
+					} 
+				}
+			}
+			
+			// Verificar se é um erro de "Load failed" e tentar novamente
+			if (error instanceof Error && error.message.includes('Load failed')) {
+				console.error('🚫 Load failed detectado')
+				
+				// Tentar novamente até 2 vezes
+				if (retryCount < 2) {
+					console.log(`🔄 Tentando novamente em 1 segundo... (${retryCount + 1}/2)`)
+					await new Promise(resolve => setTimeout(resolve, 1000))
+					return signIn(email, password, retryCount + 1)
+				}
+				
+				return { 
+					error: { 
+						message: 'Falha ao carregar após várias tentativas. Verifique sua conexão.' 
+					} 
+				}
+			}
+			
+			// Verificar se é um erro de rede e tentar novamente
+			if (error instanceof TypeError && error.message.includes('fetch')) {
+				console.error('🌐 Erro de rede detectado')
+				
+				// Tentar novamente até 2 vezes
+				if (retryCount < 2) {
+					console.log(`🔄 Tentando novamente em 1 segundo... (${retryCount + 1}/2)`)
+					await new Promise(resolve => setTimeout(resolve, 1000))
+					return signIn(email, password, retryCount + 1)
+				}
+				
+				return { 
+					error: { 
+						message: 'Erro de conexão após várias tentativas. Verifique sua internet.' 
+					} 
+				}
+			}
+			
 			return { 
 				error: { 
 					message: error instanceof Error ? error.message : 'Erro desconhecido' 

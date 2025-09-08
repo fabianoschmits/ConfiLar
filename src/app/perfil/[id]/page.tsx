@@ -19,6 +19,10 @@ import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { usePortfolio } from '@/hooks/usePortfolio'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
+import { useSupabaseReviews, ReviewWithProfiles, ReviewStats as ReviewStatsType } from '@/hooks/useSupabaseReviews'
+import { ReviewCard } from '@/components/reviews/ReviewCard'
+import { ReviewStats } from '@/components/reviews/ReviewStats'
+import { ReviewForm } from '@/components/reviews/ReviewForm'
 
 interface PublicProfile {
     id: string
@@ -35,25 +39,12 @@ interface PublicProfile {
     professional_portfolio_url: string | null
     badge: string
     rating: number
-    total_reviews: number
     total_recommendations: number
     is_verified: boolean
     is_available: boolean
     created_at: string
     phone?: string | null
     email?: string | null
-}
-
-interface UserReview {
-    id: string
-    rating: number
-    comment: string
-    created_at: string
-    reviewer: {
-        full_name: string
-        avatar_url: string | null
-        user_type: string
-    }
 }
 
 interface UserRecommendation {
@@ -77,13 +68,18 @@ export default function PublicProfilePage() {
     const [profile, setProfile] = useState<PublicProfile | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [reviews, setReviews] = useState<UserReview[]>([])
+    const [reviewStats, setReviewStats] = useState<ReviewStatsType | null>(null)
     const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
     const [calendarDate, setCalendarDate] = useState<Date>(new Date())
     const [showContactInfo, setShowContactInfo] = useState(false)
+    const [showReviewForm, setShowReviewForm] = useState(false)
+    const [canReview, setCanReview] = useState(false)
 
     // Hook do portfólio
     const { projects: portfolioProjects, loading: portfolioLoading, incrementViews } = usePortfolio(userId)
+    
+    // Hook das avaliações
+    const { reviews: hookReviews, loading: reviewsLoading, fetchUserReviews, fetchUserReviewStats, canUserReview } = useSupabaseReviews()
 
     useEffect(() => {
         fetchProfile()
@@ -104,32 +100,19 @@ export default function PublicProfilePage() {
             
             setProfile(profileData)
 
-            // Buscar avaliações
-            const { data: reviewsData, error: reviewsError } = await supabase
-                .from('user_reviews')
-                .select(`
-                    id, rating, comment, created_at,
-                    reviewer:profiles!user_reviews_reviewer_id_fkey(
-                        full_name, avatar_url, user_type
-                    )
-                `)
-                .eq('reviewed_id', userId)
-                .order('created_at', { ascending: false })
-                .limit(5)
+            // Buscar avaliações usando o novo sistema
+            await fetchUserReviews(userId, 'received')
 
-            if (!reviewsError && reviewsData) {
-                const formattedReviews = reviewsData.map((review: { id: string; rating: number; comment: string | null; created_at: string; reviewer: { full_name: string | null; avatar_url: string | null; user_type: string | null }[] }) => ({
-                    id: review.id,
-                    rating: review.rating,
-                    comment: review.comment || '',
-                    created_at: review.created_at,
-                    reviewer: {
-                        full_name: review.reviewer?.[0]?.full_name || '',
-                        avatar_url: review.reviewer?.[0]?.avatar_url || null,
-                        user_type: review.reviewer?.[0]?.user_type || ''
-                    }
-                }))
-                setReviews(formattedReviews)
+            // Buscar estatísticas das avaliações
+            const statsData = await fetchUserReviewStats(userId)
+            if (statsData) {
+                setReviewStats(statsData)
+            }
+
+            // Verificar se o usuário atual pode avaliar este perfil
+            if (user && user.id !== userId) {
+                const canUserReviewThis = await canUserReview(user.id, userId)
+                setCanReview(canUserReviewThis)
             }
 
             // Buscar recomendações
@@ -332,7 +315,7 @@ export default function PublicProfilePage() {
                                 </div>
                             </div>
                             <div className="text-center">
-                                <div className="text-xl md:text-2xl font-bold text-gray-900">{profile.total_reviews}</div>
+                                <div className="text-xl md:text-2xl font-bold text-gray-900">{reviewStats?.totalReviews || 0}</div>
                                 <div className="text-xs md:text-sm text-gray-600">Avaliações</div>
                             </div>
                             <div className="text-center">
@@ -790,56 +773,107 @@ export default function PublicProfilePage() {
                 </div>
 
                 {/* Avaliações */}
-                {reviews.length > 0 && (
-                    <Card className="border-0 shadow-sm mt-6 md:mt-8">
-                        <CardHeader className="px-4 md:px-6">
-                            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                                <Star className="w-5 h-5" />
-                                Avaliações Recebidas
-                            </CardTitle>
-                            <CardDescription>
-                                {reviews.length} avaliações de outros usuários
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-4 md:px-6">
-                            <div className="space-y-3 md:space-y-4">
-                                {reviews.map((review) => (
-                                    <div key={review.id} className="p-3 md:p-4 border border-gray-200 rounded-lg">
-                                        <div className="flex items-start gap-3">
-                                            <UserAvatar
-                                                src={review.reviewer.avatar_url}
-                                                alt={review.reviewer.full_name}
-                                                fallback={review.reviewer.full_name?.charAt(0) || 'U'}
-                                                size="sm"
-                                                className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0"
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 mb-2">
-                                                    <p className="font-medium text-gray-900 text-sm md:text-base">
-                                                        {review.reviewer.full_name}
-                                                    </p>
-                                                    <Badge variant="outline" className="text-xs capitalize w-fit">
-                                                        {review.reviewer.user_type}
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex items-center gap-1 mb-2">
-                                                    {renderStars(review.rating)}
-                                                </div>
-                                                {review.comment && (
-                                                    <p className="text-gray-700 text-xs md:text-sm leading-relaxed">
-                                                        &ldquo;{review.comment}&rdquo;
-                                                    </p>
-                                                )}
-                                                <p className="text-xs text-gray-500 mt-2">
-                                                    {formatDate(review.created_at)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                <Card className="border-0 shadow-sm mt-6 md:mt-8">
+                    <CardHeader className="px-4 md:px-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                                    <Star className="w-5 h-5" />
+                                    Avaliações Recebidas
+                                </CardTitle>
+                                <CardDescription>
+                                    {hookReviews.length > 0 
+                                        ? `${hookReviews.length} avaliações de outros usuários`
+                                        : 'Ainda não há avaliações'
+                                    }
+                                </CardDescription>
                             </div>
-                        </CardContent>
-                    </Card>
+                            {canReview && user && (
+                                <Button
+                                    onClick={() => setShowReviewForm(true)}
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                    <Star className="h-4 w-4 mr-2" />
+                                    Avaliar
+                                </Button>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="px-4 md:px-6">
+                        {hookReviews.length > 0 ? (
+                            <>
+                                {/* Estatísticas das avaliações */}
+                                {reviewStats && (
+                                    <div className="mb-6">
+                                        <ReviewStats stats={reviewStats} />
+                                    </div>
+                                )}
+                                
+                                {/* Lista de avaliações */}
+                                <div className="space-y-3 md:space-y-4">
+                                    {hookReviews.slice(0, 5).map((review) => (
+                                        <ReviewCard 
+                                            key={review.id} 
+                                            review={review} 
+                                            showActions={false}
+                                        />
+                                    ))}
+                                </div>
+                                
+                                {/* Link para ver todas as avaliações */}
+                                {hookReviews.length > 5 && (
+                                    <div className="mt-4 text-center">
+                                        <Button 
+                                            variant="outline" 
+                                            onClick={() => router.push(`/avaliacoes?user=${userId}`)}
+                                            className="text-sm"
+                                        >
+                                            Ver todas as {hookReviews.length} avaliações
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center py-8">
+                                <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                    Nenhuma avaliação ainda
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    Este usuário ainda não recebeu avaliações.
+                                </p>
+                                {canReview && user && (
+                                    <Button
+                                        onClick={() => setShowReviewForm(true)}
+                                        className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                        <Star className="h-4 w-4 mr-2" />
+                                        Seja o primeiro a avaliar
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Modal de Criação de Avaliação */}
+                {showReviewForm && user && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                            <ReviewForm
+                                reviewerId={user.id}
+                                reviewedId={userId}
+                                reviewedName={profile?.full_name || 'Usuário'}
+                                reviewedAvatar={profile?.avatar_url}
+                                onSuccess={() => {
+                                    setShowReviewForm(false)
+                                    fetchProfile() // Recarregar dados do perfil
+                                }}
+                                onCancel={() => setShowReviewForm(false)}
+                            />
+                        </div>
+                    </div>
                 )}
             </div>
         </div>
