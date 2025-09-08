@@ -1,0 +1,384 @@
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { Database } from '@/types/database'
+
+export type Review = Database['public']['Tables']['reviews']['Row']
+export type ReviewInsert = Database['public']['Tables']['reviews']['Insert']
+export type ReviewUpdate = Database['public']['Tables']['reviews']['Update']
+
+export interface ReviewWithProfiles extends Review {
+  reviewer: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
+  reviewed: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
+  ad?: {
+    id: string
+    title: string
+    category: string
+  }
+}
+
+export interface ReviewStats {
+  averageRating: number
+  totalReviews: number
+  ratingDistribution: {
+    5: number
+    4: number
+    3: number
+    2: number
+    1: number
+  }
+  recentReviews: ReviewWithProfiles[]
+}
+
+export function useSupabaseReviews() {
+  const [reviews, setReviews] = useState<ReviewWithProfiles[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Buscar avaliações de um usuário específico
+  const fetchUserReviews = async (userId: string, type: 'received' | 'given' = 'received') => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const column = type === 'received' ? 'reviewed_id' : 'reviewer_id'
+      
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          reviewer:profiles!reviews_reviewer_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          ad:classified_ads(
+            id,
+            title,
+            category
+          )
+        `)
+        .eq(column, userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setReviews(data || [])
+    } catch (err) {
+      console.error('Erro ao buscar avaliações:', err)
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Buscar estatísticas de avaliações de um usuário
+  const fetchUserReviewStats = async (userId: string): Promise<ReviewStats | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('rating_person, created_at')
+        .eq('reviewed_id', userId)
+
+      if (error) throw error
+
+      if (!data || data.length === 0) {
+        return {
+          averageRating: 0,
+          totalReviews: 0,
+          ratingDistribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+          recentReviews: []
+        }
+      }
+
+      // Calcular estatísticas
+      const totalReviews = data.length
+      const averageRating = data.reduce((sum, review) => sum + review.rating_person, 0) / totalReviews
+      
+      const ratingDistribution = data.reduce((acc, review) => {
+        acc[review.rating_person as keyof typeof acc]++
+        return acc
+      }, { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 })
+
+      // Buscar avaliações recentes
+      const recentReviewsData = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          reviewer:profiles!reviews_reviewer_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          ad:classified_ads(
+            id,
+            title,
+            category
+          )
+        `)
+        .eq('reviewed_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (recentReviewsData.error) throw recentReviewsData.error
+
+      return {
+        averageRating: Math.round(averageRating * 10) / 10,
+        totalReviews,
+        ratingDistribution,
+        recentReviews: recentReviewsData.data || []
+      }
+    } catch (err) {
+      console.error('Erro ao buscar estatísticas de avaliações:', err)
+      return null
+    }
+  }
+
+  // Criar nova avaliação
+  const createReview = async (reviewData: ReviewInsert) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert(reviewData)
+        .select(`
+          *,
+          reviewer:profiles!reviews_reviewer_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          ad:classified_ads(
+            id,
+            title,
+            category
+          )
+        `)
+        .single()
+
+      if (error) throw error
+
+      // Criar notificação para o usuário avaliado
+      if (data && data.reviewed_id !== data.reviewer_id) {
+        await createReviewNotification(data)
+      }
+
+      return { data, error: null }
+    } catch (err) {
+      console.error('Erro ao criar avaliação:', err)
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Erro desconhecido' 
+      }
+    }
+  }
+
+  // Criar notificação para nova avaliação
+  const createReviewNotification = async (review: ReviewWithProfiles) => {
+    try {
+      const notificationData = {
+        user_id: review.reviewed_id,
+        title: 'Nova Avaliação Recebida',
+        message: `${review.reviewer.full_name} avaliou você com ${review.rating_person} estrelas`,
+        type: 'review',
+        is_read: false,
+        action_url: `/perfil/${review.reviewed_id}`,
+        priority: 'normal' as const
+      }
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert(notificationData)
+
+      if (error) {
+        console.error('Erro ao criar notificação de avaliação:', error)
+      }
+    } catch (err) {
+      console.error('Erro ao criar notificação de avaliação:', err)
+    }
+  }
+
+  // Atualizar avaliação
+  const updateReview = async (reviewId: string, updates: ReviewUpdate) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', reviewId)
+        .select(`
+          *,
+          reviewer:profiles!reviews_reviewer_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          ad:classified_ads(
+            id,
+            title,
+            category
+          )
+        `)
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (err) {
+      console.error('Erro ao atualizar avaliação:', err)
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Erro desconhecido' 
+      }
+    }
+  }
+
+  // Deletar avaliação
+  const deleteReview = async (reviewId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId)
+
+      if (error) throw error
+      return { error: null }
+    } catch (err) {
+      console.error('Erro ao deletar avaliação:', err)
+      return { 
+        error: err instanceof Error ? err.message : 'Erro desconhecido' 
+      }
+    }
+  }
+
+  // Responder a uma avaliação
+  const respondToReview = async (reviewId: string, responseText: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .update({ 
+          response_text: responseText,
+          response_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', reviewId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (err) {
+      console.error('Erro ao responder avaliação:', err)
+      return { 
+        data: null, 
+        error: err instanceof Error ? err.message : 'Erro desconhecido' 
+      }
+    }
+  }
+
+
+  // Verificar se usuário pode avaliar outro usuário
+  const canUserReview = async (reviewerId: string, reviewedId: string, adId?: string) => {
+    try {
+      // 1. Não pode avaliar a si mesmo
+      if (reviewerId === reviewedId) {
+        return false
+      }
+
+      // 2. Verificar se já existe uma avaliação
+      const { data: existingReview, error: reviewError } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('reviewer_id', reviewerId)
+        .eq('reviewed_id', reviewedId)
+        .eq('ad_id', adId || null)
+
+      if (reviewError) throw reviewError
+      
+      if (existingReview && existingReview.length > 0) {
+        return false // Já existe avaliação
+      }
+
+      // 3. Verificar se há acordo de contato aceito entre os usuários
+      const { data: agreementData, error: agreementError } = await supabase
+        .from('contact_agreements')
+        .select('id, status, contacts_revealed_at')
+        .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
+        .or(`client_id.eq.${reviewedId},professional_id.eq.${reviewedId}`)
+        .in('status', ['accepted', 'completed'])
+
+      if (agreementError) {
+        console.error('Erro ao verificar acordos:', agreementError)
+        // Se não conseguir verificar acordos, permite avaliação (comportamento atual)
+        return true
+      }
+
+      // Se não há acordos aceitos, não pode avaliar
+      if (!agreementData || agreementData.length === 0) {
+        return false
+      }
+
+      // 4. Verificar se o acordo foi aceito há pelo menos 1 dia
+      const validAgreement = agreementData.find(agreement => {
+        if (!agreement.contacts_revealed_at) return false
+        
+        const revealedDate = new Date(agreement.contacts_revealed_at)
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        
+        return revealedDate <= oneDayAgo
+      })
+
+      return !!validAgreement
+
+    } catch (err) {
+      console.error('Erro ao verificar se pode avaliar:', err)
+      return false
+    }
+  }
+
+  return {
+    reviews,
+    loading,
+    error,
+    fetchUserReviews,
+    fetchUserReviewStats,
+    createReview,
+    updateReview,
+    deleteReview,
+    respondToReview,
+    canUserReview
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -22,6 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const { signIn } = useAuthContext()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -39,6 +40,24 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   })
+
+  // Verificar conectividade ao carregar o componente
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        setConnectionStatus('checking')
+        const response = await fetch('/api/health', { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        })
+        setConnectionStatus(response.ok ? 'connected' : 'error')
+      } catch {
+        setConnectionStatus('error')
+      }
+    }
+
+    checkConnection()
+  }, [])
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
@@ -73,6 +92,18 @@ export function LoginForm() {
         <CardDescription className="text-gray-600">
           Digite suas credenciais para acessar a plataforma
         </CardDescription>
+        
+        {/* Indicador de conectividade */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <div className={`w-2 h-2 rounded-full ${
+            connectionStatus === 'connected' ? 'bg-green-500' : 
+            connectionStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+          }`} />
+          <span className="text-xs text-gray-500">
+            {connectionStatus === 'connected' ? 'Conectado' : 
+             connectionStatus === 'error' ? 'Problema de conexão' : 'Verificando...'}
+          </span>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-6">
