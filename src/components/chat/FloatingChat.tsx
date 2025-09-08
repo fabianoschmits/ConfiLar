@@ -29,6 +29,7 @@ import {
   DotsThreeVertical,
   Trash
 } from '@phosphor-icons/react'
+import { AgreementStatus } from './AgreementStatus'
 import { toast } from 'sonner'
 
 interface FloatingChatProps {
@@ -357,6 +358,29 @@ export function FloatingChat({
                 </DropdownMenu>
               </div>
             </div>
+
+            {/* Status do Acordo - Para todos os usuários */}
+            {selectedConversation && (
+              <div className="px-3 py-2 border-b border-gray-200 bg-blue-50">
+                <AgreementStatus 
+                  conversationId={selectedConversation}
+                  currentUserId={user?.id || ''}
+                  otherUserId={(() => {
+                    const selectedConv = conversations.find(c => c.id === selectedConversation)
+                    return selectedConv?.participant?.id || ''
+                  })()}
+                  otherUserName={(() => {
+                    const selectedConv = conversations.find(c => c.id === selectedConversation)
+                    return selectedConv?.participant?.full_name || 'Usuário'
+                  })()}
+                  otherUserType={(() => {
+                    const selectedConv = conversations.find(c => c.id === selectedConversation)
+                    return selectedConv?.participant?.user_type || 'client'
+                  })()}
+                  currentUserType={profile?.user_type || 'client'}
+                />
+              </div>
+            )}
 
             {/* Mensagens - Área com espaço suficiente */}
             <ScrollArea className="flex-1 bg-gray-50 messages-area">
