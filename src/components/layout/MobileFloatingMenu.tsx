@@ -13,7 +13,7 @@ export function MobileFloatingMenu() {
   }
 
   const handleRegister = () => {
-    window.location.href = '/cadastro'
+    window.location.href = '/auth?tab=register'
   }
 
   return (

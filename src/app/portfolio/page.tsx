@@ -187,7 +187,7 @@ export default function PortfolioPage() {
                     Esta funcionalidade é exclusiva para profissionais cadastrados na plataforma.
                   </p>
                   <Button asChild>
-                    <a href="/cadastro">Tornar-se Profissional</a>
+                    <a href="/auth?tab=register">Tornar-se Profissional</a>
                   </Button>
                 </CardContent>
               </Card>
