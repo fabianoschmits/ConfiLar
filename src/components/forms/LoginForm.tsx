@@ -179,7 +179,7 @@ export function LoginForm() {
             Não tem uma conta?{' '}
             <button
               type="button"
-              onClick={() => router.push('/auth/cadastro')}
+              onClick={() => router.push('/auth?tab=register')}
               className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
             >
               Cadastre-se

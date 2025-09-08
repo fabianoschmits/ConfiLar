@@ -501,7 +501,7 @@ export default function BuscarPage() {
                   </p>
                   {users.length === 0 ? (
                     <Button
-                      onClick={() => window.location.href = '/auth/cadastro'}
+                      onClick={() => window.location.href = '/auth?tab=register'}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Cadastrar-se

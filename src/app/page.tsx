@@ -32,11 +32,13 @@ import {
   Sparkles
 } from 'lucide-react'
 import { services } from '@/data/services'
+import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 
 function HomeContent() {
   const router = useRouter()
   const { user, loading } = useAuthContext()
   const [isVisible, setIsVisible] = useState(false)
+  const { professionalsCount, reviewsCount, citiesCount, servicesCount, loading: statsLoading } = useHomeStats()
 
   // Redirecionar usuários logados para a página inicial
   useEffect(() => {
@@ -109,10 +111,10 @@ function HomeContent() {
   ]
 
   const stats = [
-    { label: "Profissionais Verificados", value: "2.5k+", icon: <UserCheck className="h-4 w-4" /> },
-    { label: "Avaliações Reais", value: "15k+", icon: <Star className="h-4 w-4" /> },
-    { label: "Cidades Atendidas", value: "150+", icon: <MapPin className="h-4 w-4" /> },
-    { label: "Serviços Realizados", value: "25k+", icon: <CheckCircle className="h-4 w-4" /> }
+    { label: "Profissionais Verificados", value: statsLoading ? "..." : formatStatNumber(professionalsCount), icon: <UserCheck className="h-4 w-4" /> },
+    { label: "Avaliações Reais", value: statsLoading ? "..." : formatStatNumber(reviewsCount), icon: <Star className="h-4 w-4" /> },
+    { label: "Cidades Atendidas", value: statsLoading ? "..." : formatStatNumber(citiesCount), icon: <MapPin className="h-4 w-4" /> },
+    { label: "Serviços Realizados", value: statsLoading ? "..." : formatStatNumber(servicesCount), icon: <CheckCircle className="h-4 w-4" /> }
   ]
 
   // Selecionar algumas categorias principais para a página inicial

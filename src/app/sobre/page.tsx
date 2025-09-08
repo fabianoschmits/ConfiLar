@@ -24,7 +24,7 @@ export default function SobrePage() {
                 <Link href="/auth/auth">
                   <Button variant="outline">Entrar</Button>
                 </Link>
-                <Link href="/auth/cadastro">
+                <Link href="/auth?tab=register">
                   <Button>Criar Conta</Button>
                 </Link>
               </div>
@@ -42,7 +42,7 @@ export default function SobrePage() {
               A plataforma que facilita a contratação de serviços domésticos e comerciais de forma segura e confiável
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/cadastro">
+              <Link href="/auth?tab=register">
                 <Button size="lg" className="text-lg px-8 py-4">
                   Começar Agora
                 </Button>
@@ -141,7 +141,7 @@ export default function SobrePage() {
             <p className="text-xl mb-8 opacity-90">
               Junte-se a milhares de usuários que já confiam no ConfiLar
             </p>
-            <Link href="/auth/cadastro">
+            <Link href="/auth?tab=register">
               <Button size="lg" variant="secondary" className="text-lg px-8 py-4">
                 Criar Conta Gratuita
               </Button>

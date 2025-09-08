@@ -23,6 +23,12 @@ export default function AuthPage() {
     if (redirect) {
       setRedirectPath(decodeURIComponent(redirect))
     }
+
+    // Obter o parâmetro de aba da URL
+    const tab = searchParams.get('tab')
+    if (tab === 'register') {
+      setActiveTab('register')
+    }
   }, [searchParams])
 
   const handleRegistrationComplete = () => {
