@@ -1,46 +1,19 @@
-import { useState, useEffect } from 'react'
-import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import { Database } from '@/types/database'
+'use client'
 
-// Usar o tipo do database como base
-export type Profile = Database['public']['Tables']['profiles']['Row'] & {
-	// Campos adicionais específicos do hook se necessário
-	profile_completion_score?: number
-	professional_services?: string[]
-	last_profile_update?: string
-	profile_photo_url?: string | null
-	selfie_document_url?: string | null
-	residence_proof_url?: string | null
-	client_verification_document?: string | null
-	emergency_service?: boolean
-	insurance_coverage?: boolean
-	created_at?: string
-	updated_at?: string
-	weeklyAvailability?: {
-		monday: { morning: boolean; afternoon: boolean; evening: boolean }
-		tuesday: { morning: boolean; afternoon: boolean; evening: boolean }
-		wednesday: { morning: boolean; afternoon: boolean; evening: boolean }
-		thursday: { morning: boolean; afternoon: boolean; evening: boolean }
-		friday: { morning: boolean; afternoon: boolean; evening: boolean }
-		saturday: { morning: boolean; afternoon: boolean; evening: boolean }
-		sunday: { morning: boolean; afternoon: boolean; evening: boolean }
-	}
-}
+import { useState, useEffect, useCallback } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { Profile } from '@/types/database'
 
-// Gerador simples de IDs únicos para modo mock
-const generateUniqueId = (): string => {
-	return `mock-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-}
+// Re-exportar Profile para compatibilidade
+export type { Profile }
 
-// Tipos de assinatura para signUp
 export type SignUpFn = (
-	email: string, 
-	password: string, 
+	email: string,
+	password: string,
 	additionalData?: {
 		full_name?: string
-		user_type?: 'client' | 'professional'
 		phone?: string
+		user_type?: 'client' | 'professional'
 		cpf_cnpj?: string
 		birth_date?: string
 		location_state?: string
@@ -59,316 +32,174 @@ export function useAuth() {
 	const [profile, setProfile] = useState<Profile | null>(null)
 	const [session, setSession] = useState<{ user: { id: string; email: string } } | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [initialized, setInitialized] = useState(false)
 
-	// Modo real com Supabase
-	const isMockMode = false
+	const supabase = createClientComponentClient()
 
+	// Perfil padrão reutilizável
+	const createDefaultProfile = useCallback((userId: string, email: string): Profile => {
+		return {
+			id: userId,
+			email: email,
+			full_name: 'Usuário',
+			user_type: 'client',
+			phone: '',
+			cpf_cnpj: '',
+			birth_date: null,
+			location_state: 'SP',
+			location_city: 'São Paulo',
+			neighborhood: '',
+			address: '',
+			bio: '',
+			professional_services: [],
+			professional_experience_years: 0,
+			is_verified: false,
+			badge: 'bronze',
+			rating: 0,
+			total_reviews: 0,
+			is_available: true,
+			profile_completed: false,
+			profile_completion_score: 0,
+			avatar_url: null,
+			whatsapp: '',
+			professional_certifications: [],
+			professional_portfolio_url: null,
+			profile_photo_url: null,
+			selfie_document_url: null,
+			residence_proof_url: null,
+			client_verification_document: null,
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString()
+		} as Profile
+	}, [])
+
+	// Buscar perfil do usuário
+	const fetchUserProfile = useCallback(async (userId: string, email: string) => {
+		try {
+			console.log('🔍 Buscando perfil do usuário:', userId)
+			
+			const { data, error } = await supabase
+				.from('profiles')
+				.select('*')
+				.eq('id', userId)
+				.single()
+
+			if (error) {
+				console.log('⚠️ Perfil não encontrado, criando perfil padrão')
+				const defaultProfile = createDefaultProfile(userId, email)
+				setProfile(defaultProfile)
+				return defaultProfile
+			}
+
+			console.log('✅ Perfil encontrado:', data.full_name)
+			setProfile(data as Profile)
+			return data as Profile
+		} catch (error) {
+			console.error('❌ Erro ao buscar perfil:', error)
+			const defaultProfile = createDefaultProfile(userId, email)
+			setProfile(defaultProfile)
+			return defaultProfile
+		}
+	}, [supabase, createDefaultProfile])
+
+	// Inicialização do sistema de autenticação
 	useEffect(() => {
-		console.log('🔍 useAuth useEffect iniciado', { isMockMode })
+		if (initialized) return
+
+		console.log('🔍 Inicializando sistema de autenticação...')
 		
-		// Timeout de segurança mais rápido para melhor UX
+		// Timeout de segurança mais generoso (10 segundos)
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
-				console.log('⚠️ Loading há mais de 2 segundos - definindo como não carregando')
+				console.log('⚠️ Timeout de segurança atingido - finalizando loading')
 				setLoading(false)
 			}
-		}, 2000)
-		
-		if (isMockMode) {
-			// Modo mock para desenvolvimento
-			console.log('🧪 Modo mock ativado')
-			// Verificar se há usuário salvo no localStorage
-			const savedUser = localStorage.getItem('mockUser')
-			const savedProfile = localStorage.getItem('mockProfile')
+		}, 10000)
 
-			if (savedUser && savedProfile) {
-				const parsedUser = JSON.parse(savedUser)
-				const parsedProfile = JSON.parse(savedProfile)
-				
-				// Garantir que o email existe
-				if (parsedUser.email) {
-					setUser({ id: parsedUser.id, email: parsedUser.email })
-					setProfile(parsedProfile)
-					setSession({
-						user: { id: parsedUser.id, email: parsedUser.email }
-					})
-				}
-			}
-
-			setLoading(false)
-			clearTimeout(safetyTimeout)
-			return
-		}
-
-		// Buscar sessão inicial de forma otimizada
-		const fetchSession = async () => {
-			console.log('🔄 Buscando sessão inicial...')
+		const initializeAuth = async () => {
 			try {
-				const { data: { session } } = await supabase.auth.getSession()
-				console.log('📋 Sessão obtida:', !!session?.user)
+				// 1. Buscar sessão atual
+				const { data: { session }, error } = await supabase.auth.getSession()
 				
+				if (error) {
+					console.error('❌ Erro ao buscar sessão:', error)
+					setLoading(false)
+					setInitialized(true)
+					return
+				}
+
 				if (session?.user?.email) {
 					console.log('✅ Usuário encontrado na sessão:', session.user.email)
 					
-					// Definir usuário e sessão imediatamente para melhor UX
-					setSession({ user: { id: session.user.id, email: session.user.email } })
-					setUser({ id: session.user.id, email: session.user.email })
+					// Definir usuário e sessão imediatamente
+					const userData = { id: session.user.id, email: session.user.email }
+					setUser(userData)
+					setSession({ user: userData })
 					
-					// Buscar perfil em paralelo (não bloqueia a interface)
-					console.log('🔍 Buscando perfil do usuário...')
-					try {
-						const { data, error } = await supabase
-							.from('profiles')
-							.select('*')
-							.eq('id', session.user.id)
-							.single()
-						
-						console.log('📊 Resultado da busca do perfil:', { data: !!data, error: !!error })
-						
-						if (data) {
-							setProfile(data as Profile)
-						} else {
-							console.log('⚠️ Perfil não encontrado, criando perfil padrão')
-							// Criar perfil padrão simplificado
-							const defaultProfile: Profile = {
-								id: session.user.id,
-								email: session.user.email,
-								full_name: 'Usuário',
-								user_type: 'client',
-								phone: '',
-								cpf_cnpj: '',
-								birth_date: null,
-								location_state: 'SP',
-								location_city: 'São Paulo',
-								neighborhood: '',
-								address: '',
-								bio: '',
-								professional_services: [],
-								professional_experience_years: 0,
-								is_verified: false,
-								badge: 'bronze',
-								rating: 0,
-								total_reviews: 0,
-								is_available: true,
-								profile_completed: false,
-								profile_completion_score: 0,
-								avatar_url: null,
-								whatsapp: '',
-								professional_certifications: [],
-								professional_portfolio_url: null,
-								profile_photo_url: null,
-								selfie_document_url: null,
-								residence_proof_url: null,
-								client_verification_document: null,
-								created_at: new Date().toISOString(),
-								updated_at: new Date().toISOString()
-							} as Profile
-							setProfile(defaultProfile)
-						}
-					} catch (profileError) {
-						console.error('Erro ao buscar perfil:', profileError)
-						// Criar perfil padrão em caso de erro
-						const defaultProfile: Profile = {
-							id: session.user.id,
-							email: session.user.email,
-							full_name: 'Usuário',
-							user_type: 'client',
-							phone: '',
-							cpf_cnpj: '',
-							birth_date: null,
-							location_state: 'SP',
-							location_city: 'São Paulo',
-							neighborhood: '',
-							address: '',
-							bio: '',
-							professional_services: [],
-							professional_experience_years: 0,
-							is_verified: false,
-							badge: 'bronze',
-							rating: 0,
-							total_reviews: 0,
-							is_available: true,
-							profile_completed: false,
-							profile_completion_score: 0,
-							avatar_url: null,
-							whatsapp: '',
-							professional_certifications: [],
-							professional_portfolio_url: null,
-							profile_photo_url: null,
-							selfie_document_url: null,
-							residence_proof_url: null,
-							client_verification_document: null,
-							created_at: new Date().toISOString(),
-							updated_at: new Date().toISOString()
-						} as Profile
-						setProfile(defaultProfile)
-					}
+					// Buscar perfil em paralelo
+					await fetchUserProfile(session.user.id, session.user.email)
 				} else {
 					console.log('❌ Nenhum usuário na sessão')
-					setSession(null)
 					setUser(null)
 					setProfile(null)
+					setSession(null)
 				}
-			} catch (sessionError) {
-				console.error('Erro ao buscar sessão:', sessionError)
-				setSession(null)
+			} catch (error) {
+				console.error('❌ Erro na inicialização:', error)
 				setUser(null)
 				setProfile(null)
+				setSession(null)
+			} finally {
+				setLoading(false)
+				setInitialized(true)
+				clearTimeout(safetyTimeout)
 			}
-			
-			console.log('✅ FetchSession finalizada, definindo loading = false')
-			setLoading(false)
-			clearTimeout(safetyTimeout)
 		}
 
-		fetchSession()
+		initializeAuth()
 
-		// Escutar mudanças de autenticação
+		// Listener de mudanças de autenticação - OTIMIZADO
 		const { data: { subscription } } = supabase.auth.onAuthStateChange(
 			async (event, session) => {
-				if (session?.user?.email) {
-					setSession({ user: { id: session.user.id, email: session.user.email } })
-					setUser({ id: session.user.id, email: session.user.email })
-					
-					// Buscar perfil apenas quando a autenticação mudar
-					try {
-						const { data, error } = await supabase
-							.from('profiles')
-							.select('*')
-							.eq('id', session.user.id)
-							.single()
+				console.log('🔄 Evento de auth:', event, session?.user?.email)
+				
+				// Evitar processamento desnecessário durante inicialização
+				if (!initialized && event === 'INITIAL_SESSION') {
+					return
+				}
 
-						if (!error && data) {
-							setProfile(data as Profile)
-						} else {
-							// Criar perfil padrão completo se não existir
-							const defaultProfile: Profile = {
-								id: session.user.id,
-								email: session.user.email,
-								full_name: 'Usuário',
-								user_type: 'client',
-								phone: '',
-								cpf_cnpj: '',
-								birth_date: null,
-								location_state: 'SP',
-								location_city: 'São Paulo',
-								neighborhood: '',
-								address: '',
-								bio: '',
-								professional_services: [],
-								professional_experience_years: 0,
-								is_verified: false,
-								badge: 'bronze',
-								rating: 0,
-								total_reviews: 0,
-								is_available: true,
-								profile_completed: false,
-								profile_completion_score: 0,
-								avatar_url: null,
-								whatsapp: '',
-								professional_certifications: [],
-								professional_portfolio_url: null,
-								profile_photo_url: null,
-								selfie_document_url: null,
-								residence_proof_url: null,
-								client_verification_document: null,
-								created_at: new Date().toISOString(),
-								updated_at: new Date().toISOString()
-							} as Profile
-							setProfile(defaultProfile)
-						}
-					} catch (error) {
-						console.error('Erro ao buscar perfil na mudança de auth:', error)
-						// Criar perfil padrão completo em caso de erro
-						const defaultProfile: Profile = {
-							id: session.user.id,
-							email: session.user.email,
-							full_name: 'Usuário',
-							user_type: 'client',
-							phone: '',
-							cpf_cnpj: '',
-							birth_date: null,
-							location_state: 'SP',
-							location_city: 'São Paulo',
-							neighborhood: '',
-							address: '',
-							bio: '',
-							professional_services: [],
-							professional_experience_years: 0,
-							is_verified: false,
-							badge: 'bronze',
-							rating: 0,
-							total_reviews: 0,
-							is_available: true,
-							profile_completed: false,
-							profile_completion_score: 0,
-							avatar_url: null,
-							whatsapp: '',
-							professional_certifications: [],
-							professional_portfolio_url: null,
-							profile_photo_url: null,
-							selfie_document_url: null,
-							residence_proof_url: null,
-							client_verification_document: null,
-							created_at: new Date().toISOString(),
-							updated_at: new Date().toISOString()
-						} as Profile
-						setProfile(defaultProfile)
+				if (session?.user?.email) {
+					const userData = { id: session.user.id, email: session.user.email }
+					setUser(userData)
+					setSession({ user: userData })
+					
+					// Buscar perfil apenas se necessário
+					if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+						await fetchUserProfile(session.user.id, session.user.email)
 					}
 				} else {
-					console.log('❌ Usuário não autenticado')
-					setSession(null)
+					console.log('❌ Usuário deslogado')
 					setUser(null)
 					setProfile(null)
+					setSession(null)
 				}
 				
-				console.log('✅ Loading finalizado')
 				setLoading(false)
 			}
 		)
 
-		return () => subscription.unsubscribe()
-	}, [isMockMode])
-
-	// Função para testar conectividade com o Supabase
-	const testSupabaseConnection = async () => {
-		console.log('🧪 Testando conectividade com o Supabase...')
-		
-		try {
-			// Teste 1: Verificar se o cliente está configurado
-			console.log('📋 Cliente Supabase configurado:', !!supabase)
-			
-			// Teste 2: Tentar uma consulta simples
-			console.log('📡 Testando consulta simples...')
-			const { data, error } = await supabase
-				.from('profiles')
-				.select('count')
-				.limit(1)
-			
-			console.log('📊 Resultado do teste:', { data, error })
-			
-			if (error) {
-				console.error('❌ Erro no teste de conectividade:', error)
-				return false
-			}
-			
-			console.log('✅ Conectividade com Supabase funcionando!')
-			return true
-		} catch (error) {
-			console.error('💥 Erro crítico no teste de conectividade:', error)
-			return false
+		return () => {
+			subscription.unsubscribe()
+			clearTimeout(safetyTimeout)
 		}
-	}
+	}, [initialized, supabase, fetchUserProfile, loading])
 
-	// Função de login com retry automático
-	const signIn = async (email: string, password: string, retryCount = 0) => {
-		console.log('🔐 Tentando login para:', email, retryCount > 0 ? `(tentativa ${retryCount + 1})` : '')
+	// Função de login OTIMIZADA
+	const signIn = useCallback(async (email: string, password: string) => {
+		console.log('🔐 Tentando login para:', email)
 		
 		try {
-			// Verificar conectividade antes de tentar login
-			console.log('🌐 Verificando conectividade com Supabase...')
-			const { data: healthCheck } = await supabase.from('profiles').select('count').limit(1)
-			console.log('✅ Conectividade OK:', !!healthCheck)
+			setLoading(true)
 			
 			const { data, error } = await supabase.auth.signInWithPassword({
 				email,
@@ -377,320 +208,41 @@ export function useAuth() {
 
 			if (error) {
 				console.error('❌ Erro no login:', error)
-				console.error('❌ Detalhes do erro:', {
-					message: error.message,
-					status: error.status,
-					name: error.name
-				})
+				setLoading(false)
 				return { error }
 			}
 
 			if (data.user) {
 				console.log('✅ Login bem-sucedido para:', data.user.email)
-				setUser({ id: data.user.id, email: data.user.email || 'usuario@email.com' })
-				setSession({ user: { id: data.user.id, email: data.user.email || 'usuario@email.com' } })
-				
-				// Buscar perfil após login
-				try {
-					const { data: profileData, error: profileError } = await supabase
-						.from('profiles')
-						.select('*')
-						.eq('id', data.user.id)
-						.single()
-
-					if (!profileError && profileData) {
-						setProfile(profileData as Profile)
-					} else {
-						// Criar perfil padrão se não existir
-						const defaultProfile: Profile = {
-							id: data.user.id,
-							email: data.user.email || 'usuario@email.com',
-							full_name: 'Usuário',
-							user_type: 'client'
-						} as Profile
-						setProfile(defaultProfile)
-					}
-				} catch (profileError) {
-					console.error('Erro ao buscar perfil após login:', profileError)
-					// Criar perfil padrão em caso de erro
-					const defaultProfile: Profile = {
-						id: data.user.id,
-						email: data.user.email || 'usuario@email.com',
-						full_name: 'Usuário',
-						user_type: 'client'
-					} as Profile
-					setProfile(defaultProfile)
-				}
+				// O listener onAuthStateChange vai processar o resto
 			}
 
 			return { error: null }
 		} catch (error) {
 			console.error('💥 Erro crítico no login:', error)
-			
-			// Verificar se é um erro de rede
-			if (error instanceof TypeError && error.message.includes('fetch')) {
-				console.error('🌐 Erro de rede detectado')
-				return { 
-					error: { 
-						message: 'Erro de conexão. Verifique sua internet e tente novamente.' 
-					} 
-				}
-			}
-			
-			// Verificar se é um erro de timeout
-			if (error instanceof Error && error.message.includes('timeout')) {
-				console.error('⏰ Timeout detectado')
-				return { 
-					error: { 
-						message: 'Tempo limite excedido. Tente novamente.' 
-					} 
-				}
-			}
-			
-			// Verificar se é um erro de "Load failed" e tentar novamente
-			if (error instanceof Error && error.message.includes('Load failed')) {
-				console.error('🚫 Load failed detectado')
-				
-				// Tentar novamente até 2 vezes
-				if (retryCount < 2) {
-					console.log(`🔄 Tentando novamente em 1 segundo... (${retryCount + 1}/2)`)
-					await new Promise(resolve => setTimeout(resolve, 1000))
-					return signIn(email, password, retryCount + 1)
-				}
-				
-				return { 
-					error: { 
-						message: 'Falha ao carregar após várias tentativas. Verifique sua conexão.' 
-					} 
-				}
-			}
-			
-			// Verificar se é um erro de rede e tentar novamente
-			if (error instanceof TypeError && error.message.includes('fetch')) {
-				console.error('🌐 Erro de rede detectado')
-				
-				// Tentar novamente até 2 vezes
-				if (retryCount < 2) {
-					console.log(`🔄 Tentando novamente em 1 segundo... (${retryCount + 1}/2)`)
-					await new Promise(resolve => setTimeout(resolve, 1000))
-					return signIn(email, password, retryCount + 1)
-				}
-				
-				return { 
-					error: { 
-						message: 'Erro de conexão após várias tentativas. Verifique sua internet.' 
-					} 
-				}
-			}
-			
+			setLoading(false)
 			return { 
 				error: { 
 					message: error instanceof Error ? error.message : 'Erro desconhecido' 
 				} 
 			}
 		}
-	}
+	}, [supabase])
 
-	// Função de cadastro
-	const signUp: SignUpFn = async (email: string, password: string, additionalData?: {
-		full_name?: string
-		user_type?: 'client' | 'professional'
-		phone?: string
-		cpf_cnpj?: string
-		birth_date?: string
-		location_state?: string
-		location_city?: string
-		neighborhood?: string
-		bio?: string
-		services_offered?: string[]
-		experience_years?: string
-		emergency_service?: boolean
-		insurance_coverage?: boolean
-	}) => {
-		console.log('📝 Tentando cadastro para:', email)
+	// Função de logout OTIMIZADA
+	const signOut = useCallback(async () => {
+		console.log('🚪 Executando logout...')
 		
-		if (isMockMode) {
-			// Modo mock para desenvolvimento
-			const mockUser = {
-				id: generateUniqueId(),
-				email,
-				full_name: additionalData?.full_name || 'Usuário Mock',
-				user_type: additionalData?.user_type || 'client'
-			}
-
-			const mockProfile = {
-				...mockUser,
-				phone: additionalData?.phone || '',
-				cpf_cnpj: additionalData?.cpf_cnpj || '',
-				birth_date: additionalData?.birth_date || null,
-				location_state: additionalData?.location_state || 'SP',
-				location_city: additionalData?.location_city || 'São Paulo',
-				neighborhood: additionalData?.neighborhood || '',
-				address: '',
-				bio: additionalData?.bio || '',
-				professional_services: additionalData?.services_offered || [],
-				professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) : 0,
-				is_verified: false,
-				badge: 'bronze',
-				rating: 0,
-				total_reviews: 0,
-				is_available: true,
-				profile_completed: false,
-				profile_completion_score: 0,
-				avatar_url: null,
-				whatsapp: additionalData?.phone || '',
-				professional_certifications: [],
-				professional_portfolio_url: null,
-				profile_photo_url: null,
-				selfie_document_url: null,
-				residence_proof_url: null,
-				client_verification_document: null
-				// REMOVIDO: emergency_service, insurance_coverage (não existem na tabela)
-				// REMOVIDO: created_at, updated_at (têm padrão now())
-			}
-
-			// Salvar no localStorage
-			localStorage.setItem('mockUser', JSON.stringify(mockUser))
-			localStorage.setItem('mockProfile', JSON.stringify(mockProfile))
-
-			// Atualizar estado
-			setUser({ id: mockUser.id, email: mockUser.email })
-			setProfile(mockProfile as unknown as Profile)
-			setSession({ user: { id: mockUser.id, email: mockUser.email } })
-
-			console.log('✅ Cadastro mock bem-sucedido')
-			return { error: null }
-		}
-
 		try {
-			// Cadastro real com Supabase
-			const { data, error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: {
-					data: {
-						full_name: additionalData?.full_name || 'Usuário',
-						user_type: additionalData?.user_type || 'client'
-					}
-				}
-			})
-
+			setLoading(true)
+			
+			// Logout do Supabase
+			const { error } = await supabase.auth.signOut()
+			
 			if (error) {
-				console.error('❌ Erro no cadastro:', error)
+				console.error('❌ Erro no logout:', error)
+				setLoading(false)
 				return { error }
-			}
-
-			if (data.user) {
-				console.log('✅ Cadastro bem-sucedido para:', data.user.email)
-				
-				// Criar perfil no banco com dados padrão mais completos
-				const profileData = {
-					id: data.user.id,
-					email: data.user.email || '',
-					full_name: additionalData?.full_name || 'Usuário',
-					user_type: additionalData?.user_type || 'client',
-					phone: additionalData?.phone || '',
-					cpf_cnpj: additionalData?.cpf_cnpj || '',
-					birth_date: additionalData?.birth_date || null,
-					location_state: additionalData?.location_state || 'SP', // Padrão SP
-					location_city: additionalData?.location_city || 'São Paulo', // Padrão São Paulo
-					neighborhood: additionalData?.neighborhood || '',
-					address: '',
-					bio: additionalData?.bio || '',
-					professional_services: additionalData?.services_offered || [],
-					professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) : 0,
-					// Campos obrigatórios com valores padrão
-					is_verified: false,
-					badge: 'bronze' as const,
-					rating: 0,
-					total_reviews: 0,
-					is_available: true,
-					profile_completed: false,
-					profile_completion_score: 0, // Score inicial
-					avatar_url: null,
-					whatsapp: additionalData?.phone || '', // Usar telefone como WhatsApp padrão
-					professional_certifications: [],
-					professional_portfolio_url: null,
-					profile_photo_url: null,
-					selfie_document_url: null,
-					residence_proof_url: null,
-					client_verification_document: null
-					// REMOVIDO: created_at, updated_at (têm padrão now())
-					// REMOVIDO: emergency_service e insurance_coverage (não existem na tabela)
-				}
-
-				try {
-					console.log('🔄 Criando perfil no banco...', profileData)
-					
-					// Log detalhado dos campos sendo enviados
-					console.log('📋 Campos do perfil:', Object.keys(profileData))
-					console.log('📊 Valores do perfil:', profileData)
-					
-					const { error: profileError } = await supabase
-						.from('profiles')
-						.insert([profileData])
-
-					if (profileError) {
-						console.error('❌ Erro ao criar perfil:', profileError)
-						console.error('❌ Código do erro:', profileError.code)
-						console.error('❌ Mensagem do erro:', profileError.message)
-						console.error('❌ Detalhes do erro:', profileError.details)
-						
-						// Se for erro de duplicata, tentar atualizar
-						if (profileError.code === '23505') {
-							console.log('🔄 Perfil já existe, tentando atualizar...')
-							const { error: updateError } = await supabase
-								.from('profiles')
-								.update(profileData)
-								.eq('id', data.user.id)
-							
-							if (updateError) {
-								console.error('❌ Erro ao atualizar perfil:', updateError)
-								return { error: { message: `Erro ao criar perfil: ${updateError.message}` } }
-							} else {
-								console.log('✅ Perfil atualizado com sucesso')
-							}
-						} else {
-							return { error: { message: `Erro ao criar perfil: ${profileError.message}` } }
-						}
-					} else {
-						console.log('✅ Perfil criado com sucesso')
-					}
-				} catch (profileError) {
-					console.error('❌ Erro crítico ao criar perfil:', profileError)
-					return { error: { message: `Erro crítico ao criar perfil: ${profileError instanceof Error ? profileError.message : 'Erro desconhecido'}` } }
-				}
-
-				// Atualizar estado local
-				setUser({ id: data.user.id, email: data.user.email || '' })
-				setProfile(profileData as unknown as Profile)
-				setSession({ user: { id: data.user.id, email: data.user.email || '' } })
-			}
-
-			return { error: null }
-		} catch (error) {
-			console.error('💥 Erro crítico no cadastro:', error)
-			return { 
-				error: { 
-					message: error instanceof Error ? error.message : 'Erro desconhecido' 
-				} 
-			}
-		}
-	}
-
-	// Função de logout
-	const signOut = async () => {
-		console.log('🚪 Tentando logout...')
-		
-		try {
-			// Executar logout do Supabase primeiro
-			if (!isMockMode) {
-				const { error } = await supabase.auth.signOut()
-				
-				if (error) {
-					console.error('❌ Erro no logout:', error)
-					return { error }
-				}
 			}
 
 			// Limpar estado local
@@ -698,288 +250,150 @@ export function useAuth() {
 			setProfile(null)
 			setSession(null)
 			
-			// Limpeza completa de dados persistentes
-			await clearAllUserData()
-			
-			console.log('✅ Logout bem-sucedido')
-			return { error: null }
-		} catch (error) {
-			console.error('💥 Erro crítico no logout:', error)
-			return { 
-				error: { 
-					message: error instanceof Error ? error.message : 'Erro desconhecido' 
-				} 
-			}
-		}
-	}
-
-	// Função para limpeza completa de dados do usuário
-	const clearAllUserData = async () => {
-		console.log('🧹 Iniciando limpeza completa de dados...')
-		
-		try {
-			// 1. Limpar localStorage
+			// Limpeza básica de dados
 			if (typeof window !== 'undefined') {
-				// Limpar dados específicos do app
+				// Limpar apenas dados específicos do app
 				const keysToRemove = [
 					'mockUser',
 					'mockProfile',
-					'supabase.auth.token',
-					'auth-token',
-					'user-session',
-					'user-profile',
 					'user-preferences',
 					'chat-history',
 					'notification-preferences',
-					'search-history',
-					'recent-searches'
+					'search-history'
 				]
 				
 				keysToRemove.forEach(key => {
 					localStorage.removeItem(key)
 				})
 				
-				// Limpar todos os dados do localStorage (opcional - mais agressivo)
-				// localStorage.clear()
-				
-				// 2. Limpar sessionStorage
 				sessionStorage.clear()
-				
-				// 3. Limpar cache do Service Worker
-				if ('caches' in window) {
-					const cacheNames = await caches.keys()
-					await Promise.all(
-						cacheNames.map(cacheName => {
-							console.log('🗑️ Removendo cache:', cacheName)
-							return caches.delete(cacheName)
-						})
-					)
-				}
-				
-				// 4. Desregistrar Service Workers
-				if ('serviceWorker' in navigator) {
-					const registrations = await navigator.serviceWorker.getRegistrations()
-					await Promise.all(
-						registrations.map(registration => {
-							console.log('🗑️ Desregistrando Service Worker:', registration.scope)
-							return registration.unregister()
-						})
-					)
-				}
-				
-				// 5. Limpar IndexedDB (se existir)
-				if ('indexedDB' in window) {
-					try {
-						const databases = await indexedDB.databases()
-						await Promise.all(
-							databases.map(db => {
-								console.log('🗑️ Removendo database:', db.name)
-								return new Promise((resolve, reject) => {
-									const deleteReq = indexedDB.deleteDatabase(db.name)
-									deleteReq.onsuccess = () => resolve(true)
-									deleteReq.onerror = () => reject(deleteReq.error)
-								})
-							})
-						)
-					} catch (error) {
-						console.warn('⚠️ Erro ao limpar IndexedDB:', error)
-					}
-				}
-				
-				console.log('✅ Limpeza completa de dados concluída')
 			}
+			
+			console.log('✅ Logout bem-sucedido')
+			setLoading(false)
+			return { error: null }
 		} catch (error) {
-			console.error('❌ Erro durante limpeza de dados:', error)
-		}
-	}
-
-	// Função para atualizar perfil
-	const updateProfile = async (updates: Partial<Profile>) => {
-		console.log('🔄 Tentando atualizar perfil...')
-		console.log('🔍 Dados recebidos para atualização:', JSON.stringify(updates, null, 2))
-		console.log('👤 Usuário atual:', user)
-		console.log('📊 Perfil atual:', profile)
-		
-		if (!user || !profile) {
-			console.error('❌ Usuário ou perfil não encontrado')
+			console.error('💥 Erro crítico no logout:', error)
+			setLoading(false)
 			return { 
-				data: null, 
-				error: { message: 'Usuário não autenticado' } 
+				error: { 
+					message: error instanceof Error ? error.message : 'Erro desconhecido' 
+				} 
 			}
 		}
+	}, [supabase])
 
-
-
-		if (isMockMode) {
-			// Modo mock: atualizar localStorage
-			const updatedProfile = { ...profile, ...updates }
-			localStorage.setItem('mockProfile', JSON.stringify(updatedProfile))
-			setProfile(updatedProfile)
-			
-			console.log('✅ Perfil mock atualizado')
-			return { data: updatedProfile, error: null }
-		}
-
+	// Função de cadastro (simplificada)
+	const signUp: SignUpFn = useCallback(async (email, password, additionalData) => {
+		console.log('📝 Tentando cadastro para:', email)
+		
 		try {
-			// Primeiro verificar se o perfil existe no banco
-			console.log('🔍 Verificando se perfil existe no banco...')
-			const { data: existingProfile, error: checkError } = await supabase
-				.from('profiles')
-				.select('id')
-				.eq('id', user.id)
-				.single()
+			setLoading(true)
 			
-			const profileExists = !checkError && existingProfile
-			console.log('📊 Perfil existe no banco:', profileExists)
-			
-			// Filtrar campos válidos para atualização
-			const validUpdates: Record<string, unknown> = {}
-			const allowedFields = [
-				'full_name', 'avatar_url', 'phone', 'bio', 'location_state', 
-				'location_city', 'address', 'cpf_cnpj', 'birth_date', 'neighborhood',
-				'user_type', 'is_verified', 'badge', 'rating', 'total_reviews',
-				'is_available', 'profile_completed', 'profile_completion_score',
-				'whatsapp', 'professional_services', 'professional_experience_years',
-				'professional_certifications', 'professional_portfolio_url',
-				'profile_photo_url', 'selfie_document_url', 'residence_proof_url',
-				'client_verification_document'
-				// REMOVIDO: 'emergency_service', 'insurance_coverage' (não existem na tabela)
-			]
-
-			Object.keys(updates).forEach(key => {
-				const value = updates[key as keyof Profile]
-				if (allowedFields.includes(key) && value !== undefined) {
-					// Permitir valores null para alguns campos específicos
-					validUpdates[key] = value
+			const { data, error } = await supabase.auth.signUp({
+				email,
+				password,
+				options: {
+					data: {
+						full_name: additionalData?.full_name || 'Usuário',
+						phone: additionalData?.phone || '',
+						user_type: additionalData?.user_type || 'client'
+					}
 				}
 			})
 
-			console.log('✅ Campos válidos para atualização:', validUpdates)
-
-
-
-			// Adicionar timestamp de atualização
-			validUpdates.updated_at = new Date().toISOString()
-
-			// Se não há campos válidos para atualizar (além do updated_at), retornar sucesso
-			if (Object.keys(validUpdates).length <= 1) {
-				console.log('ℹ️ Nenhum campo válido para atualizar (apenas updated_at)')
-				return { data: profile, error: null }
+			if (error) {
+				console.error('❌ Erro no cadastro:', error)
+				setLoading(false)
+				return { error }
 			}
 
-			let operationError: { message: string; code?: string; details?: string; hint?: string } | null = null
-
-			if (!profileExists) {
-				// Se perfil não existe, fazer INSERT
-				console.log('📝 Perfil não existe, criando novo...')
-				const profileToCreate = {
-					id: user.id,
-					email: user.email || '',
-					full_name: 'Usuário',
-					user_type: 'client',
-					location_state: 'SP',
-					location_city: 'São Paulo',
-					profile_completion_score: 0,
-					badge: 'bronze',
+			if (data.user) {
+				console.log('✅ Cadastro bem-sucedido para:', data.user.email)
+				
+				// Criar perfil básico
+				const profileData = {
+					id: data.user.id,
+					email: data.user.email || email,
+					full_name: additionalData?.full_name || 'Usuário',
+					user_type: additionalData?.user_type || 'client',
+					phone: additionalData?.phone || '',
+					location_state: additionalData?.location_state || 'SP',
+					location_city: additionalData?.location_city || 'São Paulo',
+					professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) : 0,
+					is_verified: false,
+					badge: 'bronze' as const,
 					rating: 0,
 					total_reviews: 0,
 					is_available: true,
 					profile_completed: false,
-					professional_services: [],
+					profile_completion_score: 0,
+					avatar_url: null,
+					whatsapp: additionalData?.phone || '',
 					professional_certifications: [],
-					...validUpdates
+					professional_portfolio_url: null,
+					profile_photo_url: null,
+					selfie_document_url: null,
+					residence_proof_url: null,
+					client_verification_document: null
 				}
 
-				const { error: insertError } = await supabase
-					.from('profiles')
-					.insert([profileToCreate])
-				
-				operationError = insertError
-			} else {
-				// Se perfil existe, fazer UPDATE
-				console.log('🔄 Perfil existe, atualizando...')
-				const { error: updateError } = await supabase
-					.from('profiles')
-					.update(validUpdates)
-					.eq('id', user.id)
-				
-				operationError = updateError
+				try {
+					const { error: profileError } = await supabase
+						.from('profiles')
+						.insert([profileData])
+
+					if (profileError) {
+						console.error('❌ Erro ao criar perfil:', profileError)
+						// Não falhar o cadastro por causa do perfil
+					} else {
+						console.log('✅ Perfil criado com sucesso')
+					}
+				} catch (profileError) {
+					console.error('❌ Erro ao criar perfil:', profileError)
+				}
 			}
 
-			if (operationError) {
-				console.error('❌ Erro do Supabase na operação:', operationError)
-				console.error('🔍 Detalhes do erro:', {
-					message: operationError.message,
-					details: operationError.details,
-					hint: operationError.hint,
-					code: operationError.code
-				})
-				console.error('🔍 Dados sendo enviados:', validUpdates)
-				console.error('🔍 ID do usuário:', user.id)
-				console.error('🔍 Operação:', profileExists ? 'UPDATE' : 'INSERT')
-				
-				throw operationError
+			setLoading(false)
+			return { error: null }
+		} catch (error) {
+			console.error('💥 Erro crítico no cadastro:', error)
+			setLoading(false)
+			return { 
+				error: { 
+					message: error instanceof Error ? error.message : 'Erro desconhecido' 
+				} 
 			}
+		}
+	}, [supabase])
 
-			console.log('✅ Update realizado com sucesso, buscando perfil atualizado...')
+	// Função de atualização de perfil
+	const updateProfile = useCallback(async (updates: Partial<Profile>) => {
+		if (!user?.id) {
+			return { data: null, error: { message: 'Usuário não autenticado' } }
+		}
 
-			// Primeiro atualizar estado local imediatamente para melhor UX
-			console.log('⚡ Atualizando estado local imediatamente...')
-			const localUpdatedProfile = { ...profile, ...validUpdates } as Profile
-			setProfile(localUpdatedProfile)
-			
-			// Depois tentar buscar o perfil atualizado do banco para confirmar
-			console.log('🔄 Buscando perfil atualizado do banco para confirmação...')
-			const { data, error: selectError } = await supabase
+		try {
+			const { data, error } = await supabase
 				.from('profiles')
-				.select('*')
+				.update(updates)
 				.eq('id', user.id)
+				.select()
 				.single()
 
-			if (selectError) {
-				console.error('❌ Erro ao buscar perfil após update:', selectError)
-				console.error('🔍 Detalhes do erro:', {
-					message: selectError.message,
-					details: selectError.details,
-					hint: selectError.hint,
-					code: selectError.code
-				})
-				
-				// Manter os dados locais já atualizados
-				console.log('⚠️ Mantendo dados locais atualizados (erro ao buscar do banco)')
-				return { data: localUpdatedProfile, error: null }
+			if (error) {
+				console.error('❌ Erro ao atualizar perfil:', error)
+				return { data: null, error }
 			}
 
-
-
-			console.log('✅ Perfil atualizado com sucesso:', data)
-			
-			// Atualizar o estado local com os novos dados
 			if (data) {
-				const updatedProfile: Profile = {
-					...profile!,
-					...data,
-					updated_at: data.updated_at || new Date().toISOString()
-				}
-				setProfile(updatedProfile)
+				setProfile(data as Profile)
+				console.log('✅ Perfil atualizado com sucesso')
 			}
-			
-			return { data, error: null }
-				} catch (error) {
+
+			return { data: data as Profile, error: null }
+		} catch (error) {
 			console.error('💥 Erro crítico ao atualizar perfil:', error)
-			console.error('🔍 Tipo do erro:', typeof error)
-			console.error('🔍 Stack trace:', error instanceof Error ? error.stack : 'N/A')
-			
-			// Log detalhado para Supabase errors
-			if (error && typeof error === 'object' && 'message' in error) {
-				console.error('🔍 Supabase Error Details:', {
-					message: error.message,
-					details: (error as { details?: unknown }).details,
-					hint: (error as { hint?: unknown }).hint,
-					code: (error as { code?: unknown }).code
-				})
-			}
-			
 			return { 
 				data: null, 
 				error: { 
@@ -987,100 +401,46 @@ export function useAuth() {
 				} 
 			}
 		}
-	}
+	}, [supabase, user?.id])
 
-	// Função para fazer upload de avatar via API (contorna RLS)
-	const uploadAvatar = async (file: File) => {
+	// Função de upload de avatar
+	const uploadAvatar = useCallback(async (file: File) => {
+		if (!user?.id) {
+			return { data: null, error: { message: 'Usuário não autenticado' } }
+		}
+
 		try {
-			console.log('=== INICIANDO UPLOAD VIA API ===');
-			
-			if (!user) {
-				console.error('❌ Usuário não autenticado');
-				return { 
-					data: null, 
-					error: { message: 'Usuário não autenticado. Faça login novamente.' } 
-				};
+			const fileExt = file.name.split('.').pop()
+			const fileName = `${user.id}-${Date.now()}.${fileExt}`
+			const filePath = `avatars/${fileName}`
+
+			const { error: uploadError } = await supabase.storage
+				.from('avatars')
+				.upload(filePath, file)
+
+			if (uploadError) {
+				console.error('❌ Erro no upload:', uploadError)
+				return { data: null, error: uploadError }
 			}
 
-			console.log('✅ Usuário autenticado:', user.id);
+			const { data: { publicUrl } } = supabase.storage
+				.from('avatars')
+				.getPublicUrl(filePath)
 
-			// Validar arquivo
-			if (!file) {
-				console.error('❌ Nenhum arquivo selecionado');
-				return { 
-					data: null, 
-					error: { message: 'Nenhum arquivo selecionado' } 
-				};
-			}
+			// Atualizar perfil com nova URL
+			await updateProfile({ avatar_url: publicUrl })
 
-			// Validar tipo de arquivo
-			const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-			if (!allowedTypes.includes(file.type)) {
-				console.error('❌ Tipo de arquivo não suportado:', file.type);
-				return { 
-					data: null, 
-					error: { message: 'Tipo de arquivo não suportado. Use JPEG, PNG ou WebP.' } 
-				};
-			}
-
-			// Validar tamanho (máximo 5MB)
-			const maxSize = 5 * 1024 * 1024; // 5MB
-			if (file.size > maxSize) {
-				console.error('❌ Arquivo muito grande:', file.size);
-				return { 
-					data: null, 
-					error: { message: 'Arquivo muito grande. Máximo 5MB.' } 
-				};
-			}
-
-			console.log('✅ Validações passaram');
-
-			// Preparar FormData para envio
-			const formData = new FormData();
-			formData.append('file', file);
-			formData.append('userId', user.id);
-
-			console.log('📤 Enviando arquivo para API...');
-
-			// Upload via API
-			const response = await fetch('/api/upload-avatar', {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				console.error('❌ Erro na API:', errorData);
-				return { 
-					data: null, 
-					error: { message: errorData.error || 'Erro no upload' } 
-				};
-			}
-
-			const result = await response.json();
-			console.log('✅ Upload realizado com sucesso via API!');
-			console.log('🔗 URL do avatar:', result.avatarUrl);
-
-			// Atualizar estado local
-			if (profile) {
-				const updatedProfile = { ...profile, avatar_url: result.avatarUrl };
-				setProfile(updatedProfile);
-				console.log('✅ Estado local atualizado');
-			}
-
-			console.log('🎉 Upload de avatar concluído com sucesso!');
-			return { data: result.avatarUrl, error: null };
-
+			return { data: publicUrl, error: null }
 		} catch (error) {
-			console.error('💥 Erro crítico no upload de avatar:', error);
-			
-			const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido no upload';
+			console.error('💥 Erro crítico no upload:', error)
 			return { 
 				data: null, 
-				error: { message: errorMessage } 
-			};
+				error: { 
+					message: error instanceof Error ? error.message : 'Erro desconhecido' 
+				} 
+			}
 		}
-	}
+	}, [supabase, user?.id, updateProfile])
 
 	return {
 		user,
@@ -1092,6 +452,6 @@ export function useAuth() {
 		signOut,
 		updateProfile,
 		uploadAvatar,
-		isMockMode,
+		isMockMode: false,
 	}
 }
