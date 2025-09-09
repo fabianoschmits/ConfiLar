@@ -2,6 +2,7 @@
 
 import { createContext, useContext, ReactNode } from 'react'
 import { useAuth, Profile, SignUpFn } from '@/hooks/useAuth'
+import { Session } from '@supabase/supabase-js'
 
 interface AuthContextType {
 	user: { id: string; email: string } | null
@@ -18,8 +19,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-	const auth = useAuth()
+interface AuthProviderProps {
+	children: ReactNode
+	initialSession?: Session | null
+}
+
+export function AuthProvider({ children, initialSession }: AuthProviderProps) {
+	const auth = useAuth(initialSession)
 
 	return (
 		<AuthContext.Provider value={auth}>

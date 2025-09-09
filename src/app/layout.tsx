@@ -1,14 +1,17 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { AuthProvider } from "@/contexts/AuthContext"
 import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
-import { FloatingChatWrapper } from "@/components/chat/FloatingChatWrapper"
-import { MetaMaskErrorSuppressor } from "@/components/MetaMaskErrorSuppressor"
+import { Suspense } from "react"
+import { FastPageLoading } from "@/components/ui/FastLoading"
+import { FloatingChatWrapper, MetaMaskErrorSuppressor } from "@/components/layout/ClientComponents"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,11 +25,15 @@ export const metadata: Metadata = {
   }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Recuperar sessão no servidor para evitar tela em branco
+  const supabase = createServerComponentClient({ cookies })
+  const { data: { session } } = await supabase.auth.getSession()
+
   return (
     <html lang="pt-BR">
       <head>
@@ -34,14 +41,16 @@ export default function RootLayout({
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
-        <body className={inter.className}>
-          <ServiceWorkerCleaner />
-          <MetaMaskErrorSuppressor />
-          <ErrorBoundary>
+      <body className={inter.className}>
+        <ServiceWorkerCleaner />
+        <MetaMaskErrorSuppressor />
+        <ErrorBoundary>
           <NotificationProvider>
-            <AuthProvider>
+            <AuthProvider initialSession={session}>
               <FloatingChatProvider>
-                {children}
+                <Suspense fallback={<FastPageLoading text="Carregando aplicação..." />}>
+                  {children}
+                </Suspense>
                 <FloatingChatWrapper />
                 <Toaster position="top-right" richColors />
               </FloatingChatProvider>

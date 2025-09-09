@@ -25,10 +25,11 @@ export default function NovaSenhaPage() {
   useEffect(() => {
     setMounted(true)
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      // Verificar sessão atual em vez de getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) {
         toast.error('Link inválido ou expirado')
-        router.push('/auth/auth')
+        router.push('/auth')
       }
     }
     checkUser()
