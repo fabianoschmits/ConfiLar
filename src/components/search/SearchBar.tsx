@@ -9,9 +9,7 @@ import {
   X, 
   Filter, 
   MapPin, 
-  Clock,
-  TrendingUp,
-  History
+  TrendingUp
 } from 'lucide-react'
 import { SearchFilters } from './AdvancedSearchFilters'
 
@@ -22,8 +20,6 @@ interface SearchBarProps {
   filters: SearchFilters
   onToggleFilters: () => void
   showFilters: boolean
-  recentSearches?: string[]
-  onRecentSearchClick?: (term: string) => void
   suggestions?: string[]
   onSuggestionClick?: (suggestion: string) => void
   placeholder?: string
@@ -37,15 +33,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   filters,
   onToggleFilters,
   showFilters,
-  recentSearches = [],
-  onRecentSearchClick,
   suggestions = [],
   onSuggestionClick,
   placeholder = "Digite o nome, profissão ou o que você precisa...",
   className = ""
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [showRecentSearches, setShowRecentSearches] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
@@ -54,7 +47,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
         setShowSuggestions(false)
-        setShowRecentSearches(false)
       }
     }
 
@@ -66,15 +58,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   useEffect(() => {
     if (searchTerm.length > 0) {
       setShowSuggestions(true)
-      setShowRecentSearches(false)
-    } else if (recentSearches.length > 0) {
-      setShowSuggestions(false)
-      setShowRecentSearches(true)
     } else {
       setShowSuggestions(false)
-      setShowRecentSearches(false)
     }
-  }, [searchTerm, recentSearches.length])
+  }, [searchTerm])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onSearchChange(e.target.value)
@@ -84,7 +71,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     if (e.key === 'Enter') {
       onSearch()
       setShowSuggestions(false)
-      setShowRecentSearches(false)
     }
   }
 
@@ -92,15 +78,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     onSearchChange(suggestion)
     onSuggestionClick?.(suggestion)
     setShowSuggestions(false)
-    setShowRecentSearches(false)
-    inputRef.current?.focus()
-  }
-
-  const handleRecentSearchClick = (term: string) => {
-    onSearchChange(term)
-    onRecentSearchClick?.(term)
-    setShowSuggestions(false)
-    setShowRecentSearches(false)
     inputRef.current?.focus()
   }
 
@@ -138,8 +115,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onFocus={() => {
             if (searchTerm.length > 0) {
               setShowSuggestions(true)
-            } else if (recentSearches.length > 0) {
-              setShowRecentSearches(true)
             }
           }}
           className="pl-12 pr-20 py-4 text-lg rounded-2xl border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
@@ -218,7 +193,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       </div>
 
       {/* Dropdown de Sugestões */}
-      {(showSuggestions || showRecentSearches) && (
+      {showSuggestions && (
         <div 
           ref={suggestionsRef}
           className="absolute top-full left-0 right-0 mt-2 bg-white border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
@@ -241,24 +216,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             </div>
           )}
 
-          {showRecentSearches && recentSearches.length > 0 && (
-            <div className="p-2">
-              <div className="text-xs font-medium text-muted-foreground mb-2 px-2 flex items-center gap-1">
-                <History className="h-3 w-3" />
-                Buscas Recentes
-              </div>
-              {recentSearches.slice(0, 5).map((term, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleRecentSearchClick(term)}
-                  className="w-full text-left px-2 py-2 hover:bg-gray-100 rounded text-sm flex items-center gap-2"
-                >
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  {term}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </div>

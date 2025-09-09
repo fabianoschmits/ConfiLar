@@ -13,8 +13,6 @@ import {
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
-import { useSearchHistory } from '@/hooks/useSearchHistory'
-import { SearchHistory as SearchHistoryComponent } from '@/components/features/SearchHistory'
 import { AdvancedSearchFilters } from '@/components/search/AdvancedSearchFilters'
 import { SearchResults } from '@/components/search/SearchResults'
 import { SearchBar } from '@/components/search/SearchBar'
@@ -27,7 +25,6 @@ import { useGeolocation } from '@/hooks/useGeolocation'
 export default function BuscarPage() {
   const router = useRouter()
   const [showFilters, setShowFilters] = useState(false)
-  const [showSearchHistory, setShowSearchHistory] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [mounted, setMounted] = useState(false)
   const [searchMode, setSearchMode] = useState<'advanced' | 'proximity'>('advanced')
@@ -61,23 +58,12 @@ export default function BuscarPage() {
   // Hook para geolocalização
   const { location, getAndSaveLocation } = useGeolocation()
 
-  // Hook para gerenciar histórico de busca
-  const { saveSearch, searchHistory } = useSearchHistory()
   const { openChat } = useFloatingChat()
 
-  // Função para executar busca e salvar no histórico
+  // Função para executar busca
   const handleSearch = useCallback(() => {
-    if (filters.searchTerm.trim()) {
-      const searchFilters = {
-        location_state: filters.state !== 'all' ? filters.state : undefined,
-        location_city: filters.city !== 'all' ? filters.city : undefined,
-        category_id: filters.category !== 'all' ? filters.category : undefined
-      }
-      
-      saveSearch(filters.searchTerm, searchFilters)
-    }
     executeSearch()
-  }, [filters, saveSearch, executeSearch])
+  }, [executeSearch])
 
   // Função para executar busca por proximidade
   const handleProximitySearch = useCallback(async () => {
@@ -121,13 +107,6 @@ export default function BuscarPage() {
     updateFilters({ searchTerm: term })
   }, [updateFilters])
 
-  const handleRecentSearchClick = useCallback((term: string) => {
-    updateFilters({ searchTerm: term })
-  }, [updateFilters])
-
-  const handleSuggestionClick = useCallback((suggestion: string) => {
-    updateFilters({ searchTerm: suggestion })
-  }, [updateFilters])
 
   // Sugestões de busca baseadas nos serviços disponíveis
   const suggestions = [
@@ -248,10 +227,7 @@ export default function BuscarPage() {
               filters={filters}
               onToggleFilters={() => setShowFilters(!showFilters)}
               showFilters={showFilters}
-              recentSearches={searchHistory.map(item => item.search_query)}
-              onRecentSearchClick={handleRecentSearchClick}
               suggestions={suggestions}
-              onSuggestionClick={handleSuggestionClick}
             />
           </div>
 
@@ -301,22 +277,6 @@ export default function BuscarPage() {
             </div>
           </div>
 
-          {/* Histórico de Buscas */}
-          <div className="mt-12 text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setShowSearchHistory(!showSearchHistory)}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              {showSearchHistory ? 'Ocultar' : 'Ver'} Histórico de Buscas
-            </Button>
-          </div>
-
-          {showSearchHistory && (
-            <div className="mt-6">
-              <SearchHistoryComponent />
-            </div>
-          )}
         </div>
       </div>
     </MainLayout>
