@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function DashboardCharts() {
+export default function DashboardCharts() {
   return (
     <Card>
       <CardHeader>

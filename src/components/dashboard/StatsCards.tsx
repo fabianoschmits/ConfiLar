@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Users, MessageSquare, Star, TrendingUp } from 'lucide-react'
 
-export function StatsCards() {
+export default function StatsCards() {
   const { profile } = useAuthContext()
 
   const stats = [
