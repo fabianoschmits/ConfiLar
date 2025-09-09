@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Profile } from '@/types/database'
+import { Session } from '@supabase/supabase-js'
 
 // Re-exportar Profile para compatibilidade
 export type { Profile }
@@ -27,7 +28,7 @@ export type SignUpFn = (
 	}
 ) => Promise<{ error: { message: string } | null }>
 
-export function useAuth() {
+export function useAuth(initialSession?: Session | null) {
 	const [user, setUser] = useState<{ id: string; email: string } | null>(null)
 	const [profile, setProfile] = useState<Profile | null>(null)
 	const [session, setSession] = useState<{ user: { id: string; email: string } } | null>(null)
@@ -128,7 +129,23 @@ export function useAuth() {
 
 		const initializeAuth = async () => {
 			try {
-				// 1. Buscar sessão atual
+				// Se temos sessão inicial do servidor, usar ela (mais rápido)
+				if (initialSession?.user?.email) {
+					console.log('✅ Usando sessão inicial do servidor:', initialSession.user.email)
+					const userData = { id: initialSession.user.id, email: initialSession.user.email }
+					setUser(userData)
+					setSession({ user: userData })
+					
+					// Buscar perfil do usuário
+					await fetchUserProfile(initialSession.user.id, initialSession.user.email)
+					setLoading(false)
+					setInitialized(true)
+					clearTimeout(safetyTimeout)
+					return
+				}
+
+				// Se não temos sessão inicial, verificar sessão atual
+				console.log('🔍 Verificando sessão existente...')
 				const { data: { session }, error } = await supabase.auth.getSession()
 				
 				if (error) {
@@ -208,7 +225,7 @@ export function useAuth() {
 			subscription.unsubscribe()
 			clearTimeout(safetyTimeout)
 		}
-	}, [initialized, supabase, fetchUserProfile, user?.id])
+	}, [initialized, supabase, fetchUserProfile, initialSession])
 
 	// Função de login OTIMIZADA
 	const signIn = useCallback(async (email: string, password: string) => {

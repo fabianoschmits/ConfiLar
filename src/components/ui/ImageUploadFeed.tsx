@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { Camera, X, Upload, Loader2, Image as ImageIcon } from 'lucide-react'
 import { Button } from './button'
 import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 interface ImageUploadFeedProps {
   onImagesUpload: (imageUrls: string[]) => void
@@ -25,8 +26,8 @@ export function ImageUploadFeed({
   const handleFileUpload = async (files: FileList) => {
     if (files.length === 0) return
 
-    // Verificar se o usuário está autenticado
-    const { data: { user } } = await supabase.auth.getUser()
+    // Usar contexto de auth em vez de chamada direta
+    const { user } = useAuthContext()
     if (!user) {
       alert('Você precisa estar logado para fazer upload de imagens')
       return
