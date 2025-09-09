@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,8 +14,13 @@ export default function RecuperarSenhaPage() {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,20 +68,49 @@ export default function RecuperarSenhaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-                         <Button
-               onClick={() => router.push('/auth')}
-               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-             >
-               Voltar para o Login
-             </Button>
-            <Button
-              onClick={() => setEmailSent(false)}
-              variant="outline"
-              className="w-full"
-            >
-              Enviar Novamente
-            </Button>
+            {mounted ? (
+              <>
+                <Button
+                  onClick={() => router.push('/auth')}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                >
+                  Voltar para o Login
+                </Button>
+                <Button
+                  onClick={() => setEmailSent(false)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Enviar Novamente
+                </Button>
+              </>
+            ) : (
+              <div className="w-full bg-gray-300 text-gray-600 py-3 text-center rounded">
+                Carregando...
+              </div>
+            )}
           </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Se não estiver montado, mostrar loading
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Recuperar Senha
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Carregando...
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     )
@@ -123,15 +157,22 @@ export default function RecuperarSenhaPage() {
             </Button>
 
             <div className="text-center">
-                           <Button
-               type="button"
-               variant="ghost"
-               onClick={() => router.push('/auth')}
-               className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
-             >
-               <ArrowLeft className="w-4 h-4 mr-2" />
-               Voltar para o Login
-             </Button>
+              {mounted ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => router.push('/auth')}
+                  className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar para o Login
+                </Button>
+              ) : (
+                <div className="text-gray-400 font-medium">
+                  <ArrowLeft className="w-4 h-4 mr-2 inline" />
+                  Carregando...
+                </div>
+              )}
             </div>
           </form>
         </CardContent>

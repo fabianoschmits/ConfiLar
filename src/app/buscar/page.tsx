@@ -40,6 +40,11 @@ export default function BuscarPage() {
   const [filteredUsers, setFilteredUsers] = useState<Profile[]>([])
   const [showSearchHistory, setShowSearchHistory] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Hook para gerenciar histórico de busca
   const { saveSearch } = useSearchHistory()
@@ -214,6 +219,22 @@ export default function BuscarPage() {
     )
   }
 
+  if (!mounted) {
+    return (
+      <MainLayout requireAuth={true}>
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                Carregando...
+              </h1>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
   return (
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-background">
@@ -241,7 +262,11 @@ export default function BuscarPage() {
                 className="pl-12 pr-4 py-4 text-lg rounded-2xl border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
               />
               <Button
-                onClick={handleSearch}
+                onClick={() => {
+                  if (mounted) {
+                    handleSearch()
+                  }
+                }}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 rounded-xl"
               >
                 Buscar
@@ -263,7 +288,11 @@ export default function BuscarPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setShowFilters(!showFilters)}
+                      onClick={() => {
+                        if (mounted) {
+                          setShowFilters(!showFilters)
+                        }
+                      }}
                       className="lg:hidden"
                     >
                       {showFilters ? <X className="h-4 w-4" /> : <Filter className="h-4 w-4" />}
@@ -328,7 +357,11 @@ export default function BuscarPage() {
                   {/* Botão Limpar Filtros */}
                   <Button
                     variant="outline"
-                    onClick={handleClearFilters}
+                    onClick={() => {
+                      if (mounted) {
+                        handleClearFilters()
+                      }
+                    }}
                     className="w-full rounded-lg border-2 hover:bg-red-50 hover:border-red-300"
                   >
                     <X className="h-4 w-4 mr-2" />
@@ -458,7 +491,11 @@ export default function BuscarPage() {
                           {/* Ações */}
                           <div className="flex flex-col gap-1">
                             <Button
-                              onClick={() => handleContact(user)}
+                              onClick={() => {
+                                if (mounted) {
+                                  handleContact(user)
+                                }
+                              }}
                               size="sm"
                               className="px-2 py-1 h-6 text-xs w-full"
                             >
@@ -501,14 +538,22 @@ export default function BuscarPage() {
                   </p>
                   {users.length === 0 ? (
                     <Button
-                      onClick={() => window.location.href = '/auth?tab=register'}
+                      onClick={() => {
+                        if (mounted) {
+                          window.location.href = '/auth?tab=register'
+                        }
+                      }}
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       Cadastrar-se
                     </Button>
                   ) : (
                     <Button
-                      onClick={handleClearFilters}
+                      onClick={() => {
+                        if (mounted) {
+                          handleClearFilters()
+                        }
+                      }}
                       variant="outline"
                       className="border-gray-300 hover:bg-gray-50"
                     >
@@ -524,7 +569,11 @@ export default function BuscarPage() {
           <div className="mt-12 text-center">
             <Button
               variant="ghost"
-              onClick={() => setShowSearchHistory(!showSearchHistory)}
+              onClick={() => {
+                if (mounted) {
+                  setShowSearchHistory(!showSearchHistory)
+                }
+              }}
               className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               {showSearchHistory ? 'Ocultar' : 'Ver'} Histórico de Buscas

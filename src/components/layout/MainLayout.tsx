@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { FloatingProfile } from './FloatingProfile';
 import { MobileBottomNavigation } from './MobileBottomNavigation';
@@ -20,9 +20,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
   const { user, profile, loading } = useAuthContext();
   const pathname = usePathname();
   const isLoggedIn = user && profile;
+  const [mounted, setMounted] = useState(false);
   
   // Hook para redirecionamento automático
   useAutoRedirect();
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Debug em desenvolvimento
   if (process.env.NODE_ENV === 'development') {
@@ -58,13 +63,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
               </p>
               <div className="space-y-3">
                 <button
-                  onClick={() => window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`}
+                  onClick={() => {
+                    if (mounted) {
+                      window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`
+                    }
+                  }}
                   className="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   Fazer Login
                 </button>
                 <button
-                  onClick={() => window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`}
+                  onClick={() => {
+                    if (mounted) {
+                      window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`
+                    }
+                  }}
                   className="w-full border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-primary/5 transition-colors"
                 >
                   Criar Conta

@@ -1,12 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 export default function LogoutPage() {
   const { signOut } = useAuthContext()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     const performLogout = async () => {
       try {
         console.log('🚪 Iniciando logout...')

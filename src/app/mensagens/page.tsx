@@ -51,6 +51,7 @@ function MensagensContent() {
   const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
   const [newMessage, setNewMessage] = useState('')
+  const [mounted, setMounted] = useState(false)
   
   // Estado para o seletor de emojis
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false)
@@ -98,6 +99,10 @@ function MensagensContent() {
   
   // Ref para o container de mensagens para auto-scroll
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Função para fazer scroll automático para o final das mensagens
   const scrollToBottom = (instant = false) => {
@@ -545,7 +550,11 @@ function MensagensContent() {
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    onClick={() => handleConversationSelect(conversation.id)}
+                    onClick={() => {
+                      if (mounted) {
+                        handleConversationSelect(conversation.id)
+                      }
+                    }}
                     className={`p-2 lg:p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                       selectedConversation === conversation.id ? 'bg-blue-50 border-blue-200' : ''
                     }`}
@@ -634,7 +643,11 @@ function MensagensContent() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleDeleteConversation} className="text-red-600">
+                            <DropdownMenuItem onClick={() => {
+                              if (mounted) {
+                                handleDeleteConversation()
+                              }
+                            }} className="text-red-600">
                               <Trash size={16} weight="light" className="mr-2" />
                               Excluir conversa
                             </DropdownMenuItem>
@@ -707,14 +720,18 @@ function MensagensContent() {
                       
                       <div className="flex items-center space-x-1 lg:space-x-2">
                         <div className="relative">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-8 w-8 lg:h-10 lg:w-10 p-0"
-                            onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                          >
-                            <PaperclipPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
-                          </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 lg:h-10 lg:w-10 p-0"
+                          onClick={() => {
+                            if (mounted) {
+                              setShowAttachmentMenu(!showAttachmentMenu)
+                            }
+                          }}
+                        >
+                          <PaperclipPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
+                        </Button>
                           {showAttachmentMenu && (
                             <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2">
                               <div className="grid grid-cols-2 gap-2">
@@ -738,11 +755,15 @@ function MensagensContent() {
                             </div>
                           )}
                         </div>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="h-8 w-8 lg:h-10 lg:w-10 p-0"
-                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                          onClick={() => {
+                            if (mounted) {
+                              setShowEmojiPicker(!showEmojiPicker)
+                            }
+                          }}
                         >
                           <Smiley size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
@@ -750,7 +771,11 @@ function MensagensContent() {
                           <Microphone size={16} weight="light" className="lg:w-5 lg:h-5" />
                         </Button>
                         <Button
-                          onClick={handleSendMessage}
+                          onClick={() => {
+                            if (mounted) {
+                              handleSendMessage()
+                            }
+                          }}
                           disabled={!newMessage.trim()}
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 lg:h-10 lg:w-10 p-0"
@@ -767,7 +792,11 @@ function MensagensContent() {
                           {emojis.map((emoji, index) => (
                             <button
                               key={index}
-                              onClick={() => addEmoji(emoji)}
+                              onClick={() => {
+                                if (mounted) {
+                                  addEmoji(emoji)
+                                }
+                              }}
                               className="p-1 hover:bg-gray-100 rounded text-base lg:text-lg"
                             >
                               {emoji}

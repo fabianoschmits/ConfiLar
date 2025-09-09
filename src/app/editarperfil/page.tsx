@@ -40,6 +40,11 @@ export default function EditarPerfilPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isSavingLocation, setIsSavingLocation] = useState(false)
   const [_selectedState, setSelectedState] = useState(profile?.location_state || '')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [formData, setFormData] = useState({
     email: profile?.email || '',
     full_name: profile?.full_name || '',
@@ -282,6 +287,20 @@ export default function EditarPerfilPage() {
       toast.error('Erro inesperado ao fazer upload da foto')
       return { data: null, error: { message: 'Erro inesperado' } }
     }
+  }
+
+  if (!mounted) {
+    return (
+      <ProfilePageLayout title="Carregando..." showBackButton={false}>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Carregando...
+            </h1>
+          </div>
+        </div>
+      </ProfilePageLayout>
+    )
   }
 
   return (

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { ThumbsUp } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'sonner'
+import { RecommendationList } from './RecommendationList'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +19,7 @@ interface RecommendationButtonProps {
   variant?: 'default' | 'outline' | 'ghost'
   showCount?: boolean
   className?: string
+  showListOnClick?: boolean
 }
 
 export function RecommendationButton({ 
@@ -25,13 +27,17 @@ export function RecommendationButton({
   size = 'default', 
   variant = 'outline',
   showCount = true,
-  className = ''
+  className = '',
+  showListOnClick = true
 }: RecommendationButtonProps) {
   const { user } = useAuthContext()
   const [isRecommended, setIsRecommended] = useState(false)
   const [recommendationCount, setRecommendationCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [userType, setUserType] = useState<string | null>(null)
+  const [showRecommendationList, setShowRecommendationList] = useState(false)
+  const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   // Verificar se o usuário atual já recomendou
   useEffect(() => {
@@ -61,6 +67,12 @@ export function RecommendationButton({
   }
 
   const checkCurrentRecommendation = async () => {
+    // Evitar auto-recomendação
+    if (user?.id === userId) {
+      setIsRecommended(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_recommendations')
@@ -79,6 +91,12 @@ export function RecommendationButton({
   }
 
   const loadRecommendationCount = async () => {
+    // Evitar auto-recomendação
+    if (user?.id === userId) {
+      setRecommendationCount(0)
+      return
+    }
+
     try {
       const { count, error } = await supabase
         .from('user_recommendations')
@@ -148,6 +166,22 @@ export function RecommendationButton({
     }
   }
 
+  const handleShowRecommendationList = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setButtonPosition({
+        top: rect.bottom + 10,
+        left: rect.left
+      })
+      setShowRecommendationList(true)
+    }
+  }
+
+  const handleCloseRecommendationList = () => {
+    setShowRecommendationList(false)
+  }
+
   const getSizeClasses = () => {
     switch (size) {
       case 'sm':
@@ -171,28 +205,44 @@ export function RecommendationButton({
   }
 
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={handleRecommendation}
-      disabled={isLoading}
-      className={`${getSizeClasses()} ${className} ${
-        isRecommended 
-          ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
-          : ''
-      }`}
-    >
-      <ThumbsUp 
-        className={`${getIconSize()} mr-2 ${
-          isRecommended ? 'text-green-600 fill-current' : ''
+    <>
+      <Button
+        ref={buttonRef}
+        variant={variant}
+        size={size}
+        onClick={handleRecommendation}
+        disabled={isLoading || user?.id === userId}
+        className={`${getSizeClasses()} ${className} ${
+          isRecommended 
+            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
+            : ''
         }`}
-      />
-      {isRecommended ? 'Recomendado' : 'Recomendar'}
-      {showCount && recommendationCount > 0 && (
-        <span className="ml-2 bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-          {recommendationCount}
-        </span>
+      >
+        <ThumbsUp 
+          className={`${getIconSize()} mr-2 ${
+            isRecommended ? 'text-green-600 fill-current' : ''
+          }`}
+        />
+        {user?.id === userId ? 'Você mesmo' : (isRecommended ? 'Recomendado' : 'Recomendar')}
+        {showCount && recommendationCount > 0 && (
+          <span 
+            className="ml-2 bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-gray-200 transition-colors"
+            onClick={showListOnClick ? handleShowRecommendationList : undefined}
+            title="Clique para ver quem recomendou"
+          >
+            {recommendationCount}
+          </span>
+        )}
+      </Button>
+
+      {showRecommendationList && (
+        <RecommendationList
+          userId={userId}
+          isOpen={showRecommendationList}
+          onClose={handleCloseRecommendationList}
+          position={buttonPosition}
+        />
       )}
-    </Button>
+    </>
   )
 }

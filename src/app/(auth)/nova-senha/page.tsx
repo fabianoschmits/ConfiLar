@@ -17,11 +17,13 @@ export default function NovaSenhaPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
   // Verificar se o usuário está autenticado (após clicar no link do email)
   useEffect(() => {
+    setMounted(true)
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -97,13 +99,40 @@ export default function NovaSenhaPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-                         <Button
-               onClick={() => router.push('/auth')}
-               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-             >
-               Ir para o Login
-             </Button>
+            {mounted ? (
+              <Button
+                onClick={() => router.push('/auth')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+              >
+                Ir para o Login
+              </Button>
+            ) : (
+              <div className="w-full bg-gray-300 text-gray-600 py-3 text-center rounded">
+                Carregando...
+              </div>
+            )}
           </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Se não estiver montado, mostrar loading
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              <Lock className="w-8 h-8 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Nova Senha
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Carregando...
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     )

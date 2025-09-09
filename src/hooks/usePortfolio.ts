@@ -19,6 +19,19 @@ export function usePortfolio(professionalId?: string) {
       setLoading(true)
       setError(null)
 
+      // Verificar se a tabela portfolio_projects existe
+      const { data, error } = await supabase
+        .from('portfolio_projects')
+        .select('*')
+        .limit(1)
+
+      if (error) {
+        console.error('Tabela portfolio_projects não encontrada:', error)
+        setError('Sistema de portfólio não disponível')
+        setProjects([])
+        return
+      }
+
       const query = supabase
         .from('portfolio_projects')
         .select('*')
@@ -28,18 +41,19 @@ export function usePortfolio(professionalId?: string) {
         query.eq('professional_id', userId)
       }
 
-      const { data, error } = await query
+      const { data: projectsData, error: projectsError } = await query
 
-      if (error) {
-        console.error('Erro ao buscar projetos:', error)
+      if (projectsError) {
+        console.error('Erro ao buscar projetos:', projectsError)
         setError('Erro ao carregar projetos do portfólio')
         return
       }
 
-      setProjects(data || [])
+      setProjects(projectsData || [])
     } catch (err) {
       console.error('Erro crítico ao buscar projetos:', err)
       setError('Erro crítico ao carregar projetos')
+      setProjects([])
     } finally {
       setLoading(false)
     }

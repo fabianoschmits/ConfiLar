@@ -20,6 +20,11 @@ export default function AvaliacoesPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; avatar?: string } | null>(null)
   const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const {
     reviews,
@@ -143,6 +148,20 @@ export default function AvaliacoesPage() {
               <RefreshCw className="h-6 w-6 animate-spin" />
               <span>Carregando avaliações...</span>
             </div>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!mounted) {
+    return (
+      <MainLayout requireAuth={true}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Carregando...
+            </h1>
           </div>
         </div>
       </MainLayout>
