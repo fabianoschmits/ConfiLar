@@ -6,7 +6,7 @@ import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { FloatingChat } from '@/components/chat/FloatingChat'
 import { Envelope } from '@phosphor-icons/react'
 
-export function FloatingChatWrapper() {
+export default function FloatingChatWrapper() {
   const { user, profile } = useAuthContext()
   const { isOpen, selectedConversationId, targetUserId, targetUserName, closeChat, selectConversation, openChat } = useFloatingChat()
   const [isMinimized, setIsMinimized] = useState(false)

@@ -8,7 +8,3 @@ export const FloatingChatWrapper = dynamic(() => import("@/components/chat/Float
   loading: () => null
 })
 
-export const MetaMaskErrorSuppressor = dynamic(() => import("@/components/MetaMaskErrorSuppressor"), {
-  ssr: false,
-  loading: () => null
-})

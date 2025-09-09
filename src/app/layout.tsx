@@ -11,7 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { Suspense } from "react"
 import { FastPageLoading } from "@/components/ui/FastLoading"
-import { FloatingChatWrapper, MetaMaskErrorSuppressor } from "@/components/layout/ClientComponents"
+import { FloatingChatWrapper } from "@/components/layout/ClientComponents"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -41,10 +41,9 @@ export default async function RootLayout({
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
-      <body className={inter.className}>
-        <ServiceWorkerCleaner />
-        <MetaMaskErrorSuppressor />
-        <ErrorBoundary>
+                  <body className={inter.className}>
+                    <ServiceWorkerCleaner />
+                    <ErrorBoundary>
           <NotificationProvider>
             <AuthProvider initialSession={session}>
               <FloatingChatProvider>
