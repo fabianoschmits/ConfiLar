@@ -19,11 +19,6 @@ export interface ReviewWithProfiles extends Review {
     avatar_url?: string
     user_type: 'client' | 'professional'
   }
-  ad?: {
-    id: string
-    title: string
-    category: string
-  }
 }
 
 export interface ReviewStats {
@@ -67,11 +62,6 @@ export function useSupabaseReviews() {
             full_name,
             avatar_url,
             user_type
-          ),
-          ad:classified_ads(
-            id,
-            title,
-            category
           )
         `)
         .eq(column, userId)

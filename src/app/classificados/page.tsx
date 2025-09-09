@@ -81,6 +81,11 @@ export default function ClassificadosPage() {
     location_city: '',
     ad_type: 'procurar' as 'procurar' | 'oferecer'
   })
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Carregar anúncios
   useEffect(() => {
@@ -456,6 +461,22 @@ export default function ClassificadosPage() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!mounted) {
+    return (
+      <MainLayout requireAuth={true}>
+        <div className="min-h-screen bg-gray-50">
+          <div className="container mx-auto px-4 py-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                Carregando...
+              </h1>
+            </div>
+          </div>
         </div>
       </MainLayout>
     )

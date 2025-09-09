@@ -79,6 +79,11 @@ export default function ReputacaoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Profile[]>([])
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Carregar avaliações e recomendações do usuário atual
   useEffect(() => {
@@ -251,6 +256,20 @@ export default function ReputacaoPage() {
       month: '2-digit',
       year: 'numeric'
     })
+  }
+
+  if (!mounted) {
+    return (
+      <MainLayout requireAuth={true}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Carregando...
+            </h1>
+          </div>
+        </div>
+      </MainLayout>
+    )
   }
 
   return (
@@ -504,7 +523,11 @@ export default function ReputacaoPage() {
                         <div
                           key={user.id}
                           className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
-                          onClick={() => setSelectedUser(user)}
+                          onClick={() => {
+                            if (mounted) {
+                              setSelectedUser(user)
+                            }
+                          }}
                         >
                           <div className="flex items-center space-x-3">
                             <Avatar className="w-10 h-10">
@@ -531,8 +554,10 @@ export default function ReputacaoPage() {
                             size="sm"
                             variant="outline"
                             onClick={(e) => {
-                              e.stopPropagation()
-                              submitRecommendation(user.id)
+                              if (mounted) {
+                                e.stopPropagation()
+                                submitRecommendation(user.id)
+                              }
                             }}
                           >
                             <ThumbsUp className="h-4 w-4 mr-2" />
@@ -558,7 +583,11 @@ export default function ReputacaoPage() {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
-                            onClick={() => setRating(star)}
+                            onClick={() => {
+                              if (mounted) {
+                                setRating(star)
+                              }
+                            }}
                             className="p-1 hover:scale-110 transition-transform"
                           >
                             <Star
@@ -588,7 +617,11 @@ export default function ReputacaoPage() {
                     {/* Botões */}
                     <div className="flex space-x-3">
                       <Button
-                        onClick={submitReview}
+                        onClick={() => {
+                          if (mounted) {
+                            submitReview()
+                          }
+                        }}
                         disabled={rating === 0 || isSubmitting}
                         className="bg-blue-600 hover:bg-blue-700"
                       >
@@ -597,9 +630,11 @@ export default function ReputacaoPage() {
                       <Button
                         variant="outline"
                         onClick={() => {
-                          setSelectedUser(null)
-                          setRating(0)
-                          setComment('')
+                          if (mounted) {
+                            setSelectedUser(null)
+                            setRating(0)
+                            setComment('')
+                          }
                         }}
                       >
                         Cancelar

@@ -209,11 +209,7 @@ export function ReviewCard({
 
             {/* Informações Adicionais */}
             <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-              {review.ad && (
-                <Badge variant="outline" className="text-xs">
-                  {review.ad.title}
-                </Badge>
-              )}
+              {/* Informações adicionais podem ser adicionadas aqui no futuro */}
             </div>
 
             {/* Formulário de Resposta */}

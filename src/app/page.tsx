@@ -38,7 +38,12 @@ function HomeContent() {
   const router = useRouter()
   const { user, loading } = useAuthContext()
   const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { professionalsCount, reviewsCount, citiesCount, servicesCount, loading: statsLoading } = useHomeStats()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Redirecionar usuários logados para a página inicial
   useEffect(() => {
@@ -151,10 +156,18 @@ function HomeContent() {
 
           <div className="hidden md:flex items-center space-x-3">
             <PWAStatus />
-            <Button variant="ghost" onClick={() => router.push('/auth')}>
+            <Button variant="ghost" onClick={() => {
+              if (mounted) {
+                router.push('/auth')
+              }
+            }}>
               Entrar
             </Button>
-            <Button variant="outline" size="lg" onClick={() => router.push('/auth')}>
+            <Button variant="outline" size="lg" onClick={() => {
+              if (mounted) {
+                router.push('/auth')
+              }
+            }}>
               <Users className="h-4 w-4 mr-2" />
               Criar Conta
             </Button>
@@ -199,13 +212,21 @@ function HomeContent() {
           </div>
 
           <div className="flex flex-col items-center justify-center gap-3 md:gap-4 w-full max-w-sm mx-auto">
-            <Button size="lg" className="w-full" onClick={() => router.push('/buscar')}>
+            <Button size="lg" className="w-full" onClick={() => {
+              if (mounted) {
+                router.push('/buscar')
+              }
+            }}>
               <Search className="h-4 w-4 mr-2" />
               Buscar Profissionais
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
             
-            <Button variant="outline" size="lg" className="w-full" onClick={() => router.push('/auth')}>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => {
+              if (mounted) {
+                router.push('/auth')
+              }
+            }}>
               <Users className="h-4 w-4 mr-2" />
               Criar Conta
             </Button>
@@ -264,7 +285,11 @@ function HomeContent() {
         </div>
 
         <div className="text-center mt-8 md:mt-12">
-          <Button size="lg" className="w-full max-w-sm" onClick={() => router.push('/buscar')}>
+          <Button size="lg" className="w-full max-w-sm" onClick={() => {
+            if (mounted) {
+              router.push('/buscar')
+            }
+          }}>
             Começar Agora
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
@@ -474,7 +499,11 @@ function HomeContent() {
         </div>
 
         <div className="text-center">
-          <Button size="lg" onClick={() => router.push('/auth')}>
+          <Button size="lg" onClick={() => {
+            if (mounted) {
+              router.push('/auth')
+            }
+          }}>
             <Users className="h-4 w-4 mr-2" />
             Cadastre-se como Profissional
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -496,12 +525,20 @@ function HomeContent() {
             </p>
             
             <div className="flex flex-col items-center justify-center gap-3 md:gap-4 w-full max-w-sm mx-auto">
-              <Button variant="secondary" size="lg" className="w-full" onClick={() => router.push('/buscar')}>
+              <Button variant="secondary" size="lg" className="w-full" onClick={() => {
+                if (mounted) {
+                  router.push('/buscar')
+                }
+              }}>
                 <Search className="h-4 w-4 mr-2" />
                 Buscar Profissionais
               </Button>
               
-              <Button variant="secondary" size="lg" className="w-full" onClick={() => router.push('/auth')}>
+              <Button variant="secondary" size="lg" className="w-full" onClick={() => {
+                if (mounted) {
+                  router.push('/auth')
+                }
+              }}>
                 <Users className="h-4 w-4 mr-2" />
                 Criar Conta
               </Button>
@@ -539,7 +576,11 @@ function HomeContent() {
               <h3 className="font-semibold">Para Profissionais</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/auth" className="hover:text-foreground transition-colors">Cadastro</a></li>
-                <li><Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground transition-colors" onClick={() => router.push('/perfil')}>Gerenciar Perfil</Button></li>
+                <li><Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground transition-colors" onClick={() => {
+                  if (mounted) {
+                    router.push('/perfil')
+                  }
+                }}>Gerenciar Perfil</Button></li>
                 <li><a href="/agenda" className="hover:text-foreground transition-colors">Agenda</a></li>
               </ul>
             </div>

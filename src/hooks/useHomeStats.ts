@@ -44,12 +44,12 @@ export function useHomeStats(): HomeStats {
         // Buscar contagem de cidades únicas
         const { data: citiesData, error: citiesError } = await supabase
           .from('profiles')
-          .select('city')
-          .not('city', 'is', null)
+          .select('location_city')
+          .not('location_city', 'is', null)
 
         if (citiesError) throw citiesError
 
-        const uniqueCities = new Set(citiesData?.map(profile => profile.city) || [])
+        const uniqueCities = new Set(citiesData?.map(profile => profile.location_city) || [])
         const citiesCount = uniqueCities.size
 
         // Buscar contagem de serviços realizados (aproximação baseada em conversas com acordos aceitos)
