@@ -137,6 +137,12 @@ export const useGeolocation = (options: GeolocationOptions = {}) => {
   // Salvar localização no perfil do usuário
   const saveLocationToProfile = useCallback(async (location: LocationData) => {
     try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user?.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -145,7 +151,7 @@ export const useGeolocation = (options: GeolocationOptions = {}) => {
           location_accuracy: location.accuracy,
           location_updated_at: new Date().toISOString(),
         })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', user.id);
 
       if (error) {
         throw error;
