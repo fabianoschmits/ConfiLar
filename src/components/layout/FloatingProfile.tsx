@@ -72,7 +72,7 @@ import { useFloatingChat } from '@/contexts/FloatingChatContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { Card, CardContent } from '@/components/ui/card';
 
 import Link from 'next/link';
@@ -134,7 +134,7 @@ export const FloatingProfile: React.FC = () => {
         {/* Perfil Colapsado */}
         <div className="flex items-center gap-3">
           {/* Notificações */}
-          <NotificationBell />
+            <NotificationDropdown />
           
           {/* Avatar e Nome - Toda a área é clicável */}
           <div 

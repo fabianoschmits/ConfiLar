@@ -57,7 +57,6 @@ export function MobileHeader({
       '/classificados': 'Classificados',
       '/feed': 'Feed Social',
       '/mensagens': 'Mensagens',
-      '/notificacoes': 'Notificações',
       '/perfil': 'Meu Perfil',
       '/agendamentos': 'Agendamentos',
       '/agenda': 'Agenda',

@@ -151,14 +151,6 @@ export function Sidebar() {
           badgeColor: 'bg-red-500',
           description: 'Chat com profissionais',
           onClick: () => openChat()
-        }, {
-          id: 'notifications',
-          title: 'Notificações',
-          href: '/notificacoes',
-          icon: <BellPhosphor size={16} weight="light" />,
-          badge: unreadCount > 0 ? unreadCount.toString() : undefined,
-          badgeColor: 'bg-blue-500',
-          description: 'Alertas e avisos'
         }] : [{
           id: 'login',
           title: 'Fazer Login',

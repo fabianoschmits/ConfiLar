@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -167,19 +168,10 @@ export function MobileQuickActions() {
                   Ações Rápidas
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/notificacoes"
-                    className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <BellPhosphor size={16} weight="light" className="text-purple-600" />
+                  <div className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                    <NotificationDropdown />
                     <span className="text-sm font-medium">Notificações</span>
-                    {unreadCount > 0 && (
-                      <Badge className="ml-auto bg-blue-500 text-white text-xs">
-                        {unreadCount}
-                      </Badge>
-                    )}
-                  </Link>
+                  </div>
                   <Link
                     href="/favoritos"
                     className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"

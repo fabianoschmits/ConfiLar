@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -128,19 +129,10 @@ export function MobileBottomNavigation() {
                   Ações Rápidas
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
-                  <Link
-                    href="/notificacoes"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <BellPhosphor size={16} weight="light" className="text-purple-600 mb-1" />
-                    <span className="text-xs font-medium">Notificações</span>
-                    {unreadCount > 0 && (
-                      <Badge className="mt-1 bg-blue-500 text-white text-xs">
-                        {unreadCount}
-                      </Badge>
-                    )}
-                  </Link>
+                  <div className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <NotificationDropdown />
+                    <span className="text-xs font-medium mt-1">Notificações</span>
+                  </div>
                   <Link
                     href="/favoritos"
                     className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
