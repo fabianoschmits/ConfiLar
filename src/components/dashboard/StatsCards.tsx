@@ -16,7 +16,7 @@ export default function StatsCards() {
     },
     {
       title: 'Recomendações',
-      value: profile?.total_recommendations || 0,
+      value: 0, // TODO: Implementar contagem de recomendações
       icon: Users,
       color: 'text-blue-500'
     },
