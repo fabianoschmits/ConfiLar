@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { getCategories } from '@/data/services'
 
 export interface ComboboxOption {
   value: string
@@ -116,22 +117,15 @@ export function ComboboxCategorias({
   className?: string
   disabled?: boolean
 }) {
+  // Obter categorias dos serviços centralizados
+  const categories = getCategories()
+  
   const categorias = [
-    { value: "eletricista", label: "Eletricista" },
-    { value: "encanador", label: "Encanador" },
-    { value: "designer", label: "Designer" },
-    { value: "programador", label: "Programador" },
-    { value: "fotografo", label: "Fotógrafo" },
-    { value: "advogado", label: "Advogado" },
-    { value: "medico", label: "Médico" },
-    { value: "dentista", label: "Dentista" },
-    { value: "personal-trainer", label: "Personal Trainer" },
-    { value: "cozinheiro", label: "Cozinheiro" },
-    { value: "pintor", label: "Pintor" },
-    { value: "jardineiro", label: "Jardineiro" },
-    { value: "limpeza", label: "Limpeza" },
-    { value: "seguranca", label: "Segurança" },
-    { value: "tecnico-informatica", label: "Técnico de Informática" },
+    { value: "all", label: "Todas as categorias" },
+    ...categories.map(category => ({
+      value: category.toLowerCase().replace(/\s+/g, '-'),
+      label: category
+    }))
   ]
 
   return (
