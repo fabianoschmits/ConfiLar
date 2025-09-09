@@ -237,12 +237,6 @@ export const NotificationBell: React.FC = () => {
               </Button>
             )}
             
-            <Link href="/notificacoes" className="ml-auto">
-              <Button variant="outline" size="sm" className="text-xs h-8">
-                <Settings className="h-3 w-3 mr-1" />
-                Ver todas
-              </Button>
-            </Link>
           </div>
         </div>
           </>
