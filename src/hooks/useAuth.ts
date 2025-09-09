@@ -33,6 +33,7 @@ export function useAuth() {
 	const [session, setSession] = useState<{ user: { id: string; email: string } } | null>(null)
 	const [loading, setLoading] = useState(true)
 	const [initialized, setInitialized] = useState(false)
+	const [profileLoading, setProfileLoading] = useState(false)
 
 	const supabase = createClientComponentClient()
 
@@ -73,9 +74,16 @@ export function useAuth() {
 		} as Profile
 	}, [])
 
-	// Buscar perfil do usuário
+	// Buscar perfil do usuário com debounce
 	const fetchUserProfile = useCallback(async (userId: string, email: string) => {
+		// Evitar múltiplas chamadas simultâneas
+		if (profileLoading) {
+			console.log('⏳ Busca de perfil já em andamento, aguardando...')
+			return profile
+		}
+
 		try {
+			setProfileLoading(true)
 			console.log('🔍 Buscando perfil do usuário:', userId)
 			
 			const { data, error } = await supabase
@@ -99,8 +107,10 @@ export function useAuth() {
 			const defaultProfile = createDefaultProfile(userId, email)
 			setProfile(defaultProfile)
 			return defaultProfile
+		} finally {
+			setProfileLoading(false)
 		}
-	}, [supabase, createDefaultProfile])
+	}, [supabase, createDefaultProfile, profileLoading, profile])
 
 	// Inicialização do sistema de autenticação
 	useEffect(() => {
@@ -108,13 +118,13 @@ export function useAuth() {
 
 		console.log('🔍 Inicializando sistema de autenticação...')
 		
-		// Timeout de segurança mais generoso (10 segundos)
+		// Timeout de segurança otimizado (3 segundos)
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
 				console.log('⚠️ Timeout de segurança atingido - finalizando loading')
 				setLoading(false)
 			}
-		}, 10000)
+		}, 3000)
 
 		const initializeAuth = async () => {
 			try {
@@ -168,13 +178,19 @@ export function useAuth() {
 					return
 				}
 
+				// Evitar processamento duplicado
+				if (event === 'SIGNED_IN' && user?.id === session?.user?.id) {
+					console.log('⏭️ Usuário já logado, pulando processamento')
+					return
+				}
+
 				if (session?.user?.email) {
 					const userData = { id: session.user.id, email: session.user.email }
 					setUser(userData)
 					setSession({ user: userData })
 					
-					// Buscar perfil apenas se necessário
-					if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+					// Buscar perfil apenas se necessário e não estiver carregando
+					if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && !profileLoading) {
 						await fetchUserProfile(session.user.id, session.user.email)
 					}
 				} else {
@@ -192,7 +208,7 @@ export function useAuth() {
 			subscription.unsubscribe()
 			clearTimeout(safetyTimeout)
 		}
-	}, [initialized, supabase, fetchUserProfile, loading])
+	}, [initialized, supabase, fetchUserProfile, user?.id])
 
 	// Função de login OTIMIZADA
 	const signIn = useCallback(async (email: string, password: string) => {
