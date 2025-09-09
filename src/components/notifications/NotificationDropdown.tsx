@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { NotificationPreferencesFallback } from './NotificationPreferencesFallback';
 
 interface NotificationPreferences {
   push_enabled: boolean;
@@ -90,6 +91,7 @@ export const NotificationDropdown: React.FC = () => {
     marketing_notifications: false,
   });
   const [saving, setSaving] = useState(false);
+  const [tableExists, setTableExists] = useState(true);
 
   const recentNotifications = notifications.slice(0, 8);
 
@@ -104,7 +106,13 @@ export const NotificationDropdown: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
+        // Se a tabela não existe ou há erro de permissão, usar preferências padrão
+        if (error.code === 'PGRST116' || error.code === '42P01' || error.message?.includes('relation "notification_preferences" does not exist')) {
+          console.log('Tabela notification_preferences não encontrada, usando preferências padrão');
+          setTableExists(false);
+          return;
+        }
         console.error('Erro ao carregar preferências:', error);
         return;
       }
@@ -140,6 +148,13 @@ export const NotificationDropdown: React.FC = () => {
         });
 
       if (error) {
+        // Se a tabela não existe, mostrar mensagem específica
+        if (error.code === '42P01' || error.message?.includes('relation "notification_preferences" does not exist')) {
+          setTableExists(false);
+          toast.error('Tabela de preferências não encontrada. Execute o script SQL fornecido.');
+          console.error('Tabela notification_preferences não existe. Execute o script fix-notification-preferences.sql');
+          return;
+        }
         console.error('Erro ao salvar preferências:', error);
         toast.error('Erro ao salvar configurações');
         return;
@@ -245,114 +260,118 @@ export const NotificationDropdown: React.FC = () => {
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
-          <div className="w-96">
-            {/* Header das Configurações */}
-            <div className="flex items-center justify-between p-3 border-b">
-              <div className="flex items-center gap-2">
+          tableExists ? (
+            <div className="w-96">
+              {/* Header das Configurações */}
+              <div className="flex items-center justify-between p-3 border-b">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowSettings(false)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ArrowLeft size={16} />
+                  </Button>
+                  <Settings size={16} />
+                  <span className="text-sm font-medium">Configurações</span>
+                </div>
                 <Button
-                  variant="ghost"
                   size="sm"
-                  onClick={() => setShowSettings(false)}
-                  className="h-8 w-8 p-0"
+                  onClick={savePreferences}
+                  disabled={saving}
+                  className="h-8 text-xs"
                 >
-                  <ArrowLeft size={16} />
+                  {saving ? (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                  ) : (
+                    <Check size={12} className="mr-1" />
+                  )}
+                  Salvar
                 </Button>
-                <Settings size={16} />
-                <span className="text-sm font-medium">Configurações</span>
-              </div>
-              <Button
-                size="sm"
-                onClick={savePreferences}
-                disabled={saving}
-                className="h-8 text-xs"
-              >
-                {saving ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                ) : (
-                  <Check size={12} className="mr-1" />
-                )}
-                Salvar
-              </Button>
-            </div>
-
-            {/* Conteúdo das Configurações */}
-            <div className="p-3 space-y-4 max-h-80 overflow-y-auto">
-              {/* Canais de Notificação */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-900">Canais de Notificação</h4>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="push_enabled" className="text-sm">Notificações Push</Label>
-                  <Switch
-                    id="push_enabled"
-                    checked={preferences.push_enabled}
-                    onCheckedChange={() => handleToggle('push_enabled')}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="email_enabled" className="text-sm">Notificações por Email</Label>
-                  <Switch
-                    id="email_enabled"
-                    checked={preferences.email_enabled}
-                    onCheckedChange={() => handleToggle('email_enabled')}
-                  />
-                </div>
               </div>
 
-              <Separator />
+              {/* Conteúdo das Configurações */}
+              <div className="p-3 space-y-4 max-h-80 overflow-y-auto">
+                {/* Canais de Notificação */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900">Canais de Notificação</h4>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="push_enabled" className="text-sm">Notificações Push</Label>
+                    <Switch
+                      id="push_enabled"
+                      checked={preferences.push_enabled}
+                      onCheckedChange={() => handleToggle('push_enabled')}
+                    />
+                  </div>
 
-              {/* Tipos de Notificação */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-900">Tipos de Notificação</h4>
-                
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="message_notifications" className="text-sm">Mensagens</Label>
-                  <Switch
-                    id="message_notifications"
-                    checked={preferences.message_notifications}
-                    onCheckedChange={() => handleToggle('message_notifications')}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="email_enabled" className="text-sm">Notificações por Email</Label>
+                    <Switch
+                      id="email_enabled"
+                      checked={preferences.email_enabled}
+                      onCheckedChange={() => handleToggle('email_enabled')}
+                    />
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="review_notifications" className="text-sm">Avaliações</Label>
-                  <Switch
-                    id="review_notifications"
-                    checked={preferences.review_notifications}
-                    onCheckedChange={() => handleToggle('review_notifications')}
-                  />
-                </div>
+                <Separator />
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="booking_notifications" className="text-sm">Agendamentos</Label>
-                  <Switch
-                    id="booking_notifications"
-                    checked={preferences.booking_notifications}
-                    onCheckedChange={() => handleToggle('booking_notifications')}
-                  />
-                </div>
+                {/* Tipos de Notificação */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900">Tipos de Notificação</h4>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="message_notifications" className="text-sm">Mensagens</Label>
+                    <Switch
+                      id="message_notifications"
+                      checked={preferences.message_notifications}
+                      onCheckedChange={() => handleToggle('message_notifications')}
+                    />
+                  </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="achievement_notifications" className="text-sm">Conquistas</Label>
-                  <Switch
-                    id="achievement_notifications"
-                    checked={preferences.achievement_notifications}
-                    onCheckedChange={() => handleToggle('achievement_notifications')}
-                  />
-                </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="review_notifications" className="text-sm">Avaliações</Label>
+                    <Switch
+                      id="review_notifications"
+                      checked={preferences.review_notifications}
+                      onCheckedChange={() => handleToggle('review_notifications')}
+                    />
+                  </div>
 
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="marketing_notifications" className="text-sm">Marketing</Label>
-                  <Switch
-                    id="marketing_notifications"
-                    checked={preferences.marketing_notifications}
-                    onCheckedChange={() => handleToggle('marketing_notifications')}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="booking_notifications" className="text-sm">Agendamentos</Label>
+                    <Switch
+                      id="booking_notifications"
+                      checked={preferences.booking_notifications}
+                      onCheckedChange={() => handleToggle('booking_notifications')}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="achievement_notifications" className="text-sm">Conquistas</Label>
+                    <Switch
+                      id="achievement_notifications"
+                      checked={preferences.achievement_notifications}
+                      onCheckedChange={() => handleToggle('achievement_notifications')}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="marketing_notifications" className="text-sm">Marketing</Label>
+                    <Switch
+                      id="marketing_notifications"
+                      checked={preferences.marketing_notifications}
+                      onCheckedChange={() => handleToggle('marketing_notifications')}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <NotificationPreferencesFallback onBack={() => setShowSettings(false)} />
+          )
         ) : (
           <>
             {/* Header das Notificações */}
