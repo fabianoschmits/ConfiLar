@@ -18,7 +18,11 @@ import { SearchHistory as SearchHistoryComponent } from '@/components/features/S
 import { AdvancedSearchFilters } from '@/components/search/AdvancedSearchFilters'
 import { SearchResults } from '@/components/search/SearchResults'
 import { SearchBar } from '@/components/search/SearchBar'
+import { ProximityFilter } from '@/components/search/ProximityFilter'
+import { ProximityResults } from '@/components/search/ProximityResults'
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
+import { useProximitySearch } from '@/hooks/useProximitySearch'
+import { useGeolocation } from '@/hooks/useGeolocation'
 
 export default function BuscarPage() {
   const router = useRouter()
@@ -26,6 +30,9 @@ export default function BuscarPage() {
   const [showSearchHistory, setShowSearchHistory] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [mounted, setMounted] = useState(false)
+  const [searchMode, setSearchMode] = useState<'advanced' | 'proximity'>('advanced')
+  const [proximityRadius, setProximityRadius] = useState(10)
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -41,6 +48,18 @@ export default function BuscarPage() {
     clearFilters,
     executeSearch
   } = useAdvancedSearch()
+
+  // Hook para busca por proximidade
+  const {
+    results: proximityResults,
+    loading: proximityLoading,
+    error: proximityError,
+    searchNearLocation,
+    searchNearbyUsers
+  } = useProximitySearch()
+
+  // Hook para geolocalização
+  const { location, getAndSaveLocation } = useGeolocation()
 
   // Hook para gerenciar histórico de busca
   const { saveSearch, searchHistory } = useSearchHistory()
@@ -59,6 +78,30 @@ export default function BuscarPage() {
     }
     executeSearch()
   }, [filters, saveSearch, executeSearch])
+
+  // Função para executar busca por proximidade
+  const handleProximitySearch = useCallback(async () => {
+    if (currentLocation) {
+      await searchNearLocation(currentLocation.lat, currentLocation.lng, {
+        radius_km: proximityRadius,
+        user_type: 'professional',
+        is_available: true
+      })
+    } else if (location) {
+      await searchNearLocation(location.latitude, location.longitude, {
+        radius_km: proximityRadius,
+        user_type: 'professional',
+        is_available: true
+      })
+    }
+  }, [currentLocation, location, proximityRadius, searchNearLocation])
+
+  // Executar busca por proximidade quando localização ou raio mudarem
+  useEffect(() => {
+    if ((currentLocation || location) && searchMode === 'proximity') {
+      handleProximitySearch()
+    }
+  }, [currentLocation, location, proximityRadius, searchMode, handleProximitySearch])
 
   const handleContact = useCallback((professional: Profile) => {
     console.log('🔍 Iniciando conversa com profissional:', {
@@ -175,6 +218,27 @@ export default function BuscarPage() {
             </div>
           )}
 
+          {/* Controles de Modo de Busca */}
+          <div className="flex justify-center mb-6">
+            <div className="bg-muted p-1 rounded-lg">
+              <Button
+                variant={searchMode === 'advanced' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSearchMode('advanced')}
+                className="mr-1"
+              >
+                Busca Avançada
+              </Button>
+              <Button
+                variant={searchMode === 'proximity' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setSearchMode('proximity')}
+              >
+                Busca por Proximidade
+              </Button>
+            </div>
+          </div>
+
           {/* Barra de Busca Principal */}
           <div className="max-w-4xl mx-auto mb-8">
             <SearchBar
@@ -193,27 +257,47 @@ export default function BuscarPage() {
 
           {/* Filtros e Resultados */}
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar de Filtros Avançados */}
-            <AdvancedSearchFilters
-              filters={filters}
-              onFiltersChange={updateFilters}
-              onClearFilters={clearFilters}
-              isMobile={true}
-              isOpen={showFilters}
-              onToggle={() => setShowFilters(!showFilters)}
-            />
+            {/* Sidebar de Filtros */}
+            <div className="w-full lg:w-80">
+              {searchMode === 'advanced' ? (
+                <AdvancedSearchFilters
+                  filters={filters}
+                  onFiltersChange={updateFilters}
+                  onClearFilters={clearFilters}
+                  isMobile={true}
+                  isOpen={showFilters}
+                  onToggle={() => setShowFilters(!showFilters)}
+                />
+              ) : (
+                <ProximityFilter
+                  radius={proximityRadius}
+                  onRadiusChange={setProximityRadius}
+                  onLocationChange={setCurrentLocation}
+                  currentLocation={currentLocation}
+                />
+              )}
+            </div>
 
             {/* Resultados da Busca */}
             <div className="flex-1">
-              <SearchResults
-                users={filteredUsers}
-                filters={filters}
-                loading={loading}
-                onContact={handleContact}
-                onViewProfile={handleViewProfile}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-              />
+              {searchMode === 'advanced' ? (
+                <SearchResults
+                  users={filteredUsers}
+                  filters={filters}
+                  loading={loading}
+                  onContact={handleContact}
+                  onViewProfile={handleViewProfile}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
+              ) : (
+                <ProximityResults
+                  results={proximityResults}
+                  loading={proximityLoading}
+                  error={proximityError}
+                  onUserClick={handleViewProfile}
+                />
+              )}
             </div>
           </div>
 
