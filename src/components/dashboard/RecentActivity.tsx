@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function RecentActivity() {
+export default function RecentActivity() {
   return (
     <Card>
       <CardHeader>

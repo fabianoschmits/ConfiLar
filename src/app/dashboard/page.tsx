@@ -2,7 +2,6 @@
 
 import { Suspense } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
 import dynamic from 'next/dynamic'
 
 // Dynamic imports para componentes pesados do dashboard
