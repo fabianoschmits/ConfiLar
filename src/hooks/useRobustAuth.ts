@@ -133,14 +133,14 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     setError(null)
 
     // Timeout de segurança principal (6 segundos)
-    const mainTimeout = addTimeout(() => {
+    addTimeout(() => {
       console.log('⚠️ Timeout principal atingido - finalizando loading')
       setLoading(false)
       setIsReady(true)
     }, 6000)
 
     // Timeout de emergência (10 segundos)
-    const emergencyTimeout = addTimeout(() => {
+    addTimeout(() => {
       console.log('🚨 Timeout de emergência - forçando finalização')
       setLoading(false)
       setIsReady(true)
