@@ -12,7 +12,7 @@ import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { Suspense } from "react"
-import { FastPageLoading } from "@/components/ui/FastLoading"
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import { FloatingChatWrapper } from "@/components/layout/ClientComponents"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -50,7 +50,7 @@ export default async function RootLayout({
             <NotificationProvider>
               <AuthProvider initialSession={session}>
                 <FloatingChatProvider>
-                  <Suspense fallback={<FastPageLoading text="Carregando aplicação..." />}>
+                  <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
                     {children}
                   </Suspense>
                   <FloatingChatWrapper />

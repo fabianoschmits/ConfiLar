@@ -4,6 +4,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -59,26 +60,7 @@ function HomeContent() {
 
   // Mostrar loading inteligente enquanto verifica autenticação
   if (loading || !isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-6 max-w-md mx-auto p-6">
-          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Carregando ConfiLar</h3>
-            <p className="text-sm text-gray-600 mt-2">
-              {loading ? 'Verificando autenticação...' : 'Preparando interface...'}
-            </p>
-          </div>
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    )
+    return <LoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
   }
 
   // Se usuário está logado, não mostrar nada (já foi redirecionado)
