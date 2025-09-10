@@ -334,19 +334,21 @@ export function SimpleRegistrationForm() {
       if (error) {
         console.error('❌ Erro detalhado:', error)
         toast.error(`Erro ao criar conta: ${error.message}`)
+        setIsLoading(false)
         return
       }
 
+      // Mostrar notificação de sucesso
       toast.success('🎉 Conta criada com sucesso! Um email de confirmação foi enviado para você. Verifique sua caixa de entrada e clique no link para ativar sua conta.')
       
       // Aguardar 3 segundos para o usuário ler a mensagem antes de redirecionar
       setTimeout(() => {
+        setIsLoading(false)
         window.location.href = '/auth?message=account_created'
       }, 3000)
     } catch (error) {
       console.error('Erro no cadastro:', error)
       toast.error('Erro inesperado ao criar conta')
-    } finally {
       setIsLoading(false)
     }
   }
