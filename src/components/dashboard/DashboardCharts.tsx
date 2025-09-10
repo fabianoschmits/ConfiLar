@@ -45,7 +45,7 @@ export default function DashboardCharts() {
     data: Array<{ date: string; value: number }>
     title: string
     color?: string
-    icon: any
+    icon: React.ComponentType<{ className?: string }>
     maxValue: number
   }) => {
     const colorClasses = {
@@ -100,7 +100,7 @@ export default function DashboardCharts() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <SimpleChart
-        data={metrics.chartData.viewsOverTime}
+        data={metrics.chartData.viewsOverTime.map(item => ({ date: item.date, value: item.views }))}
         title="Visualizações do Perfil"
         color="blue"
         icon={Eye}
@@ -108,7 +108,7 @@ export default function DashboardCharts() {
       />
       
       <SimpleChart
-        data={metrics.chartData.contactsOverTime}
+        data={metrics.chartData.contactsOverTime.map(item => ({ date: item.date, value: item.contacts }))}
         title="Contatos Recebidos"
         color="green"
         icon={MessageSquare}
@@ -116,7 +116,7 @@ export default function DashboardCharts() {
       />
       
       <SimpleChart
-        data={metrics.chartData.ratingsOverTime}
+        data={metrics.chartData.ratingsOverTime.map(item => ({ date: item.date, value: item.rating }))}
         title="Avaliações Recebidas"
         color="yellow"
         icon={Star}

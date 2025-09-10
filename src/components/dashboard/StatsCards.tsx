@@ -174,7 +174,7 @@ export default function StatsCards() {
             <CardContent>
               <div className="text-2xl font-bold text-gray-900 mb-1">
                 {stat.value}
-                {stat.isRating && <span className="text-sm text-gray-500 ml-1">/5</span>}
+                {'isRating' in stat && stat.isRating && <span className="text-sm text-gray-500 ml-1">/5</span>}
               </div>
               {stat.growth !== 0 && (
                 <div className="flex items-center text-xs">
