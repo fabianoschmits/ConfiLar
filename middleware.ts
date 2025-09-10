@@ -29,6 +29,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Permitir acesso à rota de logout sem interferência
+  if (pathname === '/logout') {
+    return res
+  }
+
   // Verificar se é uma rota protegida
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)

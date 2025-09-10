@@ -114,6 +114,13 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
 
   // Buscar perfil com timeout e retry
   const fetchUserProfile = useCallback(async (userId: string, email: string, retries = 3): Promise<Profile> => {
+    // Verificar se ainda há uma sessão ativa antes de buscar o perfil
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      console.log('⚠️ Sem sessão ativa, não buscando perfil')
+      return createDefaultProfile(userId, email)
+    }
+
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         console.log(`🔍 Buscando perfil (tentativa ${attempt}/${retries}):`, userId)
@@ -250,7 +257,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
           setSession({ user: userData })
           setError(null)
           
-          // Buscar perfil com retry
+          // Buscar perfil com retry apenas se há sessão válida
           const userProfile = await fetchUserProfile(session.user.id, session.user.email)
           setProfile(userProfile)
         } else if (event === 'SIGNED_OUT') {
@@ -326,6 +333,15 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     setLoading(true)
     
     try {
+      // Primeiro limpar estado local para evitar race conditions
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      
+      // Limpar todos os timeouts pendentes
+      clearAllTimeouts()
+      
+      // Depois executar logout no Supabase
       const { error } = await supabase.auth.signOut()
       
       if (error) {
@@ -335,11 +351,6 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         return { error }
       }
 
-      // Limpar estado local
-      setUser(null)
-      setProfile(null)
-      setSession(null)
-      
       // Limpeza de dados
       if (typeof window !== 'undefined') {
         const keysToRemove = [
@@ -363,7 +374,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         } 
       }
     }
-  }, [supabase])
+  }, [supabase, clearAllTimeouts])
 
   // Função de refresh
   const refreshAuth = useCallback(async () => {
