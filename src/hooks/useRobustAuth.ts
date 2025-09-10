@@ -16,9 +16,33 @@ export interface AuthState {
 
 export interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>
+  signUp: SignUpFn
   signOut: () => Promise<{ error: { message: string } | null }>
+  updateProfile: (updates: Partial<Profile>) => Promise<{ data: Profile | null; error: { message: string } | null }>
+  uploadAvatar: (file: File) => Promise<{ data: string | null; error: { message: string } | null }>
   refreshAuth: () => Promise<void>
+  isMockMode: boolean
 }
+
+export type SignUpFn = (
+	email: string,
+	password: string,
+	additionalData?: {
+		full_name?: string
+		phone?: string
+		user_type?: 'client' | 'professional'
+		cpf_cnpj?: string
+		birth_date?: string
+		location_state?: string
+		location_city?: string
+		neighborhood?: string
+		bio?: string
+		services_offered?: string[]
+		experience_years?: string
+		emergency_service?: boolean
+		insurance_coverage?: boolean
+	}
+) => Promise<{ error: { message: string } | null }>
 
 export function useRobustAuth(initialSession?: Session | null): AuthState & AuthActions {
   const [user, setUser] = useState<{ id: string; email: string } | null>(null)
@@ -366,6 +390,125 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     }
   }, [supabase, fetchUserProfile])
 
+  // Função de cadastro (simplificada)
+  const signUp: SignUpFn = useCallback(async (email, password, additionalData) => {
+    console.log('📝 Tentando cadastro robusto para:', email)
+    setError(null)
+    setLoading(true)
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: additionalData?.full_name || 'Usuário',
+            phone: additionalData?.phone || '',
+            user_type: additionalData?.user_type || 'client'
+          }
+        }
+      })
+
+      if (error) {
+        console.error('❌ Erro no cadastro:', error)
+        setError(error.message)
+        setLoading(false)
+        return { error }
+      }
+
+      if (data.user) {
+        console.log('✅ Cadastro bem-sucedido para:', data.user.email)
+        setLoading(false)
+      }
+
+      return { error: null }
+    } catch (error) {
+      console.error('💥 Erro crítico no cadastro:', error)
+      setError(error instanceof Error ? error.message : 'Erro desconhecido')
+      setLoading(false)
+      return { 
+        error: { 
+          message: error instanceof Error ? error.message : 'Erro desconhecido' 
+        } 
+      }
+    }
+  }, [supabase])
+
+  // Função de atualização de perfil
+  const updateProfile = useCallback(async (updates: Partial<Profile>) => {
+    if (!user?.id) {
+      return { data: null, error: { message: 'Usuário não autenticado' } }
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ Erro ao atualizar perfil:', error)
+        return { data: null, error }
+      }
+
+      if (data) {
+        setProfile(data as Profile)
+        console.log('✅ Perfil atualizado com sucesso')
+      }
+
+      return { data: data as Profile, error: null }
+    } catch (error) {
+      console.error('💥 Erro crítico ao atualizar perfil:', error)
+      return { 
+        data: null, 
+        error: { 
+          message: error instanceof Error ? error.message : 'Erro desconhecido' 
+        } 
+      }
+    }
+  }, [supabase, user?.id])
+
+  // Função de upload de avatar
+  const uploadAvatar = useCallback(async (file: File) => {
+    if (!user?.id) {
+      return { data: null, error: { message: 'Usuário não autenticado' } }
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (uploadError) {
+        console.error('❌ Erro no upload:', uploadError)
+        return { data: null, error: uploadError }
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      // Atualizar perfil com nova URL
+      await updateProfile({ avatar_url: publicUrl })
+
+      return { data: publicUrl, error: null }
+    } catch (error) {
+      console.error('💥 Erro crítico no upload:', error)
+      return { 
+        data: null, 
+        error: { 
+          message: error instanceof Error ? error.message : 'Erro desconhecido' 
+        } 
+      }
+    }
+  }, [supabase, user?.id, updateProfile])
+
   return {
     user,
     profile,
@@ -374,8 +517,12 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     isReady,
     error,
     signIn,
+    signUp,
     signOut,
-    refreshAuth
+    updateProfile,
+    uploadAvatar,
+    refreshAuth,
+    isMockMode: false
   }
 }
 

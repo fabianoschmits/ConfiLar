@@ -29,7 +29,7 @@ export function useAuthRedirect({
   const router = useRouter()
   const pathname = usePathname()
   const [redirectAttempts, setRedirectAttempts] = useState(0)
-  const redirectTimeoutRef = useRef<NodeJS.Timeout>()
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const maxAttempts = config.maxAttempts || 3
   const delay = config.delay || 500
   const fallbackPath = config.fallbackPath || '/dashboard'
