@@ -6,15 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { 
-  MessageCircle, 
-  X, 
-  Send, 
-  Minimize2,
-  Paperclip,
-  Smile,
-  Mic
-} from 'lucide-react'
+// Lucide icons não utilizados removidos
 import { 
   ChatTeardrop, 
   X as XPhosphor, 
