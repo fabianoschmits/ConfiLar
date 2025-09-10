@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PasswordInput } from '@/components/ui/password-input'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useLoading } from '@/hooks/useLoading'
 import { toast } from 'sonner'
 
 const loginSchema = z.object({
@@ -24,6 +25,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const { signIn } = useAuthContext()
+  const { setAuthLoading } = useLoading()
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -61,6 +63,7 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    setAuthLoading(true, 'Fazendo login...')
     
     try {
       const { error } = await signIn(data.email, data.password)
@@ -68,15 +71,20 @@ export function LoginForm() {
       if (error) {
         toast.error('Erro ao fazer login: ' + error.message)
         setIsLoading(false)
+        setAuthLoading(false)
       } else {
         toast.success('Login realizado com sucesso!')
+        setAuthLoading(true, 'Redirecionando...')
         
-        // Redirecionar imediatamente - o sistema robusto cuidará do resto
-        router.push(decodeURIComponent(redirectPath))
+        // Pequeno delay para mostrar o loading de redirecionamento
+        setTimeout(() => {
+          router.push(decodeURIComponent(redirectPath))
+        }, 500)
       }
     } catch {
       toast.error('Erro inesperado ao fazer login')
       setIsLoading(false)
+      setAuthLoading(false)
     }
   }
 

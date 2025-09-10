@@ -6,6 +6,8 @@ import { cookies } from 'next/headers'
 import { AuthProvider } from "@/contexts/AuthContext"
 import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
+import { LoadingProvider } from "@/hooks/useLoading"
+import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
@@ -44,17 +46,20 @@ export default async function RootLayout({
                   <body className={inter.className}>
                     <ServiceWorkerCleaner />
                     <ErrorBoundary>
-          <NotificationProvider>
-            <AuthProvider initialSession={session}>
-              <FloatingChatProvider>
-                <Suspense fallback={<FastPageLoading text="Carregando aplicação..." />}>
-                  {children}
-                </Suspense>
-                <FloatingChatWrapper />
-                <Toaster position="top-right" richColors />
-              </FloatingChatProvider>
-            </AuthProvider>
-          </NotificationProvider>
+          <LoadingProvider>
+            <NotificationProvider>
+              <AuthProvider initialSession={session}>
+                <FloatingChatProvider>
+                  <Suspense fallback={<FastPageLoading text="Carregando aplicação..." />}>
+                    {children}
+                  </Suspense>
+                  <FloatingChatWrapper />
+                  <LoadingOverlayProvider />
+                  <Toaster position="top-right" richColors />
+                </FloatingChatProvider>
+              </AuthProvider>
+            </NotificationProvider>
+          </LoadingProvider>
         </ErrorBoundary>
       </body>
     </html>
