@@ -76,10 +76,14 @@ export function LoginForm() {
         toast.success('Login realizado com sucesso!')
         setAuthLoading(true, 'Redirecionando...')
         
-        // Pequeno delay para mostrar o loading de redirecionamento
+        // Aguardar o loading do useRobustAuth terminar (1 segundo) + delay adicional
         setTimeout(() => {
           router.push(decodeURIComponent(redirectPath))
-        }, 500)
+          // Parar o loading após o redirecionamento
+          setTimeout(() => {
+            setAuthLoading(false)
+          }, 500)
+        }, 1500) // Aumentado para 1.5 segundos
       }
     } catch {
       toast.error('Erro inesperado ao fazer login')
