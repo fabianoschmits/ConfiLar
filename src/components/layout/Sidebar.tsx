@@ -46,7 +46,8 @@ import {
   CaretLeft,
   Users as UsersPhosphor,
   SignOut,
-  PencilSimple
+  PencilSimple,
+  ChartBar
 } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -97,6 +98,13 @@ export function Sidebar() {
           href: '/home',
           icon: <House size={16} weight="light" />,
           description: 'Página inicial'
+        },
+        {
+          id: 'dashboard',
+          title: 'Dashboard',
+          href: '/dashboard',
+          icon: <ChartBar size={16} weight="light" />,
+          description: 'Visão geral e métricas'
         },
       ]
     },
