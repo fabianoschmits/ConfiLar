@@ -427,10 +427,9 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         console.log('✅ Cadastro bem-sucedido para:', data.user.email)
         
         // Processar avatar se fornecido
+        let avatarUrl = null
         if (additionalData?.avatar_data) {
           try {
-            let avatarUrl = null
-            
             if (additionalData.avatar_data.type === 'dicebear') {
               // Para avatars Dicebear, usar a URL diretamente
               avatarUrl = additionalData.avatar_data.url
@@ -461,42 +460,44 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
                 console.log('🎨 Avatar enviado com sucesso:', avatarUrl)
               }
             }
-            
-            // Criar perfil com avatar
-            if (avatarUrl) {
-              const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                  id: data.user.id,
-                  email: data.user.email,
-                  full_name: additionalData?.full_name || 'Usuário',
-                  phone: additionalData?.phone || '',
-                  user_type: additionalData?.user_type || 'client',
-                  cpf_cnpj: additionalData?.cpf_cnpj || '',
-                  birth_date: additionalData?.birth_date || '',
-                  location_state: additionalData?.location_state || '',
-                  location_city: additionalData?.location_city || '',
-                  neighborhood: additionalData?.neighborhood || '',
-                  bio: additionalData?.bio || '',
-                  services_offered: additionalData?.services_offered || [],
-                  experience_years: additionalData?.experience_years || '',
-                  emergency_service: additionalData?.emergency_service || false,
-                  insurance_coverage: additionalData?.insurance_coverage || false,
-                  avatar_url: avatarUrl,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString()
-                })
-              
-              if (profileError) {
-                console.error('❌ Erro ao criar perfil:', profileError)
-              } else {
-                console.log('✅ Perfil criado com avatar:', avatarUrl)
-              }
-            }
           } catch (avatarError) {
             console.error('❌ Erro ao processar avatar:', avatarError)
             // Continuar mesmo com erro no avatar
           }
+        }
+        
+        // Criar perfil (com ou sem avatar)
+        try {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              full_name: additionalData?.full_name || 'Usuário',
+              phone: additionalData?.phone || '',
+              user_type: additionalData?.user_type || 'client',
+              cpf_cnpj: additionalData?.cpf_cnpj || '',
+              birth_date: additionalData?.birth_date || '',
+              location_state: additionalData?.location_state || '',
+              location_city: additionalData?.location_city || '',
+              neighborhood: additionalData?.neighborhood || '',
+              bio: additionalData?.bio || '',
+              professional_services: additionalData?.services_offered || [],
+              professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) || 0 : 0,
+              emergency_service: additionalData?.emergency_service || false,
+              insurance_coverage: additionalData?.insurance_coverage || false,
+              avatar_url: avatarUrl,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+          
+          if (profileError) {
+            console.error('❌ Erro ao criar perfil:', profileError)
+          } else {
+            console.log('✅ Perfil criado com sucesso:', avatarUrl ? 'com avatar' : 'sem avatar')
+          }
+        } catch (profileError) {
+          console.error('❌ Erro crítico ao criar perfil:', profileError)
         }
         
         setLoading(false)
