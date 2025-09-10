@@ -1,9 +1,35 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
-import { useRobustAuth, SignUpFn } from '@/hooks/useRobustAuth'
+import { useRobustAuth } from '@/hooks/useRobustAuth'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
+
+type SignUpFn = (
+	email: string,
+	password: string,
+	additionalData?: {
+		full_name?: string
+		phone?: string
+		user_type?: 'client' | 'professional'
+		cpf_cnpj?: string
+		birth_date?: string
+		location_state?: string
+		location_city?: string
+		neighborhood?: string
+		bio?: string
+		services_offered?: string[]
+		experience_years?: string
+		emergency_service?: boolean
+		insurance_coverage?: boolean
+		avatar_data?: {
+			type: 'upload' | 'dicebear'
+			file?: File
+			url?: string
+			preview: string
+		} | null
+	}
+) => Promise<{ error: { message: string } | null }>
 
 interface AuthContextType {
 	user: { id: string; email: string } | null
@@ -48,23 +74,3 @@ export function useAuthContext() {
 
 // Re-exportar tipos para compatibilidade
 export type { Profile } from '@/types/database'
-
-export type SignUpFn = (
-	email: string,
-	password: string,
-	additionalData?: {
-		full_name?: string
-		phone?: string
-		user_type?: 'client' | 'professional'
-		cpf_cnpj?: string
-		birth_date?: string
-		location_state?: string
-		location_city?: string
-		neighborhood?: string
-		bio?: string
-		services_offered?: string[]
-		experience_years?: string
-		emergency_service?: boolean
-		insurance_coverage?: boolean
-	}
-) => Promise<{ error: { message: string } | null }>
