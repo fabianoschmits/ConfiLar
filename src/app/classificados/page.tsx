@@ -34,6 +34,8 @@ import {
 import { services as servicesList, Service } from '@/data/services'
 import { ProfessionalService } from '@/types/database'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
+import { AdCard } from '@/components/classified/AdCard'
+import { CreateAdForm } from '@/components/classified/CreateAdForm'
 
 interface ClassifiedAd {
   id: string
@@ -49,6 +51,11 @@ interface ClassifiedAd {
   is_active: boolean
   views_count?: number
   user_avatar_url?: string
+  ad_type: 'service_request' | 'service_offer' // Novo campo para tipo de anúncio
+  budget?: number // Para pedidos de serviço
+  price?: number // Para ofertas de serviço
+  urgency?: 'low' | 'medium' | 'high' // Urgência do pedido
+  availability?: string // Disponibilidade para ofertas
 }
 
 export default function ClassificadosPage() {
@@ -62,6 +69,7 @@ export default function ClassificadosPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedState, setSelectedState] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
+  const [selectedAdType, setSelectedAdType] = useState<'all' | 'service_request' | 'service_offer'>('all')
   
   // Estados para dados
   const [ads, setAds] = useState<ClassifiedAd[]>([])
@@ -79,7 +87,11 @@ export default function ClassificadosPage() {
     category: '',
     location_state: '',
     location_city: '',
-    ad_type: 'procurar' as 'procurar' | 'oferecer'
+    ad_type: 'service_request' as 'service_request' | 'service_offer',
+    budget: '',
+    price: '',
+    urgency: 'medium' as 'low' | 'medium' | 'high',
+    availability: ''
   })
   const [mounted, setMounted] = useState(false)
 
@@ -228,8 +240,9 @@ export default function ClassificadosPage() {
     const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory
     const matchesState = !selectedState || ad.location_state === selectedState
     const matchesCity = !selectedCity || ad.location_city === selectedCity
+    const matchesAdType = selectedAdType === 'all' || ad.ad_type === selectedAdType
     
-    return matchesSearch && matchesCategory && matchesState && matchesCity
+    return matchesSearch && matchesCategory && matchesState && matchesCity && matchesAdType
   })
 
   // Filtrar serviços
@@ -254,7 +267,7 @@ export default function ClassificadosPage() {
     }
 
     try {
-      const userType = formData.ad_type === 'oferecer' ? 'professional' : 'client'
+      const userType = formData.ad_type === 'service_offer' ? 'professional' : 'client'
       
       const { data, error } = await supabase
         .from('classified_ads')
@@ -287,7 +300,11 @@ export default function ClassificadosPage() {
         category: '',
         location_state: '',
         location_city: '',
-        ad_type: 'procurar'
+        ad_type: 'service_request',
+        budget: '',
+        price: '',
+        urgency: 'medium',
+        availability: ''
       })
       toast.success('Anúncio criado com sucesso!')
     } catch (error) {
@@ -334,7 +351,11 @@ export default function ClassificadosPage() {
         category: '',
         location_state: '',
         location_city: '',
-        ad_type: 'procurar'
+        ad_type: 'service_request',
+        budget: '',
+        price: '',
+        urgency: 'medium',
+        availability: ''
       })
       toast.success('Anúncio atualizado com sucesso!')
     } catch (error) {

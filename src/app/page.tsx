@@ -1,6 +1,5 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -20,16 +19,8 @@ import {
   CheckCircle,
   ArrowRight,
   TrendingUp,
-  Zap,
-  Target,
-  Globe,
-  ThumbsUp,
   UserCheck,
-  FileText,
-  MessageSquare,
   MapPin,
-  Clock,
-  Award,
   Sparkles
 } from 'lucide-react'
 import { services } from '@/data/services'

@@ -1,50 +1,9 @@
 'use client';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { 
-  User, 
-  Settings, 
-  LogOut, 
   ChevronDown, 
-  ChevronUp, 
-  MessageSquare, 
-  FileText, 
-  BarChart3, 
-  Heart, 
-  Calendar, 
-  CreditCard, 
-  Bell,
-  HelpCircle,
-  Phone,
-  Building2,
-  Search,
-  Users,
-  Star,
-  Home,
-  MessageCircle,
-  Briefcase,
-  TrendingUp,
-  Shield,
-  Zap,
-  Globe,
-  BookOpen,
-  Award,
-  Clock,
-  Wallet,
-  Edit3,
-  Eye,
-  Crown,
-  Activity,
-  Target,
-  Bookmark,
-  Download,
-  Share2,
-  Lock,
-  Unlock,
-  CheckCircle,
-  AlertCircle,
-  Info
+  ChevronUp
 } from 'lucide-react';
 
 // Phosphor Icons Light
