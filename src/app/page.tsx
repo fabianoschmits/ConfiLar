@@ -21,7 +21,10 @@ import {
   TrendingUp,
   UserCheck,
   MapPin,
-  Sparkles
+  Sparkles,
+  MessageSquare,
+  Award,
+  Clock
 } from 'lucide-react'
 import { services } from '@/data/services'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'

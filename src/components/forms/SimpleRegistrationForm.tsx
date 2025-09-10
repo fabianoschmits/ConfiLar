@@ -318,15 +318,16 @@ export function SimpleRegistrationForm() {
         user_type: data.user_type,
         phone: data.phone,
         cpf_cnpj: data.cpf_cnpj,
-        birth_date: data.birth_date,
-        location_state: data.location_state,
-        location_city: data.location_city,
-        neighborhood: data.neighborhood,
+        birth_date: data.birth_date || '',
+        location_state: data.location_state || '',
+        location_city: data.location_city || '',
+        neighborhood: data.neighborhood || '',
         bio: data.bio || '',
-        services_offered: selectedServices,
+        services_offered: selectedServices || [],
         experience_years: data.experience_years || '',
         emergency_service: data.emergency_service || false,
         insurance_coverage: data.insurance_coverage || false,
+        gender: data.gender || 'male', // Adicionar campo gender com fallback
         avatar_data: avatarData, // Incluir dados do avatar
       })
 
