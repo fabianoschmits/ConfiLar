@@ -19,9 +19,22 @@ import {
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 
 interface CreateAdFormProps {
-  onSubmit: (data: any) => void
+  onSubmit: (data: FormData) => void
   onCancel: () => void
   loading?: boolean
+}
+
+interface FormData {
+  title: string
+  description: string
+  category: string
+  location_state: string
+  location_city: string
+  ad_type: 'service_request' | 'service_offer'
+  budget: string
+  price: string
+  urgency: 'low' | 'medium' | 'high'
+  availability: string
 }
 
 export function CreateAdForm({ onSubmit, onCancel, loading = false }: CreateAdFormProps) {
