@@ -71,11 +71,8 @@ export function LoginForm() {
       } else {
         toast.success('Login realizado com sucesso!')
         
-        // Aguardar um momento para garantir que o contexto seja atualizado
-        setTimeout(() => {
-          // Redirecionar para a página original ou dashboard
-          router.push(decodeURIComponent(redirectPath))
-        }, 500)
+        // Redirecionar imediatamente - o sistema robusto cuidará do resto
+        router.push(decodeURIComponent(redirectPath))
       }
     } catch (error) {
       toast.error('Erro inesperado ao fazer login')
