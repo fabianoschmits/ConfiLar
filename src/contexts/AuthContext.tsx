@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
-import { useAuth, Profile, SignUpFn } from '@/hooks/useAuth'
+import { useRobustAuth } from '@/hooks/useRobustAuth'
+import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 
 interface AuthContextType {
@@ -9,11 +10,14 @@ interface AuthContextType {
 	profile: Profile | null
 	session: { user: { id: string; email: string } } | null
 	loading: boolean
+	isReady: boolean
+	error: string | null
 	signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>
 	signUp: SignUpFn
 	signOut: () => Promise<{ error: { message: string } | null }>
 	updateProfile: (updates: Partial<Profile>) => Promise<{ data: Profile | null; error: { message: string } | null }>
 	uploadAvatar: (file: File) => Promise<{ data: string | null; error: { message: string } | null }>
+	refreshAuth: () => Promise<void>
 	isMockMode: boolean
 }
 
@@ -25,7 +29,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children, initialSession }: AuthProviderProps) {
-	const auth = useAuth(initialSession)
+	const auth = useRobustAuth(initialSession)
 
 	return (
 		<AuthContext.Provider value={auth}>
@@ -41,3 +45,26 @@ export function useAuthContext() {
 	}
 	return context
 }
+
+// Re-exportar tipos para compatibilidade
+export type { Profile } from '@/types/database'
+
+export type SignUpFn = (
+	email: string,
+	password: string,
+	additionalData?: {
+		full_name?: string
+		phone?: string
+		user_type?: 'client' | 'professional'
+		cpf_cnpj?: string
+		birth_date?: string
+		location_state?: string
+		location_city?: string
+		neighborhood?: string
+		bio?: string
+		services_offered?: string[]
+		experience_years?: string
+		emergency_service?: boolean
+		insurance_coverage?: boolean
+	}
+) => Promise<{ error: { message: string } | null }>

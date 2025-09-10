@@ -36,7 +36,7 @@ import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 
 function HomeContent() {
   const router = useRouter()
-  const { user, loading } = useAuthContext()
+  const { user, loading, isReady, error } = useAuthContext()
   const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { professionalsCount, reviewsCount, citiesCount, servicesCount, loading: statsLoading } = useHomeStats()
@@ -47,23 +47,35 @@ function HomeContent() {
 
   // Redirecionar usuários logados para o dashboard
   useEffect(() => {
-    if (!loading && user) {
+    if (isReady && user) {
       router.push('/dashboard')
       return
     }
-  }, [user, loading, router])
+  }, [user, isReady, router])
 
   useEffect(() => {
     setIsVisible(true)
   }, [])
 
-  // Mostrar loading enquanto verifica autenticação
-  if (loading) {
+  // Mostrar loading inteligente enquanto verifica autenticação
+  if (loading || !isReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Carregando...</p>
+        <div className="text-center space-y-6 max-w-md mx-auto p-6">
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Carregando ConfiLar</h3>
+            <p className="text-sm text-gray-600 mt-2">
+              {loading ? 'Verificando autenticação...' : 'Preparando interface...'}
+            </p>
+          </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
         </div>
       </div>
     )

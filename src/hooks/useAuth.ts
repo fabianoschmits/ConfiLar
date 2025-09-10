@@ -111,7 +111,7 @@ export function useAuth(initialSession?: Session | null) {
 		} finally {
 			setProfileLoading(false)
 		}
-	}, [supabase, createDefaultProfile, profileLoading, profile])
+	}, [supabase, createDefaultProfile, profileLoading])
 
 	// Inicialização do sistema de autenticação
 	useEffect(() => {
@@ -119,14 +119,21 @@ export function useAuth(initialSession?: Session | null) {
 
 		console.log('🔍 Inicializando sistema de autenticação...')
 		
-		// Timeout de segurança aumentado (10 segundos)
+		// Timeout de segurança mais agressivo (5 segundos)
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
 				console.log('⚠️ Timeout de segurança atingido - finalizando loading')
 				setLoading(false)
 				setInitialized(true)
 			}
-		}, 10000)
+		}, 5000)
+
+		// Timeout adicional para garantir que o loading seja finalizado
+		const forceFinishTimeout = setTimeout(() => {
+			console.log('🚨 Forçando finalização do loading após 8 segundos')
+			setLoading(false)
+			setInitialized(true)
+		}, 8000)
 
 		const initializeAuth = async () => {
 			try {
@@ -137,11 +144,22 @@ export function useAuth(initialSession?: Session | null) {
 					setUser(userData)
 					setSession({ user: userData })
 					
-					// Buscar perfil do usuário
-					await fetchUserProfile(initialSession.user.id, initialSession.user.email)
+					// Buscar perfil do usuário com timeout
+					try {
+						await Promise.race([
+							fetchUserProfile(initialSession.user.id, initialSession.user.email),
+							new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+						])
+					} catch (profileError) {
+						console.warn('⚠️ Timeout na busca do perfil, usando perfil padrão')
+						const defaultProfile = createDefaultProfile(initialSession.user.id, initialSession.user.email)
+						setProfile(defaultProfile)
+					}
+					
 					setLoading(false)
 					setInitialized(true)
 					clearTimeout(safetyTimeout)
+					clearTimeout(forceFinishTimeout)
 					return
 				}
 
@@ -154,6 +172,7 @@ export function useAuth(initialSession?: Session | null) {
 					setLoading(false)
 					setInitialized(true)
 					clearTimeout(safetyTimeout)
+					clearTimeout(forceFinishTimeout)
 					return
 				}
 
@@ -165,8 +184,17 @@ export function useAuth(initialSession?: Session | null) {
 					setUser(userData)
 					setSession({ user: userData })
 					
-					// Buscar perfil em paralelo
-					await fetchUserProfile(session.user.id, session.user.email)
+					// Buscar perfil com timeout
+					try {
+						await Promise.race([
+							fetchUserProfile(session.user.id, session.user.email),
+							new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+						])
+					} catch (profileError) {
+						console.warn('⚠️ Timeout na busca do perfil, usando perfil padrão')
+						const defaultProfile = createDefaultProfile(session.user.id, session.user.email)
+						setProfile(defaultProfile)
+					}
 				} else {
 					console.log('❌ Nenhum usuário na sessão')
 					setUser(null)
@@ -182,6 +210,7 @@ export function useAuth(initialSession?: Session | null) {
 				setLoading(false)
 				setInitialized(true)
 				clearTimeout(safetyTimeout)
+				clearTimeout(forceFinishTimeout)
 			}
 		}
 
@@ -210,7 +239,16 @@ export function useAuth(initialSession?: Session | null) {
 					
 					// Buscar perfil apenas se necessário e não estiver carregando
 					if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && !profileLoading) {
-						await fetchUserProfile(session.user.id, session.user.email)
+						try {
+							await Promise.race([
+								fetchUserProfile(session.user.id, session.user.email),
+								new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+							])
+						} catch (profileError) {
+							console.warn('⚠️ Timeout na busca do perfil durante auth change')
+							const defaultProfile = createDefaultProfile(session.user.id, session.user.email)
+							setProfile(defaultProfile)
+						}
 					}
 				} else {
 					console.log('❌ Usuário deslogado')
@@ -226,6 +264,7 @@ export function useAuth(initialSession?: Session | null) {
 		return () => {
 			subscription.unsubscribe()
 			clearTimeout(safetyTimeout)
+			clearTimeout(forceFinishTimeout)
 		}
 	}, [initialized, supabase, initialSession])
 
@@ -249,11 +288,28 @@ export function useAuth(initialSession?: Session | null) {
 
 			if (data.user) {
 				console.log('✅ Login bem-sucedido para:', data.user.email)
-				// O listener onAuthStateChange vai processar o resto
-				// Garantir que o loading seja finalizado após um tempo
+				
+				// Definir usuário e sessão imediatamente
+				const userData = { id: data.user.id, email: data.user.email }
+				setUser(userData)
+				setSession({ user: userData })
+				
+				// Buscar perfil com timeout mais agressivo
+				try {
+					await Promise.race([
+						fetchUserProfile(data.user.id, data.user.email),
+						new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+					])
+				} catch (profileError) {
+					console.warn('⚠️ Timeout na busca do perfil após login, usando perfil padrão')
+					const defaultProfile = createDefaultProfile(data.user.id, data.user.email)
+					setProfile(defaultProfile)
+				}
+				
+				// Garantir que o loading seja finalizado
 				setTimeout(() => {
 					setLoading(false)
-				}, 2000)
+				}, 1000)
 			}
 
 			return { error: null }
@@ -266,7 +322,7 @@ export function useAuth(initialSession?: Session | null) {
 				} 
 			}
 		}
-	}, [supabase])
+	}, [supabase, fetchUserProfile, createDefaultProfile])
 
 	// Função de logout OTIMIZADA
 	const signOut = useCallback(async () => {
