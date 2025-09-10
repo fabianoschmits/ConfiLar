@@ -41,6 +41,12 @@ export type SignUpFn = (
 		experience_years?: string
 		emergency_service?: boolean
 		insurance_coverage?: boolean
+		avatar_data?: {
+			type: 'upload' | 'dicebear'
+			file?: File
+			url?: string
+			preview: string
+		} | null
 	}
 ) => Promise<{ error: { message: string } | null }>
 
@@ -393,6 +399,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
   // Função de cadastro (simplificada)
   const signUp: SignUpFn = useCallback(async (email, password, additionalData) => {
     console.log('📝 Tentando cadastro robusto para:', email)
+    console.log('🎨 Dados do avatar:', additionalData?.avatar_data)
     setError(null)
     setLoading(true)
     
@@ -418,6 +425,80 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
 
       if (data.user) {
         console.log('✅ Cadastro bem-sucedido para:', data.user.email)
+        
+        // Processar avatar se fornecido
+        if (additionalData?.avatar_data) {
+          try {
+            let avatarUrl = null
+            
+            if (additionalData.avatar_data.type === 'dicebear') {
+              // Para avatars Dicebear, usar a URL diretamente
+              avatarUrl = additionalData.avatar_data.url
+              console.log('🎨 Avatar Dicebear definido:', avatarUrl)
+            } else if (additionalData.avatar_data.type === 'upload') {
+              // Para upload de arquivo, fazer upload para o Supabase Storage
+              const file = additionalData.avatar_data.file as File
+              const fileExt = file.name.split('.').pop()
+              const fileName = `${data.user.id}-avatar.${fileExt}`
+              
+              const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(fileName, file, {
+                  cacheControl: '3600',
+                  upsert: true
+                })
+              
+              if (uploadError) {
+                console.error('❌ Erro no upload do avatar:', uploadError)
+                // Usar avatar Dicebear como fallback
+                avatarUrl = additionalData.avatar_data.preview
+              } else {
+                // Obter URL pública do arquivo
+                const { data: urlData } = supabase.storage
+                  .from('avatars')
+                  .getPublicUrl(fileName)
+                avatarUrl = urlData.publicUrl
+                console.log('🎨 Avatar enviado com sucesso:', avatarUrl)
+              }
+            }
+            
+            // Criar perfil com avatar
+            if (avatarUrl) {
+              const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: data.user.id,
+                  email: data.user.email,
+                  full_name: additionalData?.full_name || 'Usuário',
+                  phone: additionalData?.phone || '',
+                  user_type: additionalData?.user_type || 'client',
+                  cpf_cnpj: additionalData?.cpf_cnpj || '',
+                  birth_date: additionalData?.birth_date || '',
+                  location_state: additionalData?.location_state || '',
+                  location_city: additionalData?.location_city || '',
+                  neighborhood: additionalData?.neighborhood || '',
+                  bio: additionalData?.bio || '',
+                  services_offered: additionalData?.services_offered || [],
+                  experience_years: additionalData?.experience_years || '',
+                  emergency_service: additionalData?.emergency_service || false,
+                  insurance_coverage: additionalData?.insurance_coverage || false,
+                  avatar_url: avatarUrl,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+              
+              if (profileError) {
+                console.error('❌ Erro ao criar perfil:', profileError)
+              } else {
+                console.log('✅ Perfil criado com avatar:', avatarUrl)
+              }
+            }
+          } catch (avatarError) {
+            console.error('❌ Erro ao processar avatar:', avatarError)
+            // Continuar mesmo com erro no avatar
+          }
+        }
+        
         setLoading(false)
       }
 
