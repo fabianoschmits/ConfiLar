@@ -410,11 +410,13 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
   // Função de cadastro (simplificada)
   const signUp: SignUpFn = useCallback(async (email, password, additionalData) => {
     console.log('📝 Tentando cadastro robusto para:', email)
+    console.log('📋 Dados adicionais:', additionalData)
     console.log('🎨 Dados do avatar:', additionalData?.avatar_data)
     setError(null)
     setLoading(true)
     
     try {
+      // Primeiro, criar o usuário no Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -436,6 +438,9 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
 
       if (data.user) {
         console.log('✅ Cadastro bem-sucedido para:', data.user.email)
+        
+        // Aguardar um pouco para garantir que o usuário foi criado
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
         // Processar avatar se fornecido
         let avatarUrl = null
@@ -477,35 +482,44 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
           }
         }
         
-        // Criar perfil (com ou sem avatar)
+        // Criar perfil com todos os dados fornecidos
         try {
-          const { error: profileError } = await supabase
+          const profileData = {
+            id: data.user.id,
+            email: data.user.email,
+            full_name: additionalData?.full_name || 'Usuário',
+            phone: additionalData?.phone || '',
+            user_type: additionalData?.user_type || 'client',
+            cpf_cnpj: additionalData?.cpf_cnpj || '',
+            birth_date: additionalData?.birth_date || null,
+            location_state: additionalData?.location_state || '',
+            location_city: additionalData?.location_city || '',
+            neighborhood: additionalData?.neighborhood || '',
+            bio: additionalData?.bio || '',
+            professional_services: additionalData?.services_offered || [],
+            professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) || 0 : 0,
+            emergency_service: additionalData?.emergency_service || false,
+            insurance_coverage: additionalData?.insurance_coverage || false,
+            avatar_url: avatarUrl,
+            profile_completed: true, // Marcar como completo se temos dados básicos
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+          
+          console.log('📝 Criando perfil com dados:', profileData)
+          
+          const { data: profileResult, error: profileError } = await supabase
             .from('profiles')
-            .insert({
-              id: data.user.id,
-              email: data.user.email,
-              full_name: additionalData?.full_name || 'Usuário',
-              phone: additionalData?.phone || '',
-              user_type: additionalData?.user_type || 'client',
-              cpf_cnpj: additionalData?.cpf_cnpj || '',
-              birth_date: additionalData?.birth_date || '',
-              location_state: additionalData?.location_state || '',
-              location_city: additionalData?.location_city || '',
-              neighborhood: additionalData?.neighborhood || '',
-              bio: additionalData?.bio || '',
-              professional_services: additionalData?.services_offered || [],
-              professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) || 0 : 0,
-              emergency_service: additionalData?.emergency_service || false,
-              insurance_coverage: additionalData?.insurance_coverage || false,
-              avatar_url: avatarUrl,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
+            .insert(profileData)
+            .select()
+            .single()
           
           if (profileError) {
             console.error('❌ Erro ao criar perfil:', profileError)
+            console.error('❌ Dados que causaram erro:', profileData)
           } else {
-            console.log('✅ Perfil criado com sucesso:', avatarUrl ? 'com avatar' : 'sem avatar')
+            console.log('✅ Perfil criado com sucesso:', profileResult.full_name)
+            console.log('✅ Avatar URL:', profileResult.avatar_url)
           }
         } catch (profileError) {
           console.error('❌ Erro crítico ao criar perfil:', profileError)
