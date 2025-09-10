@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
-import { useRobustAuth } from '@/hooks/useRobustAuth'
+import { useRobustAuth, SignUpFn } from '@/hooks/useRobustAuth'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 
