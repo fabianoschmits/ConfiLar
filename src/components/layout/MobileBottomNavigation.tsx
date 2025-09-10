@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import { useNavigationWithLoading } from '@/hooks/useLoading'
+import { NavigationLink } from '@/components/ui/NavigationLink'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -69,8 +71,9 @@ export function MobileBottomNavigation() {
           <div className="flex items-center justify-between">
             {/* Links Principais */}
             <div className="flex items-center space-x-1">
-              <button
-                onClick={() => window.location.href = '/home'}
+              <NavigationLink
+                href="/home"
+                destination="Home"
                 className={cn(
                   "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/home')
@@ -80,10 +83,11 @@ export function MobileBottomNavigation() {
               >
                 <House size={20} weight={isActive('/home') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Home</span>
-              </button>
+              </NavigationLink>
               
-              <button
-                onClick={() => window.location.href = '/dashboard'}
+              <NavigationLink
+                href="/dashboard"
+                destination="Dashboard"
                 className={cn(
                   "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/dashboard')
@@ -93,10 +97,11 @@ export function MobileBottomNavigation() {
               >
                 <ChartBar size={20} weight={isActive('/dashboard') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Dashboard</span>
-              </button>
+              </NavigationLink>
               
-              <button
-                onClick={() => window.location.href = '/buscar'}
+              <NavigationLink
+                href="/buscar"
+                destination="Buscar"
                 className={cn(
                   "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/buscar')
@@ -106,10 +111,11 @@ export function MobileBottomNavigation() {
               >
                 <MagnifyingGlass size={20} weight={isActive('/buscar') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Buscar</span>
-              </button>
+              </NavigationLink>
               
-              <button
-                onClick={() => window.location.href = '/classificados'}
+              <NavigationLink
+                href="/classificados"
+                destination="Classificados"
                 className={cn(
                   "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/classificados')
@@ -119,7 +125,7 @@ export function MobileBottomNavigation() {
               >
                 <BriefcasePhosphor size={20} weight={isActive('/classificados') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Classificados</span>
-              </button>
+              </NavigationLink>
             </div>
 
             {/* Botão de Expansão */}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { NavigationLink } from '@/components/ui/NavigationLink';
 import { 
   FileText,
   Shield,
@@ -423,9 +424,10 @@ export function Sidebar() {
                         )}
                       </button>
                     ) : (
-                      <Link
+                      <NavigationLink
                         key={item.id}
                         href={item.href}
+                        destination={item.title}
                         onClick={() => setIsMobileOpen(false)}
                         className={`
                           group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
@@ -458,7 +460,7 @@ export function Sidebar() {
                             )}
                           </div>
                         )}
-                      </Link>
+                      </NavigationLink>
                     )
                   ))}
                 </div>
