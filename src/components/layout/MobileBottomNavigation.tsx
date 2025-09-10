@@ -30,7 +30,8 @@ import {
   Eye as EyePhosphor,
   PencilSimple,
   TrendUp,
-  Lightning
+  Lightning,
+  ChartBar
 } from '@phosphor-icons/react'
 
 export function MobileBottomNavigation() {
@@ -67,43 +68,56 @@ export function MobileBottomNavigation() {
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Links Principais */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <button
                 onClick={() => window.location.href = '/home'}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
+                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/home')
                     ? "bg-blue-100 text-blue-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
-                <House size={24} weight={isActive('/home') ? "fill" : "light"} />
+                <House size={20} weight={isActive('/home') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Home</span>
+              </button>
+              
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                className={cn(
+                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
+                  isActive('/dashboard')
+                    ? "bg-indigo-100 text-indigo-600"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                )}
+              >
+                <ChartBar size={20} weight={isActive('/dashboard') ? "fill" : "light"} />
+                <span className="text-xs font-medium mt-1">Dashboard</span>
               </button>
               
               <button
                 onClick={() => window.location.href = '/buscar'}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
+                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/buscar')
                     ? "bg-green-100 text-green-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
-                <MagnifyingGlass size={24} weight={isActive('/buscar') ? "fill" : "light"} />
+                <MagnifyingGlass size={20} weight={isActive('/buscar') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Buscar</span>
               </button>
               
               <button
                 onClick={() => window.location.href = '/classificados'}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-2 rounded-xl transition-all duration-200 min-w-[60px]",
+                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
                   isActive('/classificados')
                     ? "bg-purple-100 text-purple-600"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 )}
               >
-                <BriefcasePhosphor size={24} weight={isActive('/classificados') ? "fill" : "light"} />
+                <BriefcasePhosphor size={20} weight={isActive('/classificados') ? "fill" : "light"} />
                 <span className="text-xs font-medium mt-1">Classificados</span>
               </button>
             </div>
