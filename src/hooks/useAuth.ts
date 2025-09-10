@@ -119,13 +119,14 @@ export function useAuth(initialSession?: Session | null) {
 
 		console.log('🔍 Inicializando sistema de autenticação...')
 		
-		// Timeout de segurança otimizado (3 segundos)
+		// Timeout de segurança aumentado (10 segundos)
 		const safetyTimeout = setTimeout(() => {
 			if (loading) {
 				console.log('⚠️ Timeout de segurança atingido - finalizando loading')
 				setLoading(false)
+				setInitialized(true)
 			}
-		}, 3000)
+		}, 10000)
 
 		const initializeAuth = async () => {
 			try {
@@ -152,6 +153,7 @@ export function useAuth(initialSession?: Session | null) {
 					console.error('❌ Erro ao buscar sessão:', error)
 					setLoading(false)
 					setInitialized(true)
+					clearTimeout(safetyTimeout)
 					return
 				}
 
@@ -225,7 +227,7 @@ export function useAuth(initialSession?: Session | null) {
 			subscription.unsubscribe()
 			clearTimeout(safetyTimeout)
 		}
-	}, [initialized, supabase, fetchUserProfile, initialSession])
+	}, [initialized, supabase, initialSession])
 
 	// Função de login OTIMIZADA
 	const signIn = useCallback(async (email: string, password: string) => {
@@ -248,6 +250,10 @@ export function useAuth(initialSession?: Session | null) {
 			if (data.user) {
 				console.log('✅ Login bem-sucedido para:', data.user.email)
 				// O listener onAuthStateChange vai processar o resto
+				// Garantir que o loading seja finalizado após um tempo
+				setTimeout(() => {
+					setLoading(false)
+				}, 2000)
 			}
 
 			return { error: null }
