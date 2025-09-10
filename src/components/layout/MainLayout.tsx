@@ -7,7 +7,8 @@ import { MobileBottomNavigation } from './MobileBottomNavigation';
 import { MobileQuickActions } from './MobileQuickActions';
 import { MobileHeader } from './MobileHeader';
 import { LoginPrompt } from './LoginPrompt';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext'
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { usePathname } from 'next/navigation';
 
@@ -49,24 +50,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       <MobileHeader />
       <main className={`min-h-screen bg-gray-50 transition-colors duration-200 lg:ml-16 pb-20 lg:pb-0 pt-16 lg:pt-0`}>
         {loading || !isReady ? (
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center space-y-6 max-w-md mx-auto p-6">
-              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Carregando</h3>
-                <p className="text-sm text-gray-600 mt-2">
-                  {loading ? 'Verificando autenticação...' : 'Preparando interface...'}
-                </p>
-              </div>
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <LoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
