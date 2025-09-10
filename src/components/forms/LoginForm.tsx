@@ -74,7 +74,7 @@ export function LoginForm() {
         // Redirecionar imediatamente - o sistema robusto cuidará do resto
         router.push(decodeURIComponent(redirectPath))
       }
-    } catch (error) {
+    } catch {
       toast.error('Erro inesperado ao fazer login')
       setIsLoading(false)
     }

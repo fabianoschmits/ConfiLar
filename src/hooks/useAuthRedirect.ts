@@ -147,32 +147,14 @@ export function SmartRedirect({
 
   // Se excedeu tentativas, mostrar erro
   if (!canRedirect && isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4 max-w-md mx-auto p-6">
-          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-            <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Erro de Redirecionamento</h3>
-            <p className="text-sm text-gray-600 mt-2">
-              Não foi possível redirecionar após {maxAttempts} tentativas.
-            </p>
-          </div>
-          <button 
-            onClick={() => window.location.href = redirectPath || '/dashboard'}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-          >
-            Ir para Dashboard
-          </button>
-        </div>
-      </div>
-    )
+    // Redirecionar forçadamente para dashboard
+    if (typeof window !== 'undefined') {
+      window.location.href = redirectPath || '/dashboard'
+    }
+    return null
   }
 
-  return <>{children}</>
+  return children
 }
 
 // Hook para redirecionamento automático baseado em autenticação
