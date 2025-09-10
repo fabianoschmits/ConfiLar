@@ -31,7 +31,7 @@ export function LoginForm() {
   const accountCreated = searchParams.get('message') === 'account_created'
   
   // Obter o parâmetro de redirecionamento
-  const redirectPath = searchParams.get('redirect') || '/home'
+  const redirectPath = searchParams.get('redirect') || '/dashboard'
 
   const {
     register,
@@ -67,18 +67,18 @@ export function LoginForm() {
       
       if (error) {
         toast.error('Erro ao fazer login: ' + error.message)
+        setIsLoading(false)
       } else {
         toast.success('Login realizado com sucesso!')
         
         // Aguardar um momento para garantir que o contexto seja atualizado
         setTimeout(() => {
-          // Redirecionar para a página original ou home
+          // Redirecionar para a página original ou dashboard
           router.push(decodeURIComponent(redirectPath))
-        }, 1000)
+        }, 500)
       }
     } catch (error) {
       toast.error('Erro inesperado ao fazer login')
-    } finally {
       setIsLoading(false)
     }
   }

@@ -45,10 +45,10 @@ function HomeContent() {
     setMounted(true)
   }, [])
 
-  // Redirecionar usuários logados para a página inicial
+  // Redirecionar usuários logados para o dashboard
   useEffect(() => {
     if (!loading && user) {
-      router.push('/home')
+      router.push('/dashboard')
       return
     }
   }, [user, loading, router])
