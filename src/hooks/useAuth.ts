@@ -537,6 +537,68 @@ export function useAuth(initialSession?: Session | null) {
 		}
 	}, [supabase, user?.id, updateProfile])
 
+	// Função para recuperação de senha
+	const resetPassword = useCallback(async (email: string) => {
+		console.log('🔐 Tentando enviar email de recuperação para:', email)
+		
+		try {
+			setLoading(true)
+			
+			const { error } = await supabase.auth.resetPasswordForEmail(email, {
+				redirectTo: `${window.location.origin}/nova-senha`
+			})
+
+			if (error) {
+				console.error('❌ Erro ao enviar email de recuperação:', error)
+				setLoading(false)
+				return { error }
+			}
+
+			console.log('✅ Email de recuperação enviado com sucesso')
+			setLoading(false)
+			return { error: null }
+		} catch (error) {
+			console.error('💥 Erro crítico ao enviar email de recuperação:', error)
+			setLoading(false)
+			return { 
+				error: { 
+					message: error instanceof Error ? error.message : 'Erro desconhecido' 
+				} 
+			}
+		}
+	}, [supabase])
+
+	// Função para atualizar senha
+	const updatePassword = useCallback(async (newPassword: string) => {
+		console.log('🔐 Tentando atualizar senha')
+		
+		try {
+			setLoading(true)
+			
+			const { error } = await supabase.auth.updateUser({
+				password: newPassword
+			})
+
+			if (error) {
+				console.error('❌ Erro ao atualizar senha:', error)
+				setLoading(false)
+				return { error }
+			}
+
+			console.log('✅ Senha atualizada com sucesso')
+			setLoading(false)
+			return { error: null }
+		} catch (error) {
+			console.error('💥 Erro crítico ao atualizar senha:', error)
+			setLoading(false)
+			return { 
+				error: { 
+					message: error instanceof Error ? error.message : 'Erro desconhecido' 
+				} 
+			}
+		}
+	}, [supabase])
+
 	return {
 		user,
 		profile,
@@ -547,6 +609,8 @@ export function useAuth(initialSession?: Session | null) {
 		signOut,
 		updateProfile,
 		uploadAvatar,
+		resetPassword,
+		updatePassword,
 		isMockMode: false,
 	}
 }
