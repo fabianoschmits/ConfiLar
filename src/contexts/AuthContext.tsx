@@ -22,6 +22,7 @@ type SignUpFn = (
 		experience_years?: string
 		emergency_service?: boolean
 		insurance_coverage?: boolean
+		gender?: 'male' | 'female'
 		avatar_data?: {
 			type: 'upload' | 'dicebear'
 			file?: File

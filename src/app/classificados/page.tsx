@@ -405,7 +405,11 @@ export default function ClassificadosPage() {
       category: ad.category,
       location_state: ad.location_state,
       location_city: ad.location_city,
-      ad_type: ad.user_type === 'professional' ? 'oferecer' : 'procurar'
+      ad_type: ad.user_type === 'professional' ? 'service_offer' : 'service_request',
+      budget: ad.budget?.toString() || '',
+      price: ad.price?.toString() || '',
+      urgency: ad.urgency || 'medium',
+      availability: ad.availability || ''
     })
     setIsEditModalOpen(true)
   }
@@ -538,9 +542,9 @@ export default function ClassificadosPage() {
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, ad_type: 'procurar' })}
+                          onClick={() => setFormData({ ...formData, ad_type: 'service_request' })}
                           className={`p-3 rounded-lg border-2 transition-all ${
-                            formData.ad_type === 'procurar'
+                            formData.ad_type === 'service_request'
                               ? 'border-blue-500 bg-blue-50 text-blue-700'
                               : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                           }`}
@@ -554,9 +558,9 @@ export default function ClassificadosPage() {
                         
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, ad_type: 'oferecer' })}
+                          onClick={() => setFormData({ ...formData, ad_type: 'service_offer' })}
                           className={`p-3 rounded-lg border-2 transition-all ${
-                            formData.ad_type === 'oferecer'
+                            formData.ad_type === 'service_offer'
                               ? 'border-green-500 bg-green-50 text-green-700'
                               : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                           }`}
