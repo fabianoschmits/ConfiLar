@@ -437,6 +437,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
             location_state: additionalData?.location_state || '',
             location_city: additionalData?.location_city || '',
             neighborhood: additionalData?.neighborhood || '',
+            address: additionalData?.address || '',
             bio: additionalData?.bio || '',
             gender: additionalData?.gender || 'male',
             experience_years: additionalData?.experience_years || '',
@@ -458,7 +459,9 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         console.log('✅ Cadastro bem-sucedido para:', data.user.email)
         
         // Aguardar um pouco para garantir que o usuário foi criado
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        
+        console.log('✅ Usuário criado com ID:', data.user.id)
         
         // Processar avatar se fornecido
         let avatarUrl = null
@@ -503,8 +506,8 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         // Criar perfil com todos os dados fornecidos
         try {
           const profileData = {
-            id: data.user.id,
-            email: data.user.email,
+            id: data.user.id, // Usar o ID do usuário retornado pelo signUp
+            email: data.user.email, // Usar o email do usuário retornado pelo signUp
             full_name: additionalData?.full_name || 'Usuário',
             phone: additionalData?.phone || '',
             user_type: additionalData?.user_type || 'client',
@@ -513,11 +516,10 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
             location_state: additionalData?.location_state || '',
             location_city: additionalData?.location_city || '',
             neighborhood: additionalData?.neighborhood || '',
+            address: additionalData?.address || '',
             bio: additionalData?.bio || '',
             professional_services: additionalData?.services_offered || [],
             professional_experience_years: additionalData?.experience_years ? parseInt(additionalData.experience_years) || 0 : 0,
-            emergency_service: additionalData?.emergency_service || false,
-            insurance_coverage: additionalData?.insurance_coverage || false,
             avatar_url: avatarUrl,
             profile_completed: true, // Marcar como completo se temos dados básicos
             created_at: new Date().toISOString(),
