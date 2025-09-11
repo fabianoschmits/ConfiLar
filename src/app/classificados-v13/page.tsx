@@ -30,7 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
-import { services } from '@/data/services';
+import { servicesList } from '@/data/services';
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
@@ -231,7 +231,7 @@ export default function ClassificadosV13() {
                   {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
-                  {services.find(s => s.id === ad.category)?.name || ad.category}
+                  {servicesList.find(s => s.id === ad.category)?.name || ad.category}
                 </Badge>
               </div>
             </div>
@@ -509,7 +509,7 @@ export default function ClassificadosV13() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todas as categorias</SelectItem>
-                      {services.map(service => (
+                      {servicesList.map(service => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name}
                         </SelectItem>

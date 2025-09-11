@@ -81,6 +81,9 @@ export const services: Service[] = [
   { id: 'glass-repair', name: 'Vidraçaria', icon: '🪟', description: 'Reparo e instalação de vidros', category: 'Manutenção Geral' }
 ]
 
+// Export alias for compatibility
+export const servicesList = services
+
 // Funções utilitárias para trabalhar com serviços
 
 // Buscar serviço por ID

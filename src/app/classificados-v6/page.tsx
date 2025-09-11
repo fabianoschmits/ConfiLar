@@ -95,16 +95,14 @@ const cardVariants = {
     scale: 1,
     opacity: 1,
     transition: {
-      duration: 0.4,
-      ease: "easeOut"
+      duration: 0.4
     }
   },
   hover: {
     scale: 1.02,
     y: -5,
     transition: {
-      duration: 0.2,
-      ease: "easeInOut"
+      duration: 0.2
     }
   }
 };

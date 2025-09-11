@@ -8,12 +8,9 @@ import {
   Bounce, 
   Flip, 
   Rotate, 
-  LightSpeed, 
   JackInTheBox,
   Hinge,
-  Roll,
-  Pulse,
-  Flash
+  Roll
 } from 'react-awesome-reveal';
 import { 
   Search, 
@@ -44,7 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
-import { services } from '@/data/services';
+import { servicesList } from '@/data/services';
 import { toast } from 'sonner';
 
 export const dynamic = 'force-dynamic';
@@ -219,7 +216,7 @@ export default function ClassificadosV12() {
   };
 
   const getAnimationType = (index: number) => {
-    const animations = [Fade, Slide, Zoom, Bounce, Flip, Rotate, LightSpeed, JackInTheBox];
+    const animations = [Fade, Slide, Zoom, Bounce, Flip, Rotate, JackInTheBox];
     return animations[index % animations.length];
   };
 
@@ -246,12 +243,12 @@ export default function ClassificadosV12() {
                     {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
-                    {services.find(s => s.id === ad.category)?.name || ad.category}
+                    {servicesList.find(s => s.id === ad.category)?.name || ad.category}
                   </Badge>
                 </div>
               </div>
               
-              <Pulse>
+              <Bounce>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -259,7 +256,7 @@ export default function ClassificadosV12() {
                 >
                   <Heart className="h-4 w-4" />
                 </Button>
-              </Pulse>
+              </Bounce>
             </div>
           </CardHeader>
 
@@ -518,7 +515,7 @@ export default function ClassificadosV12() {
             </Slide>
 
             {filterVisible && (
-              <LightSpeed delay={900}>
+              <Slide direction="left" delay={900}>
                 <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 mb-4">
                   <div className="flex gap-4">
                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -527,7 +524,7 @@ export default function ClassificadosV12() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todas as categorias</SelectItem>
-                        {services.map(service => (
+                        {servicesList.map(service => (
                           <SelectItem key={service.id} value={service.id}>
                             {service.name}
                           </SelectItem>
@@ -551,7 +548,7 @@ export default function ClassificadosV12() {
                     </Select>
                   </div>
                 </div>
-              </LightSpeed>
+              </Slide>
             )}
           </div>
         </div>
@@ -611,7 +608,7 @@ export default function ClassificadosV12() {
         </JackInTheBox>
 
         {/* Stats Section */}
-        <Flash delay={1200}>
+        <Fade delay={1200}>
           <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
               <CardContent className="p-6 text-center">
@@ -637,7 +634,7 @@ export default function ClassificadosV12() {
               </CardContent>
             </Card>
           </div>
-        </Flash>
+        </Fade>
       </div>
     </div>
   );
