@@ -157,6 +157,50 @@ export function RecommendationButton({
         setIsRecommended(true)
         setRecommendationCount(prev => prev + 1)
         toast.success('Usuário recomendado com sucesso!')
+
+        // Enviar notificação por email (não crítico)
+        try {
+          // Buscar informações do usuário recomendado
+          const { data: recommendedUser } = await supabase
+            .from('profiles')
+            .select('full_name, email, user_type')
+            .eq('id', userId)
+            .single()
+
+          // Buscar informações do usuário que está recomendando
+          const { data: recommenderUser } = await supabase
+            .from('profiles')
+            .select('full_name, user_type')
+            .eq('id', user.id)
+            .single()
+
+          if (recommendedUser?.email) {
+            // Enviar email de notificação
+            const { error: emailError } = await supabase.functions.invoke('send-email', {
+              body: {
+                to: recommendedUser.email,
+                subject: `👍 Nova recomendação de ${recommenderUser?.full_name || 'Usuário'} - ConfiLar`,
+                template: 'recommendation',
+                data: {
+                  userName: recommendedUser.full_name || 'Usuário',
+                  senderName: recommenderUser?.full_name || 'Usuário',
+                  senderNameInitial: (recommenderUser?.full_name || 'U').charAt(0).toUpperCase(),
+                  senderType: recommenderUser?.user_type === 'professional' ? 'Profissional' : 'Cliente',
+                  profileUrl: `${window.location.origin}/perfil`
+                }
+              }
+            })
+
+            if (emailError) {
+              console.warn('⚠️ Erro ao enviar email de notificação:', emailError)
+            } else {
+              console.log('✅ Email de notificação de recomendação enviado para:', recommendedUser.email)
+            }
+          }
+        } catch (emailError) {
+          console.warn('⚠️ Erro ao enviar email de notificação (não crítico):', emailError)
+          // Não vamos falhar a recomendação por causa do email
+        }
       }
     } catch (error) {
       console.error('Erro ao processar recomendação:', error)
