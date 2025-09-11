@@ -52,7 +52,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Se há sessão e tentando acessar rota de auth, redirecionar para dashboard
-  if (session && isAuthRoute) {
+  // Mas apenas se não for um redirecionamento interno
+  if (session && isAuthRoute && !request.headers.get('x-middleware-redirect')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

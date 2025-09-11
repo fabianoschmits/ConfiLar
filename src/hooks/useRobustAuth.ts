@@ -252,6 +252,12 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
       async (event, session) => {
         console.log('🔄 Evento de auth:', event, session?.user?.email)
         
+        // Evitar processamento desnecessário se já estamos processando
+        if (loading) {
+          console.log('⏳ Já processando auth, ignorando evento:', event)
+          return
+        }
+        
         if (event === 'SIGNED_IN' && session?.user?.email) {
           const userData = { id: session.user.id, email: session.user.email }
           setUser(userData)
@@ -277,7 +283,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
       subscription.unsubscribe()
       clearAllTimeouts()
     }
-  }, [initializeAuth, supabase, fetchUserProfile, clearAllTimeouts])
+  }, [initializeAuth, supabase, fetchUserProfile, clearAllTimeouts, loading])
 
   // Função de login robusta
   const signIn = useCallback(async (email: string, password: string) => {
@@ -334,15 +340,10 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     setLoading(true)
     
     try {
-      // Primeiro limpar estado local para evitar race conditions
-      setUser(null)
-      setProfile(null)
-      setSession(null)
-      
-      // Limpar todos os timeouts pendentes
+      // Limpar todos os timeouts pendentes primeiro
       clearAllTimeouts()
       
-      // Depois executar logout no Supabase
+      // Executar logout no Supabase primeiro
       const { error } = await supabase.auth.signOut()
       
       if (error) {
@@ -352,6 +353,11 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         return { error }
       }
 
+      // Depois limpar estado local para evitar race conditions
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      
       // Limpeza de dados
       if (typeof window !== 'undefined') {
         const keysToRemove = [
