@@ -143,7 +143,7 @@ export function SimpleRegistrationForm() {
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       user_type: 'client' as const,
-      gender: undefined as any,
+      gender: 'male' as const,
       emergency_service: false,
       insurance_coverage: false,
     },
