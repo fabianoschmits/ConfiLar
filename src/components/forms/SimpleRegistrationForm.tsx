@@ -104,6 +104,7 @@ const registrationSchema = z.object({
   location_state: z.string().min(1, 'Estado é obrigatório'),
   location_city: z.string().min(1, 'Cidade é obrigatória'),
   neighborhood: z.string().min(1, 'Bairro é obrigatório'),
+  address: z.string().min(1, 'Endereço é obrigatório'),
   // Campos opcionais para profissionais
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
@@ -142,7 +143,7 @@ export function SimpleRegistrationForm() {
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       user_type: 'client' as const,
-      gender: 'male' as const,
+      gender: undefined as any,
       emergency_service: false,
       insurance_coverage: false,
     },
@@ -151,7 +152,6 @@ export function SimpleRegistrationForm() {
   const watchedValues = watch()
   const isProfessional = watchedValues.user_type === 'professional'
   const fullName = watchedValues.name
-  const selectedGender = watchedValues.gender
 
   // Converter categorias para formato de string simples
   const serviceCategoryNames = services.map(cat => cat.name)
@@ -171,19 +171,25 @@ export function SimpleRegistrationForm() {
     setValue('services_offered', newSelectedServices)
   }
 
-  // Gerar avatar Dicebear quando o nome ou sexo mudar
+  // Selecionar avatar pixel art automaticamente quando gerado
   useEffect(() => {
-    if (fullName && fullName.length >= 2 && selectedGender) {
-      generateDicebearAvatar(fullName, selectedGender)
+    if (dicebearAvatar) {
+      setSelectedAvatar({
+        type: 'dicebear',
+        value: dicebearAvatar,
+        preview: dicebearAvatar
+      })
     }
-  }, [fullName, selectedGender])
+  }, [dicebearAvatar])
 
   const generateDicebearAvatar = async (name: string, gender: string) => {
     setIsGeneratingAvatar(true)
     try {
       const encodedName = encodeURIComponent(name)
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${gender === 'male' ? '30' : '0'}`
+      const facialHairProbability = gender === 'male' ? '30' : gender === 'female' ? '0' : '15'
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}`
       setDicebearAvatar(avatarUrl)
+      console.log('🎨 Avatar atualizado:', avatarUrl)
     } catch (error) {
       console.error('Erro ao gerar avatar Dicebear:', error)
     } finally {
@@ -266,6 +272,12 @@ export function SimpleRegistrationForm() {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Permitir digitação normal, só formatar quando sair do campo
     setValue('name', e.target.value)
+    
+    // Gerar avatar a cada letra digitada (se nome tiver 2+ caracteres)
+    const name = e.target.value
+    if (name && name.length >= 2) {
+      generateDicebearAvatar(name, 'male')
+    }
   }
 
   const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -327,7 +339,7 @@ export function SimpleRegistrationForm() {
         experience_years: data.experience_years || '',
         emergency_service: data.emergency_service || false,
         insurance_coverage: data.insurance_coverage || false,
-        gender: data.gender || 'male', // Adicionar campo gender com fallback
+        gender: data.gender || 'male', // Garantir que seja male ou female
         avatar_data: avatarData, // Incluir dados do avatar
       })
 
@@ -355,6 +367,98 @@ export function SimpleRegistrationForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Foto/Imagem */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Foto/Imagem</h3>
+        
+        <div className="space-y-3">
+          {/* Preview do Avatar Selecionado */}
+          {selectedAvatar && (
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500">
+                <img
+                  src={selectedAvatar.preview}
+                  alt="Avatar selecionado"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-900">
+                  {selectedAvatar.type === 'upload' ? 'Foto enviada' : 'Avatar gerado'}
+                </p>
+                <p className="text-xs text-blue-700">
+                  {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
+                  {selectedAvatar.type === 'dicebear' && 'Gerado automaticamente'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Opções de Avatar */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Upload de Foto */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1">
+                <Upload className="h-3 w-3 text-gray-500" />
+                <span className="text-xs font-medium">Upload</span>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="avatar-upload"
+              />
+              <label
+                htmlFor="avatar-upload"
+                className={cn(
+                  "block w-full p-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors text-center",
+                  selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50"
+                )}
+              >
+                <div className="text-xs text-gray-600">
+                  {selectedAvatar?.type === 'upload' ? '✓ Selecionado' : 'Escolher arquivo'}
+                </div>
+              </label>
+            </div>
+
+            {/* Avatar Pixel-Art */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1">
+                <RefreshCw className={cn("h-3 w-3 text-gray-500", isGeneratingAvatar && "animate-spin")} />
+                <span className="text-xs font-medium">Pixel-Art</span>
+              </div>
+              {fullName && fullName.length >= 2 ? (
+                <button
+                  type="button"
+                  onClick={handleDicebearSelect}
+                  disabled={isGeneratingAvatar || !dicebearAvatar}
+                  className={cn(
+                    "w-full p-2 border rounded-lg transition-all text-center",
+                    selectedAvatar?.type === 'dicebear'
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-300 hover:border-blue-400 text-gray-600",
+                    (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {isGeneratingAvatar ? (
+                    <div className="text-xs">Gerando...</div>
+                  ) : dicebearAvatar ? (
+                    <div className="text-xs">✓ Selecionado automaticamente</div>
+                  ) : (
+                    <div className="text-xs">Digite nome</div>
+                  )}
+                </button>
+              ) : (
+                <div className="w-full p-2 border border-gray-200 rounded-lg text-center">
+                  <div className="text-xs text-gray-400">Digite nome</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Dados Básicos */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Dados Básicos</h3>
@@ -526,164 +630,36 @@ export function SimpleRegistrationForm() {
 
            {/* Sexo */}
            <div className="space-y-2">
-             <Label className="text-sm font-medium text-gray-700">Sexo *</Label>
-             <div className="grid grid-cols-2 gap-3">
-               <label className="flex items-center space-x-2 cursor-pointer">
-                 <input
-                   type="radio"
-                   value="male"
-                   {...register('gender')}
-                   className="sr-only"
-                 />
-                 <div className={`w-full p-2 border-2 rounded-lg text-center transition-all ${
-                   selectedGender === 'male'
-                     ? 'border-blue-500 bg-blue-50 text-blue-700'
-                     : 'border-gray-200 hover:border-gray-300'
-                 }`}>
-                   <div className="text-sm font-medium">Masculino</div>
-                 </div>
-               </label>
-               
-               <label className="flex items-center space-x-2 cursor-pointer">
-                 <input
-                   type="radio"
-                   value="female"
-                   {...register('gender')}
-                   className="sr-only"
-                 />
-                 <div className={`w-full p-2 border-2 rounded-lg text-center transition-all ${
-                   selectedGender === 'female'
-                     ? 'border-blue-500 bg-blue-50 text-blue-700'
-                     : 'border-gray-200 hover:border-gray-300'
-                 }`}>
-                   <div className="text-sm font-medium">Feminino</div>
-                 </div>
-               </label>
-             </div>
+             <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
+               Sexo *
+             </Label>
+             <Select
+               value={watchedValues.gender || ''}
+               onValueChange={(value) => {
+                 setValue('gender', value as 'male' | 'female')
+               }}
+             >
+               <SelectTrigger className={cn(
+                 "h-10",
+                 errors.gender ? 'border-red-500 focus:ring-red-500' : '',
+                 watchedValues.gender && !errors.gender ? 'border-gray-400 focus:ring-gray-400' : ''
+               )}>
+                 <SelectValue placeholder="Escolha" />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="male">Masculino</SelectItem>
+                 <SelectItem value="female">Feminino</SelectItem>
+                 <SelectItem value="not_specified">Não informar</SelectItem>
+               </SelectContent>
+             </Select>
              {errors.gender && (
                <p className="text-sm text-red-500">{errors.gender.message}</p>
              )}
-           </div>
-
-           {/* Avatar */}
-           <div className="space-y-3">
-             <div className="flex items-center gap-2">
-               <User className="h-4 w-4 text-gray-600" />
-               <Label className="text-sm font-medium text-gray-700">Avatar</Label>
-             </div>
-             
-             {/* Preview do Avatar Selecionado */}
-             {selectedAvatar && (
-               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500">
-                   <img
-                     src={selectedAvatar.preview}
-                     alt="Avatar selecionado"
-                     className="w-full h-full object-cover"
-                   />
-                 </div>
-                 <div>
-                   <p className="text-sm font-medium text-blue-900">
-                     {selectedAvatar.type === 'upload' ? 'Foto enviada' : 'Avatar gerado'}
-                   </p>
-                   <p className="text-xs text-blue-700">
-                     {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
-                     {selectedAvatar.type === 'dicebear' && 'Gerado automaticamente'}
-                   </p>
-                 </div>
-               </div>
-             )}
-
-             {/* Opções de Avatar */}
-             <div className="grid grid-cols-2 gap-3">
-               {/* Upload de Foto */}
-               <div className="space-y-2">
-                 <div className="flex items-center gap-1">
-                   <Upload className="h-3 w-3 text-gray-500" />
-                   <span className="text-xs font-medium">Upload</span>
-                 </div>
-                 <input
-                   type="file"
-                   accept="image/*"
-                   onChange={handleFileUpload}
-                   className="hidden"
-                   id="avatar-upload"
-                 />
-                 <label
-                   htmlFor="avatar-upload"
-                   className={cn(
-                     "block w-full p-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors text-center",
-                     selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50"
-                   )}
-                 >
-                   <div className="text-xs text-gray-600">
-                     {selectedAvatar?.type === 'upload' ? '✓ Selecionado' : 'Escolher arquivo'}
-                   </div>
-                 </label>
-               </div>
-
-               {/* Avatar Pixel-Art */}
-               <div className="space-y-2">
-                 <div className="flex items-center gap-1">
-                   <RefreshCw className={cn("h-3 w-3 text-gray-500", isGeneratingAvatar && "animate-spin")} />
-                   <span className="text-xs font-medium">Pixel-Art</span>
-                 </div>
-                 {fullName && fullName.length >= 2 && selectedGender ? (
-                   <button
-                     type="button"
-                     onClick={handleDicebearSelect}
-                     disabled={isGeneratingAvatar || !dicebearAvatar}
-                     className={cn(
-                       "w-full p-2 border rounded-lg transition-all text-center",
-                       selectedAvatar?.type === 'dicebear'
-                         ? "border-blue-500 bg-blue-50 text-blue-700"
-                         : "border-gray-300 hover:border-blue-400 text-gray-600",
-                       (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
-                     )}
-                   >
-                     {isGeneratingAvatar ? (
-                       <div className="text-xs">Gerando...</div>
-                     ) : dicebearAvatar ? (
-                       <div className="text-xs">
-                         {selectedAvatar?.type === 'dicebear' ? '✓ Selecionado' : 'Usar avatar'}
-                       </div>
-                     ) : (
-                       <div className="text-xs">Digite nome</div>
-                     )}
-                   </button>
-                 ) : (
-                   <div className="w-full p-2 border border-gray-200 rounded-lg text-center">
-                     <div className="text-xs text-gray-400">Digite nome + sexo</div>
-                   </div>
-                 )}
-               </div>
-             </div>
-           </div>
-
-                     <div className="space-y-2">
-             <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
-               Tipo de Usuário *
-             </Label>
-             <Select
-               value={watchedValues.user_type}
-               onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}
-             >
-               <SelectTrigger className={cn(
-                 errors.user_type ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.user_type && !errors.user_type ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}>
-                 <SelectValue />
-               </SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="client">Cliente</SelectItem>
-                 <SelectItem value="professional">Profissional</SelectItem>
-               </SelectContent>
-             </Select>
-             {errors.user_type && <p className="text-sm text-red-500">{errors.user_type.message}</p>}
-             {watchedValues.user_type && !errors.user_type && (
-               <p className="text-sm text-green-600">✓ Tipo selecionado</p>
+             {watchedValues.gender && !errors.gender && (
+               <p className="text-sm text-green-600">✓ Sexo selecionado</p>
              )}
            </div>
+
         </div>
       </div>
 
@@ -691,7 +667,7 @@ export function SimpleRegistrationForm() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Localização</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
               Estado *
@@ -809,26 +785,76 @@ export function SimpleRegistrationForm() {
                <p className="text-sm text-green-600">✓ Cidade selecionada</p>
              )}
            </div>
+        </div>
 
-                     <div className="space-y-2">
-             <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
-               Bairro *
-             </Label>
-             <Input
-               id="neighborhood"
-               placeholder=""
-               {...register('neighborhood')}
-               className={cn(
-                 "h-10",
-                 errors.neighborhood ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}
-             />
-             {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
-             {watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood && (
-               <p className="text-sm text-green-600">✓ Bairro válido</p>
-             )}
-           </div>
+        {/* Campos de Bairro e Endereço */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
+              Bairro *
+            </Label>
+            <Input
+              id="neighborhood"
+              placeholder=""
+              {...register('neighborhood')}
+              className={cn(
+                "h-10",
+                errors.neighborhood ? 'border-red-500 focus:ring-red-500' : '',
+                watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-gray-400 focus:ring-gray-400' : ''
+              )}
+            />
+            {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
+            {watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood && (
+              <p className="text-sm text-green-600">✓ Bairro válido</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+              Endereço (Rua/Avenida) *
+            </Label>
+            <Input
+              id="address"
+              placeholder="Ex: Rua das Flores, 123"
+              {...register('address')}
+              className={cn(
+                "h-10",
+                errors.address ? 'border-red-500 focus:ring-red-500' : '',
+                watchedValues.address && watchedValues.address.length >= 1 && !errors.address ? 'border-gray-400 focus:ring-gray-400' : ''
+              )}
+            />
+            {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+            {watchedValues.address && watchedValues.address.length >= 1 && !errors.address && (
+              <p className="text-sm text-green-600">✓ Endereço válido</p>
+            )}
+          </div>
+        </div>
+
+        {/* Campo Tipo de Usuário */}
+        <div className="space-y-2">
+          <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
+            Tipo de Usuário *
+          </Label>
+          <Select
+            value={watchedValues.user_type}
+            onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}
+          >
+            <SelectTrigger className={cn(
+              "h-10",
+              errors.user_type ? 'border-red-500 focus:ring-red-500' : '',
+              watchedValues.user_type && !errors.user_type ? 'border-gray-400 focus:ring-gray-400' : ''
+            )}>
+              <SelectValue placeholder="Selecione o tipo de usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="client">Cliente</SelectItem>
+              <SelectItem value="professional">Profissional</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.user_type && <p className="text-sm text-red-500">{errors.user_type.message}</p>}
+          {watchedValues.user_type && !errors.user_type && (
+            <p className="text-sm text-green-600">✓ Tipo selecionado</p>
+          )}
         </div>
       </div>
 

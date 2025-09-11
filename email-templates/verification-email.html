@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificação de Conta - ConfiLar</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .message {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .security-note {
+            background-color: #f3f4f6;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .security-note h3 {
+            color: #1f2937;
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .security-note p {
+            color: #4b5563;
+            margin-bottom: 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .social-links {
+            margin: 20px 0;
+        }
+        .social-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 20px 0;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            .header, .content, .footer {
+                padding: 20px;
+            }
+            .title {
+                font-size: 20px;
+            }
+            .button {
+                padding: 14px 28px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">🎯 ConfiLar</div>
+            <div class="tagline">Conectando você aos melhores profissionais</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h1 class="title">Verifique sua conta</h1>
+            <p class="message">
+                Olá! 👋<br><br>
+                Obrigado por se cadastrar no ConfiLar! Para completar seu cadastro e começar a usar nossa plataforma, 
+                você precisa verificar seu endereço de email.
+            </p>
+
+            <div class="button-container">
+                <a href="{{ .ConfirmationURL }}" class="button">
+                    ✅ Verificar Email
+                </a>
+            </div>
+
+            <div class="security-note">
+                <h3>🔒 Por que verificar?</h3>
+                <p>
+                    A verificação garante que você tenha acesso completo à plataforma, incluindo:
+                    <br>• Receber notificações importantes
+                    <br>• Recuperar sua senha quando necessário
+                    <br>• Manter sua conta segura
+                </p>
+            </div>
+
+            <p class="message">
+                <strong>Não consegue clicar no botão?</strong><br>
+                Copie e cole este link no seu navegador:<br>
+                <a href="{{ .ConfirmationURL }}" style="color: #667eea; word-break: break-all;">{{ .ConfirmationURL }}</a>
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">📱 App Mobile</a>
+                <a href="#">💬 Suporte</a>
+                <a href="#">📋 Central de Ajuda</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
+            <p>Este email foi enviado automaticamente. Não responda a esta mensagem.</p>
+            <p>Se você não se cadastrou no ConfiLar, pode ignorar este email.</p>
+        </div>
+    </div>
+</body>
+</html>
