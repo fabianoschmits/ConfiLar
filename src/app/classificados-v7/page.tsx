@@ -162,7 +162,7 @@ export default function ClassificadosV7() {
   }, [loadData]);
 
   const filteredAds = ads.filter(ad => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||     
                          ad.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -234,31 +234,18 @@ export default function ClassificadosV7() {
     }
   };
 
-  const cardHoverSpring = (isHovered: boolean) => useSpring({
-    transform: isHovered ? 'scale(1.02) translateY(-8px)' : 'scale(1) translateY(0px)',
-    boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.15)' : '0 4px 12px rgba(0,0,0,0.1)',
-    config: { tension: 300, friction: 25 }
-  });
+  // Removed problematic hook usage - will use CSS transitions instead
 
   const renderAdCard = (ad: ClassifiedAd, index: number) => {
     const isHovered = hoveredCard === ad.id;
-    const cardSpring = cardHoverSpring(isHovered);
     
-    const cardTransition = useTransition(ad, {
-      from: { opacity: 0, transform: 'translateY(30px) scale(0.9)' },
-      enter: { opacity: 1, transform: 'translateY(0px) scale(1)' },
-      config: { tension: 300, friction: 30 },
-      delay: index * 50
-    });
-
-    return cardTransition((style, item) => (
-      <animated.div
-        key={item.id}
-        style={style}
-        onMouseEnter={() => setHoveredCard(item.id)}
+    return (
+      <div
+        key={ad.id}
+        onMouseEnter={() => setHoveredCard(ad.id)}
         onMouseLeave={() => setHoveredCard(null)}
       >
-        <animated.div style={cardSpring}>
+        <div className={`transition-all duration-300 ${isHovered ? 'transform scale-105 -translate-y-2' : ''}`}>
           <Card className="relative overflow-hidden border-0 bg-white shadow-lg transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
@@ -266,18 +253,18 @@ export default function ClassificadosV7() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors duration-300">
-                    {item.title}
+                    {ad.title}
                   </CardTitle>
                   
                   <div className="flex items-center gap-2 mb-2">
                     <Badge 
                       variant="secondary" 
-                      className={`${getUrgencyColor(item.urgency)} text-white text-xs`}
+                      className={`${getUrgencyColor(ad.urgency)} text-white text-xs`}
                     >
-                      {item.urgency === 'high' ? 'Urgente' : item.urgency === 'medium' ? 'Médio' : 'Baixo'}
+                      {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {servicesList.find(s => s.id === item.category)?.name || item.category}
+                      {servicesList.find(s => s.id === ad.category)?.name || ad.category}
                     </Badge>
                   </div>
                 </div>
@@ -294,18 +281,18 @@ export default function ClassificadosV7() {
 
             <CardContent className="relative">
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                {item.description}
+                {ad.description}
               </p>
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{item.location}</span>
+                    <span>{ad.location}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span>{new Date(item.created_at).toLocaleDateString('pt-BR')}</span>
+                    <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
                   </div>
                 </div>
               </div>
@@ -316,14 +303,14 @@ export default function ClassificadosV7() {
                     <User className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{item.user_name}</p>
-                    <p className="text-xs text-gray-500 capitalize">{item.user_type}</p>
+                    <p className="text-sm font-medium text-gray-900">{ad.user_name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{ad.user_type}</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
                   <p className="text-lg font-bold text-green-600">
-                    {formatPrice(item.budget)}
+                    {formatPrice(ad.budget)}
                   </p>
                   <p className="text-xs text-gray-500">Orçamento</p>
                 </div>
@@ -340,30 +327,21 @@ export default function ClassificadosV7() {
               </div>
             </CardContent>
           </Card>
-        </animated.div>
-      </animated.div>
-    ));
+        </div>
+      </div>
+    );
   };
 
   const renderServiceCard = (service: ProfessionalService, index: number) => {
     const isHovered = hoveredCard === service.id;
-    const cardSpring = cardHoverSpring(isHovered);
     
-    const cardTransition = useTransition(service, {
-      from: { opacity: 0, transform: 'translateY(30px) scale(0.9)' },
-      enter: { opacity: 1, transform: 'translateY(0px) scale(1)' },
-      config: { tension: 300, friction: 30 },
-      delay: index * 50
-    });
-
-    return cardTransition((style, item) => (
-      <animated.div
-        key={item.id}
-        style={style}
-        onMouseEnter={() => setHoveredCard(item.id)}
+    return (
+      <div
+        key={service.id}
+        onMouseEnter={() => setHoveredCard(service.id)}
         onMouseLeave={() => setHoveredCard(null)}
       >
-        <animated.div style={cardSpring}>
+        <div className={`transition-all duration-300 ${isHovered ? 'transform scale-105 -translate-y-2' : ''}`}>
           <Card className="relative overflow-hidden border-0 bg-white shadow-lg transition-all duration-300 group">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
@@ -371,21 +349,21 @@ export default function ClassificadosV7() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors duration-300">
-                    {item.title}
+                    {service.title}
                   </CardTitle>
                   
                   <div className="flex items-center gap-2 mb-2">
                     <Badge 
                       variant="secondary" 
-                      className={`${getExperienceColor(item.experience_level)} text-white text-xs`}
+                      className={`${getExperienceColor(service.experience_level)} text-white text-xs`}
                     >
-                      {item.experience_level === 'expert' ? 'Especialista' : 
-                       item.experience_level === 'advanced' ? 'Avançado' :
-                       item.experience_level === 'intermediate' ? 'Intermediário' : 'Iniciante'}
+                      {service.experience_level === 'expert' ? 'Especialista' : 
+                       service.experience_level === 'advanced' ? 'Avançado' :
+                       service.experience_level === 'intermediate' ? 'Intermediário' : 'Iniciante'}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {item.service_type === 'hourly' ? 'Por hora' : 
-                       item.service_type === 'fixed' ? 'Valor fixo' : 'Negociável'}
+                      {service.service_type === 'hourly' ? 'Por hora' : 
+                       service.service_type === 'fixed' ? 'Valor fixo' : 'Negociável'}
                     </Badge>
                   </div>
                 </div>
@@ -402,19 +380,19 @@ export default function ClassificadosV7() {
 
             <CardContent className="relative">
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                {item.description}
+                {service.description}
               </p>
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4" />
-                    <span>{item.location}</span>
+                    <span>{service.location}</span>
                   </div>
-                  {item.rating && (
+                  {service.rating && (
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span>{item.rating.toFixed(1)} ({item.review_count} avaliações)</span>
+                      <span>{service.rating.toFixed(1)} ({service.review_count} avaliações)</span>
                     </div>
                   )}
                 </div>
@@ -426,18 +404,18 @@ export default function ClassificadosV7() {
                     <User className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{item.user_name}</p>
+                    <p className="text-sm font-medium text-gray-900">{service.user_name}</p>
                     <p className="text-xs text-gray-500">Profissional</p>
                   </div>
                 </div>
                 
                 <div className="text-right">
                   <p className="text-lg font-bold text-green-600">
-                    {formatPrice(item.price)}
+                    {formatPrice(service.price)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {item.service_type === 'hourly' ? '/hora' : 
-                     item.service_type === 'fixed' ? 'valor fixo' : 'negociável'}
+                    {service.service_type === 'hourly' ? '/hora' :
+                     service.service_type === 'fixed' ? 'valor fixo' : 'negociável'}
                   </p>
                 </div>
               </div>
@@ -453,24 +431,18 @@ export default function ClassificadosV7() {
               </div>
             </CardContent>
           </Card>
-        </animated.div>
-      </animated.div>
-    ));
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
-        <animated.div
-          style={{
-            opacity: headerSpring.opacity,
-            transform: headerSpring.transform
-          }}
-          className="text-center"
-        >
+        <div className="text-center">
           <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4 animate-spin" />
           <p className="text-gray-600">Carregando classificados...</p>
-        </animated.div>
+        </div>
       </div>
     );
   }
@@ -478,10 +450,7 @@ export default function ClassificadosV7() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Header */}
-      <animated.div
-        style={headerSpring}
-        className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50"
-      >
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -505,7 +474,7 @@ export default function ClassificadosV7() {
           </div>
 
           {/* Search and Filters */}
-          <animated.div style={searchSpring} className="flex gap-4 mb-4">
+          <div className="flex gap-4 mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
@@ -544,10 +513,9 @@ export default function ClassificadosV7() {
                 <List className="h-4 w-4" />
               </Button>
             </div>
-          </animated.div>
+          </div>
 
-          <animated.div
-            style={filterSpring}
+          <div
             className="overflow-hidden bg-white/50 backdrop-blur-sm rounded-lg mb-4"
           >
             <div className="p-4 flex gap-4">
@@ -580,13 +548,13 @@ export default function ClassificadosV7() {
                 </SelectContent>
               </Select>
             </div>
-          </animated.div>
+          </div>
         </div>
-      </animated.div>
+      </div>
 
       {/* Tabs */}
       <div className="container mx-auto px-4 py-6">
-        <animated.div style={tabSpring}>
+        <div>
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/70 backdrop-blur-sm">
               <TabsTrigger value="ads" className="flex items-center gap-2">
@@ -631,7 +599,7 @@ export default function ClassificadosV7() {
               )}
             </TabsContent>
           </Tabs>
-        </animated.div>
+        </div>
       </div>
     </div>
   );

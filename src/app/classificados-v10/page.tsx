@@ -21,7 +21,7 @@ import {
   Sparkles,
   Zap,
   TrendingUp,
-  Box3,
+  Package,
   Layers,
   Grid3X3,
   List,
@@ -29,7 +29,6 @@ import {
   Palette,
   Brush,
   Lightbulb,
-  Cube,
   RotateCcw,
   Move3D
 } from 'lucide-react';
@@ -566,7 +565,7 @@ export default function ClassificadosV10() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center">
-                <Cube className="h-5 w-5 text-white" />
+                <Package className="h-5 w-5 text-white" />
               </div>
               <div>
                 <h1 className={`text-2xl font-bold bg-gradient-to-r ${themeColors.text} bg-clip-text text-transparent`}>
@@ -586,7 +585,7 @@ export default function ClassificadosV10() {
                 {show3D ? 'Ocultar' : 'Mostrar'} 3D
               </Button>
               
-              <Select value={theme3D} onValueChange={setTheme3D}>
+              <Select value={theme3D} onValueChange={(value) => setTheme3D(value as 'cosmic' | 'ocean' | 'fire' | 'forest')}>
                 <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>

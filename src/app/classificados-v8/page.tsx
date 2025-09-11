@@ -139,10 +139,10 @@ export default function ClassificadosV8() {
           width: 1,
         },
         move: {
-          direction: "none",
+          direction: "none" as const,
           enable: true,
           outModes: {
-            default: "bounce",
+            default: "bounce" as const,
           },
           random: false,
           speed: 2,
@@ -595,7 +595,7 @@ export default function ClassificadosV8() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Select value={particleTheme} onValueChange={setParticleTheme}>
+              <Select value={particleTheme} onValueChange={(value) => setParticleTheme(value as 'cosmic' | 'ocean' | 'fire' | 'forest')}>
                 <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
                   <SelectValue />
                 </SelectTrigger>
