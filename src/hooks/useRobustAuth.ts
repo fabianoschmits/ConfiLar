@@ -431,7 +431,18 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
           data: {
             full_name: additionalData?.full_name || 'Usuário',
             phone: additionalData?.phone || '',
-            user_type: additionalData?.user_type || 'client'
+            user_type: additionalData?.user_type || 'client',
+            cpf_cnpj: additionalData?.cpf_cnpj || '',
+            birth_date: additionalData?.birth_date || '',
+            location_state: additionalData?.location_state || '',
+            location_city: additionalData?.location_city || '',
+            neighborhood: additionalData?.neighborhood || '',
+            bio: additionalData?.bio || '',
+            gender: additionalData?.gender || 'male',
+            experience_years: additionalData?.experience_years || '',
+            emergency_service: additionalData?.emergency_service || false,
+            insurance_coverage: additionalData?.insurance_coverage || false,
+            services_offered: additionalData?.services_offered || []
           }
         }
       })
