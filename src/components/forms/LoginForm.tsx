@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PasswordInput } from '@/components/ui/password-input'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useLoading } from '@/hooks/useLoading'
 import { toast } from 'sonner'
 
 const loginSchema = z.object({
@@ -24,8 +23,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
-  const { signIn } = useAuthContext()
-  const { setAuthLoading } = useLoading()
+  const { signIn, loading: authLoading } = useAuthContext()
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -63,7 +61,6 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
-    setAuthLoading(true, 'Fazendo login...')
     
     try {
       const { error } = await signIn(data.email, data.password)
@@ -71,24 +68,18 @@ export function LoginForm() {
       if (error) {
         toast.error('Erro ao fazer login: ' + error.message)
         setIsLoading(false)
-        setAuthLoading(false)
       } else {
         toast.success('Login realizado com sucesso!')
-        setAuthLoading(true, 'Redirecionando...')
         
-        // Aguardar o loading do useRobustAuth terminar (1 segundo) + delay adicional
+        // Aguardar o loading do useRobustAuth terminar
         setTimeout(() => {
           router.push(decodeURIComponent(redirectPath))
-          // Parar o loading após o redirecionamento
-          setTimeout(() => {
-            setAuthLoading(false)
-          }, 500)
-        }, 1500) // Aumentado para 1.5 segundos
+          setIsLoading(false)
+        }, 2000) // Aguardar 2 segundos para garantir que o auth termine
       }
     } catch {
       toast.error('Erro inesperado ao fazer login')
       setIsLoading(false)
-      setAuthLoading(false)
     }
   }
 
