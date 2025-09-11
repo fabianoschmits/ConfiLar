@@ -344,6 +344,45 @@ export function useSupabaseMessages() {
           console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
           // Não vamos falhar o envio da mensagem por causa da notificação
         }
+
+        // Enviar notificação por email (não crítico)
+        try {
+          // Buscar email do destinatário
+          const { data: recipientData } = await supabase
+            .from('profiles')
+            .select('email, user_type')
+            .eq('id', otherUserId)
+            .single()
+
+          if (recipientData?.email) {
+            // Enviar email diretamente usando a Edge Function
+            const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
+              body: {
+                to: recipientData.email,
+                subject: `💬 Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'} - ConfiLar`,
+                template: 'message',
+                data: {
+                  userName: recipientProfile.data?.full_name || 'Usuário',
+                  senderName: senderProfile.data?.full_name || 'Usuário',
+                  senderNameInitial: (senderProfile.data?.full_name || 'U').charAt(0).toUpperCase(),
+                  senderType: profile.user_type === 'professional' ? 'Profissional' : 'Cliente',
+                  messagePreview: notificationMessage,
+                  messageTime: new Date().toLocaleString('pt-BR'),
+                  chatUrl: `${window.location.origin}/mensagens`
+                }
+              }
+            })
+
+            if (emailError) {
+              console.warn('⚠️ Erro ao enviar email de notificação:', emailError)
+            } else {
+              console.log('✅ Email de notificação enviado para:', recipientData.email)
+            }
+          }
+        } catch (emailError) {
+          console.warn('⚠️ Erro ao enviar email de notificação (não crítico):', emailError)
+          // Não vamos falhar o envio da mensagem por causa do email
+        }
       }
 
       // Recarregar conversas para atualizar ordem
