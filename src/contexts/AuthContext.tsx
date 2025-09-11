@@ -45,6 +45,8 @@ interface AuthContextType {
 	updateProfile: (updates: Partial<Profile>) => Promise<{ data: Profile | null; error: { message: string } | null }>
 	uploadAvatar: (file: File) => Promise<{ data: string | null; error: { message: string } | null }>
 	refreshAuth: () => Promise<void>
+	resetPassword: (email: string) => Promise<{ error: { message: string } | null }>
+	updatePassword: (newPassword: string) => Promise<{ error: { message: string } | null }>
 	isMockMode: boolean
 }
 
