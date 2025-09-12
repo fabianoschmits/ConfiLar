@@ -54,13 +54,13 @@ export function FavoriteButton({
       setIsFavorited(newStatus)
       
       if (newStatus) {
-        toast.success(`${userName} adicionado aos favoritos!`)
+        toast.success(`${userName.toUpperCase()} ADICIONADO AOS FAVORITOS!`)
       } else {
-        toast.success(`${userName} removido dos favoritos!`)
+        toast.success(`${userName.toUpperCase()} REMOVIDO DOS FAVORITOS!`)
       }
     } catch (error) {
       console.error('Erro ao alternar favorito:', error)
-      toast.error('Erro ao atualizar favoritos')
+      toast.error('ERRO AO ATUALIZAR FAVORITOS')
     } finally {
       setLoading(false)
     }

@@ -183,7 +183,7 @@ export function useSupabaseMessages() {
       setTotalUnread(totalUnreadMessages)
     } catch (error) {
       console.error('❌ Erro ao buscar conversas:', error)
-      toast.error('Erro ao carregar conversas')
+      toast.error('ERRO AO CARREGAR CONVERSAS')
     } finally {
       setIsLoading(false)
     }
@@ -238,7 +238,7 @@ export function useSupabaseMessages() {
 
     } catch (error) {
       console.error('❌ Erro ao buscar mensagens:', error)
-      toast.error('Erro ao carregar mensagens')
+      toast.error('ERRO AO CARREGAR MENSAGENS')
     }
   }, [profile?.id, markNotificationsAsRead])
 
@@ -391,7 +391,7 @@ export function useSupabaseMessages() {
       return data
     } catch (error) {
       console.error('❌ Erro ao enviar mensagem:', error)
-      toast.error('Erro ao enviar mensagem')
+      toast.error('ERRO AO ENVIAR MENSAGEM')
       return null
     }
   }, [profile?.id, fetchConversations])
@@ -469,7 +469,7 @@ export function useSupabaseMessages() {
       return newConversation.id
     } catch (error) {
       console.error('❌ Erro ao criar conversa:', error)
-      toast.error('Erro ao criar conversa')
+      toast.error('ERRO AO CRIAR CONVERSA')
       return null
     }
   }, [profile?.id, fetchConversations])
@@ -520,13 +520,13 @@ export function useSupabaseMessages() {
 
       if (checkError) {
         console.error('❌ Erro ao verificar conversa:', checkError)
-        toast.error('Erro ao verificar conversa')
+        toast.error('ERRO AO VERIFICAR CONVERSA')
         return false
       }
 
       if (!conversationData || (conversationData.client_id !== profile.id && conversationData.professional_id !== profile.id)) {
         console.error('❌ Usuário não é participante desta conversa')
-        toast.error('Você não tem permissão para excluir esta conversa')
+        toast.error('VOCÊ NÃO TEM PERMISSÃO PARA EXCLUIR ESTA CONVERSA')
         return false
       }
 
@@ -553,12 +553,12 @@ export function useSupabaseMessages() {
 
       if (conversationError) {
         console.error('❌ Erro ao excluir conversa:', conversationError)
-        toast.error('Erro ao excluir conversa')
+        toast.error('ERRO AO EXCLUIR CONVERSA')
         return false
       }
 
       console.log('✅ Conversa excluída com sucesso')
-      toast.success('Conversa excluída com sucesso')
+      toast.success('CONVERSA EXCLUÍDA COM SUCESSO')
 
       // Limpar conversa selecionada se for a mesma
       if (selectedConversation === conversationId) {
@@ -572,7 +572,7 @@ export function useSupabaseMessages() {
       return true
     } catch (error) {
       console.error('❌ Erro ao excluir conversa:', error)
-      toast.error('Erro ao excluir conversa')
+      toast.error('ERRO AO EXCLUIR CONVERSA')
       return false
     }
   }, [profile?.id, selectedConversation, fetchConversations])
@@ -614,7 +614,7 @@ export function useSupabaseMessages() {
 
                   // Mostrar notificação apenas se não estiver na conversa atual
                   if (selectedConversation !== newMessage.conversation_id) {
-                    toast.info(`Nova mensagem de ${senderProfile?.full_name || 'Usuário'}`, {
+                    toast.info(`NOVA MENSAGEM DE ${senderProfile?.full_name?.toUpperCase() || 'USUÁRIO'}`, {
                       description: newMessage.content.length > 50 ? `${newMessage.content.substring(0, 50)}...` : newMessage.content,
                       duration: 5000,
                       action: {

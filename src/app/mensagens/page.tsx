@@ -168,7 +168,7 @@ function MensagensContent() {
       }, 100)
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
-      toast.error('Erro ao enviar mensagem')
+      toast.error('ERRO AO ENVIAR MENSAGEM')
     }
   }, [newMessage, selectedConversation, sendMessage])
 
@@ -202,10 +202,10 @@ function MensagensContent() {
 
       await sendMessage(selectedConversation, JSON.stringify(appointmentMessage))
       setShowAppointmentRequest(false)
-      toast.success('Solicitação de agendamento enviada!')
+      toast.success('SOLICITAÇÃO DE AGENDAMENTO ENVIADA!')
     } catch (error) {
       console.error('Erro ao enviar solicitação de agendamento:', error)
-      toast.error('Erro ao enviar solicitação')
+      toast.error('ERRO AO ENVIAR SOLICITAÇÃO')
     }
   }
 
@@ -226,10 +226,10 @@ function MensagensContent() {
 
       await sendMessage(selectedConversation, JSON.stringify(responseMessage))
       setShowAppointmentResponse(false)
-      toast.success(`Agendamento ${response === 'accepted' ? 'aceito' : 'recusado'}!`)
+      toast.success(`AGENDAMENTO ${response === 'accepted' ? 'ACEITO' : 'RECUSADO'}!`)
     } catch (error) {
       console.error('Erro ao responder agendamento:', error)
-      toast.error('Erro ao enviar resposta')
+      toast.error('ERRO AO ENVIAR RESPOSTA')
     }
   }
 
@@ -288,11 +288,11 @@ function MensagensContent() {
             console.log('✅ Conversa iniciada e selecionada com sucesso!')
           } else {
             console.error('❌ Falha ao criar conversa')
-            toast.error('Erro ao iniciar conversa')
+            toast.error('ERRO AO INICIAR CONVERSA')
           }
         } catch (error) {
           console.error('❌ Erro ao criar conversa automaticamente:', error)
-          toast.error('Erro ao iniciar conversa')
+          toast.error('ERRO AO INICIAR CONVERSA')
         }
       }
       
@@ -390,7 +390,7 @@ function MensagensContent() {
     if (!confirmed) return
 
     // Implementar lógica de exclusão aqui
-    toast.success('Conversa excluída com sucesso')
+    toast.success('CONVERSA EXCLUÍDA COM SUCESSO')
   }
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,7 +421,7 @@ function MensagensContent() {
       }
     } catch (error) {
       console.error('Erro ao enviar foto:', error)
-      toast.error('Erro ao enviar foto')
+      toast.error('ERRO AO ENVIAR FOTO')
     }
   }
 

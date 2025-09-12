@@ -25,7 +25,7 @@ import {
   UserCircle,
   Briefcase,
   Star,
-  HelpCircle
+  Question
 } from '@phosphor-icons/react'
 
 interface MobileHeaderProps {
@@ -191,7 +191,7 @@ export function MobileHeader({
                 onClick={() => handleNavigation('/ajuda')}
                 className="px-3 py-2 mb-1 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
               >
-                <HelpCircle className="mr-3 h-5 w-5 text-black" />
+                <Question className="mr-3 h-5 w-5 text-black" />
                 <span className="font-black text-black uppercase text-sm">AJUDA</span>
               </DropdownMenuItem>
               

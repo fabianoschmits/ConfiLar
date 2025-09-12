@@ -227,7 +227,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const requestPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      toast.error('Seu navegador não suporta notificações push');
+      toast.error('SEU NAVEGADOR NÃO SUPORTA NOTIFICAÇÕES PUSH');
       return false;
     }
 
@@ -237,14 +237,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       setHasPermission(granted);
       
       if (granted) {
-        toast.success('Notificações ativadas com sucesso!');
+        toast.success('NOTIFICAÇÕES ATIVADAS COM SUCESSO!');
       } else {
-        toast.error('Permissão de notificação negada');
+        toast.error('PERMISSÃO DE NOTIFICAÇÃO NEGADA');
       }
       
       return granted;
     } catch (error) {
-      toast.error('Erro ao solicitar permissão de notificação');
+      toast.error('ERRO AO SOLICITAR PERMISSÃO DE NOTIFICAÇÃO');
       return false;
     }
   };

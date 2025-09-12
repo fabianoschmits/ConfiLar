@@ -66,10 +66,10 @@ export function LoginForm() {
       const { error } = await signIn(data.email, data.password)
       
       if (error) {
-        toast.error('Erro ao fazer login: ' + error.message)
+        toast.error('ERRO AO FAZER LOGIN: ' + error.message)
         setIsLoading(false)
       } else {
-        toast.success('Login realizado com sucesso!')
+        toast.success('LOGIN REALIZADO COM SUCESSO!')
         
         // Aguardar o loading do useRobustAuth terminar
         setTimeout(() => {
@@ -78,7 +78,7 @@ export function LoginForm() {
         }, 2000) // Aguardar 2 segundos para garantir que o auth termine
       }
     } catch {
-      toast.error('Erro inesperado ao fazer login')
+      toast.error('ERRO INESPERADO AO FAZER LOGIN')
       setIsLoading(false)
     }
   }

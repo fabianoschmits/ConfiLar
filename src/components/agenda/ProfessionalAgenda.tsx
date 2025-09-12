@@ -97,7 +97,7 @@ export const ProfessionalAgenda: React.FC = () => {
       setAppointments(data || []);
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
-      toast.error('Erro ao carregar agendamentos');
+      toast.error('ERRO AO CARREGAR AGENDAMENTOS');
     }
   };
 
@@ -113,7 +113,7 @@ export const ProfessionalAgenda: React.FC = () => {
       setWorkSchedules(data || []);
     } catch (error) {
       console.error('Erro ao carregar horários de trabalho:', error);
-      toast.error('Erro ao carregar horários de trabalho');
+      toast.error('ERRO AO CARREGAR HORÁRIOS DE TRABALHO');
     }
   };
 
@@ -152,7 +152,7 @@ export const ProfessionalAgenda: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Agendamento adicionado com sucesso!');
+      toast.success('AGENDAMENTO ADICIONADO COM SUCESSO!');
       setShowAddAppointment(false);
       setNewAppointment({
         client_name: '',
@@ -168,7 +168,7 @@ export const ProfessionalAgenda: React.FC = () => {
       loadAppointments();
     } catch (error) {
       console.error('Erro ao adicionar agendamento:', error);
-      toast.error('Erro ao adicionar agendamento');
+      toast.error('ERRO AO ADICIONAR AGENDAMENTO');
     }
   };
 
@@ -184,7 +184,7 @@ export const ProfessionalAgenda: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Horário de trabalho adicionado com sucesso!');
+      toast.success('HORÁRIO DE TRABALHO ADICIONADO COM SUCESSO!');
       setShowAddWorkSchedule(false);
       setNewWorkSchedule({
         date: '',
@@ -196,7 +196,7 @@ export const ProfessionalAgenda: React.FC = () => {
       loadWorkSchedules();
     } catch (error) {
       console.error('Erro ao adicionar horário de trabalho:', error);
-      toast.error('Erro ao adicionar horário de trabalho');
+      toast.error('ERRO AO ADICIONAR HORÁRIO DE TRABALHO');
     }
   };
 
@@ -210,11 +210,11 @@ export const ProfessionalAgenda: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Status do agendamento atualizado com sucesso!');
+      toast.success('STATUS DO AGENDAMENTO ATUALIZADO COM SUCESSO!');
       loadAppointments();
     } catch (error) {
       console.error('Erro ao atualizar status do agendamento:', error);
-      toast.error('Erro ao atualizar status do agendamento');
+      toast.error('ERRO AO ATUALIZAR STATUS DO AGENDAMENTO');
     }
   };
 

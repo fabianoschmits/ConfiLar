@@ -1,0 +1,27 @@
+warning: in the working copy of 'src/app/classificados/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/mensagens/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/agenda/ProfessionalAgenda.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/chat/AppointmentRequest.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/chat/AppointmentResponse.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/forms/LoginForm.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/forms/SimpleRegistrationForm.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/notifications/NotificationProvider.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/notifications/NotificationSettings.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/reviews/ReviewForm.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ui/FavoriteButton.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ui/sonner.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/hooks/useSupabaseMessages.ts', LF will be replaced by CRLF the next time Git touches it
+src/app/classificados/page.tsx
+src/app/mensagens/page.tsx
+src/components/agenda/ProfessionalAgenda.tsx
+src/components/chat/AppointmentRequest.tsx
+src/components/chat/AppointmentResponse.tsx
+src/components/forms/LoginForm.tsx
+src/components/forms/SimpleRegistrationForm.tsx
+src/components/layout/MobileHeader.tsx
+src/components/notifications/NotificationProvider.tsx
+src/components/notifications/NotificationSettings.tsx
+src/components/reviews/ReviewForm.tsx
+src/components/ui/FavoriteButton.tsx
+src/components/ui/sonner.tsx
+src/hooks/useSupabaseMessages.ts

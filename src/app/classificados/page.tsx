@@ -211,7 +211,7 @@ export default function ClassificadosPage() {
           }
         ]
         setListings(mockListings)
-        toast.info('Usando dados de demonstração. Verifique a configuração do banco de dados.')
+        toast.info('USANDO DADOS DE DEMONSTRAÇÃO. VERIFIQUE A CONFIGURAÇÃO DO BANCO DE DADOS.')
         return
       }
 
@@ -279,7 +279,7 @@ export default function ClassificadosPage() {
         }
       ]
       setListings(mockListings)
-      toast.error('Erro ao carregar classificados. Usando dados de demonstração.')
+      toast.error('ERRO AO CARREGAR CLASSIFICADOS. USANDO DADOS DE DEMONSTRAÇÃO.')
     }
   }
 
@@ -332,7 +332,7 @@ export default function ClassificadosPage() {
 
   const toggleFavorite = async (listingId: string) => {
     if (!user) {
-      toast.error('Faça login para favoritar')
+      toast.error('FAÇA LOGIN PARA FAVORITAR')
       return
     }
     
@@ -360,7 +360,7 @@ export default function ClassificadosPage() {
           newSet.delete(listingId)
           return newSet
         })
-        toast.success('Removido dos favoritos')
+        toast.success('REMOVIDO DOS FAVORITOS')
       } else {
         // Tentar adicionar ao banco de dados
         const { error } = await supabase
@@ -381,11 +381,11 @@ export default function ClassificadosPage() {
         }
 
         setFavorites(prev => new Set(Array.from(prev).concat(listingId)))
-        toast.success('Adicionado aos favoritos')
+        toast.success('ADICIONADO AOS FAVORITOS')
       }
     } catch (error) {
       console.error('Erro geral ao alternar favorito:', error)
-      toast.error('Erro ao atualizar favoritos')
+      toast.error('ERRO AO ATUALIZAR FAVORITOS')
     }
   }
 

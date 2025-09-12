@@ -111,7 +111,7 @@ export function ReviewForm({
 
   const onSubmit = async (data: ReviewFormData) => {
     if (rating === 0) {
-      toast.error('Selecione uma nota para a avaliação')
+      toast.error('SELECIONE UMA NOTA PARA A AVALIAÇÃO')
       return
     }
 
@@ -129,15 +129,15 @@ export function ReviewForm({
       const { data: newReview, error } = await createReview(reviewData)
 
       if (error) {
-        toast.error('Erro ao enviar avaliação: ' + error)
+        toast.error('ERRO AO ENVIAR AVALIAÇÃO: ' + error)
         return
       }
 
-      toast.success('Avaliação enviada com sucesso!')
+      toast.success('AVALIAÇÃO ENVIADA COM SUCESSO!')
       onSuccess?.()
     } catch (error) {
       console.error('Erro ao enviar avaliação:', error)
-      toast.error('Erro ao enviar avaliação. Tente novamente.')
+      toast.error('ERRO AO ENVIAR AVALIAÇÃO. TENTE NOVAMENTE.')
     } finally {
       setIsSubmitting(false)
     }
