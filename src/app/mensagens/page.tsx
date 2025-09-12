@@ -25,26 +25,26 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { 
-  PaperPlane as SendPhosphor,
-  Paperclip as PaperclipPhosphor,
-  Smiley,
-  Microphone,
-  Phone as PhonePhosphor,
-  VideoCamera,
-  DotsThreeVertical,
-  MagnifyingGlass,
-  ChatTeardrop,
-  Check as CheckPhosphor,
-  CheckCircle,
-  User as UserPhosphor,
-  Image as ImagePhosphor,
-  File as FilePhosphor,
-  Camera as CameraPhosphor,
-  MapPin as MapPinPhosphor,
-  Heart as HeartPhosphor,
-  Plus as PlusPhosphor,
-  Trash
-} from '@phosphor-icons/react'
+  IconSend,
+  IconPaperclip,
+  IconMoodSmile,
+  IconMicrophone,
+  IconPhone,
+  IconVideo,
+  IconDotsVertical,
+  IconSearch,
+  IconMessageCircle,
+  IconCheck,
+  IconCircle,
+  IconUser,
+  IconPhoto,
+  IconFile,
+  IconCamera,
+  IconMapPin,
+  IconHeart,
+  IconPlus,
+  IconTrash
+} from '@tabler/icons-react'
 
 function MensagensContent() {
   const { profile, user, loading } = useAuthContext()
@@ -343,11 +343,11 @@ function MensagensContent() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'sent':
-        return <CheckPhosphor size={16} weight="light" className="text-gray-400" />
+        return <IconCheck size={16} stroke={2} className="text-black" />
       case 'delivered':
-        return <CheckCircle size={16} weight="light" className="text-blue-500" />
+        return <IconCheck size={16} stroke={2} className="text-black" />
       case 'read':
-        return <CheckCircle size={16} weight="light" className="text-green-500" />
+        return <IconCheck size={16} stroke={2} className="text-black" />
       default:
         return null
     }
@@ -512,36 +512,36 @@ function MensagensContent() {
   // Remover verificação de login - permitir acesso para todos
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 lg:p-4">
-        <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden h-screen-mobile lg:h-[600px]">
+      <div className="min-h-screen bg-yellow-400 lg:p-4">
+        <div className="w-full max-w-6xl mx-auto bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden h-screen-mobile lg:h-[600px]">
           {/* Header Mobile */}
-          <div className="lg:hidden p-3 border-b border-gray-200 bg-white">
+          <div className="lg:hidden p-3 border-b-4 border-black bg-white">
             <div className="flex items-center justify-between">
-              <h1 className="text-lg font-bold text-gray-900">Mensagens</h1>
-              <Badge variant="outline" className="bg-purple-50 text-purple-700 text-xs">
-                {totalUnread > 0 ? `${totalUnread} não lidas` : 'Todas lidas'}
-              </Badge>
+              <h1 className="text-lg font-black text-black uppercase">MENSAGENS</h1>
+              <div className="px-3 py-1 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase">
+                {totalUnread > 0 ? `${totalUnread} NÃO LIDAS` : 'TODAS LIDAS'}
+              </div>
             </div>
           </div>
 
           <div className="flex flex-col lg:flex-row h-full chat-container">
             {/* Lista de Conversas */}
-            <div className="w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col h-1/3 lg:h-full">
-              <div className="p-3 lg:p-4 border-b border-gray-200">
+            <div className="w-full lg:w-80 bg-white border-b-4 lg:border-b-0 lg:border-r-4 border-black flex flex-col h-1/3 lg:h-full">
+              <div className="p-3 lg:p-4 border-b-4 border-black">
                 <div className="flex items-center justify-between mb-3 lg:mb-4">
-                  <h2 className="text-base lg:text-xl font-semibold text-gray-900">Conversas</h2>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
-                    {conversations.length} conversas
-                  </Badge>
+                  <h2 className="text-base lg:text-xl font-black text-black uppercase">CONVERSAS</h2>
+                  <div className="px-3 py-1 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase">
+                    {conversations.length} CONVERSAS
+                  </div>
                 </div>
                 
                 <div className="relative">
-                  <MagnifyingGlass size={16} weight="light" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    placeholder="Buscar conversas..."
+                  <IconSearch size={16} stroke={2} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-black" />
+                  <input
+                    placeholder="BUSCAR CONVERSAS..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 text-sm h-9"
+                    className="w-full pl-9 pr-4 py-2 text-sm font-bold text-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white"
                   />
                 </div>
               </div>
@@ -631,15 +631,15 @@ function MensagensContent() {
                       
                       <div className="flex items-center space-x-1 lg:space-x-2">
                         <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
-                          <PhonePhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconPhone size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
-                          <VideoCamera size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconVideo size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
-                              <DotsThreeVertical size={16} weight="light" className="lg:w-5 lg:h-5" />
+                              <IconDotsVertical size={16} stroke={2} className="lg:w-5 lg:h-5" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -648,7 +648,7 @@ function MensagensContent() {
                                 handleDeleteConversation()
                               }
                             }} className="text-red-600">
-                              <Trash size={16} weight="light" className="mr-2" />
+                              <IconTrash size={16} stroke={2} className="mr-2" />
                               Excluir conversa
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -730,25 +730,25 @@ function MensagensContent() {
                             }
                           }}
                         >
-                          <PaperclipPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconPaperclip size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                           {showAttachmentMenu && (
                             <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg p-2">
                               <div className="grid grid-cols-2 gap-2">
                                 <Button variant="ghost" size="sm" className="flex flex-col items-center p-2">
-                                  <ImagePhosphor size={16} weight="light" />
+                                  <IconPhoto size={16} stroke={2} />
                                   <span className="text-xs">Foto</span>
                                 </Button>
                                 <Button variant="ghost" size="sm" className="flex flex-col items-center p-2">
-                                  <CameraPhosphor size={16} weight="light" />
+                                  <IconCamera size={16} stroke={2} />
                                   <span className="text-xs">Câmera</span>
                                 </Button>
                                 <Button variant="ghost" size="sm" className="flex flex-col items-center p-2">
-                                  <FilePhosphor size={16} weight="light" />
+                                  <IconFile size={16} stroke={2} />
                                   <span className="text-xs">Arquivo</span>
                                 </Button>
                                 <Button variant="ghost" size="sm" className="flex flex-col items-center p-2">
-                                  <MapPinPhosphor size={16} weight="light" />
+                                  <IconMapPin size={16} stroke={2} />
                                   <span className="text-xs">Local</span>
                                 </Button>
                               </div>
@@ -765,10 +765,10 @@ function MensagensContent() {
                             }
                           }}
                         >
-                          <Smiley size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconMoodSmile size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-8 w-8 lg:h-10 lg:w-10 p-0">
-                          <Microphone size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconMicrophone size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                         <Button
                           onClick={() => {
@@ -780,7 +780,7 @@ function MensagensContent() {
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 lg:h-10 lg:w-10 p-0"
                         >
-                          <SendPhosphor size={16} weight="light" className="lg:w-5 lg:h-5" />
+                          <IconSend size={16} stroke={2} className="lg:w-5 lg:h-5" />
                         </Button>
                       </div>
                     </div>
@@ -811,7 +811,7 @@ function MensagensContent() {
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <ChatTeardrop size={48} weight="light" className="text-gray-400" />
+                      <IconMessageCircle size={48} stroke={2} className="text-black" />
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       Selecione uma conversa

@@ -84,42 +84,44 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg border-0">
-      <CardHeader className="text-center pb-6">
-        <CardTitle className="text-2xl font-bold text-gray-900">
-          Entrar na sua conta
-        </CardTitle>
-        <CardDescription className="text-gray-600">
-          Digite suas credenciais para acessar a plataforma
-        </CardDescription>
+    <div className="w-full max-w-md mx-auto bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+      <div className="text-center pb-6">
+        <h2 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
+          ENTRAR NA SUA CONTA
+        </h2>
+        <p className="text-black font-bold animate-fade-in">
+          DIGITE SUAS CREDENCIAIS PARA ACESSAR A PLATAFORMA
+        </p>
         
-        {/* Indicador de conectividade */}
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <div className={`w-2 h-2 rounded-full ${
+        {/* Indicador de conectividade brutalista */}
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <div className={`w-3 h-3 border-2 border-black ${
             connectionStatus === 'connected' ? 'bg-green-500' : 
             connectionStatus === 'error' ? 'bg-red-500' : 'bg-yellow-500'
           }`} />
-          <span className="text-xs text-gray-500">
-            {connectionStatus === 'connected' ? 'Conectado' : 
-             connectionStatus === 'error' ? 'Problema de conexão' : 'Verificando...'}
+          <span className="text-xs text-black font-black uppercase">
+            {connectionStatus === 'connected' ? 'CONECTADO' : 
+             connectionStatus === 'error' ? 'PROBLEMA DE CONEXÃO' : 'VERIFICANDO...'}
           </span>
         </div>
-      </CardHeader>
+      </div>
       
-      <CardContent className="space-y-6">
+      <div className="space-y-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Mensagem de sucesso quando a conta for criada */}
           {accountCreated && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <div className="bg-green-500 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 mb-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
+                  <div className="w-6 h-6 bg-black border-2 border-black flex items-center justify-center">
+                    <svg className="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">
-                    Conta criada com sucesso! Faça login para continuar.
+                  <p className="text-sm font-black text-black uppercase">
+                    CONTA CRIADA COM SUCESSO! FAÇA LOGIN PARA CONTINUAR.
                   </p>
                 </div>
               </div>
@@ -127,25 +129,27 @@ export function LoginForm() {
           )}
           
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
-            </Label>
-            <Input
+            <label htmlFor="email" className="text-sm font-black text-black uppercase">
+              EMAIL
+            </label>
+            <input
               id="email"
               type="email"
-              placeholder="seu@email.com"
+              placeholder="SEU@EMAIL.COM"
               {...register('email')}
-              className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
+              className={`w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                errors.email ? 'border-red-500 bg-red-100' : 'bg-white'
+              }`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
+              <p className="text-sm text-red-500 font-bold uppercase">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Senha
-            </Label>
+            <label htmlFor="password" className="text-sm font-black text-black uppercase">
+              SENHA
+            </label>
             <PasswordInput
               id="password"
               placeholder="••••••••"
@@ -153,40 +157,40 @@ export function LoginForm() {
               error={!!errors.password}
             />
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-red-500 font-bold uppercase">{errors.password.message}</p>
             )}
           </div>
 
-          <Button
+          <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+            className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
-            {isLoading ? 'Entrando...' : 'Entrar'}
-          </Button>
+            {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
+          </button>
 
           <div className="text-center">
             <button
               type="button"
               onClick={() => router.push('/recuperar-senha')}
-              className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+              className="text-sm text-black hover:text-yellow-600 hover:underline font-black uppercase"
             >
-              Esqueci minha senha
+              ESQUECI MINHA SENHA
             </button>
           </div>
 
-          <div className="text-center text-sm text-gray-600 pt-2">
-            Não tem uma conta?{' '}
+          <div className="text-center text-sm text-black font-bold pt-2">
+            NÃO TEM UMA CONTA?{' '}
             <button
               type="button"
               onClick={() => router.push('/auth?tab=register')}
-              className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
+              className="text-black hover:text-yellow-600 hover:underline font-black uppercase"
             >
-              Cadastre-se
+              CADASTRE-SE
             </button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

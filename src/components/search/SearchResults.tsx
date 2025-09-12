@@ -98,186 +98,198 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   }
 
   const UserCard = ({ user }: { user: Profile }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300 rounded-lg border border-border hover:border-primary/20 overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Avatar */}
-          <Avatar className="w-12 h-12 flex-shrink-0">
-            <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
-            <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-              {(user.full_name || 'N').charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+    <div className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden">
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Avatar Brutalista */}
+          <div className="p-3 bg-black border-2 border-black">
+            <Avatar className="w-16 h-16">
+              <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
+              <AvatarFallback className="bg-yellow-400 text-black font-black text-lg">
+                {(user.full_name || 'N').charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
 
           {/* Conteúdo Principal */}
           <div className="flex-1 min-w-0">
             {/* Nome e Verificação */}
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-3 mb-2">
               <Link 
                 href={`/perfil/${user.id}`}
-                className="font-medium text-foreground hover:text-primary transition-colors truncate"
+                className="font-black text-black hover:text-red-500 transition-colors text-lg"
               >
-                {user.full_name || 'Nome não informado'}
+                {(user.full_name || 'NOME NÃO INFORMADO').toUpperCase()}
               </Link>
               {user.is_verified && (
-                <Shield className="h-4 w-4 text-primary flex-shrink-0" />
+                <div className="p-1 bg-green-500 text-white border border-black">
+                  <Shield className="h-4 w-4" />
+                </div>
               )}
             </div>
 
             {/* Tipo de Usuário */}
-            <div className="mb-2">
-              <Badge 
-                variant={user.user_type === 'professional' ? 'default' : 'secondary'} 
-                className="text-xs"
-              >
-                {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-              </Badge>
+            <div className="mb-3">
+              <span className={`px-3 py-1 text-xs font-black border-2 border-black ${
+                user.user_type === 'professional' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-500 text-white'
+              }`}>
+                {user.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
+              </span>
             </div>
 
             {/* Localização */}
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">
+            <div className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
+              <MapPin className="h-4 w-4" />
+              <span>
                 {user.location_city && user.location_state 
-                  ? `${user.location_city}, ${user.location_state}`
-                  : user.location_city || user.location_state || 'Localização não informada'
+                  ? `${user.location_city.toUpperCase()}, ${user.location_state}`
+                  : 'LOCALIZAÇÃO NÃO INFORMADA'
                 }
               </span>
             </div>
 
             {/* Serviços (apenas para profissionais) */}
             {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
-              <div className="mb-2">
-                <div className="flex flex-wrap gap-1">
-                  {user.professional_services.slice(0, 2).map((service, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {service}
-                    </Badge>
+              <div className="mb-3">
+                <div className="text-sm font-black text-black mb-2">SERVIÇOS OFERECIDOS:</div>
+                <div className="flex flex-wrap gap-2">
+                  {user.professional_services.slice(0, 3).map((service, index) => (
+                    <span key={index} className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black">
+                      {service.toUpperCase()}
+                    </span>
                   ))}
-                  {user.professional_services.length > 2 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{user.professional_services.length - 2}
-                    </Badge>
+                  {user.professional_services.length > 3 && (
+                    <span className="px-2 py-1 text-xs font-black bg-red-500 text-white border border-black">
+                      +{user.professional_services.length - 3}
+                    </span>
                   )}
                 </div>
               </div>
             )}
 
             {/* Avaliação */}
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-3 mb-3">
               <div className="flex items-center gap-1">
                 {renderStars(user.rating || 0)}
               </div>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-black text-black">
                 {user.rating ? user.rating.toFixed(1) : '0.0'}
               </span>
-              <span className="text-sm text-muted-foreground">
-                ({user.total_reviews || 0} avaliações)
+              <span className="text-sm font-bold text-gray-700">
+                ({user.total_reviews || 0} AVALIAÇÕES)
               </span>
             </div>
 
-            {/* Bio (apenas uma linha) */}
+            {/* Bio */}
             {user.bio && (
-              <p className="text-sm text-muted-foreground line-clamp-1 mb-3">
+              <p className="text-sm font-medium text-black mb-4 line-clamp-2">
                 {user.bio}
               </p>
             )}
 
+            {/* Informações Adicionais */}
+            <div className="grid grid-cols-2 gap-4 mb-4 text-xs font-bold">
+              {user.professional_experience_years && (
+                <div className="bg-gray-100 p-2 border border-black">
+                  <div className="text-gray-700">EXPERIÊNCIA:</div>
+                  <div className="text-black">{user.professional_experience_years} ANOS</div>
+                </div>
+              )}
+              {user.professional_certifications && user.professional_certifications.length > 0 && (
+                <div className="bg-green-100 p-2 border border-black">
+                  <div className="text-gray-700">CERTIFICAÇÕES:</div>
+                  <div className="text-black">{user.professional_certifications.length}</div>
+                </div>
+              )}
+            </div>
+
             {/* Ações */}
-            <div className="flex items-center gap-2">
-              <Button
+            <div className="flex items-center gap-3">
+              <button
                 onClick={() => onContact(user)}
-                size="sm"
-                className="flex-1"
+                className="flex-1 py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
               >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                Conversar
-              </Button>
+                <MessageCircle className="h-4 w-4 mr-2 inline" />
+                CONVERSAR
+              </button>
               
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => onViewProfile(user.id)}
+                className="py-3 px-4 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
               >
                 <Eye className="h-4 w-4" />
-              </Button>
+              </button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => toggleFavorite(user.id)}>
-                    <Heart className="h-4 w-4 mr-2" />
-                    {favoriteUsers.has(user.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onViewProfile(user.id)}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Ver Perfil Completo
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <button
+                onClick={() => toggleFavorite(user.id)}
+                className="py-3 px-4 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
+              >
+                <Heart className={`h-4 w-4 ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+              </button>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 
   const UserGridCard = ({ user }: { user: Profile }) => (
-    <Card className="group hover:shadow-md transition-all duration-300 rounded-lg border border-border hover:border-primary/20 overflow-hidden">
-      <CardContent className="p-3">
+    <div className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden">
+      <div className="p-4">
         <div className="text-center">
-          {/* Avatar */}
-          <Avatar className="w-16 h-16 mx-auto mb-3">
-            <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
-            <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
-              {(user.full_name || 'N').charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          {/* Avatar Brutalista */}
+          <div className="p-3 bg-black border-2 border-black mx-auto mb-4 w-fit">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
+              <AvatarFallback className="bg-yellow-400 text-black font-black text-xl">
+                {(user.full_name || 'N').charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
 
           {/* Nome */}
           <Link 
             href={`/perfil/${user.id}`}
-            className="font-medium text-foreground hover:text-primary transition-colors block mb-1 line-clamp-1"
+            className="font-black text-black hover:text-red-500 transition-colors block mb-2 text-lg"
           >
-            {user.full_name || 'Nome não informado'}
+            {(user.full_name || 'NOME NÃO INFORMADO').toUpperCase()}
           </Link>
 
           {/* Tipo de Usuário */}
-          <div className="mb-2">
-            <Badge 
-              variant={user.user_type === 'professional' ? 'default' : 'secondary'} 
-              className="text-xs"
-            >
-              {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-            </Badge>
-          </div>
-
-          {/* Localização */}
-          <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mb-2">
-            <MapPin className="h-3 w-3" />
-            <span className="line-clamp-1">
-              {user.location_city || 'Cidade'}
+          <div className="mb-3">
+            <span className={`px-3 py-1 text-xs font-black border-2 border-black ${
+              user.user_type === 'professional' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-500 text-white'
+            }`}>
+              {user.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
             </span>
           </div>
 
           {/* Verificação */}
           {user.is_verified && (
-            <div className="flex items-center justify-center gap-1 text-xs text-primary mb-2">
-              <Shield className="h-3 w-3" />
-              <span>Verificado</span>
+            <div className="flex items-center justify-center gap-2 text-xs font-black text-green-600 mb-3">
+              <Shield className="h-4 w-4" />
+              <span>VERIFICADO</span>
             </div>
           )}
 
+          {/* Localização */}
+          <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-700 mb-3">
+            <MapPin className="h-3 w-3" />
+            <span>
+              {user.location_city ? user.location_city.toUpperCase() : 'CIDADE'}
+            </span>
+          </div>
+
           {/* Avaliação */}
-          <div className="flex items-center justify-center gap-1 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-3">
             <div className="flex items-center gap-1">
               {renderStars(user.rating || 0)}
             </div>
-            <span className="text-xs font-medium">
+            <span className="text-sm font-black text-black">
               {user.rating ? user.rating.toFixed(1) : '0.0'}
             </span>
           </div>
@@ -285,42 +297,68 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           {/* Serviço Principal (apenas para profissionais) */}
           {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
             <div className="mb-3">
-              <Badge variant="outline" className="text-xs">
-                {user.professional_services[0]}
-              </Badge>
+              <div className="text-xs font-black text-black mb-1">SERVIÇO PRINCIPAL:</div>
+              <span className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black">
+                {user.professional_services[0].toUpperCase()}
+              </span>
             </div>
           )}
 
+          {/* Informações Adicionais */}
+          <div className="grid grid-cols-1 gap-2 mb-4 text-xs font-bold">
+            {user.professional_experience_years && (
+              <div className="bg-gray-100 p-2 border border-black">
+                <div className="text-gray-700">EXPERIÊNCIA:</div>
+                <div className="text-black">{user.professional_experience_years} ANOS</div>
+              </div>
+            )}
+            {user.professional_certifications && user.professional_certifications.length > 0 && (
+              <div className="bg-green-100 p-2 border border-black">
+                <div className="text-gray-700">CERTIFICAÇÕES:</div>
+                <div className="text-black">{user.professional_certifications.length}</div>
+              </div>
+            )}
+          </div>
+
           {/* Ações */}
           <div className="space-y-2">
-            <Button
+            <button
               onClick={() => onContact(user)}
-              size="sm"
-              className="w-full"
+              className="w-full py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
             >
-              <MessageCircle className="h-3 w-3 mr-1" />
-              Conversar
-            </Button>
+              <MessageCircle className="h-4 w-4 mr-2 inline" />
+              CONVERSAR
+            </button>
             
-            <RecommendationButton
-              userId={user.id}
-              size="sm"
-              variant="outline"
-              showCount={true}
-              className="w-full"
-            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => onViewProfile(user.id)}
+                className="flex-1 py-2 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
+              >
+                <Eye className="h-3 w-3 mr-1 inline" />
+                VER
+              </button>
+              
+              <button
+                onClick={() => toggleFavorite(user.id)}
+                className="flex-1 py-2 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
+              >
+                <Heart className={`h-3 w-3 mr-1 inline ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+                FAV
+              </button>
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-3" />
-          <p className="text-muted-foreground">Carregando resultados...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-black mx-auto mb-3" />
+          <p className="text-black font-black">CARREGANDO RESULTADOS...</p>
         </div>
       </div>
     )
@@ -328,36 +366,42 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header dos Resultados */}
+      {/* Header dos Resultados Brutalista */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <p className="text-muted-foreground">
-            <span className="font-semibold text-primary">{users.length}</span> usuário{users.length !== 1 ? 's' : ''} encontrado{users.length !== 1 ? 's' : ''}
+          <p className="text-black font-black">
+            <span className="text-red-500">{users.length}</span> USUÁRIO{users.length !== 1 ? 'S' : ''} ENCONTRADO{users.length !== 1 ? 'S' : ''}
           </p>
           
           {getActiveFiltersCount() > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              {getActiveFiltersCount()} filtro{getActiveFiltersCount() !== 1 ? 's' : ''} ativo{getActiveFiltersCount() !== 1 ? 's' : ''}
-            </Badge>
+            <span className="px-3 py-1 text-xs font-black bg-yellow-400 text-black border-2 border-black">
+              {getActiveFiltersCount()} FILTRO{getActiveFiltersCount() !== 1 ? 'S' : ''} ATIVO{getActiveFiltersCount() !== 1 ? 'S' : ''}
+            </span>
           )}
         </div>
 
-        {/* Controles de Visualização */}
+        {/* Controles de Visualização Brutalistas */}
         <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="sm"
+          <button
             onClick={() => onViewModeChange('grid')}
+            className={`px-4 py-2 font-black text-sm border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${
+              viewMode === 'grid' 
+                ? 'bg-black text-yellow-400' 
+                : 'bg-white text-black hover:bg-yellow-400'
+            }`}
           >
-            Grid
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
+            GRID
+          </button>
+          <button
             onClick={() => onViewModeChange('list')}
+            className={`px-4 py-2 font-black text-sm border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${
+              viewMode === 'list' 
+                ? 'bg-black text-yellow-400' 
+                : 'bg-white text-black hover:bg-yellow-400'
+            }`}
           >
-            Lista
-          </Button>
+            LISTA
+          </button>
         </div>
       </div>
 
@@ -377,24 +421,23 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           ))}
         </div>
       ) : (
-        /* Estado Vazio */
+        /* Estado Vazio Brutalista */
         <div className="text-center py-16">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Users className="h-12 w-12 text-gray-400" />
+          <div className="w-32 h-32 bg-black border-8 border-black flex items-center justify-center mx-auto mb-6">
+            <Users className="h-16 w-16 text-yellow-400" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Nenhum usuário encontrado
+          <h3 className="text-2xl font-black text-black mb-4">
+            NENHUM USUÁRIO ENCONTRADO
           </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Tente ajustar os filtros ou usar termos de busca diferentes para encontrar mais resultados.
+          <p className="text-black font-bold mb-8 max-w-md mx-auto">
+            TENTE AJUSTAR OS FILTROS OU USAR TERMOS DE BUSCA DIFERENTES PARA ENCONTRAR MAIS RESULTADOS.
           </p>
-          <Button
-            variant="outline"
+          <button
             onClick={() => window.location.reload()}
-            className="border-gray-300 hover:bg-gray-50"
+            className="px-8 py-4 bg-red-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-lg"
           >
-            Limpar Filtros
-          </Button>
+            LIMPAR FILTROS
+          </button>
         </div>
       )}
     </div>

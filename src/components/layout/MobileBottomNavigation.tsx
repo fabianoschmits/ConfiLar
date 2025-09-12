@@ -11,30 +11,44 @@ import { NotificationDropdown } from '@/components/notifications/NotificationDro
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
-// Phosphor Icons Light
+// Tabler Icons - Estilo Brutalista
 import {
-  House,
-  MagnifyingGlass,
-  ChatTeardrop,
-  Bell as BellPhosphor,
-  User,
-  Heart as HeartPhosphor,
-  Calendar as CalendarPhosphor,
-  Briefcase as BriefcasePhosphor,
-  Users as UsersPhosphor,
-  Gear,
-  Question,
-  Phone as PhonePhosphor,
-  Info as InfoPhosphor,
-  SignOut,
-  CaretUp,
-  CaretDown,
-  Eye as EyePhosphor,
-  PencilSimple,
-  TrendUp,
-  Lightning,
-  ChartBar
-} from '@phosphor-icons/react'
+  IconHome,
+  IconSearch,
+  IconMessageCircle,
+  IconBell,
+  IconUser,
+  IconHeart,
+  IconCalendar,
+  IconCreditCard,
+  IconHelp,
+  IconPhone,
+  IconSettings,
+  IconBuilding,
+  IconMapPin,
+  IconBriefcase,
+  IconChartLine,
+  IconStar,
+  IconClock,
+  IconWallet,
+  IconTrendingUp,
+  IconFileText,
+  IconShield,
+  IconBolt,
+  IconEye,
+  IconWorld,
+  IconBook,
+  IconTrophy,
+  IconChevronRight,
+  IconChevronLeft,
+  IconChevronUp,
+  IconChevronDown,
+  IconUsers,
+  IconLogout,
+  IconEdit,
+  IconChartBar,
+  IconInfoCircle
+} from '@tabler/icons-react'
 
 export function MobileBottomNavigation() {
   const pathname = usePathname()
@@ -66,8 +80,8 @@ export function MobileBottomNavigation() {
   return (
     <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50">
       <div className="relative">
-        {/* Barra Principal - Sempre Visível */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 px-4 py-3">
+        {/* Barra Principal Brutalista */}
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Links Principais */}
             <div className="flex items-center space-x-1">
@@ -75,151 +89,151 @@ export function MobileBottomNavigation() {
                 href="/home"
                 destination="Home"
                 className={cn(
-                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
+                  "flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 min-w-[50px] border-2 border-black font-black text-xs",
                   isActive('/home')
-                    ? "bg-blue-100 text-blue-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-blue-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    : "bg-white text-black hover:bg-yellow-400 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 )}
               >
-                <House size={20} weight={isActive('/home') ? "fill" : "light"} />
-                <span className="text-xs font-medium mt-1">Home</span>
+                <IconHome size={20} stroke={2} />
+                <span className="font-black mt-1">HOME</span>
               </NavigationLink>
               
               <NavigationLink
                 href="/dashboard"
                 destination="Dashboard"
                 className={cn(
-                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
+                  "flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 min-w-[50px] border-2 border-black font-black text-xs",
                   isActive('/dashboard')
-                    ? "bg-indigo-100 text-indigo-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-indigo-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    : "bg-white text-black hover:bg-yellow-400 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 )}
               >
-                <ChartBar size={20} weight={isActive('/dashboard') ? "fill" : "light"} />
-                <span className="text-xs font-medium mt-1">Dashboard</span>
+                <IconChartBar size={20} stroke={2} />
+                <span className="font-black mt-1">DASH</span>
               </NavigationLink>
               
               <NavigationLink
                 href="/buscar"
                 destination="Buscar"
                 className={cn(
-                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
+                  "flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 min-w-[50px] border-2 border-black font-black text-xs",
                   isActive('/buscar')
-                    ? "bg-green-100 text-green-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-green-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    : "bg-white text-black hover:bg-yellow-400 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 )}
               >
-                <MagnifyingGlass size={20} weight={isActive('/buscar') ? "fill" : "light"} />
-                <span className="text-xs font-medium mt-1">Buscar</span>
+                <IconSearch size={20} stroke={2} />
+                <span className="font-black mt-1">BUSCAR</span>
               </NavigationLink>
               
               <NavigationLink
                 href="/classificados"
                 destination="Classificados"
                 className={cn(
-                  "flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all duration-200 min-w-[50px]",
+                  "flex flex-col items-center justify-center px-2 py-2 transition-all duration-200 min-w-[50px] border-2 border-black font-black text-xs",
                   isActive('/classificados')
-                    ? "bg-purple-100 text-purple-600"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-purple-500 text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                    : "bg-white text-black hover:bg-yellow-400 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
                 )}
               >
-                <BriefcasePhosphor size={20} weight={isActive('/classificados') ? "fill" : "light"} />
-                <span className="text-xs font-medium mt-1">Classificados</span>
+                <IconBriefcase size={20} stroke={2} />
+                <span className="font-black mt-1">CLASS</span>
               </NavigationLink>
             </div>
 
-            {/* Botão de Expansão */}
+            {/* Botão de Expansão Brutalista */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 transition-all duration-200"
+              className="flex items-center justify-center w-10 h-10 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
             >
-              {isExpanded ? <CaretDown size={18} weight="light" /> : <CaretUp size={18} weight="light" />}
+              {isExpanded ? <IconChevronDown size={18} stroke={2} /> : <IconChevronUp size={18} stroke={2} />}
             </button>
           </div>
         </div>
 
-        {/* Menu Expandido */}
+        {/* Menu Expandido Brutalista */}
         {isExpanded && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200 max-h-[60vh] overflow-y-auto">
+          <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-h-[60vh] overflow-y-auto">
             <div className="p-4 space-y-4">
               {/* Ações Rápidas */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <Lightning size={14} weight="light" className="mr-2 text-yellow-500" />
-                  Ações Rápidas
+                <h3 className="text-sm font-black text-black mb-3 flex items-center">
+                  <IconBolt size={16} stroke={2} className="mr-2 text-yellow-500" />
+                  AÇÕES RÁPIDAS
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
-                  <div className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex flex-col items-center p-2 bg-red-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black">
                     <NotificationDropdown />
-                    <span className="text-xs font-medium mt-1">Notificações</span>
+                    <span className="text-xs font-black mt-1">NOTIF</span>
                   </div>
                   <Link
                     href="/favoritos"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-green-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <HeartPhosphor size={16} weight="light" className="text-red-600 mb-1" />
-                    <span className="text-xs font-medium">Favoritos</span>
+                    <IconHeart size={16} stroke={2} className="mb-1" />
+                    <span className="text-xs font-black">FAV</span>
                   </Link>
                   <Link
-                    href="/_public/agendamentos"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    href="/agenda"
+                    className="flex flex-col items-center p-2 bg-blue-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <CalendarPhosphor size={16} weight="light" className="text-green-600 mb-1" />
-                    <span className="text-xs font-medium">Agendamentos</span>
+                    <IconCalendar size={16} stroke={2} className="mb-1" />
+                    <span className="text-xs font-black">AGENDA</span>
                   </Link>
                   <Link
                     href="/feed"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex flex-col items-center p-2 bg-purple-500 text-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <UsersPhosphor size={16} weight="light" className="text-blue-600 mb-1" />
-                    <span className="text-xs font-medium">Feed</span>
+                    <IconUsers size={16} stroke={2} className="mb-1" />
+                    <span className="text-xs font-black">FEED</span>
                   </Link>
                 </div>
               </div>
 
               {/* Minha Conta */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <User size={14} weight="light" className="mr-2 text-blue-500" />
-                  Minha Conta
+                <h3 className="text-sm font-black text-black mb-3 flex items-center">
+                  <IconUser size={16} stroke={2} className="mr-2 text-blue-500" />
+                  MINHA CONTA
                 </h3>
                 <div className="space-y-1">
                   <Link
                     href={`/perfil/${profile?.id}`}
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <EyePhosphor size={14} weight="light" className="text-blue-600" />
-                    <span>Ver Perfil</span>
+                    <IconEye size={14} stroke={2} className="text-blue-600" />
+                    <span>VER PERFIL</span>
                   </Link>
                   <Link
                     href="/editarperfil"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PencilSimple size={14} weight="light" className="text-green-600" />
-                    <span>Editar Perfil</span>
+                    <IconEdit size={14} stroke={2} className="text-green-600" />
+                    <span>EDITAR PERFIL</span>
                   </Link>
                   {profile?.user_type === 'professional' && (
                     <>
                       <Link
                         href="/portfolio"
-                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                         onClick={() => setIsExpanded(false)}
                       >
-                        <BriefcasePhosphor size={14} weight="light" className="text-purple-600" />
-                        <span>Portfólio</span>
+                        <IconBriefcase size={14} stroke={2} className="text-purple-600" />
+                        <span>PORTFÓLIO</span>
                       </Link>
                       <Link
-                        href="/_public/ganhos"
-                        className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                        href="/ganhos"
+                        className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                         onClick={() => setIsExpanded(false)}
                       >
-                        <TrendUp size={14} weight="light" className="text-green-600" />
-                        <span>Ganhos</span>
+                        <IconTrendingUp size={14} stroke={2} className="text-green-600" />
+                        <span>GANHOS</span>
                       </Link>
                     </>
                   )}
@@ -228,50 +242,50 @@ export function MobileBottomNavigation() {
 
               {/* Configurações */}
               <div>
-                <h3 className="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                  <Gear size={14} weight="light" className="mr-2 text-gray-500" />
-                  Configurações
+                <h3 className="text-sm font-black text-black mb-3 flex items-center">
+                  <IconSettings size={16} stroke={2} className="mr-2 text-gray-500" />
+                  CONFIGURAÇÕES
                 </h3>
                 <div className="space-y-1">
                   <Link
                     href="/ajuda"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <Question size={14} weight="light" className="text-blue-600" />
-                    <span>Central de Ajuda</span>
+                    <IconHelp size={14} stroke={2} className="text-blue-600" />
+                    <span>CENTRAL DE AJUDA</span>
                   </Link>
                   <Link
-                    href="/_public/contato"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    href="/contato"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <PhonePhosphor size={14} weight="light" className="text-green-600" />
-                    <span>Contato</span>
+                    <IconPhone size={14} stroke={2} className="text-green-600" />
+                    <span>CONTATO</span>
                   </Link>
                   <Link
                     href="/sobre"
-                    className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-3 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
                     onClick={() => setIsExpanded(false)}
                   >
-                    <InfoPhosphor size={14} weight="light" className="text-purple-600" />
-                    <span>Sobre a ConfiLar</span>
+                    <IconInfoCircle size={14} stroke={2} className="text-purple-600" />
+                    <span>SOBRE A CONFILAR</span>
                   </Link>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="border-t border-gray-200 pt-3">
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                  <span>Membro desde {profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024'}</span>
-                  <span>v5.0</span>
+              <div className="border-t-4 border-black pt-3">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-3">
+                  <span>MEMBRO DESDE {profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024'}</span>
+                  <span>V5.0</span>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors w-full text-left"
+                  className="flex items-center space-x-3 px-3 py-2 text-sm font-black text-white bg-red-500 hover:bg-red-600 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all w-full"
                 >
-                  <SignOut size={14} weight="light" />
-                  <span>Sair da Conta</span>
+                  <IconLogout size={14} stroke={2} />
+                  <span>SAIR DA CONTA</span>
                 </button>
               </div>
             </div>

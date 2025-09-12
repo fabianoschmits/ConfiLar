@@ -1,8 +1,23 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Check, Trash2, Settings, X, ArrowLeft } from 'lucide-react';
-import { Bell as BellPhosphor, Check as CheckPhosphor, Trash as TrashPhosphor, Gear } from '@phosphor-icons/react';
+// Tabler Icons - Estilo Brutalista
+import {
+  IconBell,
+  IconCheck,
+  IconTrash,
+  IconSettings,
+  IconX,
+  IconArrowLeft,
+  IconMessageCircle,
+  IconStar,
+  IconCalendar,
+  IconShield,
+  IconTrophy,
+  IconInfoCircle,
+  IconAlertTriangle,
+  IconLoader2
+} from '@tabler/icons-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
 import { useFloatingChat } from '@/contexts/FloatingChatContext';
 import { Button } from '@/components/ui/button';
@@ -237,134 +252,182 @@ export const NotificationDropdown: React.FC = () => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="relative p-2 hover:bg-gray-100"
+        <button
+          className="relative p-2 h-10 w-10 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
         >
-          <BellPhosphor size={20} weight="light" />
+          <IconBell size={20} stroke={2} />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-            >
+            <div className="absolute -top-1 -right-1 h-6 w-6 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-xs font-black">
               {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
+            </div>
           )}
-        </Button>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent 
         align="end" 
-        className="w-96 max-h-[500px] overflow-hidden"
+        className="w-96 max-h-[500px] overflow-hidden bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
           tableExists ? (
             <div className="w-96">
-              {/* Header das Configurações */}
-              <div className="flex items-center justify-between p-3 border-b">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+              {/* Header das Configurações Brutalista */}
+              <div className="flex items-center justify-between p-4 border-b-4 border-black bg-yellow-400">
+                <div className="flex items-center gap-3">
+                  <button
                     onClick={() => setShowSettings(false)}
-                    className="h-8 w-8 p-0"
+                    className="p-2 h-8 w-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
-                    <ArrowLeft size={16} />
-                  </Button>
-                  <Settings size={16} />
-                  <span className="text-sm font-medium">Configurações</span>
+                    <IconArrowLeft size={14} stroke={2} />
+                  </button>
+                  <IconSettings size={16} stroke={2} className="text-black" />
+                  <span className="text-sm font-black text-black uppercase">CONFIGURAÇÕES</span>
                 </div>
-                <Button
-                  size="sm"
+                <button
                   onClick={savePreferences}
                   disabled={saving}
-                  className="h-8 text-xs"
+                  className="px-4 py-2 text-sm font-black text-white bg-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50"
                 >
                   {saving ? (
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                    <div className="flex items-center gap-2">
+                      <IconLoader2 size={12} stroke={2} className="animate-spin" />
+                      <span>SALVANDO</span>
+                    </div>
                   ) : (
-                    <Check size={12} className="mr-1" />
+                    <div className="flex items-center gap-2">
+                      <IconCheck size={12} stroke={2} />
+                      <span>SALVAR</span>
+                    </div>
                   )}
-                  Salvar
-                </Button>
+                </button>
               </div>
 
-              {/* Conteúdo das Configurações */}
-              <div className="p-3 space-y-4 max-h-80 overflow-y-auto">
+              {/* Conteúdo das Configurações Brutalista */}
+              <div className="p-4 space-y-6 max-h-80 overflow-y-auto bg-white">
                 {/* Canais de Notificação */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-900">Canais de Notificação</h4>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="push_enabled" className="text-sm">Notificações Push</Label>
-                    <Switch
-                      id="push_enabled"
-                      checked={preferences.push_enabled}
-                      onCheckedChange={() => handleToggle('push_enabled')}
-                    />
+                <div className="space-y-4">
+                  <div className="px-3 py-2 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <h4 className="text-sm font-black uppercase">CANAIS DE NOTIFICAÇÃO</h4>
                   </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="push_enabled" className="text-sm font-black text-black">NOTIFICAÇÕES PUSH</label>
+                      <button
+                        id="push_enabled"
+                        onClick={() => handleToggle('push_enabled')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.push_enabled ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.push_enabled ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="email_enabled" className="text-sm">Notificações por Email</Label>
-                    <Switch
-                      id="email_enabled"
-                      checked={preferences.email_enabled}
-                      onCheckedChange={() => handleToggle('email_enabled')}
-                    />
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="email_enabled" className="text-sm font-black text-black">NOTIFICAÇÕES POR EMAIL</label>
+                      <button
+                        id="email_enabled"
+                        onClick={() => handleToggle('email_enabled')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.email_enabled ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.email_enabled ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <Separator />
+                {/* Separador Brutalista */}
+                <div className="h-2 bg-black border-2 border-black"></div>
 
                 {/* Tipos de Notificação */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-900">Tipos de Notificação</h4>
+                <div className="space-y-4">
+                  <div className="px-3 py-2 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    <h4 className="text-sm font-black uppercase">TIPOS DE NOTIFICAÇÃO</h4>
+                  </div>
                   
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="message_notifications" className="text-sm">Mensagens</Label>
-                    <Switch
-                      id="message_notifications"
-                      checked={preferences.message_notifications}
-                      onCheckedChange={() => handleToggle('message_notifications')}
-                    />
-                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="message_notifications" className="text-sm font-black text-black">MENSAGENS</label>
+                      <button
+                        id="message_notifications"
+                        onClick={() => handleToggle('message_notifications')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.message_notifications ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.message_notifications ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="review_notifications" className="text-sm">Avaliações</Label>
-                    <Switch
-                      id="review_notifications"
-                      checked={preferences.review_notifications}
-                      onCheckedChange={() => handleToggle('review_notifications')}
-                    />
-                  </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="review_notifications" className="text-sm font-black text-black">AVALIAÇÕES</label>
+                      <button
+                        id="review_notifications"
+                        onClick={() => handleToggle('review_notifications')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.review_notifications ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.review_notifications ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="booking_notifications" className="text-sm">Agendamentos</Label>
-                    <Switch
-                      id="booking_notifications"
-                      checked={preferences.booking_notifications}
-                      onCheckedChange={() => handleToggle('booking_notifications')}
-                    />
-                  </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="booking_notifications" className="text-sm font-black text-black">AGENDAMENTOS</label>
+                      <button
+                        id="booking_notifications"
+                        onClick={() => handleToggle('booking_notifications')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.booking_notifications ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.booking_notifications ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="achievement_notifications" className="text-sm">Conquistas</Label>
-                    <Switch
-                      id="achievement_notifications"
-                      checked={preferences.achievement_notifications}
-                      onCheckedChange={() => handleToggle('achievement_notifications')}
-                    />
-                  </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="achievement_notifications" className="text-sm font-black text-black">CONQUISTAS</label>
+                      <button
+                        id="achievement_notifications"
+                        onClick={() => handleToggle('achievement_notifications')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.achievement_notifications ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.achievement_notifications ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="marketing_notifications" className="text-sm">Marketing</Label>
-                    <Switch
-                      id="marketing_notifications"
-                      checked={preferences.marketing_notifications}
-                      onCheckedChange={() => handleToggle('marketing_notifications')}
-                    />
+                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
+                      <label htmlFor="marketing_notifications" className="text-sm font-black text-black">MARKETING</label>
+                      <button
+                        id="marketing_notifications"
+                        onClick={() => handleToggle('marketing_notifications')}
+                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.marketing_notifications ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                          preferences.marketing_notifications ? 'translate-x-6' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -374,59 +437,55 @@ export const NotificationDropdown: React.FC = () => {
           )
         ) : (
           <>
-            {/* Header das Notificações */}
-            <div className="flex items-center justify-between p-3 border-b">
-              <div className="flex items-center gap-2">
-                <Bell size={16} />
-                <span className="text-sm font-medium">Notificações</span>
+            {/* Header das Notificações Brutalista */}
+            <div className="flex items-center justify-between p-4 border-b-4 border-black bg-yellow-400">
+              <div className="flex items-center gap-3">
+                <IconBell size={16} stroke={2} className="text-black" />
+                <span className="text-sm font-black text-black uppercase">NOTIFICAÇÕES</span>
                 {unreadCount > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {unreadCount} não lidas
-                  </Badge>
+                  <div className="px-2 py-1 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black">
+                    {unreadCount} NÃO LIDAS
+                  </div>
                 )}
               </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="flex items-center gap-2">
+                <button
                   onClick={() => setShowSettings(true)}
-                  className="h-8 w-8 p-0"
+                  className="p-2 h-8 w-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                 >
-                  <Settings size={16} />
-                </Button>
+                  <IconSettings size={16} stroke={2} />
+                </button>
                 {notifications.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
                     onClick={handleClearAll}
-                    className="h-8 w-8 p-0"
+                    className="p-2 h-8 w-8 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
-                    <Trash2 size={16} />
-                  </Button>
+                    <IconTrash size={16} stroke={2} />
+                  </button>
                 )}
               </div>
             </div>
 
-            {/* Lista de Notificações */}
-            <div className="max-h-80 overflow-y-auto">
+            {/* Lista de Notificações Brutalista */}
+            <div className="max-h-80 overflow-y-auto bg-white">
               {isLoading ? (
-                <div className="text-center py-8 text-gray-500">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-sm mt-2">Carregando notificações...</p>
+                <div className="text-center py-8 bg-gray-100 border-2 border-black m-4">
+                  <div className="w-8 h-8 border-4 border-black border-t-transparent animate-spin mx-auto mb-4"></div>
+                  <p className="text-sm font-black text-black uppercase">CARREGANDO NOTIFICAÇÕES...</p>
                 </div>
               ) : recentNotifications.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Bell className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p className="text-sm">Nenhuma notificação</p>
+                <div className="text-center py-8 bg-gray-100 border-2 border-black m-4">
+                  <IconBell size={32} stroke={2} className="mx-auto mb-4 text-gray-600" />
+                  <p className="text-sm font-black text-black uppercase">NENHUMA NOTIFICAÇÃO</p>
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-2 p-2">
                   {recentNotifications.map((notification, index) => (
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "flex items-start gap-3 p-3 cursor-pointer hover:bg-gray-50",
-                          !notification.is_read && "bg-blue-50"
+                          "flex items-start gap-3 p-4 cursor-pointer border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all",
+                          !notification.is_read ? "bg-blue-100" : "bg-gray-100"
                         )}
                         onClick={() => handleNotificationClick(notification)}
                       >
@@ -436,17 +495,17 @@ export const NotificationDropdown: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <h4 className={cn(
-                                "text-sm font-medium line-clamp-2",
-                                !notification.is_read && "font-semibold"
+                                "text-sm font-black line-clamp-2 uppercase",
+                                !notification.is_read && "text-blue-900"
                               )}>
                                 {notification.title}
                               </h4>
-                              <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                              <span className="text-xs font-black text-gray-700 whitespace-nowrap ml-2">
                                 {formatTimestamp(notification.created_at)}
                               </span>
                             </div>
                             
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                            <p className="text-xs font-bold text-gray-800 mt-1 line-clamp-2">
                               {notification.message}
                             </p>
                           </div>
@@ -454,35 +513,31 @@ export const NotificationDropdown: React.FC = () => {
 
                         <div className="flex items-center gap-1">
                           {!notification.is_read && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0"
+                            <button
+                              className="p-1 h-6 w-6 bg-green-500 text-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleMarkAsRead(notification.id);
                               }}
                             >
-                              <Check className="h-3 w-3" />
-                            </Button>
+                              <IconCheck size={12} stroke={2} />
+                            </button>
                           )}
                           
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
+                          <button
+                            className="p-1 h-6 w-6 bg-red-500 text-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteNotification(notification.id);
                             }}
                           >
-                            <X className="h-3 w-3" />
-                          </Button>
+                            <IconX size={12} stroke={2} />
+                          </button>
                         </div>
                       </div>
                       
                       {index < recentNotifications.length - 1 && (
-                        <Separator className="mx-3" />
+                        <div className="h-1 bg-black mx-2"></div>
                       )}
                     </div>
                   ))}
@@ -490,31 +545,31 @@ export const NotificationDropdown: React.FC = () => {
               )}
             </div>
 
-            {/* Footer */}
+            {/* Footer Brutalista */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t">
-                <div className="flex items-center justify-between gap-2">
+              <div className="p-4 border-t-4 border-black bg-yellow-400">
+                <div className="flex items-center justify-between gap-3">
                   {unreadCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
                       onClick={handleMarkAllAsRead}
-                      className="text-xs h-8"
+                      className="px-4 py-2 text-xs font-black text-white bg-green-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
-                      <Check className="h-3 w-3 mr-1" />
-                      Marcar todas como lidas
-                    </Button>
+                      <div className="flex items-center gap-2">
+                        <IconCheck size={12} stroke={2} />
+                        <span>MARCAR TODAS COMO LIDAS</span>
+                      </div>
+                    </button>
                   )}
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <button
                     onClick={handleClearAll}
-                    className="text-xs h-8 ml-auto"
+                    className="px-4 py-2 text-xs font-black text-white bg-red-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ml-auto"
                   >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Limpar todas
-                  </Button>
+                    <div className="flex items-center gap-2">
+                      <IconTrash size={12} stroke={2} />
+                      <span>LIMPAR TODAS</span>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { IconLoader2, IconBolt, IconRefresh } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
 interface LoadingOverlayProps {
@@ -12,7 +12,7 @@ interface LoadingOverlayProps {
 
 export function LoadingOverlay({ 
   isLoading, 
-  message = 'Carregando...', 
+  message = 'CARREGANDO...', 
   className 
 }: LoadingOverlayProps) {
   const [showOverlay, setShowOverlay] = useState(false)
@@ -35,38 +35,53 @@ export function LoadingOverlay({
     <div 
       className={cn(
         'fixed inset-0 z-50 flex items-center justify-center',
-        'bg-black/20 backdrop-blur-sm',
+        'bg-yellow-400/90 backdrop-blur-sm',
         'transition-all duration-300 ease-in-out',
         className
       )}
     >
-      <div className="bg-white rounded-lg shadow-xl p-6 flex flex-col items-center space-y-4 max-w-sm mx-4">
+      {/* Container Principal Brutalista */}
+      <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 flex flex-col items-center space-y-6 max-w-sm mx-4">
+        {/* Logo/Ícone Brutalista */}
         <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <div className="w-16 h-16 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
+            <span className="text-yellow-400 font-black text-2xl">C</span>
+          </div>
+          
+          {/* Spinner Brutalista */}
+          <div className="absolute inset-0 w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
         </div>
         
-        <div className="text-center">
-          <p className="text-gray-900 font-medium">{message}</p>
-          <p className="text-sm text-gray-500 mt-1">
-            Aguarde um momento...
+        {/* Texto Principal */}
+        <div className="text-center space-y-2">
+          <p className="text-black font-black text-lg uppercase tracking-wider">{message}</p>
+          <p className="text-sm text-gray-700 font-bold uppercase">
+            AGUARDE UM MOMENTO...
           </p>
         </div>
 
-        {/* Barra de progresso animada */}
-        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-          <div className="h-full bg-blue-600 rounded-full animate-pulse" 
+        {/* Barra de Progresso Brutalista */}
+        <div className="w-full bg-gray-200 border-2 border-black rounded-none h-3 overflow-hidden">
+          <div className="h-full bg-black border-2 border-black animate-pulse" 
                style={{ 
-                 animation: 'loading-bar 2s ease-in-out infinite',
-                 width: '60%'
+                 animation: 'brutalist-loading-bar 2s ease-in-out infinite',
+                 width: '70%'
                }} 
           />
+        </div>
+
+        {/* Indicador de Status */}
+        <div className="flex items-center space-x-2 text-xs font-black text-gray-700">
+          <div className="w-2 h-2 bg-green-500 border border-black"></div>
+          <span>SISTEMA ATIVO</span>
         </div>
       </div>
 
       <style jsx>{`
-        @keyframes loading-bar {
+        @keyframes brutalist-loading-bar {
           0% { width: 0%; }
-          50% { width: 60%; }
+          30% { width: 40%; }
+          70% { width: 80%; }
           100% { width: 100%; }
         }
       `}</style>
@@ -85,8 +100,8 @@ export function NavigationLoadingOverlay({
   return (
     <LoadingOverlay 
       isLoading={isLoading}
-      message={destination ? `Navegando para ${destination}...` : 'Navegando...'}
-      className="bg-white/80"
+      message={destination ? `NAVEGANDO PARA ${destination.toUpperCase()}...` : 'NAVEGANDO...'}
+      className="bg-yellow-400/80"
     />
   )
 }
@@ -94,7 +109,7 @@ export function NavigationLoadingOverlay({
 // Componente para loading de autenticação
 export function AuthLoadingOverlay({ 
   isLoading, 
-  action = 'Autenticando...' 
+  action = 'AUTENTICANDO...' 
 }: { 
   isLoading: boolean
   action?: string 
@@ -103,7 +118,41 @@ export function AuthLoadingOverlay({
     <LoadingOverlay 
       isLoading={isLoading}
       message={action}
-      className="bg-blue-50/90"
+      className="bg-yellow-400/90"
+    />
+  )
+}
+
+// Componente para loading de dados
+export function DataLoadingOverlay({ 
+  isLoading, 
+  message = 'CARREGANDO DADOS...' 
+}: { 
+  isLoading: boolean
+  message?: string 
+}) {
+  return (
+    <LoadingOverlay 
+      isLoading={isLoading}
+      message={message}
+      className="bg-yellow-400/85"
+    />
+  )
+}
+
+// Componente para loading de upload
+export function UploadLoadingOverlay({ 
+  isLoading, 
+  message = 'ENVIANDO ARQUIVO...' 
+}: { 
+  isLoading: boolean
+  message?: string 
+}) {
+  return (
+    <LoadingOverlay 
+      isLoading={isLoading}
+      message={message}
+      className="bg-yellow-400/90"
     />
   )
 }
