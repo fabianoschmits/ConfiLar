@@ -23,9 +23,12 @@ import {
   Clock,
   Heart,
   Eye,
-  Filter,
-  Grid3X3,
-  List,
+  Zap,
+  Shield,
+  Award,
+  TrendingUp,
+  Users,
+  Sparkles,
 } from 'lucide-react'
 import { services as servicesList } from '@/data/services'
 
@@ -85,8 +88,6 @@ export default function ClassificadosV1Page() {
   const [selectedState, setSelectedState] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
   const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high' | 'rating'>('newest')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [showFilters, setShowFilters] = useState(false)
   
   // Estados para dados
   const [ads, setAds] = useState<ClassifiedAd[]>([])
@@ -282,21 +283,21 @@ export default function ClassificadosV1Page() {
     if (!min && !max) return 'Preço a combinar'
     
     if (min && max && min !== max) {
-      return `R$ ${min.toFixed(2)} - R$ ${max.toFixed(2)}`
+      return `R$ ${(min || 0).toFixed(2)} - R$ ${(max || 0).toFixed(2)}`
     }
     
-    if (min) return `A partir de R$ ${min.toFixed(2)}`
-    if (max) return `Até R$ ${max.toFixed(2)}`
+    if (min) return `A partir de R$ ${(min || 0).toFixed(2)}`
+    if (max) return `Até R$ ${(max || 0).toFixed(2)}`
     
     return 'Preço a combinar'
   }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-red-50 text-red-700 border-red-200'
-      case 'medium': return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'low': return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      default: return 'bg-gray-50 text-gray-700 border-gray-200'
+      case 'high': return 'bg-red-900/50 text-red-300 border-red-700'
+      case 'medium': return 'bg-amber-900/50 text-amber-300 border-amber-700'
+      case 'low': return 'bg-emerald-900/50 text-emerald-300 border-emerald-700'
+      default: return 'bg-gray-800 text-gray-300 border-gray-700'
     }
   }
 
@@ -377,87 +378,99 @@ export default function ClassificadosV1Page() {
 
   // Renderização de componentes
   const renderAdCard = (ad: ClassifiedAd) => (
-    <Card key={ad.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white hover:bg-gray-50/50">
+    <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-gray-900/50 backdrop-blur-sm hover:bg-gray-800/50 hover:scale-[1.02]">
       <CardContent className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-medium text-gray-500">
-                {ad.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
-              </span>
-              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-              <span className="text-sm text-gray-500">
-                {servicesList.find(s => s.id === ad.category)?.name || ad.category}
-              </span>
+        {/* Header com gradiente */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg blur-xl"></div>
+          <div className="relative flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"></div>
+                <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">
+                  {ad.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-purple-500/50 to-transparent"></div>
+              </div>
+              
+              <h3 className="font-bold text-xl text-white mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-blue-400 transition-all duration-300">
+                {ad.title}
+              </h3>
+              
+              <p className="text-gray-300 text-sm line-clamp-2 mb-4 leading-relaxed">
+                {ad.description}
+              </p>
             </div>
-            
-            <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-              {ad.title}
-            </h3>
-            
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-              {ad.description}
-            </p>
           </div>
         </div>
 
-        {/* Informações */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MapPin className="h-4 w-4 text-gray-400" />
-            <span>{ad.location_city}, {ad.location_state}</span>
+        {/* Informações com ícones neon */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-blue-400" />
+            </div>
+            <span className="text-gray-300">{ad.location_city}, {ad.location_state}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-purple-400" />
+            </div>
+            <span className="text-gray-300">{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
           
           {(ad.budget || ad.price) && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <DollarSign className="h-4 w-4 text-gray-400" />
-              <span className="font-medium">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-emerald-400" />
+              </div>
+              <span className="text-emerald-300 font-medium">
                 {ad.user_type === 'professional' ? `R$ ${(ad.price || 0).toFixed(2)}` : `Orçamento: R$ ${(ad.budget || 0).toFixed(2)}`}
               </span>
             </div>
           )}
         </div>
 
-        {/* Urgência */}
-        <div className="mb-4">
-          <Badge variant="outline" className={`text-xs ${getUrgencyColor(ad.urgency)}`}>
+        {/* Urgência com efeito neon */}
+        <div className="mb-6">
+          <Badge className={`text-xs font-medium px-3 py-1 ${getUrgencyColor(ad.urgency)} border shadow-lg`}>
+            <Zap className="h-3 w-3 mr-1" />
             {getUrgencyLabel(ad.urgency)}
           </Badge>
         </div>
 
-        {/* Footer */}
-        <div className="border-t pt-4">
+        {/* Footer com gradiente */}
+        <div className="border-t border-gray-700 pt-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-10 w-10 ring-2 ring-purple-500/50">
                 <AvatarImage src={ad.user_avatar_url || ''} />
-                <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-blue-500 text-white">
                   {ad.user_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-sm text-gray-900">{ad.user_name}</p>
+                <p className="font-semibold text-white text-sm">{ad.user_name}</p>
                 <div className="flex items-center gap-1">
                   <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-500">4.8 (24)</span>
+                  <span className="text-xs text-gray-400">4.8 (24)</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {user && ad.user_id !== user.id && (
                 <>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(ad.id, 'classified_ad')}
-                    className={`h-8 w-8 p-0 ${favorites.has(ad.id) ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+                    className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                      favorites.has(ad.id) 
+                        ? 'text-red-400 hover:text-red-300 bg-red-500/20 hover:bg-red-500/30' 
+                        : 'text-gray-400 hover:text-red-400 hover:bg-red-500/20'
+                    }`}
                   >
                     <Heart className={`h-4 w-4 ${favorites.has(ad.id) ? 'fill-current' : ''}`} />
                   </Button>
@@ -466,7 +479,7 @@ export default function ClassificadosV1Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(ad.user_id, ad.user_name)}
-                    className="h-8 w-8 p-0 text-gray-400 hover:text-blue-500"
+                    className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 transition-all duration-300"
                   >
                     <MessageCircle className="h-4 w-4" />
                   </Button>
@@ -477,7 +490,7 @@ export default function ClassificadosV1Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(ad.user_id)}
-                className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -489,90 +502,107 @@ export default function ClassificadosV1Page() {
   )
 
   const renderServiceCard = (service: ProfessionalService) => (
-    <Card key={service.id} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-white hover:bg-gray-50/50">
+    <Card key={service.id} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-gray-900/50 backdrop-blur-sm hover:bg-gray-800/50 hover:scale-[1.02]">
       <CardContent className="p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-lg">{service.category_icon}</span>
-              <span className="text-sm font-medium text-gray-500">
-                {service.category_name}
-              </span>
+        {/* Header com gradiente */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-lg blur-xl"></div>
+          <div className="relative flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">{service.category_icon}</span>
+                <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
+                  {service.category_name}
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-emerald-500/50 to-transparent"></div>
+              </div>
+              
+              <h3 className="font-bold text-xl text-white mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-teal-400 transition-all duration-300">
+                {service.title}
+              </h3>
+              
+              <p className="text-gray-300 text-sm line-clamp-2 mb-4 leading-relaxed">
+                {service.description || 'Sem descrição'}
+              </p>
             </div>
-            
-            <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-              {service.title}
-            </h3>
-            
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-              {service.description || 'Sem descrição'}
-            </p>
           </div>
         </div>
 
-        {/* Informações */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <DollarSign className="h-4 w-4 text-gray-400" />
-            <span className="font-medium">{formatPrice(service.price_min, service.price_max)}</span>
+        {/* Informações com ícones neon */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-emerald-400" />
+            </div>
+            <span className="text-emerald-300 font-medium">{formatPrice(service.price_min, service.price_max)}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MapPin className="h-4 w-4 text-gray-400" />
-            <span>{service.location_city}, {service.location_state}</span>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-blue-400" />
+            </div>
+            <span className="text-gray-300">{service.location_city}, {service.location_state}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Clock className="h-4 w-4 text-gray-400" />
-            <span className="capitalize">{service.service_type}</span>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Clock className="h-4 w-4 text-purple-400" />
+            </div>
+            <span className="text-gray-300 capitalize">{service.service_type}</span>
           </div>
         </div>
 
-        {/* Badges */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+        {/* Badges neon */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Badge className="text-xs font-medium px-3 py-1 bg-blue-900/50 text-blue-300 border-blue-700 shadow-lg">
+            <Award className="h-3 w-3 mr-1" />
             {service.experience_level}
           </Badge>
           {service.emergency_service && (
-            <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+            <Badge className="text-xs font-medium px-3 py-1 bg-red-900/50 text-red-300 border-red-700 shadow-lg">
+              <Zap className="h-3 w-3 mr-1" />
               24h
             </Badge>
           )}
           {service.insurance_coverage && (
-            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+            <Badge className="text-xs font-medium px-3 py-1 bg-green-900/50 text-green-300 border-green-700 shadow-lg">
+              <Shield className="h-3 w-3 mr-1" />
               Seguro
             </Badge>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t pt-4">
+        {/* Footer com gradiente */}
+        <div className="border-t border-gray-700 pt-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-10 w-10 ring-2 ring-emerald-500/50">
                 <AvatarImage src={service.professional_avatar_url || ''} />
-                <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
                   {service.professional_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium text-sm text-gray-900">{service.professional_name}</p>
+                <p className="font-semibold text-white text-sm">{service.professional_name}</p>
                 <div className="flex items-center gap-1">
                   <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-500">{service.rating?.toFixed(1)} ({service.reviews_count})</span>
+                  <span className="text-xs text-gray-400">{(service.rating || 0).toFixed(1)} ({service.reviews_count})</span>
                 </div>
               </div>
             </div>
             
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {user && service.professional_id !== user.id && (
                 <>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(service.id, 'service')}
-                    className={`h-8 w-8 p-0 ${favorites.has(service.id) ? 'text-red-500 hover:text-red-600' : 'text-gray-400 hover:text-red-500'}`}
+                    className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                      favorites.has(service.id) 
+                        ? 'text-red-400 hover:text-red-300 bg-red-500/20 hover:bg-red-500/30' 
+                        : 'text-gray-400 hover:text-red-400 hover:bg-red-500/20'
+                    }`}
                   >
                     <Heart className={`h-4 w-4 ${favorites.has(service.id) ? 'fill-current' : ''}`} />
                   </Button>
@@ -581,7 +611,7 @@ export default function ClassificadosV1Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(service.professional_id, service.professional_name)}
-                    className="h-8 w-8 p-0 text-gray-400 hover:text-blue-500"
+                    className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-emerald-400 hover:bg-emerald-500/20 transition-all duration-300"
                   >
                     <MessageCircle className="h-4 w-4" />
                   </Button>
@@ -592,7 +622,7 @@ export default function ClassificadosV1Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(service.professional_id)}
-                className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -605,11 +635,15 @@ export default function ClassificadosV1Page() {
 
   if (loading) {
     return (
-      <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gray-950 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-medium text-gray-900">Carregando classificados...</h2>
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-800 border-t-purple-500 mx-auto mb-6"></div>
+              <div className="absolute inset-0 animate-pulse rounded-full h-16 w-16 bg-purple-500/20 blur-xl mx-auto"></div>
+            </div>
+            <h2 className="text-xl font-medium text-white mb-2">Carregando classificados...</h2>
+            <p className="text-gray-400">Preparando a experiência mais moderna</p>
           </div>
         </div>
       </MainLayout>
@@ -617,161 +651,114 @@ export default function ClassificadosV1Page() {
   }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header Minimalista */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-gray-950">
+        {/* Header Dark com efeitos */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-indigo-900/20"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
-              <h1 className="text-3xl font-light text-gray-900 mb-2">
-                Classificados
-              </h1>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Encontre os melhores profissionais ou publique seus anúncios de forma simples e elegante
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="w-3 h-3 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
+                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-400">
+                  Classificados
+                </h1>
+                <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+                Descubra oportunidades incríveis na rede mais moderna de profissionais
               </p>
+              
+              {/* Estatísticas neon */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{ads.length + services.length}</div>
+                  <div className="text-sm text-purple-300">Oportunidades</div>
+                </div>
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{services.length}</div>
+                  <div className="text-sm text-emerald-300">Profissionais</div>
+                </div>
+                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{ads.length}</div>
+                  <div className="text-sm text-blue-300">Solicitações</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Barra de Busca e Filtros */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          {/* Barra de Busca Neon */}
+          <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800 p-6 mb-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Busca */}
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
                     placeholder="Buscar serviços e anúncios..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-12 h-14 bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 rounded-xl"
                   />
                 </div>
               </div>
               
               {/* Filtros */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="h-12 px-4"
+              <div className="flex gap-3">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="h-14 px-4 bg-gray-800/50 border border-gray-700 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
                 >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                </Button>
+                  <option value="all">Todas as categorias</option>
+                  {servicesList.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
                 
-                <div className="flex border border-gray-200 rounded-md">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-r-none border-r border-gray-200"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
+                <select
+                  value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
+                  className="h-14 px-4 bg-gray-800/50 border border-gray-700 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                >
+                  <option value="newest">Mais recentes</option>
+                  <option value="price_low">Menor preço</option>
+                  <option value="price_high">Maior preço</option>
+                  <option value="rating">Melhor avaliação</option>
+                </select>
               </div>
             </div>
-
-            {/* Filtros Expandidos */}
-            {showFilters && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="w-full h-10 px-3 border border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500 text-sm"
-                    >
-                      <option value="all">Todas as categorias</option>
-                      {servicesList.map(service => (
-                        <option key={service.id} value={service.id}>
-                          {service.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                    <select
-                      value={selectedState}
-                      onChange={(e) => {
-                        setSelectedState(e.target.value)
-                        setSelectedCity('')
-                      }}
-                      className="w-full h-10 px-3 border border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500 text-sm"
-                    >
-                      <option value="">Todos os estados</option>
-                      <option value="SP">São Paulo</option>
-                      <option value="RJ">Rio de Janeiro</option>
-                      <option value="MG">Minas Gerais</option>
-                      <option value="PR">Paraná</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Cidade</label>
-                    <select
-                      value={selectedCity}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      disabled={!selectedState}
-                      className="w-full h-10 px-3 border border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500 text-sm disabled:bg-gray-100"
-                    >
-                      <option value="">Todas as cidades</option>
-                      {selectedState === 'SP' && (
-                        <>
-                          <option value="São Paulo">São Paulo</option>
-                          <option value="Campinas">Campinas</option>
-                          <option value="Santos">Santos</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label>
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
-                      className="w-full h-10 px-3 border border-gray-200 rounded-md focus:border-blue-500 focus:ring-blue-500 text-sm"
-                    >
-                      <option value="newest">Mais recentes</option>
-                      <option value="price_low">Menor preço</option>
-                      <option value="price_high">Maior preço</option>
-                      <option value="rating">Melhor avaliação</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Botão Criar Anúncio */}
+          {/* Botão Criar Anúncio Neon */}
           <div className="text-center mb-8">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300">
               <Plus className="h-5 w-5 mr-2" />
               Criar Anúncio
             </Button>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs Dark */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-white shadow-sm border border-gray-200">
-              <TabsTrigger value="ads" className="text-base py-3">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-900/50 border border-gray-800 rounded-xl">
+              <TabsTrigger value="ads" className="text-base py-4 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                 Anúncios ({filteredAds.length})
               </TabsTrigger>
-              <TabsTrigger value="services" className="text-base py-3">
+              <TabsTrigger value="services" className="text-base py-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                 Serviços ({filteredServices.length})
               </TabsTrigger>
             </TabsList>
@@ -779,22 +766,18 @@ export default function ClassificadosV1Page() {
             {/* Conteúdo dos Anúncios */}
             <TabsContent value="ads">
               {filteredAds.length > 0 ? (
-                <div className={`grid gap-6 ${
-                  viewMode === 'grid' 
-                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                    : 'grid-cols-1'
-                }`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredAds.map(renderAdCard)}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <Search className="h-16 w-16 mx-auto" />
+                <div className="text-center py-20">
+                  <div className="w-24 h-24 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Search className="h-12 w-12 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                  <h3 className="text-2xl font-semibold text-white mb-2">
                     {ads.length === 0 ? 'Nenhum anúncio encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
+                  <p className="text-gray-400 max-w-md mx-auto">
                     {ads.length === 0 
                       ? 'Seja o primeiro a criar um anúncio!'
                       : 'Tente ajustar os filtros de busca.'
@@ -807,22 +790,18 @@ export default function ClassificadosV1Page() {
             {/* Conteúdo dos Serviços */}
             <TabsContent value="services">
               {filteredServices.length > 0 ? (
-                <div className={`grid gap-6 ${
-                  viewMode === 'grid' 
-                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                    : 'grid-cols-1'
-                }`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices.map(renderServiceCard)}
                 </div>
               ) : (
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-4">
-                    <Search className="h-16 w-16 mx-auto" />
+                <div className="text-center py-20">
+                  <div className="w-24 h-24 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Search className="h-12 w-12 text-gray-400" />
                   </div>
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                  <h3 className="text-2xl font-semibold text-white mb-2">
                     {services.length === 0 ? 'Nenhum serviço encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto">
+                  <p className="text-gray-400 max-w-md mx-auto">
                     {services.length === 0 
                       ? 'Ainda não há serviços profissionais cadastrados.'
                       : 'Tente ajustar os filtros de busca.'
@@ -837,3 +816,4 @@ export default function ClassificadosV1Page() {
     </MainLayout>
   )
 }
+

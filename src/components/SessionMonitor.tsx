@@ -17,15 +17,16 @@ export function SessionMonitor() {
     // Função para verificar se a sessão ainda é válida
     const checkSessionValidity = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const { data: { user: currentUser }, error } = await supabase.auth.getUser()
+        const { data: { session } } = await supabase.auth.getSession()
         
         if (error) {
-          console.warn('⚠️ Erro ao verificar sessão:', error)
+          console.warn('⚠️ Erro ao verificar usuário:', error)
           return
         }
 
-        // Se não há sessão mas o usuário está logado localmente, fazer logout
-        if (!session && user) {
+        // Se não há usuário mas o usuário está logado localmente, fazer logout
+        if (!currentUser && user) {
           console.log('🚪 Sessão expirada, fazendo logout automático...')
           await signOut()
           return
@@ -101,10 +102,10 @@ export function SessionMonitor() {
     const handleOnline = () => {
       console.log('🌐 Conexão restaurada, verificando sessão...')
       if (user) {
-        // Verificar sessão quando voltar online
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
-          if (error || !session) {
-            console.log('🚪 Sessão inválida após reconexão, fazendo logout...')
+        // Verificar usuário quando voltar online
+        supabase.auth.getUser().then(({ data: { user: currentUser }, error }) => {
+          if (error || !currentUser) {
+            console.log('🚪 Usuário inválido após reconexão, fazendo logout...')
             signOut()
           }
         })

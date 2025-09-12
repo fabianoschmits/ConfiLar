@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 
@@ -36,7 +36,7 @@ export function useAuth(initialSession?: Session | null) {
 	const [initialized, setInitialized] = useState(false)
 	const [profileLoading, setProfileLoading] = useState(false)
 
-	const supabase = createClientComponentClient()
+	// Usar o client Supabase configurado
 
 	// Perfil padrão reutilizável
 	const createDefaultProfile = useCallback((userId: string, email: string): Profile => {
@@ -163,12 +163,12 @@ export function useAuth(initialSession?: Session | null) {
 					return
 				}
 
-				// Se não temos sessão inicial, verificar sessão atual
-				console.log('🔍 Verificando sessão existente...')
-				const { data: { session }, error } = await supabase.auth.getSession()
+				// Se não temos sessão inicial, verificar usuário atual
+				console.log('🔍 Verificando usuário atual...')
+				const { data: { user: currentUser }, error } = await supabase.auth.getUser()
 				
 				if (error) {
-					console.error('❌ Erro ao buscar sessão:', error)
+					console.error('❌ Erro ao buscar usuário:', error)
 					setLoading(false)
 					setInitialized(true)
 					clearTimeout(safetyTimeout)
@@ -176,23 +176,23 @@ export function useAuth(initialSession?: Session | null) {
 					return
 				}
 
-				if (session?.user?.email) {
-					console.log('✅ Usuário encontrado na sessão:', session.user.email)
+				if (currentUser?.email) {
+					console.log('✅ Usuário encontrado:', currentUser.email)
 					
 					// Definir usuário e sessão imediatamente
-					const userData = { id: session.user.id, email: session.user.email }
+					const userData = { id: currentUser.id, email: currentUser.email }
 					setUser(userData)
 					setSession({ user: userData })
 					
 					// Buscar perfil com timeout
 					try {
 						await Promise.race([
-							fetchUserProfile(session.user.id, session.user.email),
+							fetchUserProfile(currentUser.id, currentUser.email),
 							new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
 						])
 					} catch (profileError) {
 						console.warn('⚠️ Timeout na busca do perfil, usando perfil padrão')
-						const defaultProfile = createDefaultProfile(session.user.id, session.user.email)
+						const defaultProfile = createDefaultProfile(currentUser.id, currentUser.email)
 						setProfile(defaultProfile)
 					}
 				} else {

@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerSupabaseClient } from '@/lib/supabase'
 import { AuthProvider } from "@/contexts/AuthContext"
 import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
@@ -32,8 +31,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Recuperar sessão no servidor para evitar tela em branco
-  const supabase = createServerComponentClient({ cookies })
+  // Recuperar usuário no servidor para evitar tela em branco
+  const supabase = createServerSupabaseClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   return (

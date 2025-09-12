@@ -318,7 +318,7 @@ export default function PublicProfilePage() {
                         <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto mb-4 md:mb-6">
                             <div className="text-center">
                                 <div className="text-xl md:text-2xl font-bold text-gray-900">
-                                    {reviewStats?.averageRating ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                                    {reviewStats?.averageRating ? (reviewStats.averageRating || 0).toFixed(1) : '0.0'}
                                 </div>
                                 <div className="text-xs md:text-sm text-gray-600">Avaliação Média</div>
                                 <div className="flex justify-center mt-1">

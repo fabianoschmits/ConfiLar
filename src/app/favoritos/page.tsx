@@ -288,7 +288,7 @@ export default function FavoritesPage() {
                                   <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <Star className="h-4 w-4" />
                                     <div className="flex items-center gap-1">
-                                      <span>{favorite.favorite_user.rating.toFixed(1)}</span>
+                                      <span>{(favorite.favorite_user.rating || 0).toFixed(1)}</span>
                                       <div className="flex">{renderStars(favorite.favorite_user.rating)}</div>
                                       <span>({favorite.favorite_user.total_reviews})</span>
                                     </div>
@@ -395,7 +395,7 @@ export default function FavoritesPage() {
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                   <Star className="h-4 w-4" />
                                   <div className="flex items-center gap-1">
-                                    <span>{favorite.favorite_user.rating.toFixed(1)}</span>
+                                    <span>{(favorite.favorite_user.rating || 0).toFixed(1)}</span>
                                     <div className="flex">{renderStars(favorite.favorite_user.rating)}</div>
                                     <span>({favorite.favorite_user.total_reviews})</span>
                                   </div>

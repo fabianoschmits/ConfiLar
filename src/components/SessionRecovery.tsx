@@ -21,22 +21,22 @@ export function SessionRecovery() {
           try {
             console.log('🔄 Tentando recuperar sessão...')
             
-            // 1. Verificar se há sessão válida no Supabase
-            const { data: { session }, error } = await supabase.auth.getSession()
+            // 1. Verificar se há usuário válido no Supabase
+            const { data: { user: currentUser }, error } = await supabase.auth.getUser()
             
             if (error) {
-              console.log('❌ Erro ao verificar sessão:', error)
+              console.log('❌ Erro ao verificar usuário:', error)
               await forceCleanup()
               return
             }
             
-            if (!session) {
-              console.log('🚪 Nenhuma sessão válida encontrada')
+            if (!currentUser) {
+              console.log('🚪 Nenhum usuário válido encontrado')
               await forceCleanup()
               return
             }
             
-            console.log('✅ Sessão válida encontrada, mas usuário preso em loading')
+            console.log('✅ Usuário válido encontrado, mas usuário preso em loading')
             
             // 2. Forçar refresh da página para sair do estado preso
             console.log('🔄 Forçando refresh da página...')

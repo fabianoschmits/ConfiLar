@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 import { Profile } from '@/types/database';
 
 export interface ProximitySearchResult extends Profile {
@@ -35,7 +35,7 @@ export const useProximitySearch = () => {
     total_count: 0,
   });
 
-  const supabase = createClientComponentClient();
+  // Usar o client Supabase configurado
 
   // Buscar usuários por proximidade usando função SQL
   const searchByProximity = useCallback(async (

@@ -405,7 +405,7 @@ export default function PortfolioPage() {
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <div className="flex items-center space-x-1">
                             <Star className="h-4 w-4 text-yellow-500" />
-                            <span>{project.rating.toFixed(1)}</span>
+                            <span>{(project.rating || 0).toFixed(1)}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Eye className="h-4 w-4" />

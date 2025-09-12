@@ -1,745 +1,625 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Particles from 'react-tsparticles';
-import { loadSlim } from 'tsparticles-slim';
-import type { Container, Engine } from 'tsparticles-engine';
+import { useState, useEffect } from 'react'
+import { MainLayout } from '@/components/layout/MainLayout'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import { 
+  Plus, 
   Search, 
-  Filter, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
   MapPin, 
-  Star, 
-  Clock, 
-  User, 
+  Calendar, 
+  MessageCircle, 
+  Star,
+  DollarSign,
+  Clock,
+  Heart,
   Eye,
-  Edit,
-  Trash2,
-  Plus,
-  ChevronDown,
-  Sparkles,
   Zap,
+  Shield,
+  Award,
   TrendingUp,
-  Orbit,
-  Waves,
-  Layers,
+  Users,
+  Sparkles,
+  Filter,
+  SortAsc,
   Grid3X3,
   List,
-  SlidersHorizontal,
-  Palette,
-  Brush,
-  Lightbulb
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
-import { servicesList } from '@/data/services';
-import { toast } from 'sonner';
+  Bookmark,
+  Share2,
+  MoreHorizontal,
+  Gamepad2,
+  Trophy,
+  Target,
+  Sword,
+  Shield as ShieldIcon,
+  Crown,
+  Flame,
+  Skull,
+  Crosshair,
+  Joystick
+} from 'lucide-react'
+import { services as servicesList } from '@/data/services'
 
-export const dynamic = 'force-dynamic';
-
-interface ClassifiedAd {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  category: string;
-  budget: number;
-  location: string;
-  urgency: 'low' | 'medium' | 'high';
-  created_at: string;
-  user_name: string;
-  user_type: 'client' | 'professional';
-  user_avatar?: string;
-  is_favorited?: boolean;
+interface GamingListing {
+  id: string
+  user_id: string
+  title: string
+  description: string
+  category: string
+  location_state: string
+  location_city: string
+  user_name: string
+  user_type: 'client' | 'professional'
+  created_at: string
+  is_active: boolean
+  views_count: number
+  user_avatar_url?: string
+  ad_type: 'service_request' | 'service_offer'
+  budget?: number
+  price?: number
+  urgency: 'low' | 'medium' | 'high'
+  level?: number
+  rank?: string
+  kills?: number
+  deaths?: number
+  assists?: number
 }
 
-interface ProfessionalService {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  service_type: 'hourly' | 'fixed' | 'negotiable';
-  price: number;
-  location: string;
-  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  created_at: string;
-  user_name: string;
-  user_avatar?: string;
-  rating?: number;
-  review_count?: number;
-  is_favorited?: boolean;
-}
+export default function ClassificadosV8Page() {
+  const { user } = useAuthContext()
+  const { openChat } = useFloatingChat()
+  
+  // Estados principais
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high' | 'rating'>('newest')
+  const [gameMode, setGameMode] = useState<'casual' | 'ranked' | 'tournament'>('casual')
+  
+  // Estados para dados
+  const [listings, setListings] = useState<GamingListing[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-export default function ClassificadosV8() {
-  const [ads, setAds] = useState<ClassifiedAd[]>([]);
-  const [services, setServices] = useState<ProfessionalService[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('ads');
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [particleTheme, setParticleTheme] = useState<'cosmic' | 'ocean' | 'fire' | 'forest'>('cosmic');
+  // Cores neon para diferentes categorias
+  const neonColors = {
+    blue: 'from-blue-400 to-cyan-400',
+    purple: 'from-purple-400 to-pink-400',
+    green: 'from-green-400 to-emerald-400',
+    orange: 'from-orange-400 to-red-400',
+    yellow: 'from-yellow-400 to-orange-400',
+    pink: 'from-pink-400 to-rose-400'
+  }
 
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
-  }, []);
+  const getNeonColor = (category: string) => {
+    const colors = Object.values(neonColors)
+    const index = category.charCodeAt(0) % colors.length
+    return colors[index]
+  }
 
-  const particlesLoaded = useCallback(async (container: Container | undefined) => {
-    console.log('Particles loaded:', container);
-  }, []);
+  // Carregar dados
+  useEffect(() => {
+    loadData()
+  }, [])
 
-  const getParticleConfig = (theme: string) => {
-    const baseConfig = {
-      background: {
-        color: {
-          value: "transparent",
-        },
-      },
-      fpsLimit: 120,
-      interactivity: {
-        events: {
-          onClick: {
-            enable: true,
-            mode: "push",
-          },
-          onHover: {
-            enable: true,
-            mode: "repulse",
-          },
-          resize: true,
-        },
-        modes: {
-          push: {
-            quantity: 4,
-          },
-          repulse: {
-            distance: 200,
-            duration: 0.4,
-          },
-        },
-      },
-      particles: {
-        color: {
-          value: "#ffffff",
-        },
-        links: {
-          color: "#ffffff",
-          distance: 150,
-          enable: true,
-          opacity: 0.5,
-          width: 1,
-        },
-        move: {
-          direction: "none" as const,
-          enable: true,
-          outModes: {
-            default: "bounce" as const,
-          },
-          random: false,
-          speed: 2,
-          straight: false,
-        },
-        number: {
-          density: {
-            enable: true,
-            area: 800,
-          },
-          value: 80,
-        },
-        opacity: {
-          value: 0.5,
-        },
-        shape: {
-          type: "circle",
-        },
-        size: {
-          value: { min: 1, max: 5 },
-        },
-      },
-      detectRetina: true,
-    };
-
-    switch (theme) {
-      case 'ocean':
-        return {
-          ...baseConfig,
-          particles: {
-            ...baseConfig.particles,
-            color: { value: "#0ea5e9" },
-            links: {
-              ...baseConfig.particles.links,
-              color: "#0ea5e9",
-            },
-          },
-        };
-      case 'fire':
-        return {
-          ...baseConfig,
-          particles: {
-            ...baseConfig.particles,
-            color: { value: "#ef4444" },
-            links: {
-              ...baseConfig.particles.links,
-              color: "#ef4444",
-            },
-          },
-        };
-      case 'forest':
-        return {
-          ...baseConfig,
-          particles: {
-            ...baseConfig.particles,
-            color: { value: "#22c55e" },
-            links: {
-              ...baseConfig.particles.links,
-              color: "#22c55e",
-            },
-          },
-        };
-      default: // cosmic
-        return {
-          ...baseConfig,
-          particles: {
-            ...baseConfig.particles,
-            color: { value: "#8b5cf6" },
-            links: {
-              ...baseConfig.particles.links,
-              color: "#8b5cf6",
-            },
-          },
-        };
-    }
-  };
-
-  const loadData = useCallback(async () => {
+  const loadData = async () => {
+    setLoading(true)
     try {
-      setLoading(true);
+      await Promise.all([loadListings(), loadFavorites()])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      // Load classified ads
-      const { data: adsData, error: adsError } = await supabase
+  const loadListings = async () => {
+    try {
+      const { data, error } = await supabase
         .from('classified_ads')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
 
-      if (adsError) throw adsError;
+      if (error) {
+        console.error('❌ Erro ao carregar anúncios:', error)
+        setListings([])
+        return
+      }
 
-      // Load professional services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('professional_services')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Adicionar dados fictícios de gaming
+      const gamingListings: GamingListing[] = (data || []).map(listing => ({
+        ...listing,
+        level: Math.floor(Math.random() * 100) + 1,
+        rank: ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster'][Math.floor(Math.random() * 7)],
+        kills: Math.floor(Math.random() * 1000) + 100,
+        deaths: Math.floor(Math.random() * 500) + 50,
+        assists: Math.floor(Math.random() * 800) + 100
+      }))
 
-      if (servicesError) throw servicesError;
-
-      // Transform services to match interface
-      const transformedServices: ProfessionalService[] = servicesData?.map(service => ({
-        id: service.id,
-        user_id: service.user_id,
-        title: service.title,
-        description: service.description,
-        service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable',
-        price: service.price,
-        location: service.location,
-        experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert',
-        created_at: service.created_at,
-        user_name: service.user_name,
-        user_avatar: service.user_avatar,
-        rating: service.rating,
-        review_count: service.review_count,
-        is_favorited: service.is_favorited
-      })) || [];
-
-      setAds(adsData || []);
-      setServices(transformedServices);
+      setListings(gamingListings)
     } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+      console.error('❌ Erro geral:', error)
+      setListings([])
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const loadFavorites = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('item_id')
+        .eq('user_id', user.id)
+        .eq('item_type', 'classified_ad')
 
-  const filteredAds = ads.filter(ad => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+      if (!error && data) {
+        setFavorites(new Set(data.map(fav => fav.item_id)))
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar favoritos:', error)
+    }
+  }
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
-                           servicesList.find(s => s.id === service.title)?.id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const sortedAds = [...filteredAds].sort((a, b) => {
+  // Filtrar e ordenar dados
+  const filteredListings = listings.filter(listing => {
+    const matchesSearch = !searchTerm || 
+      listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      listing.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  }).sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'budget_high':
-        return b.budget - a.budget;
-      case 'budget_low':
-        return a.budget - b.budget;
-      default:
-        return 0;
-    }
-  });
-
-  const sortedServices = [...filteredServices].sort((a, b) => {
-    switch (sortBy) {
-      case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'price_high':
-        return b.price - a.price;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       case 'price_low':
-        return a.price - b.price;
-      case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
+        return (a.budget || a.price || 0) - (b.budget || b.price || 0)
+      case 'price_high':
+        return (b.budget || b.price || 0) - (a.budget || a.price || 0)
       default:
-        return 0;
+        return 0
     }
-  });
+  })
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  // Funções utilitárias
+  const formatPrice = (budget?: number, price?: number) => {
+    const value = budget || price
+    if (!value) return 'Preço a combinar'
+    return `${value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+  }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/50'
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50'
+      case 'low': return 'bg-green-500/20 text-green-400 border-green-500/50'
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/50'
     }
-  };
+  }
 
-  const getExperienceColor = (level: string) => {
-    switch (level) {
-      case 'expert': return 'bg-purple-500';
-      case 'advanced': return 'bg-blue-500';
-      case 'intermediate': return 'bg-green-500';
-      case 'beginner': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+  const getUrgencyLabel = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return 'URGENTE'
+      case 'medium': return 'NORMAL'
+      case 'low': return 'BAIXA'
+      default: return 'NORMAL'
     }
-  };
+  }
 
-  const getThemeColors = (theme: string) => {
-    switch (theme) {
-      case 'ocean':
-        return {
-          bg: 'from-cyan-900 via-blue-900 to-indigo-900',
-          card: 'from-cyan-500/10 to-blue-500/10',
-          accent: 'from-cyan-400 to-blue-500',
-          text: 'from-cyan-300 to-blue-400'
-        };
-      case 'fire':
-        return {
-          bg: 'from-red-900 via-orange-900 to-yellow-900',
-          card: 'from-red-500/10 to-orange-500/10',
-          accent: 'from-red-400 to-orange-500',
-          text: 'from-red-300 to-orange-400'
-        };
-      case 'forest':
-        return {
-          bg: 'from-green-900 via-emerald-900 to-teal-900',
-          card: 'from-green-500/10 to-emerald-500/10',
-          accent: 'from-green-400 to-emerald-500',
-          text: 'from-green-300 to-emerald-400'
-        };
-      default: // cosmic
-        return {
-          bg: 'from-purple-900 via-indigo-900 to-blue-900',
-          card: 'from-purple-500/10 to-indigo-500/10',
-          accent: 'from-purple-400 to-indigo-500',
-          text: 'from-purple-300 to-indigo-400'
-        };
+  const getRankColor = (rank: string) => {
+    switch (rank) {
+      case 'Bronze': return 'text-orange-400'
+      case 'Silver': return 'text-gray-300'
+      case 'Gold': return 'text-yellow-400'
+      case 'Platinum': return 'text-blue-400'
+      case 'Diamond': return 'text-cyan-400'
+      case 'Master': return 'text-purple-400'
+      case 'Grandmaster': return 'text-pink-400'
+      default: return 'text-gray-400'
     }
-  };
+  }
 
-  const themeColors = getThemeColors(particleTheme);
+  // Funções de interação
+  const handleChat = (userId: string, userName: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para iniciar um chat')
+      return
+    }
+    
+    if (userId === user.id) {
+      toast.error('Você não pode iniciar um chat consigo mesmo')
+      return
+    }
+    
+    openChat(userId, userName)
+  }
 
-  const renderAdCard = (ad: ClassifiedAd, index: number) => (
-    <Card key={ad.id} className="relative overflow-hidden border-0 bg-white/10 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-500 group">
-      <div className={`absolute inset-0 bg-gradient-to-br ${themeColors.card} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+  const handleViewProfile = (userId: string) => {
+    window.location.href = `/perfil/${userId}`
+  }
+
+  const handleFavorite = async (itemId: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para favoritar')
+      return
+    }
+
+    const isFavorited = favorites.has(itemId)
+    
+    try {
+      if (isFavorited) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('item_id', itemId)
+          .eq('item_type', 'classified_ad')
+
+        if (error) throw error
+        
+        setFavorites(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(itemId)
+          return newSet
+        })
+        
+        toast.success('Removido dos favoritos')
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            item_id: itemId,
+            item_type: 'classified_ad'
+          })
+
+        if (error) throw error
+        
+        setFavorites(prev => new Set(prev).add(itemId))
+        
+        toast.success('Adicionado aos favoritos')
+      }
+    } catch (error) {
+      console.error('❌ Erro ao atualizar favoritos:', error)
+      toast.error('Erro ao atualizar favoritos')
+    }
+  }
+
+  // Renderização de componentes
+  const renderGamingCard = (listing: GamingListing) => (
+    <Card key={listing.id} className="group hover:scale-105 transition-all duration-500 border-0 bg-black/80 backdrop-blur-sm hover:bg-black/90 overflow-hidden relative">
+      {/* Efeito neon no hover */}
+      <div className={`absolute inset-0 bg-gradient-to-r ${getNeonColor(listing.category)} opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl`}></div>
       
-      <CardHeader className="relative pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-              {ad.title}
-            </CardTitle>
-            
-            <div className="flex items-center gap-2 mb-2">
-              <Badge 
-                variant="secondary" 
-                className={`${getUrgencyColor(ad.urgency)} text-white text-xs`}
-              >
-                {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
-              </Badge>
-              <Badge variant="outline" className="text-xs border-white/30 text-white">
-                {servicesList.find(s => s.id === ad.category)?.name || ad.category}
-              </Badge>
-            </div>
-          </div>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:text-red-400 transition-colors"
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="relative">
-        <p className="text-white/80 text-sm mb-4 line-clamp-2">
-          {ad.description}
-        </p>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4 text-sm text-white/70">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>{ad.location}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-white">{ad.user_name}</p>
-              <p className="text-xs text-white/70 capitalize">{ad.user_type}</p>
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-lg font-bold text-cyan-300">
-              {formatPrice(ad.budget)}
-            </p>
-            <p className="text-xs text-white/70">Orçamento</p>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-4">
-          <Button size="sm" className={`flex-1 bg-gradient-to-r ${themeColors.accent} hover:opacity-90`}>
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Contatar
-          </Button>
-          <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const renderServiceCard = (service: ProfessionalService, index: number) => (
-    <Card key={service.id} className="relative overflow-hidden border-0 bg-white/10 backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-500 group">
-      <div className={`absolute inset-0 bg-gradient-to-br ${themeColors.card} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      {/* Borda neon */}
+      <div className={`absolute inset-0 bg-gradient-to-r ${getNeonColor(listing.category)} opacity-0 group-hover:opacity-50 transition-opacity duration-500`} style={{
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)'
+      }}></div>
       
-      <CardHeader className="relative pb-3">
-        <div className="flex items-start justify-between">
+      <CardContent className="p-6 relative z-10">
+        {/* Header gaming */}
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors">
-              {service.title}
-            </CardTitle>
-            
-            <div className="flex items-center gap-2 mb-2">
-              <Badge 
-                variant="secondary" 
-                className={`${getExperienceColor(service.experience_level)} text-white text-xs`}
-              >
-                {service.experience_level === 'expert' ? 'Especialista' : 
-                 service.experience_level === 'advanced' ? 'Avançado' :
-                 service.experience_level === 'intermediate' ? 'Intermediário' : 'Iniciante'}
-              </Badge>
-              <Badge variant="outline" className="text-xs border-white/30 text-white">
-                {service.service_type === 'hourly' ? 'Por hora' : 
-                 service.service_type === 'fixed' ? 'Valor fixo' : 'Negociável'}
-              </Badge>
-            </div>
-          </div>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:text-red-400 transition-colors"
-          >
-            <Heart className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-
-      <CardContent className="relative">
-        <p className="text-white/80 text-sm mb-4 line-clamp-2">
-          {service.description}
-        </p>
-
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4 text-sm text-white/70">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>{service.location}</span>
-            </div>
-            {service.rating && (
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span>{service.rating.toFixed(1)} ({service.review_count} avaliações)</span>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Gamepad2 className={`h-5 w-5 text-transparent bg-clip-text bg-gradient-to-r ${getNeonColor(listing.category)}`} />
+                <span className={`text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r ${getNeonColor(listing.category)} uppercase tracking-wider`}>
+                  {listing.user_type === 'professional' ? 'BOOSTING' : 'LOOKING FOR'}
+                </span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <Trophy className="h-4 w-4 text-yellow-400" />
+                <span className={`text-sm font-bold ${getRankColor(listing.rank || 'Bronze')}`}>
+                  {listing.rank} LVL {listing.level}
+                </span>
+              </div>
+            </div>
+            
+            <h3 className={`font-bold text-xl text-white mb-4 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:${getNeonColor(listing.category)} transition-all duration-300`}>
+              {listing.title}
+            </h3>
+            
+            <p className="text-gray-300 text-sm line-clamp-2 mb-6 leading-relaxed">
+              {listing.description}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
+        {/* Stats gaming */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Target className="h-4 w-4 text-green-400" />
+              <span className="text-green-400 font-bold text-lg">{listing.kills}</span>
             </div>
-            <div>
-              <p className="text-sm font-medium text-white">{service.user_name}</p>
-              <p className="text-xs text-white/70">Profissional</p>
+            <span className="text-xs text-gray-400">KILLS</span>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Skull className="h-4 w-4 text-red-400" />
+              <span className="text-red-400 font-bold text-lg">{listing.deaths}</span>
             </div>
+            <span className="text-xs text-gray-400">DEATHS</span>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 mb-1">
+              <Crosshair className="h-4 w-4 text-blue-400" />
+              <span className="text-blue-400 font-bold text-lg">{listing.assists}</span>
+            </div>
+            <span className="text-xs text-gray-400">ASSISTS</span>
+          </div>
+        </div>
+
+        {/* Informações */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-blue-400" />
+            </div>
+            <span className="text-gray-300">{listing.location_city}, {listing.location_state}</span>
           </div>
           
-          <div className="text-right">
-            <p className="text-lg font-bold text-emerald-300">
-              {formatPrice(service.price)}
-            </p>
-            <p className="text-xs text-white/70">
-              {service.service_type === 'hourly' ? '/hora' : 
-               service.service_type === 'fixed' ? 'valor fixo' : 'negociável'}
-            </p>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-purple-400" />
+            </div>
+            <span className="text-gray-300">{new Date(listing.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
+          
+          {(listing.budget || listing.price) && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-green-400" />
+              </div>
+              <span className="text-green-400 font-bold">{formatPrice(listing.budget, listing.price)}</span>
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-2 mt-4">
-          <Button size="sm" className={`flex-1 bg-gradient-to-r ${themeColors.accent} hover:opacity-90`}>
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Contatar
-          </Button>
-          <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10">
-            <Share2 className="h-4 w-4" />
-          </Button>
+        {/* Urgência neon */}
+        <div className="mb-6">
+          <Badge className={`text-xs font-bold px-3 py-1 rounded-lg border ${getUrgencyColor(listing.urgency)} shadow-lg`}>
+            <Zap className="h-3 w-3 mr-1" />
+            {getUrgencyLabel(listing.urgency)}
+          </Badge>
+        </div>
+
+        {/* Footer gaming */}
+        <div className="border-t border-gray-800 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 ring-2 ring-purple-500/50">
+                <AvatarImage src={listing.user_avatar_url || ''} />
+                <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold">
+                  {listing.user_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-bold text-white text-sm">{listing.user_name}</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="text-xs text-gray-400">4.9 (127)</span>
+                  <Crown className="h-3 w-3 text-yellow-400" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              {user && listing.user_id !== user.id && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleFavorite(listing.id)}
+                    className={`h-10 w-10 p-0 rounded-lg transition-all duration-300 ${
+                      favorites.has(listing.id) 
+                        ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
+                        : 'text-gray-400 hover:text-red-400 hover:bg-red-500/20'
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${favorites.has(listing.id) ? 'fill-current' : ''}`} />
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleChat(listing.user_id, listing.user_name)}
+                    className="h-10 w-10 p-0 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 transition-all duration-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleViewProfile(listing.user_id)}
+                className="h-10 w-10 p-0 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 
   if (loading) {
     return (
-      <div className={`min-h-screen bg-gradient-to-br ${themeColors.bg} flex items-center justify-center`}>
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-4 animate-spin" />
-          <p className="text-white">Carregando classificados...</p>
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-6"></div>
+              <div className="absolute inset-0 animate-pulse rounded-full bg-purple-500/20 blur-xl"></div>
+            </div>
+            <h2 className="text-xl font-medium text-white mb-2">Carregando Arena...</h2>
+            <p className="text-gray-400">Preparando a batalha</p>
+          </div>
         </div>
-      </div>
-    );
+      </MainLayout>
+    )
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${themeColors.bg} relative overflow-hidden`}>
-      {/* Particles Background */}
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        loaded={particlesLoaded}
-        options={getParticleConfig(particleTheme)}
-        className="absolute inset-0 z-0"
-      />
-
-      {/* Header */}
-      <div className="relative z-10 bg-black/20 backdrop-blur-md border-b border-white/10 sticky top-0">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center">
-                <Orbit className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className={`text-2xl font-bold bg-gradient-to-r ${themeColors.text} bg-clip-text text-transparent`}>
-                  Classificados Particles
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-black relative overflow-hidden">
+        {/* Background gaming */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-pink-900/20"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        
+        {/* Header gaming */}
+        <div className="relative z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-pink-500/10"></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <Gamepad2 className="h-12 w-12 text-purple-400 animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-pink-400 drop-shadow-2xl">
+                  GAMING ARENA
                 </h1>
-                <p className="text-white/70 text-sm">Efeitos visuais impressionantes</p>
+                <Joystick className="h-12 w-12 text-blue-400 animate-pulse" />
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Select value={particleTheme} onValueChange={(value) => setParticleTheme(value as 'cosmic' | 'ocean' | 'fire' | 'forest')}>
-                <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cosmic">Cosmic</SelectItem>
-                  <SelectItem value="ocean">Ocean</SelectItem>
-                  <SelectItem value="fire">Fire</SelectItem>
-                  <SelectItem value="forest">Forest</SelectItem>
-                </SelectContent>
-              </Select>
               
-              <Button className={`bg-gradient-to-r ${themeColors.accent} hover:opacity-90`}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Anúncio
-              </Button>
-            </div>
-          </div>
-
-          {/* Search and Filters */}
-          <div className="flex gap-4 mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 h-4 w-4" />
-              <Input
-                placeholder="Buscar serviços ou anúncios..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50 focus:border-cyan-400"
-              />
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={() => setFilterVisible(!filterVisible)}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros
-              <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${filterVisible ? 'rotate-180' : ''}`} />
-            </Button>
-
-            <div className="flex gap-1 bg-white/10 backdrop-blur-sm rounded-lg p-1">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="px-3 text-white hover:bg-white/20"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="px-3 text-white hover:bg-white/20"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {filterVisible && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mb-4">
-              <div className="flex gap-4">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
-                    {servicesList.map(service => (
-                      <SelectItem key={service.id} value={service.id}>
-                        {service.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Ordenar por" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Mais recentes</SelectItem>
-                    <SelectItem value="oldest">Mais antigos</SelectItem>
-                    <SelectItem value="budget_high">Maior orçamento</SelectItem>
-                    <SelectItem value="budget_low">Menor orçamento</SelectItem>
-                    <SelectItem value="price_high">Maior preço</SelectItem>
-                    <SelectItem value="price_low">Menor preço</SelectItem>
-                    <SelectItem value="rating">Melhor avaliação</SelectItem>
-                  </SelectContent>
-                </Select>
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8 drop-shadow-md">
+                Encontre parceiros de equipe, boosters e oportunidades de gaming profissional
+              </p>
+              
+              {/* Estatísticas gaming */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+                <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{listings.length}</div>
+                  <div className="text-sm text-purple-300">Gamers Online</div>
+                </div>
+                <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{filteredListings.length}</div>
+                  <div className="text-sm text-blue-300">Missões Ativas</div>
+                </div>
+                <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-green-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{favorites.size}</div>
+                  <div className="text-sm text-green-300">Favoritos</div>
+                </div>
+                <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-yellow-500/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Flame className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">24/7</div>
+                  <div className="text-sm text-yellow-300">Arena Online</div>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Barra de busca gaming */}
+          <div className="bg-black/50 backdrop-blur-sm rounded-2xl border border-purple-500/20 p-6 mb-8 shadow-2xl">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Busca */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-400 h-5 w-5" />
+                  <Input
+                    placeholder="Buscar gamers, boosters, equipes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-14 bg-black/50 border-purple-500/30 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 rounded-xl"
+                  />
+                </div>
+              </div>
+              
+              {/* Filtros gaming */}
+              <div className="flex gap-3">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="h-14 px-4 bg-black/50 border border-purple-500/30 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {servicesList.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
+                  className="h-14 px-4 bg-black/50 border border-purple-500/30 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                >
+                  <option value="newest">Mais recentes</option>
+                  <option value="price_low">Menor preço</option>
+                  <option value="price_high">Maior preço</option>
+                  <option value="rating">Melhor rank</option>
+                </select>
+
+                <select
+                  value={gameMode}
+                  onChange={(e) => setGameMode(e.target.value as 'casual' | 'ranked' | 'tournament')}
+                  className="h-14 px-4 bg-black/50 border border-purple-500/30 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                >
+                  <option value="casual">Casual</option>
+                  <option value="ranked">Ranked</option>
+                  <option value="tournament">Tournament</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Botão criar gaming */}
+          <div className="text-center mb-8">
+            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-10 py-5 text-xl rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 hover:scale-105">
+              <Plus className="h-6 w-6 mr-3" />
+              Criar Missão
+              <Sword className="h-6 w-6 ml-3" />
+            </Button>
+          </div>
+
+          {/* Grid gaming */}
+          {filteredListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredListings.map(renderGamingCard)}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Gamepad2 className="h-12 w-12 text-purple-400" />
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-3">
+                {listings.length === 0 ? 'Nenhuma missão encontrada' : 'Nenhum resultado encontrado'}
+              </h3>
+              <p className="text-gray-400 max-w-md mx-auto">
+                {listings.length === 0 
+                  ? 'Seja o primeiro a criar uma missão!'
+                  : 'Tente ajustar os filtros de busca.'
+                }
+              </p>
             </div>
           )}
         </div>
       </div>
-
-      {/* Tabs */}
-      <div className="container mx-auto px-4 py-6 relative z-10">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/10 backdrop-blur-sm border-white/20">
-            <TabsTrigger value="ads" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20">
-              <Zap className="h-4 w-4" />
-              Anúncios ({filteredAds.length})
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20">
-              <TrendingUp className="h-4 w-4" />
-              Serviços ({filteredServices.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="ads">
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {sortedAds.map((ad, index) => renderAdCard(ad, index))}
-            </div>
-
-            {sortedAds.length === 0 && (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
-                  <Search className="h-12 w-12 text-white/50" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Nenhum anúncio encontrado</h3>
-                <p className="text-white/70">Tente ajustar seus filtros de busca</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="services">
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {sortedServices.map((service, index) => renderServiceCard(service, index))}
-            </div>
-
-            {sortedServices.length === 0 && (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
-                  <TrendingUp className="h-12 w-12 text-white/50" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Nenhum serviço encontrado</h3>
-                <p className="text-white/70">Tente ajustar seus filtros de busca</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
+    </MainLayout>
+  )
 }
+

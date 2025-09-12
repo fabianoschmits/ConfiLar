@@ -1,641 +1,619 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react'
+import { MainLayout } from '@/components/layout/MainLayout'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import { 
-  Fade, 
-  Slide, 
-  Zoom, 
-  Bounce, 
-  Flip, 
-  Rotate, 
-  JackInTheBox,
-  Hinge,
-  Roll
-} from 'react-awesome-reveal';
-import { 
-  Search, 
-  Filter, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  MapPin, 
-  Star, 
-  Clock, 
-  User, 
-  Plus,
-  ChevronDown,
-  Sparkles,
-  Zap,
-  TrendingUp,
-  Award,
-  Rocket,
-  Target,
-  Layers,
-  Grid3X3,
-  List
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
-import { servicesList } from '@/data/services';
-import { toast } from 'sonner';
+  Plus, Search, MapPin, Calendar, MessageCircle, Star,
+  DollarSign, Clock, Heart, Eye, Zap, Shield, Award,
+  TrendingUp, Users, Sparkles, Filter, SortAsc, Grid3X3,
+  List, Bookmark, Share2, MoreHorizontal, Bot, Cpu,
+  Wifi, Radio, Satellite, Terminal, Code,
+  Database, Lock, Unlock, Scan, QrCode, Cctv,
+  Smartphone, Laptop, Monitor, HardDrive, MemoryStick,
+  Plug, Power, Battery, Signal, Wifi as WifiIcon,
+  Bluetooth, Headphones, Mic, Camera, Video,
+  Gamepad2, Joystick, Mouse, Keyboard,
+  Printer, Router, Server, Cloud,
+  Globe, Network, Link, Download, Upload, Share
+} from 'lucide-react'
+import { services as servicesList } from '@/data/services'
 
-export const dynamic = 'force-dynamic';
-
-interface ClassifiedAd {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  category: string;
-  budget: number;
-  location: string;
-  urgency: 'low' | 'medium' | 'high';
-  created_at: string;
-  user_name: string;
-  user_type: 'client' | 'professional';
-  user_avatar?: string;
-  is_favorited?: boolean;
+interface CyberpunkListing {
+  id: string
+  user_id: string
+  title: string
+  description: string
+  category: string
+  location_state: string
+  location_city: string
+  user_name: string
+  user_type: 'client' | 'professional'
+  created_at: string
+  is_active: boolean
+  views_count: number
+  user_avatar_url?: string
+  ad_type: 'service_request' | 'service_offer'
+  budget?: number
+  price?: number
+  urgency: 'low' | 'medium' | 'high'
+  hack_level?: 'script-kiddie' | 'hacker' | 'cyber-ninja' | 'ghost'
+  encryption?: boolean
+  anonymous?: boolean
+  underground?: boolean
 }
 
-interface ProfessionalService {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  service_type: 'hourly' | 'fixed' | 'negotiable';
-  price: number;
-  location: string;
-  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  created_at: string;
-  user_name: string;
-  user_avatar?: string;
-  rating?: number;
-  review_count?: number;
-  is_favorited?: boolean;
-}
+export default function ClassificadosV12Page() {
+  const { user } = useAuthContext()
+  const { openChat } = useFloatingChat()
+  
+  // Estados principais
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high' | 'rating'>('newest')
+  const [district, setDistrict] = useState<'neon' | 'matrix' | 'cyber' | 'digital'>('neon')
+  
+  // Estados para dados
+  const [listings, setListings] = useState<CyberpunkListing[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-export default function ClassificadosV12() {
-  const [ads, setAds] = useState<ClassifiedAd[]>([]);
-  const [services, setServices] = useState<ProfessionalService[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('ads');
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // Cores cyberpunk para diferentes distritos
+  const districtColors = {
+    'neon': 'from-pink-500 via-purple-500 to-cyan-500',
+    'matrix': 'from-green-500 via-emerald-500 to-teal-500',
+    'cyber': 'from-blue-500 via-indigo-500 to-purple-500',
+    'digital': 'from-orange-500 via-red-500 to-pink-500'
+  }
 
-  const loadData = useCallback(async () => {
+  const getDistrictIcon = (district: string) => {
+    switch (district) {
+      case 'neon': return Bot
+      case 'matrix': return Code
+      case 'cyber': return Cpu
+      case 'digital': return Terminal
+      default: return Bot
+    }
+  }
+
+  // Carregar dados
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
     try {
-      setLoading(true);
+      await Promise.all([loadListings(), loadFavorites()])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      // Load classified ads
-      const { data: adsData, error: adsError } = await supabase
+  const loadListings = async () => {
+    try {
+      const { data, error } = await supabase
         .from('classified_ads')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
 
-      if (adsError) throw adsError;
+      if (error) {
+        console.error('❌ Erro ao carregar anúncios:', error)
+        setListings([])
+        return
+      }
 
-      // Load professional services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('professional_services')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Adicionar dados fictícios cyberpunk
+      const cyberpunkListings: CyberpunkListing[] = (data || []).map(listing => ({
+        ...listing,
+        hack_level: ['script-kiddie', 'hacker', 'cyber-ninja', 'ghost'][Math.floor(Math.random() * 4)] as 'script-kiddie' | 'hacker' | 'cyber-ninja' | 'ghost',
+        encryption: Math.random() > 0.3,
+        anonymous: Math.random() > 0.4,
+        underground: Math.random() > 0.5
+      }))
 
-      if (servicesError) throw servicesError;
-
-      // Transform services to match interface
-      const transformedServices: ProfessionalService[] = servicesData?.map(service => ({
-        id: service.id,
-        user_id: service.user_id,
-        title: service.title,
-        description: service.description,
-        service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable',
-        price: service.price,
-        location: service.location,
-        experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert',
-        created_at: service.created_at,
-        user_name: service.user_name,
-        user_avatar: service.user_avatar,
-        rating: service.rating,
-        review_count: service.review_count,
-        is_favorited: service.is_favorited
-      })) || [];
-
-      setAds(adsData || []);
-      setServices(transformedServices);
+      setListings(cyberpunkListings)
     } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+      console.error('❌ Erro geral:', error)
+      setListings([])
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  const loadFavorites = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('item_id')
+        .eq('user_id', user.id)
+        .eq('item_type', 'classified_ad')
 
-  const filteredAds = ads.filter(ad => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+      if (!error && data) {
+        setFavorites(new Set(data.map(fav => fav.item_id)))
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar favoritos:', error)
+    }
+  }
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
-                           services.find(s => s.id === service.title)?.id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const sortedAds = [...filteredAds].sort((a, b) => {
+  // Filtrar e ordenar dados
+  const filteredListings = listings.filter(listing => {
+    const matchesSearch = !searchTerm || 
+      listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      listing.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  }).sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'budget_high':
-        return b.budget - a.budget;
-      case 'budget_low':
-        return a.budget - b.budget;
-      default:
-        return 0;
-    }
-  });
-
-  const sortedServices = [...filteredServices].sort((a, b) => {
-    switch (sortBy) {
-      case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'price_high':
-        return b.price - a.price;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       case 'price_low':
-        return a.price - b.price;
-      case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
+        return (a.budget || a.price || 0) - (b.budget || b.price || 0)
+      case 'price_high':
+        return (b.budget || b.price || 0) - (a.budget || a.price || 0)
       default:
-        return 0;
+        return 0
     }
-  });
+  })
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  // Funções utilitárias
+  const formatPrice = (budget?: number, price?: number) => {
+    const value = budget || price
+    if (!value) return 'Preço a combinar'
+    return `${value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+  }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case 'high': return 'bg-red-900/50 text-red-400 border-red-500/50'
+      case 'medium': return 'bg-yellow-900/50 text-yellow-400 border-yellow-500/50'
+      case 'low': return 'bg-green-900/50 text-green-400 border-green-500/50'
+      default: return 'bg-gray-900/50 text-gray-400 border-gray-500/50'
     }
-  };
+  }
 
-  const getExperienceColor = (level: string) => {
+  const getUrgencyLabel = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return 'CRITICAL'
+      case 'medium': return 'NORMAL'
+      case 'low': return 'LOW'
+      default: return 'NORMAL'
+    }
+  }
+
+  const getHackLevelColor = (level: string) => {
     switch (level) {
-      case 'expert': return 'bg-purple-500';
-      case 'advanced': return 'bg-blue-500';
-      case 'intermediate': return 'bg-green-500';
-      case 'beginner': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'ghost': return 'text-pink-400'
+      case 'cyber-ninja': return 'text-purple-400'
+      case 'hacker': return 'text-blue-400'
+      case 'script-kiddie': return 'text-gray-400'
+      default: return 'text-gray-400'
     }
-  };
+  }
 
-  const getAnimationType = (index: number) => {
-    const animations = [Fade, Slide, Zoom, Bounce, Flip, Rotate, JackInTheBox];
-    return animations[index % animations.length];
-  };
-
-  const renderAdCard = (ad: ClassifiedAd, index: number) => {
-    const AnimationComponent = getAnimationType(index);
+  // Funções de interação
+  const handleChat = (userId: string, userName: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para iniciar um chat')
+      return
+    }
     
-    return (
-      <AnimationComponent key={ad.id} delay={index * 100} duration={800} triggerOnce>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-2xl transition-all duration-500 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          <CardHeader className="relative pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {ad.title}
-                </CardTitle>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge 
-                    variant="secondary" 
-                    className={`${getUrgencyColor(ad.urgency)} text-white text-xs`}
-                  >
-                    {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {servicesList.find(s => s.id === ad.category)?.name || ad.category}
-                  </Badge>
-                </div>
-              </div>
-              
-              <Bounce>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Heart className="h-4 w-4" />
-                </Button>
-              </Bounce>
-            </div>
-          </CardHeader>
-
-          <CardContent className="relative">
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-              {ad.description}
-            </p>
-
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{ad.location}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{ad.user_name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{ad.user_type}</p>
-                </div>
-              </div>
-              
-              <div className="text-right">
-                <p className="text-lg font-bold text-green-600">
-                  {formatPrice(ad.budget)}
-                </p>
-                <p className="text-xs text-gray-500">Orçamento</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-4">
-              <Zoom delay={200}>
-                <Button size="sm" className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Contatar
-                </Button>
-              </Zoom>
-              <Rotate delay={300}>
-                <Button variant="outline" size="sm">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </Rotate>
-            </div>
-          </CardContent>
-        </Card>
-      </AnimationComponent>
-    );
-  };
-
-  const renderServiceCard = (service: ProfessionalService, index: number) => {
-    const AnimationComponent = getAnimationType(index + 10);
+    if (userId === user.id) {
+      toast.error('Você não pode iniciar um chat consigo mesmo')
+      return
+    }
     
-    return (
-      <AnimationComponent key={service.id} delay={index * 100} duration={800} triggerOnce>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-2xl transition-all duration-500 group">
-          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          
-          <CardHeader className="relative pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
-                  {service.title}
-                </CardTitle>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge 
-                    variant="secondary" 
-                    className={`${getExperienceColor(service.experience_level)} text-white text-xs`}
-                  >
-                    {service.experience_level === 'expert' ? 'Especialista' : 
-                     service.experience_level === 'advanced' ? 'Avançado' :
-                     service.experience_level === 'intermediate' ? 'Intermediário' : 'Iniciante'}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {service.service_type === 'hourly' ? 'Por hora' : 
-                     service.service_type === 'fixed' ? 'Valor fixo' : 'Negociável'}
-                  </Badge>
-                </div>
-              </div>
-              
-              <Bounce>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  <Heart className="h-4 w-4" />
-                </Button>
-              </Bounce>
-            </div>
-          </CardHeader>
+    openChat(userId, userName)
+  }
 
-          <CardContent className="relative">
-            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-              {service.description}
-            </p>
+  const handleViewProfile = (userId: string) => {
+    window.location.href = `/perfil/${userId}`
+  }
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{service.location}</span>
-                </div>
-                {service.rating && (
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{service.rating.toFixed(1)} ({service.review_count} avaliações)</span>
-                  </div>
-                )}
-              </div>
-            </div>
+  const handleFavorite = async (itemId: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para favoritar')
+      return
+    }
 
-            <div className="flex items-center justify-between">
+    const isFavorited = favorites.has(itemId)
+    
+    try {
+      if (isFavorited) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('item_id', itemId)
+          .eq('item_type', 'classified_ad')
+
+        if (error) throw error
+        
+        setFavorites(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(itemId)
+          return newSet
+        })
+        
+        toast.success('Removido dos favoritos')
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            item_id: itemId,
+            item_type: 'classified_ad'
+          })
+
+        if (error) throw error
+        
+        setFavorites(prev => new Set(prev).add(itemId))
+        
+        toast.success('Adicionado aos favoritos')
+      }
+    } catch (error) {
+      console.error('❌ Erro ao atualizar favoritos:', error)
+      toast.error('Erro ao atualizar favoritos')
+    }
+  }
+
+  // Renderização de componentes
+  const renderCyberpunkCard = (listing: CyberpunkListing) => (
+    <Card key={listing.id} className="group hover:shadow-2xl transition-all duration-500 border border-pink-500/20 bg-gradient-to-br from-gray-900 via-gray-800 to-black hover:from-pink-900/20 hover:via-purple-900/20 hover:to-cyan-900/20 overflow-hidden relative">
+      {/* Efeito cyberpunk no hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      <CardContent className="p-6 relative z-10">
+        {/* Header cyberpunk */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center">
-                  <User className="h-4 w-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{service.user_name}</p>
-                  <p className="text-xs text-gray-500">Profissional</p>
-                </div>
+                <Bot className="h-5 w-5 text-pink-400" />
+                <span className="text-xs font-medium text-pink-400 uppercase tracking-wider">
+                  {listing.user_type === 'professional' ? 'TRANSMITTING' : 'RECEIVING'}
+                </span>
               </div>
-              
-              <div className="text-right">
-                <p className="text-lg font-bold text-green-600">
-                  {formatPrice(service.price)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {service.service_type === 'hourly' ? '/hora' : 
-                   service.service_type === 'fixed' ? 'valor fixo' : 'negociável'}
-                </p>
+              <div className="flex items-center gap-2">
+                <Cpu className="h-4 w-4 text-purple-400" />
+                <span className="text-sm font-medium text-purple-400">
+                  {listing.hack_level?.toUpperCase()}
+                </span>
               </div>
             </div>
+            
+            <h3 className="font-bold text-xl text-white mb-4 line-clamp-2 group-hover:text-pink-300 transition-colors duration-300">
+              {listing.title}
+            </h3>
+            
+            <p className="text-gray-300 text-sm line-clamp-2 mb-6 leading-relaxed">
+              {listing.description}
+            </p>
+          </div>
+        </div>
 
-            <div className="flex gap-2 mt-4">
-              <Slide direction="up" delay={200}>
-                <Button size="sm" className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Contatar
-                </Button>
-              </Slide>
-              <JackInTheBox delay={300}>
-                <Button variant="outline" size="sm">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </JackInTheBox>
+        {/* Badges cyberpunk */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {listing.encryption && (
+            <Badge className="bg-green-900/50 text-green-300 border-green-500/50">
+              <Lock className="h-3 w-3 mr-1" />
+              ENCRYPTED
+            </Badge>
+          )}
+          {listing.anonymous && (
+            <Badge className="bg-blue-900/50 text-blue-300 border-blue-500/50">
+              <Scan className="h-3 w-3 mr-1" />
+              ANONYMOUS
+            </Badge>
+          )}
+          {listing.underground && (
+            <Badge className="bg-purple-900/50 text-purple-300 border-purple-500/50">
+              <Terminal className="h-3 w-3 mr-1" />
+              UNDERGROUND
+            </Badge>
+          )}
+          <Badge className={`${getUrgencyColor(listing.urgency)}`}>
+            <Zap className="h-3 w-3 mr-1" />
+            {getUrgencyLabel(listing.urgency)}
+          </Badge>
+        </div>
+
+        {/* Informações cyberpunk */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-white" />
             </div>
-          </CardContent>
-        </Card>
-      </AnimationComponent>
-    );
-  };
+            <span className="text-gray-300">{listing.location_city}, {listing.location_state}</span>
+          </div>
+          
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-gray-300">{new Date(listing.created_at).toLocaleDateString('pt-BR')}</span>
+          </div>
+          
+          {(listing.budget || listing.price) && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-pink-300 font-semibold">{formatPrice(listing.budget, listing.price)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Barra de hack level */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-300">Hack Level</span>
+            <span className={`text-sm font-bold ${getHackLevelColor(listing.hack_level || 'script-kiddie')}`}>
+              {listing.hack_level?.toUpperCase()}
+            </span>
+          </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
+              style={{ 
+                width: listing.hack_level === 'ghost' ? '100%' : 
+                       listing.hack_level === 'cyber-ninja' ? '75%' : 
+                       listing.hack_level === 'hacker' ? '50%' : '25%' 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Footer cyberpunk */}
+        <div className="border-t border-pink-500/20 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 ring-2 ring-pink-500/50">
+                <AvatarImage src={listing.user_avatar_url || ''} />
+                <AvatarFallback className="text-sm bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold">
+                  {listing.user_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-bold text-white text-sm">{listing.user_name}</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="text-xs text-gray-400">4.9 (89)</span>
+                  <Bot className="h-3 w-3 text-pink-400" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              {user && listing.user_id !== user.id && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleFavorite(listing.id)}
+                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
+                      favorites.has(listing.id) 
+                        ? 'text-pink-400 bg-pink-900/20 hover:bg-pink-900/30' 
+                        : 'text-gray-400 hover:text-pink-400 hover:bg-pink-900/20'
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${favorites.has(listing.id) ? 'fill-current' : ''}`} />
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleChat(listing.user_id, listing.user_name)}
+                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-cyan-400 hover:bg-cyan-900/20 transition-all duration-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleViewProfile(listing.user_id)}
+                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-300 hover:bg-gray-700 transition-all duration-300"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center">
-        <Zoom>
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full mx-auto mb-4 animate-spin" />
-            <p className="text-gray-600">Carregando animações...</p>
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 flex items-center justify-center relative overflow-hidden">
+          {/* Efeitos visuais de fundo */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+            <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-purple-400 rounded-full animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-cyan-400 rounded-full animate-pulse delay-500"></div>
+            <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-1500"></div>
           </div>
-        </Zoom>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
-      {/* Header */}
-      <Fade duration={1000}>
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Bounce>
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center">
-                    <Rocket className="h-6 w-6 text-white" />
-                  </div>
-                </Bounce>
-                <Slide direction="right" delay={200}>
-                  <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                      Classificados Animados
-                    </h1>
-                    <p className="text-gray-600 text-sm">Animações profissionais incríveis</p>
-                  </div>
-                </Slide>
-              </div>
-
-              <Flip delay={400}>
-                <div className="flex items-center gap-2">
-                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Novo Anúncio
-                  </Button>
-                </div>
-              </Flip>
+          
+          <div className="text-center relative z-10">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin mx-auto"></div>
+              <div className="absolute inset-0 animate-pulse rounded-full bg-pink-500/20 blur-xl"></div>
             </div>
-
-            {/* Search and Filters */}
-            <Slide direction="up" delay={600}>
-              <div className="flex gap-4 mb-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar serviços ou anúncios..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white/70 backdrop-blur-sm border-gray-200 focus:border-orange-500"
-                  />
-                </div>
-                
-                <Zoom delay={700}>
-                  <Button
-                    variant="outline"
-                    onClick={() => setFilterVisible(!filterVisible)}
-                    className="bg-white/70 backdrop-blur-sm"
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filtros
-                    <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${filterVisible ? 'rotate-180' : ''}`} />
-                  </Button>
-                </Zoom>
-
-                <Rotate delay={800}>
-                  <div className="flex gap-1 bg-white/70 backdrop-blur-sm rounded-lg p-1">
-                    <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('grid')}
-                      className="px-3"
-                    >
-                      <Grid3X3 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                      className="px-3"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </Rotate>
-              </div>
-            </Slide>
-
-            {filterVisible && (
-              <Slide direction="left" delay={900}>
-                <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 mb-4">
-                  <div className="flex gap-4">
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger className="w-48 bg-white/70">
-                        <SelectValue placeholder="Categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todas as categorias</SelectItem>
-                        {servicesList.map(service => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="w-48 bg-white/70">
-                        <SelectValue placeholder="Ordenar por" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="newest">Mais recentes</SelectItem>
-                        <SelectItem value="oldest">Mais antigos</SelectItem>
-                        <SelectItem value="budget_high">Maior orçamento</SelectItem>
-                        <SelectItem value="budget_low">Menor orçamento</SelectItem>
-                        <SelectItem value="price_high">Maior preço</SelectItem>
-                        <SelectItem value="price_low">Menor preço</SelectItem>
-                        <SelectItem value="rating">Melhor avaliação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </Slide>
-            )}
+            <h2 className="text-2xl font-medium text-white mb-2">Inicializando sistema...</h2>
+            <p className="text-gray-300">Conectando à matrix</p>
           </div>
         </div>
-      </Fade>
+      </MainLayout>
+    )
+  }
 
-      {/* Tabs */}
-      <div className="container mx-auto px-4 py-6">
-        <JackInTheBox delay={1000}>
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/70 backdrop-blur-sm">
-              <TabsTrigger value="ads" className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Anúncios ({filteredAds.length})
-              </TabsTrigger>
-              <TabsTrigger value="services" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Serviços ({filteredServices.length})
-              </TabsTrigger>
-            </TabsList>
+  const DistrictIcon = getDistrictIcon(district)
 
-            <TabsContent value="ads">
-              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {sortedAds.map((ad, index) => renderAdCard(ad, index))}
+  return (
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900 relative overflow-hidden">
+        {/* Background cyberpunk */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-purple-900/90 to-pink-900/90"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.02%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%221%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-60"></div>
+        
+        {/* Header cyberpunk */}
+        <div className="relative z-10 overflow-hidden">
+          <div className={`absolute inset-0 bg-gradient-to-r ${districtColors[district]} opacity-10`}></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <DistrictIcon className="h-12 w-12 text-pink-400 animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 drop-shadow-lg">
+                  CYBERPUNK
+                </h1>
+                <Bot className="h-12 w-12 text-purple-400 animate-pulse" />
               </div>
-
-              {sortedAds.length === 0 && (
-                <Hinge>
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-orange-100 to-red-100 flex items-center justify-center">
-                      <Search className="h-12 w-12 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum anúncio encontrado</h3>
-                    <p className="text-gray-600">Tente ajustar seus filtros de busca</p>
+              
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+                Conecte-se com hackers, cypherpunks e profissionais do submundo digital
+              </p>
+              
+              {/* Estatísticas cyberpunk */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-pink-500/20 shadow-2xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-6 w-6 text-white" />
                   </div>
-                </Hinge>
-              )}
-            </TabsContent>
-
-            <TabsContent value="services">
-              <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {sortedServices.map((service, index) => renderServiceCard(service, index))}
+                  <div className="text-2xl font-bold text-white">{listings.length}</div>
+                  <div className="text-sm text-pink-400">Hackers</div>
+                </div>
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/20 shadow-2xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Bot className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{filteredListings.length}</div>
+                  <div className="text-sm text-purple-400">Serviços</div>
+                </div>
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-cyan-500/20 shadow-2xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">{favorites.size}</div>
+                  <div className="text-sm text-cyan-400">Favoritos</div>
+                </div>
+                <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-pink-500/20 shadow-2xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Terminal className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-white">∞</div>
+                  <div className="text-sm text-pink-400">Possibilidades</div>
+                </div>
               </div>
-
-              {sortedServices.length === 0 && (
-                <Roll>
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-teal-100 flex items-center justify-center">
-                      <TrendingUp className="h-12 w-12 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum serviço encontrado</h3>
-                    <p className="text-gray-600">Tente ajustar seus filtros de busca</p>
-                  </div>
-                </Roll>
-              )}
-            </TabsContent>
-          </Tabs>
-        </JackInTheBox>
-
-        {/* Stats Section */}
-        <Fade delay={1200}>
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Award className="h-12 w-12 mx-auto mb-4 text-orange-200" />
-                <h3 className="text-2xl font-bold mb-2">{ads.length}</h3>
-                <p className="text-orange-100">Total de Anúncios</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Target className="h-12 w-12 mx-auto mb-4 text-red-200" />
-                <h3 className="text-2xl font-bold mb-2">{services.length}</h3>
-                <p className="text-red-100">Total de Serviços</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-pink-200" />
-                <h3 className="text-2xl font-bold mb-2">{ads.length + services.length}</h3>
-                <p className="text-pink-100">Total de Oportunidades</p>
-              </CardContent>
-            </Card>
+            </div>
           </div>
-        </Fade>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Barra de busca cyberpunk */}
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl border border-pink-500/20 p-6 mb-8 shadow-2xl">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Busca */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-pink-400 h-5 w-5" />
+                  <Input
+                    placeholder="Buscar hackers e cypherpunks..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-14 bg-gray-800/50 border-pink-500/30 text-white placeholder:text-gray-400 focus:bg-gray-700/50 focus:border-pink-400 focus:ring-pink-400 rounded-xl"
+                  />
+                </div>
+              </div>
+              
+              {/* Filtros cyberpunk */}
+              <div className="flex gap-3">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="h-14 px-4 bg-gray-800/50 border border-pink-500/30 text-white rounded-xl focus:bg-gray-700/50 focus:border-pink-400 focus:ring-pink-400"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {servicesList.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
+                  className="h-14 px-4 bg-gray-800/50 border border-pink-500/30 text-white rounded-xl focus:bg-gray-700/50 focus:border-pink-400 focus:ring-pink-400"
+                >
+                  <option value="newest">Mais recentes</option>
+                  <option value="price_low">Menor preço</option>
+                  <option value="price_high">Maior preço</option>
+                  <option value="rating">Mais hacker</option>
+                </select>
+
+                <select
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value as 'neon' | 'matrix' | 'cyber' | 'digital')}
+                  className="h-14 px-4 bg-gray-800/50 border border-pink-500/30 text-white rounded-xl focus:bg-gray-700/50 focus:border-pink-400 focus:ring-pink-400"
+                >
+                  <option value="neon">Neon District</option>
+                  <option value="matrix">Matrix Zone</option>
+                  <option value="cyber">Cyber Sector</option>
+                  <option value="digital">Digital Alley</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Botão criar cyberpunk */}
+          <div className="text-center mb-8">
+            <Button size="lg" className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white px-10 py-5 text-xl rounded-xl shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105">
+              <Plus className="h-6 w-6 mr-3" />
+              Hackear Sistema
+              <Terminal className="h-6 w-6 ml-3" />
+            </Button>
+          </div>
+
+          {/* Grid cyberpunk */}
+          {filteredListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredListings.map(renderCyberpunkCard)}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Bot className="h-12 w-12 text-pink-400" />
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-3">
+                {listings.length === 0 ? 'Nenhum hacker encontrado' : 'Nenhum resultado encontrado'}
+              </h3>
+              <p className="text-gray-300 max-w-md mx-auto">
+                {listings.length === 0 
+                  ? 'Seja o primeiro a hackear o sistema!'
+                  : 'Tente ajustar os filtros de busca.'
+                }
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    </MainLayout>
+  )
 }
+
