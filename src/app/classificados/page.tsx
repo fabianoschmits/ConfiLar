@@ -2,42 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { 
-  Plus, 
-  Search, 
-  MapPin, 
-  Calendar, 
-  User, 
-  MessageCircle, 
-  Star,
-  DollarSign,
-  Clock,
-  Shield,
-  Zap,
-  Tag,
-  Edit,
-  Trash2,
-  Eye
+  Search, MapPin, Calendar, MessageCircle, Star, Clock, 
+  Heart, Eye, Filter, SortAsc, Building2, Briefcase,
+  Users, TrendingUp, Award, Shield, Zap, Plus, ArrowRight,
+  DollarSign, CheckCircle, AlertTriangle, Info
 } from 'lucide-react'
-import { services as servicesList, Service } from '@/data/services'
-import { ProfessionalService } from '@/types/database'
-import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
-import { AdCard } from '@/components/classified/AdCard'
-import { CreateAdForm } from '@/components/classified/CreateAdForm'
 
-interface ClassifiedAd {
+interface Listing {
   id: string
   user_id: string
   title: string
@@ -49,457 +30,303 @@ interface ClassifiedAd {
   user_type: 'client' | 'professional'
   created_at: string
   is_active: boolean
-  views_count?: number
+  views_count: number
   user_avatar_url?: string
-  ad_type: 'service_request' | 'service_offer' // Novo campo para tipo de anúncio
-  budget?: number // Para pedidos de serviço
-  price?: number // Para ofertas de serviço
-  urgency?: 'low' | 'medium' | 'high' // Urgência do pedido
-  availability?: string // Disponibilidade para ofertas
+  ad_type: 'service_request' | 'service_offer'
+  budget?: number
+  price?: number
+  urgency: 'low' | 'medium' | 'high'
 }
 
 export default function ClassificadosPage() {
-  const { user, profile } = useAuthContext()
+  const { user } = useAuthContext()
   const { openChat } = useFloatingChat()
   
-  // Estados principais
-  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('ads')
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedState, setSelectedState] = useState('')
-  const [selectedCity, setSelectedCity] = useState('')
-  const [selectedAdType, setSelectedAdType] = useState<'all' | 'service_request' | 'service_offer'>('all')
-  
-  // Estados para dados
-  const [ads, setAds] = useState<ClassifiedAd[]>([])
-  const [services, setServices] = useState<ProfessionalService[]>([])
-  
-  // Estados para modais
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingAd, setEditingAd] = useState<ClassifiedAd | null>(null)
-  
-  // Estados para formulário
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    location_state: '',
-    location_city: '',
-    ad_type: 'service_request' as 'service_request' | 'service_offer',
-    budget: '',
-    price: '',
-    urgency: 'medium' as 'low' | 'medium' | 'high',
-    availability: ''
-  })
-  const [mounted, setMounted] = useState(false)
+  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high'>('newest')
+  const [listings, setListings] = useState<Listing[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
+  // Carregar dados
   useEffect(() => {
-    setMounted(true)
+    loadData()
   }, [])
 
-  // Carregar anúncios
-  useEffect(() => {
-    const loadAds = async () => {
-      try {
-        setLoading(true)
-        console.log('🔍 Carregando anúncios...')
-        
-        const { data, error } = await supabase
-          .from('classified_ads')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('❌ Erro ao carregar anúncios:', error)
-          if (error.code === 'PGRST116') {
-            console.log('⚠️ Tabela classified_ads não existe')
-            toast.info('Tabela de anúncios não encontrada. Execute o script SQL para criá-la.')
-          }
-          setAds([])
-          return
-        }
-
-        console.log('✅ Anúncios carregados:', data?.length || 0)
-        setAds(data || [])
-      } catch (error) {
-        console.error('❌ Erro geral:', error)
-        setAds([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadAds()
-  }, [])
-
-  // Carregar serviços profissionais
-  useEffect(() => {
-    const loadServices = async () => {
-      try {
-        console.log('🔍 Carregando serviços profissionais...')
-        
-        const { data, error } = await supabase
-          .from('professional_services')
-          .select(`
-            *,
-            profiles (
-              full_name,
-              avatar_url,
-              location_state,
-              location_city
-            ),
-            service_categories (
-              name,
-              icon
-            )
-          `)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-
-        if (error) {
-          console.error('❌ Erro ao carregar serviços:', error)
-          if (error.code === 'PGRST116') {
-            console.log('⚠️ Tabela professional_services não existe')
-            toast.info('Tabela de serviços profissionais não encontrada.')
-          }
-          setServices([])
-          return
-        }
-
-        // Transformar dados
-        const transformedServices: ProfessionalService[] = (data || []).map((service: {
-          id: string
-          professional_id: string
-          profiles?: {
-            full_name?: string
-            avatar_url?: string
-            location_state?: string
-            location_city?: string
-          }
-          title: string
-          description: string
-          category_id: string
-          service_categories?: {
-            name: string
-            icon: string
-          }
-          price_range: string
-          price_min?: number
-          price_max?: number
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          is_active?: boolean
-          location_city: string
-          location_state: string
-          experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-          insurance_coverage?: boolean
-          emergency_service?: boolean
-          created_at: string
-        }) => ({
-          id: service.id,
-          professional_id: service.professional_id,
-          professional_name: service.profiles?.full_name || 'Profissional',
-          professional_avatar_url: service.profiles?.avatar_url,
-          category_id: service.category_id,
-          category_name: service.service_categories?.name || 'Serviço',
-          category_icon: service.service_categories?.icon || '🔧',
-          title: service.title,
-          description: service.description,
-          price_min: service.price_min,
-          price_max: service.price_max,
-          service_type: service.service_type || 'fixed',
-          is_active: service.is_active,
-          created_at: service.created_at,
-          updated_at: service.created_at, // Usar created_at como fallback
-          location_state: service.profiles?.location_state || '',
-          location_city: service.profiles?.location_city || '',
-          experience_level: service.experience_level || 'intermediate',
-          insurance_coverage: service.insurance_coverage || false,
-          emergency_service: service.emergency_service || false
-        }))
-
-        console.log('✅ Serviços carregados:', transformedServices.length)
-        setServices(transformedServices)
-      } catch (error) {
-        console.error('❌ Erro geral:', error)
-        setServices([])
-      }
-    }
-
-    loadServices()
-  }, [])
-
-  // Filtrar anúncios
-  const filteredAds = ads.filter(ad => {
-    const matchesSearch = !searchTerm || 
-      ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ad.description.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory
-    const matchesState = !selectedState || ad.location_state === selectedState
-    const matchesCity = !selectedCity || ad.location_city === selectedCity
-    const matchesAdType = selectedAdType === 'all' || ad.ad_type === selectedAdType
-    
-    return matchesSearch && matchesCategory && matchesState && matchesCity && matchesAdType
-  })
-
-  // Filtrar serviços
-  const filteredServices = services.filter(service => {
-    const matchesSearch = !searchTerm || 
-      service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      servicesList.find(s => s.id === service.category_id)?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = selectedCategory === 'all' || service.category_id === selectedCategory
-    const matchesState = !selectedState || (service as ProfessionalService & { location_state?: string }).location_state === selectedState
-    const matchesCity = !selectedCity || (service as ProfessionalService & { location_city?: string }).location_city === selectedCity
-    
-    return matchesSearch && matchesCategory && matchesState && matchesCity
-  })
-
-  // Criar anúncio
-  const handleCreateAd = async () => {
-    if (!user || !profile) {
-      toast.error('Você precisa estar logado para criar um anúncio')
-      return
-    }
-
+  const loadData = async () => {
+    setLoading(true)
     try {
-      const userType = formData.ad_type === 'service_offer' ? 'professional' : 'client'
-      
-      const { data, error } = await supabase
-        .from('classified_ads')
-        .insert({
-          user_id: user.id,
-          user_name: profile.full_name || 'Usuário',
-          user_type: userType,
-          title: formData.title.trim(),
-          description: formData.description.trim(),
-          category: formData.category,
-          location_state: formData.location_state,
-          location_city: formData.location_city?.trim() || '',
-          is_active: true,
-          views_count: 0
-        })
-        .select()
-        .single()
+      await Promise.all([loadListings(), loadFavorites()])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      if (error) {
-        console.error('❌ Erro ao criar anúncio:', error)
-        toast.error('Erro ao criar anúncio')
+  const loadListings = async () => {
+    try {
+      // Usar as tabelas corretas que já existem no banco
+      // Carregar service_requests (clientes procurando serviços)
+      const { data: requestsData, error: requestsError } = await supabase
+        .from('service_requests')
+        .select(`
+          *,
+          profiles:client_id (
+            full_name,
+            avatar_url,
+            user_type
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      // Carregar service_listings (profissionais oferecendo serviços)
+      const { data: listingsData, error: listingsError } = await supabase
+        .from('service_listings')
+        .select(`
+          *,
+          profiles:professional_id (
+            full_name,
+            avatar_url,
+            user_type
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (requestsError || listingsError) {
+        console.error('Erro ao carregar dados:', requestsError || listingsError)
+        // Usar dados mock se houver erro
+        const mockListings: Listing[] = [
+          {
+            id: '1',
+            user_id: 'user1',
+            title: 'Preciso de um desenvolvedor React',
+            description: 'Estou procurando um desenvolvedor experiente em React para um projeto de e-commerce.',
+            category: 'tecnologia',
+            location_state: 'SP',
+            location_city: 'São Paulo',
+            user_name: 'João Silva',
+            user_type: 'client',
+            created_at: new Date().toISOString(),
+            is_active: true,
+            views_count: 15,
+            ad_type: 'service_request',
+            budget: 5000,
+            urgency: 'high'
+          },
+          {
+            id: '2',
+            user_id: 'user2',
+            title: 'Ofereço serviços de design gráfico',
+            description: 'Designer gráfico com 5 anos de experiência oferece serviços de identidade visual.',
+            category: 'design',
+            location_state: 'RJ',
+            location_city: 'Rio de Janeiro',
+            user_name: 'Maria Santos',
+            user_type: 'professional',
+            created_at: new Date().toISOString(),
+            is_active: true,
+            views_count: 23,
+            ad_type: 'service_offer',
+            price: 150,
+            urgency: 'medium'
+          }
+        ]
+        setListings(mockListings)
+        toast.info('Usando dados de demonstração. Verifique a configuração do banco de dados.')
         return
       }
 
-      setAds(prev => [data, ...prev])
-      setIsCreateModalOpen(false)
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        location_state: '',
-        location_city: '',
-        ad_type: 'service_request',
-        budget: '',
-        price: '',
-        urgency: 'medium',
-        availability: ''
-      })
-      toast.success('Anúncio criado com sucesso!')
+      // Combinar os dados das duas tabelas
+      const requests = requestsData?.map(item => ({
+        id: item.id,
+        user_id: item.client_id,
+        title: item.title,
+        description: item.description,
+        category: item.service_category_id,
+        location_state: item.location_state,
+        location_city: item.location_city,
+        user_name: item.profiles?.full_name || 'Cliente',
+        user_type: 'client' as const,
+        created_at: item.created_at,
+        is_active: item.is_active,
+        views_count: 0,
+        user_avatar_url: item.profiles?.avatar_url,
+        ad_type: 'service_request' as const,
+        budget: item.budget,
+        urgency: 'medium' as const
+      })) || []
+
+      const offers = listingsData?.map(item => ({
+        id: item.id,
+        user_id: item.professional_id,
+        title: item.title,
+        description: item.description,
+        category: item.service_category_id,
+        location_state: item.location_state,
+        location_city: item.location_city,
+        user_name: item.profiles?.full_name || 'Profissional',
+        user_type: 'professional' as const,
+        created_at: item.created_at,
+        is_active: item.is_active,
+        views_count: 0,
+        user_avatar_url: item.profiles?.avatar_url,
+        ad_type: 'service_offer' as const,
+        price: item.price_min,
+        urgency: 'medium' as const
+      })) || []
+
+      setListings([...requests, ...offers])
     } catch (error) {
-      toast.error('Erro ao criar anúncio')
-      console.error('Erro:', error)
+      console.error('Erro ao carregar classificados:', error)
+      toast.error('Erro ao carregar classificados. Verifique a configuração do banco de dados.')
     }
   }
 
-  // Editar anúncio
-  const handleEditAd = async () => {
-    if (!editingAd || !user) return
-    
-    if (editingAd.user_id !== user.id) {
-      toast.error('Você só pode editar seus próprios anúncios')
-      return
-    }
-    
+  const loadFavorites = async () => {
+    if (!user) return
+
     try {
       const { data, error } = await supabase
-        .from('classified_ads')
-        .update({
-          title: formData.title,
-          description: formData.description,
-          category: formData.category,
-          location_state: formData.location_state,
-          location_city: formData.location_city
-        })
-        .eq('id', editingAd.id)
-        .select()
-        .single()
+        .from('service_favorites')
+        .select('service_id')
+        .eq('user_id', user.id)
 
       if (error) {
-        console.error('❌ Erro ao atualizar anúncio:', error)
-        toast.error('Erro ao atualizar anúncio')
+        console.error('Erro ao carregar favoritos:', error)
+        // Se a tabela service_favorites não existir, usar localStorage como fallback
+        const localFavorites = localStorage.getItem('favorites')
+        if (localFavorites) {
+          setFavorites(new Set(JSON.parse(localFavorites)))
+        }
         return
       }
 
-      setAds(prev => prev.map(ad => ad.id === editingAd.id ? data : ad))
-      setIsEditModalOpen(false)
-      setEditingAd(null)
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        location_state: '',
-        location_city: '',
-        ad_type: 'service_request',
-        budget: '',
-        price: '',
-        urgency: 'medium',
-        availability: ''
-      })
-      toast.success('Anúncio atualizado com sucesso!')
+      const favoriteIds = new Set(data?.map(item => item.service_id) || [])
+      setFavorites(favoriteIds)
     } catch (error) {
-      toast.error('Erro ao atualizar anúncio')
-      console.error('Erro:', error)
+      console.error('Erro ao carregar favoritos:', error)
     }
   }
 
-  // Excluir anúncio
-  const handleDeleteAd = async (adId: string) => {
-    const ad = ads.find(a => a.id === adId)
-    if (!ad || !user) return
-    
-    if (ad.user_id !== user.id) {
-      toast.error('Você só pode excluir seus próprios anúncios')
-      return
-    }
-    
-    if (confirm('Tem certeza que deseja excluir este anúncio?')) {
-      try {
-        const { error } = await supabase
-          .from('classified_ads')
-          .delete()
-          .eq('id', adId)
-
-        if (error) {
-          console.error('❌ Erro ao deletar anúncio:', error)
-          toast.error('Erro ao deletar anúncio')
-          return
-        }
-
-        setAds(prev => prev.filter(ad => ad.id !== adId))
-        toast.success('Anúncio excluído com sucesso!')
-      } catch (error) {
-        toast.error('Erro ao excluir anúncio')
-        console.error('Erro:', error)
-      }
-    }
-  }
-
-  // Abrir modal de edição
-  const openEditModal = (ad: ClassifiedAd) => {
-    setEditingAd(ad)
-    setFormData({
-      title: ad.title,
-      description: ad.description,
-      category: ad.category,
-      location_state: ad.location_state,
-      location_city: ad.location_city,
-      ad_type: ad.user_type === 'professional' ? 'service_offer' : 'service_request',
-      budget: ad.budget?.toString() || '',
-      price: ad.price?.toString() || '',
-      urgency: ad.urgency || 'medium',
-      availability: ad.availability || ''
-    })
-    setIsEditModalOpen(true)
-  }
-
-  // Iniciar chat
-  const handleChat = (userId: string, userName: string) => {
+  const toggleFavorite = async (listingId: string) => {
     if (!user) {
-      toast.error('Você precisa estar logado para iniciar um chat')
+      toast.error('Faça login para favoritar')
       return
     }
-    
-    if (userId === user.id) {
-      toast.error('Você não pode iniciar um chat consigo mesmo')
-      return
+
+    try {
+      const isFavorited = favorites.has(listingId)
+
+      if (isFavorited) {
+        // Tentar remover do banco de dados
+        const { error } = await supabase
+          .from('service_favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('service_id', listingId)
+
+        if (error) {
+          console.error('Erro ao remover favorito do banco:', error)
+          // Fallback para localStorage
+          const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+          const updatedFavorites = localFavorites.filter((id: string) => id !== listingId)
+          localStorage.setItem('favorites', JSON.stringify(updatedFavorites))
+        }
+
+        setFavorites(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(listingId)
+          return newSet
+        })
+        toast.success('Removido dos favoritos')
+      } else {
+        // Tentar adicionar ao banco de dados
+        const { error } = await supabase
+          .from('service_favorites')
+          .insert({
+            user_id: user.id,
+            service_id: listingId
+          })
+
+        if (error) {
+          console.error('Erro ao adicionar favorito ao banco:', error)
+          // Fallback para localStorage
+          const localFavorites = JSON.parse(localStorage.getItem('favorites') || '[]')
+          if (!localFavorites.includes(listingId)) {
+            localFavorites.push(listingId)
+            localStorage.setItem('favorites', JSON.stringify(localFavorites))
+          }
+        }
+
+        setFavorites(prev => new Set(Array.from(prev).concat(listingId)))
+        toast.success('Adicionado aos favoritos')
+      }
+    } catch (error) {
+      console.error('Erro ao favoritar:', error)
+      toast.error('Erro ao favoritar')
     }
-    
-    // Abrir chat flutuante diretamente
-    openChat(userId, userName)
   }
 
-  // Ver perfil
-  const handleViewProfile = (userId: string) => {
-    window.location.href = `/perfil/${userId}`
-  }
-
-  // Formatar preço
-  const formatPrice = (min: number | null, max: number | null, type: string) => {
-    if (!min && !max) return 'Preço a combinar'
-    
-    if (min && max) {
-      return `R$ ${(min || 0).toFixed(2)} - R$ ${(max || 0).toFixed(2)}`
-    }
-    
-    if (min) return `A partir de R$ ${(min || 0).toFixed(2)}`
-    if (max) return `Até R$ ${(max || 0).toFixed(2)}`
-    
-    return 'Preço a combinar'
-  }
-
-  // Obter texto do nível de experiência
-  const getExperienceLevelText = (level: string) => {
-    switch (level) {
-      case 'beginner': return 'Iniciante'
-      case 'intermediate': return 'Intermediário'
-      case 'advanced': return 'Avançado'
-      case 'expert': return 'Especialista'
-      default: return 'Intermediário'
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return 'text-red-600 bg-red-50 border-red-200'
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'low': return 'text-green-600 bg-green-50 border-green-200'
+      default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
   }
 
-  // Obter texto do tipo de serviço
-  const getServiceTypeText = (type: string) => {
-    switch (type) {
-      case 'hourly': return 'Por hora'
-      case 'fixed': return 'Preço fixo'
-      case 'negotiable': return 'Negociável'
-      default: return 'Preço fixo'
+  const getUrgencyText = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return 'Urgente'
+      case 'medium': return 'Médio'
+      case 'low': return 'Baixo'
+      default: return 'Normal'
     }
   }
 
-  if (!user) {
+  const getUrgencyIcon = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return AlertTriangle
+      case 'medium': return Clock
+      case 'low': return CheckCircle
+      default: return Info
+    }
+  }
+
+  // Filtrar e ordenar dados
+  const filteredListings = listings
+    .filter(listing => {
+      const matchesSearch = listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           listing.description.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory
+      return matchesSearch && matchesCategory
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price_low':
+          return (a.budget || a.price || 0) - (b.budget || b.price || 0)
+        case 'price_high':
+          return (b.budget || b.price || 0) - (a.budget || a.price || 0)
+        case 'newest':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
+
+  // Separar em duas colunas
+  const serviceRequests = filteredListings.filter(listing => listing.ad_type === 'service_request')
+  const serviceOffers = filteredListings.filter(listing => listing.ad_type === 'service_offer')
+
+  if (loading) {
     return (
-      <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-8 text-center">
-              <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-4">Classificados</h1>
-              <p className="text-gray-600 mb-6">
-                Faça login para acessar os classificados e criar anúncios.
-              </p>
-              <Button onClick={() => window.location.href = '/auth'} className="w-full">
-                Fazer Login
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
-    )
-  }
-
-  if (!mounted) {
-    return (
-      <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50">
-          <div className="container mx-auto px-4 py-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                Carregando...
-              </h1>
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           </div>
         </div>
@@ -508,518 +335,331 @@ export default function ClassificadosPage() {
   }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Classificados</h1>
-                <p className="text-gray-600">
-                  Encontre serviços profissionais e publique seus anúncios
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4" />
-                      Criar Anúncio
-                    </Button>
-                  </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Criar Novo Anúncio</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {/* Tipo de anúncio */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Tipo de Anúncio
-                      </label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, ad_type: 'service_request' })}
-                          className={`p-3 rounded-lg border-2 transition-all ${
-                            formData.ad_type === 'service_request'
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="text-center">
-                            <div className="text-2xl mb-1">🔍</div>
-                            <div className="font-medium">Procurar</div>
-                            <div className="text-xs text-gray-500">Preciso de ajuda</div>
-                          </div>
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, ad_type: 'service_offer' })}
-                          className={`p-3 rounded-lg border-2 transition-all ${
-                            formData.ad_type === 'service_offer'
-                              ? 'border-green-500 bg-green-50 text-green-700'
-                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="text-center">
-                            <div className="text-2xl mb-1">🏗️</div>
-                            <div className="font-medium">Oferecer</div>
-                            <div className="text-xs text-gray-500">Tenho habilidades</div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <Input
-                      placeholder="Título do anúncio"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    />
-                    
-                    <Textarea
-                      placeholder="Descrição (máx. 500 caracteres)"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      maxLength={500}
-                      rows={3}
-                    />
-                    
-                    <CategoriaCombobox 
-                      value={formData.category} 
-                      onValueChange={(value) => setFormData({ ...formData, category: value })}
-                      placeholder="Selecione a categoria"
-                    />
-                    
-                    <div className="grid grid-cols-2 gap-2">
-                      <EstadoCombobox 
-                        value={formData.location_state} 
-                        onValueChange={(value) => {
-                          setFormData({ ...formData, location_state: value, location_city: '' })
-                        }}
-                        placeholder="Estado"
-                      />
-                      
-                      <CidadeCombobox 
-                        value={formData.location_city} 
-                        onValueChange={(value) => setFormData({ ...formData, location_city: value })}
-                        estadoSigla={formData.location_state}
-                        placeholder="Cidade"
-                        disabled={!formData.location_state}
-                      />
-                    </div>
-                    
-                    <Button onClick={handleCreateAd} className="w-full">
-                      Criar Anúncio
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+    <MainLayout>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header com gradiente */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-8 mb-12">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="relative z-10 text-center text-white">
+              <h1 className="text-5xl font-bold mb-4">
+                Classificados ConfiLar
+              </h1>
+              <p className="text-xl opacity-90 max-w-2xl mx-auto">
+                Conecte-se com profissionais qualificados ou encontre clientes para seus serviços
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                  <Users className="h-5 w-5" />
+                  <span className="font-medium">{serviceRequests.length} Solicitações</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                  <Briefcase className="h-5 w-5" />
+                  <span className="font-medium">{serviceOffers.length} Ofertas</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Conteúdo Principal */}
-        <div className="container mx-auto px-4 py-6">
-          {/* Filtros */}
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Buscar anúncios e serviços..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <CategoriaCombobox 
-                  value={selectedCategory} 
-                  onValueChange={setSelectedCategory}
-                  placeholder="Categoria"
-                />
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <EstadoCombobox 
-                    value={selectedState} 
-                    onValueChange={(value) => {
-                      setSelectedState(value)
-                      setSelectedCity('') // Limpar cidade quando estado muda
-                    }}
-                    placeholder="Estado"
-                  />
-                  
-                  <CidadeCombobox 
-                    value={selectedCity} 
-                    onValueChange={setSelectedCity}
-                    estadoSigla={selectedState}
-                    placeholder="Cidade"
-                    disabled={!selectedState}
+          {/* Barra de filtros moderna */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Input
+                    placeholder="Buscar por título ou descrição..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-12 text-lg border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-56 h-12 border-gray-200">
+                  <SelectValue placeholder="Categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectItem value="tecnologia">Tecnologia</SelectItem>
+                  <SelectItem value="design">Design</SelectItem>
+                  <SelectItem value="marketing">Marketing</SelectItem>
+                  <SelectItem value="consultoria">Consultoria</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <SelectTrigger className="w-full lg:w-56 h-12 border-gray-200">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Mais recentes</SelectItem>
+                  <SelectItem value="price_low">Menor preço</SelectItem>
+                  <SelectItem value="price_high">Maior preço</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="ads">
-                Anúncios ({filteredAds.length})
-              </TabsTrigger>
-              <TabsTrigger value="services">
-                Serviços ({filteredServices.length})
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Conteúdo dos Anúncios */}
-            <TabsContent value="ads">
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
-                    <p className="text-gray-600">Carregando anúncios...</p>
-                  </div>
+          {/* Layout em duas colunas */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+            {/* Coluna 1: Clientes Procurando Serviços */}
+            <div>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="p-4 bg-blue-100 rounded-2xl">
+                  <Users className="h-8 w-8 text-blue-600" />
                 </div>
-              ) : filteredAds.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredAds.map((ad) => (
-                    <Card key={ad.id} className={`hover:shadow-lg transition-all duration-200 ${
-                      user && ad.user_id === user.id ? 'ring-2 ring-blue-200 bg-blue-50/50' : ''
-                    }`}>
-                      <CardContent className="p-6">
-                        {/* Header */}
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    Clientes Procurando Serviços
+                  </h2>
+                  <p className="text-gray-600 text-lg">
+                    {serviceRequests.length} solicitações disponíveis
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {serviceRequests.map((listing, index) => {
+                  const UrgencyIcon = getUrgencyIcon(listing.urgency)
+                  return (
+                    <div 
+                      key={listing.id} 
+                      className="group relative bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Barra lateral colorida */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500"></div>
+                      
+                      <div className="p-6 pl-8">
+                        {/* Header do item */}
                         <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-lg">
-                                {ad.user_type === 'professional' ? '🏗️' : '🔍'}
-                              </span>
-                              <Badge variant="secondary">
-                                {typeof ad.category === 'string'
-                                  ? (servicesList.find(c => c.id === ad.category)?.name || ad.category)
-                                  : (ad.category as ProfessionalService).title || 'Serviço'
-                                }
-                              </Badge>
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12 ring-2 ring-blue-100">
+                              <AvatarImage src={listing.user_avatar_url} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                                {listing.user_name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {listing.title}
+                              </h3>
+                              <p className="text-gray-600 font-medium">{listing.user_name}</p>
                             </div>
-                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
-                              {ad.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                              {ad.description}
-                            </p>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleFavorite(listing.id)}
+                            className="hover:bg-red-50"
+                          >
+                            <Heart 
+                              className={`h-5 w-5 ${
+                                favorites.has(listing.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                              }`} 
+                            />
+                          </Button>
                         </div>
 
-                        {/* Informações do anúncio */}
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                        {/* Descrição */}
+                        <p className="text-gray-700 mb-6 leading-relaxed line-clamp-3">
+                          {listing.description}
+                        </p>
+
+                        {/* Tags e informações */}
+                        <div className="flex flex-wrap items-center gap-3 mb-6">
+                          <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
+                            {listing.category}
+                          </Badge>
+                          <div className="flex items-center gap-1 text-gray-600">
                             <MapPin className="h-4 w-4" />
-                            <span>{ad.location_city}, {ad.location_state}</span>
+                            <span className="text-sm">{listing.location_city}, {listing.location_state}</span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-1 text-gray-600">
                             <Calendar className="h-4 w-4" />
-                            <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <User className="h-4 w-4" />
-                            <span>{ad.user_type === 'professional' ? 'Oferecendo serviços' : 'Procurando serviços'}</span>
+                            <span className="text-sm">{new Date(listing.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
 
-                        {/* Badges */}
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          <Badge variant="outline" className="text-xs">
-                            {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                          </Badge>
-                          {user && ad.user_id === user.id && (
-                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                              Seu anúncio
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Perfil do usuário */}
-                        <div className="border-t pt-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={ad.user_avatar_url || ''} />
-                                <AvatarFallback className="text-xs">
-                                  {ad.user_name.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-sm text-gray-900">{ad.user_name}</p>
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                  <span className="text-xs text-gray-500">4.8 (24)</span>
-                                </div>
+                        {/* Footer com urgência e ações */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getUrgencyColor(listing.urgency)}`}>
+                              <UrgencyIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">{getUrgencyText(listing.urgency)}</span>
+                            </div>
+                            {listing.budget && (
+                              <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full">
+                                <DollarSign className="h-4 w-4" />
+                                <span className="text-sm font-medium">R$ {listing.budget.toLocaleString()}</span>
                               </div>
-                            </div>
-                            
-                            <div className="flex gap-1">
-                              {user && ad.user_id !== user.id && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleChat(ad.user_id, ad.user_name)}
-                                  className="h-8 px-2"
-                                >
-                                  <MessageCircle className="h-3 w-3" />
-                                </Button>
-                              )}
-                              
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleViewProfile(ad.user_id)}
-                                className="h-8 px-2"
-                              >
-                                <Eye className="h-3 w-3" />
-                              </Button>
-                              
-                              {user && ad.user_id === user.id && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => openEditModal(ad)}
-                                    className="h-8 px-2 text-gray-500 hover:text-gray-700"
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDeleteAd(ad.id)}
-                                    className="h-8 px-2 text-red-500 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
+                            )}
                           </div>
+                          <Button
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-xl font-medium"
+                            onClick={() => openChat(listing.user_id)}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Contatar
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {ads.length === 0 ? 'Nenhum anúncio cadastrado' : 'Nenhum anúncio encontrado'}
-                    </h3>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      {ads.length === 0 
-                        ? 'Seja o primeiro a criar um anúncio!'
-                        : 'Tente ajustar os filtros de busca.'
-                      }
-                    </p>
-                    {ads.length === 0 && (
-                      <Button onClick={() => setIsCreateModalOpen(true)}>
-                        Criar Primeiro Anúncio
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+                      </div>
+                    </div>
+                  )
+                })}
 
-            {/* Conteúdo dos Serviços */}
-            <TabsContent value="services">
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
-                    <p className="text-gray-600">Carregando serviços...</p>
+                {serviceRequests.length === 0 && (
+                  <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                    <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhuma solicitação encontrada
+                    </h3>
+                    <p className="text-gray-600">
+                      Não há solicitações de serviços no momento.
+                    </p>
                   </div>
-                </div>
-              ) : filteredServices.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredServices.map((service) => (
-                    <Card key={service.id} className="hover:shadow-lg transition-all duration-200">
-                      <CardContent className="p-6">
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-lg">{servicesList.find(s => s.id === service.category_id)?.icon || '🔧'}</span>
-                              <Badge variant="secondary">{servicesList.find(s => s.id === service.category_id)?.name || 'Serviço'}</Badge>
-                            </div>
-                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
-                              {service.title}
-                            </h3>
-                            <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                              {service.description || 'Sem descrição'}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Informações do serviço */}
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <DollarSign className="h-4 w-4" />
-                            <span className="font-medium">
-                              {formatPrice(service.price_min, service.price_max, service.service_type)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Clock className="h-4 w-4" />
-                            <span>{getServiceTypeText(service.service_type)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <MapPin className="h-4 w-4" />
-                            <span>{(service as ProfessionalService & { location_city?: string; location_state?: string }).location_city || 'N/A'}, {(service as ProfessionalService & { location_state?: string }).location_state || 'N/A'}</span>
-                          </div>
-                        </div>
-
-                        {/* Badges */}
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          <Badge variant="outline" className="text-xs">
-                            {getExperienceLevelText(service.experience_level)}
-                          </Badge>
-                          {service.insurance_coverage && (
-                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                              <Shield className="h-3 w-3 mr-1" />
-                              Seguro
-                            </Badge>
-                          )}
-                          {service.emergency_service && (
-                            <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                              <Zap className="h-3 w-3 mr-1" />
-                              Emergência
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Perfil do profissional */}
-                        <div className="border-t pt-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={(service as ProfessionalService & { professional_avatar_url?: string }).professional_avatar_url || ''} />
-                                <AvatarFallback className="text-xs">
-                                  {(service as ProfessionalService & { professional_name?: string }).professional_name?.charAt(0).toUpperCase() || 'P'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium text-sm text-gray-900">{(service as ProfessionalService & { professional_name?: string }).professional_name || 'Profissional'}</p>
-                                <p className="text-xs text-gray-500">
-                                  {new Date(service.created_at).toLocaleDateString('pt-BR')}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex gap-1">
-                              {user && service.professional_id !== user.id && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleChat(service.professional_id, (service as ProfessionalService & { professional_name?: string }).professional_name || 'Profissional')}
-                                  className="h-8 px-2"
-                                >
-                                  <MessageCircle className="h-3 w-3" />
-                                </Button>
-                              )}
-                              
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleViewProfile(service.professional_id)}
-                                className="h-8 px-2"
-                              >
-                                <Eye className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {services.length === 0 ? 'Nenhum serviço cadastrado' : 'Nenhum serviço encontrado'}
-                    </h3>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      {services.length === 0 
-                        ? 'Ainda não há serviços profissionais cadastrados.'
-                        : 'Tente ajustar os filtros de busca.'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Modal de Edição */}
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Editar Anúncio</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Título do anúncio"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
-              
-              <Textarea
-                placeholder="Descrição (máx. 500 caracteres)"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                maxLength={500}
-                rows={3}
-              />
-              
-              <CategoriaCombobox 
-                value={formData.category} 
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-                placeholder="Selecione a categoria"
-              />
-              
-              <div className="grid grid-cols-2 gap-2">
-                <EstadoCombobox 
-                  value={formData.location_state} 
-                  onValueChange={(value) => {
-                    setFormData({ ...formData, location_state: value, location_city: '' })
-                  }}
-                  placeholder="Estado"
-                />
-                
-                <CidadeCombobox 
-                  value={formData.location_city} 
-                  onValueChange={(value) => setFormData({ ...formData, location_city: value })}
-                  estadoSigla={formData.location_state}
-                  placeholder="Cidade"
-                  disabled={!formData.location_state}
-                />
+                )}
               </div>
-              
-              <Button onClick={handleEditAd} className="w-full">
-                Atualizar Anúncio
+            </div>
+
+            {/* Coluna 2: Profissionais Oferecendo Serviços */}
+            <div>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="p-4 bg-green-100 rounded-2xl">
+                  <Briefcase className="h-8 w-8 text-green-600" />
+                </div>
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    Profissionais Oferecendo Serviços
+                  </h2>
+                  <p className="text-gray-600 text-lg">
+                    {serviceOffers.length} ofertas disponíveis
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {serviceOffers.map((listing, index) => {
+                  const UrgencyIcon = getUrgencyIcon(listing.urgency)
+                  return (
+                    <div 
+                      key={listing.id} 
+                      className="group relative bg-white rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-xl transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Barra lateral colorida */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-green-500 to-emerald-500"></div>
+                      
+                      <div className="p-6 pl-8">
+                        {/* Header do item */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12 ring-2 ring-green-100">
+                              <AvatarImage src={listing.user_avatar_url} />
+                              <AvatarFallback className="bg-green-100 text-green-600 font-semibold">
+                                {listing.user_name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="text-xl font-bold text-gray-900 group-hover:text-green-600 transition-colors">
+                                {listing.title}
+                              </h3>
+                              <p className="text-gray-600 font-medium">{listing.user_name}</p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleFavorite(listing.id)}
+                            className="hover:bg-red-50"
+                          >
+                            <Heart 
+                              className={`h-5 w-5 ${
+                                favorites.has(listing.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                              }`} 
+                            />
+                          </Button>
+                        </div>
+
+                        {/* Descrição */}
+                        <p className="text-gray-700 mb-6 leading-relaxed line-clamp-3">
+                          {listing.description}
+                        </p>
+
+                        {/* Tags e informações */}
+                        <div className="flex flex-wrap items-center gap-3 mb-6">
+                          <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
+                            {listing.category}
+                          </Badge>
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-sm">{listing.location_city}, {listing.location_state}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-sm">{new Date(listing.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        {/* Footer com urgência e ações */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getUrgencyColor(listing.urgency)}`}>
+                              <UrgencyIcon className="h-4 w-4" />
+                              <span className="text-sm font-medium">{getUrgencyText(listing.urgency)}</span>
+                            </div>
+                            {listing.price && (
+                              <div className="flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full">
+                                <DollarSign className="h-4 w-4" />
+                                <span className="text-sm font-medium">R$ {listing.price.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-xl font-medium"
+                            onClick={() => openChat(listing.user_id)}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Contatar
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {serviceOffers.length === 0 && (
+                  <div className="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                    <Briefcase className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhuma oferta encontrada
+                    </h3>
+                    <p className="text-gray-600">
+                      Não há ofertas de serviços no momento.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="mt-16 text-center">
+            <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-3xl p-8 text-white">
+              <h3 className="text-2xl font-bold mb-4">Pronto para conectar?</h3>
+              <p className="text-lg opacity-90 mb-6">
+                Crie seu próprio classificado e encontre os melhores profissionais ou clientes
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-white text-blue-600 hover:bg-gray-50 px-8 py-3 text-lg font-semibold"
+              >
+                <Plus className="h-6 w-6 mr-2" />
+                Criar Novo Classificado
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
       </div>
     </MainLayout>
   )
