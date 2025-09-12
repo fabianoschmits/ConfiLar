@@ -58,16 +58,16 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
   const handleAccept = async () => {
     if (!acceptMessage.trim()) {
-      toast.error('Por favor, adicione uma mensagem de confirmação');
+      toast.error('POR FAVOR, ADICIONE UMA MENSAGEM DE CONFIRMAÇÃO');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onAccept(appointmentRequest.id, acceptMessage);
-      toast.success('Agendamento aceito com sucesso!');
+      toast.success('AGENDAMENTO ACEITO COM SUCESSO!');
     } catch (error) {
-      toast.error('Erro ao aceitar agendamento');
+      toast.error('ERRO AO ACEITAR AGENDAMENTO');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,16 +75,16 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      toast.error('Por favor, informe o motivo da recusa');
+      toast.error('POR FAVOR, INFORME O MOTIVO DA RECUSA');
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onReject(appointmentRequest.id, rejectReason);
-      toast.success('Agendamento recusado');
+      toast.success('AGENDAMENTO RECUSADO');
     } catch (error) {
-      toast.error('Erro ao recusar agendamento');
+      toast.error('ERRO AO RECUSAR AGENDAMENTO');
     } finally {
       setIsSubmitting(false);
     }
@@ -97,9 +97,9 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
       await onSendMessage(quickMessage);
       setQuickMessage('');
       setShowQuickMessage(false);
-      toast.success('Mensagem enviada!');
+      toast.success('MENSAGEM ENVIADA!');
     } catch (error) {
-      toast.error('Erro ao enviar mensagem');
+      toast.error('ERRO AO ENVIAR MENSAGEM');
     }
   };
 

@@ -345,13 +345,13 @@ export function SimpleRegistrationForm() {
 
       if (error) {
         console.error('❌ Erro detalhado:', error)
-        toast.error(`Erro ao criar conta: ${error.message}`)
+        toast.error(`ERRO AO CRIAR CONTA: ${error.message}`)
         setIsLoading(false)
         return
       }
 
       // Mostrar notificação de sucesso
-      toast.success('🎉 Conta criada com sucesso! Um email de confirmação foi enviado para você. Verifique sua caixa de entrada e clique no link para ativar sua conta.')
+      toast.success('🎉 CONTA CRIADA COM SUCESSO! UM EMAIL DE CONFIRMAÇÃO FOI ENVIADO PARA VOCÊ. VERIFIQUE SUA CAIXA DE ENTRADA E CLIQUE NO LINK PARA ATIVAR SUA CONTA.')
       
       // Aguardar 3 segundos para o usuário ler a mensagem antes de redirecionar
       setTimeout(() => {
@@ -360,7 +360,7 @@ export function SimpleRegistrationForm() {
       }, 3000)
     } catch (error) {
       console.error('Erro no cadastro:', error)
-      toast.error('Erro inesperado ao criar conta')
+      toast.error('ERRO INESPERADO AO CRIAR CONTA')
       setIsLoading(false)
     }
   }
@@ -458,50 +458,50 @@ export function SimpleRegistrationForm() {
       </div>
 
       {/* Dados Básicos */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Dados Básicos</h3>
+      <div className="space-y-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+        <h3 className="text-lg font-black text-black uppercase border-b-4 border-black pb-2">DADOS BÁSICOS</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div className="space-y-2">
-             <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-               Nome Completo *
-             </Label>
-             <Input
-               id="name"
-               placeholder=""
-               {...register('name')}
-               onChange={handleNameChange}
-               onBlur={handleNameBlur}
-               className={cn(
-                 errors.name ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.name && watchedValues.name.length >= 2 && !errors.name ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}
-             />
-             {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
-             {watchedValues.name && watchedValues.name.length >= 2 && !errors.name && (
-               <p className="text-sm text-green-600">✓ Nome válido</p>
-             )}
-           </div>
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-black text-black uppercase">
+              NOME COMPLETO *
+            </label>
+            <input
+              id="name"
+              placeholder=""
+              {...register('name')}
+              onChange={handleNameChange}
+              onBlur={handleNameBlur}
+              className={cn(
+                "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                errors.name ? 'border-red-500 bg-red-100' : ''
+              )}
+            />
+            {errors.name && <p className="text-sm text-red-500 font-bold">{errors.name.message}</p>}
+            {watchedValues.name && watchedValues.name.length >= 2 && !errors.name && (
+              <p className="text-sm text-black font-bold">✓ NOME VÁLIDO</p>
+            )}
+          </div>
 
-                     <div className="space-y-2">
-             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-               Email *
-             </Label>
-             <Input
-               id="email"
-               type="email"
-               placeholder=""
-               {...register('email')}
-               className={cn(
-                 errors.email ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}
-             />
-             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
-             {watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
-               <p className="text-sm text-green-600">✓ Email válido</p>
-             )}
-           </div>
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-black text-black uppercase">
+              EMAIL *
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder=""
+              {...register('email')}
+              className={cn(
+                "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                errors.email ? 'border-red-500 bg-red-100' : ''
+              )}
+            />
+            {errors.email && <p className="text-sm text-red-500 font-bold">{errors.email.message}</p>}
+            {watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
+              <p className="text-sm text-black font-bold">✓ EMAIL VÁLIDO</p>
+            )}
+          </div>
 
                      <div className="space-y-2">
              <Label htmlFor="password" className="text-sm font-medium text-gray-700">

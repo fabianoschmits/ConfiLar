@@ -71,7 +71,7 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
 
   const handleSubmit = async () => {
     if (!date || !time || !serviceDescription || !address) {
-      toast.error('Por favor, preencha todos os campos obrigatórios');
+      toast.error('POR FAVOR, PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS');
       return;
     }
 
@@ -89,9 +89,9 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
       };
 
       await onSendRequest(requestData);
-      toast.success('Solicitação de agendamento enviada com sucesso!');
+      toast.success('SOLICITAÇÃO DE AGENDAMENTO ENVIADA COM SUCESSO!');
     } catch (error) {
-      toast.error('Erro ao enviar solicitação de agendamento');
+      toast.error('ERRO AO ENVIAR SOLICITAÇÃO DE AGENDAMENTO');
     } finally {
       setIsSubmitting(false);
     }

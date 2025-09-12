@@ -82,14 +82,14 @@ export const NotificationSettings: React.FC = () => {
 
       if (error) {
         console.error('Erro ao salvar preferências:', error);
-        toast.error('Erro ao salvar preferências');
+        toast.error('ERRO AO SALVAR PREFERÊNCIAS');
         return;
       }
 
-      toast.success('Preferências salvas com sucesso!');
+      toast.success('PREFERÊNCIAS SALVAS COM SUCESSO!');
     } catch (error) {
       console.error('Erro ao salvar preferências:', error);
-      toast.error('Erro ao salvar preferências');
+      toast.error('ERRO AO SALVAR PREFERÊNCIAS');
     } finally {
       setLoading(false);
     }
