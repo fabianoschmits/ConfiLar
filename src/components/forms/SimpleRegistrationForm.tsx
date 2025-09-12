@@ -504,9 +504,9 @@ export function SimpleRegistrationForm() {
           </div>
 
                      <div className="space-y-2">
-             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-               Senha *
-             </Label>
+             <label htmlFor="password" className="text-sm font-black text-black uppercase">
+               SENHA *
+             </label>
              <PasswordInput
                id="password"
                placeholder=""
@@ -565,96 +565,90 @@ export function SimpleRegistrationForm() {
            </div>
 
                      <div className="space-y-2">
-             <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-               Telefone *
-             </Label>
-             <Input
+             <label htmlFor="phone" className="text-sm font-black text-black uppercase">
+               TELEFONE *
+             </label>
+             <input
                id="phone"
                placeholder=""
                {...register('phone')}
                onChange={handlePhoneChange}
                className={cn(
-                 errors.phone ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone ? 'border-gray-400 focus:ring-gray-400' : ''
+                 "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                 errors.phone ? 'border-red-500 bg-red-100' : ''
                )}
              />
-             {errors.phone && <p className="text-sm text-red-500">{errors.phone.message}</p>}
+             {errors.phone && <p className="text-sm text-red-500 font-bold">{errors.phone.message}</p>}
              {watchedValues.phone && watchedValues.phone.length >= 10 && !errors.phone && (
-               <p className="text-sm text-green-600">✓ Telefone válido</p>
+               <p className="text-sm text-black font-bold">✓ TELEFONE VÁLIDO</p>
              )}
            </div>
 
                      <div className="space-y-2">
-             <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
+             <label htmlFor="cpf_cnpj" className="text-sm font-black text-black uppercase">
                CPF/CNPJ *
-             </Label>
-             <Input
+             </label>
+             <input
                id="cpf_cnpj"
                placeholder=""
                {...register('cpf_cnpj')}
                onChange={handleCPFChange}
                className={cn(
-                 errors.cpf_cnpj ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj ? 'border-gray-400 focus:ring-gray-400' : ''
+                 "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                 errors.cpf_cnpj ? 'border-red-500 bg-red-100' : ''
                )}
              />
-             {errors.cpf_cnpj && <p className="text-sm text-red-500">{errors.cpf_cnpj.message}</p>}
+             {errors.cpf_cnpj && <p className="text-sm text-red-500 font-bold">{errors.cpf_cnpj.message}</p>}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-red-500">❌ CPF inválido. Este CPF não é válido ou está na lista de CPFs bloqueados.</p>
+               <p className="text-sm text-red-500 font-bold">❌ CPF INVÁLIDO. ESTE CPF NÃO É VÁLIDO OU ESTÁ NA LISTA DE CPFS BLOQUEADOS.</p>
              )}
              {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-               <p className="text-sm text-green-600">✅ CPF válido</p>
+               <p className="text-sm text-black font-bold">✅ CPF VÁLIDO</p>
              )}
            </div>
 
                      <div className="space-y-2">
-             <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
-               Data de Nascimento *
-             </Label>
-             <Input
+             <label htmlFor="birth_date" className="text-sm font-black text-black uppercase">
+               DATA DE NASCIMENTO *
+             </label>
+             <input
                id="birth_date"
                type="date"
                {...register('birth_date')}
                className={cn(
-                 errors.birth_date ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.birth_date && !errors.birth_date ? 'border-gray-400 focus:ring-gray-400' : ''
+                 "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                 errors.birth_date ? 'border-red-500 bg-red-100' : ''
                )}
              />
-             {errors.birth_date && <p className="text-sm text-red-500">{errors.birth_date.message}</p>}
+             {errors.birth_date && <p className="text-sm text-red-500 font-bold">{errors.birth_date.message}</p>}
              {watchedValues.birth_date && !errors.birth_date && (
-               <p className="text-sm text-green-600">✓ Data válida</p>
+               <p className="text-sm text-black font-bold">✓ DATA VÁLIDA</p>
              )}
            </div>
 
            {/* Sexo */}
            <div className="space-y-2">
-             <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
-               Sexo *
-             </Label>
-             <Select
+             <label htmlFor="gender" className="text-sm font-black text-black uppercase">
+               SEXO *
+             </label>
+             <select
+               id="gender"
                value={watchedValues.gender || ''}
-               onValueChange={(value) => {
-                 setValue('gender', value as 'male' | 'female')
-               }}
+               onChange={(e) => setValue('gender', e.target.value as 'male' | 'female')}
+               className={cn(
+                 "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                 errors.gender ? 'border-red-500 bg-red-100' : ''
+               )}
              >
-               <SelectTrigger className={cn(
-                 "h-10",
-                 errors.gender ? 'border-red-500 focus:ring-red-500' : '',
-                 watchedValues.gender && !errors.gender ? 'border-gray-400 focus:ring-gray-400' : ''
-               )}>
-                 <SelectValue placeholder="Escolha" />
-               </SelectTrigger>
-               <SelectContent>
-                 <SelectItem value="male">Masculino</SelectItem>
-                 <SelectItem value="female">Feminino</SelectItem>
-                 <SelectItem value="not_specified">Não informar</SelectItem>
-               </SelectContent>
-             </Select>
+               <option value="">ESCOLHA</option>
+               <option value="male">MASCULINO</option>
+               <option value="female">FEMININO</option>
+             </select>
              {errors.gender && (
-               <p className="text-sm text-red-500">{errors.gender.message}</p>
+               <p className="text-sm text-red-500 font-bold">{errors.gender.message}</p>
              )}
              {watchedValues.gender && !errors.gender && (
-               <p className="text-sm text-green-600">✓ Sexo selecionado</p>
+               <p className="text-sm text-black font-bold">✓ SEXO SELECIONADO</p>
              )}
            </div>
 
@@ -662,37 +656,34 @@ export function SimpleRegistrationForm() {
       </div>
 
       {/* Localização */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Localização</h3>
+      <div className="space-y-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+        <h3 className="text-lg font-black text-black uppercase border-b-4 border-black pb-2">LOCALIZAÇÃO</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
-              Estado *
-            </Label>
+            <label htmlFor="location_state" className="text-sm font-black text-black uppercase">
+              ESTADO *
+            </label>
             <Popover open={stateOpen} onOpenChange={setStateOpen}>
               <PopoverTrigger asChild>
-                                 <Button
-                   variant="outline"
-                   role="combobox"
-                   aria-expanded={stateOpen}
-                   className={cn(
-                     "w-full justify-between h-10",
-                     errors.location_state && "border-red-500 focus:ring-red-500",
-                     watchedValues.location_state && !errors.location_state ? "border-gray-400 focus:ring-gray-400" : ""
-                   )}
-                 >
+                <button
+                  type="button"
+                  className={cn(
+                    "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white flex items-center justify-between",
+                    errors.location_state ? 'border-red-500 bg-red-100' : ''
+                  )}
+                >
                   {watchedValues.location_state
                     ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                    : "Estado"}
-                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
-                </Button>
+                    : "ESTADO"}
+                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0" />
+                </button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
+              <PopoverContent className="w-full p-0 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" align="start">
                 <Command>
-                  <CommandInput placeholder="Buscar estado..." />
+                  <CommandInput placeholder="BUSCAR ESTADO..." className="border-b-2 border-black" />
                   <CommandList>
-                    <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
+                    <CommandEmpty>NENHUM ESTADO ENCONTRADO.</CommandEmpty>
                     <CommandGroup>
                       {estadosBrasil.map((estado) => (
                         <CommandItem
@@ -703,6 +694,7 @@ export function SimpleRegistrationForm() {
                             setValue('location_city', '') // Limpar cidade quando mudar estado
                             setStateOpen(false)
                           }}
+                          className="px-4 py-2 hover:bg-yellow-400 cursor-pointer"
                         >
                           <IconCheck
                             size={16} stroke={2} className={cn(
@@ -718,42 +710,40 @@ export function SimpleRegistrationForm() {
                 </Command>
               </PopoverContent>
             </Popover>
-                         {errors.location_state && <p className="text-sm text-red-500">{errors.location_state.message}</p>}
-             {watchedValues.location_state && !errors.location_state && (
-               <p className="text-sm text-green-600">✓ Estado selecionado</p>
-             )}
-           </div>
+            {errors.location_state && <p className="text-sm text-red-500 font-bold">{errors.location_state.message}</p>}
+            {watchedValues.location_state && !errors.location_state && (
+              <p className="text-sm text-black font-bold">✓ ESTADO SELECIONADO</p>
+            )}
+          </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
-              Cidade *
-            </Label>
+            <label htmlFor="location_city" className="text-sm font-black text-black uppercase">
+              CIDADE *
+            </label>
             <Popover open={cityOpen} onOpenChange={setCityOpen}>
               <PopoverTrigger asChild>
-                                 <Button
-                   variant="outline"
-                   role="combobox"
-                   aria-expanded={cityOpen}
-                   disabled={!watchedValues.location_state}
-                   className={cn(
-                     "w-full justify-between h-10",
-                     errors.location_city && "border-red-500 focus:ring-red-500",
-                     watchedValues.location_city && !errors.location_city ? "border-gray-400 focus:ring-gray-400" : ""
-                   )}
-                 >
+                <button
+                  type="button"
+                  disabled={!watchedValues.location_state}
+                  className={cn(
+                    "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white flex items-center justify-between",
+                    errors.location_city ? 'border-red-500 bg-red-100' : '',
+                    !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
+                  )}
+                >
                   {watchedValues.location_city
                     ? watchedValues.location_city
                     : watchedValues.location_state
-                    ? "Cidade"
-                    : "Estado primeiro"}
-                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
-                </Button>
+                    ? "CIDADE"
+                    : "ESTADO PRIMEIRO"}
+                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0" />
+                </button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
+              <PopoverContent className="w-full p-0 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" align="start">
                 <Command>
-                  <CommandInput placeholder="Buscar cidade..." />
+                  <CommandInput placeholder="BUSCAR CIDADE..." className="border-b-2 border-black" />
                   <CommandList>
-                    <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                    <CommandEmpty>NENHUMA CIDADE ENCONTRADA.</CommandEmpty>
                     <CommandGroup>
                       {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
                         <CommandItem
@@ -763,6 +753,7 @@ export function SimpleRegistrationForm() {
                             setValue('location_city', cidade)
                             setCityOpen(false)
                           }}
+                          className="px-4 py-2 hover:bg-yellow-400 cursor-pointer"
                         >
                           <IconCheck
                             size={16} stroke={2} className={cn(
@@ -778,152 +769,142 @@ export function SimpleRegistrationForm() {
                 </Command>
               </PopoverContent>
             </Popover>
-                         {errors.location_city && <p className="text-sm text-red-500">{errors.location_city.message}</p>}
-             {watchedValues.location_city && !errors.location_city && (
-               <p className="text-sm text-green-600">✓ Cidade selecionada</p>
-             )}
-           </div>
+            {errors.location_city && <p className="text-sm text-red-500 font-bold">{errors.location_city.message}</p>}
+            {watchedValues.location_city && !errors.location_city && (
+              <p className="text-sm text-black font-bold">✓ CIDADE SELECIONADA</p>
+            )}
+          </div>
         </div>
 
         {/* Campos de Bairro e Endereço */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
-              Bairro *
-            </Label>
-            <Input
+            <label htmlFor="neighborhood" className="text-sm font-black text-black uppercase">
+              BAIRRO *
+            </label>
+            <input
               id="neighborhood"
               placeholder=""
               {...register('neighborhood')}
               className={cn(
-                "h-10",
-                errors.neighborhood ? 'border-red-500 focus:ring-red-500' : '',
-                watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood ? 'border-gray-400 focus:ring-gray-400' : ''
+                "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                errors.neighborhood ? 'border-red-500 bg-red-100' : ''
               )}
             />
-            {errors.neighborhood && <p className="text-sm text-red-500">{errors.neighborhood.message}</p>}
+            {errors.neighborhood && <p className="text-sm text-red-500 font-bold">{errors.neighborhood.message}</p>}
             {watchedValues.neighborhood && watchedValues.neighborhood.length >= 1 && !errors.neighborhood && (
-              <p className="text-sm text-green-600">✓ Bairro válido</p>
+              <p className="text-sm text-black font-bold">✓ BAIRRO VÁLIDO</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-              Endereço (Rua/Avenida) *
-            </Label>
-            <Input
+            <label htmlFor="address" className="text-sm font-black text-black uppercase">
+              ENDEREÇO (RUA/AVENIDA) *
+            </label>
+            <input
               id="address"
-              placeholder="Ex: Rua das Flores, 123"
+              placeholder="EX: RUA DAS FLORES, 123"
               {...register('address')}
               className={cn(
-                "h-10",
-                errors.address ? 'border-red-500 focus:ring-red-500' : '',
-                watchedValues.address && watchedValues.address.length >= 1 && !errors.address ? 'border-gray-400 focus:ring-gray-400' : ''
+                "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+                errors.address ? 'border-red-500 bg-red-100' : ''
               )}
             />
-            {errors.address && <p className="text-sm text-red-500">{errors.address.message}</p>}
+            {errors.address && <p className="text-sm text-red-500 font-bold">{errors.address.message}</p>}
             {watchedValues.address && watchedValues.address.length >= 1 && !errors.address && (
-              <p className="text-sm text-green-600">✓ Endereço válido</p>
+              <p className="text-sm text-black font-bold">✓ ENDEREÇO VÁLIDO</p>
             )}
           </div>
         </div>
 
         {/* Campo Tipo de Usuário */}
         <div className="space-y-2">
-          <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
-            Tipo de Usuário *
-          </Label>
-          <Select
+          <label htmlFor="user_type" className="text-sm font-black text-black uppercase">
+            TIPO DE USUÁRIO *
+          </label>
+          <select
+            id="user_type"
             value={watchedValues.user_type}
-            onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}
+            onChange={(e) => setValue('user_type', e.target.value as 'client' | 'professional')}
+            className={cn(
+              "w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white",
+              errors.user_type ? 'border-red-500 bg-red-100' : ''
+            )}
           >
-            <SelectTrigger className={cn(
-              "h-10",
-              errors.user_type ? 'border-red-500 focus:ring-red-500' : '',
-              watchedValues.user_type && !errors.user_type ? 'border-gray-400 focus:ring-gray-400' : ''
-            )}>
-              <SelectValue placeholder="Selecione o tipo de usuário" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="client">Cliente</SelectItem>
-              <SelectItem value="professional">Profissional</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.user_type && <p className="text-sm text-red-500">{errors.user_type.message}</p>}
+            <option value="client">CLIENTE</option>
+            <option value="professional">PROFISSIONAL</option>
+          </select>
+          {errors.user_type && <p className="text-sm text-red-500 font-bold">{errors.user_type.message}</p>}
           {watchedValues.user_type && !errors.user_type && (
-            <p className="text-sm text-green-600">✓ Tipo selecionado</p>
+            <p className="text-sm text-black font-bold">✓ TIPO SELECIONADO</p>
           )}
         </div>
       </div>
 
       {/* Campos específicos para profissionais */}
       {isProfessional && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Dados Profissionais</h3>
+        <div className="space-y-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+          <h3 className="text-lg font-black text-black uppercase border-b-4 border-black pb-2">DADOS PROFISSIONAIS</h3>
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                Biografia
-              </Label>
-              <Textarea
+              <label htmlFor="bio" className="text-sm font-black text-black uppercase">
+                BIOGRAFIA
+              </label>
+              <textarea
                 {...register('bio')}
-                placeholder="Conte um pouco sobre você e sua experiência..."
+                placeholder="CONTE UM POUCO SOBRE VOCÊ E SUA EXPERIÊNCIA..."
                 rows={3}
-                className="resize-none"
+                className="w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white resize-none"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="experience_years" className="text-sm font-medium text-gray-700">
-                Anos de Experiência
-              </Label>
-              <Select
-                value={watchedValues.experience_years || undefined}
-                onValueChange={(value) => setValue('experience_years', value)}
+              <label htmlFor="experience_years" className="text-sm font-black text-black uppercase">
+                ANOS DE EXPERIÊNCIA
+              </label>
+              <select
+                value={watchedValues.experience_years || ''}
+                onChange={(e) => setValue('experience_years', e.target.value)}
+                className="w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0-1">0-1 ano</SelectItem>
-                  <SelectItem value="1-3">1-3 anos</SelectItem>
-                  <SelectItem value="3-5">3-5 anos</SelectItem>
-                  <SelectItem value="5-10">5-10 anos</SelectItem>
-                  <SelectItem value="10+">Mais de 10 anos</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">SELECIONE</option>
+                <option value="0-1">0-1 ANO</option>
+                <option value="1-3">1-3 ANOS</option>
+                <option value="3-5">3-5 ANOS</option>
+                <option value="5-10">5-10 ANOS</option>
+                <option value="10+">MAIS DE 10 ANOS</option>
+              </select>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">
-                Serviços Oferecidos
-              </Label>
+              <label className="text-sm font-black text-black uppercase">
+                SERVIÇOS OFERECIDOS
+              </label>
               <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={servicesOpen}
-                    className="w-full justify-between"
+                  <button
+                    type="button"
+                    className="w-full px-4 py-3 text-black font-bold border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all bg-white flex items-center justify-between"
                   >
                     {selectedServices.length === 0
-                      ? "Selecione os serviços..."
-                      : `${selectedServices.length} serviço(s) selecionado(s)`}
-                    <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
-                  </Button>
+                      ? "SELECIONE OS SERVIÇOS..."
+                      : `${selectedServices.length} SERVIÇO(S) SELECIONADO(S)`}
+                    <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0" />
+                  </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg">
+                <PopoverContent className="w-full p-0 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <Command>
-                    <CommandInput placeholder="Buscar serviços..." />
+                    <CommandInput placeholder="BUSCAR SERVIÇOS..." className="border-b-2 border-black" />
                     <CommandList>
-                      <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                      <CommandEmpty>NENHUM SERVIÇO ENCONTRADO.</CommandEmpty>
                       <CommandGroup>
                         {serviceCategoryNames.map((service) => (
                           <CommandItem
                             key={service}
                             value={service}
                             onSelect={() => handleServiceToggle(service)}
+                            className="px-4 py-2 hover:bg-yellow-400 cursor-pointer"
                           >
                             <IconCheck
                               size={16} stroke={2} className={cn(
@@ -931,7 +912,7 @@ export function SimpleRegistrationForm() {
                                 selectedServices.includes(service) ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            {service}
+                            {service.toUpperCase()}
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -943,23 +924,22 @@ export function SimpleRegistrationForm() {
               {/* Serviços selecionados */}
               {selectedServices.length > 0 && (
                 <div className="mt-3 space-y-2">
-                  <p className="text-sm text-gray-600">Serviços selecionados:</p>
+                  <p className="text-sm text-black font-bold uppercase">SERVIÇOS SELECIONADOS:</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedServices.map((service) => (
-                      <Badge 
+                      <div 
                         key={service} 
-                        variant="secondary"
-                        className="flex items-center gap-1"
+                        className="px-3 py-1 bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1"
                       >
-                        {service}
+                        <span className="text-black font-bold text-sm uppercase">{service}</span>
                         <button
                           type="button"
                           onClick={() => removeService(service)}
-                          className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                          className="text-black hover:text-red-600 font-bold"
                         >
                           <IconX size={12} stroke={2} />
                         </button>
-                      </Badge>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -967,24 +947,28 @@ export function SimpleRegistrationForm() {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
+              <div className="flex items-center space-x-3">
+                <input
                   {...register('emergency_service')}
                   id="emergency_service"
+                  type="checkbox"
+                  className="w-5 h-5 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] accent-yellow-400"
                 />
-                <Label htmlFor="emergency_service" className="text-sm cursor-pointer">
-                  Ofereço serviço de emergência 24h
-                </Label>
+                <label htmlFor="emergency_service" className="text-sm text-black font-bold uppercase cursor-pointer">
+                  OFEREÇO SERVIÇO DE EMERGÊNCIA 24H
+                </label>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
+              <div className="flex items-center space-x-3">
+                <input
                   {...register('insurance_coverage')}
                   id="insurance_coverage"
+                  type="checkbox"
+                  className="w-5 h-5 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] accent-yellow-400"
                 />
-                <Label htmlFor="insurance_coverage" className="text-sm cursor-pointer">
-                  Possuo seguro de responsabilidade civil
-                </Label>
+                <label htmlFor="insurance_coverage" className="text-sm text-black font-bold uppercase cursor-pointer">
+                  POSSUO SEGURO DE RESPONSABILIDADE CIVIL
+                </label>
               </div>
             </div>
           </div>
@@ -993,20 +977,20 @@ export function SimpleRegistrationForm() {
 
       {/* Botão de cadastro */}
       <div className="pt-4">
-        <Button
+        <button
           type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+          className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isLoading || !isValid}
         >
-          {isLoading ? 'Criando conta...' : 'Criar Conta'}
-        </Button>
+          {isLoading ? 'CRIANDO CONTA...' : 'CRIAR CONTA'}
+        </button>
       </div>
 
-      <div className="text-center text-sm text-gray-600 pt-2">
+      <div className="text-center text-sm text-black font-bold pt-2">
         <p>
-          Já tem uma conta?{' '}
-          <a href="/auth" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
-            Faça login
+          JÁ TEM UMA CONTA?{' '}
+          <a href="/auth" className="text-black hover:text-yellow-600 hover:underline font-black uppercase">
+            FAÇA LOGIN
           </a>
         </p>
       </div>
