@@ -440,11 +440,11 @@ export default function ClassificadosPage() {
     if (!min && !max) return 'Preço a combinar'
     
     if (min && max) {
-      return `R$ ${min.toFixed(2)} - R$ ${max.toFixed(2)}`
+      return `R$ ${(min || 0).toFixed(2)} - R$ ${(max || 0).toFixed(2)}`
     }
     
-    if (min) return `A partir de R$ ${min.toFixed(2)}`
-    if (max) return `Até R$ ${max.toFixed(2)}`
+    if (min) return `A partir de R$ ${(min || 0).toFixed(2)}`
+    if (max) return `Até R$ ${(max || 0).toFixed(2)}`
     
     return 'Preço a combinar'
   }

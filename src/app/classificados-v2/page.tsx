@@ -29,6 +29,8 @@ import {
   TrendingUp,
   Users,
   Sparkles,
+  Rainbow,
+  PartyPopper,
 } from 'lucide-react'
 import { services as servicesList } from '@/data/services'
 
@@ -76,7 +78,7 @@ interface ProfessionalService {
   reviews_count?: number
 }
 
-export default function ClassificadosV2Page() {
+export default function ClassifiedsV2Page() {
   const { user } = useAuthContext()
   const { openChat } = useFloatingChat()
   
@@ -93,6 +95,20 @@ export default function ClassificadosV2Page() {
   const [ads, setAds] = useState<ClassifiedAd[]>([])
   const [services, setServices] = useState<ProfessionalService[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
+
+  // Cores vibrantes para categorias
+  const categoryColors = [
+    'from-pink-400 to-rose-400',
+    'from-orange-400 to-red-400',
+    'from-yellow-400 to-orange-400',
+    'from-green-400 to-emerald-400',
+    'from-teal-400 to-cyan-400',
+    'from-blue-400 to-indigo-400',
+    'from-purple-400 to-pink-400',
+    'from-indigo-400 to-purple-400',
+    'from-red-400 to-pink-400',
+    'from-emerald-400 to-teal-400'
+  ]
 
   // Carregar dados
   useEffect(() => {
@@ -283,21 +299,21 @@ export default function ClassificadosV2Page() {
     if (!min && !max) return 'Preço a combinar'
     
     if (min && max && min !== max) {
-      return `R$ ${min.toFixed(2)} - R$ ${max.toFixed(2)}`
+      return `R$ ${(min || 0).toFixed(2)} - R$ ${(max || 0).toFixed(2)}`
     }
     
-    if (min) return `A partir de R$ ${min.toFixed(2)}`
-    if (max) return `Até R$ ${max.toFixed(2)}`
+    if (min) return `A partir de R$ ${(min || 0).toFixed(2)}`
+    if (max) return `Até R$ ${(max || 0).toFixed(2)}`
     
     return 'Preço a combinar'
   }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-red-900/50 text-red-300 border-red-700'
-      case 'medium': return 'bg-amber-900/50 text-amber-300 border-amber-700'
-      case 'low': return 'bg-emerald-900/50 text-emerald-300 border-emerald-700'
-      default: return 'bg-gray-800 text-gray-300 border-gray-700'
+      case 'high': return 'bg-gradient-to-r from-red-400 to-pink-400 text-white'
+      case 'medium': return 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white'
+      case 'low': return 'bg-gradient-to-r from-green-400 to-emerald-400 text-white'
+      default: return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
     }
   }
 
@@ -308,6 +324,11 @@ export default function ClassificadosV2Page() {
       case 'low': return 'Baixa'
       default: return 'Normal'
     }
+  }
+
+  const getCategoryColor = (categoryId: string) => {
+    const index = servicesList.findIndex(s => s.id === categoryId)
+    return categoryColors[index % categoryColors.length] || 'from-gray-400 to-gray-500'
   }
 
   // Funções de interação
@@ -378,83 +399,82 @@ export default function ClassificadosV2Page() {
 
   // Renderização de componentes
   const renderAdCard = (ad: ClassifiedAd) => (
-    <Card key={ad.id} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-gray-900/50 backdrop-blur-sm hover:bg-gray-800/50 hover:scale-[1.02]">
+    <Card key={ad.id} className="group hover:scale-105 transition-all duration-500 border-0 shadow-lg bg-white overflow-hidden">
+      {/* Header colorido */}
+      <div className={`h-2 bg-gradient-to-r ${getCategoryColor(ad.category)}`}></div>
+      
       <CardContent className="p-6">
-        {/* Header com gradiente */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg blur-xl"></div>
-          <div className="relative flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full"></div>
-                <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">
-                  {ad.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-purple-500/50 to-transparent"></div>
-              </div>
-              
-              <h3 className="font-bold text-xl text-white mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-blue-400 transition-all duration-300">
-                {ad.title}
-              </h3>
-              
-              <p className="text-gray-300 text-sm line-clamp-2 mb-4 leading-relaxed">
-                {ad.description}
-              </p>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${getCategoryColor(ad.category)}`}></div>
+              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                {ad.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
+              </span>
             </div>
+            
+            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-500 group-hover:to-purple-500 transition-all duration-300">
+              {ad.title}
+            </h3>
+            
+            <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">
+              {ad.description}
+            </p>
           </div>
         </div>
 
-        {/* Informações com ícones neon */}
+        {/* Informações coloridas */}
         <div className="space-y-3 mb-6">
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-blue-400" />
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-white" />
             </div>
-            <span className="text-gray-300">{ad.location_city}, {ad.location_state}</span>
+            <span className="text-gray-700 font-medium">{ad.location_city}, {ad.location_state}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-purple-400" />
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+              <Calendar className="h-4 w-4 text-white" />
             </div>
-            <span className="text-gray-300">{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+            <span className="text-gray-700 font-medium">{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
           
           {(ad.budget || ad.price) && (
             <div className="flex items-center gap-3 text-sm">
-              <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-emerald-400" />
+              <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-white" />
               </div>
-              <span className="text-emerald-300 font-medium">
+              <span className="text-green-600 font-bold">
                 {ad.user_type === 'professional' ? `R$ ${(ad.price || 0).toFixed(2)}` : `Orçamento: R$ ${(ad.budget || 0).toFixed(2)}`}
               </span>
             </div>
           )}
         </div>
 
-        {/* Urgência com efeito neon */}
+        {/* Urgência colorida */}
         <div className="mb-6">
-          <Badge className={`text-xs font-medium px-3 py-1 ${getUrgencyColor(ad.urgency)} border shadow-lg`}>
+          <Badge className={`text-xs font-bold px-4 py-2 rounded-full ${getUrgencyColor(ad.urgency)} shadow-lg`}>
             <Zap className="h-3 w-3 mr-1" />
             {getUrgencyLabel(ad.urgency)}
           </Badge>
         </div>
 
-        {/* Footer com gradiente */}
-        <div className="border-t border-gray-700 pt-6">
+        {/* Footer colorido */}
+        <div className="border-t border-gray-100 pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Avatar className="h-10 w-10 ring-2 ring-purple-500/50">
+              <Avatar className="h-12 w-12 ring-4 ring-white shadow-lg">
                 <AvatarImage src={ad.user_avatar_url || ''} />
-                <AvatarFallback className="text-sm bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-pink-400 to-purple-500 text-white font-bold">
                   {ad.user_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-white text-sm">{ad.user_name}</p>
+                <p className="font-bold text-gray-900 text-sm">{ad.user_name}</p>
                 <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-400">4.8 (24)</span>
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="text-xs text-gray-600 font-medium">4.8 (24)</span>
                 </div>
               </div>
             </div>
@@ -466,22 +486,22 @@ export default function ClassificadosV2Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(ad.id, 'classified_ad')}
-                    className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
                       favorites.has(ad.id) 
-                        ? 'text-red-400 hover:text-red-300 bg-red-500/20 hover:bg-red-500/30' 
-                        : 'text-gray-400 hover:text-red-400 hover:bg-red-500/20'
+                        ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                     }`}
                   >
-                    <Heart className={`h-4 w-4 ${favorites.has(ad.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`h-5 w-5 ${favorites.has(ad.id) ? 'fill-current' : ''}`} />
                   </Button>
                   
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(ad.user_id, ad.user_name)}
-                    className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-blue-500/20 transition-all duration-300"
+                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all duration-300"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageCircle className="h-5 w-5" />
                   </Button>
                 </>
               )}
@@ -490,9 +510,9 @@ export default function ClassificadosV2Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(ad.user_id)}
-                className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
+                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-300"
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -502,91 +522,91 @@ export default function ClassificadosV2Page() {
   )
 
   const renderServiceCard = (service: ProfessionalService) => (
-    <Card key={service.id} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-gray-900/50 backdrop-blur-sm hover:bg-gray-800/50 hover:scale-[1.02]">
+    <Card key={service.id} className="group hover:scale-105 transition-all duration-500 border-0 shadow-lg bg-white overflow-hidden">
+      {/* Header colorido */}
+      <div className={`h-2 bg-gradient-to-r ${getCategoryColor(service.category_id)}`}></div>
+      
       <CardContent className="p-6">
-        {/* Header com gradiente */}
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-lg blur-xl"></div>
-          <div className="relative flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">{service.category_icon}</span>
-                <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
-                  {service.category_name}
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-emerald-500/50 to-transparent"></div>
-              </div>
-              
-              <h3 className="font-bold text-xl text-white mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-teal-400 transition-all duration-300">
-                {service.title}
-              </h3>
-              
-              <p className="text-gray-300 text-sm line-clamp-2 mb-4 leading-relaxed">
-                {service.description || 'Sem descrição'}
-              </p>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">{service.category_icon}</span>
+              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${getCategoryColor(service.category_id)}`}></div>
+              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+                {service.category_name}
+              </span>
             </div>
+            
+            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-teal-500 transition-all duration-300">
+              {service.title}
+            </h3>
+            
+            <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">
+              {service.description || 'Sem descrição'}
+            </p>
           </div>
         </div>
 
-        {/* Informações com ícones neon */}
+        {/* Informações coloridas */}
         <div className="space-y-3 mb-6">
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-emerald-400" />
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-400 to-green-400 rounded-lg flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-white" />
             </div>
-            <span className="text-emerald-300 font-medium">{formatPrice(service.price_min, service.price_max)}</span>
+            <span className="text-emerald-600 font-bold">{formatPrice(service.price_min, service.price_max)}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-blue-400" />
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-lg flex items-center justify-center">
+              <MapPin className="h-4 w-4 text-white" />
             </div>
-            <span className="text-gray-300">{service.location_city}, {service.location_state}</span>
+            <span className="text-gray-700 font-medium">{service.location_city}, {service.location_state}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <Clock className="h-4 w-4 text-purple-400" />
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+              <Clock className="h-4 w-4 text-white" />
             </div>
-            <span className="text-gray-300 capitalize">{service.service_type}</span>
+            <span className="text-gray-700 font-medium capitalize">{service.service_type}</span>
           </div>
         </div>
 
-        {/* Badges neon */}
+        {/* Badges coloridos */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <Badge className="text-xs font-medium px-3 py-1 bg-blue-900/50 text-blue-300 border-blue-700 shadow-lg">
+          <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 text-white shadow-lg">
             <Award className="h-3 w-3 mr-1" />
             {service.experience_level}
           </Badge>
           {service.emergency_service && (
-            <Badge className="text-xs font-medium px-3 py-1 bg-red-900/50 text-red-300 border-red-700 shadow-lg">
+            <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-red-400 to-pink-400 text-white shadow-lg">
               <Zap className="h-3 w-3 mr-1" />
               24h
             </Badge>
           )}
           {service.insurance_coverage && (
-            <Badge className="text-xs font-medium px-3 py-1 bg-green-900/50 text-green-300 border-green-700 shadow-lg">
+            <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 text-white shadow-lg">
               <Shield className="h-3 w-3 mr-1" />
               Seguro
             </Badge>
           )}
         </div>
 
-        {/* Footer com gradiente */}
-        <div className="border-t border-gray-700 pt-6">
+        {/* Footer colorido */}
+        <div className="border-t border-gray-100 pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Avatar className="h-10 w-10 ring-2 ring-emerald-500/50">
+              <Avatar className="h-12 w-12 ring-4 ring-white shadow-lg">
                 <AvatarImage src={service.professional_avatar_url || ''} />
-                <AvatarFallback className="text-sm bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-bold">
                   {service.professional_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-semibold text-white text-sm">{service.professional_name}</p>
+                <p className="font-bold text-gray-900 text-sm">{service.professional_name}</p>
                 <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-400">{service.rating?.toFixed(1)} ({service.reviews_count})</span>
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="text-xs text-gray-600 font-medium">{(service.rating || 0).toFixed(1)} ({service.reviews_count})</span>
                 </div>
               </div>
             </div>
@@ -598,22 +618,22 @@ export default function ClassificadosV2Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(service.id, 'service')}
-                    className={`h-9 w-9 p-0 rounded-lg transition-all duration-300 ${
+                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
                       favorites.has(service.id) 
-                        ? 'text-red-400 hover:text-red-300 bg-red-500/20 hover:bg-red-500/30' 
-                        : 'text-gray-400 hover:text-red-400 hover:bg-red-500/20'
+                        ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
                     }`}
                   >
-                    <Heart className={`h-4 w-4 ${favorites.has(service.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`h-5 w-5 ${favorites.has(service.id) ? 'fill-current' : ''}`} />
                   </Button>
                   
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(service.professional_id, service.professional_name)}
-                    className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-emerald-400 hover:bg-emerald-500/20 transition-all duration-300"
+                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all duration-300"
                   >
-                    <MessageCircle className="h-4 w-4" />
+                    <MessageCircle className="h-5 w-5" />
                   </Button>
                 </>
               )}
@@ -622,9 +642,9 @@ export default function ClassificadosV2Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(service.professional_id)}
-                className="h-9 w-9 p-0 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
+                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-300"
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -635,15 +655,15 @@ export default function ClassificadosV2Page() {
 
   if (loading) {
     return (
-      <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 flex items-center justify-center">
           <div className="text-center">
             <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-800 border-t-purple-500 mx-auto mb-6"></div>
-              <div className="absolute inset-0 animate-pulse rounded-full h-16 w-16 bg-purple-500/20 blur-xl mx-auto"></div>
+              <div className="w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-bounce mx-auto mb-6"></div>
+              <div className="absolute inset-0 animate-ping w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full mx-auto opacity-20"></div>
             </div>
-            <h2 className="text-xl font-medium text-white mb-2">Carregando classificados...</h2>
-            <p className="text-gray-400">Preparando a experiência mais moderna</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Carregando classificados...</h2>
+            <p className="text-gray-600">Preparando uma experiência colorida!</p>
           </div>
         </div>
       </MainLayout>
@@ -651,47 +671,47 @@ export default function ClassificadosV2Page() {
   }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-950">
-        {/* Header Dark com efeitos */}
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100">
+        {/* Header Colorido Vibrante */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-indigo-900/20"></div>
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-600"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-3 h-3 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></div>
-                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-400">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <Rainbow className="h-12 w-12 text-white animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
                   Classificados
                 </h1>
-                <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full animate-pulse"></div>
+                <PartyPopper className="h-12 w-12 text-white animate-pulse" />
               </div>
-              <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-                Descubra oportunidades incríveis na rede mais moderna de profissionais
+              <p className="text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
+                Descubra oportunidades incríveis com a plataforma mais colorida e divertida!
               </p>
               
-              {/* Estatísticas neon */}
+              {/* Estatísticas coloridas */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Users className="h-6 w-6 text-white" />
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
+                  <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Users className="h-8 w-8 text-white" />
                   </div>
-                  <div className="text-2xl font-bold text-white">{ads.length + services.length}</div>
-                  <div className="text-sm text-purple-300">Oportunidades</div>
+                  <div className="text-3xl font-bold text-white">{ads.length + services.length}</div>
+                  <div className="text-sm text-white/80">Oportunidades</div>
                 </div>
-                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-500/20">
-                  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <TrendingUp className="h-6 w-6 text-white" />
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
+                  <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-8 w-8 text-white" />
                   </div>
-                  <div className="text-2xl font-bold text-white">{services.length}</div>
-                  <div className="text-sm text-emerald-300">Profissionais</div>
+                  <div className="text-3xl font-bold text-white">{services.length}</div>
+                  <div className="text-sm text-white/80">Profissionais</div>
                 </div>
-                <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Sparkles className="h-6 w-6 text-white" />
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
+                  <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="h-8 w-8 text-white" />
                   </div>
-                  <div className="text-2xl font-bold text-white">{ads.length}</div>
-                  <div className="text-sm text-blue-300">Solicitações</div>
+                  <div className="text-3xl font-bold text-white">{ads.length}</div>
+                  <div className="text-sm text-white/80">Solicitações</div>
                 </div>
               </div>
             </div>
@@ -699,28 +719,28 @@ export default function ClassificadosV2Page() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Barra de Busca Neon */}
-          <div className="bg-gray-900/50 backdrop-blur-sm rounded-2xl border border-gray-800 p-6 mb-8 shadow-2xl">
+          {/* Barra de Busca Colorida */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-6 mb-8 shadow-xl">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Busca */}
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
                   <Input
                     placeholder="Buscar serviços e anúncios..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-14 bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 focus:border-purple-500 focus:ring-purple-500 rounded-xl"
+                    className="pl-12 h-14 bg-white/50 border-2 border-pink-200 text-gray-800 placeholder:text-gray-500 focus:border-pink-400 focus:ring-pink-400 rounded-2xl text-lg"
                   />
                 </div>
               </div>
               
-              {/* Filtros */}
+              {/* Filtros coloridos */}
               <div className="flex gap-3">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="h-14 px-4 bg-gray-800/50 border border-gray-700 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                  className="h-14 px-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white border-0 rounded-2xl focus:ring-2 focus:ring-pink-300 font-medium"
                 >
                   <option value="all">Todas as categorias</option>
                   {servicesList.map(service => (
@@ -733,7 +753,7 @@ export default function ClassificadosV2Page() {
                 <select
                   value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
-                  className="h-14 px-4 bg-gray-800/50 border border-gray-700 text-white rounded-xl focus:border-purple-500 focus:ring-purple-500"
+                  className="h-14 px-4 bg-gradient-to-r from-purple-400 to-indigo-400 text-white border-0 rounded-2xl focus:ring-2 focus:ring-purple-300 font-medium"
                 >
                   <option value="newest">Mais recentes</option>
                   <option value="price_low">Menor preço</option>
@@ -744,21 +764,22 @@ export default function ClassificadosV2Page() {
             </div>
           </div>
 
-          {/* Botão Criar Anúncio Neon */}
+          {/* Botão Criar Anúncio Colorido */}
           <div className="text-center mb-8">
-            <Button size="lg" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-4 text-lg rounded-xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300">
-              <Plus className="h-5 w-5 mr-2" />
+            <Button size="lg" className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white px-10 py-5 text-xl rounded-2xl shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105">
+              <Plus className="h-6 w-6 mr-3" />
               Criar Anúncio
+              <Sparkles className="h-6 w-6 ml-3" />
             </Button>
           </div>
 
-          {/* Tabs Dark */}
+          {/* Tabs Coloridas */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-900/50 border border-gray-800 rounded-xl">
-              <TabsTrigger value="ads" className="text-base py-4 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-2">
+              <TabsTrigger value="ads" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-xl font-bold">
                 Anúncios ({filteredAds.length})
               </TabsTrigger>
-              <TabsTrigger value="services" className="text-base py-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <TabsTrigger value="services" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-xl font-bold">
                 Serviços ({filteredServices.length})
               </TabsTrigger>
             </TabsList>
@@ -771,13 +792,13 @@ export default function ClassificadosV2Page() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="w-24 h-24 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Search className="h-12 w-12 text-gray-400" />
+                  <div className="w-32 h-32 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
+                    <Search className="h-16 w-16 text-white" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-white mb-3">
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
                     {ads.length === 0 ? 'Nenhum anúncio encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-400 max-w-md mx-auto">
+                  <p className="text-gray-600 max-w-md mx-auto text-lg">
                     {ads.length === 0 
                       ? 'Seja o primeiro a criar um anúncio!'
                       : 'Tente ajustar os filtros de busca.'
@@ -795,13 +816,13 @@ export default function ClassificadosV2Page() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="w-24 h-24 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Search className="h-12 w-12 text-gray-400" />
+                  <div className="w-32 h-32 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
+                    <Search className="h-16 w-16 text-white" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-white mb-3">
+                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
                     {services.length === 0 ? 'Nenhum serviço encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-400 max-w-md mx-auto">
+                  <p className="text-gray-600 max-w-md mx-auto text-lg">
                     {services.length === 0 
                       ? 'Ainda não há serviços profissionais cadastrados.'
                       : 'Tente ajustar os filtros de busca.'

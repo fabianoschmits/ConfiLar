@@ -6,8 +6,8 @@ export async function middleware(request: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req: request, res })
 
-  // Verificar sessão atual
-  const { data: { session } } = await supabase.auth.getSession()
+  // Verificar usuário atual (mais seguro que getSession)
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Rotas que requerem autenticação
   const protectedRoutes = [
@@ -17,11 +17,31 @@ export async function middleware(request: NextRequest) {
     '/agenda',
     '/feed',
     '/buscar',
-    '/classificados',
+    '/classificados', // Apenas a página principal de classificados
     '/avaliacoes',
     '/reputacao',
     '/portfolio',
     '/configuracoes'
+  ]
+
+  // Rotas de teste que não requerem autenticação
+  const testRoutes = [
+    '/classificados-novo',
+    '/classificados-v1',
+    '/classificados-v2',
+    '/classificados-v3',
+    '/classificados-v4',
+    '/classificados-v5',
+    '/classificados-v6',
+    '/classificados-v7',
+    '/classificados-v8',
+    '/classificados-v9',
+    '/classificados-v10',
+    '/classificados-v11',
+    '/classificados-v12',
+    '/classificados-v13',
+    '/classificados-v14',
+    '/classificados-v15'
   ]
 
   // Rotas de autenticação (redirecionar se já logado)
@@ -29,8 +49,18 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Verificar se é uma rota de teste (não requer autenticação)
+  const isTestRoute = testRoutes.some(route => 
+    pathname.startsWith(route)
+  )
+
   // Permitir acesso à rota de logout sem interferência
   if (pathname === '/logout') {
+    return res
+  }
+
+  // Permitir acesso às rotas de teste sem verificação de autenticação
+  if (isTestRoute) {
     return res
   }
 
@@ -44,16 +74,16 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   )
 
-  // Se não há sessão e tentando acessar rota protegida
-  if (!session && isProtectedRoute) {
+  // Se não há usuário e tentando acessar rota protegida
+  if (!user && isProtectedRoute) {
     const redirectUrl = new URL('/auth', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Se há sessão e tentando acessar rota de auth, redirecionar para dashboard
+  // Se há usuário e tentando acessar rota de auth, redirecionar para dashboard
   // Mas apenas se não for um redirecionamento interno
-  if (session && isAuthRoute && !request.headers.get('x-middleware-redirect')) {
+  if (user && isAuthRoute && !request.headers.get('x-middleware-redirect')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

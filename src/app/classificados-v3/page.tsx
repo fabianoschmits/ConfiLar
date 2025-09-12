@@ -29,8 +29,12 @@ import {
   TrendingUp,
   Users,
   Sparkles,
-  Rainbow,
-  PartyPopper,
+  Hexagon,
+  Cpu,
+  Atom,
+  Brain,
+  Rocket,
+  Satellite
 } from 'lucide-react'
 import { services as servicesList } from '@/data/services'
 
@@ -96,20 +100,6 @@ export default function ClassifiedsV3Page() {
   const [services, setServices] = useState<ProfessionalService[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-  // Cores vibrantes para categorias
-  const categoryColors = [
-    'from-pink-400 to-rose-400',
-    'from-orange-400 to-red-400',
-    'from-yellow-400 to-orange-400',
-    'from-green-400 to-emerald-400',
-    'from-teal-400 to-cyan-400',
-    'from-blue-400 to-indigo-400',
-    'from-purple-400 to-pink-400',
-    'from-indigo-400 to-purple-400',
-    'from-red-400 to-pink-400',
-    'from-emerald-400 to-teal-400'
-  ]
-
   // Carregar dados
   useEffect(() => {
     loadData()
@@ -174,27 +164,19 @@ export default function ClassifiedsV3Page() {
       const transformedServices: ProfessionalService[] = (data || []).map((service: {
         id: string
         professional_id: string
+        profiles?: { full_name?: string; avatar_url?: string; location_state?: string; location_city?: string }
         category_id: string
+        service_categories?: { name?: string; icon?: string }
         title: string
-        description: string
+        description?: string
         price_min?: number
         price_max?: number
         service_type?: 'hourly' | 'fixed' | 'negotiable'
         is_active: boolean
         created_at: string
-        experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
+        experience_level?: ProfessionalService['experience_level']
         insurance_coverage?: boolean
         emergency_service?: boolean
-        profiles?: {
-          full_name?: string
-          avatar_url?: string
-          location_state?: string
-          location_city?: string
-        }
-        service_categories?: {
-          name?: string
-          icon?: string
-        }
       }) => ({
         id: service.id,
         professional_id: service.professional_id,
@@ -207,12 +189,12 @@ export default function ClassifiedsV3Page() {
         description: service.description,
         price_min: service.price_min,
         price_max: service.price_max,
-        service_type: (service.service_type as 'hourly' | 'fixed' | 'negotiable') || 'fixed',
+        service_type: service.service_type || 'fixed',
         is_active: service.is_active,
         created_at: service.created_at,
         location_state: service.profiles?.location_state || '',
         location_city: service.profiles?.location_city || '',
-        experience_level: (service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert') || 'intermediate',
+        experience_level: service.experience_level || 'intermediate',
         insurance_coverage: service.insurance_coverage || false,
         emergency_service: service.emergency_service || false,
         rating: 4.5 + Math.random() * 0.5,
@@ -299,21 +281,21 @@ export default function ClassifiedsV3Page() {
     if (!min && !max) return 'Preço a combinar'
     
     if (min && max && min !== max) {
-      return `R$ ${min.toFixed(2)} - R$ ${max.toFixed(2)}`
+      return `R$ ${(min || 0).toFixed(2)} - R$ ${(max || 0).toFixed(2)}`
     }
     
-    if (min) return `A partir de R$ ${min.toFixed(2)}`
-    if (max) return `Até R$ ${max.toFixed(2)}`
+    if (min) return `A partir de R$ ${(min || 0).toFixed(2)}`
+    if (max) return `Até R$ ${(max || 0).toFixed(2)}`
     
     return 'Preço a combinar'
   }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-gradient-to-r from-red-400 to-pink-400 text-white'
-      case 'medium': return 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white'
-      case 'low': return 'bg-gradient-to-r from-green-400 to-emerald-400 text-white'
-      default: return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
+      case 'high': return 'bg-gradient-to-r from-red-400/20 to-pink-400/20 text-red-300 border-red-400/30'
+      case 'medium': return 'bg-gradient-to-r from-amber-400/20 to-orange-400/20 text-amber-300 border-amber-400/30'
+      case 'low': return 'bg-gradient-to-r from-emerald-400/20 to-green-400/20 text-emerald-300 border-emerald-400/30'
+      default: return 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 text-gray-300 border-gray-400/30'
     }
   }
 
@@ -324,11 +306,6 @@ export default function ClassifiedsV3Page() {
       case 'low': return 'Baixa'
       default: return 'Normal'
     }
-  }
-
-  const getCategoryColor = (categoryId: string) => {
-    const index = servicesList.findIndex(s => s.id === categoryId)
-    return categoryColors[index % categoryColors.length] || 'from-gray-400 to-gray-500'
   }
 
   // Funções de interação
@@ -399,82 +376,91 @@ export default function ClassifiedsV3Page() {
 
   // Renderização de componentes
   const renderAdCard = (ad: ClassifiedAd) => (
-    <Card key={ad.id} className="group hover:scale-105 transition-all duration-500 border-0 shadow-lg bg-white overflow-hidden">
-      {/* Header colorido */}
-      <div className={`h-2 bg-gradient-to-r ${getCategoryColor(ad.category)}`}></div>
+    <Card key={ad.id} className="group hover:scale-105 transition-all duration-700 border-0 bg-white/10 backdrop-blur-xl hover:bg-white/20 shadow-2xl hover:shadow-cyan-500/25 overflow-hidden">
+      {/* Header com efeito glassmorphism */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-blue-400/10 to-purple-400/10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        <div className="relative h-32 flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+            <Hexagon className="h-8 w-8 text-cyan-400" />
+          </div>
+        </div>
+      </div>
       
       <CardContent className="p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${getCategoryColor(ad.category)}`}></div>
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-cyan-300 uppercase tracking-wider">
                 {ad.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
               </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-transparent"></div>
             </div>
             
-            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-pink-500 group-hover:to-purple-500 transition-all duration-300">
+            <h3 className="font-bold text-xl text-white mb-4 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 transition-all duration-500">
               {ad.title}
             </h3>
             
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">
+            <p className="text-white/70 text-sm line-clamp-3 mb-6 leading-relaxed">
               {ad.description}
             </p>
           </div>
         </div>
 
-        {/* Informações coloridas */}
-        <div className="space-y-3 mb-6">
+        {/* Informações com ícones futuristas */}
+        <div className="space-y-4 mb-6">
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-lg flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-cyan-400/30">
+              <MapPin className="h-5 w-5 text-cyan-400" />
             </div>
-            <span className="text-gray-700 font-medium">{ad.location_city}, {ad.location_state}</span>
+            <span className="text-white/80 font-medium">{ad.location_city}, {ad.location_state}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-purple-400/30">
+              <Calendar className="h-5 w-5 text-purple-400" />
             </div>
-            <span className="text-gray-700 font-medium">{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+            <span className="text-white/80 font-medium">{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
           
           {(ad.budget || ad.price) && (
             <div className="flex items-center gap-3 text-sm">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-400 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-400/20 to-green-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
+                <DollarSign className="h-5 w-5 text-emerald-400" />
               </div>
-              <span className="text-green-600 font-bold">
+              <span className="text-emerald-300 font-bold">
                 {ad.user_type === 'professional' ? `R$ ${(ad.price || 0).toFixed(2)}` : `Orçamento: R$ ${(ad.budget || 0).toFixed(2)}`}
               </span>
             </div>
           )}
         </div>
 
-        {/* Urgência colorida */}
+        {/* Urgência com efeito neon */}
         <div className="mb-6">
-          <Badge className={`text-xs font-bold px-4 py-2 rounded-full ${getUrgencyColor(ad.urgency)} shadow-lg`}>
+          <Badge className={`text-xs font-medium px-4 py-2 rounded-full border backdrop-blur-sm ${getUrgencyColor(ad.urgency)}`}>
             <Zap className="h-3 w-3 mr-1" />
             {getUrgencyLabel(ad.urgency)}
           </Badge>
         </div>
 
-        {/* Footer colorido */}
-        <div className="border-t border-gray-100 pt-6">
+        {/* Footer com glassmorphism */}
+        <div className="border-t border-white/10 pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 ring-4 ring-white shadow-lg">
+              <Avatar className="h-12 w-12 ring-2 ring-cyan-400/50 backdrop-blur-sm">
                 <AvatarImage src={ad.user_avatar_url || ''} />
-                <AvatarFallback className="text-sm bg-gradient-to-br from-pink-400 to-purple-500 text-white font-bold">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-cyan-500 to-blue-500 text-white font-bold">
                   {ad.user_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-bold text-gray-900 text-sm">{ad.user_name}</p>
+                <p className="font-bold text-white text-sm">{ad.user_name}</p>
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600 font-medium">4.8 (24)</span>
+                  <span className="text-xs text-white/60">4.8 (24)</span>
                 </div>
               </div>
             </div>
@@ -486,22 +472,22 @@ export default function ClassifiedsV3Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(ad.id, 'classified_ad')}
-                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
+                    className={`h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-500 ${
                       favorites.has(ad.id) 
-                        ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
+                        : 'text-white/60 hover:text-red-400 hover:bg-red-500/20'
                     }`}
                   >
-                    <Heart className={`h-5 w-5 ${favorites.has(ad.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`h-4 w-4 ${favorites.has(ad.id) ? 'fill-current' : ''}`} />
                   </Button>
                   
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(ad.user_id, ad.user_name)}
-                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all duration-300"
+                    className="h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 text-white/60 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all duration-500"
                   >
-                    <MessageCircle className="h-5 w-5" />
+                    <MessageCircle className="h-4 w-4" />
                   </Button>
                 </>
               )}
@@ -510,9 +496,9 @@ export default function ClassifiedsV3Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(ad.user_id)}
-                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-300"
+                className="h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-500"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -522,91 +508,100 @@ export default function ClassifiedsV3Page() {
   )
 
   const renderServiceCard = (service: ProfessionalService) => (
-    <Card key={service.id} className="group hover:scale-105 transition-all duration-500 border-0 shadow-lg bg-white overflow-hidden">
-      {/* Header colorido */}
-      <div className={`h-2 bg-gradient-to-r ${getCategoryColor(service.category_id)}`}></div>
+    <Card key={service.id} className="group hover:scale-105 transition-all duration-700 border-0 bg-white/10 backdrop-blur-xl hover:bg-white/20 shadow-2xl hover:shadow-emerald-500/25 overflow-hidden">
+      {/* Header com efeito glassmorphism */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/10 via-teal-400/10 to-cyan-400/10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+        <div className="relative h-32 flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+            <Atom className="h-8 w-8 text-emerald-400" />
+          </div>
+        </div>
+      </div>
       
       <CardContent className="p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-6">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">{service.category_icon}</span>
-              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${getCategoryColor(service.category_id)}`}></div>
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+              <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">
                 {service.category_name}
               </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-emerald-500/30 to-transparent"></div>
             </div>
             
-            <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-500 group-hover:to-teal-500 transition-all duration-300">
+            <h3 className="font-bold text-xl text-white mb-4 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-emerald-400 group-hover:to-teal-400 transition-all duration-500">
               {service.title}
             </h3>
             
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4 leading-relaxed">
+            <p className="text-white/70 text-sm line-clamp-3 mb-6 leading-relaxed">
               {service.description || 'Sem descrição'}
             </p>
           </div>
         </div>
 
-        {/* Informações coloridas */}
-        <div className="space-y-3 mb-6">
+        {/* Informações com ícones futuristas */}
+        <div className="space-y-4 mb-6">
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-emerald-400 to-green-400 rounded-lg flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-400/20 to-green-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
+              <DollarSign className="h-5 w-5 text-emerald-400" />
             </div>
-            <span className="text-emerald-600 font-bold">{formatPrice(service.price_min, service.price_max)}</span>
+            <span className="text-emerald-300 font-bold">{formatPrice(service.price_min, service.price_max)}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-lg flex items-center justify-center">
-              <MapPin className="h-4 w-4 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-blue-400/30">
+              <MapPin className="h-5 w-5 text-blue-400" />
             </div>
-            <span className="text-gray-700 font-medium">{service.location_city}, {service.location_state}</span>
+            <span className="text-white/80 font-medium">{service.location_city}, {service.location_state}</span>
           </div>
           
           <div className="flex items-center gap-3 text-sm">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
-              <Clock className="h-4 w-4 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-xl flex items-center justify-center backdrop-blur-sm border border-purple-400/30">
+              <Clock className="h-5 w-5 text-purple-400" />
             </div>
-            <span className="text-gray-700 font-medium capitalize">{service.service_type}</span>
+            <span className="text-white/80 font-medium capitalize">{service.service_type}</span>
           </div>
         </div>
 
-        {/* Badges coloridos */}
+        {/* Badges futuristas */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-blue-400 to-indigo-400 text-white shadow-lg">
+          <Badge className="text-xs font-medium px-3 py-1 rounded-full bg-gradient-to-r from-blue-400/20 to-indigo-400/20 text-blue-300 border border-blue-400/30 backdrop-blur-sm">
             <Award className="h-3 w-3 mr-1" />
             {service.experience_level}
           </Badge>
           {service.emergency_service && (
-            <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-red-400 to-pink-400 text-white shadow-lg">
+            <Badge className="text-xs font-medium px-3 py-1 rounded-full bg-gradient-to-r from-red-400/20 to-pink-400/20 text-red-300 border border-red-400/30 backdrop-blur-sm">
               <Zap className="h-3 w-3 mr-1" />
               24h
             </Badge>
           )}
           {service.insurance_coverage && (
-            <Badge className="text-xs font-bold px-4 py-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 text-white shadow-lg">
+            <Badge className="text-xs font-medium px-3 py-1 rounded-full bg-gradient-to-r from-green-400/20 to-emerald-400/20 text-green-300 border border-green-400/30 backdrop-blur-sm">
               <Shield className="h-3 w-3 mr-1" />
               Seguro
             </Badge>
           )}
         </div>
 
-        {/* Footer colorido */}
-        <div className="border-t border-gray-100 pt-6">
+        {/* Footer com glassmorphism */}
+        <div className="border-t border-white/10 pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 ring-4 ring-white shadow-lg">
+              <Avatar className="h-12 w-12 ring-2 ring-emerald-400/50 backdrop-blur-sm">
                 <AvatarImage src={service.professional_avatar_url || ''} />
-                <AvatarFallback className="text-sm bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-bold">
+                <AvatarFallback className="text-sm bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-bold">
                   {service.professional_name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-bold text-gray-900 text-sm">{service.professional_name}</p>
+                <p className="font-bold text-white text-sm">{service.professional_name}</p>
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                  <span className="text-xs text-gray-600 font-medium">{service.rating?.toFixed(1)} ({service.reviews_count})</span>
+                  <span className="text-xs text-white/60">{(service.rating || 0).toFixed(1)} ({service.reviews_count})</span>
                 </div>
               </div>
             </div>
@@ -618,22 +613,22 @@ export default function ClassifiedsV3Page() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleFavorite(service.id, 'service')}
-                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
+                    className={`h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 transition-all duration-500 ${
                       favorites.has(service.id) 
-                        ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-                        : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+                        ? 'text-red-400 bg-red-500/20 hover:bg-red-500/30' 
+                        : 'text-white/60 hover:text-red-400 hover:bg-red-500/20'
                     }`}
                   >
-                    <Heart className={`h-5 w-5 ${favorites.has(service.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`h-4 w-4 ${favorites.has(service.id) ? 'fill-current' : ''}`} />
                   </Button>
                   
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => handleChat(service.professional_id, service.professional_name)}
-                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all duration-300"
+                    className="h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 text-white/60 hover:text-emerald-400 hover:bg-emerald-500/20 transition-all duration-500"
                   >
-                    <MessageCircle className="h-5 w-5" />
+                    <MessageCircle className="h-4 w-4" />
                   </Button>
                 </>
               )}
@@ -642,9 +637,9 @@ export default function ClassifiedsV3Page() {
                 size="sm"
                 variant="ghost"
                 onClick={() => handleViewProfile(service.professional_id)}
-                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all duration-300"
+                className="h-10 w-10 p-0 rounded-xl backdrop-blur-sm border border-white/20 text-white/60 hover:text-white hover:bg-white/10 transition-all duration-500"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -655,15 +650,15 @@ export default function ClassifiedsV3Page() {
 
   if (loading) {
     return (
-      <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100 flex items-center justify-center">
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
           <div className="text-center">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full animate-bounce mx-auto mb-6"></div>
-              <div className="absolute inset-0 animate-ping w-20 h-20 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full mx-auto opacity-20"></div>
+              <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl animate-pulse mx-auto mb-6 backdrop-blur-sm border border-cyan-400/30"></div>
+              <div className="absolute inset-0 w-20 h-20 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl animate-ping mx-auto opacity-20"></div>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Carregando classificados...</h2>
-            <p className="text-gray-600">Preparando uma experiência colorida!</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Carregando classificados...</h2>
+            <p className="text-white/60">Preparando a experiência futurista</p>
           </div>
         </div>
       </MainLayout>
@@ -671,80 +666,84 @@ export default function ClassifiedsV3Page() {
   }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-indigo-100">
-        {/* Header Colorido Vibrante */}
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        {/* Background com efeitos */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.02%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%221%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-blue-500/5"></div>
+        
+        {/* Header Futurista */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-600"></div>
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-blue-500/10"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-4 mb-6">
-                <Rainbow className="h-12 w-12 text-white animate-pulse" />
-                <h1 className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg">
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <Rocket className="h-12 w-12 text-cyan-400 animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-blue-400 drop-shadow-2xl">
                   Classificados
                 </h1>
-                <PartyPopper className="h-12 w-12 text-white animate-pulse" />
+                <Satellite className="h-12 w-12 text-blue-400 animate-pulse" />
               </div>
-              <p className="text-xl text-white/90 max-w-2xl mx-auto mb-8 drop-shadow-md">
-                Descubra oportunidades incríveis com a plataforma mais colorida e divertida!
+              <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12 drop-shadow-md">
+                Explore o futuro das conexões profissionais com tecnologia de ponta
               </p>
               
-              {/* Estatísticas coloridas */}
+              {/* Estatísticas futuristas */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                  <div className="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Users className="h-8 w-8 text-white" />
+                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-cyan-400/30">
+                    <Users className="h-8 w-8 text-cyan-400" />
                   </div>
                   <div className="text-3xl font-bold text-white">{ads.length + services.length}</div>
-                  <div className="text-sm text-white/80">Oportunidades</div>
+                  <div className="text-sm text-white/60">Oportunidades</div>
                 </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                  <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <TrendingUp className="h-8 w-8 text-white" />
+                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-emerald-400/30">
+                    <TrendingUp className="h-8 w-8 text-emerald-400" />
                   </div>
                   <div className="text-3xl font-bold text-white">{services.length}</div>
-                  <div className="text-sm text-white/80">Profissionais</div>
+                  <div className="text-sm text-white/60">Profissionais</div>
                 </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                  <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-8 w-8 text-white" />
+                <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-purple-400/30">
+                    <Sparkles className="h-8 w-8 text-purple-400" />
                   </div>
                   <div className="text-3xl font-bold text-white">{ads.length}</div>
-                  <div className="text-sm text-white/80">Solicitações</div>
+                  <div className="text-sm text-white/60">Solicitações</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Barra de Busca Colorida */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/50 p-6 mb-8 shadow-xl">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Barra de Busca Futurista */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 p-6 mb-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Busca */}
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/60 h-6 w-6" />
                   <Input
                     placeholder="Buscar serviços e anúncios..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-14 bg-white/50 border-2 border-pink-200 text-gray-800 placeholder:text-gray-500 focus:border-pink-400 focus:ring-pink-400 rounded-2xl text-lg"
+                    className="pl-12 h-14 bg-white/10 border border-white/20 text-white placeholder:text-white/50 focus:border-cyan-400 focus:ring-cyan-400 rounded-2xl backdrop-blur-sm"
                   />
                 </div>
               </div>
               
-              {/* Filtros coloridos */}
+              {/* Filtros futuristas */}
               <div className="flex gap-3">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="h-14 px-4 bg-gradient-to-r from-pink-400 to-purple-400 text-white border-0 rounded-2xl focus:ring-2 focus:ring-pink-300 font-medium"
+                  className="h-14 px-4 bg-white/10 border border-white/20 text-white rounded-2xl focus:border-cyan-400 focus:ring-cyan-400 backdrop-blur-sm"
                 >
                   <option value="all">Todas as categorias</option>
                   {servicesList.map(service => (
-                    <option key={service.id} value={service.id}>
+                    <option key={service.id} value={service.id} className="bg-slate-800 text-white">
                       {service.name}
                     </option>
                   ))}
@@ -753,7 +752,7 @@ export default function ClassifiedsV3Page() {
                 <select
                   value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
-                  className="h-14 px-4 bg-gradient-to-r from-purple-400 to-indigo-400 text-white border-0 rounded-2xl focus:ring-2 focus:ring-purple-300 font-medium"
+                  className="h-14 px-4 bg-white/10 border border-white/20 text-white rounded-2xl focus:border-purple-400 focus:ring-purple-400 backdrop-blur-sm"
                 >
                   <option value="newest">Mais recentes</option>
                   <option value="price_low">Menor preço</option>
@@ -764,22 +763,22 @@ export default function ClassifiedsV3Page() {
             </div>
           </div>
 
-          {/* Botão Criar Anúncio Colorido */}
+          {/* Botão Criar Anúncio Futurista */}
           <div className="text-center mb-8">
-            <Button size="lg" className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white px-10 py-5 text-xl rounded-2xl shadow-2xl hover:shadow-pink-500/25 transition-all duration-300 hover:scale-105">
+            <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-10 py-5 text-xl rounded-2xl shadow-2xl hover:shadow-cyan-500/25 transition-all duration-500 hover:scale-105 backdrop-blur-sm border border-white/20">
               <Plus className="h-6 w-6 mr-3" />
               Criar Anúncio
-              <Sparkles className="h-6 w-6 ml-3" />
+              <Rocket className="h-6 w-6 ml-3" />
             </Button>
           </div>
 
-          {/* Tabs Coloridas */}
+          {/* Tabs Futuristas */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/80 backdrop-blur-sm border border-white/50 rounded-2xl p-2">
-              <TabsTrigger value="ads" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-xl font-bold">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-2">
+              <TabsTrigger value="ads" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-500 data-[state=active]:text-white rounded-xl font-bold backdrop-blur-sm">
                 Anúncios ({filteredAds.length})
               </TabsTrigger>
-              <TabsTrigger value="services" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-xl font-bold">
+              <TabsTrigger value="services" className="text-lg py-4 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white rounded-xl font-bold backdrop-blur-sm">
                 Serviços ({filteredServices.length})
               </TabsTrigger>
             </TabsList>
@@ -792,13 +791,13 @@ export default function ClassifiedsV3Page() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="w-32 h-32 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                    <Search className="h-16 w-16 text-white" />
+                  <div className="w-32 h-32 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm border border-cyan-400/30">
+                    <Cpu className="h-16 w-16 text-cyan-400" />
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                  <h3 className="text-3xl font-bold text-white mb-4">
                     {ads.length === 0 ? 'Nenhum anúncio encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto text-lg">
+                  <p className="text-white/60 max-w-md mx-auto text-lg">
                     {ads.length === 0 
                       ? 'Seja o primeiro a criar um anúncio!'
                       : 'Tente ajustar os filtros de busca.'
@@ -816,13 +815,13 @@ export default function ClassifiedsV3Page() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="w-32 h-32 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                    <Search className="h-16 w-16 text-white" />
+                  <div className="w-32 h-32 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm border border-emerald-400/30">
+                    <Brain className="h-16 w-16 text-emerald-400" />
                   </div>
-                  <h3 className="text-3xl font-bold text-gray-800 mb-4">
+                  <h3 className="text-3xl font-bold text-white mb-4">
                     {services.length === 0 ? 'Nenhum serviço encontrado' : 'Nenhum resultado encontrado'}
                   </h3>
-                  <p className="text-gray-600 max-w-md mx-auto text-lg">
+                  <p className="text-white/60 max-w-md mx-auto text-lg">
                     {services.length === 0 
                       ? 'Ainda não há serviços profissionais cadastrados.'
                       : 'Tente ajustar os filtros de busca.'

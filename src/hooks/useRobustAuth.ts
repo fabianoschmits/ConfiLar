@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 
@@ -61,7 +61,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const supabase = createClientComponentClient()
+  // Usar o client Supabase configurado
   const initializationRef = useRef(false)
   const timeoutRefs = useRef<NodeJS.Timeout[]>([])
 
@@ -117,10 +117,10 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
 
   // Buscar perfil com timeout e retry
   const fetchUserProfile = useCallback(async (userId: string, email: string, retries = 3): Promise<Profile> => {
-    // Verificar se ainda há uma sessão ativa antes de buscar o perfil
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      console.log('⚠️ Sem sessão ativa, não buscando perfil')
+    // Verificar se ainda há um usuário ativo antes de buscar o perfil
+    const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+    if (userError || !currentUser) {
+      console.log('⚠️ Sem usuário ativo, não buscando perfil')
       return createDefaultProfile(userId, email)
     }
 
@@ -205,12 +205,12 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         return
       }
 
-      // Verificar sessão atual
-      console.log('🔍 Verificando sessão existente...')
-      const { data: { session }, error } = await supabase.auth.getSession()
+      // Verificar usuário atual
+      console.log('🔍 Verificando usuário atual...')
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser()
       
       if (error) {
-        console.error('❌ Erro ao buscar sessão:', error)
+        console.error('❌ Erro ao buscar usuário:', error)
         setError(error.message)
         setLoading(false)
         setIsReady(true)
@@ -218,14 +218,14 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         return
       }
 
-      if (session?.user?.email) {
-        console.log('✅ Usuário encontrado na sessão:', session.user.email)
-        const userData = { id: session.user.id, email: session.user.email }
+      if (currentUser?.email) {
+        console.log('✅ Usuário encontrado:', currentUser.email)
+        const userData = { id: currentUser.id, email: currentUser.email }
         setUser(userData)
         setSession({ user: userData })
         
         // Buscar perfil com retry
-        const userProfile = await fetchUserProfile(session.user.id, session.user.email)
+        const userProfile = await fetchUserProfile(currentUser.id, currentUser.email)
         setProfile(userProfile)
       } else {
         console.log('❌ Nenhum usuário na sessão')
@@ -391,19 +391,19 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     setError(null)
     
     try {
-      const { data: { session }, error } = await supabase.auth.getSession()
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser()
       
       if (error) {
         setError(error.message)
         return
       }
 
-      if (session?.user?.email) {
-        const userData = { id: session.user.id, email: session.user.email }
+      if (currentUser?.email) {
+        const userData = { id: currentUser.id, email: currentUser.email }
         setUser(userData)
         setSession({ user: userData })
         
-        const userProfile = await fetchUserProfile(session.user.id, session.user.email)
+        const userProfile = await fetchUserProfile(currentUser.id, currentUser.email)
         setProfile(userProfile)
       } else {
         setUser(null)

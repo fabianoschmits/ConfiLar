@@ -1,719 +1,605 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { useState, useEffect } from 'react'
+import { MainLayout } from '@/components/layout/MainLayout'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import { 
-  Search, 
-  Filter, 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  MapPin, 
-  Star, 
-  Clock, 
-  User, 
-  Plus,
-  ChevronDown,
-  Layers,
-  Grid3X3,
-  List,
-  Zap,
-  TrendingUp,
-  Palette,
-  Brush,
-  Sparkles
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
-import { servicesList } from '@/data/services';
-import { toast } from 'sonner';
+  Plus, Search, MapPin, Calendar, MessageCircle, Star,
+  DollarSign, Clock, Heart, Eye, Zap, Shield, Award,
+  TrendingUp, Users, Sparkles, Filter, SortAsc, Grid3X3,
+  List, Bookmark, Share2, MoreHorizontal, Diamond,
+  Gem, Lightbulb, Sun, Moon, Cloud, Wind, Waves,
+  Mountain, TreePine, Flower, Leaf, Sparkle, Crown, Circle
+} from 'lucide-react'
+import { services as servicesList } from '@/data/services'
 
-export const dynamic = 'force-dynamic';
-
-interface ClassifiedAd {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  category: string;
-  budget: number;
-  location: string;
-  urgency: 'low' | 'medium' | 'high';
-  created_at: string;
-  user_name: string;
-  user_type: 'client' | 'professional';
-  user_avatar?: string;
-  is_favorited?: boolean;
+interface GlassmorphismListing {
+  id: string
+  user_id: string
+  title: string
+  description: string
+  category: string
+  location_state: string
+  location_city: string
+  user_name: string
+  user_type: 'client' | 'professional'
+  created_at: string
+  is_active: boolean
+  views_count: number
+  user_avatar_url?: string
+  ad_type: 'service_request' | 'service_offer'
+  budget?: number
+  price?: number
+  urgency: 'low' | 'medium' | 'high'
+  clarity_level?: 'crystal' | 'diamond' | 'gem' | 'precious'
+  transparency?: boolean
+  refraction?: boolean
+  premium_quality?: boolean
 }
 
-interface ProfessionalService {
-  id: string;
-  user_id: string;
-  title: string;
-  description: string;
-  service_type: 'hourly' | 'fixed' | 'negotiable';
-  price: number;
-  location: string;
-  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  created_at: string;
-  user_name: string;
-  user_avatar?: string;
-  rating?: number;
-  review_count?: number;
-  is_favorited?: boolean;
-}
+export default function ClassificadosV13Page() {
+  const { user } = useAuthContext()
+  const { openChat } = useFloatingChat()
+  
+  // Estados principais
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [sortBy, setSortBy] = useState<'newest' | 'price_low' | 'price_high' | 'rating'>('newest')
+  const [crystal, setCrystal] = useState<'diamond' | 'emerald' | 'sapphire' | 'ruby'>('diamond')
+  
+  // Estados para dados
+  const [listings, setListings] = useState<GlassmorphismListing[]>([])
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
-export default function ClassificadosV13() {
-  const [ads, setAds] = useState<ClassifiedAd[]>([]);
-  const [services, setServices] = useState<ProfessionalService[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [activeTab, setActiveTab] = useState<'ads' | 'services'>('ads');
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showHeader, setShowHeader] = useState(false);
+  // Cores de cristal para diferentes tipos
+  const crystalColors = {
+    'diamond': 'from-white via-blue-100 to-cyan-100',
+    'emerald': 'from-green-100 via-emerald-100 to-teal-100',
+    'sapphire': 'from-blue-100 via-indigo-100 to-purple-100',
+    'ruby': 'from-red-100 via-pink-100 to-rose-100'
+  }
 
-  const loadData = useCallback(async () => {
+  const getCrystalIcon = (crystal: string) => {
+    switch (crystal) {
+      case 'diamond': return Diamond
+      case 'emerald': return Gem
+      case 'sapphire': return Diamond
+      case 'ruby': return Gem
+      default: return Diamond
+    }
+  }
+
+  // Carregar dados
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
     try {
-      setLoading(true);
+      await Promise.all([loadListings(), loadFavorites()])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      // Load classified ads
-      const { data: adsData, error: adsError } = await supabase
+  const loadListings = async () => {
+    try {
+      const { data, error } = await supabase
         .from('classified_ads')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
 
-      if (adsError) throw adsError;
+      if (error) {
+        console.error('❌ Erro ao carregar anúncios:', error)
+        setListings([])
+        return
+      }
 
-      // Load professional services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('professional_services')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Adicionar dados fictícios glassmorphism
+      const glassmorphismListings: GlassmorphismListing[] = (data || []).map(listing => ({
+        ...listing,
+        clarity_level: ['crystal', 'diamond', 'gem', 'precious'][Math.floor(Math.random() * 4)] as 'crystal' | 'diamond' | 'gem' | 'precious',
+        transparency: Math.random() > 0.2,
+        refraction: Math.random() > 0.3,
+        premium_quality: Math.random() > 0.4
+      }))
 
-      if (servicesError) throw servicesError;
-
-      // Transform services to match interface
-      const transformedServices: ProfessionalService[] = servicesData?.map(service => ({
-        id: service.id,
-        user_id: service.user_id,
-        title: service.title,
-        description: service.description,
-        service_type: service.service_type as 'hourly' | 'fixed' | 'negotiable',
-        price: service.price,
-        location: service.location,
-        experience_level: service.experience_level as 'beginner' | 'intermediate' | 'advanced' | 'expert',
-        created_at: service.created_at,
-        user_name: service.user_name,
-        user_avatar: service.user_avatar,
-        rating: service.rating,
-        review_count: service.review_count,
-        is_favorited: service.is_favorited
-      })) || [];
-
-      setAds(adsData || []);
-      setServices(transformedServices);
+      setListings(glassmorphismListings)
     } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+      console.error('❌ Erro geral:', error)
+      setListings([])
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    loadData();
-    setShowHeader(true);
-  }, [loadData]);
+  const loadFavorites = async () => {
+    if (!user) return
+    
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('item_id')
+        .eq('user_id', user.id)
+        .eq('item_type', 'classified_ad')
 
-  const filteredAds = ads.filter(ad => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || ad.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+      if (!error && data) {
+        setFavorites(new Set(data.map(fav => fav.item_id)))
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar favoritos:', error)
+    }
+  }
 
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
-                           services.find(s => s.id === service.title)?.id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const sortedAds = [...filteredAds].sort((a, b) => {
+  // Filtrar e ordenar dados
+  const filteredListings = listings.filter(listing => {
+    const matchesSearch = !searchTerm || 
+      listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      listing.description.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory
+    
+    return matchesSearch && matchesCategory
+  }).sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'budget_high':
-        return b.budget - a.budget;
-      case 'budget_low':
-        return a.budget - b.budget;
-      default:
-        return 0;
-    }
-  });
-
-  const sortedServices = [...filteredServices].sort((a, b) => {
-    switch (sortBy) {
-      case 'newest':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      case 'oldest':
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      case 'price_high':
-        return b.price - a.price;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       case 'price_low':
-        return a.price - b.price;
-      case 'rating':
-        return (b.rating || 0) - (a.rating || 0);
+        return (a.budget || a.price || 0) - (b.budget || b.price || 0)
+      case 'price_high':
+        return (b.budget || b.price || 0) - (a.budget || a.price || 0)
       default:
-        return 0;
+        return 0
     }
-  });
+  })
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
+  // Funções utilitárias
+  const formatPrice = (budget?: number, price?: number) => {
+    const value = budget || price
+    if (!value) return 'Preço a combinar'
+    return `${value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+  }
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
+      case 'high': return 'bg-red-100/50 text-red-600 border-red-200/50'
+      case 'medium': return 'bg-yellow-100/50 text-yellow-600 border-yellow-200/50'
+      case 'low': return 'bg-green-100/50 text-green-600 border-green-200/50'
+      default: return 'bg-gray-100/50 text-gray-600 border-gray-200/50'
     }
-  };
+  }
 
-  const getExperienceColor = (level: string) => {
+  const getUrgencyLabel = (urgency: string) => {
+    switch (urgency) {
+      case 'high': return 'URGENTE'
+      case 'medium': return 'NORMAL'
+      case 'low': return 'BAIXA'
+      default: return 'NORMAL'
+    }
+  }
+
+  const getClarityColor = (level: string) => {
     switch (level) {
-      case 'expert': return 'bg-purple-500';
-      case 'advanced': return 'bg-blue-500';
-      case 'intermediate': return 'bg-green-500';
-      case 'beginner': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'precious': return 'text-purple-600'
+      case 'diamond': return 'text-blue-600'
+      case 'gem': return 'text-green-600'
+      case 'crystal': return 'text-gray-600'
+      default: return 'text-gray-600'
     }
-  };
+  }
 
-  const renderAdCard = (ad: ClassifiedAd, index: number) => (
-    <CSSTransition
-      key={ad.id}
-      timeout={500}
-      classNames="card"
-      appear
-    >
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-2xl transition-all duration-500 group">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+  // Funções de interação
+  const handleChat = (userId: string, userName: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para iniciar um chat')
+      return
+    }
+    
+    if (userId === user.id) {
+      toast.error('Você não pode iniciar um chat consigo mesmo')
+      return
+    }
+    
+    openChat(userId, userName)
+  }
+
+  const handleViewProfile = (userId: string) => {
+    window.location.href = `/perfil/${userId}`
+  }
+
+  const handleFavorite = async (itemId: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para favoritar')
+      return
+    }
+
+    const isFavorited = favorites.has(itemId)
+    
+    try {
+      if (isFavorited) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('item_id', itemId)
+          .eq('item_type', 'classified_ad')
+
+        if (error) throw error
         
-        <CardHeader className="relative pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                {ad.title}
-              </CardTitle>
-              
-              <div className="flex items-center gap-2 mb-2">
-                <Badge 
-                  variant="secondary" 
-                  className={`${getUrgencyColor(ad.urgency)} text-white text-xs`}
-                >
-                  {ad.urgency === 'high' ? 'Urgente' : ad.urgency === 'medium' ? 'Médio' : 'Baixo'}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {servicesList.find(s => s.id === ad.category)?.name || ad.category}
-                </Badge>
+        setFavorites(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(itemId)
+          return newSet
+        })
+        
+        toast.success('Removido dos favoritos')
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            item_id: itemId,
+            item_type: 'classified_ad'
+          })
+
+        if (error) throw error
+        
+        setFavorites(prev => new Set(prev).add(itemId))
+        
+        toast.success('Adicionado aos favoritos')
+      }
+    } catch (error) {
+      console.error('❌ Erro ao atualizar favoritos:', error)
+      toast.error('Erro ao atualizar favoritos')
+    }
+  }
+
+  // Renderização de componentes
+  const renderGlassmorphismCard = (listing: GlassmorphismListing) => (
+    <Card key={listing.id} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white/10 backdrop-blur-lg hover:bg-white/20 overflow-hidden relative">
+      {/* Efeito glassmorphism no hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      <CardContent className="p-6 relative z-10">
+        {/* Header glassmorphism */}
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <Diamond className="h-5 w-5 text-blue-500" />
+                <span className="text-xs font-medium text-blue-600 uppercase tracking-wider">
+                  {listing.user_type === 'professional' ? 'OFERECENDO' : 'PROCURANDO'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkle className="h-4 w-4 text-purple-500" />
+                <span className="text-sm font-medium text-purple-600">
+                  {listing.clarity_level?.toUpperCase()}
+                </span>
               </div>
             </div>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Heart className="h-4 w-4" />
-            </Button>
+            <h3 className="font-bold text-xl text-gray-800 mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+              {listing.title}
+            </h3>
+            
+            <p className="text-gray-600 text-sm line-clamp-2 mb-6 leading-relaxed">
+              {listing.description}
+            </p>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent className="relative">
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {ad.description}
-          </p>
+        {/* Badges glassmorphism */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {listing.transparency && (
+            <Badge className="bg-blue-100/50 text-blue-600 border-blue-200/50">
+              <Circle className="h-3 w-3 mr-1" />
+              TRANSPARENT
+            </Badge>
+          )}
+          {listing.refraction && (
+            <Badge className="bg-purple-100/50 text-purple-600 border-purple-200/50">
+              <Sparkle className="h-3 w-3 mr-1" />
+              REFRACTION
+            </Badge>
+          )}
+          {listing.premium_quality && (
+            <Badge className="bg-pink-100/50 text-pink-600 border-pink-200/50">
+              <Crown className="h-3 w-3 mr-1" />
+              PREMIUM
+            </Badge>
+          )}
+          <Badge className={`${getUrgencyColor(listing.urgency)}`}>
+            <Zap className="h-3 w-3 mr-1" />
+            {getUrgencyLabel(listing.urgency)}
+          </Badge>
+        </div>
 
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{ad.location}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
-              </div>
+        {/* Informações glassmorphism */}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+              <MapPin className="h-4 w-4 text-blue-600" />
             </div>
+            <span className="text-gray-700">{listing.location_city}, {listing.location_state}</span>
           </div>
+          
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+              <Calendar className="h-4 w-4 text-purple-600" />
+            </div>
+            <span className="text-gray-700">{new Date(listing.created_at).toLocaleDateString('pt-BR')}</span>
+          </div>
+          
+          {(listing.budget || listing.price) && (
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </div>
+              <span className="text-green-600 font-semibold">{formatPrice(listing.budget, listing.price)}</span>
+            </div>
+          )}
+        </div>
 
+        {/* Barra de clareza */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Nível de Clareza</span>
+            <span className={`text-sm font-bold ${getClarityColor(listing.clarity_level || 'crystal')}`}>
+              {listing.clarity_level?.toUpperCase()}
+            </span>
+          </div>
+          <div className="w-full bg-white/20 rounded-full h-2 backdrop-blur-sm">
+            <div 
+              className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 h-2 rounded-full transition-all duration-500"
+              style={{ 
+                width: listing.clarity_level === 'precious' ? '100%' : 
+                       listing.clarity_level === 'diamond' ? '75%' : 
+                       listing.clarity_level === 'gem' ? '50%' : '25%' 
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Footer glassmorphism */}
+        <div className="border-t border-white/20 pt-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-12 w-12 ring-2 ring-white/30">
+                <AvatarImage src={listing.user_avatar_url || ''} />
+                <AvatarFallback className="text-sm bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold">
+                  {listing.user_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div>
-                <p className="text-sm font-medium text-gray-900">{ad.user_name}</p>
-                <p className="text-xs text-gray-500 capitalize">{ad.user_type}</p>
-              </div>
-            </div>
-            
-            <div className="text-right">
-              <p className="text-lg font-bold text-green-600">
-                {formatPrice(ad.budget)}
-              </p>
-              <p className="text-xs text-gray-500">Orçamento</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-4">
-            <Button size="sm" className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Contatar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </CSSTransition>
-  );
-
-  const renderServiceCard = (service: ProfessionalService, index: number) => (
-    <CSSTransition
-      key={service.id}
-      timeout={500}
-      classNames="card"
-      appear
-    >
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-2xl transition-all duration-500 group">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        <CardHeader className="relative pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
-                {service.title}
-              </CardTitle>
-              
-              <div className="flex items-center gap-2 mb-2">
-                <Badge 
-                  variant="secondary" 
-                  className={`${getExperienceColor(service.experience_level)} text-white text-xs`}
-                >
-                  {service.experience_level === 'expert' ? 'Especialista' : 
-                   service.experience_level === 'advanced' ? 'Avançado' :
-                   service.experience_level === 'intermediate' ? 'Intermediário' : 'Iniciante'}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {service.service_type === 'hourly' ? 'Por hora' : 
-                   service.service_type === 'fixed' ? 'Valor fixo' : 'Negociável'}
-                </Badge>
-              </div>
-            </div>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Heart className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="relative">
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-            {service.description}
-          </p>
-
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                <span>{service.location}</span>
-              </div>
-              {service.rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span>{service.rating.toFixed(1)} ({service.review_count} avaliações)</span>
+                <p className="font-bold text-gray-800 text-sm">{listing.user_name}</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                  <span className="text-xs text-gray-600">4.9 (89)</span>
+                  <Diamond className="h-3 w-3 text-blue-500" />
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{service.user_name}</p>
-                <p className="text-xs text-gray-500">Profissional</p>
               </div>
             </div>
             
-            <div className="text-right">
-              <p className="text-lg font-bold text-green-600">
-                {formatPrice(service.price)}
-              </p>
-              <p className="text-xs text-gray-500">
-                {service.service_type === 'hourly' ? '/hora' : 
-                 service.service_type === 'fixed' ? 'valor fixo' : 'negociável'}
-              </p>
+            <div className="flex gap-2">
+              {user && listing.user_id !== user.id && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleFavorite(listing.id)}
+                    className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
+                      favorites.has(listing.id) 
+                        ? 'text-pink-500 bg-pink-100/50 hover:bg-pink-100/70' 
+                        : 'text-gray-400 hover:text-pink-500 hover:bg-pink-100/50'
+                    }`}
+                  >
+                    <Heart className={`h-4 w-4 ${favorites.has(listing.id) ? 'fill-current' : ''}`} />
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleChat(listing.user_id, listing.user_name)}
+                    className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-100/50 transition-all duration-300"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleViewProfile(listing.user_id)}
+                className="h-10 w-10 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 transition-all duration-300"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-
-          <div className="flex gap-2 mt-4">
-            <Button size="sm" className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Contatar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </CSSTransition>
-  );
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 flex items-center justify-center">
-        <CSSTransition
-          in={true}
-          timeout={500}
-          classNames="fade"
-          appear
-        >
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-teal-200 border-t-teal-600 rounded-full mx-auto mb-4 animate-spin" />
-            <p className="text-gray-600">Carregando transições...</p>
-          </div>
-        </CSSTransition>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
-      {/* Header */}
-      <CSSTransition
-        in={showHeader}
-        timeout={800}
-        classNames="slideDown"
-        appear
-      >
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center">
-                  <Layers className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                    Classificados Transitions
-                  </h1>
-                  <p className="text-gray-600 text-sm">Transições suaves e elegantes</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button className="bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Anúncio
-                </Button>
-              </div>
+            <div className="relative mb-6">
+              <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+              <div className="absolute inset-0 animate-pulse rounded-full bg-blue-500/20 blur-xl"></div>
             </div>
-
-            {/* Search and Filters */}
-            <CSSTransition
-              in={showHeader}
-              timeout={1000}
-              classNames="slideUp"
-              appear
-            >
-              <div className="flex gap-4 mb-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar serviços ou anúncios..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-white/70 backdrop-blur-sm border-gray-200 focus:border-teal-500"
-                  />
-                </div>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setFilterVisible(!filterVisible)}
-                  className="bg-white/70 backdrop-blur-sm"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                  <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${filterVisible ? 'rotate-180' : ''}`} />
-                </Button>
-
-                <div className="flex gap-1 bg-white/70 backdrop-blur-sm rounded-lg p-1">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="px-3"
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="px-3"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CSSTransition>
-
-            <CSSTransition
-              in={filterVisible}
-              timeout={300}
-              classNames="expand"
-              unmountOnExit
-            >
-              <div className="bg-white/50 backdrop-blur-sm rounded-lg p-4 mb-4">
-                <div className="flex gap-4">
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-48 bg-white/70">
-                      <SelectValue placeholder="Categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as categorias</SelectItem>
-                      {servicesList.map(service => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-48 bg-white/70">
-                      <SelectValue placeholder="Ordenar por" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="newest">Mais recentes</SelectItem>
-                      <SelectItem value="oldest">Mais antigos</SelectItem>
-                      <SelectItem value="budget_high">Maior orçamento</SelectItem>
-                      <SelectItem value="budget_low">Menor orçamento</SelectItem>
-                      <SelectItem value="price_high">Maior preço</SelectItem>
-                      <SelectItem value="price_low">Menor preço</SelectItem>
-                      <SelectItem value="rating">Melhor avaliação</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CSSTransition>
+            <h2 className="text-xl font-medium text-gray-800 mb-2">Cristalizando...</h2>
+            <p className="text-gray-600">Preparando a transparência perfeita</p>
           </div>
         </div>
-      </CSSTransition>
+      </MainLayout>
+    )
+  }
 
-      {/* Tabs */}
-      <div className="container mx-auto px-4 py-6">
-        <CSSTransition
-          in={showHeader}
-          timeout={1200}
-          classNames="fadeIn"
-          appear
-        >
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ads' | 'services')}>
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/70 backdrop-blur-sm">
-              <TabsTrigger value="ads" className="flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Anúncios ({filteredAds.length})
-              </TabsTrigger>
-              <TabsTrigger value="services" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Serviços ({filteredServices.length})
-              </TabsTrigger>
-            </TabsList>
+  const CrystalIcon = getCrystalIcon(crystal)
 
-            <TabsContent value="ads">
-              <TransitionGroup className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {sortedAds.map((ad, index) => renderAdCard(ad, index))}
-              </TransitionGroup>
-
-              {sortedAds.length === 0 && (
-                <CSSTransition
-                  in={true}
-                  timeout={500}
-                  classNames="fade"
-                >
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-teal-100 to-cyan-100 flex items-center justify-center">
-                      <Search className="h-12 w-12 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum anúncio encontrado</h3>
-                    <p className="text-gray-600">Tente ajustar seus filtros de busca</p>
+  return (
+    <MainLayout requireAuth={false}>
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 relative overflow-hidden">
+        {/* Background glassmorphism */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-200/30 via-purple-200/30 to-pink-200/30"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23000000%22%20fill-opacity%3D%220.02%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%223%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+        
+        {/* Header glassmorphism */}
+        <div className="relative z-10 overflow-hidden">
+          <div className={`absolute inset-0 bg-gradient-to-r ${crystalColors[crystal]} opacity-20`}></div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <CrystalIcon className="h-12 w-12 text-blue-600 animate-pulse" />
+                <h1 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 drop-shadow-lg">
+                  GLASSMORPHISM
+                </h1>
+                <Diamond className="h-12 w-12 text-purple-600 animate-pulse" />
+              </div>
+              
+              <p className="text-xl text-gray-700 max-w-2xl mx-auto mb-8">
+                Conecte-se com profissionais que brilham com transparência e clareza
+              </p>
+              
+              {/* Estatísticas glassmorphism */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
+                <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 shadow-xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-6 w-6 text-white" />
                   </div>
-                </CSSTransition>
-              )}
-            </TabsContent>
-
-            <TabsContent value="services">
-              <TransitionGroup className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-                {sortedServices.map((service, index) => renderServiceCard(service, index))}
-              </TransitionGroup>
-
-              {sortedServices.length === 0 && (
-                <CSSTransition
-                  in={true}
-                  timeout={500}
-                  classNames="fade"
-                >
-                  <div className="text-center py-12">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-teal-100 flex items-center justify-center">
-                      <TrendingUp className="h-12 w-12 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum serviço encontrado</h3>
-                    <p className="text-gray-600">Tente ajustar seus filtros de busca</p>
+                  <div className="text-2xl font-bold text-gray-800">{listings.length}</div>
+                  <div className="text-sm text-blue-600">Profissionais</div>
+                </div>
+                <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 shadow-xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Diamond className="h-6 w-6 text-white" />
                   </div>
-                </CSSTransition>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CSSTransition>
-
-        {/* Stats Section */}
-        <CSSTransition
-          in={showHeader}
-          timeout={1500}
-          classNames="slideUp"
-          appear
-        >
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Palette className="h-12 w-12 mx-auto mb-4 text-teal-200" />
-                <h3 className="text-2xl font-bold mb-2">{ads.length}</h3>
-                <p className="text-teal-100">Total de Anúncios</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Brush className="h-12 w-12 mx-auto mb-4 text-cyan-200" />
-                <h3 className="text-2xl font-bold mb-2">{services.length}</h3>
-                <p className="text-cyan-100">Total de Serviços</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0">
-              <CardContent className="p-6 text-center">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-emerald-200" />
-                <h3 className="text-2xl font-bold mb-2">{ads.length + services.length}</h3>
-                <p className="text-emerald-100">Total de Oportunidades</p>
-              </CardContent>
-            </Card>
+                  <div className="text-2xl font-bold text-gray-800">{filteredListings.length}</div>
+                  <div className="text-sm text-purple-600">Serviços</div>
+                </div>
+                <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 shadow-xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-800">{favorites.size}</div>
+                  <div className="text-sm text-pink-600">Favoritos</div>
+                </div>
+                <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 border border-white/30 shadow-xl">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Sparkle className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-800">100%</div>
+                  <div className="text-sm text-blue-600">Transparência</div>
+                </div>
+              </div>
+            </div>
           </div>
-        </CSSTransition>
-      </div>
+        </div>
 
-      <style jsx global>{`
-        .card-enter {
-          opacity: 0;
-          transform: translateY(20px) scale(0.9);
-        }
-        .card-enter-active {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-          transition: opacity 500ms, transform 500ms;
-        }
-        .card-exit {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-        .card-exit-active {
-          opacity: 0;
-          transform: translateY(-20px) scale(0.9);
-          transition: opacity 500ms, transform 500ms;
-        }
-        
-        .fade-enter {
-          opacity: 0;
-        }
-        .fade-enter-active {
-          opacity: 1;
-          transition: opacity 500ms;
-        }
-        
-        .slideDown-enter {
-          opacity: 0;
-          transform: translateY(-50px);
-        }
-        .slideDown-enter-active {
-          opacity: 1;
-          transform: translateY(0);
-          transition: opacity 800ms, transform 800ms;
-        }
-        
-        .slideUp-enter {
-          opacity: 0;
-          transform: translateY(50px);
-        }
-        .slideUp-enter-active {
-          opacity: 1;
-          transform: translateY(0);
-          transition: opacity 1000ms, transform 1000ms;
-        }
-        
-        .expand-enter {
-          opacity: 0;
-          max-height: 0;
-        }
-        .expand-enter-active {
-          opacity: 1;
-          max-height: 200px;
-          transition: opacity 300ms, max-height 300ms;
-        }
-        .expand-exit {
-          opacity: 1;
-          max-height: 200px;
-        }
-        .expand-exit-active {
-          opacity: 0;
-          max-height: 0;
-          transition: opacity 300ms, max-height 300ms;
-        }
-        
-        .fadeIn-enter {
-          opacity: 0;
-        }
-        .fadeIn-enter-active {
-          opacity: 1;
-          transition: opacity 1200ms;
-        }
-      `}</style>
-    </div>
-  );
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Barra de busca glassmorphism */}
+          <div className="bg-white/20 backdrop-blur-lg rounded-2xl border border-white/30 p-6 mb-8 shadow-xl">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Busca */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-500 h-5 w-5" />
+                  <Input
+                    placeholder="Buscar serviços transparentes..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-14 bg-white/20 border-white/30 text-gray-900 placeholder:text-gray-500 focus:bg-white/30 focus:border-white/50 focus:ring-white/50 rounded-xl backdrop-blur-sm"
+                  />
+                </div>
+              </div>
+              
+              {/* Filtros glassmorphism */}
+              <div className="flex gap-3">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="h-14 px-4 bg-white/20 border border-white/30 text-gray-900 rounded-xl focus:bg-white/30 focus:border-white/50 focus:ring-white/50 backdrop-blur-sm"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {servicesList.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as 'newest' | 'price_low' | 'price_high' | 'rating')}
+                  className="h-14 px-4 bg-white/20 border border-white/30 text-gray-900 rounded-xl focus:bg-white/30 focus:border-white/50 focus:ring-white/50 backdrop-blur-sm"
+                >
+                  <option value="newest">Mais recentes</option>
+                  <option value="price_low">Menor preço</option>
+                  <option value="price_high">Maior preço</option>
+                  <option value="rating">Mais transparente</option>
+                </select>
+
+                <select
+                  value={crystal}
+                  onChange={(e) => setCrystal(e.target.value as 'diamond' | 'emerald' | 'sapphire' | 'ruby')}
+                  className="h-14 px-4 bg-white/20 border border-white/30 text-gray-900 rounded-xl focus:bg-white/30 focus:border-white/50 focus:ring-white/50 backdrop-blur-sm"
+                >
+                  <option value="diamond">Diamante</option>
+                  <option value="emerald">Esmeralda</option>
+                  <option value="sapphire">Safira</option>
+                  <option value="ruby">Rubi</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Botão criar glassmorphism */}
+          <div className="text-center mb-8">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-5 text-xl rounded-xl shadow-xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105">
+              <Plus className="h-6 w-6 mr-3" />
+              Criar Transparência
+              <Diamond className="h-6 w-6 ml-3" />
+            </Button>
+          </div>
+
+          {/* Grid glassmorphism */}
+          {filteredListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredListings.map(renderGlassmorphismCard)}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Diamond className="h-12 w-12 text-blue-500" />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-3">
+                {listings.length === 0 ? 'Nenhum serviço transparente encontrado' : 'Nenhum resultado encontrado'}
+              </h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                {listings.length === 0 
+                  ? 'Seja o primeiro a criar transparência!'
+                  : 'Tente ajustar os filtros de busca.'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </MainLayout>
+  )
 }
+

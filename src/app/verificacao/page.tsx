@@ -18,16 +18,16 @@ export default function EmailVerificationSuccess() {
   useEffect(() => {
     const checkVerificationStatus = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const { data: { user: currentUser }, error } = await supabase.auth.getUser()
         
         if (error) {
-          console.error('Erro ao verificar sessão:', error)
+          console.error('Erro ao verificar usuário:', error)
           setStatus('error')
           setMessage('Erro ao verificar sua conta. Tente novamente.')
           return
         }
 
-        if (session?.user?.email_confirmed_at) {
+        if (currentUser?.email_confirmed_at) {
           setStatus('success')
           setMessage('🎉 Sua conta foi verificada com sucesso!')
         } else {

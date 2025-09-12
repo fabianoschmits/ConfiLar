@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 export interface DashboardMetrics {
@@ -56,7 +56,7 @@ export function useDashboardMetrics() {
   const [error, setError] = useState<string | null>(null)
   
   const { user, profile } = useAuthContext()
-  const supabase = createClientComponentClient()
+  // Usar o client Supabase configurado
 
   const fetchMetrics = useCallback(async () => {
     if (!user?.id || !profile) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase';
 
 export interface LocationData {
   latitude: number;
@@ -37,7 +37,7 @@ export const useGeolocation = (options: GeolocationOptions = {}) => {
     permission: null,
   });
 
-  const supabase = createClientComponentClient();
+  // Usar o client Supabase configurado
 
   // Verificar permissão de geolocalização
   const checkPermission = useCallback(async () => {
