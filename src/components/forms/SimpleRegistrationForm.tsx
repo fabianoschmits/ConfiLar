@@ -15,7 +15,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { PasswordInput } from '@/components/ui/password-input'
 import { cn } from '@/lib/utils'
-import { Check, ChevronsUpDown, X, Upload, User, RefreshCw } from 'lucide-react'
+import { IconCheck, IconChevronsDown, IconX, IconUpload, IconUser, IconRefresh } from '@tabler/icons-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
@@ -367,15 +367,15 @@ export function SimpleRegistrationForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Foto/Imagem */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold border-b pb-2 text-gray-900">Foto/Imagem</h3>
+      {/* Foto/Imagem Brutalista */}
+      <div className="space-y-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+        <h3 className="text-lg font-black text-black uppercase border-b-4 border-black pb-2">FOTO/IMAGEM</h3>
         
         <div className="space-y-3">
           {/* Preview do Avatar Selecionado */}
           {selectedAvatar && (
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500">
+            <div className="flex items-center gap-3 p-3 bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <div className="w-12 h-12 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                 <img
                   src={selectedAvatar.preview}
                   alt="Avatar selecionado"
@@ -383,12 +383,12 @@ export function SimpleRegistrationForm() {
                 />
               </div>
               <div>
-                <p className="text-sm font-medium text-blue-900">
-                  {selectedAvatar.type === 'upload' ? 'Foto enviada' : 'Avatar gerado'}
+                <p className="text-sm font-black text-black uppercase">
+                  {selectedAvatar.type === 'upload' ? 'FOTO ENVIADA' : 'AVATAR GERADO'}
                 </p>
-                <p className="text-xs text-blue-700">
+                <p className="text-xs text-black font-bold">
                   {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
-                  {selectedAvatar.type === 'dicebear' && 'Gerado automaticamente'}
+                  {selectedAvatar.type === 'dicebear' && 'GERADO AUTOMATICAMENTE'}
                 </p>
               </div>
             </div>
@@ -399,8 +399,8 @@ export function SimpleRegistrationForm() {
             {/* Upload de Foto */}
             <div className="space-y-2">
               <div className="flex items-center gap-1">
-                <Upload className="h-3 w-3 text-gray-500" />
-                <span className="text-xs font-medium">Upload</span>
+                <IconUpload size={12} stroke={2} className="text-black" />
+                <span className="text-xs font-black text-black uppercase">UPLOAD</span>
               </div>
               <input
                 type="file"
@@ -412,12 +412,12 @@ export function SimpleRegistrationForm() {
               <label
                 htmlFor="avatar-upload"
                 className={cn(
-                  "block w-full p-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 transition-colors text-center",
-                  selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50"
+                  "block w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white",
+                  selectedAvatar?.type === 'upload' && "bg-yellow-400"
                 )}
               >
-                <div className="text-xs text-gray-600">
-                  {selectedAvatar?.type === 'upload' ? '✓ Selecionado' : 'Escolher arquivo'}
+                <div className="text-xs text-black font-black uppercase">
+                  {selectedAvatar?.type === 'upload' ? '✓ SELECIONADO' : 'ESCOLHER ARQUIVO'}
                 </div>
               </label>
             </div>
@@ -425,8 +425,8 @@ export function SimpleRegistrationForm() {
             {/* Avatar Pixel-Art */}
             <div className="space-y-2">
               <div className="flex items-center gap-1">
-                <RefreshCw className={cn("h-3 w-3 text-gray-500", isGeneratingAvatar && "animate-spin")} />
-                <span className="text-xs font-medium">Pixel-Art</span>
+                <IconRefresh size={12} stroke={2} className={cn("text-black", isGeneratingAvatar && "animate-spin")} />
+                <span className="text-xs font-black text-black uppercase">PIXEL-ART</span>
               </div>
               {fullName && fullName.length >= 2 ? (
                 <button
@@ -434,24 +434,22 @@ export function SimpleRegistrationForm() {
                   onClick={handleDicebearSelect}
                   disabled={isGeneratingAvatar || !dicebearAvatar}
                   className={cn(
-                    "w-full p-2 border rounded-lg transition-all text-center",
-                    selectedAvatar?.type === 'dicebear'
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-300 hover:border-blue-400 text-gray-600",
+                    "w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+                    selectedAvatar?.type === 'dicebear' && "bg-yellow-400",
                     (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {isGeneratingAvatar ? (
-                    <div className="text-xs">Gerando...</div>
+                    <div className="text-xs text-black font-black uppercase">GERANDO...</div>
                   ) : dicebearAvatar ? (
-                    <div className="text-xs">✓ Selecionado automaticamente</div>
+                    <div className="text-xs text-black font-black uppercase">✓ SELECIONADO AUTOMATICAMENTE</div>
                   ) : (
-                    <div className="text-xs">Digite nome</div>
+                    <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
                   )}
                 </button>
               ) : (
-                <div className="w-full p-2 border border-gray-200 rounded-lg text-center">
-                  <div className="text-xs text-gray-400">Digite nome</div>
+                <div className="w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-center bg-white">
+                  <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
                 </div>
               )}
             </div>
@@ -687,7 +685,7 @@ export function SimpleRegistrationForm() {
                   {watchedValues.location_state
                     ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
                     : "Estado"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
@@ -706,9 +704,9 @@ export function SimpleRegistrationForm() {
                             setStateOpen(false)
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
+                          <IconCheck
+                            size={16} stroke={2} className={cn(
+                              "mr-2",
                               watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
                             )}
                           />
@@ -748,7 +746,7 @@ export function SimpleRegistrationForm() {
                     : watchedValues.location_state
                     ? "Cidade"
                     : "Estado primeiro"}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg" align="start">
@@ -766,9 +764,9 @@ export function SimpleRegistrationForm() {
                             setCityOpen(false)
                           }}
                         >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
+                          <IconCheck
+                            size={16} stroke={2} className={cn(
+                              "mr-2",
                               watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
                             )}
                           />
@@ -912,7 +910,7 @@ export function SimpleRegistrationForm() {
                     {selectedServices.length === 0
                       ? "Selecione os serviços..."
                       : `${selectedServices.length} serviço(s) selecionado(s)`}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <IconChevronsDown size={16} stroke={2} className="ml-2 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0 bg-white border border-gray-200 shadow-lg">
@@ -927,9 +925,9 @@ export function SimpleRegistrationForm() {
                             value={service}
                             onSelect={() => handleServiceToggle(service)}
                           >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
+                            <IconCheck
+                              size={16} stroke={2} className={cn(
+                                "mr-2",
                                 selectedServices.includes(service) ? "opacity-100" : "opacity-0"
                               )}
                             />
@@ -959,7 +957,7 @@ export function SimpleRegistrationForm() {
                           onClick={() => removeService(service)}
                           className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
                         >
-                          <X className="h-3 w-3" />
+                          <IconX size={12} stroke={2} />
                         </button>
                       </Badge>
                     ))}

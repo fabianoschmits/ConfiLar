@@ -16,40 +16,40 @@ import {
   Wallet
 } from 'lucide-react';
 
-// Phosphor Icons Light
+// Tabler Icons - Estilo Brutalista
 import {
-  House,
-  MagnifyingGlass,
-  User as UserPhosphor,
-  Gear,
-  Bell as BellPhosphor,
-  Heart as HeartPhosphor,
-  Calendar as CalendarPhosphor,
-  CreditCard as CreditCardPhosphor,
-  Question,
-  Phone as PhonePhosphor,
-  Buildings,
-  MapPin as MapPinPhosphor,
-  Briefcase as BriefcasePhosphor,
-  ChartLine,
-  ChatTeardrop,
-  Star as StarPhosphor,
-  Clock as ClockPhosphor,
-  Wallet as WalletPhosphor,
-  TrendUp,
-  FileText as FileTextPhosphor,
-  Shield as ShieldPhosphor,
-  Lightning,
-  Globe as GlobePhosphor,
-  BookOpen as BookOpenPhosphor,
-  Trophy,
-  CaretRight,
-  CaretLeft,
-  Users as UsersPhosphor,
-  SignOut,
-  PencilSimple,
-  ChartBar
-} from '@phosphor-icons/react';
+  IconHome,
+  IconSearch,
+  IconUser,
+  IconSettings,
+  IconBell,
+  IconHeart,
+  IconCalendar,
+  IconCreditCard,
+  IconHelp,
+  IconPhone,
+  IconBuilding,
+  IconMapPin,
+  IconBriefcase,
+  IconChartLine,
+  IconMessageCircle,
+  IconStar,
+  IconClock,
+  IconWallet,
+  IconTrendingUp,
+  IconFileText,
+  IconShield,
+  IconBolt,
+  IconWorld,
+  IconBook,
+  IconTrophy,
+  IconChevronRight,
+  IconChevronLeft,
+  IconUsers,
+  IconLogout,
+  IconEdit,
+  IconChartBar
+} from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
@@ -85,216 +85,216 @@ export function Sidebar() {
   // Sempre renderizar o componente para navegação
   const isLoggedIn = user && profile
 
-  // Categorias principais da sidebar com ícones Phosphor Light
+  // Categorias principais da sidebar com ícones Tabler
   const sidebarCategories: SidebarCategory[] = [
     {
       id: 'main',
-      title: 'Principal',
-      icon: <House size={20} weight="light" />,
+      title: 'PRINCIPAL',
+      icon: <IconHome size={20} stroke={2} />,
       color: 'blue',
       items: [
         {
           id: 'home',
-          title: 'Home',
+          title: 'HOME',
           href: '/home',
-          icon: <House size={16} weight="light" />,
+          icon: <IconHome size={16} stroke={2} />,
           description: 'Página inicial'
         },
         {
           id: 'dashboard',
-          title: 'Dashboard',
+          title: 'DASHBOARD',
           href: '/dashboard',
-          icon: <ChartBar size={16} weight="light" />,
+          icon: <IconChartBar size={16} stroke={2} />,
           description: 'Visão geral e métricas'
         },
       ]
     },
     {
       id: 'discovery',
-      title: 'Descobrir',
-      icon: <MagnifyingGlass size={20} weight="light" />,
+      title: 'DESCOBRIR',
+      icon: <IconSearch size={20} stroke={2} />,
       color: 'green',
       items: [
         {
           id: 'search',
-          title: 'Buscar Profissionais',
+          title: 'BUSCAR PROFISSIONAIS',
           href: '/buscar',
-          icon: <MagnifyingGlass size={16} weight="light" />,
+          icon: <IconSearch size={16} stroke={2} />,
           description: 'Encontre profissionais'
         },
         {
           id: 'classificados',
-          title: 'Classificados',
+          title: 'CLASSIFICADOS',
           href: '/classificados',
-          icon: <BriefcasePhosphor size={16} weight="light" />,
+          icon: <IconBriefcase size={16} stroke={2} />,
           description: 'Anúncios e ofertas'
         },
         {
           id: 'feed',
-          title: 'Feed Social',
+          title: 'FEED SOCIAL',
           href: '/feed',
-          icon: <UsersPhosphor size={16} weight="light" />,
+          icon: <IconUsers size={16} stroke={2} />,
           description: 'Atualizações da comunidade'
         },
         {
           id: 'reviews',
-          title: 'Avaliações',
+          title: 'AVALIAÇÕES',
           href: '/avaliacoes',
-          icon: <StarPhosphor size={16} weight="light" />,
+          icon: <IconStar size={16} stroke={2} />,
           description: 'Avalie e veja reviews'
         }
       ]
     },
     {
       id: 'communication',
-      title: 'Comunicação',
-      icon: <ChatTeardrop size={20} weight="light" />,
+      title: 'COMUNICAÇÃO',
+      icon: <IconMessageCircle size={20} stroke={2} />,
       color: 'purple',
       items: [
         ...(isLoggedIn ? [{
           id: 'messages',
-          title: 'Mensagens',
+          title: 'MENSAGENS',
           href: '#',
-          icon: <ChatTeardrop size={16} weight="light" />,
+          icon: <IconMessageCircle size={16} stroke={2} />,
           badge: unreadCount > 0 ? unreadCount.toString() : undefined,
           badgeColor: 'bg-red-500',
           description: 'Chat com profissionais',
           onClick: () => openChat()
         }] : [{
           id: 'login',
-          title: 'Fazer Login',
+          title: 'FAZER LOGIN',
           href: '/auth',
-          icon: <UserPhosphor size={16} weight="light" />,
+          icon: <IconUser size={16} stroke={2} />,
           description: 'Acesse sua conta'
         }])
       ]
     },
     ...(isLoggedIn ? [{
       id: 'management',
-      title: 'Gestão',
-      icon: <CalendarPhosphor size={20} weight="light" />,
+      title: 'GESTÃO',
+      icon: <IconCalendar size={20} stroke={2} />,
       color: 'orange',
       items: [
         {
           id: 'appointments',
-          title: 'Agendamentos',
+          title: 'AGENDAMENTOS',
           href: '/agendamentos',
-          icon: <CalendarPhosphor size={16} weight="light" />,
+          icon: <IconCalendar size={16} stroke={2} />,
           description: 'Seus compromissos'
         },
         {
           id: 'agenda',
-          title: 'Agenda Profissional',
+          title: 'AGENDA PROFISSIONAL',
           href: '/agenda',
-          icon: <ClockPhosphor size={16} weight="light" />,
+          icon: <IconClock size={16} stroke={2} />,
           description: 'Gerencie sua agenda'
         },
         {
           id: 'favorites',
-          title: 'Favoritos',
+          title: 'FAVORITOS',
           href: '/favoritos',
-          icon: <HeartPhosphor size={16} weight="light" />,
+          icon: <IconHeart size={16} stroke={2} />,
           description: 'Profissionais favoritos'
         },
         {
           id: 'payments',
-          title: 'Pagamentos',
+          title: 'PAGAMENTOS',
           href: '/pagamentos',
-          icon: <CreditCardPhosphor size={16} weight="light" />,
+          icon: <IconCreditCard size={16} stroke={2} />,
           description: 'Histórico financeiro'
         }
       ]
     }] : []),
     ...(isLoggedIn && profile?.user_type === 'professional' ? [{
       id: 'professional',
-      title: 'Profissional',
-      icon: <BriefcasePhosphor size={20} weight="light" />,
+      title: 'PROFISSIONAL',
+      icon: <IconBriefcase size={20} stroke={2} />,
       color: 'indigo',
       items: [
         {
           id: 'portfolio',
-          title: 'Meu Portfólio',
+          title: 'MEU PORTFÓLIO',
           href: '/portfolio',
-          icon: <FileTextPhosphor size={16} weight="light" />,
+          icon: <IconFileText size={16} stroke={2} />,
           description: 'Mostre seu trabalho'
         },
         {
           id: 'earnings',
-          title: 'Ganhos',
+          title: 'GANHOS',
           href: '/ganhos',
-          icon: <TrendUp size={16} weight="light" />,
+          icon: <IconTrendingUp size={16} stroke={2} />,
           description: 'Acompanhe seus lucros'
         },
         {
           id: 'reputation',
-          title: 'Reputação',
+          title: 'REPUTAÇÃO',
           href: '/reputacao',
-          icon: <Trophy size={16} weight="light" />,
+          icon: <IconTrophy size={16} stroke={2} />,
           description: 'Sua avaliação'
         }
       ]
     }] : []),
     {
       id: 'support',
-      title: 'Suporte',
-      icon: <Question size={20} weight="light" />,
+      title: 'SUPORTE',
+      icon: <IconHelp size={20} stroke={2} />,
       color: 'red',
       items: [
         {
           id: 'help',
-          title: 'Central de Ajuda',
+          title: 'CENTRAL DE AJUDA',
           href: '/ajuda',
-          icon: <Question size={16} weight="light" />,
+          icon: <IconHelp size={16} stroke={2} />,
           description: 'Tire suas dúvidas'
         },
         {
           id: 'contact',
-          title: 'Contato',
-          href: '/_public/contato',
-          icon: <PhonePhosphor size={16} weight="light" />,
+          title: 'CONTATO',
+          href: '/contato',
+          icon: <IconPhone size={16} stroke={2} />,
           description: 'Fale conosco'
         },
         {
           id: 'about',
-          title: 'Sobre Nós',
+          title: 'SOBRE NÓS',
           href: '/sobre',
-          icon: <Buildings size={16} weight="light" />,
+          icon: <IconBuilding size={16} stroke={2} />,
           description: 'Conheça a ConfiLar'
         }
       ]
     },
     ...(isLoggedIn ? [{
       id: 'account',
-      title: 'Conta',
-      icon: <UserPhosphor size={20} weight="light" />,
+      title: 'CONTA',
+      icon: <IconUser size={20} stroke={2} />,
       color: 'gray',
       items: [
         {
           id: 'profile',
-          title: 'Meu Perfil',
+          title: 'MEU PERFIL',
           href: '/perfil',
-          icon: <UserPhosphor size={16} weight="light" />,
+          icon: <IconUser size={16} stroke={2} />,
           description: 'Editar perfil'
         },
         {
           id: 'edit-profile',
-          title: 'Editar Perfil',
+          title: 'EDITAR PERFIL',
           href: '/editarperfil',
-          icon: <PencilSimple size={16} weight="light" />,
+          icon: <IconEdit size={16} stroke={2} />,
           description: 'Atualizar informações'
         },
         {
           id: 'verification',
-          title: 'Verificação',
+          title: 'VERIFICAÇÃO',
           href: '/verificacao',
-          icon: <ShieldPhosphor size={16} weight="light" />,
+          icon: <IconShield size={16} stroke={2} />,
           description: 'Verificar identidade'
         },
         {
           id: 'logout',
-          title: 'Sair',
+          title: 'SAIR',
           href: '/logout',
-          icon: <SignOut size={16} weight="light" />,
+          icon: <IconLogout size={16} stroke={2} />,
           description: 'Desconectar'
         }
       ]
@@ -310,12 +310,13 @@ export function Sidebar() {
 
   const getCategoryColor = (color: string) => {
     const colors = {
-      blue: 'bg-blue-50 text-blue-700 border-blue-200',
-      green: 'bg-green-50 text-green-700 border-green-200',
-      purple: 'bg-purple-50 text-purple-700 border-purple-200',
-      orange: 'bg-orange-50 text-orange-700 border-orange-200',
-      indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      red: 'bg-red-50 text-red-700 border-red-200'
+      blue: 'bg-blue-500 text-white border-black',
+      green: 'bg-green-500 text-white border-black',
+      purple: 'bg-purple-500 text-white border-black',
+      orange: 'bg-orange-500 text-white border-black',
+      indigo: 'bg-indigo-500 text-white border-black',
+      red: 'bg-red-500 text-white border-black',
+      gray: 'bg-gray-500 text-white border-black'
     }
     return colors[color as keyof typeof colors] || colors.blue
   }
@@ -325,9 +326,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Botão Mobile - Removido para evitar conflito com MobileHeader */}
-
-      {/* Overlay Mobile - Melhorado */}
+      {/* Overlay Mobile */}
       {isMobileOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
@@ -335,35 +334,32 @@ export function Sidebar() {
         />
       )}
 
-      {/* Sidebar - Melhorada para Mobile */}
+      {/* Sidebar Brutalista */}
       <div className={`
-        fixed left-0 top-0 h-full bg-white/95 backdrop-blur-sm border-r border-gray-200 shadow-2xl z-30
+        fixed left-0 top-0 h-full bg-yellow-400 border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-30
         ${sidebarWidth} ${sidebarTransition}
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
-        lg:bg-white lg:backdrop-blur-none
       `}>
-        {/* Header da Sidebar */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        {/* Header da Sidebar Brutalista */}
+        <div className="flex items-center justify-between p-4 border-b-4 border-black bg-black">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">C</span>
+              <div className="w-10 h-10 bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
+                <span className="text-black font-black text-xl">C</span>
               </div>
               <div>
-                <span className="font-bold text-gray-900 text-lg">ConfiLar</span>
-                <p className="text-xs text-gray-600">Marketplace Profissional</p>
+                <span className="font-black text-yellow-400 text-lg">CONFILAR</span>
+                <p className="text-xs text-yellow-400 font-bold">MARKETPLACE PROFISSIONAL</p>
               </div>
             </div>
           )}
           
-                     <Button
-             variant="ghost"
-             size="sm"
-             onClick={() => setIsCollapsed(!isCollapsed)}
-             className="p-2 hover:bg-white/80 rounded-lg text-gray-600 hover:text-gray-900 transition-all"
-           >
-             {isCollapsed ? <CaretRight size={16} weight="light" /> : <CaretLeft size={16} weight="light" />}
-           </Button>
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-2 bg-yellow-400 text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+          >
+            {isCollapsed ? <IconChevronRight size={16} stroke={2} /> : <IconChevronLeft size={16} stroke={2} />}
+          </button>
         </div>
 
         {/* Conteúdo da Sidebar */}
@@ -371,10 +367,10 @@ export function Sidebar() {
           <nav className="space-y-4 px-3">
             {sidebarCategories.map((category) => (
               <div key={category.id} className="space-y-2">
-                {/* Cabeçalho da Categoria */}
+                {/* Cabeçalho da Categoria Brutalista */}
                 <div className="px-2 py-1">
                   {!isCollapsed && (
-                    <div className={`flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider px-3 py-2 rounded-lg ${getCategoryColor(category.color || 'blue')}`}>
+                    <div className={`flex items-center space-x-2 text-xs font-black uppercase tracking-wider px-3 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${getCategoryColor(category.color || 'blue')}`}>
                       {category.icon}
                       <span>{category.title}</span>
                     </div>
@@ -382,7 +378,7 @@ export function Sidebar() {
                 </div>
 
                 {/* Itens da Categoria */}
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {category.items.map((item) => (
                     item.onClick ? (
                       <button
@@ -392,36 +388,32 @@ export function Sidebar() {
                           setIsMobileOpen(false)
                         }}
                         className={`
-                          group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 w-full text-left
+                          group flex items-center px-3 py-2 text-sm font-black transition-all duration-200 w-full text-left border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
                           ${isActive(item.href)
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:transform hover:scale-105'
+                            ? 'bg-black text-yellow-400'
+                            : 'bg-white text-black hover:bg-yellow-400'
                           }
                         `}
                       >
-                        <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-yellow-400' : 'text-black group-hover:text-black'}`}>
                           {item.icon}
                         </div>
                         
-                        {!isCollapsed && (
-                          <div className="flex-1 flex items-center justify-between">
-                            <div className="flex-1">
-                              <span className="block">{item.title}</span>
-                              {item.description && (
-                                <span className="text-xs opacity-70 block mt-0.5">
-                                  {item.description}
-                                </span>
-                              )}
-                            </div>
-                            {item.badge && (
-                              <Badge 
-                                className={`text-xs ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}
-                              >
-                                {item.badge}
-                              </Badge>
+                        <div className="flex-1 flex items-center justify-between">
+                          <div className="flex-1">
+                            <span className="block text-xs font-black">{item.title}</span>
+                            {item.description && (
+                              <span className="text-xs opacity-70 block mt-0.5 font-bold">
+                                {item.description}
+                              </span>
                             )}
                           </div>
-                        )}
+                          {item.badge && (
+                            <span className={`text-xs px-2 py-1 font-black border-2 border-black ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
                       </button>
                     ) : (
                       <NavigationLink
@@ -430,36 +422,32 @@ export function Sidebar() {
                         destination={item.title}
                         onClick={() => setIsMobileOpen(false)}
                         className={`
-                          group flex items-center space-x-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                          group flex items-center px-3 py-2 text-sm font-black transition-all duration-200 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
                           ${isActive(item.href)
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg transform scale-105'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:shadow-md hover:transform hover:scale-105'
+                            ? 'bg-black text-yellow-400'
+                            : 'bg-white text-black hover:bg-yellow-400'
                           }
                         `}
                       >
-                        <div className={`flex-shrink-0 ${isActive(item.href) ? 'text-white' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-yellow-400' : 'text-black group-hover:text-black'}`}>
                           {item.icon}
                         </div>
                         
-                        {!isCollapsed && (
-                          <div className="flex-1 flex items-center justify-between">
-                            <div className="flex-1">
-                              <span className="block">{item.title}</span>
-                              {item.description && (
-                                <span className="text-xs opacity-70 block mt-0.5">
-                                  {item.description}
-                                </span>
-                              )}
-                            </div>
-                            {item.badge && (
-                              <Badge 
-                                className={`text-xs ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}
-                              >
-                                {item.badge}
-                              </Badge>
+                        <div className="flex-1 flex items-center justify-between">
+                          <div className="flex-1">
+                            <span className="block text-xs font-black">{item.title}</span>
+                            {item.description && (
+                              <span className="text-xs opacity-70 block mt-0.5 font-bold">
+                                {item.description}
+                              </span>
                             )}
                           </div>
-                        )}
+                          {item.badge && (
+                            <span className={`text-xs px-2 py-1 font-black border-2 border-black ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
                       </NavigationLink>
                     )
                   ))}
@@ -469,38 +457,38 @@ export function Sidebar() {
           </nav>
         </div>
 
-        {/* Informações do Usuário */}
+        {/* Informações do Usuário Brutalista */}
         {!isCollapsed && (
-          <div className="p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <div className="p-4 border-t-4 border-black bg-black">
             <div className="space-y-3">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 font-medium">
-                  {profile?.user_type === 'professional' ? 'Profissional Ativo' : 'Cliente Ativo'}
+                <div className="w-3 h-3 bg-green-500 border-2 border-black"></div>
+                <span className="text-xs text-yellow-400 font-black">
+                  {profile?.user_type === 'professional' ? 'PROFISSIONAL ATIVO' : 'CLIENTE ATIVO'}
                 </span>
               </div>
               
-                             {/* Localização */}
-               {profile?.location_city && profile?.location_state && (
-                 <div className="flex items-center space-x-2 text-xs text-gray-600">
-                   <MapPinPhosphor size={12} weight="light" />
-                   <span className="truncate">
-                     {profile.location_city}, {profile.location_state}
-                   </span>
-                 </div>
-               )}
-               
-               {/* Membro desde */}
-               <div className="flex items-center space-x-2 text-xs text-gray-600">
-                 <CalendarPhosphor size={12} weight="light" />
-                 <span>
-                   Membro desde {profile?.created_at 
-                     ? new Date(profile.created_at).getFullYear() 
-                     : '2024'
-                   }
-                 </span>
-               </div>
+              {/* Localização */}
+              {profile?.location_city && profile?.location_state && (
+                <div className="flex items-center space-x-2 text-xs text-yellow-400 font-bold">
+                  <IconMapPin size={12} stroke={2} />
+                  <span className="truncate">
+                    {profile.location_city.toUpperCase()}, {profile.location_state.toUpperCase()}
+                  </span>
+                </div>
+              )}
+              
+              {/* Membro desde */}
+              <div className="flex items-center space-x-2 text-xs text-yellow-400 font-bold">
+                <IconCalendar size={12} stroke={2} />
+                <span>
+                  MEMBRO DESDE {profile?.created_at 
+                    ? new Date(profile.created_at).getFullYear() 
+                    : '2024'
+                  }
+                </span>
+              </div>
             </div>
           </div>
         )}
