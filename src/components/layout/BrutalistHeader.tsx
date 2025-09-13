@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { Button } from '@/components/ui/button'
@@ -20,7 +20,6 @@ import {
   IconUser,
   IconArrowLeft,
   IconMenu2,
-  IconPlus,
   IconChevronDown,
   IconChevronUp,
   IconHeart,
@@ -41,22 +40,19 @@ interface BrutalistHeaderProps {
   showBackButton?: boolean
   title?: string
   showMenuButton?: boolean
-  showQuickActions?: boolean
   onBackClick?: () => void
   onMenuClick?: () => void
-  onQuickActionsClick?: () => void
 }
 
 export function BrutalistHeader({
   showBackButton = false,
   title,
   showMenuButton = false,
-  showQuickActions = true,
   onBackClick,
-  onMenuClick,
-  onQuickActionsClick
+  onMenuClick
 }: BrutalistHeaderProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { user, profile, signOut } = useAuthContext()
   const { openChat } = useFloatingChat()
   const { unreadCount } = useSupabaseNotifications()
@@ -65,6 +61,13 @@ export function BrutalistHeader({
   // Só renderiza se o usuário estiver logado
   if (!user || !profile) {
     return null
+  }
+
+  // Função de navegação simplificada
+  const handleNavigation = (path: string) => {
+    console.log('Navegando para:', path)
+    setIsMenuExpanded(false)
+    window.location.href = path
   }
 
   const getPageTitle = () => {
@@ -92,12 +95,10 @@ export function BrutalistHeader({
   }
 
   const handleSignOut = async () => {
-    try {
-      setIsMenuExpanded(false)
-      window.location.href = '/logout'
-    } catch (error) {
-      console.error('Erro ao sair:', error)
-    }
+    console.log('Executando logout...')
+    setIsMenuExpanded(false)
+    await signOut()
+    window.location.href = '/logout'
   }
 
   // Dados mockados para demonstração
@@ -160,14 +161,6 @@ export function BrutalistHeader({
 
           {/* Right side - Menu do usuário */}
           <div className="flex items-center space-x-2">
-            {showQuickActions && (
-              <button
-                onClick={onQuickActionsClick}
-                className="p-2 h-10 w-10 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-              >
-                <IconPlus size={20} stroke={2} />
-              </button>
-            )}
             
             {/* Notificações */}
             <div className="relative">
@@ -194,161 +187,182 @@ export function BrutalistHeader({
 
               {/* Menu Expandido */}
               {isMenuExpanded && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-[9999]">
-                  <div className="p-4 space-y-4">
-                    {/* Header do Perfil */}
-                    <div className="text-center pb-4 border-b-4 border-black">
-                      <div className="flex justify-center mb-2">
+                <div className="absolute top-full right-0 mt-2 w-72 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-[9999] max-h-[80vh] overflow-hidden">
+                  <div className="h-full flex flex-col">
+                    {/* Header do Perfil - Fixo */}
+                    <div className="p-3 border-b-2 border-black bg-yellow-400 flex-shrink-0">
+                      <div className="flex items-center space-x-3">
                         <UserAvatar 
                           src={profile?.avatar_url}
                           alt={profile?.full_name || 'Usuário'}
                           fallback={profile?.full_name?.charAt(0) || 'U'}
-                          size="md"
+                          size="sm"
                         />
-                      </div>
-                      <h3 className="font-black text-black text-lg">
-                        {(profile?.full_name || 'USUÁRIO').toUpperCase()}
-                      </h3>
-                      <p className="text-sm font-bold text-gray-700 mb-2">
-                        {profile?.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
-                      </p>
-                      <div className="flex items-center justify-center gap-2">
-                        {getVerificationBadge()}
-                        {getPremiumBadge()}
-                      </div>
-                    </div>
-
-                    {/* Estatísticas Rápidas */}
-                    <div className="bg-yellow-400 border-4 border-black p-3">
-                      <div className="grid grid-cols-2 gap-3 text-center">
-                        <div>
-                          <div className="text-xl font-black text-black">{accountStats.totalServices}</div>
-                          <div className="text-xs font-bold text-gray-700">SERVIÇOS</div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-black text-black text-sm truncate">
+                            {(profile?.full_name || 'USUÁRIO').toUpperCase()}
+                          </h3>
+                          <p className="text-xs font-bold text-gray-700">
+                            {profile?.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
+                          </p>
                         </div>
-                        <div>
-                          <div className="text-xl font-black text-black">{accountStats.rating}</div>
-                          <div className="text-xs font-bold text-gray-700">AVALIAÇÃO</div>
+                        <div className="flex flex-col gap-1">
+                          {getVerificationBadge()}
+                          {getPremiumBadge()}
                         </div>
                       </div>
-                      {profile?.user_type === 'professional' && (
-                        <div className="mt-2 pt-2 border-t-2 border-black text-center">
-                          <div className="text-sm font-black text-black">
-                            R$ {accountStats.totalEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </div>
-                          <div className="text-xs font-bold text-gray-700">GANHOS TOTAIS</div>
-                        </div>
-                      )}
                     </div>
 
-                    {/* Ações Rápidas */}
-                    <div>
-                      <h3 className="text-sm font-black text-black mb-2 flex items-center">
-                        <IconBolt size={16} stroke={2} className="mr-2 text-yellow-500" />
-                        AÇÕES RÁPIDAS
-                      </h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => {
-                            openChat()
-                            setIsMenuExpanded(false)
-                          }}
-                          className="flex flex-col items-center p-3 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                        >
-                          <IconMessageCircle size={16} stroke={2} className="mb-1" />
-                          <span className="text-xs">MENSAGENS</span>
-                          {unreadCount > 0 && (
-                            <span className="mt-1 px-1 py-0.5 text-xs font-black bg-white text-red-500 border border-black">
-                              {unreadCount}
-                            </span>
-                          )}
-                        </button>
-                        <Link
-                          href="/favoritos"
-                          className="flex flex-col items-center p-3 bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                          onClick={() => setIsMenuExpanded(false)}
-                        >
-                          <IconHeart size={16} stroke={2} className="mb-1" />
-                          <span className="text-xs">FAVORITOS</span>
-                        </Link>
-                        <Link
-                          href="/agenda"
-                          className="flex flex-col items-center p-3 bg-blue-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                          onClick={() => setIsMenuExpanded(false)}
-                        >
-                          <IconCalendar size={16} stroke={2} className="mb-1" />
-                          <span className="text-xs">AGENDA</span>
-                        </Link>
-                        <Link
-                          href="/ajuda"
-                          className="flex flex-col items-center p-3 bg-purple-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                          onClick={() => setIsMenuExpanded(false)}
-                        >
-                          <IconHelp size={16} stroke={2} className="mb-1" />
-                          <span className="text-xs">AJUDA</span>
-                        </Link>
-                      </div>
-                    </div>
-
-                    {/* Conta e Perfil */}
-                    <div>
-                      <h3 className="text-sm font-black text-black mb-2 flex items-center">
-                        <IconUser size={16} stroke={2} className="mr-2 text-blue-500" />
-                        MINHA CONTA
-                      </h3>
-                      <div className="space-y-1">
-                        <Link
-                          href={`/perfil/${profile?.id}`}
-                          className="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
-                          onClick={() => setIsMenuExpanded(false)}
-                        >
-                          <IconEye size={14} stroke={2} className="text-blue-600" />
-                          <span>VER MEU PERFIL</span>
-                        </Link>
-                        <Link
-                          href="/editarperfil"
-                          className="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
-                          onClick={() => setIsMenuExpanded(false)}
-                        >
-                          <IconEdit size={14} stroke={2} className="text-green-600" />
-                          <span>EDITAR PERFIL</span>
-                        </Link>
-                        {profile?.user_type === 'professional' && (
-                          <>
-                            <Link
-                              href="/portfolio"
-                              className="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
-                              onClick={() => setIsMenuExpanded(false)}
-                            >
-                              <IconBriefcase size={14} stroke={2} className="text-purple-600" />
-                              <span>MEU PORTFÓLIO</span>
-                            </Link>
-                            <Link
-                              href="/ganhos"
-                              className="flex items-center space-x-2 px-3 py-2 text-sm font-bold text-black hover:bg-yellow-400 border-2 border-black transition-all"
-                              onClick={() => setIsMenuExpanded(false)}
-                            >
-                              <IconTrendingUp size={14} stroke={2} className="text-green-600" />
-                              <span>MEUS GANHOS</span>
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Botão de Sair */}
-                    <div className="border-t-4 border-black pt-3">
-                      <button
-                        onClick={handleSignOut}
-                        className="flex items-center justify-center space-x-2 px-4 py-3 text-sm font-black text-white bg-red-500 hover:bg-red-600 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all w-full"
-                      >
-                        <IconLogout size={16} stroke={2} />
-                        <span>SAIR DA CONTA</span>
-                      </button>
+                    {/* Conteúdo Scrollável com Indicadores */}
+                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                      {/* Indicador de scroll no topo */}
+                      <div className="h-1 bg-gradient-to-b from-gray-300 to-transparent"></div>
                       
-                      <div className="flex items-center justify-between text-xs font-bold text-gray-700 mt-2">
-                        <span>MEMBRO DESDE {accountStats.memberSince}</span>
-                        <span>V5.0</span>
+                      <div className="p-3 space-y-3">
+                        {/* Estatísticas Rápidas - Compactas */}
+                        <div className="bg-yellow-400 border-2 border-black p-2">
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <div className="text-lg font-black text-black">{accountStats.totalServices}</div>
+                              <div className="text-xs font-bold text-gray-700">SERVIÇOS</div>
+                            </div>
+                            <div>
+                              <div className="text-lg font-black text-black">{accountStats.rating}</div>
+                              <div className="text-xs font-bold text-gray-700">AVALIAÇÃO</div>
+                            </div>
+                            {profile?.user_type === 'professional' && (
+                              <div>
+                                <div className="text-lg font-black text-black">
+                                  R$ {(accountStats.totalEarnings / 1000).toFixed(0)}k
+                                </div>
+                                <div className="text-xs font-bold text-gray-700">GANHOS</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Ações Rápidas - Grid Compacto */}
+                        <div>
+                          <h3 className="text-xs font-black text-black mb-2 flex items-center">
+                            <IconBolt size={12} stroke={2} className="mr-1 text-yellow-500" />
+                            AÇÕES RÁPIDAS
+                          </h3>
+                          <div className="grid grid-cols-3 gap-1">
+                            <button
+                              onClick={() => {
+                                console.log('Abrindo chat...')
+                                openChat()
+                                setIsMenuExpanded(false)
+                              }}
+                              className="flex flex-col items-center p-2 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconMessageCircle size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">MSG</span>
+                              {unreadCount > 0 && (
+                                <span className="mt-1 px-1 py-0.5 text-xs font-black bg-white text-red-500 border border-black">
+                                  {unreadCount}
+                                </span>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/favoritos')}
+                              className="flex flex-col items-center p-2 bg-green-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconHeart size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">FAV</span>
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/agenda')}
+                              className="flex flex-col items-center p-2 bg-blue-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconCalendar size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">AGENDA</span>
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/buscar')}
+                              className="flex flex-col items-center p-2 bg-purple-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconSearch size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">BUSCAR</span>
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/classificados')}
+                              className="flex flex-col items-center p-2 bg-orange-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconBriefcase size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">CLASS</span>
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/ajuda')}
+                              className="flex flex-col items-center p-2 bg-gray-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                            >
+                              <IconHelp size={12} stroke={2} className="mb-1" />
+                              <span className="text-xs">AJUDA</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Conta e Perfil - Lista Compacta */}
+                        <div>
+                          <h3 className="text-xs font-black text-black mb-2 flex items-center">
+                            <IconUser size={12} stroke={2} className="mr-1 text-blue-500" />
+                            MINHA CONTA
+                          </h3>
+                          <div className="space-y-1">
+                            <button
+                              onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
+                              className="flex items-center space-x-2 px-2 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 border border-black transition-all w-full text-left"
+                            >
+                              <IconEye size={12} stroke={2} className="text-blue-600" />
+                              <span>VER PERFIL</span>
+                            </button>
+                            <button
+                              onClick={() => handleNavigation('/editarperfil')}
+                              className="flex items-center space-x-2 px-2 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 border border-black transition-all w-full text-left"
+                            >
+                              <IconEdit size={12} stroke={2} className="text-green-600" />
+                              <span>EDITAR PERFIL</span>
+                            </button>
+                            {profile?.user_type === 'professional' && (
+                              <>
+                                <button
+                                  onClick={() => handleNavigation('/portfolio')}
+                                  className="flex items-center space-x-2 px-2 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 border border-black transition-all w-full text-left"
+                                >
+                                  <IconBriefcase size={12} stroke={2} className="text-purple-600" />
+                                  <span>PORTFÓLIO</span>
+                                </button>
+                                <button
+                                  onClick={() => handleNavigation('/ganhos')}
+                                  className="flex items-center space-x-2 px-2 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 border border-black transition-all w-full text-left"
+                                >
+                                  <IconTrendingUp size={12} stroke={2} className="text-green-600" />
+                                  <span>GANHOS</span>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Botão de Sair - Fixo no final */}
+                        <div className="border-t-2 border-black pt-2">
+                          <button
+                            onClick={handleSignOut}
+                            className="flex items-center justify-center space-x-2 px-3 py-2 text-xs font-black text-white bg-red-500 hover:bg-red-600 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all w-full"
+                          >
+                            <IconLogout size={12} stroke={2} />
+                            <span>SAIR DA CONTA</span>
+                          </button>
+                          
+                          <div className="flex items-center justify-between text-xs font-bold text-gray-700 mt-1">
+                            <span>DESDE {accountStats.memberSince}</span>
+                            <span>V5.0</span>
+                          </div>
+                        </div>
                       </div>
+                      
+                      {/* Indicador de scroll na parte inferior */}
+                      <div className="h-1 bg-gradient-to-t from-gray-300 to-transparent"></div>
                     </div>
                   </div>
                 </div>
@@ -358,13 +372,7 @@ export function BrutalistHeader({
         </div>
       </div>
 
-      {/* Overlay para fechar ao clicar fora */}
-      {isMenuExpanded && (
-        <div
-          className="fixed inset-0 z-[9998]"
-          onClick={() => setIsMenuExpanded(false)}
-        />
-      )}
+      {/* Overlay removido - usando onClick no container principal */}
     </>
   )
 }

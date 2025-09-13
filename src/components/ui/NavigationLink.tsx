@@ -30,19 +30,25 @@ export function NavigationLink({
       onClick()
     }
 
-    await navigateWithLoading(
-      destination || href.replace('/', '').replace('_public/', ''),
-      () => router.push(href)
-    )
+    try {
+      // Usar window.location para navegação mais confiável
+      window.location.href = href
+    } catch (error) {
+      console.error('Erro na navegação:', error)
+      // Fallback para router.push
+      await navigateWithLoading(
+        destination || href.replace('/', '').replace('_public/', ''),
+        () => router.push(href)
+      )
+    }
   }
 
   return (
-    <Link 
-      href={href} 
+    <button 
       className={className}
       onClick={handleClick}
     >
       {children}
-    </Link>
+    </button>
   )
 }

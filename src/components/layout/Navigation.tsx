@@ -20,8 +20,24 @@ export function Navigation() {
   const { profile, signOut, isMockMode } = useAuthContext()
   const router = useRouter()
 
+  // Função de navegação robusta
+  const handleNavigation = (path: string) => {
+    try {
+      window.location.href = path
+    } catch (error) {
+      console.error('Erro na navegação:', error)
+      router.push(path)
+    }
+  }
+
   const handleLogout = async () => {
-    window.location.href = '/logout'
+    try {
+      await signOut()
+      window.location.href = '/logout'
+    } catch (error) {
+      console.error('Erro ao sair:', error)
+      window.location.href = '/logout'
+    }
   }
 
   if (!profile) return null
@@ -32,67 +48,84 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
+            <button 
+              onClick={() => handleNavigation('/home')}
+              className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors"
+            >
               Confilar
-            </Link>
+            </button>
           </div>
 
           {/* Links de Navegação */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/home">
-              <Button variant="ghost" size="sm">
-                <Home className="h-4 w-4 mr-2" />
-                Home
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleNavigation('/home')}
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Home
+            </Button>
             
-            <Link href="/feed">
-              <Button variant="ghost" size="sm">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Feed Social
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleNavigation('/feed')}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Feed Social
+            </Button>
 
-            <Link href="/buscar">
-              <Button variant="ghost" size="sm">
-                <Search className="h-4 w-4 mr-2" />
-                Buscar
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleNavigation('/buscar')}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Buscar
+            </Button>
 
-            <Link href="/classificados">
-              <Button variant="ghost" size="sm">
-                <Briefcase className="h-4 w-4 mr-2" />
-                Classificados
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleNavigation('/classificados')}
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Classificados
+            </Button>
 
             {profile.user_type === 'professional' && (
               <>
-                <Link href="/agenda">
-                  <Button variant="ghost" size="sm">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Agenda
-                  </Button>
-                </Link>
-                <Link href="/portfolio">
-                  <Button variant="ghost" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Meus Serviços
-                  </Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleNavigation('/agenda')}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Agenda
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => handleNavigation('/portfolio')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Meus Serviços
+                </Button>
               </>
             )}
           </div>
 
           {/* Perfil e Ações */}
           <div className="flex items-center space-x-4">
-            <Link href="/editarperfil">
-              <Button variant="ghost" size="sm">
-                <User className="h-4 w-4 mr-2" />
-                Perfil
-              </Button>
-            </Link>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => handleNavigation('/editarperfil')}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Perfil
+            </Button>
 
             <Button 
               variant="outline" 

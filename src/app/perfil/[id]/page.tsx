@@ -268,186 +268,208 @@ export default function PublicProfilePage() {
 
     return (
         <MainLayout>
-            <div className="container mx-auto px-4 py-6 md:py-8">
-                <div className="max-w-6xl mx-auto">
-                {/* Header do Perfil */}
-                <Card className="mb-6 md:mb-8 border-0 shadow-sm">
-                    <CardHeader className="text-center pb-4 md:pb-6 px-4 md:px-6">
-                        <div className="flex justify-center mb-4 md:mb-6">
-                            <UserAvatar
-                                src={profile.avatar_url}
-                                alt={profile.full_name}
-                                fallback={profile.full_name?.charAt(0) || 'U'}
-                                size="lg"
-                                className="w-24 h-24 md:w-32 md:h-32 border-4 border-gray-100"
-                            />
-                        </div>
-                        
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 mb-4">
-                            <CardTitle className="text-2xl md:text-4xl font-bold text-gray-900 text-center">{profile.full_name}</CardTitle>
-                            {profile.is_verified && (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Verificado
-                                </Badge>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-6 text-gray-600 mb-4 md:mb-6 text-sm md:text-base">
-                            <div className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
-                                <span className="capitalize font-medium">
-                                    {profile.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                </span>
+            <div className="min-h-screen bg-yellow-400">
+                <div className="container mx-auto px-4 py-6 md:py-8">
+                    <div className="max-w-6xl mx-auto">
+                    {/* Header do Perfil Brutalista */}
+                    <div className="bg-white border-8 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] mb-6 md:mb-8">
+                        <div className="text-center p-6 md:p-8">
+                            <div className="flex justify-center mb-6 md:mb-8">
+                                <div className="p-4 bg-black border-4 border-black">
+                                    <UserAvatar
+                                        src={profile.avatar_url}
+                                        alt={profile.full_name}
+                                        fallback={profile.full_name?.charAt(0) || 'U'}
+                                        size="lg"
+                                        className="w-24 h-24 md:w-32 md:h-32"
+                                    />
+                                </div>
                             </div>
                             
-                            {profile.location_city && profile.location_state && (
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4 mb-6">
+                                <h1 className="text-3xl md:text-5xl font-black text-black text-center tracking-wider">
+                                    {profile.full_name?.toUpperCase()}
+                                </h1>
+                                {profile.is_verified && (
+                                    <div className="px-4 py-2 bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="w-5 h-5" />
+                                            <span className="font-black text-sm">VERIFICADO</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-black mb-6 md:mb-8 text-sm md:text-base">
                                 <div className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="font-medium">{profile.location_city}, {profile.location_state}</span>
+                                    <User className="w-5 h-5" />
+                                    <span className="font-black uppercase">
+                                        {profile.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
+                                    </span>
                                 </div>
-                            )}
+                                
+                                {profile.location_city && profile.location_state && (
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-5 h-5" />
+                                        <span className="font-black uppercase">{profile.location_city}, {profile.location_state}</span>
+                                    </div>
+                                )}
 
-                            <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4" />
-                                <span className="font-medium">Membro desde {formatDate(profile.created_at)}</span>
-                            </div>
-                        </div>
-
-                        {/* Estatísticas Principais */}
-                        <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto mb-4 md:mb-6">
-                            <div className="text-center">
-                                <div className="text-xl md:text-2xl font-bold text-gray-900">
-                                    {reviewStats?.averageRating ? (reviewStats.averageRating || 0).toFixed(1) : '0.0'}
-                                </div>
-                                <div className="text-xs md:text-sm text-gray-600">Avaliação Média</div>
-                                <div className="flex justify-center mt-1">
-                                    {renderStars(reviewStats?.averageRating || 0)}
+                                <div className="flex items-center gap-2">
+                                    <CalendarIcon className="w-5 h-5" />
+                                    <span className="font-black">MEMBRO DESDE {formatDate(profile.created_at)}</span>
                                 </div>
                             </div>
-                            <div className="text-center">
-                                <div className="text-xl md:text-2xl font-bold text-gray-900">{reviewStats?.totalReviews || 0}</div>
-                                <div className="text-xs md:text-sm text-gray-600">Avaliações</div>
+
+                            {/* Estatísticas Principais Brutalistas */}
+                            <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto mb-6 md:mb-8">
+                                <div className="p-4 bg-yellow-400 text-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
+                                    <div className="text-2xl md:text-3xl font-black">
+                                        {reviewStats?.averageRating ? (reviewStats.averageRating || 0).toFixed(1) : '0.0'}
+                                    </div>
+                                    <div className="text-xs md:text-sm font-black">AVALIAÇÃO MÉDIA</div>
+                                    <div className="flex justify-center mt-2">
+                                        {renderStars(reviewStats?.averageRating || 0)}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-red-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
+                                    <div className="text-2xl md:text-3xl font-black">{reviewStats?.totalReviews || 0}</div>
+                                    <div className="text-xs md:text-sm font-black">AVALIAÇÕES</div>
+                                </div>
+                                <div className="p-4 bg-blue-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
+                                    <div className="text-2xl md:text-3xl font-black">{profile?.total_recommendations || 0}</div>
+                                    <div className="text-xs md:text-sm font-black">RECOMENDAÇÕES</div>
+                                </div>
                             </div>
-                            <div className="text-center">
-                                <div className="text-xl md:text-2xl font-bold text-gray-900">{profile?.total_recommendations || 0}</div>
-                                <div className="text-xs md:text-sm text-gray-600">Recomendações</div>
+
+                            {/* Botões de Ação Brutalistas */}
+                            <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-lg mx-auto">
+                                <Button
+                                    onClick={handleChatRedirect}
+                                    className="bg-black text-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-6 py-3"
+                                >
+                                    <MessageSquare className="w-4 h-4 mr-2" />
+                                    <span className="text-sm">CONVERSAR</span>
+                                </Button>
+                                
+                                {/* Botão de Favorito */}
+                                {user && user.id !== userId && (
+                                    <FavoriteButton
+                                        userId={userId}
+                                        userName={profile?.full_name || 'Usuário'}
+                                        size="sm"
+                                        variant="outline"
+                                        showText={true}
+                                        className="text-xs bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-4 py-2"
+                                    />
+                                )}
+                                
+                                {/* Botão de Recomendação */}
+                                {user && user.id !== userId && (
+                                    <RecommendationButton
+                                        userId={userId}
+                                        size="sm"
+                                        variant="outline"
+                                        showCount={true}
+                                        className="text-xs bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-4 py-2"
+                                    />
+                                )}
+                                
+                                <Button
+                                    onClick={copyProfileLink}
+                                    className="bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-4 py-2"
+                                >
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    <span className="text-sm">COPIAR LINK</span>
+                                </Button>
                             </div>
+
                         </div>
+                    </div>
 
-                        {/* Botões de Ação */}
-                        <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-lg mx-auto">
-                            <Button
-                                onClick={handleChatRedirect}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                                size="sm"
-                            >
-                                <MessageSquare className="w-3 h-3 mr-1" />
-                                <span className="text-xs">Conversar</span>
-                            </Button>
-                            
-                            {/* Botão de Favorito */}
-                            {user && user.id !== userId && (
-                                <FavoriteButton
-                                    userId={userId}
-                                    userName={profile?.full_name || 'Usuário'}
-                                    size="sm"
-                                    variant="outline"
-                                    showText={true}
-                                    className="text-xs"
-                                />
-                            )}
-                            
-                            {/* Botão de Recomendação */}
-                            {user && user.id !== userId && (
-                                <RecommendationButton
-                                    userId={userId}
-                                    size="sm"
-                                    variant="outline"
-                                    showCount={true}
-                                    className="text-xs"
-                                />
-                            )}
-                            
-                            <Button
-                                variant="outline"
-                                onClick={copyProfileLink}
-                                size="sm"
-                                className="text-xs"
-                            >
-                                <Copy className="w-3 h-3 mr-1" />
-                                Copiar Link
-                            </Button>
-                        </div>
-
-                    </CardHeader>
-                </Card>
-
-                {/* Sistema de Abas */}
+                {/* Sistema de Abas Brutalista */}
                 <Tabs defaultValue="informacoes" className="w-full">
-                    <TabsList className={`grid w-full mb-6 ${profile.user_type === 'professional' ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                        <TabsTrigger value="informacoes" className="flex items-center gap-2 text-sm md:text-base">
-                            <User className="w-4 h-4" />
-                            <span className="hidden sm:inline">Informações</span>
-                            <span className="sm:hidden">Info</span>
-                        </TabsTrigger>
-                        {profile.user_type === 'professional' && (
-                            <TabsTrigger value="portfolio" className="flex items-center gap-2 text-sm md:text-base">
-                                <Briefcase className="w-4 h-4" />
-                                <span className="hidden sm:inline">Portfólio</span>
-                                <span className="sm:hidden">Projetos</span>
+                    <TabsList className="bg-black p-2 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-6 flex w-full gap-2 h-auto">
+                            <TabsTrigger 
+                                value="informacoes" 
+                                className="flex items-center justify-center gap-2 text-sm md:text-base font-black bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all data-[state=active]:bg-yellow-400 data-[state=active]:text-black py-3 flex-1"
+                            >
+                                <User className="w-4 h-4" />
+                                <span className="hidden sm:inline">INFORMAÇÕES</span>
+                                <span className="sm:hidden">INFO</span>
                             </TabsTrigger>
-                        )}
-                        <TabsTrigger value="avaliacoes" className="flex items-center gap-2 text-sm md:text-base">
-                            <Star className="w-4 h-4" />
-                            <span className="hidden sm:inline">Avaliações</span>
-                            <span className="sm:hidden">Aval.</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="recomendacoes" className="flex items-center gap-2 text-sm md:text-base">
-                            <ThumbsUp className="w-4 h-4" />
-                            <span className="hidden sm:inline">Recomendações</span>
-                            <span className="sm:hidden">Rec.</span>
-                        </TabsTrigger>
+                            {profile.user_type === 'professional' && (
+                                <TabsTrigger 
+                                    value="portfolio" 
+                                    className="flex items-center justify-center gap-2 text-sm md:text-base font-black bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all data-[state=active]:bg-yellow-400 data-[state=active]:text-black py-3 flex-1"
+                                >
+                                    <Briefcase className="w-4 h-4" />
+                                    <span className="hidden sm:inline">PORTFÓLIO</span>
+                                    <span className="sm:hidden">PROJETOS</span>
+                                </TabsTrigger>
+                            )}
+                            <TabsTrigger 
+                                value="avaliacoes" 
+                                className="flex items-center justify-center gap-2 text-sm md:text-base font-black bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all data-[state=active]:bg-yellow-400 data-[state=active]:text-black py-3 flex-1"
+                            >
+                                <Star className="w-4 h-4" />
+                                <span className="hidden sm:inline">AVALIAÇÕES</span>
+                                <span className="sm:hidden">AVAL.</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="recomendacoes" 
+                                className="flex items-center justify-center gap-2 text-sm md:text-base font-black bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all data-[state=active]:bg-yellow-400 data-[state=active]:text-black py-3 flex-1"
+                            >
+                                <ThumbsUp className="w-4 h-4" />
+                                <span className="hidden sm:inline">RECOMENDAÇÕES</span>
+                                <span className="sm:hidden">REC.</span>
+                            </TabsTrigger>
                     </TabsList>
 
-                    {/* Aba de Informações */}
+                    {/* Aba de Informações Brutalista */}
                     <TabsContent value="informacoes" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Coluna Esquerda - Informações Principais */}
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Informações do Profissional */}
                                 {profile.user_type === 'professional' && (
-                                    <Card className="border-0 shadow-sm">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-xl">
+                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+                                            <h3 className="flex items-center gap-2 text-xl font-black">
                                                 <Briefcase className="w-5 h-5" />
-                                                Informações Profissionais
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-6">
+                                                INFORMAÇÕES PROFISSIONAIS
+                                            </h3>
+                                        </div>
+                                        <div className="p-6 space-y-6">
                                             {/* Badge e Status */}
                                             <div className="flex items-center justify-between">
-                                                <Badge className={`${getBadgeColor(profile.badge)} text-sm px-4 py-2`}>
-                                                    <Award className="w-4 h-4 mr-2" />
-                                                    {getBadgeName(profile.badge)}
-                                                </Badge>
+                                                <div className={`px-4 py-2 text-sm font-black border-2 border-black ${
+                                                    profile.badge === 'gold' ? 'bg-yellow-400 text-black' :
+                                                    profile.badge === 'silver' ? 'bg-gray-400 text-white' :
+                                                    profile.badge === 'bronze' ? 'bg-amber-600 text-white' :
+                                                    'bg-gray-500 text-white'
+                                                }`}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Award className="w-4 h-4" />
+                                                        {getBadgeName(profile.badge).toUpperCase()}
+                                                    </div>
+                                                </div>
                                                 
-                                                <Badge 
-                                                    variant={profile.is_available ? "default" : "secondary"}
-                                                    className={profile.is_available ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}
-                                                >
-                                                    {profile.is_available ? 'Disponível' : 'Indisponível'}
-                                                </Badge>
+                                                <div className={`px-4 py-2 text-sm font-black border-2 border-black ${
+                                                    profile.is_available ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                                                }`}>
+                                                    {profile.is_available ? 'DISPONÍVEL' : 'INDISPONÍVEL'}
+                                                </div>
                                             </div>
 
                                             {/* Experiência */}
                                             {profile.professional_experience_years && (
-                                                <div className="flex items-center gap-3">
-                                                    <Clock className="w-5 h-5 text-gray-500" />
+                                                <div className="flex items-center gap-3 p-4 bg-gray-100 border-2 border-black">
+                                                    <Clock className="w-5 h-5 text-black" />
                                                     <div>
-                                                        <span className="font-medium text-gray-900">Experiência:</span>
-                                                        <span className="ml-2 text-gray-600">
-                                                            {profile.professional_experience_years} ano(s)
+                                                        <span className="font-black text-black">EXPERIÊNCIA:</span>
+                                                        <span className="ml-2 font-black text-black">
+                                                            {profile.professional_experience_years} ANO(S)
                                                         </span>
                                                     </div>
                                                 </div>
@@ -456,12 +478,12 @@ export default function PublicProfilePage() {
                                             {/* Serviços */}
                                             {profile.professional_services && profile.professional_services.length > 0 && (
                                                 <div>
-                                                    <h4 className="font-medium text-gray-900 mb-3">Serviços Oferecidos</h4>
+                                                    <h4 className="font-black text-black mb-3 text-lg">SERVIÇOS OFERECIDOS</h4>
                                                     <div className="flex flex-wrap gap-2">
                                                         {profile.professional_services.map((service, index) => (
-                                                            <Badge key={index} variant="outline" className="px-3 py-1">
-                                                                {service}
-                                                            </Badge>
+                                                            <div key={index} className="px-3 py-1 bg-yellow-400 text-black border-2 border-black font-black text-sm">
+                                                                {service.toUpperCase()}
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -470,13 +492,15 @@ export default function PublicProfilePage() {
                                             {/* Certificações */}
                                             {profile.professional_certifications && profile.professional_certifications.length > 0 && (
                                                 <div>
-                                                    <h4 className="font-medium text-gray-900 mb-3">Certificações</h4>
+                                                    <h4 className="font-black text-black mb-3 text-lg">CERTIFICAÇÕES</h4>
                                                     <div className="flex flex-wrap gap-2">
                                                         {profile.professional_certifications.map((cert, index) => (
-                                                            <Badge key={index} variant="secondary" className="px-3 py-1">
-                                                                <CheckCircle className="w-3 h-3 mr-1" />
-                                                                {cert}
-                                                            </Badge>
+                                                            <div key={index} className="px-3 py-1 bg-green-500 text-white border-2 border-black font-black text-sm">
+                                                                <div className="flex items-center gap-1">
+                                                                    <CheckCircle className="w-3 h-3" />
+                                                                    {cert.toUpperCase()}
+                                                                </div>
+                                                            </div>
                                                         ))}
                                                     </div>
                                                 </div>
@@ -484,192 +508,188 @@ export default function PublicProfilePage() {
 
                                             {/* Portfolio */}
                                             {profile.professional_portfolio_url && (
-                                                <div className="flex items-center gap-3">
-                                                    <Building2 className="w-5 h-5 text-gray-500" />
+                                                <div className="flex items-center gap-3 p-4 bg-blue-100 border-2 border-black">
+                                                    <Building2 className="w-5 h-5 text-black" />
                                                     <div>
-                                                        <span className="font-medium text-gray-900">Portfolio:</span>
+                                                        <span className="font-black text-black">PORTFOLIO:</span>
                                                         <a 
                                                             href={profile.professional_portfolio_url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="ml-2 text-blue-600 hover:underline"
+                                                            className="ml-2 text-blue-600 hover:underline font-black"
                                                         >
-                                                            Ver portfolio
+                                                            VER PORTFOLIO
                                                         </a>
                                                     </div>
                                                 </div>
                                             )}
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 )}
 
-                                {/* Bio */}
+                                {/* Bio Brutalista */}
                                 {profile.bio && (
-                                    <Card className="border-0 shadow-sm">
-                                        <CardHeader>
-                                            <CardTitle className="text-xl">Sobre</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <p className="text-gray-700 leading-relaxed text-lg">{profile.bio}</p>
-                                        </CardContent>
-                                    </Card>
+                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+                                            <h3 className="text-xl font-black">SOBRE</h3>
+                                        </div>
+                                        <div className="p-6">
+                                            <p className="text-black leading-relaxed text-lg font-medium">{profile.bio}</p>
+                                        </div>
+                                    </div>
                                 )}
 
-                                {/* Localização */}
+                                {/* Localização Brutalista */}
                                 {(profile.location_state || profile.location_city || profile.neighborhood) && (
-                                    <Card className="border-0 shadow-sm">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-xl">
+                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+                                            <h3 className="flex items-center gap-2 text-xl font-black">
                                                 <MapPinIcon className="w-5 h-5" />
-                                                Localização
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-3">
+                                                LOCALIZAÇÃO
+                                            </h3>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="space-y-4">
                                                 {profile.location_state && (
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-medium text-gray-900">Estado:</span>
-                                                        <span className="text-gray-600">{profile.location_state}</span>
+                                                    <div className="flex items-center gap-3 p-3 bg-gray-100 border-2 border-black">
+                                                        <span className="font-black text-black">ESTADO:</span>
+                                                        <span className="font-black text-black">{profile.location_state.toUpperCase()}</span>
                                                     </div>
                                                 )}
                                                 {profile.location_city && (
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-medium text-gray-900">Cidade:</span>
-                                                        <span className="text-gray-600">{profile.location_city}</span>
+                                                    <div className="flex items-center gap-3 p-3 bg-gray-100 border-2 border-black">
+                                                        <span className="font-black text-black">CIDADE:</span>
+                                                        <span className="font-black text-black">{profile.location_city.toUpperCase()}</span>
                                                     </div>
                                                 )}
                                                 {profile.neighborhood && (
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-medium text-gray-900">Bairro:</span>
-                                                        <span className="text-gray-600">{profile.neighborhood}</span>
+                                                    <div className="flex items-center gap-3 p-3 bg-gray-100 border-2 border-black">
+                                                        <span className="font-black text-black">BAIRRO:</span>
+                                                        <span className="font-black text-black">{profile.neighborhood.toUpperCase()}</span>
                                                     </div>
                                                 )}
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 )}
 
-                                {/* Dados de Contato (Só aparece após acordo fechado) */}
+                                {/* Dados de Contato Brutalista (Só aparece após acordo fechado) */}
                                 {showContactInfo && (profile.phone || profile.email) && (
-                                    <Card className="border-0 shadow-sm border-l-4 border-l-blue-500">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-xl">
-                                                <MessageCircle className="w-5 h-5 text-blue-500" />
-                                                Dados de Contato
-                                            </CardTitle>
-                                            <CardDescription>
-                                                Informações disponíveis após acordo fechado
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-3">
+                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-l-8 border-l-blue-500">
+                                        <div className="p-6 border-b-4 border-black bg-blue-500 text-white">
+                                            <h3 className="flex items-center gap-2 text-xl font-black">
+                                                <MessageCircle className="w-5 h-5" />
+                                                DADOS DE CONTATO
+                                            </h3>
+                                            <p className="text-sm font-black mt-2">
+                                                INFORMAÇÕES DISPONÍVEIS APÓS ACORDO FECHADO
+                                            </p>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="space-y-4">
                                                 {profile.phone && (
-                                                    <div className="flex items-center gap-3">
-                                                        <Phone className="w-5 h-5 text-gray-500" />
+                                                    <div className="flex items-center gap-3 p-3 bg-green-100 border-2 border-black">
+                                                        <Phone className="w-5 h-5 text-black" />
                                                         <div>
-                                                            <span className="font-medium text-gray-900">Telefone:</span>
-                                                            <span className="ml-2 text-gray-600">{profile.phone}</span>
+                                                            <span className="font-black text-black">TELEFONE:</span>
+                                                            <span className="ml-2 font-black text-black">{profile.phone}</span>
                                                         </div>
                                                     </div>
                                                 )}
                                                 {profile.email && (
-                                                    <div className="flex items-center gap-3">
-                                                        <Mail className="w-5 h-5 text-gray-500" />
+                                                    <div className="flex items-center gap-3 p-3 bg-green-100 border-2 border-black">
+                                                        <Mail className="w-5 h-5 text-black" />
                                                         <div>
-                                                            <span className="font-medium text-gray-900">E-mail:</span>
-                                                            <span className="ml-2 text-gray-600">{profile.email}</span>
+                                                            <span className="font-black text-black">E-MAIL:</span>
+                                                            <span className="ml-2 font-black text-black">{profile.email}</span>
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Coluna Direita - Calendário */}
+                            {/* Coluna Direita - Calendário Brutalista */}
                             <div className="space-y-6">
-                                {/* Calendário de Disponibilidade */}
+                                {/* Calendário de Disponibilidade Brutalista */}
                                 {profile.user_type === 'professional' && (
-                                    <Card className="border-0 shadow-sm">
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-xl">
+                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                        <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+                                            <h3 className="flex items-center gap-2 text-xl font-black">
                                                 <CalendarIcon className="w-5 h-5" />
-                                                Disponibilidade
-                                            </CardTitle>
-                                            <CardDescription>
-                                                Visualize os horários disponíveis
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
+                                                DISPONIBILIDADE
+                                            </h3>
+                                            <p className="text-sm font-black mt-2">
+                                                VISUALIZE OS HORÁRIOS DISPONÍVEIS
+                                            </p>
+                                        </div>
+                                        <div className="p-6">
                                             <div className="space-y-4">
                                                 <Popover>
                                                     <PopoverTrigger asChild>
                                                         <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal",
-                                                                !calendarDate && "text-muted-foreground"
-                                                            )}
+                                                            className="w-full justify-start text-left font-black bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
                                                         >
                                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {calendarDate ? format(calendarDate, "MMMM yyyy", { locale: ptBR }) : "Selecione uma data"}
+                                                            {calendarDate ? format(calendarDate, "MMMM yyyy", { locale: ptBR }).toUpperCase() : "SELECIONE UMA DATA"}
                                                         </Button>
                                                     </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                    <PopoverContent className="w-auto p-0 border-4 border-black" align="start">
                                                         <Calendar
                                                             mode="single"
                                                             selected={calendarDate}
                                                             onSelect={setCalendarDate}
                                                             locale={ptBR}
-                                                            className="rounded-md border"
+                                                            className="rounded-md border-4 border-black"
                                                             required
                                                         />
                                                     </PopoverContent>
                                                 </Popover>
                                                 
-                                                <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                                    <p className="text-sm text-gray-600">
-                                                        {profile.is_available ? 'Profissional disponível para novos trabalhos' : 'Profissional indisponível no momento'}
+                                                <div className="text-center p-4 bg-gray-100 border-2 border-black">
+                                                    <p className="text-sm font-black text-black">
+                                                        {profile.is_available ? 'PROFISSIONAL DISPONÍVEL PARA NOVOS TRABALHOS' : 'PROFISSIONAL INDISPONÍVEL NO MOMENTO'}
                                                     </p>
                                                 </div>
                                             </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
                     </TabsContent>
 
-                    {/* Aba de Portfólio */}
+                    {/* Aba de Portfólio Brutalista */}
                     {profile.user_type === 'professional' && (
                         <TabsContent value="portfolio" className="space-y-6">
-                            <Card className="border-0 shadow-sm">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-xl">
+                            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+                                    <h3 className="flex items-center gap-2 text-xl font-black">
                                         <Briefcase className="w-5 h-5" />
-                                        Portfólio de Trabalhos
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Projetos realizados pelo profissional
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
+                                        PORTFÓLIO DE TRABALHOS
+                                    </h3>
+                                    <p className="text-sm font-black mt-2">
+                                        PROJETOS REALIZADOS PELO PROFISSIONAL
+                                    </p>
+                                </div>
+                                <div className="p-6">
                                     {portfolioLoading ? (
                                         <div className="text-center py-8">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                            <p className="text-gray-600">Carregando portfólio...</p>
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-black mx-auto mb-4"></div>
+                                            <p className="text-black font-black">CARREGANDO PORTFÓLIO...</p>
                                         </div>
                                     ) : portfolioProjects.length > 0 ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                             {portfolioProjects.map((project) => (
                                                 <div 
                                                     key={project.id} 
-                                                    className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                                                    className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
                                                     onClick={() => handleViewPortfolioProject(project.id)}
                                                 >
                                                     {/* Imagem do Projeto */}
-                                                    <div className="h-48 bg-gray-200 flex items-center justify-center">
+                                                    <div className="h-48 bg-gray-200 border-b-4 border-black flex items-center justify-center">
                                                         {project.images && project.images.length > 0 ? (
                                                             <img
                                                                 src={project.images[0]}
@@ -677,33 +697,33 @@ export default function PublicProfilePage() {
                                                                 className="w-full h-full object-cover"
                                                             />
                                                         ) : (
-                                                            <ImageIcon className="h-12 w-12 text-gray-400" />
+                                                            <ImageIcon className="h-12 w-12 text-black" />
                                                         )}
                                                     </div>
                                                     
                                                     {/* Conteúdo */}
                                                     <div className="p-4">
                                                         <div className="flex items-start justify-between mb-3">
-                                                            <h4 className="font-semibold text-gray-900 text-base line-clamp-2">
-                                                                {project.title}
+                                                            <h4 className="font-black text-black text-base line-clamp-2">
+                                                                {project.title.toUpperCase()}
                                                             </h4>
                                                             {project.is_featured && (
-                                                                <Badge className="bg-yellow-500 text-white text-xs ml-2">
-                                                                    Destaque
-                                                                </Badge>
+                                                                <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs ml-2">
+                                                                    DESTAQUE
+                                                                </div>
                                                             )}
                                                         </div>
                                                         
-                                                        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                                                            {project.description || 'Sem descrição'}
+                                                        <p className="text-black text-sm line-clamp-3 mb-4 font-medium">
+                                                            {project.description || 'SEM DESCRIÇÃO'}
                                                         </p>
                                                         
-                                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                                                        <div className="flex items-center justify-between text-sm text-black mb-3 font-bold">
                                                             <div className="flex items-center gap-4">
                                                                 {project.location && (
                                                                     <div className="flex items-center gap-1">
                                                                         <MapPin className="h-4 w-4" />
-                                                                        <span className="truncate max-w-24">{project.location}</span>
+                                                                        <span className="truncate max-w-24">{project.location.toUpperCase()}</span>
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center gap-1">
@@ -718,7 +738,7 @@ export default function PublicProfilePage() {
                                                         </div>
                                                         
                                                         {project.budget_range && (
-                                                            <div className="flex items-center gap-1 text-sm text-green-600">
+                                                            <div className="flex items-center gap-1 text-sm text-green-600 font-black">
                                                                 <DollarSign className="h-4 w-4" />
                                                                 <span>{project.budget_range}</span>
                                                             </div>
@@ -728,47 +748,48 @@ export default function PublicProfilePage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="text-center py-12 text-gray-500">
-                                            <Briefcase className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                                            <p className="text-xl font-medium mb-2">Nenhum projeto ainda</p>
-                                            <p className="text-sm">Este profissional ainda não adicionou projetos ao seu portfólio.</p>
+                                        <div className="text-center py-12 text-black">
+                                            <div className="w-16 h-16 bg-black border-4 border-black flex items-center justify-center mx-auto mb-4">
+                                                <Briefcase className="h-8 w-8 text-yellow-400" />
+                                            </div>
+                                            <h3 className="text-xl font-black mb-2">NENHUM PROJETO AINDA</h3>
+                                            <p className="text-sm font-bold">ESTE PROFISSIONAL AINDA NÃO ADICIONOU PROJETOS AO SEU PORTFÓLIO.</p>
                                         </div>
                                     )}
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         </TabsContent>
                     )}
 
                     {/* Aba de Avaliações */}
                     <TabsContent value="avaliacoes" className="space-y-6">
-                        <Card className="border-0 shadow-sm">
-                            <CardHeader className="px-4 md:px-6">
+                        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <div className="p-4 md:p-6 border-b-4 border-black bg-black text-yellow-400">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                                            <Star className="w-5 h-5" />
-                                            Avaliações Recebidas
-                                        </CardTitle>
-                                        <CardDescription>
+                                        <h3 className="text-lg md:text-xl font-black flex items-center gap-2">
+                                            <Star className="w-5 h-5 text-green-500" />
+                                            AVALIAÇÕES RECEBIDAS
+                                        </h3>
+                                        <p className="text-sm font-bold mt-1">
                                             {hookReviews.length > 0 
-                                                ? `${hookReviews.length} avaliações de outros usuários`
-                                                : 'Ainda não há avaliações'
+                                                ? `${hookReviews.length} AVALIAÇÕES DE OUTROS USUÁRIOS`
+                                                : 'AINDA NÃO HÁ AVALIAÇÕES'
                                             }
-                                        </CardDescription>
+                                        </p>
                                     </div>
                                     {canReview && user && (
                                         <Button
                                             onClick={() => setShowReviewForm(true)}
-                                            size="sm"
-                                            className="bg-blue-600 hover:bg-blue-700"
+                                            className="bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
                                         >
                                             <Star className="h-4 w-4 mr-2" />
-                                            Avaliar
+                                            AVALIAR
                                         </Button>
                                     )}
                                 </div>
-                            </CardHeader>
-                            <CardContent className="px-4 md:px-6">
+                            </div>
+                            <div className="p-4 md:p-6">
                                 {hookReviews.length > 0 ? (
                                     <>
                                         {/* Estatísticas das avaliações */}
@@ -790,27 +811,27 @@ export default function PublicProfilePage() {
                                         </div>
                                     </>
                                 ) : (
-                                    <div className="text-center py-12">
-                                        <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-medium text-gray-900 mb-2">
-                                            Nenhuma avaliação ainda
-                                        </h3>
-                                        <p className="text-gray-600 mb-6">
-                                            Este usuário ainda não recebeu avaliações.
+                                    <div className="text-center py-12 text-black">
+                                        <div className="w-16 h-16 bg-black border-4 border-black flex items-center justify-center mx-auto mb-4">
+                                            <Star className="h-8 w-8 text-yellow-400" />
+                                        </div>
+                                        <h3 className="text-xl font-black mb-2">NENHUMA AVALIAÇÃO AINDA</h3>
+                                        <p className="text-sm font-bold mb-6">
+                                            ESTE USUÁRIO AINDA NÃO RECEBEU AVALIAÇÕES.
                                         </p>
                                         {canReview && user && (
                                             <Button
                                                 onClick={() => setShowReviewForm(true)}
-                                                className="bg-blue-600 hover:bg-blue-700"
+                                                className="bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
                                             >
                                                 <Star className="h-4 w-4 mr-2" />
-                                                Seja o primeiro a avaliar
+                                                SEJA O PRIMEIRO A AVALIAR
                                             </Button>
                                         )}
                                     </div>
                                 )}
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     </TabsContent>
 
                     {/* Aba de Recomendações */}
@@ -843,6 +864,7 @@ export default function PublicProfilePage() {
                 )}
             </div>
         </div>
+      </div>
     </MainLayout>
   )
 }

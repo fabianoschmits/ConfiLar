@@ -108,14 +108,14 @@ export function AvatarUpload({
             size="lg"
           />
           {uploadSuccess && (
-            <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
+            <div className="absolute -top-2 -right-2 bg-green-500 text-white border-2 border-black rounded-full p-1">
               <Check className="w-4 h-4" />
             </div>
           )}
         </div>
         
-        <p className="text-sm text-gray-600 text-center">
-          Avatar atual
+        <p className="text-sm text-black font-bold text-center">
+          AVATAR ATUAL
         </p>
       </div>
 
@@ -132,12 +132,11 @@ export function AvatarUpload({
         {!selectedFile ? (
           <Button
             onClick={handleClickUpload}
-            variant="outline"
-            className="w-full"
+            className="w-full bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
             disabled={isUploading}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Selecionar Nova Foto
+            SELECIONAR NOVA FOTO
           </Button>
         ) : (
           <div className="space-y-3">
@@ -147,19 +146,17 @@ export function AvatarUpload({
                 <img
                   src={previewUrl!}
                   alt="Preview"
-                  className="w-24 h-24 rounded-full object-cover border-2 border-gray-200"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-black"
                 />
                 <Button
                   onClick={handleRemoveFile}
-                  size="sm"
-                  variant="destructive"
-                  className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                  className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full bg-red-500 text-white border-2 border-black hover:bg-red-600"
                 >
                   <X className="w-3 h-3" />
                 </Button>
               </div>
-              <p className="text-xs text-gray-500 text-center">
-                {selectedFile.name}
+              <p className="text-xs text-black font-bold text-center">
+                {selectedFile.name.toUpperCase()}
               </p>
             </div>
 
@@ -167,18 +164,18 @@ export function AvatarUpload({
             <div className="flex space-x-2">
               <Button
                 onClick={handleUpload}
-                className="flex-1"
+                className="flex-1 bg-green-500 text-white border-2 border-black hover:bg-green-600 font-black"
                 disabled={isUploading}
               >
                 {isUploading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    Fazendo Upload...
+                    FAZENDO UPLOAD...
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Salvar Avatar
+                    SALVAR AVATAR
                   </>
                 )}
               </Button>
@@ -189,25 +186,25 @@ export function AvatarUpload({
 
       {/* Mensagens de Status */}
       {uploadError && (
-        <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-red-500" />
-          <p className="text-sm text-red-600">{uploadError}</p>
+        <div className="flex items-center space-x-2 p-3 bg-red-500 border-2 border-black">
+          <AlertCircle className="w-4 h-4 text-white" />
+          <p className="text-sm text-white font-bold">{uploadError.toUpperCase()}</p>
         </div>
       )}
 
       {uploadSuccess && (
-        <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <Check className="w-4 h-4 text-green-500" />
-          <p className="text-sm text-green-600">
-            Avatar atualizado com sucesso!
+        <div className="flex items-center space-x-2 p-3 bg-green-500 border-2 border-black">
+          <Check className="w-4 h-4 text-white" />
+          <p className="text-sm text-white font-bold">
+            AVATAR ATUALIZADO COM SUCESSO!
           </p>
         </div>
       )}
 
       {/* Informações */}
-      <div className="text-xs text-gray-500 text-center space-y-1">
-        <p>Formatos suportados: JPEG, PNG, WebP</p>
-        <p>Tamanho máximo: 5MB</p>
+      <div className="text-xs text-black font-bold text-center space-y-1">
+        <p>FORMATOS SUPORTADOS: JPEG, PNG, WEBP</p>
+        <p>TAMANHO MÁXIMO: 5MB</p>
       </div>
     </div>
   )

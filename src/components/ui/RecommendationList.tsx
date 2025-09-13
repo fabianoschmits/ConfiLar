@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { X, ThumbsUp, User, MapPin, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -111,8 +109,8 @@ export function RecommendationList({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <Card 
-        className="w-full max-w-md max-h-[80vh] overflow-hidden"
+      <div 
+        className="w-full max-w-md max-h-[80vh] overflow-hidden bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
         style={{
           position: 'fixed',
           top: position.top > 0 ? `${position.top}px` : '50%',
@@ -122,88 +120,97 @@ export function RecommendationList({
           maxHeight: '600px'
         }}
       >
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-600" />
-            Quem Recomendou
-          </CardTitle>
+        <div className="flex flex-row items-center justify-between p-4 border-b-4 border-black bg-black text-yellow-400">
+          <h3 className="text-lg font-black flex items-center gap-2">
+            <ThumbsUp className="h-5 w-5 text-green-500" />
+            QUEM RECOMENDOU
+          </h3>
           <Button
-            variant="ghost"
-            size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 bg-red-500 text-white border-2 border-black hover:bg-red-600"
           >
             <X className="h-4 w-4" />
           </Button>
-        </CardHeader>
+        </div>
         
-        <CardContent className="space-y-4 overflow-y-auto max-h-[500px]">
+        <div className="space-y-4 overflow-y-auto max-h-[500px] p-4">
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-black"></div>
             </div>
           ) : recommendations.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <ThumbsUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>Nenhuma recomendação ainda</p>
-              <p className="text-sm">Seja o primeiro a recomendar!</p>
+            <div className="text-center py-8 text-black">
+              <div className="w-16 h-16 bg-black border-4 border-black flex items-center justify-center mx-auto mb-4">
+                <ThumbsUp className="h-8 w-8 text-yellow-400" />
+              </div>
+              <h3 className="text-lg font-black mb-2">NENHUMA RECOMENDAÇÃO AINDA</h3>
+              <p className="text-sm font-bold">SEJA O PRIMEIRO A RECOMENDAR!</p>
             </div>
           ) : (
             recommendations.map((rec) => (
-              <div key={rec.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={rec.recommender.avatar_url || ''} />
-                  <AvatarFallback>
-                    {rec.recommender.full_name?.charAt(0) || <User className="h-4 w-4" />}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-sm truncate">
-                      {rec.recommender.full_name || 'Usuário'}
-                    </h4>
-                    {rec.recommender.is_verified && (
-                      <Badge variant="secondary" className="text-xs px-1 py-0">
-                        <Star className="h-3 w-3 mr-1" />
-                        Verificado
-                      </Badge>
-                    )}
+              <div key={rec.id} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-black border-2 border-black">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={rec.recommender.avatar_url || ''} />
+                      <AvatarFallback className="bg-yellow-400 text-black font-black">
+                        {rec.recommender.full_name?.charAt(0) || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-                    <Badge 
-                      variant="outline" 
-                      className={`text-xs ${getRecommendationTypeColor(rec.recommendation_type)}`}
-                    >
-                      {getRecommendationTypeText(rec.recommendation_type)}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    {rec.recommender.location_city && rec.recommender.location_state && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{rec.recommender.location_city}, {rec.recommender.location_state}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-black text-sm truncate text-black">
+                        {rec.recommender.full_name?.toUpperCase() || 'USUÁRIO'}
+                      </h4>
+                      {rec.recommender.is_verified && (
+                        <div className="px-2 py-1 bg-green-500 text-white border-2 border-black font-black text-xs">
+                          <Star className="h-3 w-3 mr-1 inline" />
+                          VERIFICADO
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-xs mb-2">
+                      <div 
+                        className={`px-2 py-1 border-2 border-black font-black text-xs ${
+                          rec.recommendation_type === 'professional_to_client' 
+                            ? 'bg-blue-500 text-white' 
+                            : rec.recommendation_type === 'client_to_professional'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-500 text-white'
+                        }`}
+                      >
+                        {getRecommendationTypeText(rec.recommendation_type).toUpperCase()}
                       </div>
-                    )}
-                    {rec.recommender.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span>{rec.recommender.rating.toFixed(1)}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="text-xs text-gray-400 mt-1">
-                    {new Date(rec.created_at).toLocaleDateString('pt-BR')}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 text-xs text-black font-bold mb-2">
+                      {rec.recommender.location_city && rec.recommender.location_state && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span>{rec.recommender.location_city.toUpperCase()}, {rec.recommender.location_state.toUpperCase()}</span>
+                        </div>
+                      )}
+                      {rec.recommender.rating && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span>{rec.recommender.rating.toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="text-xs text-black font-bold">
+                      {new Date(rec.created_at).toLocaleDateString('pt-BR').toUpperCase()}
+                    </div>
                   </div>
                 </div>
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

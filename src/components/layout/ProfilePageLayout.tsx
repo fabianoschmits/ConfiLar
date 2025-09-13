@@ -45,89 +45,83 @@ export function ProfilePageLayout({
 
   return (
     <MainLayout>
-      <PageTransition>
-        <div className={`min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 ${className}`}>
-          <div className="container mx-auto px-4 py-8 max-w-6xl">
-            <FadeIn>
-              {/* Header da Página */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    {showBackButton && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.back()}
-                        className="text-gray-600 hover:text-gray-900"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Voltar
-                      </Button>
-                    )}
-                    <div>
-                      <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-                      {description && (
-                        <p className="text-gray-600 mt-1">{description}</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Botões de Ação */}
-                  {showSaveButton && (
-                    <div className="flex items-center space-x-2">
-                      {isEditing && onCancel && (
-                        <Button
-                          variant="outline"
-                          onClick={onCancel}
-                          disabled={isSaving}
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Cancelar
-                        </Button>
-                      )}
-                      {onSave && (
-                        <Button
-                          onClick={onSave}
-                          disabled={isSaving}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          {isSaving ? (
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                          ) : (
-                            <Save className="h-4 w-4 mr-2" />
-                          )}
-                          Salvar
-                        </Button>
-                      )}
-                    </div>
+      <div className="min-h-screen bg-yellow-400">
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Header da Página */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-4">
+                {showBackButton && (
+                  <Button
+                    onClick={() => router.back()}
+                    className="bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    VOLTAR
+                  </Button>
+                )}
+                <div>
+                  <h1 className="text-3xl font-black text-black tracking-wider">{title.toUpperCase()}</h1>
+                  {description && (
+                    <p className="text-black font-bold mt-1">{description.toUpperCase()}</p>
                   )}
                 </div>
-                
-                {/* Breadcrumb/Status */}
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <User className="h-4 w-4" />
-                  <span>Perfil</span>
+              </div>
+              
+              {/* Botões de Ação */}
+              {showSaveButton && (
+                <div className="flex items-center space-x-2">
+                  {isEditing && onCancel && (
+                    <Button
+                      onClick={onCancel}
+                      disabled={isSaving}
+                      className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      CANCELAR
+                    </Button>
+                  )}
+                  {onSave && (
+                    <Button
+                      onClick={onSave}
+                      disabled={isSaving}
+                      className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    >
+                      {isSaving ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
+                      SALVAR
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Breadcrumb/Status */}
+            <div className="flex items-center space-x-2 text-sm text-black font-bold">
+              <User className="h-4 w-4" />
+              <span>PERFIL</span>
+              <span>•</span>
+              <span>{title.toUpperCase()}</span>
+              {isEditing && (
+                <>
                   <span>•</span>
-                  <span>{title}</span>
-                  {isEditing && (
-                    <>
-                      <span>•</span>
-                      <Badge variant="secondary" className="text-xs">
-                        Modo Edição
-                      </Badge>
-                    </>
-                  )}
-                </div>
-              </div>
+                  <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
+                    MODO EDIÇÃO
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
-              {/* Conteúdo Principal */}
-              <div className="space-y-6">
-                {children}
-              </div>
-            </FadeIn>
+          {/* Conteúdo Principal */}
+          <div className="space-y-6">
+            {children}
           </div>
         </div>
-      </PageTransition>
+      </div>
     </MainLayout>
   )
 }
@@ -149,22 +143,22 @@ export function ProfileSection({
   className = ''
 }: ProfileSectionProps) {
   return (
-    <Card className={`bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center space-x-2 text-lg">
+    <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${className}`}>
+      <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
+        <h3 className="text-lg font-black flex items-center space-x-2">
           {icon}
-          <span>{title}</span>
-        </CardTitle>
+          <span>{title.toUpperCase()}</span>
+        </h3>
         {description && (
-          <CardDescription className="text-sm">
-            {description}
-          </CardDescription>
+          <p className="text-sm font-bold mt-1">
+            {description.toUpperCase()}
+          </p>
         )}
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+      <div className="p-6 space-y-4">
         {children}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -187,14 +181,14 @@ export function ProfileInfo({
   className = ''
 }: ProfileInfoProps) {
   return (
-    <div className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg ${className}`}>
+    <div className={`flex items-center justify-between p-3 bg-gray-100 border-2 border-black ${className}`}>
       <div className="flex items-center space-x-3">
-        {icon && <div className="text-gray-500">{icon}</div>}
+        {icon && <div className="text-black">{icon}</div>}
         <div>
-          <p className="text-sm font-medium text-gray-700">{label}</p>
-          <div className="text-gray-900 mt-1">
+          <p className="text-sm font-black text-black">{label.toUpperCase()}</p>
+          <div className="text-black mt-1">
             {typeof value === 'string' ? (
-              <p className="text-sm">{value || 'Não informado'}</p>
+              <p className="text-sm font-bold">{value || 'NÃO INFORMADO'}</p>
             ) : (
               value
             )}
@@ -203,10 +197,8 @@ export function ProfileInfo({
       </div>
       {editable && onEdit && (
         <Button
-          variant="ghost"
-          size="sm"
           onClick={onEdit}
-          className="text-gray-500 hover:text-gray-700"
+          className="bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -230,14 +222,14 @@ export function ProfileStats({ stats, className = '' }: ProfileStatsProps) {
   return (
     <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 ${className}`}>
       {stats.map((stat, index) => (
-        <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
+        <div key={index} className="text-center p-4 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           {stat.icon && (
-            <div className={`text-2xl mb-2 ${stat.color || 'text-gray-600'}`}>
+            <div className={`text-2xl mb-2 ${stat.color || 'text-black'}`}>
               {stat.icon}
             </div>
           )}
-          <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-          <p className="text-sm text-gray-600">{stat.label}</p>
+          <p className="text-2xl font-black text-black">{stat.value}</p>
+          <p className="text-sm font-bold text-black">{stat.label.toUpperCase()}</p>
         </div>
       ))}
     </div>

@@ -99,37 +99,37 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
   const UserCard = ({ user }: { user: Profile }) => (
     <div className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-start gap-4">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start gap-4">
           {/* Avatar Brutalista */}
-          <div className="p-3 bg-black border-2 border-black">
-            <Avatar className="w-16 h-16">
+          <div className="p-2 sm:p-3 bg-black border-2 border-black mx-auto sm:mx-0">
+            <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
               <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
-              <AvatarFallback className="bg-yellow-400 text-black font-black text-lg">
+              <AvatarFallback className="bg-yellow-400 text-black font-black text-lg sm:text-xl">
                 {(user.full_name || 'N').charAt(0)}
               </AvatarFallback>
             </Avatar>
           </div>
 
           {/* Conteúdo Principal */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full sm:w-auto">
             {/* Nome e Verificação */}
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
               <Link 
                 href={`/perfil/${user.id}`}
-                className="font-black text-black hover:text-red-500 transition-colors text-lg"
+                className="font-black text-black hover:text-red-500 transition-colors text-base sm:text-lg text-center sm:text-left"
               >
                 {(user.full_name || 'NOME NÃO INFORMADO').toUpperCase()}
               </Link>
               {user.is_verified && (
-                <div className="p-1 bg-green-500 text-white border border-black">
+                <div className="p-1 bg-green-500 text-white border border-black mx-auto sm:mx-0 w-fit">
                   <Shield className="h-4 w-4" />
                 </div>
               )}
             </div>
 
             {/* Tipo de Usuário */}
-            <div className="mb-3">
+            <div className="mb-3 text-center sm:text-left">
               <span className={`px-3 py-1 text-xs font-black border-2 border-black ${
                 user.user_type === 'professional' 
                   ? 'bg-blue-500 text-white' 
@@ -140,9 +140,9 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             </div>
 
             {/* Localização */}
-            <div className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-3">
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-sm font-bold text-gray-700 mb-3">
               <MapPin className="h-4 w-4" />
-              <span>
+              <span className="text-center sm:text-left">
                 {user.location_city && user.location_state 
                   ? `${user.location_city.toUpperCase()}, ${user.location_state}`
                   : 'LOCALIZAÇÃO NÃO INFORMADA'
@@ -153,8 +153,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             {/* Serviços (apenas para profissionais) */}
             {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
               <div className="mb-3">
-                <div className="text-sm font-black text-black mb-2">SERVIÇOS OFERECIDOS:</div>
-                <div className="flex flex-wrap gap-2">
+                <div className="text-sm font-black text-black mb-2 text-center sm:text-left">SERVIÇOS OFERECIDOS:</div>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                   {user.professional_services.slice(0, 3).map((service, index) => (
                     <span key={index} className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black">
                       {service.toUpperCase()}
@@ -170,7 +170,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             )}
 
             {/* Avaliação */}
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center justify-center sm:justify-start gap-3 mb-3">
               <div className="flex items-center gap-1">
                 {renderStars(user.rating || 0)}
               </div>
@@ -184,13 +184,13 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
             {/* Bio */}
             {user.bio && (
-              <p className="text-sm font-medium text-black mb-4 line-clamp-2">
+              <p className="text-sm font-medium text-black mb-4 line-clamp-2 text-center sm:text-left">
                 {user.bio}
               </p>
             )}
 
             {/* Informações Adicionais */}
-            <div className="grid grid-cols-2 gap-4 mb-4 text-xs font-bold">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-xs font-bold">
               {user.professional_experience_years && (
                 <div className="bg-gray-100 p-2 border border-black">
                   <div className="text-gray-700">EXPERIÊNCIA:</div>
@@ -206,28 +206,30 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             </div>
 
             {/* Ações */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 onClick={() => onContact(user)}
-                className="flex-1 py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
+                className="w-full sm:flex-1 py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
               >
                 <MessageCircle className="h-4 w-4 mr-2 inline" />
                 CONVERSAR
               </button>
               
-              <button
-                onClick={() => onViewProfile(user.id)}
-                className="py-3 px-4 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
-              >
-                <Eye className="h-4 w-4" />
-              </button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => onViewProfile(user.id)}
+                  className="flex-1 sm:flex-none py-3 px-4 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
+                >
+                  <Eye className="h-4 w-4" />
+                </button>
 
-              <button
-                onClick={() => toggleFavorite(user.id)}
-                className="py-3 px-4 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
-              >
-                <Heart className={`h-4 w-4 ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
-              </button>
+                <button
+                  onClick={() => toggleFavorite(user.id)}
+                  className="flex-1 sm:flex-none py-3 px-4 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
+                >
+                  <Heart className={`h-4 w-4 ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -236,14 +238,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   )
 
   const UserGridCard = ({ user }: { user: Profile }) => (
-    <div className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden">
-      <div className="p-4">
-        <div className="text-center">
+    <div className="group bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 overflow-hidden h-full">
+      <div className="p-4 h-full flex flex-col">
+        <div className="text-center flex-1">
           {/* Avatar Brutalista */}
-          <div className="p-3 bg-black border-2 border-black mx-auto mb-4 w-fit">
-            <Avatar className="w-20 h-20">
+          <div className="p-2 bg-black border-2 border-black mx-auto mb-3 w-fit">
+            <Avatar className="w-16 h-16 sm:w-20 sm:h-20">
               <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'Usuário'} />
-              <AvatarFallback className="bg-yellow-400 text-black font-black text-xl">
+              <AvatarFallback className="bg-yellow-400 text-black font-black text-lg sm:text-xl">
                 {(user.full_name || 'N').charAt(0)}
               </AvatarFallback>
             </Avatar>
@@ -252,14 +254,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           {/* Nome */}
           <Link 
             href={`/perfil/${user.id}`}
-            className="font-black text-black hover:text-red-500 transition-colors block mb-2 text-lg"
+            className="font-black text-black hover:text-red-500 transition-colors block mb-2 text-sm sm:text-base leading-tight"
           >
             {(user.full_name || 'NOME NÃO INFORMADO').toUpperCase()}
           </Link>
 
           {/* Tipo de Usuário */}
-          <div className="mb-3">
-            <span className={`px-3 py-1 text-xs font-black border-2 border-black ${
+          <div className="mb-2">
+            <span className={`px-2 py-1 text-xs font-black border-2 border-black ${
               user.user_type === 'professional' 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-500 text-white'
@@ -270,83 +272,83 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
           {/* Verificação */}
           {user.is_verified && (
-            <div className="flex items-center justify-center gap-2 text-xs font-black text-green-600 mb-3">
-              <Shield className="h-4 w-4" />
+            <div className="flex items-center justify-center gap-1 text-xs font-black text-green-600 mb-2">
+              <Shield className="h-3 w-3" />
               <span>VERIFICADO</span>
             </div>
           )}
 
           {/* Localização */}
-          <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-700 mb-3">
+          <div className="flex items-center justify-center gap-1 text-xs font-bold text-gray-700 mb-2">
             <MapPin className="h-3 w-3" />
-            <span>
+            <span className="truncate">
               {user.location_city ? user.location_city.toUpperCase() : 'CIDADE'}
             </span>
           </div>
 
           {/* Avaliação */}
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-center gap-1 mb-2">
+            <div className="flex items-center gap-0.5">
               {renderStars(user.rating || 0)}
             </div>
-            <span className="text-sm font-black text-black">
+            <span className="text-xs font-black text-black">
               {user.rating ? user.rating.toFixed(1) : '0.0'}
             </span>
           </div>
 
           {/* Serviço Principal (apenas para profissionais) */}
           {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
-            <div className="mb-3">
-              <div className="text-xs font-black text-black mb-1">SERVIÇO PRINCIPAL:</div>
-              <span className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black">
+            <div className="mb-2">
+              <div className="text-xs font-black text-black mb-1">SERVIÇO:</div>
+              <span className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black block truncate">
                 {user.professional_services[0].toUpperCase()}
               </span>
             </div>
           )}
 
-          {/* Informações Adicionais */}
-          <div className="grid grid-cols-1 gap-2 mb-4 text-xs font-bold">
+          {/* Informações Adicionais Compactas */}
+          <div className="grid grid-cols-1 gap-1 mb-3 text-xs font-bold">
             {user.professional_experience_years && (
-              <div className="bg-gray-100 p-2 border border-black">
-                <div className="text-gray-700">EXPERIÊNCIA:</div>
-                <div className="text-black">{user.professional_experience_years} ANOS</div>
+              <div className="bg-gray-100 p-1 border border-black">
+                <div className="text-gray-700 text-xs">EXP:</div>
+                <div className="text-black text-xs">{user.professional_experience_years}A</div>
               </div>
             )}
             {user.professional_certifications && user.professional_certifications.length > 0 && (
-              <div className="bg-green-100 p-2 border border-black">
-                <div className="text-gray-700">CERTIFICAÇÕES:</div>
-                <div className="text-black">{user.professional_certifications.length}</div>
+              <div className="bg-green-100 p-1 border border-black">
+                <div className="text-gray-700 text-xs">CERT:</div>
+                <div className="text-black text-xs">{user.professional_certifications.length}</div>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Ações */}
-          <div className="space-y-2">
+        {/* Ações */}
+        <div className="space-y-2 mt-auto">
+          <button
+            onClick={() => onContact(user)}
+            className="w-full py-2 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
+          >
+            <MessageCircle className="h-3 w-3 mr-1 inline" />
+            CONVERSAR
+          </button>
+          
+          <div className="flex gap-1">
             <button
-              onClick={() => onContact(user)}
-              className="w-full py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
+              onClick={() => onViewProfile(user.id)}
+              className="flex-1 py-1.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
             >
-              <MessageCircle className="h-4 w-4 mr-2 inline" />
-              CONVERSAR
+              <Eye className="h-3 w-3 mr-1 inline" />
+              VER
             </button>
             
-            <div className="flex gap-2">
-              <button
-                onClick={() => onViewProfile(user.id)}
-                className="flex-1 py-2 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
-              >
-                <Eye className="h-3 w-3 mr-1 inline" />
-                VER
-              </button>
-              
-              <button
-                onClick={() => toggleFavorite(user.id)}
-                className="flex-1 py-2 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
-              >
-                <Heart className={`h-3 w-3 mr-1 inline ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
-                FAV
-              </button>
-            </div>
+            <button
+              onClick={() => toggleFavorite(user.id)}
+              className="flex-1 py-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
+            >
+              <Heart className={`h-3 w-3 mr-1 inline ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+              FAV
+            </button>
           </div>
         </div>
       </div>
@@ -409,7 +411,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       {users.length > 0 ? (
         <div className={
           viewMode === 'grid' 
-            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+            ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4"
             : "space-y-4"
         }>
           {users.map((user) => (

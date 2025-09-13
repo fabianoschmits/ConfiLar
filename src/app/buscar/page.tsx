@@ -221,7 +221,7 @@ export default function BuscarPage() {
           </div>
 
           {/* Barra de Busca Principal Brutalista */}
-          <div className="max-w-4xl mx-auto mb-8">
+          <div className="max-w-4xl mx-auto mb-4">
             <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
               <SearchBar
                 searchTerm={filters.searchTerm}
