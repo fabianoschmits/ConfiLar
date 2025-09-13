@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AvatarUpload } from '@/components/ui/AvatarUpload'
+import { IconUpload, IconRefresh } from '@tabler/icons-react'
+import { cn } from '@/lib/utils'
 import { 
   User, 
   Mail, 
@@ -41,10 +43,16 @@ export default function EditarPerfilPage() {
   const [isSavingLocation, setIsSavingLocation] = useState(false)
   const [_selectedState, setSelectedState] = useState(profile?.location_state || '')
   const [mounted, setMounted] = useState(false)
+  
+  // Estados para sistema de upload avançado
+  const [selectedAvatar, setSelectedAvatar] = useState<{
+    type: 'upload' | 'dicebear'
+    value: string | File
+    preview?: string
+  } | null>(null)
+  const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
   const [formData, setFormData] = useState({
     email: profile?.email || '',
     full_name: profile?.full_name || '',
@@ -58,6 +66,10 @@ export default function EditarPerfilPage() {
     professional_experience_years: profile?.professional_experience_years || 0,
     professional_services: profile?.professional_services || []
   })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Sincronizar dados quando o perfil mudar
   useEffect(() => {
@@ -78,6 +90,24 @@ export default function EditarPerfilPage() {
       setSelectedState(profile.location_state || '')
     }
   }, [profile, isEditing, isEditingLocation])
+
+  // Gerar avatar automaticamente quando o nome mudar
+  useEffect(() => {
+    if (profile?.full_name && profile.full_name.length >= 2) {
+      generateDicebearAvatar(profile.full_name, 'male')
+    }
+  }, [profile?.full_name])
+
+  // Selecionar avatar Dicebear automaticamente quando gerado
+  useEffect(() => {
+    if (dicebearAvatar && !selectedAvatar) {
+      setSelectedAvatar({
+        type: 'dicebear',
+        value: dicebearAvatar,
+        preview: dicebearAvatar
+      })
+    }
+  }, [dicebearAvatar])
 
   const handleEditClick = () => {
     setFormData({
@@ -271,6 +301,84 @@ export default function EditarPerfilPage() {
     return '2024'
   }
 
+  // Função para gerar avatar Dicebear
+  const generateDicebearAvatar = async (name: string, gender: string = 'male') => {
+    setIsGeneratingAvatar(true)
+    try {
+      const encodedName = encodeURIComponent(name)
+      const facialHairProbability = gender === 'male' ? '30' : gender === 'female' ? '0' : '15'
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}`
+      setDicebearAvatar(avatarUrl)
+      console.log('🎨 Avatar atualizado:', avatarUrl)
+    } catch (error) {
+      console.error('Erro ao gerar avatar Dicebear:', error)
+    } finally {
+      setIsGeneratingAvatar(false)
+    }
+  }
+
+  // Função para upload de arquivo
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setSelectedAvatar({
+          type: 'upload',
+          value: file,
+          preview: e.target?.result as string
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Função para selecionar avatar Dicebear
+  const handleDicebearSelect = () => {
+    if (dicebearAvatar) {
+      setSelectedAvatar({
+        type: 'dicebear',
+        value: dicebearAvatar,
+        preview: dicebearAvatar
+      })
+    }
+  }
+
+  // Função para salvar avatar selecionado
+  const handleAvatarSave = async () => {
+    if (!selectedAvatar) {
+      toast.error('NENHUM AVATAR SELECIONADO')
+      return
+    }
+
+    try {
+      if (selectedAvatar.type === 'upload') {
+        // Upload de arquivo
+        const result = await uploadAvatar(selectedAvatar.value as File)
+        if (result.error) {
+          toast.error(result.error.message)
+          return
+        }
+        if (result.data) {
+          setFormData(prevData => ({ ...prevData, avatar_url: result.data || '' }))
+          toast.success('FOTO DO PERFIL ATUALIZADA COM SUCESSO!')
+        }
+      } else if (selectedAvatar.type === 'dicebear') {
+        // Avatar Dicebear - atualizar diretamente no perfil
+        const result = await updateProfile({ avatar_url: selectedAvatar.value as string })
+        if (result?.error) {
+          toast.error('ERRO AO ATUALIZAR AVATAR: ' + result.error.message)
+          return
+        }
+        setFormData(prevData => ({ ...prevData, avatar_url: selectedAvatar.value as string }))
+        toast.success('AVATAR ATUALIZADO COM SUCESSO!')
+      }
+    } catch (error) {
+      console.error('Erro ao salvar avatar:', error)
+      toast.error('ERRO INESPERADO AO SALVAR AVATAR')
+    }
+  }
+
   const handleAvatarUpload = async (file: File) => {
     try {
       const result = await uploadAvatar(file)
@@ -319,25 +427,125 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Foto do Perfil"
             description="Atualize sua foto de perfil"
-            icon={<User className="h-5 w-5 text-blue-600" />}
+            icon={<User className="h-5 w-5 text-yellow-400" />}
           >
-            <div className="flex flex-col items-center gap-4">
-              <Avatar className="w-24 h-24 border-4 border-blue-100">
-                <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
-                <AvatarFallback className="text-xl bg-blue-100 text-blue-600">
-                  {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="w-full max-w-sm">
-                <AvatarUpload
-                  currentAvatarUrl={formData.avatar_url || profile.avatar_url}
-                  onUpload={handleAvatarUpload}
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  Formatos: JPEG, PNG, WebP. Máx: 5MB
-                </p>
+            <div className="space-y-4">
+              {/* Preview do Avatar Selecionado */}
+              {selectedAvatar && (
+                <div className="flex items-center gap-3 p-3 bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="w-12 h-12 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                    <img
+                      src={selectedAvatar.preview}
+                      alt="Avatar selecionado"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-black uppercase">
+                      {selectedAvatar.type === 'upload' ? 'FOTO ENVIADA' : 'AVATAR GERADO'}
+                    </p>
+                    <p className="text-xs text-black font-bold">
+                      {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
+                      {selectedAvatar.type === 'dicebear' && 'GERADO AUTOMATICAMENTE'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Avatar Atual */}
+              <div className="flex items-center gap-3 p-3 bg-gray-100 border-2 border-black">
+                <div className="w-12 h-12 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                  <Avatar className="w-full h-full">
+                    <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
+                    <AvatarFallback className="text-sm bg-yellow-400 text-black font-black">
+                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <div>
+                  <p className="text-sm font-black text-black uppercase">AVATAR ATUAL</p>
+                  <p className="text-xs text-black font-bold">
+                    {profile?.avatar_url ? 'FOTO PERSONALIZADA' : 'AVATAR PADRÃO'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Opções de Avatar */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Upload de Foto */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    <IconUpload size={12} stroke={2} className="text-black" />
+                    <span className="text-xs font-black text-black uppercase">UPLOAD</span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="avatar-upload"
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className={cn(
+                      "block w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white",
+                      selectedAvatar?.type === 'upload' && "bg-yellow-400"
+                    )}
+                  >
+                    <div className="text-xs text-black font-black uppercase">
+                      {selectedAvatar?.type === 'upload' ? '✓ SELECIONADO' : 'ESCOLHER ARQUIVO'}
+                    </div>
+                  </label>
+                </div>
+
+                {/* Avatar Pixel-Art */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    <IconRefresh size={12} stroke={2} className={cn("text-black", isGeneratingAvatar && "animate-spin")} />
+                    <span className="text-xs font-black text-black uppercase">PIXEL-ART</span>
+                  </div>
+                  {profile?.full_name && profile.full_name.length >= 2 ? (
+                    <button
+                      type="button"
+                      onClick={handleDicebearSelect}
+                      disabled={isGeneratingAvatar || !dicebearAvatar}
+                      className={cn(
+                        "w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+                        selectedAvatar?.type === 'dicebear' && "bg-yellow-400",
+                        (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      {isGeneratingAvatar ? (
+                        <div className="text-xs text-black font-black uppercase">GERANDO...</div>
+                      ) : dicebearAvatar ? (
+                        <div className="text-xs text-black font-black uppercase">✓ SELECIONADO AUTOMATICAMENTE</div>
+                      ) : (
+                        <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-center bg-white">
+                      <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Botão de Salvar */}
+              {selectedAvatar && (
+                <Button
+                  onClick={handleAvatarSave}
+                  className="w-full bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  SALVAR AVATAR
+                </Button>
+              )}
+
+              {/* Informações */}
+              <div className="text-xs text-black font-bold text-center">
+                <p>FORMATOS SUPORTADOS: JPEG, PNG, WEBP</p>
+                <p>TAMANHO MÁXIMO: 5MB</p>
               </div>
             </div>
           </ProfileSection>
@@ -352,7 +560,7 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Informações Básicas"
             description="Dados pessoais e informações de contato"
-            icon={<User className="h-5 w-5 text-blue-600" />}
+            icon={<User className="h-5 w-5 text-yellow-400" />}
           >
             <div className="space-y-4">
               <ProfileInfo
@@ -363,14 +571,14 @@ export default function EditarPerfilPage() {
               />
 
               <div>
-                <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">Nome Completo</Label>
+                <Label htmlFor="full_name" className="text-sm font-black text-black">NOME COMPLETO</Label>
                 {isEditing ? (
                   <Input
                     id="full_name"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="mt-1"
-                    placeholder="Digite seu nome completo"
+                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
+                    placeholder="DIGITE SEU NOME COMPLETO"
                   />
                 ) : (
                   <ProfileInfo
@@ -384,13 +592,13 @@ export default function EditarPerfilPage() {
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Telefone</Label>
+                <Label htmlFor="phone" className="text-sm font-black text-black">TELEFONE</Label>
                 {isEditing ? (
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="mt-1"
+                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
                     placeholder="(11) 99999-9999"
                   />
                 ) : (
@@ -405,14 +613,14 @@ export default function EditarPerfilPage() {
               </div>
 
               <div>
-                <Label htmlFor="bio" className="text-sm font-medium text-gray-700">Biografia</Label>
+                <Label htmlFor="bio" className="text-sm font-black text-black">BIOGRAFIA</Label>
                 {isEditing ? (
                   <Textarea
                     id="bio"
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    className="mt-1"
-                    placeholder="Conte um pouco sobre você..."
+                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
+                    placeholder="CONTE UM POUCO SOBRE VOCÊ..."
                     rows={3}
                   />
                 ) : (
@@ -428,25 +636,25 @@ export default function EditarPerfilPage() {
 
               {/* Botões de ação */}
               {isEditing && (
-                <div className="flex justify-end space-x-2 pt-4">
+                <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
                   <Button
-                    variant="outline"
                     onClick={handleCancel}
+                    className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Cancelar
+                    CANCELAR
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
                     {isSaving ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    Salvar
+                    SALVAR
                   </Button>
                 </div>
               )}
@@ -457,12 +665,12 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Localização"
             description="Informações de endereço e localização"
-            icon={<MapPin className="h-5 w-5 text-blue-600" />}
+            icon={<MapPin className="h-5 w-5 text-yellow-400" />}
           >
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">Estado</Label>
+                  <Label htmlFor="location_state" className="text-sm font-black text-black">ESTADO</Label>
                   {isEditingLocation ? (
                     <EstadoCombobox
                       value={formData.location_state}
@@ -470,8 +678,8 @@ export default function EditarPerfilPage() {
                         setSelectedState(value)
                         setFormData({ ...formData, location_state: value, location_city: '' })
                       }}
-                      placeholder="Selecione o estado"
-                      className="mt-1"
+                      placeholder="SELECIONE O ESTADO"
+                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black"
                     />
                   ) : (
                     <ProfileInfo
@@ -485,7 +693,7 @@ export default function EditarPerfilPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">Cidade</Label>
+                  <Label htmlFor="location_city" className="text-sm font-black text-black">CIDADE</Label>
                   {isEditingLocation ? (
                     <CidadeCombobox
                       value={formData.location_city}
@@ -493,9 +701,9 @@ export default function EditarPerfilPage() {
                         setFormData({ ...formData, location_city: value })
                       }}
                       estadoSigla={formData.location_state}
-                      placeholder="Selecione a cidade"
+                      placeholder="SELECIONE A CIDADE"
                       disabled={!formData.location_state}
-                      className="mt-1"
+                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black"
                     />
                   ) : (
                     <ProfileInfo
@@ -511,14 +719,14 @@ export default function EditarPerfilPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">Bairro</Label>
+                  <Label htmlFor="neighborhood" className="text-sm font-black text-black">BAIRRO</Label>
                   {isEditingLocation ? (
                     <Input
                       id="neighborhood"
                       value={formData.neighborhood}
                       onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                      className="mt-1"
-                      placeholder="Digite seu bairro"
+                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
+                      placeholder="DIGITE SEU BAIRRO"
                     />
                   ) : (
                     <ProfileInfo
@@ -532,14 +740,14 @@ export default function EditarPerfilPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="address" className="text-sm font-medium text-gray-700">Endereço</Label>
+                  <Label htmlFor="address" className="text-sm font-black text-black">ENDEREÇO</Label>
                   {isEditingLocation ? (
                     <Input
                       id="address"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="mt-1"
-                      placeholder="Digite seu endereço completo"
+                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
+                      placeholder="DIGITE SEU ENDEREÇO COMPLETO"
                     />
                   ) : (
                     <ProfileInfo
@@ -555,25 +763,25 @@ export default function EditarPerfilPage() {
 
               {/* Botões de ação */}
               {isEditingLocation && (
-                <div className="flex justify-end space-x-2 pt-4">
+                <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
                   <Button
-                    variant="outline"
                     onClick={handleCancelLocation}
+                    className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Cancelar
+                    CANCELAR
                   </Button>
                   <Button
                     onClick={handleSaveLocation}
                     disabled={isSavingLocation}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
                     {isSavingLocation ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    Salvar
+                    SALVAR
                   </Button>
                 </div>
               )}
@@ -587,24 +795,24 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Dados Profissionais"
             description="Informações sobre seus serviços e experiência"
-            icon={<Building2 className="h-5 w-5 text-blue-600" />}
+            icon={<Building2 className="h-5 w-5 text-yellow-400" />}
           >
             <div className="space-y-4">
               {isEditingProfessional ? (
                 <>
                   <div>
-                    <Label htmlFor="experience_years" className="text-sm font-medium text-gray-700">Anos de Experiência</Label>
+                    <Label htmlFor="experience_years" className="text-sm font-black text-black">ANOS DE EXPERIÊNCIA</Label>
                     <Select
                       value={formData.professional_experience_years.toString()}
                       onValueChange={(value) => setFormData({ ...formData, professional_experience_years: parseInt(value, 10) })}
                     >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Selecione" />
+                      <SelectTrigger className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black">
+                        <SelectValue placeholder="SELECIONE" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="border-4 border-black">
                         {Array.from({ length: 51 }, (_, i) => (
-                          <SelectItem key={i} value={i.toString()}>
-                            {i} {i === 1 ? 'ano' : 'anos'}
+                          <SelectItem key={i} value={i.toString()} className="font-black">
+                            {i} {i === 1 ? 'ANO' : 'ANOS'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -612,8 +820,8 @@ export default function EditarPerfilPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="services" className="text-sm font-medium text-gray-700">Serviços Oferecidos</Label>
-                    <div className="mt-1 p-3 border rounded-md max-h-32 overflow-y-auto">
+                    <Label htmlFor="services" className="text-sm font-black text-black">SERVIÇOS OFERECIDOS</Label>
+                    <div className="mt-1 p-3 border-4 border-black bg-gray-100 max-h-32 overflow-y-auto">
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {['Diarista', 'Faxineira', 'Pedreiro', 'Pintor', 'Eletricista', 'Encanador', 'Jardineiro', 'Cabeleireiro'].map((service) => (
                           <div key={service} className="flex items-center space-x-2">
@@ -635,9 +843,9 @@ export default function EditarPerfilPage() {
                                   })
                                 }
                               }}
-                              className="rounded"
+                              className="rounded border-2 border-black"
                             />
-                            <label htmlFor={service} className="text-sm">{service}</label>
+                            <label htmlFor={service} className="text-sm font-bold text-black">{service}</label>
                           </div>
                         ))}
                       </div>
@@ -645,20 +853,20 @@ export default function EditarPerfilPage() {
                   </div>
 
                   {/* Botões de ação */}
-                  <div className="flex justify-end space-x-2 pt-4">
+                  <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
                     <Button
-                      variant="outline"
                       onClick={handleCancelProfessional}
+                      className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Cancelar
+                      CANCELAR
                     </Button>
                     <Button
                       onClick={handleSaveProfessional}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      Salvar
+                      SALVAR
                     </Button>
                   </div>
                 </>
@@ -673,28 +881,26 @@ export default function EditarPerfilPage() {
                   />
 
                   <div>
-                    <Label className="text-sm font-medium text-gray-700">Serviços Oferecidos</Label>
+                    <Label className="text-sm font-black text-black">SERVIÇOS OFERECIDOS</Label>
                     <div className="mt-2">
                       {profile.professional_services && profile.professional_services.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {profile.professional_services.map((service, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
+                            <div key={index} className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
                               {service}
-                            </Badge>
+                            </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-gray-500 text-sm">Nenhum serviço cadastrado</p>
+                        <p className="text-black font-bold text-sm">NENHUM SERVIÇO CADASTRADO</p>
                       )}
                     </div>
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={handleEditProfessional}
-                      className="mt-2"
+                      className="mt-2 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      Editar Serviços
+                      EDITAR SERVIÇOS
                     </Button>
                   </div>
                 </>
@@ -706,39 +912,39 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Perfil Público"
             description="Compartilhe seu perfil com outros usuários"
-            icon={<Share2 className="h-5 w-5 text-blue-600" />}
+            icon={<Share2 className="h-5 w-5 text-yellow-400" />}
           >
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
-                  <AvatarFallback className="text-sm bg-blue-100 text-blue-600">
-                    {profile?.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="p-2 bg-black border-2 border-black">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
+                    <AvatarFallback className="text-sm bg-yellow-400 text-black font-black">
+                      {profile?.full_name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 <div>
-                  <p className="font-medium text-gray-900">{profile?.full_name}</p>
-                  <Badge variant="secondary" className="text-xs">
-                    {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                  </Badge>
+                  <p className="font-black text-black">{profile?.full_name}</p>
+                  <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
+                    {profile?.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
+                  </div>
                 </div>
               </div>
               <div className="flex space-x-2">
                 <Button
-                  variant="outline"
                   onClick={copyProfileLink}
-                  className="flex-1"
+                  className="flex-1 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                 >
                   <Copy className="h-4 w-4 mr-2" />
-                  Copiar Link
+                  COPIAR LINK
                 </Button>
                 <Button
-                  variant="outline"
                   onClick={shareProfile}
-                  className="flex-1"
+                  className="flex-1 bg-blue-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                 >
                   <Share2 className="h-4 w-4 mr-2" />
-                  Compartilhar
+                  COMPARTILHAR
                 </Button>
               </div>
             </div>
@@ -748,7 +954,7 @@ export default function EditarPerfilPage() {
           <ProfileSection
             title="Estatísticas"
             description="Informações sobre seu perfil"
-            icon={<BarChart3 className="h-5 w-5 text-blue-600" />}
+            icon={<BarChart3 className="h-5 w-5 text-yellow-400" />}
           >
             <ProfileStats
               stats={[

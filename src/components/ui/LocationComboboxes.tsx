@@ -299,7 +299,7 @@ export function CategoriaCombobox({
               {filteredCategorias.map((categoria) => (
                 <CommandItem
                   key={categoria.id}
-                  value={categoria.id}
+                  value={categoria.name}
                   onSelect={(currentValue) => {
                     onValueChange(currentValue === value ? "" : currentValue)
                     setOpen(false)
@@ -309,7 +309,7 @@ export function CategoriaCombobox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === categoria.id ? "opacity-100" : "opacity-0"
+                      value === categoria.name ? "opacity-100" : "opacity-0"
                     )}
                   />
                   <span className="mr-2">{categoria.icon}</span>

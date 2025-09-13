@@ -67,7 +67,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconUserCheck size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconUserCheck size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">1. COMPLETE SEU PERFIL</h3>
@@ -112,7 +112,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up" style={{animationDelay: '0.1s'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconSearch size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconSearch size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">2. BUSQUE PROFISSIONAIS</h3>
@@ -157,7 +157,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up" style={{animationDelay: '0.2s'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconMessageCircle size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconMessageCircle size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">3. ENTRE EM CONTATO</h3>
@@ -218,7 +218,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconFileText size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconFileText size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">1. CRIE SEU PORTFÓLIO</h3>
@@ -263,7 +263,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up" style={{animationDelay: '0.1s'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconStar size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconStar size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">2. CONSTRUA REPUTAÇÃO</h3>
@@ -308,7 +308,7 @@ export default function HomePage() {
               <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 h-full animate-slide-in-up" style={{animationDelay: '0.2s'}}>
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconTrendingUp size={24} stroke={2} className="text-yellow-400 animate-spin" />
+                    <IconTrendingUp size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-black uppercase">3. ACOMPANHE GANHOS</h3>

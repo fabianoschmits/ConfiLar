@@ -79,7 +79,6 @@ export function Sidebar() {
   const { user, profile } = useAuthContext()
   const { unreadCount } = useSupabaseNotifications()
   const { openChat } = useFloatingChat()
-  const [isCollapsed, setIsCollapsed] = useState(true)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   // Sempre renderizar o componente para navegação
@@ -321,7 +320,7 @@ export function Sidebar() {
     return colors[color as keyof typeof colors] || colors.blue
   }
 
-  const sidebarWidth = isCollapsed ? 'w-16' : 'w-72'
+  const sidebarWidth = 'w-72'
   const sidebarTransition = 'transition-all duration-300 ease-in-out'
 
   return (
@@ -336,30 +335,21 @@ export function Sidebar() {
 
       {/* Sidebar Brutalista */}
       <div className={`
-        fixed left-0 top-0 h-full bg-yellow-400 border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-30
+        fixed left-0 top-0 h-full bg-yellow-400 border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-[60]
         ${sidebarWidth} ${sidebarTransition}
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar Brutalista */}
         <div className="flex items-center justify-between p-4 border-b-4 border-black bg-black">
-          {!isCollapsed && (
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
-                <span className="text-black font-black text-xl">C</span>
-              </div>
-              <div>
-                <span className="font-black text-yellow-400 text-lg">CONFILAR</span>
-                <p className="text-xs text-yellow-400 font-bold">MARKETPLACE PROFISSIONAL</p>
-              </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
+              <span className="text-black font-black text-xl">C</span>
             </div>
-          )}
-          
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 bg-yellow-400 text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-          >
-            {isCollapsed ? <IconChevronRight size={16} stroke={2} /> : <IconChevronLeft size={16} stroke={2} />}
-          </button>
+            <div>
+              <span className="font-black text-yellow-400 text-lg">CONFILAR</span>
+              <p className="text-xs text-yellow-400 font-bold">MARKETPLACE PROFISSIONAL</p>
+            </div>
+          </div>
         </div>
 
         {/* Conteúdo da Sidebar */}
@@ -369,12 +359,10 @@ export function Sidebar() {
               <div key={category.id} className="space-y-2">
                 {/* Cabeçalho da Categoria Brutalista */}
                 <div className="px-2 py-1">
-                  {!isCollapsed && (
-                    <div className={`flex items-center space-x-2 text-xs font-black uppercase tracking-wider px-3 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${getCategoryColor(category.color || 'blue')}`}>
-                      {category.icon}
-                      <span>{category.title}</span>
-                    </div>
-                  )}
+                  <div className={`flex items-center space-x-2 text-xs font-black uppercase tracking-wider px-3 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${getCategoryColor(category.color || 'blue')}`}>
+                    {category.icon}
+                    <span>{category.title}</span>
+                  </div>
                 </div>
 
                 {/* Itens da Categoria */}
@@ -458,8 +446,7 @@ export function Sidebar() {
         </div>
 
         {/* Informações do Usuário Brutalista */}
-        {!isCollapsed && (
-          <div className="p-4 border-t-4 border-black bg-black">
+        <div className="p-4 border-t-4 border-black bg-black">
             <div className="space-y-3">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">
@@ -491,7 +478,6 @@ export function Sidebar() {
               </div>
             </div>
           </div>
-        )}
 
       </div>
 

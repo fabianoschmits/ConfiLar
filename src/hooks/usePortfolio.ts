@@ -26,9 +26,9 @@ export function usePortfolio(professionalId?: string) {
         .limit(1)
 
       if (error) {
-        console.error('Tabela portfolio_projects não encontrada:', error)
-        setError('Sistema de portfólio não disponível')
-        setProjects([])
+        console.warn('Sistema de portfólio não disponível - tabela portfolio_projects não encontrada')
+        setError(null) // Não mostrar erro para o usuário
+        setProjects([]) // Retornar array vazio
         return
       }
 
@@ -44,15 +44,16 @@ export function usePortfolio(professionalId?: string) {
       const { data: projectsData, error: projectsError } = await query
 
       if (projectsError) {
-        console.error('Erro ao buscar projetos:', projectsError)
-        setError('Erro ao carregar projetos do portfólio')
+        console.warn('Erro ao buscar projetos do portfólio:', projectsError)
+        setError(null) // Não mostrar erro para o usuário
+        setProjects([])
         return
       }
 
       setProjects(projectsData || [])
     } catch (err) {
-      console.error('Erro crítico ao buscar projetos:', err)
-      setError('Erro crítico ao carregar projetos')
+      console.warn('Erro ao buscar projetos do portfólio:', err)
+      setError(null) // Não mostrar erro para o usuário
       setProjects([])
     } finally {
       setLoading(false)

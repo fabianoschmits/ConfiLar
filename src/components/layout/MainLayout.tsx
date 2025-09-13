@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { BrutalistHeader } from './BrutalistHeader';
 import { MobileBottomNavigation } from './MobileBottomNavigation';
-import { MobileQuickActions } from './MobileQuickActions';
 import { LoginPrompt } from './LoginPrompt';
 import { useAuthContext } from '@/contexts/AuthContext'
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -49,7 +48,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       {/* Header Brutalista - substitui MobileHeader e FloatingProfile */}
       <BrutalistHeader />
       
-      <main className={`min-h-screen bg-yellow-400 transition-colors duration-200 lg:ml-16 pb-20 lg:pb-0 pt-16 lg:pt-0`}>
+      <main className={`min-h-screen bg-yellow-400 transition-colors duration-200 lg:ml-72 pb-20 lg:pb-0 pt-20`}>
         {loading || !isReady ? (
           <LoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
@@ -94,7 +93,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
         )}
       </main>
       <MobileBottomNavigation />
-      <MobileQuickActions />
       <LoginPrompt />
     </>
   );

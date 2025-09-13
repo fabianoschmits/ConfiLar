@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ThumbsUp, User, MapPin, Star, Eye } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -103,133 +101,142 @@ export function RecommendationSection({ userId, className = '' }: Recommendation
 
   if (loading) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-600" />
-            Recomendações
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${className}`}>
+        <div className="p-4 border-b-4 border-black bg-black text-yellow-400">
+          <h3 className="text-lg font-black flex items-center gap-2">
+            <ThumbsUp className="h-5 w-5 text-green-500" />
+            RECOMENDAÇÕES
+          </h3>
+        </div>
+        <div className="p-4">
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-black"></div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   if (recommendations.length === 0) {
     return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-600" />
-            Recomendações
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <ThumbsUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium mb-2">Nenhuma recomendação ainda</p>
-            <p className="text-sm">Seja o primeiro a recomendar este usuário!</p>
+      <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${className}`}>
+        <div className="p-4 border-b-4 border-black bg-black text-yellow-400">
+          <h3 className="text-lg font-black flex items-center gap-2">
+            <ThumbsUp className="h-5 w-5 text-green-500" />
+            RECOMENDAÇÕES
+          </h3>
+        </div>
+        <div className="p-4">
+          <div className="text-center py-8 text-black">
+            <div className="w-16 h-16 bg-black border-4 border-black flex items-center justify-center mx-auto mb-4">
+              <ThumbsUp className="h-8 w-8 text-yellow-400" />
+            </div>
+            <h3 className="text-lg font-black mb-2">NENHUMA RECOMENDAÇÃO AINDA</h3>
+            <p className="text-sm font-bold">SEJA O PRIMEIRO A RECOMENDAR ESTE USUÁRIO!</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   const displayedRecommendations = showAll ? recommendations : recommendations.slice(0, 3)
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+    <div className={`bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${className}`}>
+      <div className="p-4 border-b-4 border-black bg-black text-yellow-400">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-600" />
-            Recomendações
-            <Badge variant="secondary" className="ml-2">
+            <ThumbsUp className="h-5 w-5 text-green-500" />
+            <h3 className="text-lg font-black">RECOMENDAÇÕES</h3>
+            <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-sm">
               {recommendations.length}
-            </Badge>
+            </div>
           </div>
           {recommendations.length > 3 && (
             <Button
-              variant="ghost"
-              size="sm"
               onClick={() => setShowAll(!showAll)}
-              className="text-blue-600 hover:text-blue-700"
+              className="bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
             >
-              {showAll ? 'Ver menos' : `Ver todas (${recommendations.length})`}
+              {showAll ? 'VER MENOS' : `VER TODAS (${recommendations.length})`}
             </Button>
           )}
-        </CardTitle>
-      </CardHeader>
+        </div>
+      </div>
       
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {displayedRecommendations.map((rec) => (
-            <div key={rec.id} className="flex flex-col items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <Avatar className="h-10 w-10 mb-2">
-                <AvatarImage src={rec.recommender.avatar_url || ''} />
-                <AvatarFallback>
-                  {rec.recommender.full_name?.charAt(0) || <User className="h-4 w-4" />}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="text-center w-full">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <Link 
-                    href={`/perfil/${rec.recommender.id}`}
-                    className="font-medium text-sm hover:text-blue-600 transition-colors truncate"
-                  >
-                    {rec.recommender.full_name || 'Usuário'}
-                  </Link>
-                  {rec.recommender.is_verified && (
-                    <Star className="h-3 w-3 text-blue-500" />
-                  )}
+            <div key={rec.id} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+              <div className="flex flex-col items-center">
+                <div className="p-2 bg-black border-2 border-black mb-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={rec.recommender.avatar_url || ''} />
+                    <AvatarFallback className="bg-yellow-400 text-black font-black">
+                      {rec.recommender.full_name?.charAt(0) || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
                 
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs mb-1 ${getRecommendationTypeColor(rec.recommendation_type)}`}
-                >
-                  {getRecommendationTypeText(rec.recommendation_type)}
-                </Badge>
-                
-                <div className="text-xs text-gray-500 mb-2">
-                  {new Date(rec.created_at).toLocaleDateString('pt-BR')}
-                </div>
-                
-                {rec.recommender.rating && (
-                  <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mb-2">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span>{rec.recommender.rating.toFixed(1)}</span>
+                <div className="text-center w-full">
+                  <div className="flex items-center justify-center gap-1 mb-2">
+                    <Link 
+                      href={`/perfil/${rec.recommender.id}`}
+                      className="font-black text-sm hover:text-blue-600 transition-colors truncate text-black"
+                    >
+                      {rec.recommender.full_name?.toUpperCase() || 'USUÁRIO'}
+                    </Link>
+                    {rec.recommender.is_verified && (
+                      <div className="px-1 py-0.5 bg-green-500 text-white border border-black">
+                        <Star className="h-3 w-3" />
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                <Link href={`/perfil/${rec.recommender.id}`}>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
+                  
+                  <div 
+                    className={`px-2 py-1 border-2 border-black font-black text-xs mb-2 ${
+                      rec.recommendation_type === 'professional_to_client' 
+                        ? 'bg-blue-500 text-white' 
+                        : rec.recommendation_type === 'client_to_professional'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-500 text-white'
+                    }`}
+                  >
+                    {getRecommendationTypeText(rec.recommendation_type).toUpperCase()}
+                  </div>
+                  
+                  <div className="text-xs text-black font-bold mb-2">
+                    {new Date(rec.created_at).toLocaleDateString('pt-BR').toUpperCase()}
+                  </div>
+                  
+                  {rec.recommender.rating && (
+                    <div className="flex items-center justify-center gap-1 text-xs text-black font-bold mb-3">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span>{rec.recommender.rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                  
+                  <Link href={`/perfil/${rec.recommender.id}`}>
+                    <Button className="bg-black text-yellow-400 border-2 border-black hover:bg-gray-800 font-black h-8 w-8 p-0">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
         </div>
         
         {recommendations.length > 3 && !showAll && (
-          <div className="text-center pt-2">
+          <div className="text-center pt-4">
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => setShowAll(true)}
-              className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="bg-green-500 text-white border-2 border-black hover:bg-green-600 font-black"
             >
-              Ver mais {recommendations.length - 3} recomendações
+              VER MAIS {recommendations.length - 3} RECOMENDAÇÕES
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

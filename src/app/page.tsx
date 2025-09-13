@@ -190,7 +190,7 @@ function HomeContent() {
           <div className="space-y-4">
             <div className="inline-block px-4 py-2 bg-black text-yellow-400 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
               <div className="flex items-center gap-2">
-                <IconSparkles size={16} stroke={2} className="animate-spin" />
+                <IconSparkles size={16} stroke={2} />
                 <span className="text-sm font-black uppercase">PLATAFORMA DE CONFIANÇA</span>
               </div>
             </div>
@@ -266,7 +266,7 @@ function HomeContent() {
             >
               <div className="text-center md:text-left">
                 <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-4 mx-auto md:mx-0 animate-pulse">
-                  <div className="text-yellow-400 animate-spin">
+                  <div className="text-yellow-400">
                     {feature.icon}
                   </div>
                 </div>
@@ -428,7 +428,7 @@ function HomeContent() {
           {stats.map((stat, index) => (
             <div key={index} className="text-center space-y-3 animate-slide-in-up" style={{ animationDelay: `${index * 0.2}s` }}>
               <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mx-auto animate-pulse">
-                <div className="text-yellow-400 animate-spin">
+                <div className="text-yellow-400">
                   {stat.icon}
                 </div>
               </div>
