@@ -25,6 +25,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
+import { useFavorites } from '@/hooks/useFavorites'
 
 interface SearchResultsProps {
   users: Profile[]
@@ -45,18 +46,10 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   viewMode,
   onViewModeChange
 }) => {
-  const [favoriteUsers, setFavoriteUsers] = useState<Set<string>>(new Set())
+  const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites()
 
-  const toggleFavorite = (userId: string) => {
-    setFavoriteUsers(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(userId)) {
-        newSet.delete(userId)
-      } else {
-        newSet.add(userId)
-      }
-      return newSet
-    })
+  const handleToggleFavorite = async (userId: string) => {
+    await toggleFavorite(userId)
   }
 
   const renderStars = (rating: number) => {
@@ -224,10 +217,10 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                 </button>
 
                 <button
-                  onClick={() => toggleFavorite(user.id)}
+                  onClick={() => handleToggleFavorite(user.id)}
                   className="flex-1 sm:flex-none py-3 px-4 bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
                 >
-                  <Heart className={`h-4 w-4 ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+                  <Heart className={`h-4 w-4 ${isFavorite(user.id) ? 'fill-white' : ''}`} />
                 </button>
               </div>
             </div>
@@ -343,10 +336,10 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             </button>
             
             <button
-              onClick={() => toggleFavorite(user.id)}
+              onClick={() => handleToggleFavorite(user.id)}
               className="flex-1 py-1.5 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
             >
-              <Heart className={`h-3 w-3 mr-1 inline ${favoriteUsers.has(user.id) ? 'fill-white' : ''}`} />
+              <Heart className={`h-3 w-3 mr-1 inline ${isFavorite(user.id) ? 'fill-white' : ''}`} />
               FAV
             </button>
           </div>

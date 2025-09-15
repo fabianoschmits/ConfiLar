@@ -577,9 +577,13 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id, selectedConversation, fetchConversations])
 
-  // Sincronização em tempo real para todas as conversas
+  // Sincronização em tempo real para todas as conversas (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
     if (!profile?.id) return
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LOOPS
+    console.log('🔕 Realtime desabilitado temporariamente para conversas')
+    return
 
     const channel = supabase
       .channel(`all-messages-${profile.id}`)
@@ -612,22 +616,8 @@ export function useSupabaseMessages() {
                     .eq('id', newMessage.sender_id)
                     .single()
 
-                  // Mostrar notificação apenas se não estiver na conversa atual
-                  if (selectedConversation !== newMessage.conversation_id) {
-                    toast.info(`NOVA MENSAGEM DE ${senderProfile?.full_name?.toUpperCase() || 'USUÁRIO'}`, {
-                      description: newMessage.content.length > 50 ? `${newMessage.content.substring(0, 50)}...` : newMessage.content,
-                      duration: 5000,
-                      action: {
-                        label: 'Ver',
-                        onClick: () => {
-                          if (typeof window !== 'undefined') {
-                            // Redirecionar para página de mensagens
-                            window.location.href = '/mensagens'
-                          }
-                        }
-                      }
-                    })
-                  }
+                  // Nova mensagem recebida - apenas atualizar contadores
+                  // Não mostrar toast - apenas atualizar estado
                   
                   // Recarregar conversas para atualizar contadores
                   fetchConversations()
@@ -648,9 +638,13 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id, selectedConversation, fetchConversations])
 
-  // Sincronização em tempo real para conversas
+  // Sincronização em tempo real para conversas (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
     if (!profile?.id) return
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LOOPS
+    console.log('🔕 Realtime desabilitado temporariamente para conversas')
+    return
 
     console.log('🔔 Configurando Realtime para conversas')
 
@@ -683,9 +677,13 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id])
 
-  // Sincronização em tempo real para conversa selecionada
+  // Sincronização em tempo real para conversa selecionada (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
     if (!profile?.id || !selectedConversation) return
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LOOPS
+    console.log('🔕 Realtime desabilitado temporariamente para conversa selecionada')
+    return
 
     console.log('🔔 Configurando Realtime para conversa:', selectedConversation)
 

@@ -49,15 +49,31 @@ function HomeContent() {
 
   // Redirecionar usuários logados para o dashboard
   useEffect(() => {
-    if (isReady && user) {
+    if (mounted && isReady && user) {
       router.push('/dashboard')
       return
     }
-  }, [user, isReady, router])
+  }, [user, isReady, router, mounted])
 
   useEffect(() => {
-    setIsVisible(true)
-  }, [])
+    if (mounted) {
+      setIsVisible(true)
+    }
+  }, [mounted])
+
+  // Não renderizar nada até estar montado no cliente
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-yellow-400 flex items-center justify-center">
+        <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 border-4 border-black border-t-transparent animate-spin"></div>
+            <span className="font-black text-black">CARREGANDO...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Mostrar loading inteligente enquanto verifica autenticação
   if (loading || !isReady) {
@@ -197,7 +213,7 @@ function HomeContent() {
             
             <h1 className="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight leading-tight text-black">
               CONECTE-SE{' '}
-              <span className="text-black bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 py-2 animate-bounce">DIRETAMENTE</span>{' '}
+              <span className="text-black bg-yellow-400 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-1 py-0.5 animate-bounce">DIRETAMENTE</span>{' '}
               AOS PROFISSIONAIS
             </h1>
             

@@ -1,62 +1,60 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/types/database'
+import { useAuthContext } from '@/contexts/AuthContext'
 
-type UserFavorite = {
+export interface Favorite {
   id: string
   user_id: string
-  favorite_user_id: string
+  professional_id: string
   created_at: string
-  favorite_user: {
+  professional?: {
     id: string
     full_name: string
-    avatar_url: string | null
-    user_type: 'client' | 'professional'
-    bio: string | null
-    location_city: string | null
-    location_state: string | null
-    rating: number
-    total_reviews: number
-    is_verified: boolean
-    badge: string
-    professional_services: string[] | null
+    avatar_url?: string
+    user_type?: string
+    location_city?: string
+    location_state?: string
+    rating?: number
+    total_reviews?: number
+    is_verified?: boolean
+    bio?: string
+    badge?: string
+    professional_services?: string[]
   }
 }
 
 export function useFavorites() {
-  const [favorites, setFavorites] = useState<UserFavorite[]>([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuthContext()
+  const [favorites, setFavorites] = useState<Favorite[]>([])
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Buscar favoritos do usuário
-  const fetchFavorites = async () => {
+  // Carregar favoritos do usuário
+  const loadFavorites = useCallback(async () => {
+    if (!user?.id) return
+
     try {
       setLoading(true)
       setError(null)
 
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
       const { data, error } = await supabase
-        .from('user_favorites')
+        .from('favorites')
         .select(`
-          id,
-          user_id,
-          favorite_user_id,
-          created_at,
-          favorite_user:profiles!user_favorites_favorite_user_id_fkey(
+          *,
+          professional:profiles!favorites_professional_id_fkey(
             id,
             full_name,
             avatar_url,
             user_type,
-            bio,
             location_city,
             location_state,
             rating,
             total_reviews,
             is_verified,
+            bio,
             badge,
             professional_services
           )
@@ -64,200 +62,175 @@ export function useFavorites() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Erro ao buscar favoritos:', error)
-        setError('Erro ao carregar favoritos')
-        return
-      }
+      if (error) throw error
 
-      // Transformar os dados para o formato correto
-      const formattedData = (data || []).map((item: {
-        id: string
-        user_id: string
-        favorite_user_id: string
-        created_at: string
-        favorite_user: unknown
-      }) => ({
-        id: item.id,
-        user_id: item.user_id,
-        favorite_user_id: item.favorite_user_id,
-        created_at: item.created_at,
-        favorite_user: Array.isArray(item.favorite_user) ? item.favorite_user[0] : item.favorite_user
-      }))
-
-      setFavorites(formattedData)
+      setFavorites(data || [])
+      setFavoriteIds(new Set(data?.map(fav => fav.professional_id) || []))
     } catch (err) {
-      console.error('Erro crítico ao buscar favoritos:', err)
-      setError('Erro crítico ao carregar favoritos')
+      console.error('❌ Erro ao carregar favoritos:', err)
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
 
-  // Verificar se um usuário está nos favoritos
-  const isFavorite = async (userId: string): Promise<boolean> => {
+  // Adicionar usuário aos favoritos
+  const addFavorite = useCallback(async (professionalId: string) => {
+    if (!user?.id) return false
+
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return false
+      setLoading(true)
+      setError(null)
 
-      const { data, error } = await supabase
-        .from('user_favorites')
+      // Verificar se já é favorito
+      const { data: existingFavorite, error: checkError } = await supabase
+        .from('favorites')
         .select('id')
         .eq('user_id', user.id)
-        .eq('favorite_user_id', userId)
+        .eq('professional_id', professionalId)
         .single()
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Erro ao verificar favorito:', error)
-        return false
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError
       }
 
-      return !!data
-    } catch (err) {
-      console.error('Erro ao verificar favorito:', err)
-      return false
-    }
-  }
-
-  // Adicionar aos favoritos
-  const addToFavorites = async (userId: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('Usuário não autenticado')
+      if (existingFavorite) {
+        // Já é favorito, não fazer nada
+        return true
       }
 
-      if (user.id === userId) {
-        throw new Error('Você não pode se favoritar')
-      }
-
+      // Adicionar aos favoritos
       const { data, error } = await supabase
-        .from('user_favorites')
-        .insert([{
+        .from('favorites')
+        .insert({
           user_id: user.id,
-          favorite_user_id: userId
-        }])
+          professional_id: professionalId
+        })
         .select(`
-          id,
-          user_id,
-          favorite_user_id,
-          created_at,
-          favorite_user:profiles!user_favorites_favorite_user_id_fkey(
+          *,
+          professional:profiles!favorites_professional_id_fkey(
             id,
             full_name,
             avatar_url,
             user_type,
-            bio,
             location_city,
             location_state,
             rating,
             total_reviews,
             is_verified,
+            bio,
             badge,
             professional_services
           )
         `)
         .single()
 
-      if (error) {
-        console.error('Erro ao adicionar favorito:', error)
-        throw new Error('Erro ao adicionar aos favoritos')
-      }
+      if (error) throw error
 
-      // Transformar os dados para o formato correto antes de adicionar ao estado
-      const formattedData = {
-        id: data.id,
-        user_id: data.user_id,
-        favorite_user_id: data.favorite_user_id,
-        created_at: data.created_at,
-        favorite_user: Array.isArray(data.favorite_user) ? data.favorite_user[0] : data.favorite_user
-      }
+      // Atualizar estado local
+      setFavorites(prev => [data, ...prev])
+      setFavoriteIds(prev => new Set(Array.from(prev).concat(professionalId)))
 
-      setFavorites(prev => [formattedData, ...prev])
-      return formattedData
+      return true
     } catch (err) {
-      console.error('Erro ao adicionar favorito:', err)
-      throw err
+      console.error('❌ Erro ao adicionar favorito:', err)
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      return false
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [user?.id])
 
-  // Remover dos favoritos
-  const removeFromFavorites = async (userId: string) => {
+  // Remover usuário dos favoritos
+  const removeFavorite = useCallback(async (professionalId: string) => {
+    if (!user?.id) return false
+
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        throw new Error('Usuário não autenticado')
-      }
+      setLoading(true)
+      setError(null)
 
       const { error } = await supabase
-        .from('user_favorites')
+        .from('favorites')
         .delete()
         .eq('user_id', user.id)
-        .eq('favorite_user_id', userId)
+        .eq('professional_id', professionalId)
 
-      if (error) {
-        console.error('Erro ao remover favorito:', error)
-        throw new Error('Erro ao remover dos favoritos')
-      }
+      if (error) throw error
 
-      setFavorites(prev => prev.filter(fav => fav.favorite_user_id !== userId))
+      // Atualizar estado local
+      setFavorites(prev => prev.filter(fav => fav.professional_id !== professionalId))
+      setFavoriteIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(professionalId)
+        return newSet
+      })
+
+      return true
     } catch (err) {
-      console.error('Erro ao remover favorito:', err)
-      throw err
+      console.error('❌ Erro ao remover favorito:', err)
+      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      return false
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [user?.id])
 
-  // Toggle favorito (adicionar ou remover)
-  const toggleFavorite = async (userId: string) => {
-    try {
-      const isCurrentlyFavorite = await isFavorite(userId)
-      
-      if (isCurrentlyFavorite) {
-        await removeFromFavorites(userId)
-        return false
-      } else {
-        await addToFavorites(userId)
-        return true
-      }
-    } catch (err) {
-      console.error('Erro ao alternar favorito:', err)
-      throw err
-    }
-  }
+  // Alternar favorito (adicionar ou remover)
+  const toggleFavorite = useCallback(async (professionalId: string) => {
+    if (!user?.id) return false
 
-  // Buscar favoritos por tipo de usuário
-  const getFavoritesByType = (userType: 'client' | 'professional' | 'all') => {
-    if (userType === 'all') return favorites
+    const isFavorite = favoriteIds.has(professionalId)
     
-    return favorites.filter(fav => fav.favorite_user.user_type === userType)
-  }
+    if (isFavorite) {
+      return await removeFavorite(professionalId)
+    } else {
+      return await addFavorite(professionalId)
+    }
+  }, [user?.id, favoriteIds, addFavorite, removeFavorite])
 
-  // Estatísticas dos favoritos
-  const getFavoritesStats = () => {
+  // Verificar se um usuário é favorito
+  const isFavorite = useCallback((userId: string) => {
+    return favoriteIds.has(userId)
+  }, [favoriteIds])
+
+  // Obter favoritos por tipo de usuário
+  const getFavoritesByType = useCallback((userType: 'professional' | 'client') => {
+    return favorites.filter(fav => fav.professional?.user_type === userType)
+  }, [favorites])
+
+  // Obter estatísticas dos favoritos
+  const getFavoritesStats = useCallback(() => {
     const totalFavorites = favorites.length
-    const professionalFavorites = favorites.filter(fav => fav.favorite_user.user_type === 'professional').length
-    const clientFavorites = favorites.filter(fav => fav.favorite_user.user_type === 'client').length
+    const professionalFavorites = favorites.filter(fav => fav.professional?.user_type === 'professional').length
+    const clientFavorites = favorites.filter(fav => fav.professional?.user_type === 'client').length
 
     return {
       totalFavorites,
       professionalFavorites,
       clientFavorites
     }
-  }
+  }, [favorites])
 
+  // Carregar favoritos quando o usuário mudar
   useEffect(() => {
-    fetchFavorites()
-  }, [])
+    if (user?.id) {
+      loadFavorites()
+    } else {
+      setFavorites([])
+      setFavoriteIds(new Set())
+    }
+  }, [user?.id, loadFavorites])
 
   return {
     favorites,
+    favoriteIds,
     loading,
     error,
-    fetchFavorites,
-    isFavorite,
-    addToFavorites,
-    removeFromFavorites,
+    loadFavorites,
+    addFavorite,
+    removeFavorite,
     toggleFavorite,
+    isFavorite,
     getFavoritesByType,
     getFavoritesStats
   }

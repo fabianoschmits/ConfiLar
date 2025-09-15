@@ -93,12 +93,12 @@ export function useDashboardMetrics() {
       // Buscar avaliações
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
-        .select('id, rating, created_at')
-        .eq('reviewee_id', user.id)
+        .select('id, rating_person, created_at')
+        .eq('reviewed_id', user.id)
 
       const reviewsCount = reviewsData?.length || 0
       const averageRating = reviewsData?.length > 0 
-        ? reviewsData.reduce((sum, review) => sum + review.rating, 0) / reviewsData.length 
+        ? reviewsData.reduce((sum, review) => sum + review.rating_person, 0) / reviewsData.length 
         : 0
 
       // Calcular crescimento (simulado)
@@ -222,8 +222,8 @@ export function useDashboardMetrics() {
       // Buscar avaliações recentes
       const { data: recentReviews } = await supabase
         .from('reviews')
-        .select('id, rating, comment, created_at')
-        .eq('reviewee_id', userId)
+        .select('id, rating_person, comment, created_at')
+        .eq('reviewed_id', userId)
         .order('created_at', { ascending: false })
         .limit(3)
 
@@ -232,7 +232,7 @@ export function useDashboardMetrics() {
           id: `review-${review.id}`,
           type: 'review' as const,
           title: 'Nova avaliação',
-          description: `${review.rating} estrelas - ${review.comment?.substring(0, 30) || 'Sem comentário'}...`,
+          description: `${review.rating_person} estrelas - ${review.comment?.substring(0, 30) || 'Sem comentário'}...`,
           timestamp: review.created_at,
           icon: '⭐'
         })

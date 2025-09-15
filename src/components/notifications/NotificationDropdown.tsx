@@ -39,12 +39,10 @@ import { NotificationPreferencesFallback } from './NotificationPreferencesFallba
 
 interface NotificationPreferences {
   push_enabled: boolean;
-  email_enabled: boolean;
   message_notifications: boolean;
   review_notifications: boolean;
   booking_notifications: boolean;
   achievement_notifications: boolean;
-  marketing_notifications: boolean;
 }
 
 const getNotificationIcon = (type: string) => {
@@ -98,12 +96,10 @@ export const NotificationDropdown: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push_enabled: true,
-    email_enabled: true,
     message_notifications: true,
     review_notifications: true,
     booking_notifications: true,
     achievement_notifications: true,
-    marketing_notifications: false,
   });
   const [saving, setSaving] = useState(false);
   const [tableExists, setTableExists] = useState(true);
@@ -135,12 +131,10 @@ export const NotificationDropdown: React.FC = () => {
       if (data) {
         setPreferences({
           push_enabled: data.push_enabled ?? true,
-          email_enabled: data.email_enabled ?? true,
           message_notifications: data.message_notifications ?? true,
           review_notifications: data.review_notifications ?? true,
           booking_notifications: data.booking_notifications ?? true,
           achievement_notifications: data.achievement_notifications ?? true,
-          marketing_notifications: data.marketing_notifications ?? false,
         });
       }
     } catch (error) {
@@ -327,20 +321,6 @@ export const NotificationDropdown: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="email_enabled" className="text-sm font-black text-black">NOTIFICAÇÕES POR EMAIL</label>
-                      <button
-                        id="email_enabled"
-                        onClick={() => handleToggle('email_enabled')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.email_enabled ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.email_enabled ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -414,20 +394,6 @@ export const NotificationDropdown: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="marketing_notifications" className="text-sm font-black text-black">MARKETING</label>
-                      <button
-                        id="marketing_notifications"
-                        onClick={() => handleToggle('marketing_notifications')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.marketing_notifications ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.marketing_notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

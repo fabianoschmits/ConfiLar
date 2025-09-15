@@ -11,6 +11,7 @@ interface FloatingChatContextType {
   openChat: (userId?: string, userName?: string) => void
   closeChat: () => void
   selectConversation: (conversationId?: string) => void
+  setSelectedConversation: (conversationId?: string) => void
 }
 
 const FloatingChatContext = createContext<FloatingChatContextType | undefined>(undefined)
@@ -22,7 +23,7 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
   const [targetUserName, setTargetUserName] = useState<string | undefined>()
   
   // Usar o hook de mensagens para verificar conversas existentes
-  const { checkExistingConversation, setSelectedConversation, fetchMessages, createConversation } = useSupabaseMessages()
+  const { checkExistingConversation, setSelectedConversation: setSupabaseConversation, fetchMessages, createConversation } = useSupabaseMessages()
 
   const openChat = useCallback(async (userId?: string, userName?: string) => {
     setTargetUserId(userId)
@@ -39,7 +40,7 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
           console.log('✅ Conversa existente encontrada:', existingConversationId)
           // Abrir conversa existente
           setSelectedConversationId(existingConversationId)
-          setSelectedConversation(existingConversationId)
+          setSupabaseConversation(existingConversationId)
           await fetchMessages(existingConversationId)
         } else {
           console.log('🆕 Nenhuma conversa existente, criando nova conversa automaticamente')
@@ -47,7 +48,7 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
           const newConversationId = await createConversation(userId)
           if (newConversationId) {
             setSelectedConversationId(newConversationId)
-            setSelectedConversation(newConversationId)
+            setSupabaseConversation(newConversationId)
             await fetchMessages(newConversationId)
             // Limpar targetUserId após criar a conversa
             setTargetUserId(undefined)
@@ -56,21 +57,21 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
             console.error('❌ Erro ao criar conversa automaticamente')
             // Em caso de erro, preparar para nova conversa manual
             setSelectedConversationId(undefined)
-            setSelectedConversation(null)
+            setSupabaseConversation(null)
           }
         }
       } catch (error) {
         console.error('❌ Erro ao verificar/criar conversa:', error)
         // Em caso de erro, preparar para nova conversa manual
         setSelectedConversationId(undefined)
-        setSelectedConversation(null)
+        setSupabaseConversation(null)
       }
     } else {
       // Se não há userId, apenas abre o chat sem conversa específica
       setSelectedConversationId(undefined)
-      setSelectedConversation(null)
+      setSupabaseConversation(null)
     }
-  }, [checkExistingConversation, setSelectedConversation, fetchMessages, createConversation])
+  }, [checkExistingConversation, setSupabaseConversation, fetchMessages, createConversation])
 
   const closeChat = useCallback(() => {
     setIsOpen(false)
@@ -89,6 +90,10 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
     }
   }, [])
 
+  const setSelectedConversation = useCallback((conversationId?: string) => {
+    setSelectedConversationId(conversationId)
+  }, [])
+
   return (
     <FloatingChatContext.Provider
       value={{
@@ -98,7 +103,8 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
         targetUserName,
         openChat,
         closeChat,
-        selectConversation
+        selectConversation,
+        setSelectedConversation
       }}
     >
       {children}

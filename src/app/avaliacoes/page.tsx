@@ -21,6 +21,7 @@ export default function AvaliacoesPage() {
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; avatar?: string } | null>(null)
   const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isLoadingData, setIsLoadingData] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -41,6 +42,7 @@ export default function AvaliacoesPage() {
     if (!currentUser?.id) return
 
     try {
+      setIsLoadingData(true)
       // Carregar avaliações recebidas
       await fetchUserReviews(currentUser.id, 'received')
       
@@ -49,6 +51,8 @@ export default function AvaliacoesPage() {
     } catch (error) {
       console.error('Erro ao carregar avaliações:', error)
       toast.error('Erro ao carregar avaliações')
+    } finally {
+      setIsLoadingData(false)
     }
   }, [currentUser?.id, fetchUserReviews])
 
@@ -63,13 +67,13 @@ export default function AvaliacoesPage() {
     }
   }, [currentUser?.id, fetchUserReviewStats])
 
-  // Carregar dados iniciais
+  // Carregar dados iniciais - removendo dependências que causam loop
   useEffect(() => {
-    if (currentUser?.id) {
+    if (currentUser?.id && mounted) {
       loadReviews()
       loadStats()
     }
-  }, [currentUser?.id, loadReviews, loadStats])
+  }, [currentUser?.id, mounted]) // Removendo loadReviews e loadStats das dependências
 
   const handleEditReview = (review: ReviewWithProfiles) => {
     setEditingReview(review)
@@ -139,14 +143,14 @@ export default function AvaliacoesPage() {
     loadStats()
   }
 
-  if (loading && !stats) {
+  if (loading || isLoadingData) {
     return (
       <MainLayout requireAuth={true}>
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="flex items-center space-x-2">
-              <RefreshCw className="h-6 w-6 animate-spin" />
-              <span>Carregando avaliações...</span>
+            <div className="flex items-center space-x-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+              <RefreshCw className="h-6 w-6 animate-spin text-black" />
+              <span className="font-black text-black">CARREGANDO AVALIAÇÕES...</span>
             </div>
           </div>
         </div>
@@ -159,9 +163,11 @@ export default function AvaliacoesPage() {
       <MainLayout requireAuth={true}>
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Carregando...
-            </h1>
+            <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 inline-block">
+              <h1 className="text-2xl font-black text-black mb-4">
+                CARREGANDO...
+              </h1>
+            </div>
           </div>
         </div>
       </MainLayout>
@@ -171,109 +177,109 @@ export default function AvaliacoesPage() {
   return (
     <MainLayout requireAuth={true}>
       <div className="container mx-auto px-4 py-8">
-        {/* Cabeçalho */}
+        {/* Cabeçalho Brutalista */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Avaliações</h1>
-              <p className="text-gray-600">Gerencie suas avaliações e feedback</p>
+            <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+              <h1 className="text-3xl font-black text-black mb-2">⭐ AVALIAÇÕES</h1>
+              <p className="text-black font-bold">GERENCIE SUAS AVALIAÇÕES E FEEDBACK</p>
             </div>
             <Button
               onClick={() => setShowCreateForm(true)}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-6 py-3"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Nova Avaliação
+              NOVA AVALIAÇÃO
             </Button>
           </div>
         </div>
 
-        {/* Como Funciona o Sistema */}
-        <Card className="mb-8 bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <Info className="h-6 w-6 text-blue-600 mt-1" />
-              <div>
-                <h2 className="text-xl font-semibold text-blue-900 mb-2">
-                  Como Funciona o Sistema de Avaliações
-                </h2>
-                <p className="text-blue-800 mb-4">
-                  Entenda como você pode avaliar outros usuários e receber avaliações.
-                </p>
-              </div>
+        {/* Como Funciona o Sistema - Brutalista */}
+        <div className="mb-8 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-yellow-400 border-b-4 border-black p-4">
+            <div className="flex items-center gap-3">
+              <Info className="h-6 w-6 text-black" />
+              <h2 className="text-xl font-black text-black uppercase">
+                COMO FUNCIONA O SISTEMA DE AVALIAÇÕES
+              </h2>
             </div>
-
+            <p className="text-black font-bold mt-2">
+              ENTENDA COMO VOCÊ PODE AVALIAR OUTROS USUÁRIOS E RECEBER AVALIAÇÕES.
+            </p>
+          </div>
+          
+          <div className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Passo 1 */}
-              <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <div className="bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="w-8 h-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm font-black">
                     1
                   </div>
-                  <h3 className="font-semibold text-gray-900">Inicie uma Conversa</h3>
+                  <h3 className="font-black text-black uppercase">INICIE UMA CONVERSA</h3>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Entre em contato com outro usuário através do chat para discutir serviços.
+                <p className="text-sm text-black font-bold mb-3">
+                  ENTRE EM CONTATO COM OUTRO USUÁRIO ATRAVÉS DO CHAT PARA DISCUTIR SERVIÇOS.
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-black font-black">
                   <Handshake className="w-4 h-4" />
-                  <span>Converse sobre o serviço</span>
+                  <span>CONVERSE SOBRE O SERVIÇO</span>
                 </div>
               </div>
 
               {/* Passo 2 */}
-              <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <div className="bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="w-8 h-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm font-black">
                     2
                   </div>
-                  <h3 className="font-semibold text-gray-900">Faça um Acordo</h3>
+                  <h3 className="font-black text-black uppercase">FAÇA UM ACORDO</h3>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Um dos usuários propõe um acordo de contato. O outro pode aceitar ou rejeitar.
+                <p className="text-sm text-black font-bold mb-3">
+                  UM DOS USUÁRIOS PROPÕE UM ACORDO DE CONTATO. O OUTRO PODE ACEITAR OU REJEITAR.
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-black font-black">
                   <Clock className="w-4 h-4" />
-                  <span>Aguarde a resposta</span>
+                  <span>AGUARDE A RESPOSTA</span>
                 </div>
               </div>
 
               {/* Passo 3 */}
-              <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <div className="bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="w-8 h-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm font-black">
                     3
                   </div>
-                  <h3 className="font-semibold text-gray-900">Avalie Após o Serviço</h3>
+                  <h3 className="font-black text-black uppercase">AVALIE APÓS O SERVIÇO</h3>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  Após 1 dia do acordo aceito, ambos podem avaliar a experiência.
+                <p className="text-sm text-black font-bold mb-3">
+                  APÓS 1 DIA DO ACORDO ACEITO, AMBOS PODEM AVALIAR A EXPERIÊNCIA.
                 </p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-black font-black">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Deixe sua avaliação</span>
+                  <span>DEIXE SUA AVALIAÇÃO</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="mt-6 p-4 bg-red-500 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-start gap-2">
-                <Info className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <Info className="h-5 w-5 text-white mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-yellow-800 mb-1">
-                    Regras Importantes:
+                  <h4 className="font-black text-white mb-1 uppercase">
+                    REGRAS IMPORTANTES:
                   </h4>
-                  <ul className="text-sm text-yellow-700 space-y-1">
-                    <li>• Você só pode avaliar usuários com quem teve um acordo aceito</li>
-                    <li>• É necessário aguardar 1 dia após o acordo para poder avaliar</li>
-                    <li>• Cada usuário pode avaliar o outro apenas uma vez por acordo</li>
-                    <li>• As avaliações ajudam a construir confiança na plataforma</li>
+                  <ul className="text-sm text-white font-bold space-y-1">
+                    <li>• VOCÊ SÓ PODE AVALIAR USUÁRIOS COM QUEM TEVE UM ACORDO ACEITO</li>
+                    <li>• É NECESSÁRIO AGUARDAR 1 DIA APÓS O ACORDO PARA PODER AVALIAR</li>
+                    <li>• CADA USUÁRIO PODE AVALIAR O OUTRO APENAS UMA VEZ POR ACORDO</li>
+                    <li>• AS AVALIAÇÕES AJUDAM A CONSTRUIR CONFIANÇA NA PLATAFORMA</li>
                   </ul>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Estatísticas */}
         {stats && (
@@ -282,39 +288,54 @@ export default function AvaliacoesPage() {
           </div>
         )}
 
-        {/* Filtros e Busca */}
+        {/* Filtros e Busca - Brutalista */}
         <div className="mb-6 space-y-4">
           <div className="flex items-center space-x-4">
             <Button
               variant={filter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter('all')}
+              className={`font-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                filter === 'all' 
+                  ? 'bg-black text-yellow-400' 
+                  : 'bg-white text-black hover:bg-yellow-400'
+              }`}
             >
-              Todas
+              TODAS
             </Button>
             <Button
               variant={filter === 'received' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter('received')}
+              className={`font-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                filter === 'received' 
+                  ? 'bg-black text-yellow-400' 
+                  : 'bg-white text-black hover:bg-yellow-400'
+              }`}
             >
-              Recebidas ({reviews.filter(review => review.reviewed_id === currentUser?.id).length})
+              RECEBIDAS ({reviews.filter(review => review.reviewed_id === currentUser?.id).length})
             </Button>
             <Button
               variant={filter === 'given' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter('given')}
+              className={`font-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all ${
+                filter === 'given' 
+                  ? 'bg-black text-yellow-400' 
+                  : 'bg-white text-black hover:bg-yellow-400'
+              }`}
             >
-              Enviadas ({reviews.filter(review => review.reviewer_id === currentUser?.id).length})
+              ENVIADAS ({reviews.filter(review => review.reviewer_id === currentUser?.id).length})
             </Button>
           </div>
 
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black" />
             <Input
-              placeholder="Buscar avaliações..."
+              placeholder="BUSCAR AVALIAÇÕES..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
             />
           </div>
         </div>
@@ -322,28 +343,29 @@ export default function AvaliacoesPage() {
         {/* Lista de Avaliações */}
         <div className="space-y-4">
           {getFilteredReviews().length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhuma avaliação encontrada
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  {filter === 'all' 
-                    ? 'Você ainda não tem avaliações.'
-                    : filter === 'received'
-                    ? 'Você ainda não recebeu avaliações.'
-                    : 'Você ainda não enviou avaliações.'
-                  }
-                </p>
-                {filter === 'given' && (
-                  <Button onClick={() => setShowCreateForm(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Criar Primeira Avaliação
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-8 text-center">
+              <Star className="h-12 w-12 text-black mx-auto mb-4" />
+              <h3 className="text-lg font-black text-black mb-2 uppercase">
+                NENHUMA AVALIAÇÃO ENCONTRADA
+              </h3>
+              <p className="text-black font-bold mb-4">
+                {filter === 'all' 
+                  ? 'VOCÊ AINDA NÃO TEM AVALIAÇÕES.'
+                  : filter === 'received'
+                  ? 'VOCÊ AINDA NÃO RECEBEU AVALIAÇÕES.'
+                  : 'VOCÊ AINDA NÃO ENVIOU AVALIAÇÕES.'
+                }
+              </p>
+              {filter === 'given' && (
+                <Button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  CRIAR PRIMEIRA AVALIAÇÃO
+                </Button>
+              )}
+            </div>
           ) : (
             getFilteredReviews().map((review) => (
               <ReviewCard
@@ -359,10 +381,10 @@ export default function AvaliacoesPage() {
           )}
         </div>
 
-        {/* Modal de Criação de Avaliação */}
+        {/* Modal de Criação de Avaliação - Brutalista */}
         {showCreateForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <ReviewForm
                 reviewerId={currentUser?.id || ''}
                 reviewedId={selectedUser?.id || ''}
@@ -378,21 +400,22 @@ export default function AvaliacoesPage() {
           </div>
         )}
 
-        {/* Modal de Edição de Avaliação */}
+        {/* Modal de Edição de Avaliação - Brutalista */}
         {editingReview && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <h2 className="text-xl font-bold mb-4">Editar Avaliação</h2>
-                <p className="text-gray-600 mb-4">
-                  Edição de avaliações será implementada em breve.
+                <h2 className="text-xl font-black text-black mb-4 uppercase">EDITAR AVALIAÇÃO</h2>
+                <p className="text-black font-bold mb-4">
+                  EDIÇÃO DE AVALIAÇÕES SERÁ IMPLEMENTADA EM BREVE.
                 </p>
                 <div className="flex justify-end gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setEditingReview(null)}
+                    className="bg-white text-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
                   >
-                    Fechar
+                    FECHAR
                   </Button>
                 </div>
               </div>

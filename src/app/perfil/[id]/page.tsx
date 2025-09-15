@@ -89,18 +89,19 @@ export default function PublicProfilePage() {
             }
 
             // Buscar contagem de recomendações em tempo real
-            const { data: recommendationsData, error: recommendationsError } = await supabase
-                .from('user_recommendations')
-                .select('id')
-                .eq('recommended_id', userId)
+            // Nota: Sistema de recomendações temporariamente desabilitado
+            // const { data: recommendationsData, error: recommendationsError } = await supabase
+            //     .from('user_recommendations')
+            //     .select('id')
+            //     .eq('recommended_id', userId)
 
-            if (!recommendationsError && recommendationsData && profile) {
-                // Atualizar o perfil com a contagem real de recomendações
-                setProfile(prev => prev ? {
-                    ...prev,
-                    total_recommendations: recommendationsData.length
-                } : null)
-            }
+            // if (!recommendationsError && recommendationsData && profile) {
+            //     // Atualizar o perfil com a contagem real de recomendações
+            //     setProfile(prev => prev ? {
+            //         ...prev,
+            //         total_recommendations: recommendationsData.length
+            //     } : null)
+            // }
         } catch (error) {
             console.error('Erro ao atualizar estatísticas:', error)
         }
@@ -131,18 +132,19 @@ export default function PublicProfilePage() {
             }
 
             // Buscar contagem de recomendações em tempo real
-            const { data: recommendationsData, error: recommendationsError } = await supabase
-                .from('user_recommendations')
-                .select('id')
-                .eq('recommended_id', userId)
+            // Nota: Sistema de recomendações temporariamente desabilitado
+            // const { data: recommendationsData, error: recommendationsError } = await supabase
+            //     .from('user_recommendations')
+            //     .select('id')
+            //     .eq('recommended_id', userId)
 
-            if (!recommendationsError && recommendationsData) {
-                // Atualizar o perfil com a contagem real de recomendações
-                setProfile(prev => prev ? {
-                    ...prev,
-                    total_recommendations: recommendationsData.length
-                } : null)
-            }
+            // if (!recommendationsError && recommendationsData) {
+            //     // Atualizar o perfil com a contagem real de recomendações
+            //     setProfile(prev => prev ? {
+            //         ...prev,
+            //         total_recommendations: recommendationsData.length
+            //     } : null)
+            // }
 
             // Verificar se o usuário atual pode avaliar este perfil
             if (user && user.id !== userId) {
