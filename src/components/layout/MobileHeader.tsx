@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
+
 // Phosphor Icons Light
 import {
   Bell as BellPhosphor,
@@ -110,6 +112,9 @@ export function MobileHeader({
 
         {/* Right side - Notifications and User Menu */}
         <div className="flex items-center space-x-3">
+          {/* Toggle de Disponibilidade */}
+          <AvailabilityToggleCompact />
+          
           {/* Notifications Bell */}
           <button
             className="p-2 h-12 w-12 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all relative"

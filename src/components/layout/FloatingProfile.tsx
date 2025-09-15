@@ -6,6 +6,8 @@ import {
   ChevronUp
 } from 'lucide-react';
 
+import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
+
 // Phosphor Icons Light
 import {
   User as UserPhosphor,
@@ -91,6 +93,9 @@ export const FloatingProfile: React.FC = () => {
       <div className="relative">
         {/* Perfil Colapsado */}
         <div className="flex items-center gap-3">
+          {/* Toggle de Disponibilidade */}
+          <AvailabilityToggleCompact />
+          
           {/* Notificações */}
             <NotificationDropdown />
           

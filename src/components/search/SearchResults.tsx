@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useOpenMessages } from '@/hooks/useOpenMessages'
-import { useProfileViews } from '@/hooks/useProfileViews'
+import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator'
 
 interface SearchResultsProps {
   users: Profile[]
@@ -131,8 +131,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               )}
             </div>
 
-            {/* Tipo de Usuário */}
-            <div className="mb-3 text-center sm:text-left">
+            {/* Tipo de Usuário e Disponibilidade */}
+            <div className="mb-3 text-center sm:text-left flex flex-col sm:flex-row items-center gap-2">
               <span className={`px-3 py-1 text-xs font-black border-2 border-black ${
                 user.user_type === 'professional' 
                   ? 'bg-blue-500 text-white' 
@@ -140,6 +140,11 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               }`}>
                 {user.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
               </span>
+              <AvailabilityIndicator 
+                isAvailable={user.is_available} 
+                size="sm" 
+                showText={true}
+              />
             </div>
 
             {/* Localização */}
@@ -262,8 +267,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             {(user.full_name || 'NOME NÃO INFORMADO').toUpperCase()}
           </Link>
 
-          {/* Tipo de Usuário */}
-          <div className="mb-2">
+          {/* Tipo de Usuário e Disponibilidade */}
+          <div className="mb-2 flex flex-col items-center gap-1">
             <span className={`px-2 py-1 text-xs font-black border-2 border-black ${
               user.user_type === 'professional' 
                 ? 'bg-blue-500 text-white' 
@@ -271,6 +276,11 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             }`}>
               {user.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
             </span>
+            <AvailabilityIndicator 
+              isAvailable={user.is_available} 
+              size="sm" 
+              showText={true}
+            />
           </div>
 
           {/* Verificação */}

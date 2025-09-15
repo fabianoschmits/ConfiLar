@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 
 // Tabler Icons - Estilo Brutalista
 import {
@@ -156,6 +157,9 @@ export function BrutalistHeader({
 
           {/* Right side - Menu do usuário */}
           <div className="flex items-center space-x-2">
+            
+            {/* Toggle de Disponibilidade */}
+            <AvailabilityToggleCompact />
             
             {/* Notificações */}
             <div className="relative">

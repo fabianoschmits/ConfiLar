@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 import { LocationSearch } from '@/components/ui/LocationSearch'
+import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { supabase } from '@/lib/supabase'
@@ -209,14 +210,31 @@ export default function ClassificadosPage() {
     if (!user) return
     
     try {
-      // Por enquanto, vamos usar um sistema simples de favoritos local
-      // Em uma implementação completa, criaria uma tabela classified_favorites
+      const { data: favoritesData, error } = await supabase
+        .from('favorites')
+        .select('favorite_id')
+        .eq('user_id', user.id)
+        .eq('favorite_type', 'service')
+
+      if (error) {
+        console.error('Erro ao carregar favoritos:', error)
+        // Fallback para localStorage se houver erro
+        const savedFavorites = localStorage.getItem(`favorites_${user.id}`)
+        if (savedFavorites) {
+          setFavorites(new Set(JSON.parse(savedFavorites)))
+        }
+        return
+      }
+
+      const favoriteIds = favoritesData?.map(fav => fav.favorite_id) || []
+      setFavorites(new Set(favoriteIds))
+    } catch (error) {
+      console.error('Erro ao carregar favoritos:', error)
+      // Fallback para localStorage se houver erro
       const savedFavorites = localStorage.getItem(`favorites_${user.id}`)
       if (savedFavorites) {
         setFavorites(new Set(JSON.parse(savedFavorites)))
       }
-    } catch (error) {
-      console.error('Erro ao carregar favoritos:', error)
     }
   }
 
@@ -230,17 +248,44 @@ export default function ClassificadosPage() {
       const isFavorited = favorites.has(adId)
       
       if (isFavorited) {
-        // Remover dos favoritos
+        // Remover dos favoritos no banco
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('favorite_id', adId)
+          .eq('favorite_type', 'service')
+
+        if (error) {
+          console.error('Erro ao remover favorito:', error)
+          toast.error('Erro ao remover favorito')
+          return
+        }
+
+        // Atualizar estado local
         const newFavorites = new Set(favorites)
         newFavorites.delete(adId)
         setFavorites(newFavorites)
-        localStorage.setItem(`favorites_${user.id}`, JSON.stringify(Array.from(newFavorites)))
         toast.success('Removido dos favoritos')
       } else {
-        // Adicionar aos favoritos
+        // Adicionar aos favoritos no banco
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            favorite_id: adId,
+            favorite_type: 'service'
+          })
+
+        if (error) {
+          console.error('Erro ao adicionar favorito:', error)
+          toast.error('Erro ao adicionar favorito')
+          return
+        }
+
+        // Atualizar estado local
         const newFavorites = new Set([...Array.from(favorites), adId])
         setFavorites(newFavorites)
-        localStorage.setItem(`favorites_${user.id}`, JSON.stringify(Array.from(newFavorites)))
         toast.success('Adicionado aos favoritos')
       }
     } catch (error) {
@@ -257,17 +302,17 @@ export default function ClassificadosPage() {
     }
 
     try {
-      // Incrementar contador de contatos
+      // Incrementar contador de visualizações
       const { data: currentAd } = await supabase
         .from('classified_ads')
-        .select('contact_agreements_count')
+        .select('views')
         .eq('id', adId)
         .single()
 
       if (currentAd) {
         await supabase
           .from('classified_ads')
-          .update({ contact_agreements_count: (currentAd.contact_agreements_count || 0) + 1 })
+          .update({ views: (currentAd.views || 0) + 1 })
           .eq('id', adId)
       }
 
@@ -1175,6 +1220,11 @@ export default function ClassificadosPage() {
                             }`}>
                               {isOffer ? 'PROFISSIONAL' : 'CLIENTE'}
                             </Badge>
+                            <AvailabilityIndicator 
+                              isAvailable={ad.is_active || false} 
+                              size="sm" 
+                              showText={true}
+                            />
                           </div>
                         </div>
                         <div className="flex items-center space-x-1 sm:space-x-2">

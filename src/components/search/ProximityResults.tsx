@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProximitySearchResult } from '@/hooks/useProximitySearch';
-import { formatDistance } from '@/lib/utils';
+import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator';
 
 interface ProximityResultsProps {
   results: ProximitySearchResult[];
@@ -166,13 +166,22 @@ export function ProximityResults({
                       </p>
                     </div>
                     
-                    {/* Distância */}
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-xs ${getDistanceColor(user.distance_km)}`}
-                    >
-                      {getDistanceIcon(user.distance_km)} {formatDistance(user.distance_km)}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1">
+                      {/* Distância */}
+                      <Badge 
+                        variant="secondary" 
+                        className={`text-xs ${getDistanceColor(user.distance_km)}`}
+                      >
+                        {getDistanceIcon(user.distance_km)} {formatDistance(user.distance_km)}
+                      </Badge>
+                      
+                      {/* Disponibilidade */}
+                      <AvailabilityIndicator 
+                        isAvailable={user.is_available} 
+                        size="sm" 
+                        showText={false}
+                      />
+                    </div>
                   </div>
 
                   {/* Serviços */}
