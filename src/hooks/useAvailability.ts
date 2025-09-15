@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 export interface AvailabilityState {
   isAvailable: boolean
@@ -58,6 +59,17 @@ export const useAvailability = () => {
         loading: false
       }))
 
+      // Mostrar mensagem de feedback
+      if (newAvailability) {
+        toast.success('DISPONÍVEL PARA ORÇAMENTOS!', {
+          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes'
+        })
+      } else {
+        toast.info('INDISPONÍVEL', {
+          description: 'Você não está mais disponível para receber orçamentos e ofertas'
+        })
+      }
+
       return newAvailability
     } catch (error) {
       console.error('Erro ao atualizar disponibilidade:', error)
@@ -66,9 +78,15 @@ export const useAvailability = () => {
         loading: false,
         error: error instanceof Error ? error.message : 'Erro ao atualizar disponibilidade'
       }))
+      
+      // Mostrar erro
+      toast.error('ERRO AO ALTERAR DISPONIBILIDADE', {
+        description: 'Tente novamente em alguns instantes'
+      })
+      
       return null
     }
-  }, [user, profile])
+  }, [user, profile, state.isAvailable])
 
   // Função para definir disponibilidade específica
   const setAvailability = useCallback(async (available: boolean) => {
@@ -97,6 +115,17 @@ export const useAvailability = () => {
         loading: false
       }))
 
+      // Mostrar mensagem de feedback
+      if (available) {
+        toast.success('DISPONÍVEL PARA ORÇAMENTOS!', {
+          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes'
+        })
+      } else {
+        toast.info('INDISPONÍVEL', {
+          description: 'Você não está mais disponível para receber orçamentos e ofertas'
+        })
+      }
+
       return available
     } catch (error) {
       console.error('Erro ao definir disponibilidade:', error)
@@ -105,6 +134,12 @@ export const useAvailability = () => {
         loading: false,
         error: error instanceof Error ? error.message : 'Erro ao definir disponibilidade'
       }))
+      
+      // Mostrar erro
+      toast.error('ERRO AO ALTERAR DISPONIBILIDADE', {
+        description: 'Tente novamente em alguns instantes'
+      })
+      
       return null
     }
   }, [user, profile])
