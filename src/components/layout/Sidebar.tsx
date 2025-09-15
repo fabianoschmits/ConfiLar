@@ -197,13 +197,6 @@ export function Sidebar() {
           description: 'Mostre seu trabalho'
         },
         {
-          id: 'earnings',
-          title: 'GANHOS',
-          href: '/ganhos',
-          icon: <IconTrendingUp size={16} stroke={2} />,
-          description: 'Acompanhe seus lucros'
-        },
-        {
           id: 'reputation',
           title: 'REPUTAÇÃO',
           href: '/reputacao',

@@ -274,6 +274,7 @@ export default function AvaliacoesPage() {
                     <li>• É NECESSÁRIO AGUARDAR 1 DIA APÓS O ACORDO PARA PODER AVALIAR</li>
                     <li>• CADA USUÁRIO PODE AVALIAR O OUTRO APENAS UMA VEZ POR ACORDO</li>
                     <li>• AS AVALIAÇÕES AJUDAM A CONSTRUIR CONFIANÇA NA PLATAFORMA</li>
+                    <li>• OS DADOS DE CONTATO SÃO SEMPRE VISÍVEIS</li>
                   </ul>
                 </div>
               </div>

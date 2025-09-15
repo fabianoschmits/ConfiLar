@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useMessages } from './useMessages'
 
 export interface ContactAgreement {
   id: string
@@ -41,27 +42,31 @@ export interface ContactAgreementCreate {
 
 export function useContactAgreements() {
   const { profile } = useAuthContext()
+  const { createAgreementNotification } = useMessages()
   const [agreements, setAgreements] = useState<ContactAgreement[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  // Verificar se contatos estão revelados entre dois usuários
-  const areContactsRevealed = useCallback(async (otherUserId: string): Promise<boolean> => {
+  // Verificar se existe acordo aceito entre dois usuários (para avaliações)
+  const hasAcceptedAgreement = useCallback(async (otherUserId: string): Promise<boolean> => {
     if (!profile?.id) return false
 
     try {
-      const { data, error } = await supabase.rpc('are_contacts_revealed', {
-        user1_id: profile.id,
-        user2_id: otherUserId
-      })
+      const { data, error } = await supabase
+        .from('contact_agreements')
+        .select('id')
+        .or(`client_id.eq.${profile.id},professional_id.eq.${profile.id}`)
+        .or(`client_id.eq.${otherUserId},professional_id.eq.${otherUserId}`)
+        .eq('status', 'accepted')
+        .limit(1)
 
       if (error) {
-        console.error('Erro ao verificar contatos revelados:', error)
+        console.error('Erro ao verificar acordo aceito:', error)
         return false
       }
 
-      return data || false
+      return (data && data.length > 0) || false
     } catch (error) {
-      console.error('Erro ao verificar contatos revelados:', error)
+      console.error('Erro ao verificar acordo aceito:', error)
       return false
     }
   }, [profile?.id])
@@ -129,12 +134,29 @@ export function useContactAgreements() {
       // Recarregar acordos
       await fetchAgreements()
 
+      // Criar notificação
+      if (data) {
+        const agreement = agreements.find(a => a.id === data) || {
+          id: data,
+          client_id: agreementData.client_id,
+          professional_id: agreementData.professional_id,
+          conversation_id: agreementData.conversation_id,
+          service_description: agreementData.service_description,
+          status: 'pending' as const,
+          proposed_by: profile.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          currency: 'BRL'
+        }
+        await createAgreementNotification(agreement, 'proposal')
+      }
+
       return data
     } catch (error) {
       console.error('Erro ao criar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Aceitar acordo
   const acceptAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -157,24 +179,20 @@ export function useContactAgreements() {
         throw new Error('Erro ao aceitar acordo')
       }
 
-      // Revelar contatos
-      const { error: revealError } = await supabase.rpc('reveal_contacts', {
-        agreement_id: agreementId
-      })
-
-      if (revealError) {
-        console.error('Erro ao revelar contatos:', revealError)
-        // Não bloquear se não conseguir revelar contatos
-      }
-
       // Recarregar acordos
       await fetchAgreements()
+
+      // Criar notificação
+      const agreement = agreements.find(a => a.id === agreementId)
+      if (agreement) {
+        await createAgreementNotification(agreement, 'accepted')
+      }
 
     } catch (error) {
       console.error('Erro ao aceitar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Rejeitar acordo
   const rejectAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -196,11 +214,17 @@ export function useContactAgreements() {
       // Recarregar acordos
       await fetchAgreements()
 
+      // Criar notificação
+      const agreement = agreements.find(a => a.id === agreementId)
+      if (agreement) {
+        await createAgreementNotification(agreement, 'rejected')
+      }
+
     } catch (error) {
       console.error('Erro ao rejeitar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Cancelar acordo
   const cancelAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -226,7 +250,7 @@ export function useContactAgreements() {
       console.error('Erro ao cancelar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Marcar acordo como concluído
   const completeAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -252,14 +276,14 @@ export function useContactAgreements() {
       console.error('Erro ao concluir acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Buscar acordos na inicialização
   useEffect(() => {
     if (profile?.id) {
       fetchAgreements()
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   // Subscription para atualizações em tempo real
   useEffect(() => {
@@ -284,12 +308,12 @@ export function useContactAgreements() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [profile?.id, fetchAgreements])
+  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
 
   return {
     agreements,
     isLoading,
-    areContactsRevealed,
+    hasAcceptedAgreement,
     fetchAgreements,
     createAgreement,
     acceptAgreement,

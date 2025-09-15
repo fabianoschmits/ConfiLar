@@ -321,18 +321,17 @@ export function useSupabaseReviews() {
         return false // Já existe avaliação
       }
 
-      // 3. Verificar se há acordo de contato aceito entre os usuários
+      // 3. Verificar se há acordo aceito entre os usuários
       const { data: agreementData, error: agreementError } = await supabase
         .from('contact_agreements')
-        .select('id, status, contacts_revealed_at')
+        .select('id, contacts_revealed_at')
         .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
         .or(`client_id.eq.${reviewedId},professional_id.eq.${reviewedId}`)
-        .in('status', ['accepted', 'completed'])
+        .eq('status', 'accepted')
 
       if (agreementError) {
         console.error('Erro ao verificar acordos:', agreementError)
-        // Se não conseguir verificar acordos, permite avaliação (comportamento atual)
-        return true
+        return false
       }
 
       // Se não há acordos aceitos, não pode avaliar

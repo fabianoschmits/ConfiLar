@@ -22,6 +22,7 @@ import { useMessages } from '@/hooks/useMessages'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
+import { ContactAgreementChat } from './ContactAgreementChat'
 
 export function FloatingChat() {
   const { user, profile } = useAuthContext()
@@ -360,6 +361,22 @@ export function FloatingChat() {
                         disabled={sending}
                       />
                     </div>
+                  </div>
+
+                  {/* Sistema de Acordos */}
+                  <div className="p-3">
+                    <ContactAgreementChat
+                      conversationId={selectedConversation.id}
+                      otherUserId={user.id === selectedConversation.client_id 
+                        ? selectedConversation.professional.id
+                        : selectedConversation.client.id}
+                      otherUserName={user.id === selectedConversation.client_id 
+                        ? selectedConversation.professional.full_name
+                        : selectedConversation.client.full_name}
+                      otherUserType={user.id === selectedConversation.client_id 
+                        ? selectedConversation.professional.user_type as 'professional' | 'client'
+                        : selectedConversation.client.user_type as 'professional' | 'client'}
+                    />
                   </div>
 
                   {/* Mensagens */}
