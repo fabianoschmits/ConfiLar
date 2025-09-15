@@ -77,7 +77,6 @@ export function MobileHeader({
       '/perfil': 'Meu Perfil',
       '/favoritos': 'Favoritos',
       '/portfolio': 'Meu Portfólio',
-      '/ganhos': 'Ganhos',
       '/reputacao': 'Reputação',
       '/ajuda': 'Central de Ajuda',
       '/contato': 'Contato',
