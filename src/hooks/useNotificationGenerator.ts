@@ -46,7 +46,6 @@ export const useNotificationGenerator = () => {
       message: `${clientName} agendou ${serviceName}`,
       type: 'booking',
       category: 'bookings',
-      action_url: `/agendamentos/${bookingId}`,
       action_label: 'Ver agendamento',
       metadata: {
         client: clientName,
@@ -63,7 +62,6 @@ export const useNotificationGenerator = () => {
       message: `${professionalName} confirmou seu agendamento para ${serviceName}`,
       type: 'success',
       category: 'bookings',
-      action_url: `/agendamentos/${bookingId}`,
       action_label: 'Ver detalhes',
       metadata: {
         professional: professionalName,
@@ -80,7 +78,6 @@ export const useNotificationGenerator = () => {
       message: `${professionalName} cancelou o agendamento para ${serviceName}`,
       type: 'warning',
       category: 'bookings',
-      action_url: `/agendamentos/${bookingId}`,
       action_label: 'Ver detalhes',
       metadata: {
         professional: professionalName,

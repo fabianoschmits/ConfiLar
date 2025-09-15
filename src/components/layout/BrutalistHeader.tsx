@@ -79,8 +79,6 @@ export function BrutalistHeader({
       '/classificados': 'CLASSIFICADOS',
       '/feed': 'FEED SOCIAL',
       '/perfil': 'MEU PERFIL',
-      '/agendamentos': 'AGENDAMENTOS',
-      '/agenda': 'AGENDA',
       '/favoritos': 'FAVORITOS',
       '/portfolio': 'MEU PORTFÓLIO',
       '/ganhos': 'GANHOS',
@@ -269,13 +267,6 @@ export function BrutalistHeader({
                             >
                               <IconHeart size={12} stroke={2} className="mb-1" />
                               <span className="text-xs">FAV</span>
-                            </button>
-                            <button
-                              onClick={() => handleNavigation('/agenda')}
-                              className="flex flex-col items-center p-2 bg-blue-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                            >
-                              <IconCalendar size={12} stroke={2} className="mb-1" />
-                              <span className="text-xs">AGENDA</span>
                             </button>
                             <button
                               onClick={() => handleNavigation('/buscar')}

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
+import { useReauthentication } from './useReauthentication'
 
 export interface AuthState {
   user: { id: string; email: string } | null
@@ -23,6 +24,8 @@ export interface AuthActions {
   refreshAuth: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: { message: string } | null }>
   updatePassword: (newPassword: string) => Promise<{ error: { message: string } | null }>
+  updateEmail: (newEmail: string) => Promise<{ error: { message: string } | null }>
+  requireReauthentication: (action: 'password' | 'email' | 'general') => void
   isMockMode: boolean
 }
 
@@ -60,6 +63,9 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
   const [loading, setLoading] = useState(true)
   const [isReady, setIsReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Hook de reautenticação
+  const { checkReauthenticationRequired } = useReauthentication()
   
   // Usar o client Supabase configurado
   const initializationRef = useRef(false)
@@ -696,12 +702,46 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     }
   }, [supabase])
 
-  // Função para atualizar senha
+  // Função para requerer reautenticação
+  const requireReauthentication = useCallback((action: 'password' | 'email' | 'general') => {
+    console.log(`🔐 Requerendo reautenticação para: ${action}`)
+    if (typeof window !== 'undefined') {
+      window.location.href = `/reautenticacao?action=${action}`
+    }
+  }, [])
+
+  // Função para verificar se reautenticação é necessária
+  const checkReauthNeeded = useCallback(async (action: 'password' | 'email' | 'general'): Promise<boolean> => {
+    try {
+      // Para 'general', usar verificação simples baseada em sessionStorage
+      if (action === 'general') {
+        const reauthSession = sessionStorage.getItem('reauth_session')
+        return !reauthSession
+      }
+      
+      // Para 'password' e 'email', usar a função específica
+      return await checkReauthenticationRequired(action)
+    } catch (error) {
+      console.error('❌ Erro ao verificar reautenticação:', error)
+      return true // Em caso de erro, assumir que é necessária
+    }
+  }, [checkReauthenticationRequired])
+
+  // Função para atualizar senha com reautenticação automática
   const updatePassword = useCallback(async (newPassword: string) => {
     console.log('🔐 Tentando atualizar senha')
     
     try {
       setLoading(true)
+      
+      // Verificar se reautenticação é necessária
+      const needsReauth = await checkReauthNeeded('password')
+      if (needsReauth) {
+        console.log('⚠️ Reautenticação necessária para alterar senha')
+        setLoading(false)
+        requireReauthentication('password')
+        return { error: { message: 'Reautenticação necessária' } }
+      }
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword
@@ -714,6 +754,8 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
       }
 
       console.log('✅ Senha atualizada com sucesso')
+      // Limpar sessão de reautenticação após sucesso
+      sessionStorage.removeItem('reauth_session')
       setLoading(false)
       return { error: null }
     } catch (error) {
@@ -725,7 +767,49 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
         } 
       }
     }
-  }, [supabase])
+  }, [supabase, checkReauthNeeded, requireReauthentication])
+
+  // Função para atualizar email com reautenticação automática
+  const updateEmail = useCallback(async (newEmail: string) => {
+    console.log('📧 Tentando atualizar email')
+    
+    try {
+      setLoading(true)
+      
+      // Verificar se reautenticação é necessária
+      const needsReauth = await checkReauthNeeded('email')
+      if (needsReauth) {
+        console.log('⚠️ Reautenticação necessária para alterar email')
+        setLoading(false)
+        requireReauthentication('email')
+        return { error: { message: 'Reautenticação necessária' } }
+      }
+      
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail
+      })
+
+      if (error) {
+        console.error('❌ Erro ao atualizar email:', error)
+        setLoading(false)
+        return { error }
+      }
+
+      console.log('✅ Email atualizado com sucesso')
+      // Limpar sessão de reautenticação após sucesso
+      sessionStorage.removeItem('reauth_session')
+      setLoading(false)
+      return { error: null }
+    } catch (error) {
+      console.error('💥 Erro crítico ao atualizar email:', error)
+      setLoading(false)
+      return { 
+        error: { 
+          message: error instanceof Error ? error.message : 'Erro desconhecido' 
+        } 
+      }
+    }
+  }, [supabase, checkReauthNeeded, requireReauthentication])
 
   return {
     user,
@@ -742,6 +826,8 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
     refreshAuth,
     resetPassword,
     updatePassword,
+    updateEmail,
+    requireReauthentication,
     isMockMode: false
   }
 }

@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { AuthProvider } from "@/contexts/AuthContext"
 import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
 import { NotificationProvider } from "@/components/notifications/NotificationProvider"
+import { AutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { LoadingProvider } from "@/hooks/useLoading"
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
 import { Toaster } from "sonner"
@@ -85,14 +86,16 @@ export default async function RootLayout({
           <LoadingProvider>
             <NotificationProvider>
               <AuthProvider initialSession={session}>
-                <FloatingChatProvider>
-                  <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                    {children}
-                  </Suspense>
-                  <FloatingChatWrapper />
-                  <LoadingOverlayProvider />
-                  <Toaster position="top-right" richColors />
-                </FloatingChatProvider>
+                <AutoReauthentication>
+                  <FloatingChatProvider>
+                    <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
+                      {children}
+                    </Suspense>
+                    <FloatingChatWrapper />
+                    <LoadingOverlayProvider />
+                    <Toaster position="top-right" richColors />
+                  </FloatingChatProvider>
+                </AutoReauthentication>
               </AuthProvider>
             </NotificationProvider>
           </LoadingProvider>

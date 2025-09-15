@@ -49,6 +49,11 @@ export function FloatingChat() {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
+  // Sincronizar isOpen do contexto com isExpanded local
+  useEffect(() => {
+    setIsExpanded(isOpen)
+  }, [isOpen])
+
   // Sincronizar com contexto quando selectedConversationId muda
   useEffect(() => {
     if (selectedConversationId) {
@@ -143,6 +148,12 @@ export function FloatingChat() {
     }
   }
 
+  // Função para fechar o chat
+  const handleCloseChat = () => {
+    setIsExpanded(false)
+    closeChat()
+  }
+
   // Voltar para lista de conversas
   const goBackToConversations = () => {
     setSelectedConversation(null)
@@ -188,7 +199,7 @@ export function FloatingChat() {
       {isExpanded && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setIsExpanded(false)}
+          onClick={handleCloseChat}
         />
       )}
 
@@ -209,7 +220,7 @@ export function FloatingChat() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsExpanded(false)}
+                  onClick={handleCloseChat}
                   className="bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black p-2 rounded-none"
                 >
                   <X className="h-4 w-4" />

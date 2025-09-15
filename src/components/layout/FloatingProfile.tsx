@@ -215,14 +215,6 @@ export const FloatingProfile: React.FC = () => {
                     <HeartPhosphor size={16} weight="light" className="text-red-600 mb-1" />
                     <span className="text-xs font-medium">Favoritos</span>
                   </Link>
-                  <Link
-                    href="/_public/agendamentos"
-                    className="flex flex-col items-center p-2 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <CalendarPhosphor size={16} weight="light" className="text-green-600 mb-1" />
-                    <span className="text-xs font-medium">Agendamentos</span>
-                  </Link>
                 </div>
               </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useOpenMessages } from '@/hooks/useOpenMessages'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
@@ -56,7 +56,7 @@ export default function PublicProfilePage() {
     const params = useParams()
     const router = useRouter()
     const { user } = useAuthContext()
-    const { openChat } = useFloatingChat()
+    const { openMessages } = useOpenMessages()
     const userId = params.id as string
     const [profile, setProfile] = useState<PublicProfile | null>(null)
     const [loading, setLoading] = useState(true)
@@ -216,7 +216,7 @@ export default function PublicProfilePage() {
         }
         
         // Abrir chat flutuante diretamente
-        openChat(userId, profile?.full_name || 'Usuário')
+        openMessages(userId, profile?.full_name || 'Usuário')
     }
 
     const handleViewPortfolioProject = async (projectId: string) => {

@@ -175,33 +175,12 @@ export function Sidebar() {
       color: 'orange',
       items: [
         {
-          id: 'appointments',
-          title: 'AGENDAMENTOS',
-          href: '/agendamentos',
-          icon: <IconCalendar size={16} stroke={2} />,
-          description: 'Seus compromissos'
-        },
-        {
-          id: 'agenda',
-          title: 'AGENDA PROFISSIONAL',
-          href: '/agenda',
-          icon: <IconClock size={16} stroke={2} />,
-          description: 'Gerencie sua agenda'
-        },
-        {
           id: 'favorites',
           title: 'FAVORITOS',
           href: '/favoritos',
           icon: <IconHeart size={16} stroke={2} />,
           description: 'Profissionais favoritos'
         },
-        {
-          id: 'payments',
-          title: 'PAGAMENTOS',
-          href: '/pagamentos',
-          icon: <IconCreditCard size={16} stroke={2} />,
-          description: 'Histórico financeiro'
-        }
       ]
     }] : []),
     ...(isLoggedIn && profile?.user_type === 'professional' ? [{
