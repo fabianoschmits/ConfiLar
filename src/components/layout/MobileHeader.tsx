@@ -141,7 +141,7 @@ export function MobileHeader({
                 )}
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-2">
+            <DropdownMenuContent align="end" className="w-64 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-2 max-h-96 overflow-y-auto">
               {/* User Info */}
               <div className="px-3 py-3 border-b-2 border-black mb-2">
                 <p className="text-sm font-black text-black uppercase">

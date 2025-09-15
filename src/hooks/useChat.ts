@@ -203,9 +203,13 @@ export function useChat(userId: string) {
     }
   }, [userId, supabase])
 
-  // Configurar Realtime para mensagens
+  // Configurar Realtime para mensagens (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
     if (!userId) return
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LOOPS
+    console.log('🔕 Realtime desabilitado temporariamente para useChat')
+    return
 
     const newChannel = supabase
       .channel(`chat:${userId}`)

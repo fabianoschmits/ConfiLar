@@ -229,24 +229,24 @@ export default function FavoritesPage() {
                             <CardContent className="p-6">
                               <div className="flex items-start gap-4 mb-4">
                                 <UserAvatar
-                                  src={favorite.favorite_user.avatar_url}
-                                  alt={favorite.favorite_user.full_name}
-                                  fallback={favorite.favorite_user.full_name?.charAt(0) || 'U'}
+                                  src={favorite.professional?.avatar_url}
+                                  alt={favorite.professional?.full_name}
+                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
                                   size="md"
                                   className="w-12 h-12"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.favorite_user.full_name}
+                                    {favorite.professional?.full_name}
                                   </h3>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge 
                                       variant="outline" 
                                       className="text-xs capitalize"
                                     >
-                                      {favorite.favorite_user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                      {favorite.professional?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                                     </Badge>
-                                    {favorite.favorite_user.is_verified && (
+                                    {favorite.professional?.is_verified && (
                                       <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
                                         Verificado
                                       </Badge>
@@ -254,27 +254,27 @@ export default function FavoritesPage() {
                                   </div>
                                 </div>
                                 <FavoriteButton 
-                                  userId={favorite.favorite_user.id}
-                                  userName={favorite.favorite_user.full_name}
+                                  userId={favorite.professional?.id || ''}
+                                  userName={favorite.professional?.full_name || ''}
                                   size="sm"
                                   variant="ghost"
                                 />
                               </div>
 
-                              {favorite.favorite_user.bio && (
+                              {favorite.professional?.bio && (
                                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.favorite_user.bio}
+                                  {favorite.professional.bio}
                                 </p>
                               )}
 
                               <div className="space-y-2 mb-4">
-                                {(favorite.favorite_user.location_city || favorite.favorite_user.location_state) && (
+                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
                                   <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <MapPin className="h-4 w-4" />
                                     <span>
-                                      {favorite.favorite_user.location_city}
-                                      {favorite.favorite_user.location_city && favorite.favorite_user.location_state && ', '}
-                                      {favorite.favorite_user.location_state}
+                                      {favorite.professional?.location_city}
+                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
+                                      {favorite.professional?.location_state}
                                     </span>
                                   </div>
                                 )}
@@ -284,13 +284,13 @@ export default function FavoritesPage() {
                                   <span>Favoritado em {formatDate(favorite.created_at)}</span>
                                 </div>
 
-                                {favorite.favorite_user.user_type === 'professional' && (
+                                {favorite.professional?.user_type === 'professional' && (
                                   <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <Star className="h-4 w-4" />
                                     <div className="flex items-center gap-1">
-                                      <span>{(favorite.favorite_user.rating || 0).toFixed(1)}</span>
-                                      <div className="flex">{renderStars(favorite.favorite_user.rating)}</div>
-                                      <span>({favorite.favorite_user.total_reviews})</span>
+                                      <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>
+                                      <div className="flex">{renderStars(favorite.professional?.rating || 0)}</div>
+                                      <span>({favorite.professional?.total_reviews})</span>
                                     </div>
                                   </div>
                                 )}
@@ -300,7 +300,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.favorite_user.id)}
+                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   Ver Perfil
@@ -308,7 +308,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   variant="outline"
-                                  onClick={() => handleStartChat(favorite.favorite_user.id, favorite.favorite_user.full_name)}
+                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
                                 >
                                   <MessageCircle className="h-4 w-4" />
                                 </Button>
@@ -328,21 +328,21 @@ export default function FavoritesPage() {
                             <CardContent className="p-6">
                               <div className="flex items-start gap-4 mb-4">
                                 <UserAvatar
-                                  src={favorite.favorite_user.avatar_url}
-                                  alt={favorite.favorite_user.full_name}
-                                  fallback={favorite.favorite_user.full_name?.charAt(0) || 'U'}
+                                  src={favorite.professional?.avatar_url}
+                                  alt={favorite.professional?.full_name}
+                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
                                   size="md"
                                   className="w-12 h-12"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.favorite_user.full_name}
+                                    {favorite.professional?.full_name}
                                   </h3>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <Badge className={`${getBadgeColor(favorite.favorite_user.badge)} text-xs`}>
-                                      {getBadgeName(favorite.favorite_user.badge)}
+                                    <Badge className={`${getBadgeColor(favorite.professional?.badge || 'bronze')} text-xs`}>
+                                      {getBadgeName(favorite.professional?.badge || 'bronze')}
                                     </Badge>
-                                    {favorite.favorite_user.is_verified && (
+                                    {favorite.professional?.is_verified && (
                                       <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
                                         Verificado
                                       </Badge>
@@ -350,30 +350,30 @@ export default function FavoritesPage() {
                                   </div>
                                 </div>
                                 <FavoriteButton 
-                                  userId={favorite.favorite_user.id}
-                                  userName={favorite.favorite_user.full_name}
+                                  userId={favorite.professional?.id || ''}
+                                  userName={favorite.professional?.full_name || ''}
                                   size="sm"
                                   variant="ghost"
                                 />
                               </div>
 
-                              {favorite.favorite_user.bio && (
+                              {favorite.professional?.bio && (
                                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.favorite_user.bio}
+                                  {favorite.professional.bio}
                                 </p>
                               )}
 
-                              {favorite.favorite_user.professional_services && favorite.favorite_user.professional_services.length > 0 && (
+                              {favorite.professional?.professional_services && favorite.professional.professional_services.length > 0 && (
                                 <div className="mb-3">
                                   <div className="flex flex-wrap gap-1">
-                                    {favorite.favorite_user.professional_services.slice(0, 3).map((service, idx) => (
+                                    {favorite.professional.professional_services.slice(0, 3).map((service, idx) => (
                                       <Badge key={idx} variant="outline" className="text-xs">
                                         {service}
                                       </Badge>
                                     ))}
-                                    {favorite.favorite_user.professional_services.length > 3 && (
+                                    {favorite.professional.professional_services.length > 3 && (
                                       <Badge variant="outline" className="text-xs">
-                                        +{favorite.favorite_user.professional_services.length - 3}
+                                        +{favorite.professional.professional_services.length - 3}
                                       </Badge>
                                     )}
                                   </div>
@@ -381,13 +381,13 @@ export default function FavoritesPage() {
                               )}
 
                               <div className="space-y-2 mb-4">
-                                {(favorite.favorite_user.location_city || favorite.favorite_user.location_state) && (
+                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
                                   <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <MapPin className="h-4 w-4" />
                                     <span>
-                                      {favorite.favorite_user.location_city}
-                                      {favorite.favorite_user.location_city && favorite.favorite_user.location_state && ', '}
-                                      {favorite.favorite_user.location_state}
+                                      {favorite.professional?.location_city}
+                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
+                                      {favorite.professional?.location_state}
                                     </span>
                                   </div>
                                 )}
@@ -395,9 +395,9 @@ export default function FavoritesPage() {
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                   <Star className="h-4 w-4" />
                                   <div className="flex items-center gap-1">
-                                    <span>{(favorite.favorite_user.rating || 0).toFixed(1)}</span>
-                                    <div className="flex">{renderStars(favorite.favorite_user.rating)}</div>
-                                    <span>({favorite.favorite_user.total_reviews})</span>
+                                    <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>
+                                    <div className="flex">{renderStars(favorite.professional?.rating || 0)}</div>
+                                    <span>({favorite.professional?.total_reviews})</span>
                                   </div>
                                 </div>
                               </div>
@@ -406,7 +406,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.favorite_user.id)}
+                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   Ver Perfil
@@ -414,7 +414,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   variant="outline"
-                                  onClick={() => handleStartChat(favorite.favorite_user.id, favorite.favorite_user.full_name)}
+                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
                                 >
                                   <MessageCircle className="h-4 w-4" />
                                 </Button>
@@ -434,21 +434,21 @@ export default function FavoritesPage() {
                             <CardContent className="p-6">
                               <div className="flex items-start gap-4 mb-4">
                                 <UserAvatar
-                                  src={favorite.favorite_user.avatar_url}
-                                  alt={favorite.favorite_user.full_name}
-                                  fallback={favorite.favorite_user.full_name?.charAt(0) || 'U'}
+                                  src={favorite.professional?.avatar_url}
+                                  alt={favorite.professional?.full_name}
+                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
                                   size="md"
                                   className="w-12 h-12"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.favorite_user.full_name}
+                                    {favorite.professional?.full_name}
                                   </h3>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge variant="outline" className="text-xs">
                                       Cliente
                                     </Badge>
-                                    {favorite.favorite_user.is_verified && (
+                                    {favorite.professional?.is_verified && (
                                       <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
                                         Verificado
                                       </Badge>
@@ -456,27 +456,27 @@ export default function FavoritesPage() {
                                   </div>
                                 </div>
                                 <FavoriteButton 
-                                  userId={favorite.favorite_user.id}
-                                  userName={favorite.favorite_user.full_name}
+                                  userId={favorite.professional?.id || ''}
+                                  userName={favorite.professional?.full_name || ''}
                                   size="sm"
                                   variant="ghost"
                                 />
                               </div>
 
-                              {favorite.favorite_user.bio && (
+                              {favorite.professional?.bio && (
                                 <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.favorite_user.bio}
+                                  {favorite.professional.bio}
                                 </p>
                               )}
 
                               <div className="space-y-2 mb-4">
-                                {(favorite.favorite_user.location_city || favorite.favorite_user.location_state) && (
+                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
                                   <div className="flex items-center gap-2 text-sm text-gray-500">
                                     <MapPin className="h-4 w-4" />
                                     <span>
-                                      {favorite.favorite_user.location_city}
-                                      {favorite.favorite_user.location_city && favorite.favorite_user.location_state && ', '}
-                                      {favorite.favorite_user.location_state}
+                                      {favorite.professional?.location_city}
+                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
+                                      {favorite.professional?.location_state}
                                     </span>
                                   </div>
                                 )}
@@ -491,7 +491,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.favorite_user.id)}
+                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
                                 >
                                   <Eye className="h-4 w-4 mr-2" />
                                   Ver Perfil
@@ -499,7 +499,7 @@ export default function FavoritesPage() {
                                 <Button 
                                   size="sm" 
                                   variant="outline"
-                                  onClick={() => handleStartChat(favorite.favorite_user.id, favorite.favorite_user.full_name)}
+                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
                                 >
                                   <MessageCircle className="h-4 w-4" />
                                 </Button>

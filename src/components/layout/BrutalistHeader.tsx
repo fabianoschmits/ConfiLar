@@ -78,7 +78,6 @@ export function BrutalistHeader({
       '/buscar': 'BUSCAR PROFISSIONAIS',
       '/classificados': 'CLASSIFICADOS',
       '/feed': 'FEED SOCIAL',
-      '/mensagens': 'MENSAGENS',
       '/perfil': 'MEU PERFIL',
       '/agendamentos': 'AGENDAMENTOS',
       '/agenda': 'AGENDA',

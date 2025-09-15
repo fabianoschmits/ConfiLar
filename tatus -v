@@ -1,5 +1,0 @@
-[33mcde1ebf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: Corrigir erros de build em todas as páginas de classificados
-[33ma0e4e88[m feat: Adicionar 10 novas páginas de classificados com bibliotecas modernas
-[33m0cf4896[m feat: Implementar sistema completo de recuperação de senha
-[33m73762f2[m feat: Implementar sistema de notificações por email para mensagens e recomendações
-[33mc0061d9[m fix: Corrigir erros de TypeScript no build

@@ -185,9 +185,10 @@ export function ReviewForm({
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3">
+    <div className="w-full max-w-2xl mx-auto bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      {/* Header Brutalista */}
+      <div className="bg-yellow-400 border-b-4 border-black p-6">
+        <div className="flex items-center gap-3">
           <UserAvatar
             src={reviewedAvatar}
             alt={reviewedName}
@@ -195,96 +196,105 @@ export function ReviewForm({
             size="md"
           />
           <div>
-            <h3 className="text-lg font-semibold">Avaliar {reviewedName}</h3>
+            <h3 className="text-lg font-black text-black uppercase">AVALIAR {reviewedName.toUpperCase()}</h3>
             {adTitle && (
-              <Badge variant="secondary" className="mt-1">
-                {adTitle}
-              </Badge>
+              <div className="bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-2 py-1 mt-1 inline-block">
+                <span className="text-xs font-black">{adTitle.toUpperCase()}</span>
+              </div>
             )}
           </div>
-        </CardTitle>
-        <CardDescription>
-          Compartilhe sua experiência e ajude outros usuários
-        </CardDescription>
-      </CardHeader>
+        </div>
+        <p className="text-black font-bold mt-2">
+          COMPARTILHE SUA EXPERIÊNCIA E AJUDE OUTROS USUÁRIOS
+        </p>
+      </div>
 
-      <CardContent>
+      {/* Conteúdo Brutalista */}
+      <div className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Avaliação por Estrelas */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">Sua Avaliação</Label>
+            <Label className="text-base font-black text-black uppercase">SUA AVALIAÇÃO</Label>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 {renderStars(hoveredRating || rating, true)}
               </div>
               <div className="flex flex-col">
-                <span className={`font-medium ${getRatingColor(rating)}`}>
-                  {getRatingText(rating)}
+                <span className={`font-black text-black ${getRatingColor(rating)}`}>
+                  {getRatingText(rating).toUpperCase()}
                 </span>
                 {rating > 0 && (
-                  <span className="text-sm text-gray-600">
-                    {rating} de 5 estrelas
+                  <span className="text-sm text-black font-bold">
+                    {rating} DE 5 ESTRELAS
                   </span>
                 )}
               </div>
             </div>
             {errors.rating && (
-              <p className="text-sm text-red-600">{errors.rating.message}</p>
+              <p className="text-sm text-red-600 font-bold">{errors.rating.message}</p>
             )}
           </div>
 
           {/* Título da Avaliação */}
           <div className="space-y-2">
-            <Label htmlFor="title">Título da Avaliação (Opcional)</Label>
+            <Label htmlFor="title" className="text-black font-black uppercase">TÍTULO DA AVALIAÇÃO (OPCIONAL)</Label>
             <Input
               id="title"
-              placeholder="Ex: Excelente trabalho!"
+              placeholder="EX: EXCELENTE TRABALHO!"
+              className="bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
               {...register('title')}
             />
           </div>
 
           {/* Comentário */}
           <div className="space-y-2">
-            <Label htmlFor="comment">Comentário</Label>
+            <Label htmlFor="comment" className="text-black font-black uppercase">COMENTÁRIO</Label>
             <Textarea
               id="comment"
-              placeholder="Descreva sua experiência com este profissional..."
+              placeholder="DESCREVA SUA EXPERIÊNCIA COM ESTE PROFISSIONAL..."
               rows={4}
+              className="bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all resize-none"
               {...register('comment')}
             />
             {errors.comment && (
-              <p className="text-sm text-red-600">{errors.comment.message}</p>
+              <p className="text-sm text-red-600 font-bold">{errors.comment.message}</p>
             )}
           </div>
 
           {/* Pontos Positivos */}
           <div className="space-y-3">
-            <Label>Pontos Positivos (Opcional)</Label>
+            <Label className="text-black font-black uppercase">PONTOS POSITIVOS (OPCIONAL)</Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Ex: Pontual, profissional..."
+                placeholder="EX: PONTUAL, PROFISSIONAL..."
                 value={proInput}
                 onChange={(e) => setProInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPro())}
+                className="bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
               />
-              <Button type="button" variant="outline" onClick={addPro}>
-                Adicionar
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={addPro}
+                className="bg-white text-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+              >
+                ADICIONAR
               </Button>
             </div>
             {pros.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {pros.map((pro, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  <div key={index} className="bg-green-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-2 py-1 flex items-center gap-1">
                     <ThumbsUp className="h-3 w-3" />
-                    {pro}
+                    <span className="text-xs font-black">{pro.toUpperCase()}</span>
                     <button
                       type="button"
                       onClick={() => removePro(index)}
-                      className="ml-1 hover:text-red-600"
+                      className="ml-1 hover:text-red-300 font-black"
                     >
                       ×
                     </button>
-                  </Badge>
+                  </div>
                 ))}
               </div>
             )}
@@ -292,32 +302,38 @@ export function ReviewForm({
 
           {/* Pontos Negativos */}
           <div className="space-y-3">
-            <Label>Pontos a Melhorar (Opcional)</Label>
+            <Label className="text-black font-black uppercase">PONTOS A MELHORAR (OPCIONAL)</Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Ex: Demorou mais que o esperado..."
+                placeholder="EX: DEMOROU MAIS QUE O ESPERADO..."
                 value={conInput}
                 onChange={(e) => setConInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCon())}
+                className="bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
               />
-              <Button type="button" variant="outline" onClick={addCon}>
-                Adicionar
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={addCon}
+                className="bg-white text-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+              >
+                ADICIONAR
               </Button>
             </div>
             {cons.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {cons.map((con, index) => (
-                  <Badge key={index} variant="destructive" className="flex items-center gap-1">
+                  <div key={index} className="bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-2 py-1 flex items-center gap-1">
                     <ThumbsDown className="h-3 w-3" />
-                    {con}
+                    <span className="text-xs font-black">{con.toUpperCase()}</span>
                     <button
                       type="button"
                       onClick={() => removeCon(index)}
-                      className="ml-1 hover:text-red-600"
+                      className="ml-1 hover:text-red-300 font-black"
                     >
                       ×
                     </button>
-                  </Badge>
+                  </div>
                 ))}
               </div>
             )}
@@ -325,13 +341,14 @@ export function ReviewForm({
 
           {/* Data do Serviço */}
           <div className="space-y-2">
-            <Label htmlFor="service_date" className="flex items-center gap-2">
+            <Label htmlFor="service_date" className="flex items-center gap-2 text-black font-black uppercase">
               <Calendar className="h-4 w-4" />
-              Data do Serviço (Opcional)
+              DATA DO SERVIÇO (OPCIONAL)
             </Label>
             <Input
               id="service_date"
               type="date"
+              className="bg-white border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
               {...register('service_date')}
             />
           </div>
@@ -342,31 +359,36 @@ export function ReviewForm({
               type="checkbox"
               id="is_recommended"
               {...register('is_recommended')}
-              className="rounded border-gray-300"
+              className="w-4 h-4 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
             />
-            <Label htmlFor="is_recommended" className="flex items-center gap-2">
+            <Label htmlFor="is_recommended" className="flex items-center gap-2 text-black font-black uppercase">
               <CheckCircle className="h-4 w-4" />
-              Recomendo este profissional
+              RECOMENDO ESTE PROFISSIONAL
             </Label>
           </div>
 
           {/* Botões */}
           <div className="flex justify-end gap-3 pt-4">
             {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Cancelar
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                className="bg-white text-black border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+              >
+                CANCELAR
               </Button>
             )}
             <Button 
               type="submit" 
               disabled={isSubmitting || rating === 0}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Enviando...' : 'Enviar Avaliação'}
+              {isSubmitting ? 'ENVIANDO...' : 'ENVIAR AVALIAÇÃO'}
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

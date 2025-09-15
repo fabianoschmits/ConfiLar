@@ -74,16 +74,8 @@ export function RecommendationButton({
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_recommendations')
-        .select('id')
-        .eq('recommender_id', user?.id)
-        .eq('recommended_id', userId)
-        .single()
-
-      if (!error && data) {
-        setIsRecommended(true)
-      }
+      // Sistema de recomendações temporariamente desabilitado
+      setIsRecommended(false) // Temporariamente sempre false
     } catch (error) {
       // Usuário não recomendou ainda
       setIsRecommended(false)
@@ -98,14 +90,8 @@ export function RecommendationButton({
     }
 
     try {
-      const { count, error } = await supabase
-        .from('user_recommendations')
-        .select('*', { count: 'exact', head: true })
-        .eq('recommended_id', userId)
-
-      if (!error && count !== null) {
-        setRecommendationCount(count)
-      }
+      // Sistema de recomendações temporariamente desabilitado
+      setRecommendationCount(0) // Temporariamente sempre 0
     } catch (error) {
       console.error('Erro ao carregar contagem de recomendações:', error)
     }
@@ -122,158 +108,41 @@ export function RecommendationButton({
       return
     }
 
-    setIsLoading(true)
-
-    try {
-      const recommendationType = userType === 'professional' 
-        ? 'professional_to_client' 
-        : 'client_to_professional'
-
-      if (isRecommended) {
-        // Remover recomendação
-        const { error } = await supabase
-          .from('user_recommendations')
-          .delete()
-          .eq('recommender_id', user.id)
-          .eq('recommended_id', userId)
-
-        if (error) throw error
-
-        setIsRecommended(false)
-        setRecommendationCount(prev => Math.max(0, prev - 1))
-        toast.success('Recomendação removida')
-      } else {
-        // Adicionar recomendação
-        const { error } = await supabase
-          .from('user_recommendations')
-          .upsert({
-            recommender_id: user.id,
-            recommended_id: userId,
-            recommendation_type: recommendationType
-          })
-
-        if (error) throw error
-
-        setIsRecommended(true)
-        setRecommendationCount(prev => prev + 1)
-        toast.success('Usuário recomendado com sucesso!')
-
-        // Enviar notificação por email (não crítico)
-        try {
-          // Buscar informações do usuário recomendado
-          const { data: recommendedUser } = await supabase
-            .from('profiles')
-            .select('full_name, email, user_type')
-            .eq('id', userId)
-            .single()
-
-          // Buscar informações do usuário que está recomendando
-          const { data: recommenderUser } = await supabase
-            .from('profiles')
-            .select('full_name, user_type')
-            .eq('id', user.id)
-            .single()
-
-          if (recommendedUser?.email) {
-            // Enviar email de notificação
-            const { error: emailError } = await supabase.functions.invoke('send-email', {
-              body: {
-                to: recommendedUser.email,
-                subject: `👍 Nova recomendação de ${recommenderUser?.full_name || 'Usuário'} - ConfiLar`,
-                template: 'recommendation',
-                data: {
-                  userName: recommendedUser.full_name || 'Usuário',
-                  senderName: recommenderUser?.full_name || 'Usuário',
-                  senderNameInitial: (recommenderUser?.full_name || 'U').charAt(0).toUpperCase(),
-                  senderType: recommenderUser?.user_type === 'professional' ? 'Profissional' : 'Cliente',
-                  profileUrl: `${window.location.origin}/perfil`
-                }
-              }
-            })
-
-            if (emailError) {
-              console.warn('⚠️ Erro ao enviar email de notificação:', emailError)
-            } else {
-              console.log('✅ Email de notificação de recomendação enviado para:', recommendedUser.email)
-            }
-          }
-        } catch (emailError) {
-          console.warn('⚠️ Erro ao enviar email de notificação (não crítico):', emailError)
-          // Não vamos falhar a recomendação por causa do email
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao processar recomendação:', error)
-      toast.error('Erro ao processar recomendação. Tente novamente.')
-    } finally {
-      setIsLoading(false)
-    }
+    // Sistema de recomendações temporariamente desabilitado
+    toast.info('Sistema de recomendações temporariamente indisponível')
   }
 
   const handleShowRecommendationList = (e: React.MouseEvent) => {
     e.stopPropagation()
+    
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect()
       setButtonPosition({
-        top: rect.bottom + 10,
-        left: rect.left
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX
       })
-      setShowRecommendationList(true)
     }
+    
+    setShowRecommendationList(true)
   }
 
-  const handleCloseRecommendationList = () => {
+  const handleHideRecommendationList = () => {
     setShowRecommendationList(false)
   }
 
-  const getSizeClasses = () => {
-    switch (size) {
-      case 'sm':
-        return 'h-8 px-3 text-sm'
-      case 'lg':
-        return 'h-12 px-6 text-base'
-      default:
-        return 'h-10 px-4 text-sm'
-    }
-  }
-
-  const getIconSize = () => {
-    switch (size) {
-      case 'sm':
-        return 'h-4 w-4'
-      case 'lg':
-        return 'h-5 w-5'
-      default:
-        return 'h-4 w-4'
-    }
-  }
-
   return (
-    <>
+    <div className="relative">
       <Button
         ref={buttonRef}
         variant={variant}
         size={size}
-        onClick={handleRecommendation}
+        onClick={showListOnClick ? handleShowRecommendationList : handleRecommendation}
         disabled={isLoading || user?.id === userId}
-        className={`${getSizeClasses()} ${className} ${
-          isRecommended 
-            ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
-            : ''
-        }`}
+        className={`${className} ${isRecommended ? 'bg-green-500 hover:bg-green-600 text-white' : ''}`}
       >
-        <ThumbsUp 
-          className={`${getIconSize()} mr-2 ${
-            isRecommended ? 'text-green-600 fill-current' : ''
-          }`}
-        />
-        {user?.id === userId ? 'Você mesmo' : (isRecommended ? 'Recomendado' : 'Recomendar')}
+        <ThumbsUp className={`h-4 w-4 ${isRecommended ? 'fill-current' : ''}`} />
         {showCount && recommendationCount > 0 && (
-          <span 
-            className="ml-2 bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs cursor-pointer hover:bg-gray-200 transition-colors"
-            onClick={showListOnClick ? handleShowRecommendationList : undefined}
-            title="Clique para ver quem recomendou"
-          >
+          <span className="ml-1 text-xs">
             {recommendationCount}
           </span>
         )}
@@ -283,10 +152,10 @@ export function RecommendationButton({
         <RecommendationList
           userId={userId}
           isOpen={showRecommendationList}
-          onClose={handleCloseRecommendationList}
           position={buttonPosition}
+          onClose={handleHideRecommendationList}
         />
       )}
-    </>
+    </div>
   )
 }

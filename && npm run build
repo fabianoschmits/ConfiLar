@@ -1,5 +1,0 @@
-[33m9781a17[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m feat: simplificar design da página home - menos colorida e cards maiores no desktop
-[33m4eae8e3[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: melhorar responsividade e estética das páginas - home, perfil e mensagens otimizadas para mobile e desktop
-[33ma8bed9c[m feat: adicionar Classificados na navegação mobile - substituir Alertas por Classificados
-[33m3219874[m fix: corrigir erro de build - ícone Menu não existe no phosphor-icons
-[33m4f4891b[m feat: confirmar deploy automático funcionando - site online em 2m 4s

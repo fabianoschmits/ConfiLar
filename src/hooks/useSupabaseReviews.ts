@@ -314,7 +314,6 @@ export function useSupabaseReviews() {
         .select('id')
         .eq('reviewer_id', reviewerId)
         .eq('reviewed_id', reviewedId)
-        .eq('ad_id', adId || null)
 
       if (reviewError) throw reviewError
       

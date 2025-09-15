@@ -227,27 +227,12 @@ export function useSupabaseNotifications() {
           
           if (payload.eventType === 'INSERT') {
             // Nova notificação
+            // Notificação recebida - apenas atualizar estado
             const newNotification = payload.new as SupabaseNotification
             setNotifications(prev => [newNotification, ...prev])
             setUnreadCount(prev => prev + 1)
             
-            // Mostrar toast para notificação em tempo real
-            toast.info(newNotification.title, {
-              description: newNotification.message,
-              duration: 5000,
-              action: {
-                label: 'Ver',
-                onClick: () => {
-                  // Aqui você pode adicionar lógica para abrir a conversa
-                  console.log('Abrindo conversa:', newNotification.action_url)
-                  // Redirecionar para a página de mensagens
-                  if (typeof window !== 'undefined') {
-                    // Redirecionar para página de mensagens
-                    window.location.href = '/mensagens'
-                  }
-                }
-              }
-            })
+            // Não mostrar toast - apenas atualizar contador
           } else if (payload.eventType === 'UPDATE') {
             // Notificação atualizada (ex: marcada como lida)
             const updatedNotification = payload.new as SupabaseNotification

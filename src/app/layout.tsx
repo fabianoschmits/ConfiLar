@@ -41,6 +41,43 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suprimir erros específicos do Ethereum
+              const originalError = console.error;
+              console.error = function(...args) {
+                const message = args.join(' ');
+                
+                // Ignorar erros específicos do Ethereum
+                if (
+                  message.includes('Cannot redefine property: ethereum') ||
+                  message.includes('evmAsk.js') ||
+                  message.includes('ethereum') && message.includes('redefine')
+                ) {
+                  return; // Não mostrar o erro
+                }
+                
+                // Mostrar outros erros normalmente
+                originalError.apply(console, args);
+              };
+              
+              // Suprimir erros não capturados relacionados ao Ethereum
+              window.addEventListener('error', function(event) {
+                if (
+                  event.message && (
+                    event.message.includes('Cannot redefine property: ethereum') ||
+                    event.message.includes('evmAsk.js') ||
+                    event.message.includes('ethereum') && event.message.includes('redefine')
+                  )
+                ) {
+                  event.preventDefault();
+                  return false;
+                }
+              });
+            `
+          }}
+        />
       </head>
                   <body className={inter.className}>
                     <ServiceWorkerCleaner />
