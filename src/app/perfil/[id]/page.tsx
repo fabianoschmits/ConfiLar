@@ -25,6 +25,7 @@ import { useSupabaseReviews, ReviewWithProfiles, ReviewStats as ReviewStatsType 
 import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { ReviewStats } from '@/components/reviews/ReviewStats'
 import { ReviewForm } from '@/components/reviews/ReviewForm'
+import { useProfileViews } from '@/hooks/useProfileViews'
 
 interface PublicProfile {
     id: string
@@ -72,10 +73,31 @@ export default function PublicProfilePage() {
     
     // Hook das avaliações
     const { reviews: hookReviews, loading: reviewsLoading, fetchUserReviews, fetchUserReviewStats, canUserReview } = useSupabaseReviews()
+    
+    // Hook das visualizações
+    const { getViewStats, useAutoRecordView, loading: viewsLoading } = useProfileViews()
+    const [viewStats, setViewStats] = useState<{ total_views: number; views_today: number } | null>(null)
 
     useEffect(() => {
         fetchProfile()
     }, [userId])
+
+    // Registrar visualização automaticamente
+    useAutoRecordView(userId)
+
+    // Buscar estatísticas de visualizações
+    useEffect(() => {
+        if (userId) {
+            getViewStats(userId).then(stats => {
+                if (stats) {
+                    setViewStats({
+                        total_views: stats.total_views,
+                        views_today: stats.views_today
+                    })
+                }
+            })
+        }
+    }, [userId, getViewStats])
 
     // Função para atualizar estatísticas quando necessário
     const refreshStats = async () => {
@@ -324,7 +346,7 @@ export default function PublicProfilePage() {
                             </div>
 
                             {/* Estatísticas Principais Brutalistas */}
-                            <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-2xl mx-auto mb-6 md:mb-8">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mb-6 md:mb-8">
                                 <div className="p-4 bg-yellow-400 text-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
                                     <div className="text-2xl md:text-3xl font-black">
                                         {reviewStats?.averageRating ? (reviewStats.averageRating || 0).toFixed(1) : '0.0'}
@@ -337,6 +359,15 @@ export default function PublicProfilePage() {
                                 <div className="p-4 bg-red-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
                                     <div className="text-2xl md:text-3xl font-black">{reviewStats?.totalReviews || 0}</div>
                                     <div className="text-xs md:text-sm font-black">AVALIAÇÕES</div>
+                                </div>
+                                <div className="p-4 bg-green-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
+                                    <div className="text-2xl md:text-3xl font-black">{viewStats?.total_views || 0}</div>
+                                    <div className="text-xs md:text-sm font-black">VISUALIZAÇÕES</div>
+                                    {viewStats?.views_today && viewStats.views_today > 0 && (
+                                        <div className="text-xs text-yellow-300 font-bold mt-1">
+                                            +{viewStats.views_today} hoje
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-4 bg-blue-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
                                     <div className="text-2xl md:text-3xl font-black">{profile?.total_recommendations || 0}</div>

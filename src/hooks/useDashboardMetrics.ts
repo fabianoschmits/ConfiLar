@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useProfileViews } from '@/hooks/useProfileViews'
 
 export interface DashboardMetrics {
   // Métricas gerais
@@ -19,23 +20,22 @@ export interface DashboardMetrics {
   // Métricas específicas por tipo de usuário
   professionalMetrics?: {
     totalServices: number
-    totalEarnings: number
-    activeBookings: number
-    completedJobs: number
-    earningsGrowth: number
+    activeAgreements: number
+    completedAgreements: number
+    totalAgreements: number
   }
   
   clientMetrics?: {
-    totalBookings: number
-    totalSpent: number
+    totalAgreements: number
+    activeAgreements: number
+    completedAgreements: number
     favoriteProfessionals: number
-    bookingsGrowth: number
   }
   
   // Atividade recente
   recentActivity: Array<{
     id: string
-    type: 'view' | 'contact' | 'review' | 'booking' | 'message'
+    type: 'message' | 'review' | 'agreement' | 'view'
     title: string
     description: string
     timestamp: string
@@ -56,7 +56,7 @@ export function useDashboardMetrics() {
   const [error, setError] = useState<string | null>(null)
   
   const { user, profile } = useAuthContext()
-  // Usar o client Supabase configurado
+  const { getViewStats } = useProfileViews()
 
   const fetchMetrics = useCallback(async () => {
     if (!user?.id || !profile) {
@@ -79,8 +79,9 @@ export function useDashboardMetrics() {
         console.error('Erro ao buscar dados do perfil:', profileError)
       }
 
-      // Buscar visualizações do perfil (simulado - você pode implementar uma tabela de views)
-      const viewsCount = Math.floor(Math.random() * 1000) + 100
+      // Buscar visualizações reais do perfil
+      const viewStats = await getViewStats(user.id)
+      const viewsCount = viewStats?.total_views || 0
       
       // Buscar contatos/mensagens
       const { data: messagesData, error: messagesError } = await supabase
@@ -114,56 +115,43 @@ export function useDashboardMetrics() {
         // Buscar serviços oferecidos
         const servicesCount = profile.professional_services?.length || 0
         
-        // Simular ganhos (você pode implementar uma tabela de transações)
-        const totalEarnings = Math.floor(Math.random() * 5000) + 500
-        
-        // Buscar agendamentos ativos
-        const { data: bookingsData } = await supabase
-          .from('appointments')
+        // Buscar acordos
+        const { data: agreementsData } = await supabase
+          .from('contact_agreements')
           .select('id, status')
           .eq('professional_id', user.id)
-          .eq('status', 'confirmed')
 
-        const activeBookings = bookingsData?.length || 0
-        
-        // Buscar trabalhos completados
-        const { data: completedJobsData } = await supabase
-          .from('appointments')
-          .select('id')
-          .eq('professional_id', user.id)
-          .eq('status', 'completed')
-
-        const completedJobs = completedJobsData?.length || 0
+        const totalAgreements = agreementsData?.length || 0
+        const activeAgreements = agreementsData?.filter(a => a.status === 'accepted').length || 0
+        const completedAgreements = agreementsData?.filter(a => a.status === 'completed').length || 0
         
         professionalMetrics = {
           totalServices: servicesCount,
-          totalEarnings,
-          activeBookings,
-          completedJobs,
-          earningsGrowth: Math.floor(Math.random() * 40) - 5 // -5% a +35%
+          totalAgreements,
+          activeAgreements,
+          completedAgreements
         }
       } else {
         // Métricas para clientes
-        const { data: clientBookingsData } = await supabase
-          .from('appointments')
-          .select('id, professional_id, status')
+        const { data: agreementsData } = await supabase
+          .from('contact_agreements')
+          .select('id, status, professional_id')
           .eq('client_id', user.id)
 
-        const totalBookings = clientBookingsData?.length || 0
-        
-        // Simular gastos totais
-        const totalSpent = Math.floor(Math.random() * 2000) + 200
+        const totalAgreements = agreementsData?.length || 0
+        const activeAgreements = agreementsData?.filter(a => a.status === 'accepted').length || 0
+        const completedAgreements = agreementsData?.filter(a => a.status === 'completed').length || 0
         
         // Contar profissionais únicos
         const uniqueProfessionals = new Set(
-          clientBookingsData?.map(booking => booking.professional_id) || []
+          agreementsData?.map(agreement => agreement.professional_id) || []
         ).size
 
         clientMetrics = {
-          totalBookings,
-          totalSpent,
-          favoriteProfessionals: uniqueProfessionals,
-          bookingsGrowth: Math.floor(Math.random() * 25) - 5 // -5% a +20%
+          totalAgreements,
+          activeAgreements,
+          completedAgreements,
+          favoriteProfessionals: uniqueProfessionals
         }
       }
 
@@ -194,7 +182,7 @@ export function useDashboardMetrics() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id, profile, supabase])
+  }, [user?.id, profile])
 
   const fetchRecentActivity = async (userId: string) => {
     const activities = []
@@ -238,22 +226,22 @@ export function useDashboardMetrics() {
         })
       })
 
-      // Buscar agendamentos recentes
-      const { data: recentAppointments } = await supabase
-        .from('appointments')
-        .select('id, status, appointment_date, created_at')
+      // Buscar acordos recentes
+      const { data: recentAgreements } = await supabase
+        .from('contact_agreements')
+        .select('id, status, service_description, created_at')
         .or(`client_id.eq.${userId},professional_id.eq.${userId}`)
         .order('created_at', { ascending: false })
         .limit(3)
 
-      recentAppointments?.forEach(appointment => {
+      recentAgreements?.forEach(agreement => {
         activities.push({
-          id: `appointment-${appointment.id}`,
-          type: 'booking' as const,
-          title: 'Novo agendamento',
-          description: `Agendamento ${appointment.status} para ${new Date(appointment.appointment_date).toLocaleDateString()}`,
-          timestamp: appointment.created_at,
-          icon: '📅'
+          id: `agreement-${agreement.id}`,
+          type: 'agreement' as const,
+          title: 'Novo acordo',
+          description: `Acordo ${agreement.status} - ${agreement.service_description?.substring(0, 30) || 'Serviço'}...`,
+          timestamp: agreement.created_at,
+          icon: '🤝'
         })
       })
 

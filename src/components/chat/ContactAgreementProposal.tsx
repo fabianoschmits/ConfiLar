@@ -43,11 +43,11 @@ export function ContactAgreementProposal({
     createAgreement, 
     acceptAgreement, 
     rejectAgreement,
-    areContactsRevealed 
+    hasAcceptedAgreement 
   } = useContactAgreements()
 
   const [isProposalOpen, setIsProposalOpen] = useState(false)
-  const [contactsRevealed, setContactsRevealed] = useState(false)
+  const [hasAgreement, setHasAgreement] = useState(false)
   const [formData, setFormData] = useState({
     service_description: '',
     agreed_price: '',
@@ -57,9 +57,9 @@ export function ContactAgreementProposal({
     notes: ''
   })
 
-  // Verificar se contatos estão revelados
+  // Verificar se há acordo aceito
   useState(() => {
-    areContactsRevealed(otherUserId).then(setContactsRevealed)
+    hasAcceptedAgreement(otherUserId).then(setHasAgreement)
   })
 
   // Encontrar acordos para esta conversa
@@ -121,8 +121,8 @@ export function ContactAgreementProposal({
   const handleAcceptAgreement = async (agreementId: string) => {
     try {
       await acceptAgreement(agreementId)
-      setContactsRevealed(true)
-      toast.success('Acordo aceito! Dados de contato liberados.')
+      setHasAgreement(true)
+      toast.success('Acordo aceito! Agora vocês podem se avaliar após 1 dia.')
     } catch (error) {
       console.error('Erro ao aceitar acordo:', error)
       toast.error('Erro ao aceitar acordo')
@@ -156,8 +156,8 @@ export function ContactAgreementProposal({
     }
   }
 
-  // Se os contatos já estão revelados
-  if (contactsRevealed || acceptedAgreement) {
+  // Se há acordo aceito
+  if (hasAgreement || acceptedAgreement) {
     return (
       <Card className="mb-4 border-green-200 bg-green-50">
         <CardContent className="p-4">
@@ -165,10 +165,10 @@ export function ContactAgreementProposal({
             <CheckCircle className="h-5 w-5 text-green-600" />
             <div>
               <p className="font-medium text-green-800">
-                Dados de contato liberados!
+                Acordo aceito!
               </p>
               <p className="text-sm text-green-600">
-                Vocês podem trocar informações de contato livremente.
+                Vocês podem se avaliar após 1 dia do acordo.
               </p>
             </div>
           </div>
@@ -257,10 +257,10 @@ export function ContactAgreementProposal({
             <Users className="h-5 w-5 text-blue-600" />
             <div>
               <p className="font-medium text-blue-800">
-                Proteção de Privacidade Ativa
+                Sistema de Acordos para Avaliações
               </p>
               <p className="text-sm text-blue-600">
-                Os dados de contato só serão liberados após um acordo.
+                Faça um acordo para poder avaliar este usuário após o serviço.
               </p>
             </div>
           </div>
@@ -281,7 +281,7 @@ export function ContactAgreementProposal({
                 </DialogTitle>
                 <DialogDescription>
                   Crie uma proposta de trabalho para {otherUserName}. 
-                  Após o acordo ser aceito, os dados de contato serão liberados.
+                  Após o acordo ser aceito, vocês poderão se avaliar após 1 dia.
                 </DialogDescription>
               </DialogHeader>
 

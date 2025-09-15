@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useOpenMessages } from '@/hooks/useOpenMessages'
+import { useProfileViews } from '@/hooks/useProfileViews'
 
 interface SearchResultsProps {
   users: Profile[]
@@ -49,9 +50,16 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 }) => {
   const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites()
   const { openMessages } = useOpenMessages()
+  const { recordView } = useProfileViews()
 
   const handleToggleFavorite = async (userId: string) => {
     await toggleFavorite(userId)
+  }
+
+  const handleViewProfile = async (userId: string) => {
+    // Registrar visualização antes de navegar
+    await recordView(userId)
+    onViewProfile(userId)
   }
 
   const renderStars = (rating: number) => {
@@ -212,7 +220,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               
               <div className="flex gap-2 w-full sm:w-auto">
                 <button
-                  onClick={() => onViewProfile(user.id)}
+                  onClick={() => handleViewProfile(user.id)}
                   className="flex-1 sm:flex-none py-3 px-4 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
                 >
                   <Eye className="h-4 w-4" />
@@ -330,7 +338,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           
           <div className="flex gap-1">
             <button
-              onClick={() => onViewProfile(user.id)}
+              onClick={() => handleViewProfile(user.id)}
               className="flex-1 py-1.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
             >
               <Eye className="h-3 w-3 mr-1 inline" />

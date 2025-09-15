@@ -212,6 +212,52 @@ export function useMessages() {
     }
   }, [user?.id, addNotification])
 
+  // Criar notificação para acordo
+  const createAgreementNotification = useCallback(async (agreement: any, type: 'proposal' | 'accepted' | 'rejected') => {
+    if (!user?.id) return
+
+    try {
+      let title = ''
+      let message = ''
+      let notificationType: 'info' | 'success' | 'warning' | 'error' | 'message' | 'review' | 'booking' | 'verification' | 'achievement' | 'system' = 'info'
+
+      switch (type) {
+        case 'proposal':
+          title = 'Nova proposta de acordo'
+          message = `${agreement.professional?.full_name || 'Profissional'} enviou uma proposta de acordo`
+          notificationType = 'info'
+          break
+        case 'accepted':
+          title = 'Acordo aceito'
+          message = `${agreement.client?.full_name || 'Cliente'} aceitou sua proposta de acordo`
+          notificationType = 'success'
+          break
+        case 'rejected':
+          title = 'Acordo rejeitado'
+          message = `${agreement.client?.full_name || 'Cliente'} rejeitou sua proposta de acordo`
+          notificationType = 'warning'
+          break
+      }
+
+      await addNotification({
+        user_id: type === 'proposal' ? agreement.client_id : agreement.professional_id,
+        title,
+        message,
+        type: notificationType,
+        category: 'messages',
+        action_url: `/mensagens?conversation=${agreement.conversation_id}`,
+        action_label: 'Ver Acordo',
+        metadata: {
+          agreement_id: agreement.id,
+          conversation_id: agreement.conversation_id,
+          agreement_type: type
+        }
+      })
+    } catch (error) {
+      console.error('❌ Erro ao criar notificação de acordo:', error)
+    }
+  }, [user?.id, addNotification])
+
   // Enviar mensagem
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
     if (!user?.id) return false
@@ -592,6 +638,7 @@ export function useMessages() {
     deleteConversation,
     deleteMessage,
     editMessage,
-    getTotalUnreadCount
+    getTotalUnreadCount,
+    createAgreementNotification
   }
 }
