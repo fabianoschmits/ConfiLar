@@ -26,48 +26,51 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
   const { checkExistingConversation, setSelectedConversation: setSupabaseConversation, fetchMessages, createConversation } = useSupabaseMessages()
 
   const openChat = useCallback(async (userId?: string, userName?: string) => {
+    console.log('🔐 Abrindo chat...', { userId, userName })
     setTargetUserId(userId)
     setTargetUserName(userName)
     setIsOpen(true)
     
+    // Se não há userId, apenas abrir o chat (lista de conversas)
+    if (!userId) {
+      console.log('📋 Abrindo lista de conversas')
+      setSelectedConversationId(undefined)
+      setSupabaseConversation(null)
+      return
+    }
+    
     // Se há userId, verificar se já existe conversa
-    if (userId) {
-      try {
-        console.log('🔍 Verificando conversa existente com:', userId)
-        const existingConversationId = await checkExistingConversation(userId)
-        
-        if (existingConversationId) {
-          console.log('✅ Conversa existente encontrada:', existingConversationId)
-          // Abrir conversa existente
-          setSelectedConversationId(existingConversationId)
-          setSupabaseConversation(existingConversationId)
-          await fetchMessages(existingConversationId)
+    try {
+      console.log('🔍 Verificando conversa existente com:', userId)
+      const existingConversationId = await checkExistingConversation(userId)
+      
+      if (existingConversationId) {
+        console.log('✅ Conversa existente encontrada:', existingConversationId)
+        // Abrir conversa existente
+        setSelectedConversationId(existingConversationId)
+        setSupabaseConversation(existingConversationId)
+        await fetchMessages(existingConversationId)
+      } else {
+        console.log('🆕 Nenhuma conversa existente, criando nova conversa automaticamente')
+        // Criar nova conversa automaticamente
+        const newConversationId = await createConversation(userId)
+        if (newConversationId) {
+          setSelectedConversationId(newConversationId)
+          setSupabaseConversation(newConversationId)
+          await fetchMessages(newConversationId)
+          // Limpar targetUserId após criar a conversa
+          setTargetUserId(undefined)
+          setTargetUserName(undefined)
         } else {
-          console.log('🆕 Nenhuma conversa existente, criando nova conversa automaticamente')
-          // Criar nova conversa automaticamente
-          const newConversationId = await createConversation(userId)
-          if (newConversationId) {
-            setSelectedConversationId(newConversationId)
-            setSupabaseConversation(newConversationId)
-            await fetchMessages(newConversationId)
-            // Limpar targetUserId após criar a conversa
-            setTargetUserId(undefined)
-            setTargetUserName(undefined)
-          } else {
-            console.error('❌ Erro ao criar conversa automaticamente')
-            // Em caso de erro, preparar para nova conversa manual
-            setSelectedConversationId(undefined)
-            setSupabaseConversation(null)
-          }
+          console.error('❌ Erro ao criar conversa automaticamente')
+          // Em caso de erro, preparar para nova conversa manual
+          setSelectedConversationId(undefined)
+          setSupabaseConversation(null)
         }
-      } catch (error) {
-        console.error('❌ Erro ao verificar/criar conversa:', error)
-        // Em caso de erro, preparar para nova conversa manual
-        setSelectedConversationId(undefined)
-        setSupabaseConversation(null)
       }
-    } else {
-      // Se não há userId, apenas abre o chat sem conversa específica
+    } catch (error) {
+      console.error('❌ Erro ao verificar/criar conversa:', error)
+      // Em caso de erro, preparar para nova conversa manual
       setSelectedConversationId(undefined)
       setSupabaseConversation(null)
     }

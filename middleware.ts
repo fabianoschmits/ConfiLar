@@ -14,7 +14,6 @@ export async function middleware(request: NextRequest) {
     '/dashboard',
     '/perfil',
     '/mensagens',
-    '/agenda',
     '/feed',
     '/buscar',
     '/classificados', // Apenas a página principal de classificados

@@ -47,6 +47,8 @@ interface AuthContextType {
 	refreshAuth: () => Promise<void>
 	resetPassword: (email: string) => Promise<{ error: { message: string } | null }>
 	updatePassword: (newPassword: string) => Promise<{ error: { message: string } | null }>
+	updateEmail: (newEmail: string) => Promise<{ error: { message: string } | null }>
+	requireReauthentication: (action: 'password' | 'email' | 'general') => void
 	isMockMode: boolean
 }
 

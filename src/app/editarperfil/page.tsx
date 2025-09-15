@@ -31,11 +31,13 @@ import {
   Calendar,
   Award
 } from 'lucide-react'
+import { useAutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { toast } from 'sonner'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
 
 export default function EditarPerfilPage() {
   const { profile, updateProfile, uploadAvatar } = useAuthContext()
+  const { checkAndRedirect } = useAutoReauthentication()
   const [isEditing, setIsEditing] = useState(false)
   const [isEditingLocation, setIsEditingLocation] = useState(false)
   const [isEditingProfessional, setIsEditingProfessional] = useState(false)
@@ -563,12 +565,32 @@ export default function EditarPerfilPage() {
             icon={<User className="h-5 w-5 text-yellow-400" />}
           >
             <div className="space-y-4">
-              <ProfileInfo
-                label="Email"
-                value={profile.email || 'Não informado'}
-                icon={<Mail className="h-4 w-4" />}
-                editable={false}
-              />
+              <div>
+                <Label htmlFor="email" className="text-sm font-black text-black">EMAIL</Label>
+                <div className="mt-1 p-3 bg-gray-100 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-black" />
+                      <span className="text-sm font-bold text-black">{profile.email || 'Não informado'}</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const needsReauth = await checkAndRedirect('email')
+                        if (!needsReauth) {
+                          // Se não precisa de reautenticação, redirecionar para página de alterar email
+                          window.location.href = '/alterar-email'
+                        }
+                      }}
+                      className="px-3 py-1 text-xs font-black text-white bg-blue-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
+                    >
+                      ALTERAR
+                    </button>
+                  </div>
+                  <div className="mt-2 text-xs text-black font-bold">
+                    ⚠️ Para alterar o email, será necessário confirmar sua identidade
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <Label htmlFor="full_name" className="text-sm font-black text-black">NOME COMPLETO</Label>

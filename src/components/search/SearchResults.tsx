@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu'
 import { useFavorites } from '@/hooks/useFavorites'
+import { useOpenMessages } from '@/hooks/useOpenMessages'
 
 interface SearchResultsProps {
   users: Profile[]
@@ -47,6 +48,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   onViewModeChange
 }) => {
   const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites()
+  const { openMessages } = useOpenMessages()
 
   const handleToggleFavorite = async (userId: string) => {
     await toggleFavorite(userId)
@@ -201,7 +203,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             {/* Ações */}
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
-                onClick={() => onContact(user)}
+                onClick={() => openMessages(user.id, user.full_name || 'Usuário')}
                 className="w-full sm:flex-1 py-3 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-sm"
               >
                 <MessageCircle className="h-4 w-4 mr-2 inline" />
@@ -319,7 +321,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         {/* Ações */}
         <div className="space-y-2 mt-auto">
           <button
-            onClick={() => onContact(user)}
+            onClick={() => openMessages(user.id, user.full_name || 'Usuário')}
             className="w-full py-2 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black text-xs"
           >
             <MessageCircle className="h-3 w-3 mr-1 inline" />

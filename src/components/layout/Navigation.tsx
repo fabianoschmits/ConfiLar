@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
+import { useOpenMessages } from '@/hooks/useOpenMessages'
 import { 
   Home, 
   Search, 
@@ -14,11 +16,11 @@ import {
   Calendar,
   HelpCircle
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 export function Navigation() {
   const { profile, signOut, isMockMode } = useAuthContext()
   const router = useRouter()
+  const { openMessagesList } = useOpenMessages()
 
   // Função de navegação robusta
   const handleNavigation = (path: string) => {
@@ -79,6 +81,15 @@ export function Navigation() {
             <Button 
               variant="ghost" 
               size="sm"
+              onClick={openMessagesList}
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Mensagens
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              size="sm"
               onClick={() => handleNavigation('/buscar')}
             >
               <Search className="h-4 w-4 mr-2" />
@@ -96,14 +107,6 @@ export function Navigation() {
 
             {profile.user_type === 'professional' && (
               <>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => handleNavigation('/agenda')}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Agenda
-                </Button>
                 <Button 
                   variant="ghost" 
                   size="sm"

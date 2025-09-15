@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Menu, X, Home, Search, User, MessageSquare, FileText, Star, Settings, LogOut, HelpCircle } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useOpenMessages } from '@/hooks/useOpenMessages'
 
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const { user, signOut } = useAuthContext()
+  const { openMessagesList } = useOpenMessages()
 
   const handleNavigation = (path: string) => {
     try {
@@ -38,6 +40,7 @@ export function MobileNavigation() {
   const navigationItems = [
     { icon: Home, label: 'Home', path: '/home' },
     { icon: Search, label: 'Buscar', path: '/buscar' },
+    { icon: MessageSquare, label: 'Mensagens', path: 'messages', isAction: true },
     { icon: FileText, label: 'Classificados', path: '/classificados' },
     { icon: Star, label: 'Reputação', path: '/reputacao' },
   ]
@@ -80,7 +83,14 @@ export function MobileNavigation() {
                   key={item.path}
                   variant="ghost"
                   className="w-full justify-start h-12 text-base"
-                  onClick={() => handleNavigation(item.path)}
+                  onClick={() => {
+                    if (item.isAction && item.path === 'messages') {
+                      openMessagesList()
+                      setIsOpen(false)
+                    } else {
+                      handleNavigation(item.path)
+                    }
+                  }}
                 >
                   <item.icon className="h-5 w-5 mr-3" />
                   {item.label}

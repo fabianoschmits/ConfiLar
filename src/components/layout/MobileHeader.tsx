@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useOpenMessages } from '@/hooks/useOpenMessages'
+
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -25,7 +27,8 @@ import {
   UserCircle,
   Briefcase,
   Star,
-  Question
+  Question,
+  ChatCircle
 } from '@phosphor-icons/react'
 
 interface MobileHeaderProps {
@@ -46,6 +49,7 @@ export function MobileHeader({
   const pathname = usePathname()
   const router = useRouter()
   const { user, profile } = useAuthContext()
+  const { openMessagesList } = useOpenMessages()
   const [notificationCount, setNotificationCount] = useState(0)
 
   // Só renderiza se o usuário estiver logado
@@ -71,8 +75,6 @@ export function MobileHeader({
       '/feed': 'Feed Social',
       '/mensagens': 'Mensagens',
       '/perfil': 'Meu Perfil',
-      '/agendamentos': 'Agendamentos',
-      '/agenda': 'Agenda',
       '/favoritos': 'Favoritos',
       '/portfolio': 'Meu Portfólio',
       '/ganhos': 'Ganhos',
@@ -122,6 +124,15 @@ export function MobileHeader({
                 </span>
               </div>
             )}
+          </button>
+
+          {/* Messages Button */}
+          <button
+            className="p-2 h-12 w-12 bg-blue-500 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+            onClick={openMessagesList}
+            title="Abrir Mensagens"
+          >
+            <ChatCircle className="h-6 w-6 text-white" />
           </button>
           
           {/* User Menu Dropdown */}

@@ -60,121 +60,137 @@ export default function RecuperarSenhaPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto shadow-xl border-0 backdrop-blur-sm bg-white/80">
-          <CardHeader className="text-center pb-6">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">
-              Email Enviado!
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Enviamos um link de recuperação para <strong>{getValues('email')}</strong>
-            </CardDescription>
-          </CardHeader>
+      <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
+          <div className="mx-auto w-20 h-20 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
+            <Mail className="w-10 h-10 text-yellow-400" />
+          </div>
+          <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
+            EMAIL ENVIADO!
+          </h1>
+          <p className="text-black font-bold mb-8 animate-fade-in">
+            ENVIAMOS UM LINK DE RECUPERAÇÃO PARA <strong>{getValues('email')}</strong>
+          </p>
           
-          <CardContent className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-blue-800">
-                    Próximos passos:
-                  </h3>
-                  <div className="mt-2 text-sm text-blue-700">
-                    <ul className="list-disc pl-5 space-y-1">
-                      <li>Verifique sua caixa de entrada</li>
-                      <li>Clique no link do email</li>
-                      <li>Defina uma nova senha</li>
-                      <li>Faça login com sua nova senha</li>
-                    </ul>
-                  </div>
-                </div>
+          <div className="bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6">
+            <div className="text-left">
+              <h3 className="text-sm font-black text-black uppercase mb-2">
+                PRÓXIMOS PASSOS:
+              </h3>
+              <div className="text-sm text-black font-bold space-y-1">
+                <p>• VERIFIQUE SUA CAIXA DE ENTRADA</p>
+                <p>• CLIQUE NO LINK DO EMAIL</p>
+                <p>• DEFINA UMA NOVA SENHA</p>
+                <p>• FAÇA LOGIN COM SUA NOVA SENHA</p>
               </div>
             </div>
+          </div>
 
-            <div className="text-center text-sm text-gray-500">
-              Não recebeu o email? Verifique sua pasta de spam ou{' '}
-              <button
-                type="button"
-                onClick={() => setEmailSent(false)}
-                className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
-              >
-                tente novamente
-              </button>
-            </div>
-
-            <Button
+          <div className="text-center text-sm text-black font-bold mb-6">
+            NÃO RECEBEU O EMAIL? VERIFIQUE SUA PASTA DE SPAM OU{' '}
+            <button
               type="button"
-              onClick={handleBackToLogin}
-              variant="outline"
-              className="w-full"
+              onClick={() => setEmailSent(false)}
+              className="text-black hover:text-gray-600 hover:underline font-black uppercase"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar para o Login
-            </Button>
-          </CardContent>
-        </Card>
+              TENTE NOVAMENTE
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBackToLogin}
+            className="w-full px-6 py-4 text-lg font-black text-black bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none flex items-center justify-center space-x-2"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>VOLTAR PARA O LOGIN</span>
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md mx-auto shadow-xl border-0 backdrop-blur-sm bg-white/80">
-        <CardHeader className="text-center pb-6">
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Recuperar Senha
-          </CardTitle>
-          <CardDescription className="text-gray-600">
-            Digite seu email para receber um link de recuperação
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen bg-yellow-400">
+      {/* Header Brutalista */}
+      <header className="bg-white border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 border border-black animate-ping"></div>
+          <div className="absolute top-4 right-8 w-1 h-1 bg-black animate-pulse"></div>
+          <div className="absolute bottom-2 left-12 w-1 h-1 bg-yellow-400 animate-bounce"></div>
+        </div>
         
-        <CardContent className="space-y-6">
+        <div className="container flex h-16 items-center justify-between px-4 relative z-10">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
+              <span className="text-yellow-400 font-black text-lg">C</span>
+            </div>
+            <span className="text-xl font-black text-black uppercase tracking-wider animate-fade-in">CONFILAR</span>
+          </div>
+          
+          <button 
+            onClick={handleBackToLogin}
+            className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all animate-fade-in flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>VOLTAR</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Brutalista */}
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
+        <div className="max-w-md w-full bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
+              <Mail className="w-8 h-8 text-yellow-400" />
+            </div>
+            <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
+              RECUPERAR SENHA
+            </h1>
+            <p className="text-black font-bold animate-fade-in">
+              DIGITE SEU EMAIL PARA RECEBER UM LINK DE RECUPERAÇÃO
+            </p>
+          </div>
+          
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Email
-              </Label>
+              <label htmlFor="email" className="text-sm font-black text-black uppercase">
+                EMAIL
+              </label>
               <Input
                 id="email"
                 type="email"
                 placeholder="seu@email.com"
                 {...register('email')}
-                className={errors.email ? 'border-red-500 focus:ring-red-500' : ''}
+                className={`w-full px-4 py-3 text-lg font-bold bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all ${errors.email ? 'border-red-500' : ''}`}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-sm text-red-600 font-bold">{errors.email.message}</p>
               )}
             </div>
 
-            <Button
+            <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+              className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isLoading}
             >
-              {isLoading ? 'Enviando...' : 'Enviar Email de Recuperação'}
-            </Button>
+              {isLoading ? 'ENVIANDO...' : 'ENVIAR EMAIL DE RECUPERAÇÃO'}
+            </button>
 
             <div className="text-center">
               <button
                 type="button"
                 onClick={handleBackToLogin}
-                className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                className="text-sm text-black hover:text-gray-600 hover:underline font-black uppercase flex items-center justify-center space-x-1 mx-auto"
               >
-                <ArrowLeft className="w-4 h-4 inline mr-1" />
-                Voltar para o Login
+                <ArrowLeft className="w-4 h-4" />
+                <span>VOLTAR PARA O LOGIN</span>
               </button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

@@ -629,7 +629,6 @@ function HomeContent() {
                     router.push('/perfil')
                   }
                 }}>Gerenciar Perfil</Button></li>
-                <li><a href="/agenda" className="hover:text-foreground transition-colors">Agenda</a></li>
               </ul>
             </div>
 
