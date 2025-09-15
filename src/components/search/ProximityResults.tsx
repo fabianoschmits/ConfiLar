@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProximitySearchResult } from '@/hooks/useProximitySearch';
 import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator';
+import { formatDistance } from '@/lib/utils';
 
 interface ProximityResultsProps {
   results: ProximitySearchResult[];

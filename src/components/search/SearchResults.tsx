@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useOpenMessages } from '@/hooks/useOpenMessages'
+import { useProfileViews } from '@/hooks/useProfileViews'
 import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator'
 
 interface SearchResultsProps {
