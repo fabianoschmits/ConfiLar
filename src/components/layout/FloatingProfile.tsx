@@ -67,7 +67,6 @@ export const FloatingProfile: React.FC = () => {
     totalServices: profile?.user_type === 'professional' ? 45 : 12,
     completedServices: profile?.user_type === 'professional' ? 38 : 10,
     rating: 4.8,
-    totalEarnings: profile?.user_type === 'professional' ? 15420.50 : 0,
     memberSince: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024',
     verificationStatus: profile?.user_type === 'professional' ? 'verified' : 'basic',
     premiumStatus: false
@@ -158,18 +157,10 @@ export const FloatingProfile: React.FC = () => {
                     </div>
                     <div>
                       <div className="text-lg font-bold text-green-600">{accountStats.rating}</div>
-                      <div className="text-xs text-gray-600">Avaliação</div>
-                    </div>
+                    <div className="text-xs text-gray-600">Avaliação</div>
                   </div>
-                  {profile?.user_type === 'professional' && (
-                    <div className="mt-2 pt-2 border-t border-blue-200 text-center">
-                      <div className="text-sm font-bold text-green-600">
-                        R$ {accountStats.totalEarnings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </div>
-                      <div className="text-xs text-gray-600">Ganhos Totais</div>
-                    </div>
-                  )}
-                </CardContent>
+                </div>
+              </CardContent>
               </Card>
 
               {/* Ações Rápidas */}
@@ -250,14 +241,6 @@ export const FloatingProfile: React.FC = () => {
                       >
                         <BriefcasePhosphor size={14} weight="light" className="text-purple-600" />
                         <span>Meu Portfólio</span>
-                      </Link>
-                      <Link
-                        href="/_public/ganhos"
-                        className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                        onClick={() => setIsExpanded(false)}
-                      >
-                        <TrendUp size={14} weight="light" className="text-green-600" />
-                        <span>Meus Ganhos</span>
                       </Link>
                     </>
                   )}

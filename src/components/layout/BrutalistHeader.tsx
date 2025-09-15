@@ -81,7 +81,6 @@ export function BrutalistHeader({
       '/perfil': 'MEU PERFIL',
       '/favoritos': 'FAVORITOS',
       '/portfolio': 'MEU PORTFÓLIO',
-      '/ganhos': 'GANHOS',
       '/reputacao': 'REPUTAÇÃO',
       '/ajuda': 'CENTRAL DE AJUDA',
       '/contato': 'CONTATO',
@@ -103,7 +102,6 @@ export function BrutalistHeader({
     totalServices: profile?.user_type === 'professional' ? 45 : 12,
     completedServices: profile?.user_type === 'professional' ? 38 : 10,
     rating: 4.8,
-    totalEarnings: profile?.user_type === 'professional' ? 15420.50 : 0,
     memberSince: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024',
     verificationStatus: profile?.user_type === 'professional' ? 'verified' : 'basic',
     premiumStatus: false
@@ -224,18 +222,10 @@ export function BrutalistHeader({
                               <div className="text-xs font-bold text-gray-700">SERVIÇOS</div>
                             </div>
                             <div>
-                              <div className="text-lg font-black text-black">{accountStats.rating}</div>
-                              <div className="text-xs font-bold text-gray-700">AVALIAÇÃO</div>
-                            </div>
-                            {profile?.user_type === 'professional' && (
-                              <div>
-                                <div className="text-lg font-black text-black">
-                                  R$ {(accountStats.totalEarnings / 1000).toFixed(0)}k
-                                </div>
-                                <div className="text-xs font-bold text-gray-700">GANHOS</div>
-                              </div>
-                            )}
+                            <div className="text-lg font-black text-black">{accountStats.rating}</div>
+                            <div className="text-xs font-bold text-gray-700">AVALIAÇÃO</div>
                           </div>
+                        </div>
                         </div>
 
                         {/* Ações Rápidas - Grid Compacto */}
@@ -321,13 +311,6 @@ export function BrutalistHeader({
                                 >
                                   <IconBriefcase size={12} stroke={2} className="text-purple-600" />
                                   <span>PORTFÓLIO</span>
-                                </button>
-                                <button
-                                  onClick={() => handleNavigation('/ganhos')}
-                                  className="flex items-center space-x-2 px-2 py-1.5 text-xs font-bold text-black hover:bg-yellow-400 border border-black transition-all w-full text-left"
-                                >
-                                  <IconTrendingUp size={12} stroke={2} className="text-green-600" />
-                                  <span>GANHOS</span>
                                 </button>
                               </>
                             )}

@@ -311,7 +311,7 @@ export default function HomePage() {
                     <IconTrendingUp size={24} stroke={2} className="text-yellow-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-black uppercase">3. ACOMPANHE GANHOS</h3>
+                    <h3 className="text-xl font-black text-black uppercase">3. ACOMPANHE CRESCIMENTO</h3>
                     <div className="inline-block px-2 py-1 bg-yellow-400 text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase">
                       CRESCER
                     </div>
@@ -328,7 +328,7 @@ export default function HomePage() {
                     </li>
                     <li className="flex items-center">
                       <div className="w-2 h-2 bg-black border border-black mr-3"></div>
-                      <span className="font-bold">Acompanhe seus ganhos</span>
+                      <span className="font-bold">Acompanhe seu crescimento</span>
                     </li>
                     <li className="flex items-center">
                       <div className="w-2 h-2 bg-black border border-black mr-3"></div>
@@ -340,10 +340,10 @@ export default function HomePage() {
                     </li>
                   </ul>
                   <button 
-                    onClick={() => handleNavigateTo('/ganhos')}
+                    onClick={() => handleNavigateTo('/dashboard')}
                     className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all mt-6 animate-pulse"
                   >
-                    VER GANHOS
+                    VER DASHBOARD
                     <IconArrowRight size={20} stroke={2} className="ml-2 inline animate-bounce" />
                   </button>
                 </div>
