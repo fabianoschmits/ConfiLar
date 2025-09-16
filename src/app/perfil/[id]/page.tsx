@@ -401,6 +401,7 @@ export default function PublicProfilePage() {
                                 {user && user.id !== userId && (
                                     <RecommendationButton
                                         userId={userId}
+                                        userName={profile?.full_name || 'Usuário'}
                                         size="sm"
                                         variant="outline"
                                         showCount={true}

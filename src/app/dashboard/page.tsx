@@ -34,7 +34,7 @@ export default function DashboardPage() {
           {/* Header Brutalista */}
           <div className="mb-8">
             <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 animate-slide-in-up">
-              <h1 className="text-3xl font-black text-black uppercase animate-fade-in">DASHBOARD</h1>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-poetsen-one text-black uppercase animate-fade-in" style={{textShadow: 'none'}}>DASHBOARD</h1>
               <p className="mt-2 text-black font-bold animate-fade-in">
                 Visão geral da sua atividade na plataforma
               </p>

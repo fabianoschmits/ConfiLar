@@ -126,37 +126,37 @@ export function BrutalistHeader({
     <>
       {/* Header Principal Brutalista */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-400 border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-2 sm:px-4 py-2 sm:py-3">
           {/* Left side */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3">
             {showBackButton && (
               <button
                 onClick={onBackClick}
-                className="p-2 h-10 w-10 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                className="p-1 sm:p-2 h-8 w-8 sm:h-10 sm:w-10 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
               >
-                <IconArrowLeft size={20} stroke={2} />
+                <IconArrowLeft size={16} stroke={2} className="sm:w-5 sm:h-5" />
               </button>
             )}
             
             {showMenuButton && (
               <button
                 onClick={onMenuClick}
-                className="p-2 h-10 w-10 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                className="p-1 sm:p-2 h-8 w-8 sm:h-10 sm:w-10 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
               >
-                <IconMenu2 size={20} stroke={2} />
+                <IconMenu2 size={16} stroke={2} className="sm:w-5 sm:h-5" />
               </button>
             )}
           </div>
 
           {/* Center - Title */}
           <div className="flex-1 text-center">
-            <h1 className="text-lg font-black text-black truncate">
+            <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-6xl font-poetsen-one text-black uppercase tracking-wider leading-tight sm:drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] transform hover:scale-105 transition-transform duration-200" style={{textShadow: 'none'}}>
               {getPageTitle()}
             </h1>
           </div>
 
           {/* Right side - Menu do usuário */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             
             {/* Toggle de Disponibilidade */}
             <AvailabilityToggleCompact />
@@ -170,7 +170,7 @@ export function BrutalistHeader({
             <div className="relative">
               <button
                 onClick={() => setIsMenuExpanded(!isMenuExpanded)}
-                className="flex items-center gap-2 bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all px-3 py-2 font-black"
+                className="flex items-center gap-1 sm:gap-2 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all px-2 sm:px-3 py-1 sm:py-2 font-black"
               >
                 <UserAvatar 
                   src={profile?.avatar_url}
@@ -181,7 +181,7 @@ export function BrutalistHeader({
                 <span className="hidden sm:block text-xs">
                   {(profile?.full_name || 'USUÁRIO').toUpperCase()}
                 </span>
-                {isMenuExpanded ? <IconChevronUp size={14} stroke={2} /> : <IconChevronDown size={14} stroke={2} />}
+                {isMenuExpanded ? <IconChevronUp size={12} stroke={2} className="sm:w-3.5 sm:h-3.5" /> : <IconChevronDown size={12} stroke={2} className="sm:w-3.5 sm:h-3.5" />}
               </button>
 
               {/* Menu Expandido */}

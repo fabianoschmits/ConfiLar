@@ -282,9 +282,9 @@ export default function ReputacaoPage() {
               <Award className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Sistema de Reputação
-          </h1>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-poetsen-one text-black mb-4 uppercase tracking-wider sm:drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" style={{textShadow: 'none'}}>
+          Sistema de Reputação
+        </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Avalie e recomende outros usuários. Sistema 100% transparente onde você vê exatamente quem te avaliou.
           </p>

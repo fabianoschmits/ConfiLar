@@ -6,7 +6,7 @@ import { ThumbsUp } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'sonner'
-import { RecommendationList } from './RecommendationList'
+import { RecommendationModal } from './RecommendationModal'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,56 +15,34 @@ const supabase = createClient(
 
 interface RecommendationButtonProps {
   userId: string
+  userName?: string
   size?: 'sm' | 'default' | 'lg'
   variant?: 'default' | 'outline' | 'ghost'
   showCount?: boolean
   className?: string
-  showListOnClick?: boolean
 }
 
 export function RecommendationButton({ 
   userId, 
+  userName = 'Usuário',
   size = 'default', 
   variant = 'outline',
   showCount = true,
-  className = '',
-  showListOnClick = true
+  className = ''
 }: RecommendationButtonProps) {
   const { user } = useAuthContext()
   const [isRecommended, setIsRecommended] = useState(false)
   const [recommendationCount, setRecommendationCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [userType, setUserType] = useState<string | null>(null)
-  const [showRecommendationList, setShowRecommendationList] = useState(false)
-  const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [showRecommendationModal, setShowRecommendationModal] = useState(false)
 
   // Verificar se o usuário atual já recomendou
   useEffect(() => {
     if (user?.id && userId) {
       checkCurrentRecommendation()
       loadRecommendationCount()
-      loadUserType()
     }
   }, [user?.id, userId])
-
-  const loadUserType = async () => {
-    if (!user?.id) return
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', user.id)
-        .single()
-
-      if (!error && data) {
-        setUserType(data.user_type)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar tipo do usuário:', error)
-    }
-  }
 
   const checkCurrentRecommendation = async () => {
     // Evitar auto-recomendação
@@ -74,8 +52,18 @@ export function RecommendationButton({
     }
 
     try {
-      // Sistema de recomendações temporariamente desabilitado
-      setIsRecommended(false) // Temporariamente sempre false
+      const { data, error } = await supabase
+        .from('user_recommendations')
+        .select('id')
+        .eq('recommender_id', user?.id)
+        .eq('recommended_id', userId)
+        .single()
+
+      if (!error && data) {
+        setIsRecommended(true)
+      } else {
+        setIsRecommended(false)
+      }
     } catch (error) {
       // Usuário não recomendou ainda
       setIsRecommended(false)
@@ -90,53 +78,36 @@ export function RecommendationButton({
     }
 
     try {
-      // Sistema de recomendações temporariamente desabilitado
-      setRecommendationCount(0) // Temporariamente sempre 0
+      const { count, error } = await supabase
+        .from('user_recommendations')
+        .select('*', { count: 'exact', head: true })
+        .eq('recommended_id', userId)
+
+      if (!error) {
+        setRecommendationCount(count || 0)
+      }
     } catch (error) {
       console.error('Erro ao carregar contagem de recomendações:', error)
     }
   }
 
-  const handleRecommendation = async () => {
-    if (!user) {
-      toast.error('Faça login para recomendar usuários')
-      return
-    }
-
-    if (user.id === userId) {
-      toast.error('Você não pode se recomendar')
-      return
-    }
-
-    // Sistema de recomendações temporariamente desabilitado
-    toast.info('Sistema de recomendações temporariamente indisponível')
+  const handleShowRecommendationModal = () => {
+    setShowRecommendationModal(true)
   }
 
-  const handleShowRecommendationList = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setButtonPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX
-      })
-    }
-    
-    setShowRecommendationList(true)
-  }
-
-  const handleHideRecommendationList = () => {
-    setShowRecommendationList(false)
+  const handleCloseRecommendationModal = () => {
+    setShowRecommendationModal(false)
+    // Recarregar dados quando fechar o modal
+    checkCurrentRecommendation()
+    loadRecommendationCount()
   }
 
   return (
-    <div className="relative">
+    <>
       <Button
-        ref={buttonRef}
         variant={variant}
         size={size}
-        onClick={showListOnClick ? handleShowRecommendationList : handleRecommendation}
+        onClick={handleShowRecommendationModal}
         disabled={isLoading || user?.id === userId}
         className={`${className} ${isRecommended ? 'bg-green-500 hover:bg-green-600 text-white' : ''}`}
       >
@@ -148,14 +119,12 @@ export function RecommendationButton({
         )}
       </Button>
 
-      {showRecommendationList && (
-        <RecommendationList
-          userId={userId}
-          isOpen={showRecommendationList}
-          position={buttonPosition}
-          onClose={handleHideRecommendationList}
-        />
-      )}
-    </div>
+      <RecommendationModal
+        userId={userId}
+        userName={userName}
+        isOpen={showRecommendationModal}
+        onClose={handleCloseRecommendationModal}
+      />
+    </>
   )
 }

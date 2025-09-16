@@ -101,7 +101,7 @@ export function EstadoSearch({
             {!loading && filteredEstados.length === 0 && searchTerm && (
               <CommandEmpty className="py-6 text-center">
                 <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                Nenhum estado encontrado para "{searchTerm}"
+                Nenhum estado encontrado para &quot;{searchTerm}&quot;
               </CommandEmpty>
             )}
             {!loading && filteredEstados.length > 0 && (
@@ -231,7 +231,7 @@ export function CidadeSearch({
             {!loading && filteredCidades.length === 0 && searchTerm && (
               <CommandEmpty className="py-6 text-center">
                 <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                Nenhuma cidade encontrada para "{searchTerm}"
+                Nenhuma cidade encontrada para &quot;{searchTerm}&quot;
               </CommandEmpty>
             )}
             {!loading && filteredCidades.length > 0 && (

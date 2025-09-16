@@ -59,14 +59,34 @@ export const useAvailability = () => {
         loading: false
       }))
 
-      // Mostrar mensagem de feedback
+      // Mostrar mensagem de feedback com tema brutalista
       if (newAvailability) {
-        toast.success('DISPONÍVEL PARA ORÇAMENTOS!', {
-          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes'
+        toast.success('🎯 DISPONÍVEL PARA ORÇAMENTOS!', {
+          description: 'AGORA VOCÊ ESTÁ DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS DE CLIENTES',
+          style: {
+            background: '#10B981',
+            color: '#FFFFFF',
+            border: '4px solid #000000',
+            borderRadius: '0px',
+            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            fontSize: '16px'
+          }
         })
       } else {
-        toast.info('INDISPONÍVEL', {
-          description: 'Você não está mais disponível para receber orçamentos e ofertas'
+        toast.info('🚫 INDISPONÍVEL', {
+          description: 'VOCÊ NÃO ESTÁ MAIS DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS',
+          style: {
+            background: '#EF4444',
+            color: '#FFFFFF',
+            border: '4px solid #000000',
+            borderRadius: '0px',
+            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            fontSize: '16px'
+          }
         })
       }
 
@@ -79,9 +99,19 @@ export const useAvailability = () => {
         error: error instanceof Error ? error.message : 'Erro ao atualizar disponibilidade'
       }))
       
-      // Mostrar erro
-      toast.error('ERRO AO ALTERAR DISPONIBILIDADE', {
-        description: 'Tente novamente em alguns instantes'
+      // Mostrar erro com tema brutalista
+      toast.error('❌ ERRO AO ALTERAR DISPONIBILIDADE', {
+        description: 'TENTE NOVAMENTE EM ALGUNS INSTANTES',
+        style: {
+          background: '#DC2626',
+          color: '#FFFFFF',
+          border: '4px solid #000000',
+          borderRadius: '0px',
+          boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+          fontWeight: '900',
+          textTransform: 'uppercase',
+          fontSize: '16px'
+        }
       })
       
       return null
@@ -115,14 +145,34 @@ export const useAvailability = () => {
         loading: false
       }))
 
-      // Mostrar mensagem de feedback
+      // Mostrar mensagem de feedback com tema brutalista
       if (available) {
-        toast.success('DISPONÍVEL PARA ORÇAMENTOS!', {
-          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes'
+        toast.success('🎯 DISPONÍVEL PARA ORÇAMENTOS!', {
+          description: 'AGORA VOCÊ ESTÁ DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS DE CLIENTES',
+          style: {
+            background: '#10B981',
+            color: '#FFFFFF',
+            border: '4px solid #000000',
+            borderRadius: '0px',
+            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            fontSize: '16px'
+          }
         })
       } else {
-        toast.info('INDISPONÍVEL', {
-          description: 'Você não está mais disponível para receber orçamentos e ofertas'
+        toast.info('🚫 INDISPONÍVEL', {
+          description: 'VOCÊ NÃO ESTÁ MAIS DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS',
+          style: {
+            background: '#EF4444',
+            color: '#FFFFFF',
+            border: '4px solid #000000',
+            borderRadius: '0px',
+            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+            fontWeight: '900',
+            textTransform: 'uppercase',
+            fontSize: '16px'
+          }
         })
       }
 
@@ -135,9 +185,19 @@ export const useAvailability = () => {
         error: error instanceof Error ? error.message : 'Erro ao definir disponibilidade'
       }))
       
-      // Mostrar erro
-      toast.error('ERRO AO ALTERAR DISPONIBILIDADE', {
-        description: 'Tente novamente em alguns instantes'
+      // Mostrar erro com tema brutalista
+      toast.error('❌ ERRO AO ALTERAR DISPONIBILIDADE', {
+        description: 'TENTE NOVAMENTE EM ALGUNS INSTANTES',
+        style: {
+          background: '#DC2626',
+          color: '#FFFFFF',
+          border: '4px solid #000000',
+          borderRadius: '0px',
+          boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
+          fontWeight: '900',
+          textTransform: 'uppercase',
+          fontSize: '16px'
+        }
       })
       
       return null
