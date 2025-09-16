@@ -19,6 +19,7 @@ export interface ContactAgreement {
   status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled'
   proposed_by: string
   contacts_revealed_at?: string
+  review_available_at?: string
   notes?: string
   created_at: string
   updated_at: string
@@ -45,6 +46,80 @@ export function useContactAgreements() {
   const { createAgreementNotification } = useMessages()
   const [agreements, setAgreements] = useState<ContactAgreement[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  // Criar notificação quando avaliação ficar disponível
+  const createReviewAvailableNotification = useCallback(async (agreement: ContactAgreement) => {
+    if (!profile?.id) return
+
+    try {
+      // Determinar quem recebe a notificação (ambos os usuários)
+      const clientId = agreement.client_id
+      const professionalId = agreement.professional_id
+
+      const clientName = agreement.client_name || 'Cliente'
+      const professionalName = agreement.professional_name || 'Profissional'
+
+      // Notificação para o cliente
+      await createAgreementNotification({
+        ...agreement,
+        client: { full_name: clientName },
+        professional: { full_name: professionalName }
+      }, 'review_available')
+
+      // Notificação para o profissional
+      await createAgreementNotification({
+        ...agreement,
+        client: { full_name: clientName },
+        professional: { full_name: professionalName }
+      }, 'review_available')
+
+      console.log('📨 Notificações de avaliação disponível enviadas')
+    } catch (error) {
+      console.error('Erro ao criar notificação de avaliação disponível:', error)
+    }
+  }, [profile?.id, createAgreementNotification])
+
+  // Verificar se pode avaliar outro usuário (após acordo aceito + 20h)
+  const canReviewUser = useCallback(async (otherUserId: string): Promise<{
+    canReview: boolean
+    timeRemaining?: number
+    agreement?: ContactAgreement
+  }> => {
+    if (!profile?.id) {
+      return { canReview: false }
+    }
+
+    try {
+      const { data: agreement, error } = await supabase
+        .from('contact_agreements')
+        .select('*')
+        .or(`and(client_id.eq.${profile.id},professional_id.eq.${otherUserId}),and(client_id.eq.${otherUserId},professional_id.eq.${profile.id})`)
+        .eq('status', 'accepted')
+        .single()
+
+      if (error || !agreement) {
+        return { canReview: false }
+      }
+
+      // Verificar se já passou o tempo necessário
+      if (!agreement.review_available_at) {
+        return { canReview: false }
+      }
+
+      const now = new Date()
+      const reviewAvailableAt = new Date(agreement.review_available_at)
+      
+      if (now >= reviewAvailableAt) {
+        return { canReview: true, agreement }
+      } else {
+        const timeRemaining = Math.ceil((reviewAvailableAt.getTime() - now.getTime()) / (1000 * 60 * 60)) // horas
+        return { canReview: false, timeRemaining, agreement }
+      }
+    } catch (error) {
+      console.error('Erro ao verificar se pode avaliar:', error)
+      return { canReview: false }
+    }
+  }, [profile?.id])
 
   // Verificar se existe acordo aceito entre dois usuários (para avaliações)
   const hasAcceptedAgreement = useCallback(async (otherUserId: string): Promise<boolean> => {
@@ -112,6 +187,12 @@ export function useContactAgreements() {
       throw new Error('Usuário não autenticado')
     }
 
+    console.log('🚀 Criando proposta de acordo:', {
+      agreementData,
+      profileId: profile.id,
+      timestamp: new Date().toISOString()
+    })
+
     try {
       const { data, error } = await supabase.rpc('create_contact_agreement', {
         p_client_id: agreementData.client_id,
@@ -126,10 +207,14 @@ export function useContactAgreements() {
         p_notes: agreementData.notes || null
       })
 
+      console.log('📤 Resposta da função RPC:', { data, error })
+
       if (error) {
-        console.error('Erro ao criar acordo:', error)
-        throw new Error('Erro ao criar proposta de acordo')
+        console.error('❌ Erro ao criar acordo:', error)
+        throw new Error(`Erro ao criar proposta de acordo: ${error.message}`)
       }
+
+      console.log('✅ Acordo criado com sucesso:', data)
 
       // Recarregar acordos
       await fetchAgreements()
@@ -148,12 +233,15 @@ export function useContactAgreements() {
           updated_at: new Date().toISOString(),
           currency: 'BRL'
         }
+        
+        console.log('📨 Criando notificação para acordo:', agreement)
         await createAgreementNotification(agreement, 'proposal')
+        console.log('✅ Notificação criada com sucesso')
       }
 
       return data
     } catch (error) {
-      console.error('Erro ao criar acordo:', error)
+      console.error('❌ Erro completo ao criar acordo:', error)
       throw error
     }
   }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
@@ -166,11 +254,15 @@ export function useContactAgreements() {
 
     try {
       // Atualizar status do acordo
+      const reviewAvailableAt = new Date()
+      reviewAvailableAt.setHours(reviewAvailableAt.getHours() + 20) // 20 horas após aceitar
+      
       const { error: updateError } = await supabase
         .from('contact_agreements')
         .update({ 
           status: 'accepted',
-          contacts_revealed_at: new Date().toISOString()
+          contacts_revealed_at: new Date().toISOString(),
+          review_available_at: reviewAvailableAt.toISOString()
         })
         .eq('id', agreementId)
 
@@ -314,6 +406,8 @@ export function useContactAgreements() {
     agreements,
     isLoading,
     hasAcceptedAgreement,
+    canReviewUser,
+    createReviewAvailableNotification,
     fetchAgreements,
     createAgreement,
     acceptAgreement,

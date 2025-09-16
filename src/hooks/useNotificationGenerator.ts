@@ -10,13 +10,8 @@ export const useNotificationGenerator = () => {
       title: 'Nova mensagem recebida',
       message: `${senderName} enviou uma nova mensagem`,
       type: 'message',
-      category: 'messages',
       action_url: `/mensagens?conversa=${conversationId}`,
-      action_label: 'Responder',
-      metadata: {
-        sender: senderName,
-        conversation_id: conversationId
-      }
+      priority: 'normal'
     });
   };
 
@@ -27,14 +22,8 @@ export const useNotificationGenerator = () => {
       title: 'Nova avaliação recebida',
       message: `${reviewerName} avaliou seu serviço com ${rating} estrelas`,
       type: 'review',
-      category: 'reviews',
       action_url: `/avaliacoes/${reviewId}`,
-      action_label: 'Ver avaliação',
-      metadata: {
-        reviewer: reviewerName,
-        rating: rating,
-        review_id: reviewId
-      }
+      priority: 'normal'
     });
   };
 
@@ -45,13 +34,7 @@ export const useNotificationGenerator = () => {
       title: 'Novo agendamento',
       message: `${clientName} agendou ${serviceName}`,
       type: 'booking',
-      category: 'bookings',
-      action_label: 'Ver agendamento',
-      metadata: {
-        client: clientName,
-        service: serviceName,
-        booking_id: bookingId
-      }
+      priority: 'normal'
     });
   };
 
@@ -61,13 +44,7 @@ export const useNotificationGenerator = () => {
       title: 'Agendamento confirmado',
       message: `${professionalName} confirmou seu agendamento para ${serviceName}`,
       type: 'success',
-      category: 'bookings',
-      action_label: 'Ver detalhes',
-      metadata: {
-        professional: professionalName,
-        service: serviceName,
-        booking_id: bookingId
-      }
+      priority: 'normal'
     });
   };
 
@@ -77,13 +54,7 @@ export const useNotificationGenerator = () => {
       title: 'Agendamento cancelado',
       message: `${professionalName} cancelou o agendamento para ${serviceName}`,
       type: 'warning',
-      category: 'bookings',
-      action_label: 'Ver detalhes',
-      metadata: {
-        professional: professionalName,
-        service: serviceName,
-        booking_id: bookingId
-      }
+      priority: 'high'
     });
   };
 
@@ -94,13 +65,8 @@ export const useNotificationGenerator = () => {
       title: 'Verificação solicitada',
       message: `Sua verificação de ${documentType} foi enviada para análise`,
       type: 'verification',
-      category: 'verifications',
       action_url: '/verificacao',
-      action_label: 'Acompanhar status',
-      metadata: {
-        document_type: documentType,
-        status: 'pending'
-      }
+      priority: 'normal'
     });
   };
 
@@ -110,13 +76,8 @@ export const useNotificationGenerator = () => {
       title: 'Verificação aprovada!',
       message: `Sua verificação de ${documentType} foi aprovada com sucesso`,
       type: 'success',
-      category: 'verifications',
       action_url: '/verificacao',
-      action_label: 'Ver perfil',
-      metadata: {
-        document_type: documentType,
-        status: 'approved'
-      }
+      priority: 'normal'
     });
   };
 
@@ -126,14 +87,8 @@ export const useNotificationGenerator = () => {
       title: 'Verificação rejeitada',
       message: `Sua verificação de ${documentType} foi rejeitada: ${reason}`,
       type: 'error',
-      category: 'verifications',
       action_url: '/verificacao',
-      action_label: 'Corrigir',
-      metadata: {
-        document_type: documentType,
-        status: 'rejected',
-        reason: reason
-      }
+      priority: 'high'
     });
   };
 
@@ -144,14 +99,8 @@ export const useNotificationGenerator = () => {
       title: '🏆 Nova conquista desbloqueada!',
       message: `${achievementName}: ${description}`,
       type: 'achievement',
-      category: 'achievements',
       action_url: `/conquistas/${achievementId}`,
-      action_label: 'Ver conquista',
-      metadata: {
-        achievement_name: achievementName,
-        description: description,
-        achievement_id: achievementId
-      }
+      priority: 'normal'
     });
   };
 
@@ -162,7 +111,7 @@ export const useNotificationGenerator = () => {
       title: title,
       message: message,
       type: 'info',
-      category: 'system'
+      priority: 'normal'
     });
   };
 
@@ -172,13 +121,8 @@ export const useNotificationGenerator = () => {
       title: '🎉 Bem-vindo ao ConfiLar!',
       message: `Olá ${userName}! Estamos felizes em tê-lo conosco. Complete seu perfil para começar.`,
       type: 'success',
-      category: 'system',
       action_url: '/perfil',
-      action_label: 'Completar perfil',
-      metadata: {
-        welcome: true,
-        user_name: userName
-      }
+      priority: 'normal'
     });
   };
 
@@ -188,12 +132,8 @@ export const useNotificationGenerator = () => {
       title: 'Perfil atualizado!',
       message: `Seu perfil está ${completionPercentage}% completo. Continue para melhorar sua visibilidade!`,
       type: 'success',
-      category: 'system',
       action_url: '/perfil',
-      action_label: 'Ver perfil',
-      metadata: {
-        profile_completion: completionPercentage
-      }
+      priority: 'normal'
     });
   };
 
@@ -204,12 +144,8 @@ export const useNotificationGenerator = () => {
       title: `🔒 ${title}`,
       message: message,
       type: 'warning',
-      category: 'system',
       action_url: '/perfil',
-      action_label: 'Verificar',
-      metadata: {
-        security_alert: true
-      }
+      priority: 'urgent'
     });
   };
 
@@ -220,12 +156,8 @@ export const useNotificationGenerator = () => {
       title: title,
       message: message,
       type: 'info',
-      category: 'marketing',
       action_url: actionUrl,
-      action_label: actionUrl ? 'Ver oferta' : undefined,
-      metadata: {
-        promotion: true
-      }
+      priority: 'normal'
     });
   };
 

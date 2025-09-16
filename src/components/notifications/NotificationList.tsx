@@ -163,18 +163,18 @@ export const NotificationList: React.FC = () => {
   const filteredNotifications = notifications.filter(notification => {
     if (filter === 'unread' && notification.is_read) return false;
     if (filter === 'read' && !notification.is_read) return false;
-    if (category !== 'all' && notification.category !== category) return false;
+    if (category !== 'all' && (notification as any).category !== category) return false;
     return true;
   });
 
   const categories = [
     { value: 'all', label: 'Todas', count: notifications.length },
-    { value: 'messages', label: 'Mensagens', count: notifications.filter(n => n.category === 'messages').length },
-    { value: 'reviews', label: 'Avaliações', count: notifications.filter(n => n.category === 'reviews').length },
-    { value: 'bookings', label: 'Agendamentos', count: notifications.filter(n => n.category === 'bookings').length },
-    { value: 'verifications', label: 'Verificações', count: notifications.filter(n => n.category === 'verifications').length },
-    { value: 'achievements', label: 'Conquistas', count: notifications.filter(n => n.category === 'achievements').length },
-    { value: 'system', label: 'Sistema', count: notifications.filter(n => n.category === 'system').length },
+    { value: 'messages', label: 'Mensagens', count: notifications.filter(n => (n as any).category === 'messages').length },
+    { value: 'reviews', label: 'Avaliações', count: notifications.filter(n => (n as any).category === 'reviews').length },
+    { value: 'bookings', label: 'Agendamentos', count: notifications.filter(n => (n as any).category === 'bookings').length },
+    { value: 'verifications', label: 'Verificações', count: notifications.filter(n => (n as any).category === 'verifications').length },
+    { value: 'achievements', label: 'Conquistas', count: notifications.filter(n => (n as any).category === 'achievements').length },
+    { value: 'system', label: 'Sistema', count: notifications.filter(n => (n as any).category === 'system').length },
   ];
 
   if (notifications.length === 0) {
@@ -317,9 +317,9 @@ export const NotificationList: React.FC = () => {
                       </p>
                       
                       {/* Metadados */}
-                      {notification.metadata && Object.keys(notification.metadata).length > 0 && (
+                      {(notification as any).metadata && Object.keys((notification as any).metadata).length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {Object.entries(notification.metadata).map(([key, value]) => (
+                          {Object.entries((notification as any).metadata).map(([key, value]) => (
                             <Badge key={key} variant="outline" className="text-xs">
                               {key}: {String(value)}
                             </Badge>
@@ -355,7 +355,7 @@ export const NotificationList: React.FC = () => {
                         onClick={() => window.open(notification.action_url, '_blank')}
                         className="h-7 px-2 text-xs"
                       >
-                        {notification.action_label || 'Ver detalhes'}
+                        {(notification as any).action_label || 'Ver detalhes'}
                       </Button>
                     )}
 

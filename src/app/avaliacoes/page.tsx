@@ -8,9 +8,13 @@ import { Star, Search, Plus, RefreshCw, Info, Handshake, Clock, CheckCircle } fr
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useSupabaseReviews, ReviewWithProfiles, ReviewStats as ReviewStatsType } from '@/hooks/useSupabaseReviews'
+import { useContactAgreements } from '@/hooks/useContactAgreements'
+import { useReviewNotificationMonitor } from '@/hooks/useReviewNotificationMonitor'
+import { supabase } from '@/lib/supabase'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { ReviewStats } from '@/components/reviews/ReviewStats'
 import { ReviewForm } from '@/components/reviews/ReviewForm'
+import { TimeCounter } from '@/components/ui/TimeCounter'
 import { toast } from 'sonner'
 
 export default function AvaliacoesPage() {
@@ -36,7 +40,86 @@ export default function AvaliacoesPage() {
     respondToReview
   } = useSupabaseReviews()
 
+  const { canReviewUser } = useContactAgreements()
+
+  // Monitorar notificações de avaliação disponível
+  useReviewNotificationMonitor()
+
   const [stats, setStats] = useState<ReviewStatsType | null>(null)
+  const [reviewableUsers, setReviewableUsers] = useState<Array<{
+    id: string
+    name: string
+    avatar?: string
+    timeRemaining?: number
+    reviewAvailableAt?: string
+    agreement?: any
+    canReview?: boolean
+  }>>([])
+
+  const loadReviewableUsers = useCallback(async () => {
+    if (!currentUser?.id) return
+
+    try {
+      // Buscar usuários com quem há acordos aceitos
+      const { data: agreements, error } = await supabase
+        .from('contact_agreements')
+        .select(`
+          *,
+          client:profiles!client_id(id, full_name, avatar_url),
+          professional:profiles!professional_id(id, full_name, avatar_url)
+        `)
+        .or(`client_id.eq.${currentUser.id},professional_id.eq.${currentUser.id}`)
+        .eq('status', 'accepted')
+
+      if (error) {
+        console.error('Erro ao carregar acordos:', error)
+        return
+      }
+
+      const users: Array<{
+        id: string
+        name: string
+        avatar?: string
+        timeRemaining?: number
+        reviewAvailableAt?: string
+        agreement?: any
+        canReview?: boolean
+      }> = []
+
+      for (const agreement of agreements || []) {
+        const otherUserId = agreement.client_id === currentUser.id 
+          ? agreement.professional_id 
+          : agreement.client_id
+        
+        const otherUser = agreement.client_id === currentUser.id 
+          ? agreement.professional 
+          : agreement.client
+
+        if (otherUser) {
+          const reviewStatus = await canReviewUser(otherUserId)
+          
+          users.push({
+            id: otherUserId,
+            name: otherUser.full_name || 'Usuário',
+            avatar: otherUser.avatar_url,
+            timeRemaining: reviewStatus.timeRemaining,
+            reviewAvailableAt: reviewStatus.agreement?.review_available_at,
+            agreement: reviewStatus.agreement,
+            canReview: reviewStatus.canReview
+          })
+        }
+      }
+
+      setReviewableUsers(users)
+    } catch (error) {
+      console.error('Erro ao carregar usuários avaliáveis:', error)
+    }
+  }, [currentUser?.id, canReviewUser])
+
+  // Função para recarregar usuários quando o tempo expirar
+  const handleTimeExpired = useCallback(() => {
+    loadReviewableUsers()
+  }, [loadReviewableUsers])
 
   const loadReviews = useCallback(async () => {
     if (!currentUser?.id) return
@@ -72,6 +155,7 @@ export default function AvaliacoesPage() {
     if (currentUser?.id && mounted) {
       loadReviews()
       loadStats()
+      loadReviewableUsers()
     }
   }, [currentUser?.id, mounted]) // Removendo loadReviews e loadStats das dependências
 
@@ -253,7 +337,7 @@ export default function AvaliacoesPage() {
                   <h3 className="font-black text-black uppercase">AVALIE APÓS O SERVIÇO</h3>
                 </div>
                 <p className="text-sm text-black font-bold mb-3">
-                  APÓS 1 DIA DO ACORDO ACEITO, AMBOS PODEM AVALIAR A EXPERIÊNCIA.
+                  APÓS 20 HORAS DO ACORDO ACEITO, AMBOS PODEM AVALIAR A EXPERIÊNCIA.
                 </p>
                 <div className="flex items-center gap-2 text-xs text-black font-black">
                   <CheckCircle className="w-4 h-4" />
@@ -271,7 +355,7 @@ export default function AvaliacoesPage() {
                   </h4>
                   <ul className="text-sm text-white font-bold space-y-1">
                     <li>• VOCÊ SÓ PODE AVALIAR USUÁRIOS COM QUEM TEVE UM ACORDO ACEITO</li>
-                    <li>• É NECESSÁRIO AGUARDAR 1 DIA APÓS O ACORDO PARA PODER AVALIAR</li>
+                    <li>• É NECESSÁRIO AGUARDAR 20 HORAS APÓS O ACORDO PARA PODER AVALIAR</li>
                     <li>• CADA USUÁRIO PODE AVALIAR O OUTRO APENAS UMA VEZ POR ACORDO</li>
                     <li>• AS AVALIAÇÕES AJUDAM A CONSTRUIR CONFIANÇA NA PLATAFORMA</li>
                     <li>• OS DADOS DE CONTATO SÃO SEMPRE VISÍVEIS</li>
@@ -281,6 +365,100 @@ export default function AvaliacoesPage() {
             </div>
           </div>
         </div>
+
+        {/* Seção de Usuários que Podem ser Avaliados */}
+        {reviewableUsers.length > 0 && (
+          <div className="mb-8 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="bg-green-500 border-b-4 border-black p-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-6 w-6 text-white" />
+                <h2 className="text-xl font-black text-white uppercase">USUÁRIOS DISPONÍVEIS PARA AVALIAÇÃO</h2>
+              </div>
+              <p className="text-white font-bold mt-2">
+                Estes usuários têm acordos aceitos com você e podem ser avaliados:
+              </p>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid gap-4">
+                {reviewableUsers.map((user) => (
+                  <div key={user.id} className="bg-gray-100 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Foto do usuário */}
+                      <div className="w-16 h-16 bg-yellow-400 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-full flex items-center justify-center flex-shrink-0">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                          <span className="text-black font-black text-xl">
+                            {user.name.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Informações do usuário */}
+                      <div className="flex-1">
+                        <h3 className="font-black text-black text-lg">{user.name}</h3>
+                        <p className="text-black font-bold text-sm">
+                          Acordo aceito - {user.agreement?.service_description || 'Serviço'}
+                        </p>
+                      </div>
+                      
+                      {/* Contador de tempo ou botão de avaliar */}
+                      <div className="flex-shrink-0">
+                        {user.reviewAvailableAt ? (
+                          <TimeCounter
+                            targetDate={user.reviewAvailableAt}
+                            onExpired={handleTimeExpired}
+                            onReviewClick={() => {
+                              if (user.canReview) {
+                                setSelectedUser(user)
+                                setShowCreateForm(true)
+                              } else {
+                                toast.error('Aguarde o tempo necessário para poder avaliar este usuário.')
+                              }
+                            }}
+                            className="min-w-[160px]"
+                          />
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="bg-green-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] p-3 min-w-[160px]">
+                              <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle className="h-4 w-4 text-white" />
+                                <span className="font-black text-white text-sm">DISPONÍVEL</span>
+                              </div>
+                              <p className="text-white font-bold text-lg">
+                                Pode avaliar agora!
+                              </p>
+                            </div>
+                            <Button
+                              onClick={() => {
+                                if (user.canReview) {
+                                  setSelectedUser(user)
+                                  setShowCreateForm(true)
+                                } else {
+                                  toast.error('Aguarde o tempo necessário para poder avaliar este usuário.')
+                                }
+                              }}
+                              disabled={!user.canReview}
+                              className={`border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black w-full ${
+                                user.canReview 
+                                  ? 'bg-green-500 text-white hover:bg-green-600' 
+                                  : 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                              }`}
+                            >
+                              <Star className="h-4 w-4 mr-2" />
+                              AVALIAR AGORA
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Estatísticas */}
         {stats && (

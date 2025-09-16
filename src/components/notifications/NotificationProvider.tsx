@@ -11,11 +11,9 @@ export interface Notification {
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error' | 'message' | 'review' | 'booking' | 'verification' | 'achievement' | 'system';
-  category: 'messages' | 'reviews' | 'bookings' | 'verifications' | 'achievements' | 'system' | 'marketing';
   is_read: boolean;
   action_url?: string;
-  action_label?: string;
-  metadata?: Record<string, unknown>;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
   timestamp: Date;
   created_at: Date;
 }
@@ -76,7 +74,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         ...n,
         timestamp: new Date(n.created_at),
         created_at: new Date(n.created_at),
-        is_read: n.is_read || false
+        is_read: n.is_read || false,
+        priority: n.priority || 'normal'
       }));
 
       setNotifications(formattedNotifications);
@@ -153,12 +152,17 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Mostrar toast baseado no tipo de notificação
   const showNotificationToast = (notification: Notification) => {
+    // Não exibir toast para notificações de mensagem - apenas no sino
+    if (notification.type === 'message') {
+      return;
+    }
+
     switch (notification.type) {
       case 'success':
         toast.success(notification.message, {
           description: notification.title,
           action: notification.action_url ? {
-            label: notification.action_label || 'Ver',
+            label: 'Ver',
             onClick: () => window.open(notification.action_url, '_blank')
           } : undefined
         });
@@ -171,15 +175,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       case 'warning':
         toast.warning(notification.message, {
           description: notification.title,
-        });
-        break;
-      case 'message':
-        toast.info(notification.message, {
-          description: notification.title,
-          action: notification.action_url ? {
-            label: 'Responder',
-            onClick: () => window.open(notification.action_url, '_blank')
-          } : undefined
         });
         break;
       case 'review':
@@ -261,11 +256,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           title: notification.title,
           message: notification.message,
           type: notification.type,
-          category: notification.category,
           is_read: false,
           action_url: notification.action_url,
-          action_label: notification.action_label,
-          metadata: notification.metadata
+          priority: 'normal'
         })
         .select()
         .single();

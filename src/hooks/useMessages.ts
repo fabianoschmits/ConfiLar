@@ -197,15 +197,8 @@ export function useMessages() {
         title: `Nova mensagem de ${senderName}`,
         message: messagePreview,
         type: 'message',
-        category: 'messages',
         action_url: `/mensagens?conversation=${conversation.id}`,
-        action_label: 'Responder',
-        metadata: {
-          conversation_id: conversation.id,
-          message_id: message.id,
-          sender_id: message.sender_id,
-          sender_name: senderName
-        }
+        priority: 'normal'
       })
     } catch (error) {
       console.error('❌ Erro ao criar notificação de mensagem:', error)
@@ -213,7 +206,7 @@ export function useMessages() {
   }, [user?.id, addNotification])
 
   // Criar notificação para acordo
-  const createAgreementNotification = useCallback(async (agreement: any, type: 'proposal' | 'accepted' | 'rejected') => {
+  const createAgreementNotification = useCallback(async (agreement: any, type: 'proposal' | 'accepted' | 'rejected' | 'review_available') => {
     if (!user?.id) return
 
     try {
@@ -237,26 +230,90 @@ export function useMessages() {
           message = `${agreement.client?.full_name || 'Cliente'} rejeitou sua proposta de acordo`
           notificationType = 'warning'
           break
+        case 'review_available':
+          title = 'Avaliação disponível!'
+          message = `Você já pode avaliar ${agreement.client?.full_name || 'Cliente'} após o acordo aceito`
+          notificationType = 'review'
+          break
       }
 
+      // Determinar o destinatário da notificação
+      let recipientId: string
+      
+      if (type === 'proposal') {
+        // Para proposta: enviar para quem NÃO fez a proposta
+        // Se quem propôs é o cliente, enviar para o profissional
+        // Se quem propôs é o profissional, enviar para o cliente
+        recipientId = agreement.proposed_by === agreement.client_id 
+          ? agreement.professional_id 
+          : agreement.client_id
+      } else if (type === 'accepted') {
+        // Para aceito: enviar para quem fez a proposta
+        recipientId = agreement.proposed_by
+      } else if (type === 'review_available') {
+        // Para avaliação disponível: enviar para ambos os usuários
+        // Esta função será chamada duas vezes (uma para cada usuário)
+        recipientId = user.id === agreement.client_id ? agreement.professional_id : agreement.client_id
+      } else {
+        // Para rejeitado: enviar para quem fez a proposta
+        recipientId = agreement.proposed_by
+      }
+
+      console.log('📤 Enviando notificação:', {
+        type,
+        recipientId,
+        proposedBy: agreement.proposed_by,
+        clientId: agreement.client_id,
+        professionalId: agreement.professional_id,
+        title,
+        message
+      })
+
       await addNotification({
-        user_id: type === 'proposal' ? agreement.client_id : agreement.professional_id,
+        user_id: recipientId,
         title,
         message,
         type: notificationType,
-        category: 'messages',
         action_url: `/mensagens?conversation=${agreement.conversation_id}`,
-        action_label: 'Ver Acordo',
-        metadata: {
-          agreement_id: agreement.id,
-          conversation_id: agreement.conversation_id,
-          agreement_type: type
-        }
+        priority: 'normal'
       })
     } catch (error) {
       console.error('❌ Erro ao criar notificação de acordo:', error)
     }
   }, [user?.id, addNotification])
+
+  // Função para enviar notificação automática de nova conversa
+  const sendNewConversationNotification = useCallback(async (conversation: Conversation) => {
+    if (!user?.id) return
+
+    try {
+      // Determinar quem recebe a notificação (quem não iniciou a conversa)
+      const recipientId = user.id === conversation.client_id 
+        ? conversation.professional_id 
+        : conversation.client_id
+
+      const recipientName = user.id === conversation.client_id 
+        ? conversation.professional?.full_name || 'Profissional'
+        : conversation.client?.full_name || 'Cliente'
+
+      const senderName = conversation.client_id === user.id 
+        ? conversation.client?.full_name || 'Usuário'
+        : conversation.professional?.full_name || 'Usuário'
+
+      await addNotification({
+        user_id: recipientId,
+        title: 'Nova conversa iniciada',
+        message: `${senderName} iniciou uma conversa com você. Clique para responder!`,
+        type: 'message',
+        action_url: `/mensagens?conversation=${conversation.id}`,
+        priority: 'normal'
+      })
+
+      console.log('📨 Notificação de nova conversa enviada para:', recipientName)
+    } catch (error) {
+      console.error('Erro ao enviar notificação de nova conversa:', error)
+    }
+  }, [user, addNotification])
 
   // Enviar mensagem
   const sendMessage = useCallback(async (conversationId: string, content: string) => {
@@ -639,6 +696,7 @@ export function useMessages() {
     deleteMessage,
     editMessage,
     getTotalUnreadCount,
-    createAgreementNotification
+    createAgreementNotification,
+    sendNewConversationNotification
   }
 }

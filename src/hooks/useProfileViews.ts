@@ -207,7 +207,7 @@ export function useProfileViews() {
     if (!profileId || !user?.id) return
 
     // Não registrar visualização do próprio perfil
-    if (profileId === user.id) return
+    if (profileId === user?.id) return
 
     // Registrar visualização com delay para evitar spam
     const timer = setTimeout(() => {
@@ -215,7 +215,7 @@ export function useProfileViews() {
     }, 2000) // 2 segundos de delay
 
     return () => clearTimeout(timer)
-  }, [recordView, user.id])
+  }, [recordView, user?.id])
 
   return {
     loading,

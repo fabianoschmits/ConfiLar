@@ -10,10 +10,9 @@ export const useNotificationService = () => {
       title: 'Nova Mensagem',
       message: `${senderName}: ${messagePreview}`,
       type: 'info',
-      category: 'messages',
       user_id: profile?.id || '',
-      action_label: 'Ver Mensagem',
-      action_url: '/mensagens'
+      action_url: '/mensagens',
+      priority: 'normal'
     });
   };
 
@@ -23,10 +22,9 @@ export const useNotificationService = () => {
       title: 'Nova Avaliação',
       message: `${emoji} ${reviewerName} avaliou seu serviço "${serviceName}" com ${rating}/5 estrelas`,
       type: 'success',
-      category: 'reviews',
       user_id: profile?.id || '',
-      action_label: 'Ver Avaliação',
-      action_url: '/avaliacoes'
+      action_url: '/avaliacoes',
+      priority: 'normal'
     });
   };
 
@@ -35,10 +33,9 @@ export const useNotificationService = () => {
       title: 'Nova Solicitação de Serviço',
       message: `${clientName} solicitou seus serviços de ${serviceType}`,
       type: 'info',
-      category: 'bookings',
       user_id: profile?.id || '',
-      action_label: 'Ver Solicitação',
-      action_url: '/dashboard'
+      action_url: '/dashboard',
+      priority: 'normal'
     });
   };
 
@@ -47,8 +44,8 @@ export const useNotificationService = () => {
       title: 'Perfil Atualizado',
       message: `Seu ${field} foi atualizado com sucesso!`,
       type: 'success',
-      category: 'system',
-      user_id: profile?.id || ''
+      user_id: profile?.id || '',
+      priority: 'normal'
     });
   };
 
@@ -57,8 +54,8 @@ export const useNotificationService = () => {
       title,
       message,
       type: 'info',
-      category: 'system',
-      user_id: profile?.id || ''
+      user_id: profile?.id || '',
+      priority: 'normal'
     });
   };
 
@@ -67,8 +64,8 @@ export const useNotificationService = () => {
       title,
       message,
       type: 'error',
-      category: 'system',
-      user_id: profile?.id || ''
+      user_id: profile?.id || '',
+      priority: 'high'
     });
   };
 
@@ -77,8 +74,8 @@ export const useNotificationService = () => {
       title,
       message,
       type: 'success',
-      category: 'system',
-      user_id: profile?.id || ''
+      user_id: profile?.id || '',
+      priority: 'normal'
     });
   };
 
@@ -87,8 +84,8 @@ export const useNotificationService = () => {
       title,
       message,
       type: 'warning',
-      category: 'system',
-      user_id: profile?.id || ''
+      user_id: profile?.id || '',
+      priority: 'high'
     });
   };
 
