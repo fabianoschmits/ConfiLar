@@ -339,14 +339,14 @@ export function useSupabaseReviews() {
         return false
       }
 
-      // 4. Verificar se o acordo foi aceito há pelo menos 1 dia
+      // 4. Verificar se o acordo foi aceito há pelo menos 20 horas
       const validAgreement = agreementData.find(agreement => {
         if (!agreement.contacts_revealed_at) return false
         
         const revealedDate = new Date(agreement.contacts_revealed_at)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000)
         
-        return revealedDate <= oneDayAgo
+        return revealedDate <= twentyHoursAgo
       })
 
       return !!validAgreement
@@ -354,6 +354,85 @@ export function useSupabaseReviews() {
     } catch (err) {
       console.error('Erro ao verificar se pode avaliar:', err)
       return false
+    }
+  }
+
+  // Buscar usuários que podem ser avaliados pelo usuário atual
+  const getEligibleUsersForReview = async (reviewerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('contact_agreements')
+        .select(`
+          id,
+          client_id,
+          professional_id,
+          contacts_revealed_at,
+          client:profiles!contact_agreements_client_id_fkey(
+            id, full_name, avatar_url, user_type
+          ),
+          professional:profiles!contact_agreements_professional_id_fkey(
+            id, full_name, avatar_url, user_type
+          )
+        `)
+        .or(`client_id.eq.${reviewerId},professional_id.eq.${reviewerId}`)
+        .eq('status', 'accepted')
+        .not('contacts_revealed_at', 'is', null)
+
+      if (error) throw error
+
+      // Filtrar usuários elegíveis (acordo aceito há pelo menos 20 horas)
+      const eligibleAgreements = data?.filter(agreement => {
+        if (!agreement.contacts_revealed_at) return false
+        
+        const revealedDate = new Date(agreement.contacts_revealed_at)
+        const twentyHoursAgo = new Date(Date.now() - 20 * 60 * 60 * 1000)
+        
+        return revealedDate <= twentyHoursAgo
+      }) || []
+
+      // Verificar quais usuários já foram avaliados
+      const reviewedUserIds = await Promise.all(
+        eligibleAgreements.map(async (agreement) => {
+          const otherUserId = agreement.client_id === reviewerId 
+            ? agreement.professional_id 
+            : agreement.client_id
+          
+          const { data: existingReview } = await supabase
+            .from('reviews')
+            .select('id')
+            .eq('reviewer_id', reviewerId)
+            .eq('reviewed_id', otherUserId)
+            .limit(1)
+          
+          return existingReview && existingReview.length > 0 ? otherUserId : null
+        })
+      )
+
+      // Retornar apenas usuários não avaliados
+      const eligibleUsers = eligibleAgreements
+        .map(agreement => {
+          const otherUser = agreement.client_id === reviewerId 
+            ? agreement.professional 
+            : agreement.client
+          
+          // Type assertion para resolver problema de tipagem
+          const user = otherUser as any
+          
+          return {
+            id: user?.id || '',
+            name: user?.full_name || 'Nome não disponível',
+            avatar: user?.avatar_url,
+            userType: user?.user_type || 'user',
+            agreementId: agreement.id,
+            contactsRevealedAt: agreement.contacts_revealed_at
+          }
+        })
+        .filter(user => user.id && !reviewedUserIds.includes(user.id))
+
+      return eligibleUsers
+    } catch (err) {
+      console.error('Erro ao buscar usuários elegíveis:', err)
+      return []
     }
   }
 
@@ -367,6 +446,7 @@ export function useSupabaseReviews() {
     updateReview,
     deleteReview,
     respondToReview,
-    canUserReview
+    canUserReview,
+    getEligibleUsersForReview
   }
 }

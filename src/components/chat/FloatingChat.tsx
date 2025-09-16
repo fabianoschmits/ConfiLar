@@ -14,7 +14,8 @@ import {
   CheckCheck,
   Clock,
   Edit3,
-  X as XIcon
+  X as XIcon,
+  Handshake
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
@@ -38,7 +39,8 @@ export function FloatingChat() {
     deleteConversation,
     deleteMessage,
     editMessage,
-    getTotalUnreadCount 
+    getTotalUnreadCount,
+    sendNewConversationNotification 
   } = useMessages()
   
   const [selectedConversation, setSelectedConversation] = useState<any>(null)
@@ -125,7 +127,17 @@ export function FloatingChat() {
 
     try {
       setSending(true)
+      
+      // Verificar se é a primeira mensagem da conversa
+      const isFirstMessage = messages.length === 0
+      
       await sendMessage(selectedConversation.id, newMessage.trim())
+      
+      // Se for a primeira mensagem, enviar notificação automática
+      if (isFirstMessage) {
+        await sendNewConversationNotification(selectedConversation)
+      }
+      
       setNewMessage('')
       // Não forçar scroll automático - deixar o usuário decidir
     } catch (error) {
@@ -352,6 +364,7 @@ export function FloatingChat() {
                             ? selectedConversation.professional.user_type as 'professional' | 'client'
                             : selectedConversation.client.user_type as 'professional' | 'client'}
                           onAgreementClick={() => setShowAgreementModal(true)}
+                          onProposeAgreement={() => setShowAgreementModal(true)}
                         />
                       </div>
                       <ConversationMenu
@@ -371,6 +384,20 @@ export function FloatingChat() {
                   {showAgreementModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                       <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="bg-yellow-400 border-b-4 border-black p-4">
+                          <div className="flex items-center gap-3">
+                            <Handshake className="h-6 w-6 text-black" />
+                            <h2 className="text-xl font-black text-black uppercase">
+                              PROPOR ACORDO DE SERVIÇO
+                            </h2>
+                          </div>
+                          <p className="text-black font-bold mt-2">
+                            Crie uma proposta de trabalho para {user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.full_name
+                              : selectedConversation.client.full_name}. 
+                            Após o acordo ser aceito, vocês poderão se avaliar após 20 horas.
+                          </p>
+                        </div>
                         <ContactAgreementChat
                           conversationId={selectedConversation.id}
                           otherUserId={user.id === selectedConversation.client_id 
@@ -382,15 +409,9 @@ export function FloatingChat() {
                           otherUserType={user.id === selectedConversation.client_id 
                             ? selectedConversation.professional.user_type as 'professional' | 'client'
                             : selectedConversation.client.user_type as 'professional' | 'client'}
+                          isInModal={true}
+                          onClose={() => setShowAgreementModal(false)}
                         />
-                        <div className="bg-gray-100 border-t-4 border-black p-4 flex justify-end">
-                          <Button 
-                            onClick={() => setShowAgreementModal(false)}
-                            className="bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                          >
-                            FECHAR
-                          </Button>
-                        </div>
                       </div>
                     </div>
                   )}

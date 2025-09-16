@@ -99,13 +99,8 @@ export const NotificationBell: React.FC = () => {
     // Fechar dropdown
     setIsOpen(false);
 
-    // Se for notificação de mensagem, abrir chat
-    if (notification.type === 'message' && notification.metadata?.sender_id) {
-      const senderId = notification.metadata.sender_id as string;
-      const senderName = (notification.metadata.sender_name as string) || 'Usuário';
-      openChat(senderId, senderName);
-    } else if (notification.action_url) {
-      // Para outros tipos de notificação, usar action_url
+    // Para notificações com action_url, abrir a URL
+    if (notification.action_url) {
       window.open(notification.action_url, '_blank');
     }
   };

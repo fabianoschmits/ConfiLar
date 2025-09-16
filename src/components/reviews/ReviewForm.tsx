@@ -10,10 +10,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Star, ThumbsUp, ThumbsDown, Calendar, CheckCircle } from 'lucide-react'
+import { Star, ThumbsUp, ThumbsDown, Calendar, CheckCircle, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSupabaseReviews, ReviewInsert } from '@/hooks/useSupabaseReviews'
 import { UserAvatar } from '@/components/ui/UserAvatar'
+import { useEffect } from 'react'
 
 const reviewSchema = z.object({
   rating: z.number().min(1, 'Selecione uma nota').max(5, 'Nota inválida'),
@@ -55,8 +56,10 @@ export function ReviewForm({
   const [proInput, setProInput] = useState('')
   const [conInput, setConInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [canReview, setCanReview] = useState(true)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
-  const { createReview } = useSupabaseReviews()
+  const { createReview, canUserReview } = useSupabaseReviews()
 
   const {
     register,
@@ -73,6 +76,28 @@ export function ReviewForm({
   })
 
   const watchedRating = watch('rating')
+
+  // Verificar se o usuário pode avaliar quando o componente é montado
+  useEffect(() => {
+    const checkCanReview = async () => {
+      if (!reviewerId || !reviewedId) return
+      
+      try {
+        const canReviewUser = await canUserReview(reviewerId, reviewedId)
+        setCanReview(canReviewUser)
+        
+        if (!canReviewUser) {
+          setValidationError('Você não pode avaliar este usuário. É necessário ter um acordo aceito há pelo menos 1 dia.')
+        }
+      } catch (error) {
+        console.error('Erro ao verificar se pode avaliar:', error)
+        setCanReview(false)
+        setValidationError('Erro ao verificar elegibilidade para avaliação.')
+      }
+    }
+
+    checkCanReview()
+  }, [reviewerId, reviewedId, canUserReview])
 
   const handleRatingClick = (selectedRating: number) => {
     setRating(selectedRating)
@@ -112,6 +137,23 @@ export function ReviewForm({
   const onSubmit = async (data: ReviewFormData) => {
     if (rating === 0) {
       toast.error('SELECIONE UMA NOTA PARA A AVALIAÇÃO')
+      return
+    }
+
+    if (!canReview) {
+      toast.error('VOCÊ NÃO PODE AVALIAR ESTE USUÁRIO')
+      return
+    }
+
+    // Verificar novamente antes de enviar
+    try {
+      const canReviewUser = await canUserReview(reviewerId, reviewedId)
+      if (!canReviewUser) {
+        toast.error('VOCÊ NÃO PODE AVALIAR ESTE USUÁRIO. VERIFIQUE SE HÁ UM ACORDO VÁLIDO.')
+        return
+      }
+    } catch (error) {
+      toast.error('ERRO AO VERIFICAR ELEGIBILIDADE PARA AVALIAÇÃO')
       return
     }
 
@@ -211,6 +253,23 @@ export function ReviewForm({
 
       {/* Conteúdo Brutalista */}
       <div className="p-6">
+        {/* Mensagem de erro de validação */}
+        {validationError && (
+          <div className="mb-6 bg-red-500 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-white mt-0.5" />
+              <div>
+                <h4 className="font-black text-white mb-1 uppercase">
+                  AVALIAÇÃO NÃO PERMITIDA
+                </h4>
+                <p className="text-sm text-white font-bold">
+                  {validationError}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Avaliação por Estrelas */}
           <div className="space-y-3">
@@ -381,7 +440,7 @@ export function ReviewForm({
             )}
             <Button 
               type="submit" 
-              disabled={isSubmitting || rating === 0}
+              disabled={isSubmitting || rating === 0 || !canReview}
               className="bg-black text-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'ENVIANDO...' : 'ENVIAR AVALIAÇÃO'}

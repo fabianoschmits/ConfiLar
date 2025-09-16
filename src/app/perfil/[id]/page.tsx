@@ -9,13 +9,12 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare, Eye, Image as ImageIcon, Calendar as CalendarIcon, DollarSign, Heart } from 'lucide-react'
+import { MapPin, Star, Award, Phone, Mail, User, Briefcase, MessageCircle, Copy, Clock, MapPinIcon, Building2, CheckCircle, ThumbsUp, MessageSquare, Eye, Image as ImageIcon, DollarSign, Heart, Calendar } from 'lucide-react'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { RecommendationSection } from '@/components/ui/RecommendationSection'
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -63,7 +62,6 @@ export default function PublicProfilePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [reviewStats, setReviewStats] = useState<ReviewStatsType | null>(null)
-    const [calendarDate, setCalendarDate] = useState<Date>(new Date())
     const [showContactInfo, setShowContactInfo] = useState(false)
     const [showReviewForm, setShowReviewForm] = useState(false)
     const [canReview, setCanReview] = useState(false)
@@ -83,7 +81,12 @@ export default function PublicProfilePage() {
     }, [userId])
 
     // Registrar visualização automaticamente
-    useAutoRecordView(userId)
+    useEffect(() => {
+        if (userId) {
+            const cleanup = useAutoRecordView(userId)
+            return cleanup
+        }
+    }, [userId, useAutoRecordView])
 
     // Buscar estatísticas de visualizações
     useEffect(() => {
@@ -340,7 +343,7 @@ export default function PublicProfilePage() {
                                 )}
 
                                 <div className="flex items-center gap-2">
-                                    <CalendarIcon className="w-5 h-5" />
+                                    <Calendar className="w-5 h-5" />
                                     <span className="font-black">MEMBRO DESDE {formatDate(profile.created_at)}</span>
                                 </div>
                             </div>
@@ -462,9 +465,7 @@ export default function PublicProfilePage() {
 
                     {/* Aba de Informações Brutalista */}
                     <TabsContent value="informacoes" className="space-y-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Coluna Esquerda - Informações Principais */}
-                            <div className="lg:col-span-2 space-y-6">
+                        <div className="w-full space-y-6">
                                 {/* Informações do Profissional */}
                                 {profile.user_type === 'professional' && (
                                     <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -643,55 +644,6 @@ export default function PublicProfilePage() {
                                         </div>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* Coluna Direita - Calendário Brutalista */}
-                            <div className="space-y-6">
-                                {/* Calendário de Disponibilidade Brutalista */}
-                                {profile.user_type === 'professional' && (
-                                    <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                                        <div className="p-6 border-b-4 border-black bg-black text-yellow-400">
-                                            <h3 className="flex items-center gap-2 text-xl font-black">
-                                                <CalendarIcon className="w-5 h-5" />
-                                                DISPONIBILIDADE
-                                            </h3>
-                                            <p className="text-sm font-black mt-2">
-                                                VISUALIZE OS HORÁRIOS DISPONÍVEIS
-                                            </p>
-                                        </div>
-                                        <div className="p-6">
-                                            <div className="space-y-4">
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            className="w-full justify-start text-left font-black bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-                                                        >
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {calendarDate ? format(calendarDate, "MMMM yyyy", { locale: ptBR }).toUpperCase() : "SELECIONE UMA DATA"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0 border-4 border-black" align="start">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={calendarDate}
-                                                            onSelect={setCalendarDate}
-                                                            locale={ptBR}
-                                                            className="rounded-md border-4 border-black"
-                                                            required
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                                
-                                                <div className="text-center p-4 bg-gray-100 border-2 border-black">
-                                                    <p className="text-sm font-black text-black">
-                                                        {profile.is_available ? 'PROFISSIONAL DISPONÍVEL PARA NOVOS TRABALHOS' : 'PROFISSIONAL INDISPONÍVEL NO MOMENTO'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </TabsContent>
 
@@ -761,7 +713,7 @@ export default function PublicProfilePage() {
                                                                     </div>
                                                                 )}
                                                                 <div className="flex items-center gap-1">
-                                                                    <CalendarIcon className="h-4 w-4" />
+                                                                    <Calendar className="h-4 w-4" />
                                                                     <span>{new Date(project.created_at).toLocaleDateString('pt-BR')}</span>
                                                                 </div>
                                                             </div>
