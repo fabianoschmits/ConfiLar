@@ -175,7 +175,7 @@ export default function ReauthenticationPage() {
             <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
               <span className="text-yellow-400 font-black text-lg">C</span>
             </div>
-            <span className="text-xl font-black text-black uppercase tracking-wider animate-fade-in">CONFILAR</span>
+            <span className="text-xl font-poetsen-one text-black uppercase tracking-wider animate-fade-in" style={{textShadow: 'none'}}>CONFILAR</span>
           </div>
           
           <button 

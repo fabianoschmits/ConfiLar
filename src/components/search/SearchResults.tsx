@@ -29,6 +29,7 @@ import { useFavorites } from '@/hooks/useFavorites'
 import { useOpenMessages } from '@/hooks/useOpenMessages'
 import { useProfileViews } from '@/hooks/useProfileViews'
 import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator'
+import { ProfessionalServicesModal } from './ProfessionalServicesModal'
 
 interface SearchResultsProps {
   users: Profile[]
@@ -52,6 +53,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   const { toggleFavorite, isFavorite, loading: favoritesLoading } = useFavorites()
   const { openMessages } = useOpenMessages()
   const { recordView } = useProfileViews()
+  const [selectedProfessional, setSelectedProfessional] = useState<Profile | null>(null)
+  const [isServicesModalOpen, setIsServicesModalOpen] = useState(false)
 
   const handleToggleFavorite = async (userId: string) => {
     await toggleFavorite(userId)
@@ -61,6 +64,16 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     // Registrar visualização antes de navegar
     await recordView(userId)
     onViewProfile(userId)
+  }
+
+  const handleShowAllServices = (professional: Profile) => {
+    setSelectedProfessional(professional)
+    setIsServicesModalOpen(true)
+  }
+
+  const handleCloseServicesModal = () => {
+    setIsServicesModalOpen(false)
+    setSelectedProfessional(null)
   }
 
   const renderStars = (rating: number) => {
@@ -170,11 +183,22 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                     </span>
                   ))}
                   {user.professional_services.length > 3 && (
-                    <span className="px-2 py-1 text-xs font-black bg-red-500 text-white border border-black">
-                      +{user.professional_services.length - 3}
-                    </span>
+                    <button
+                      onClick={() => handleShowAllServices(user)}
+                      className="px-2 py-1 text-xs font-black bg-red-500 text-white border border-black hover:bg-red-600 transition-colors cursor-pointer"
+                    >
+                      +{user.professional_services.length - 3} MAIS
+                    </button>
                   )}
                 </div>
+                {user.professional_services.length > 3 && (
+                  <button
+                    onClick={() => handleShowAllServices(user)}
+                    className="text-xs font-black text-red-500 hover:text-red-700 transition-colors mt-1 text-center sm:text-left block w-full"
+                  >
+                    CLIQUE PARA VER TODOS OS SERVIÇOS
+                  </button>
+                )}
               </div>
             )}
 
@@ -314,9 +338,19 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           {user.user_type === 'professional' && user.professional_services && user.professional_services.length > 0 && (
             <div className="mb-2">
               <div className="text-xs font-black text-black mb-1">SERVIÇO:</div>
-              <span className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black block truncate">
-                {user.professional_services[0].toUpperCase()}
-              </span>
+              <div className="space-y-1">
+                <span className="px-2 py-1 text-xs font-black bg-yellow-400 text-black border border-black block truncate">
+                  {user.professional_services[0].toUpperCase()}
+                </span>
+                {user.professional_services.length > 1 && (
+                  <button
+                    onClick={() => handleShowAllServices(user)}
+                    className="px-2 py-1 text-xs font-black bg-red-500 text-white border border-black hover:bg-red-600 transition-colors cursor-pointer w-full"
+                  >
+                    +{user.professional_services.length - 1} MAIS SERVIÇOS
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -456,6 +490,13 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
           </button>
         </div>
       )}
+
+      {/* Modal de Serviços */}
+      <ProfessionalServicesModal
+        isOpen={isServicesModalOpen}
+        onClose={handleCloseServicesModal}
+        professional={selectedProfessional}
+      />
     </div>
   )
 }

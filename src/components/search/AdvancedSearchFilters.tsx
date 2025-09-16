@@ -90,9 +90,9 @@ export const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
 
   const FilterSection = ({ title, children, icon: Icon }: { title: string; children: React.ReactNode; icon?: React.ComponentType<{ className?: string }> }) => (
     <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-        <Label className="text-sm font-medium text-foreground">{title}</Label>
+      <div className="flex items-center gap-2 bg-black text-yellow-400 p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        {Icon && <Icon className="h-4 w-4 text-yellow-400" />}
+        <Label className="text-sm font-black text-yellow-400 uppercase">{title}</Label>
       </div>
       {children}
     </div>
@@ -103,23 +103,23 @@ export const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
       {/* Busca por Texto */}
       <FilterSection title="Busca por Texto" icon={Search}>
         <Input
-          placeholder="Nome, profissão, especialidade..."
+          placeholder="NOME, PROFISSÃO, ESPECIALIDADE..."
           value={localFilters.searchTerm}
           onChange={(e) => updateFilter('searchTerm', e.target.value)}
-          className="rounded-lg"
+          className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-black placeholder:text-gray-500"
         />
       </FilterSection>
 
       {/* Tipo de Usuário */}
       <FilterSection title="Tipo de Usuário" icon={Users}>
         <Select value={localFilters.userType} onValueChange={(value) => updateFilter('userType', value)}>
-          <SelectTrigger className="rounded-lg">
+          <SelectTrigger className="border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="professional">Profissionais</SelectItem>
-            <SelectItem value="client">Clientes</SelectItem>
+          <SelectContent className="border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <SelectItem value="all" className="font-black">TODOS</SelectItem>
+            <SelectItem value="professional" className="font-black">PROFISSIONAIS</SelectItem>
+            <SelectItem value="client" className="font-black">CLIENTES</SelectItem>
           </SelectContent>
         </Select>
       </FilterSection>
@@ -269,14 +269,13 @@ export const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
         </div>
       </FilterSection>
 
-      {/* Botão Limpar Filtros */}
+      {/* Botão Limpar Filtros Brutalista */}
       <Button
-        variant="outline"
         onClick={handleClearFilters}
-        className="w-full rounded-lg border-2 hover:bg-red-50 hover:border-red-300"
+        className="w-full bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black py-3"
       >
         <X className="h-4 w-4 mr-2" />
-        Limpar Todos os Filtros
+        LIMPAR TODOS OS FILTROS
       </Button>
     </CardContent>
   )
@@ -284,40 +283,42 @@ export const AdvancedSearchFilters: React.FC<AdvancedSearchFiltersProps> = ({
   if (isMobile) {
     return (
       <div className={`lg:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <Card className="mb-4">
-          <CardHeader className="pb-4">
+        <div className="mb-4 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-black text-yellow-400 p-4 border-b-4 border-black">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filtros Avançados
-              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-yellow-400" />
+                <h3 className="text-lg font-black text-yellow-400 uppercase">FILTROS AVANÇADOS</h3>
+              </div>
               <Button
-                variant="ghost"
-                size="sm"
                 onClick={onToggle}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
               >
                 <X className="h-4 w-4" />
               </Button>
             </div>
-          </CardHeader>
-          {filtersContent}
-        </Card>
+          </div>
+          <div className="p-6">
+            {filtersContent}
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="hidden lg:block lg:w-80 flex-shrink-0">
-      <Card className="sticky top-8">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros Avançados
-          </CardTitle>
-        </CardHeader>
-        {filtersContent}
-      </Card>
+      <div className="sticky top-8 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+        <div className="bg-black text-yellow-400 p-4 border-b-4 border-black">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-yellow-400" />
+            <h3 className="text-lg font-black text-yellow-400 uppercase">FILTROS AVANÇADOS</h3>
+          </div>
+        </div>
+        <div className="p-6">
+          {filtersContent}
+        </div>
+      </div>
     </div>
   )
 }

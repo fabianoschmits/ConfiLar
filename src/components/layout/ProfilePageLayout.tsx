@@ -61,9 +61,9 @@ export function ProfilePageLayout({
                   </Button>
                 )}
                 <div>
-                  <h1 className="text-3xl font-black text-black tracking-wider">{title.toUpperCase()}</h1>
+                  <h1 className="text-4xl md:text-6xl lg:text-8xl font-poetsen-one text-black uppercase tracking-wider leading-tight sm:drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" style={{textShadow: 'none'}}>{title.toUpperCase()}</h1>
                   {description && (
-                    <p className="text-black font-bold mt-1">{description.toUpperCase()}</p>
+                    <p className="text-black font-bold mt-1 text-xl md:text-2xl font-poetsen-one uppercase tracking-wide" style={{textShadow: 'none'}}>{description.toUpperCase()}</p>
                   )}
                 </div>
               </div>

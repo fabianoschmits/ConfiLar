@@ -13,7 +13,6 @@ import {
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
-import { AdvancedSearchFilters } from '@/components/search/AdvancedSearchFilters'
 import { SearchResults } from '@/components/search/SearchResults'
 import { SearchBar } from '@/components/search/SearchBar'
 import { ProximityFilter } from '@/components/search/ProximityFilter'
@@ -30,6 +29,10 @@ export default function BuscarPage() {
   const [searchMode, setSearchMode] = useState<'advanced' | 'proximity'>('advanced')
   const [proximityRadius, setProximityRadius] = useState(10)
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null)
+  
+  // Estados para filtro de localização
+  const [selectedEstado, setSelectedEstado] = useState<string | undefined>(undefined)
+  const [selectedCidade, setSelectedCidade] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     setMounted(true)
@@ -81,6 +84,19 @@ export default function BuscarPage() {
       })
     }
   }, [currentLocation, location, proximityRadius, searchNearLocation])
+
+  // Função para lidar com mudanças de localização
+  const handleLocationChange = useCallback((estado?: string, cidade?: string) => {
+    setSelectedEstado(estado)
+    setSelectedCidade(cidade)
+    
+    // Atualizar os filtros de busca com a localização selecionada
+    updateFilters({
+      ...filters,
+      state: estado || '',
+      city: cidade || ''
+    })
+  }, [filters, updateFilters])
 
   // Executar busca por proximidade quando localização ou raio mudarem
   useEffect(() => {
@@ -152,40 +168,37 @@ export default function BuscarPage() {
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-yellow-400">
         <div className="container mx-auto px-4 py-8">
-          {/* Header Brutalista */}
-          <div className="text-center mb-12">
-            <div className="inline-block p-8 bg-black text-yellow-400 border-8 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <h1 className="text-5xl font-black mb-4 tracking-wider">
+          {/* Header Compacto */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-block p-3 sm:p-4 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-black tracking-wider">
                 BUSCA AVANÇADA
               </h1>
-              <p className="text-xl font-bold">
-                ENCONTRE OS MELHORES PROFISSIONAIS
-              </p>
             </div>
           </div>
 
-          {/* Estatísticas Brutalistas */}
+          {/* Estatísticas Brutalistas Compactas */}
           {stats.totalUsers > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-              <div className="p-6 bg-black text-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
-                <Users className="h-8 w-8 mx-auto mb-2" />
-                <div className="text-3xl font-black">{stats.totalUsers}</div>
-                <div className="font-bold">TOTAL DE USUÁRIOS</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+              <div className="p-2 sm:p-4 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+                <Users className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+                <div className="text-sm sm:text-xl font-black">{stats.totalUsers}</div>
+                <div className="text-xs font-bold">USUÁRIOS</div>
               </div>
-              <div className="p-6 bg-white text-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
-                <TrendingUp className="h-8 w-8 mx-auto mb-2" />
-                <div className="text-3xl font-black">{stats.professionalsCount}</div>
-                <div className="font-bold">PROFISSIONAIS</div>
+              <div className="p-2 sm:p-4 bg-white text-black border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+                <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+                <div className="text-sm sm:text-xl font-black">{stats.professionalsCount}</div>
+                <div className="text-xs font-bold">PROFISSIONAIS</div>
               </div>
-              <div className="p-6 bg-red-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
-                <Star className="h-8 w-8 mx-auto mb-2" />
-                <div className="text-3xl font-black">{stats.verifiedCount}</div>
-                <div className="font-bold">VERIFICADOS</div>
+              <div className="p-2 sm:p-4 bg-red-500 text-white border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+                <Star className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+                <div className="text-sm sm:text-xl font-black">{stats.verifiedCount}</div>
+                <div className="text-xs font-bold">VERIFICADOS</div>
               </div>
-              <div className="p-6 bg-green-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-center">
-                <Clock className="h-8 w-8 mx-auto mb-2" />
-                <div className="text-3xl font-black">{stats.clientsCount}</div>
-                <div className="font-bold">CLIENTES</div>
+              <div className="p-2 sm:p-4 bg-green-500 text-white border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+                <Clock className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+                <div className="text-sm sm:text-xl font-black">{stats.clientsCount}</div>
+                <div className="text-xs font-bold">CLIENTES</div>
               </div>
             </div>
           )}
@@ -220,6 +233,7 @@ export default function BuscarPage() {
             </div>
           </div>
 
+
           {/* Barra de Busca Principal Brutalista */}
           <div className="max-w-4xl mx-auto mb-4">
             <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
@@ -231,57 +245,32 @@ export default function BuscarPage() {
                 onToggleFilters={() => setShowFilters(!showFilters)}
                 showFilters={showFilters}
                 suggestions={suggestions}
+                onLocationChange={handleLocationChange}
               />
             </div>
           </div>
 
-          {/* Filtros e Resultados */}
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar de Filtros Brutalista */}
-            <div className="w-full lg:w-80">
-              <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
-                {searchMode === 'advanced' ? (
-                  <AdvancedSearchFilters
-                    filters={filters}
-                    onFiltersChange={updateFilters}
-                    onClearFilters={clearFilters}
-                    isMobile={true}
-                    isOpen={showFilters}
-                    onToggle={() => setShowFilters(!showFilters)}
-                  />
-                ) : (
-                  <ProximityFilter
-                    radius={proximityRadius}
-                    onRadiusChange={setProximityRadius}
-                    onLocationChange={setCurrentLocation}
-                    currentLocation={currentLocation}
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Resultados da Busca Brutalista */}
-            <div className="flex-1">
-              <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
-                {searchMode === 'advanced' ? (
-                  <SearchResults
-                    users={filteredUsers}
-                    filters={filters}
-                    loading={loading}
-                    onContact={handleContact}
-                    onViewProfile={handleViewProfile}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                  />
-                ) : (
-                  <ProximityResults
-                    results={proximityResults}
-                    loading={proximityLoading}
-                    error={proximityError}
-                    onUserClick={handleViewProfile}
-                  />
-                )}
-              </div>
+          {/* Resultados da Busca */}
+          <div className="w-full">
+            <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
+              {searchMode === 'advanced' ? (
+                <SearchResults
+                  users={filteredUsers}
+                  filters={filters}
+                  loading={loading}
+                  onContact={handleContact}
+                  onViewProfile={handleViewProfile}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
+              ) : (
+                <ProximityResults
+                  results={proximityResults}
+                  loading={proximityLoading}
+                  error={proximityError}
+                  onUserClick={handleViewProfile}
+                />
+              )}
             </div>
           </div>
 

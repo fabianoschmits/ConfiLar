@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { EstadoCombobox, CidadeCombobox, CategoriaCombobox } from '@/components/ui/LocationComboboxes'
 import { LocationSearch } from '@/components/ui/LocationSearch'
+import { SearchBar } from '@/components/search/SearchBar'
+import { useIBGE } from '@/hooks/useIBGE'
 import { AvailabilityIndicator } from '@/components/ui/AvailabilityIndicator'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
@@ -65,6 +67,14 @@ export default function ClassificadosPage() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [showStats, setShowStats] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  
+  // Estados para filtros integrados
+  const [filters, setFilters] = useState({
+    searchTerm: '',
+    state: '',
+    city: '',
+    category: 'all'
+  })
 
   // Estados do formulário de criação
   const [formData, setFormData] = useState({
@@ -82,6 +92,19 @@ export default function ClassificadosPage() {
 
   // Usar os serviços do arquivo de dados
   const availableServices = services
+
+  // Função para atualizar filtros
+  const updateFilters = useCallback((newFilters: Partial<typeof filters>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }))
+  }, [])
+
+  // Função para lidar com mudanças de localização
+  const handleLocationChange = useCallback((estado?: string, cidade?: string) => {
+    updateFilters({
+      state: estado || '',
+      city: cidade || ''
+    })
+  }, [updateFilters])
 
   useEffect(() => {
     loadData()
@@ -212,9 +235,8 @@ export default function ClassificadosPage() {
     try {
       const { data: favoritesData, error } = await supabase
         .from('favorites')
-        .select('favorite_id')
+        .select('professional_id')
         .eq('user_id', user.id)
-        .eq('favorite_type', 'service')
 
       if (error) {
         console.error('Erro ao carregar favoritos:', error)
@@ -226,7 +248,7 @@ export default function ClassificadosPage() {
         return
       }
 
-      const favoriteIds = favoritesData?.map(fav => fav.favorite_id) || []
+      const favoriteIds = favoritesData?.map(fav => fav.professional_id) || []
       setFavorites(new Set(favoriteIds))
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error)
@@ -253,8 +275,7 @@ export default function ClassificadosPage() {
           .from('favorites')
           .delete()
           .eq('user_id', user.id)
-          .eq('favorite_id', adId)
-          .eq('favorite_type', 'service')
+          .eq('professional_id', adId)
 
         if (error) {
           console.error('Erro ao remover favorito:', error)
@@ -273,8 +294,7 @@ export default function ClassificadosPage() {
           .from('favorites')
           .insert({
             user_id: user.id,
-            favorite_id: adId,
-            favorite_type: 'service'
+            professional_id: adId
           })
 
         if (error) {
@@ -411,8 +431,8 @@ export default function ClassificadosPage() {
     let filteredAds = [...classifiedAds]
 
     // Filtro por busca
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase()
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase()
       filteredAds = filteredAds.filter(item =>
         item.title.toLowerCase().includes(searchLower) ||
         item.description.toLowerCase().includes(searchLower) ||
@@ -420,32 +440,24 @@ export default function ClassificadosPage() {
       )
     }
 
-    // Filtro por serviço
-    if (selectedService !== 'all') {
+    // Filtro por categoria
+    if (filters.category !== 'all') {
       filteredAds = filteredAds.filter(item =>
-        item.category.toLowerCase().includes(selectedService.toLowerCase())
+        item.category.toLowerCase().includes(filters.category.toLowerCase())
       )
     }
 
-    // Filtro por localização (apenas se selecionado)
-    if (selectedLocation !== 'all') {
+    // Filtro por estado específico
+    if (filters.state) {
       filteredAds = filteredAds.filter(item =>
-        item.location_state.toLowerCase().includes(selectedLocation.toLowerCase()) ||
-        item.location_city.toLowerCase().includes(selectedLocation.toLowerCase())
-      )
-    }
-
-    // Filtro por estado específico (prioridade sobre localização geral)
-    if (selectedEstado) {
-      filteredAds = filteredAds.filter(item =>
-        item.location_state.toLowerCase().includes(selectedEstado.toLowerCase())
+        item.location_state.toLowerCase().includes(filters.state.toLowerCase())
       )
     }
 
     // Filtro por cidade específica (maior prioridade)
-    if (selectedCidade) {
+    if (filters.city) {
       filteredAds = filteredAds.filter(item =>
-        item.location_city.toLowerCase().includes(selectedCidade.toLowerCase())
+        item.location_city.toLowerCase().includes(filters.city.toLowerCase())
       )
     }
 
@@ -503,70 +515,37 @@ export default function ClassificadosPage() {
   return (
     <MainLayout>
       <div className="min-h-screen bg-yellow-400">
-        {/* Header Brutalista */}
-        <div className="bg-black text-yellow-400 py-4 sm:py-6 lg:py-8">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black mb-2 sm:mb-4">CLASSIFICADOS</h1>
-            <p className="text-sm sm:text-base lg:text-lg font-bold text-yellow-400 mb-4 sm:mb-6 px-2">
+        {/* Header Compacto */}
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-block p-3 sm:p-4 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-black tracking-wider">
               ENCONTRE SERVIÇOS OU OFEREÇA SEUS SERVIÇOS PROFISSIONAIS
-            </p>
-            
-            {/* Seção de Categorias Destacadas */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mt-4 sm:mt-6 lg:mt-8">
-              {availableServices.slice(0, 6).map((service) => (
-                <div
-                  key={service.id}
-                  className="bg-yellow-400 border-2 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transition-all cursor-pointer p-2 sm:p-3 lg:p-4 transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  onClick={() => {
-                    setSelectedService(service.name)
-                    setActiveTab('offers')
-                  }}
-                >
-                  <div className="text-center">
-                    <div className="text-xl sm:text-2xl lg:text-3xl mb-1 sm:mb-2 lg:mb-3">{service.icon}</div>
-                    <div className="text-xs sm:text-sm font-black text-black uppercase tracking-wide leading-tight">{service.name}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-3 sm:mt-4">
-              <Button
-                onClick={() => setSelectedService('all')}
-                className="bg-yellow-400 text-black border-2 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transition-all px-4 sm:px-6 lg:px-8 py-2 sm:py-3 font-black text-sm sm:text-base lg:text-lg transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-              >
-                VER TODAS AS CATEGORIAS
-              </Button>
-            </div>
+            </h1>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Estatísticas Compactas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center bg-blue-500 border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer" onClick={() => setActiveTab('all')}>
-              <div className="text-3xl font-black text-white mb-2">
-                {classifiedAds.length}
-              </div>
-              <div className="text-sm font-black text-white uppercase tracking-wide">TOTAL</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+            <div className="p-3 sm:p-4 bg-black text-yellow-400 border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <Users className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+              <div className="text-sm sm:text-xl font-black">{classifiedAds.length}</div>
+              <div className="text-xs sm:text-sm font-bold leading-tight">TOTAL</div>
             </div>
-            <div className="text-center bg-red-500 border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer" onClick={() => setActiveTab('requests')}>
-              <div className="text-3xl font-black text-white mb-2">
-                {classifiedAds.filter(ad => ad.user_type === 'client').length}
-              </div>
-              <div className="text-sm font-black text-white uppercase tracking-wide">SOLICITAÇÕES</div>
+            <div className="p-3 sm:p-4 bg-white text-black border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <Users className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+              <div className="text-sm sm:text-xl font-black">{classifiedAds.filter(ad => ad.user_type === 'client').length}</div>
+              <div className="text-xs sm:text-sm font-bold leading-tight">SOLICITAÇÕES</div>
             </div>
-            <div className="text-center bg-green-500 border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer" onClick={() => setActiveTab('offers')}>
-              <div className="text-3xl font-black text-white mb-2">
-                {classifiedAds.filter(ad => ad.user_type === 'professional').length}
-              </div>
-              <div className="text-sm font-black text-white uppercase tracking-wide">OFERTAS</div>
+            <div className="p-3 sm:p-4 bg-red-500 text-white border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <Briefcase className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+              <div className="text-sm sm:text-xl font-black">{classifiedAds.filter(ad => ad.user_type === 'professional').length}</div>
+              <div className="text-xs sm:text-sm font-bold leading-tight">OFERTAS</div>
             </div>
-            <div className="text-center bg-purple-500 border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer" onClick={() => setSelectedService('all')}>
-              <div className="text-3xl font-black text-white mb-2">
-                {availableServices.length}
-              </div>
-              <div className="text-sm font-black text-white uppercase tracking-wide">CATEGORIAS</div>
+            <div className="p-3 sm:p-4 bg-green-500 text-white border-2 sm:border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center">
+              <Square className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1" />
+              <div className="text-sm sm:text-xl font-black">{availableServices.length}</div>
+              <div className="text-xs sm:text-sm font-bold leading-tight">CATEGORIAS</div>
             </div>
           </div>
 
@@ -654,183 +633,74 @@ export default function ClassificadosPage() {
           )}
 
           {/* Abas Brutalistas */}
-          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-4 mb-8">
-            <div className="flex gap-4">
+          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-2 sm:p-4 mb-8">
+            <div className="flex gap-2 sm:gap-4">
               <Button
                 onClick={() => setActiveTab('all')}
-                className={`flex-1 font-black text-xl py-6 transition-all ${
+                className={`flex-1 font-black text-xs sm:text-xl py-2 sm:py-6 transition-all ${
                   activeTab === 'all'
-                    ? 'bg-black text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white text-black border-4 border-black hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    ? 'bg-black text-white border-2 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black border-2 sm:border-4 border-black hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 }`}
               >
-                <Square className="h-6 w-6 mr-2" />
-                TODOS ({classifiedAds.length})
+                <Square className="h-3 w-3 sm:h-6 sm:w-6 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">TODOS ({classifiedAds.length})</span>
+                <span className="sm:hidden">TODOS</span>
               </Button>
               <Button
                 onClick={() => setActiveTab('requests')}
-                className={`flex-1 font-black text-xl py-6 transition-all ${
+                className={`flex-1 font-black text-xs sm:text-xl py-2 sm:py-6 transition-all ${
                   activeTab === 'requests'
-                    ? 'bg-red-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white text-black border-4 border-black hover:bg-red-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    ? 'bg-red-500 text-white border-2 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black border-2 sm:border-4 border-black hover:bg-red-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 }`}
               >
-                <Users className="h-6 w-6 mr-2" />
-                SOLICITAÇÕES ({classifiedAds.filter(ad => ad.user_type === 'client').length})
+                <span className="hidden sm:inline">SOLICITAÇÕES ({classifiedAds.filter(ad => ad.user_type === 'client').length})</span>
+                <span className="sm:hidden text-[0.65rem]">SOLICITAÇÕES</span>
               </Button>
               <Button
                 onClick={() => setActiveTab('offers')}
-                className={`flex-1 font-black text-xl py-6 transition-all ${
+                className={`flex-1 font-black text-xs sm:text-xl py-2 sm:py-6 transition-all ${
                   activeTab === 'offers'
-                    ? 'bg-green-500 text-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                    : 'bg-white text-black border-4 border-black hover:bg-green-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    ? 'bg-green-500 text-white border-2 sm:border-4 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black border-2 sm:border-4 border-black hover:bg-green-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 }`}
               >
-                <Briefcase className="h-6 w-6 mr-2" />
-                OFERTAS ({classifiedAds.filter(ad => ad.user_type === 'professional').length})
+                <span className="hidden sm:inline">OFERTAS ({classifiedAds.filter(ad => ad.user_type === 'professional').length})</span>
+                <span className="sm:hidden">OFERTAS</span>
               </Button>
             </div>
           </div>
 
-          {/* Botões de Controle - Filtros e Estatísticas */}
-          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6 lg:mb-8">
-            {/* Botão para mostrar/esconder estatísticas */}
-            {classifiedAds.length > 0 && (
-              <Button
-                onClick={() => setShowStats(!showStats)}
-                className={`border-2 sm:border-4 border-black font-black text-sm sm:text-base lg:text-lg px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 transition-all ${
-                  showStats 
-                    ? 'bg-red-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
-                    : 'bg-blue-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                }`}
-              >
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{showStats ? 'ESCONDER ESTATÍSTICAS' : 'VER ESTATÍSTICAS'}</span>
-                <span className="sm:hidden">{showStats ? 'ESCONDER' : 'ESTATÍSTICAS'}</span>
-              </Button>
-            )}
-            
-            {/* Botão para mostrar/esconder filtros */}
-            <Button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`border-2 sm:border-4 border-black font-black text-sm sm:text-base lg:text-lg px-4 sm:px-5 lg:px-6 py-2 sm:py-2.5 lg:py-3 transition-all ${
-                showFilters 
-                  ? 'bg-red-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
-                  : 'bg-green-500 text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-              }`}
-            >
-              <Filter className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{showFilters ? 'ESCONDER FILTROS' : 'VER FILTROS'}</span>
-              <span className="sm:hidden">{showFilters ? 'ESCONDER' : 'FILTROS'}</span>
-            </Button>
+          {/* Barra de Busca e Filtros */}
+          <div className="mb-6 sm:mb-8">
+            <SearchBar
+              searchTerm={filters.searchTerm}
+              onSearchChange={(value) => updateFilters({ searchTerm: value })}
+              onSearch={() => {}}
+              filters={{
+                searchTerm: filters.searchTerm,
+                category: filters.category,
+                state: filters.state,
+                city: filters.city,
+                userType: 'all',
+                minRating: 0,
+                maxRating: 5,
+                verifiedOnly: false,
+                availableOnly: true,
+                sortBy: 'rating',
+                sortOrder: 'desc',
+                priceRange: [0, 1000],
+                experienceYears: 0,
+                hasPortfolio: false,
+                hasReviews: false
+              }}
+              showFilters={showFilters}
+              onToggleFilters={() => setShowFilters(!showFilters)}
+              onLocationChange={handleLocationChange}
+              placeholder="BUSCAR ANÚNCIOS..."
+            />
           </div>
-
-          {/* Filtros - Condicional */}
-          {showFilters && (
-            <div className="bg-white border-2 sm:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6 lg:mb-8 transition-all duration-300">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
-                <h3 className="text-lg sm:text-xl font-black text-black flex items-center gap-2">
-                  <Filter className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />
-                  FILTROS E BUSCA
-                </h3>
-                <Button
-                  onClick={() => {
-                    setSearchTerm('')
-                    setSelectedService('all')
-                    setSelectedLocation('all')
-                    setSelectedEstado('')
-                    setSelectedCidade('')
-                    setSortBy('newest')
-                  }}
-                  variant="outline"
-                  className="border-2 sm:border-4 border-black font-black text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 bg-white hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-                >
-                  LIMPAR FILTROS
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                {/* Busca */}
-                <div className="md:col-span-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                    <Input
-                      placeholder="BUSCAR ANÚNCIOS..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 sm:pl-12 border-2 sm:border-4 border-black font-black text-base sm:text-lg py-3 sm:py-4 bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Serviço */}
-                <div>
-                  <Select value={selectedService} onValueChange={setSelectedService}>
-                    <SelectTrigger className="border-2 sm:border-4 border-black font-black text-base sm:text-lg py-3 sm:py-4 bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
-                      <SelectValue placeholder="SERVIÇO" />
-                    </SelectTrigger>
-                    <SelectContent className="border-2 sm:border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                      <SelectItem value="all" className="font-black text-base sm:text-lg py-2 sm:py-3 hover:bg-gray-100 border-b-2 border-gray-200 last:border-b-0">TODOS OS SERVIÇOS</SelectItem>
-                      {availableServices.map(service => (
-                        <SelectItem key={service.id} value={service.name} className="font-black text-base sm:text-lg py-2 sm:py-3 hover:bg-gray-100 border-b-2 border-gray-200 last:border-b-0">
-                          <span className="mr-2 text-lg sm:text-xl">{service.icon}</span>
-                          {service.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              {/* Busca por Localização */}
-              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t-2 sm:border-t-4 border-gray-200">
-                <h4 className="text-base sm:text-lg font-black text-black mb-3 sm:mb-4 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-                  LOCALIZAÇÃO
-                </h4>
-                <LocationSearch
-                  estadoValue={selectedEstado}
-                  cidadeValue={selectedCidade}
-                  onEstadoChange={setSelectedEstado}
-                  onCidadeChange={setSelectedCidade}
-                />
-              </div>
-              
-              {/* Filtros ativos */}
-              {(searchTerm || selectedService !== 'all' || selectedLocation !== 'all' || selectedEstado || selectedCidade) && (
-                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t-2 sm:border-t-4 border-gray-200">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                    <span className="text-sm sm:text-lg font-black text-gray-600">FILTROS ATIVOS:</span>
-                    {searchTerm && (
-                      <Badge className="bg-blue-500 text-white text-xs sm:text-sm font-black px-2 sm:px-4 py-1 sm:py-2 border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        Busca: "{searchTerm}"
-                      </Badge>
-                    )}
-                    {selectedService !== 'all' && (
-                      <Badge className="bg-green-500 text-white text-xs sm:text-sm font-black px-2 sm:px-4 py-1 sm:py-2 border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        Serviço: {selectedService}
-                      </Badge>
-                    )}
-                    {selectedLocation !== 'all' && (
-                      <Badge className="bg-purple-500 text-white text-xs sm:text-sm font-black px-2 sm:px-4 py-1 sm:py-2 border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        Local: {selectedLocation}
-                      </Badge>
-                    )}
-                    {selectedEstado && (
-                      <Badge className="bg-orange-500 text-white text-xs sm:text-sm font-black px-2 sm:px-4 py-1 sm:py-2 border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        Estado: {selectedEstado}
-                      </Badge>
-                    )}
-                    {selectedCidade && (
-                      <Badge className="bg-pink-500 text-white text-xs sm:text-sm font-black px-2 sm:px-4 py-1 sm:py-2 border-2 border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] sm:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                        Cidade: {selectedCidade}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Botão Criar Anúncio */}
           <div className="flex justify-center mb-4 sm:mb-6 lg:mb-8">
@@ -1048,17 +918,21 @@ export default function ClassificadosPage() {
               </div>
               
               {/* Indicador de filtros ativos */}
-              {(searchTerm || selectedService !== 'all' || selectedLocation !== 'all' || selectedEstado || selectedCidade) && (
+              {(filters.searchTerm || filters.category !== 'all' || filters.state || filters.city) && (
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-black text-gray-600">FILTROS APLICADOS:</span>
                   <Badge className="bg-orange-500 text-white text-sm font-black px-4 py-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     {[
-                      searchTerm && 'Busca',
-                      selectedService !== 'all' && 'Serviço',
-                      selectedLocation !== 'all' && 'Local',
-                      selectedEstado && 'Estado',
-                      selectedCidade && 'Cidade'
-                    ].filter(Boolean).length} filtro(s)
+                      filters.searchTerm && 'Busca',
+                      filters.category !== 'all' && 'Categoria',
+                      filters.state && 'Estado',
+                      filters.city && 'Cidade'
+                    ].filter(Boolean).length} filtro{[
+                      filters.searchTerm && 'Busca',
+                      filters.category !== 'all' && 'Categoria',
+                      filters.state && 'Estado',
+                      filters.city && 'Cidade'
+                    ].filter(Boolean).length !== 1 ? 's' : ''}
                   </Badge>
                 </div>
               )}
@@ -1076,11 +950,12 @@ export default function ClassificadosPage() {
                 </p>
                 <Button
                   onClick={() => {
-                    setSearchTerm('')
-                    setSelectedService('all')
-                    setSelectedLocation('all')
-                    setSelectedEstado('')
-                    setSelectedCidade('')
+                    updateFilters({
+                      searchTerm: '',
+                      state: '',
+                      city: '',
+                      category: 'all'
+                    })
                     setSortBy('newest')
                   }}
                   variant="outline"
@@ -1126,13 +1001,13 @@ export default function ClassificadosPage() {
                       💡 SUGESTÕES:
                     </p>
                     <ul className="text-base text-yellow-700 text-left space-y-2 font-bold">
-                      {(selectedEstado || selectedCidade) && (
+                      {(filters.state || filters.city) && (
                         <li>• Tente buscar em outras cidades ou estados</li>
                       )}
-                      {selectedService !== 'all' && (
+                      {filters.category !== 'all' && (
                         <li>• Verifique outras categorias de serviços</li>
                       )}
-                      {searchTerm && (
+                      {filters.searchTerm && (
                         <li>• Tente termos de busca diferentes</li>
                       )}
                       <li>• Limpe os filtros para ver todos os anúncios</li>
@@ -1144,11 +1019,12 @@ export default function ClassificadosPage() {
               <div className="flex gap-6 justify-center">
                 <Button
                   onClick={() => {
-                    setSearchTerm('')
-                    setSelectedService('all')
-                    setSelectedLocation('all')
-                    setSelectedEstado('')
-                    setSelectedCidade('')
+                    updateFilters({
+                      searchTerm: '',
+                      state: '',
+                      city: '',
+                      category: 'all'
+                    })
                     setSortBy('newest')
                   }}
                   variant="outline"
@@ -1188,16 +1064,16 @@ export default function ClassificadosPage() {
                 const serviceIcon = availableServices.find(service => service.name === mappedCategory)?.icon || '🔧'
 
                 // Verificar se o anúncio corresponde à localização selecionada
-                const matchesLocation = selectedCidade 
-                  ? ad.location_city.toLowerCase().includes(selectedCidade.toLowerCase())
-                  : selectedEstado 
-                    ? ad.location_state.toLowerCase().includes(selectedEstado.toLowerCase())
+                const matchesLocation = filters.city 
+                  ? ad.location_city.toLowerCase().includes(filters.city.toLowerCase())
+                  : filters.state 
+                    ? ad.location_state.toLowerCase().includes(filters.state.toLowerCase())
                     : true
 
                 return (
                   <Card key={ad.id} className={`bg-white border-2 sm:border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] sm:hover:translate-x-[-2px] sm:hover:translate-y-[-2px] transition-all duration-200 overflow-hidden transform active:translate-x-[1px] active:translate-y-[1px] sm:active:translate-x-[2px] sm:active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
                     isOffer ? 'ring-2 ring-green-500 ring-opacity-50' : 'ring-2 ring-red-500 ring-opacity-50'
-                  } ${matchesLocation && (selectedEstado || selectedCidade) ? 'ring-4 ring-blue-500 ring-opacity-75' : ''}`}>
+                  } ${matchesLocation && (filters.state || filters.city) ? 'ring-4 ring-blue-500 ring-opacity-75' : ''}`}>
                     {/* Header com gradiente baseado no tipo */}
                     <CardHeader className={`p-3 sm:p-4 border-b-2 sm:border-b-4 border-black ${
                       isOffer ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'
@@ -1255,7 +1131,7 @@ export default function ClassificadosPage() {
                             }`}>
                               {isOffer ? 'OFERECENDO' : 'SOLICITANDO'}
                             </Badge>
-                            {matchesLocation && (selectedEstado || selectedCidade) && (
+                            {matchesLocation && (filters.state || filters.city) && (
                               <Badge className="bg-blue-500 text-white text-xs font-black px-2 py-1 flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
                                 LOCAL

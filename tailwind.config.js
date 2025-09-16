@@ -5,6 +5,17 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'brutalist': ['Impact', 'Arial Black', 'sans-serif'],
+        'rustic': ['Courier New', 'monospace'],
+        'brutal-rustic': ['"Press Start 2P"', 'Consolas', 'Monaco', 'monospace'],
+        'heavy': ['"Black Ops One"', 'Impact', 'Arial Black', 'sans-serif'],
+        'industrial': ['"Orbitron"', 'monospace'],
+        'lil-grotesk': ['"Space Grotesk"', 'sans-serif'],
+        'fs-ostro': ['"Playfair Display"', 'serif'],
+        'rubik-dirt': ['"Rubik"', 'sans-serif'],
+        'poetsen-one': ['"Poetsen One"', 'cursive'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

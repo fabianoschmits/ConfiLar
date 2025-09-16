@@ -39,7 +39,7 @@ export default function HomePage() {
                 <IconUsers size={16} stroke={2} className="mr-2" />
                 <span className="font-black uppercase text-sm">PLATAFORMA CONFILAR</span>
               </div>
-              <h1 className="text-3xl lg:text-5xl font-black tracking-tight text-black mb-6 uppercase animate-fade-in">
+              <h1 className="text-4xl lg:text-7xl font-poetsen-one tracking-tight text-black mb-6 uppercase animate-fade-in" style={{textShadow: 'none'}}>
                 COMO FUNCIONA O CONFILAR
               </h1>
               <p className="text-lg lg:text-xl text-black max-w-4xl mx-auto leading-relaxed font-bold animate-fade-in">

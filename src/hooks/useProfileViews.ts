@@ -202,22 +202,20 @@ export function useProfileViews() {
     }
   }, [])
 
-  // Hook para registrar visualização automaticamente quando um perfil é visualizado
+  // Função para registrar visualização automaticamente quando um perfil é visualizado
   const useAutoRecordView = useCallback((profileId: string) => {
-    useEffect(() => {
-      if (!profileId || !user?.id) return
+    if (!profileId || !user?.id) return
 
-      // Não registrar visualização do próprio perfil
-      if (profileId === user.id) return
+    // Não registrar visualização do próprio perfil
+    if (profileId === user.id) return
 
-      // Registrar visualização com delay para evitar spam
-      const timer = setTimeout(() => {
-        recordView(profileId)
-      }, 2000) // 2 segundos de delay
+    // Registrar visualização com delay para evitar spam
+    const timer = setTimeout(() => {
+      recordView(profileId)
+    }, 2000) // 2 segundos de delay
 
-      return () => clearTimeout(timer)
-    }, [profileId, user?.id, recordView])
-  }, [recordView])
+    return () => clearTimeout(timer)
+  }, [recordView, user.id])
 
   return {
     loading,

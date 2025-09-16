@@ -23,6 +23,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
 import { ContactAgreementChat } from './ContactAgreementChat'
+import { AgreementButton } from './AgreementButton'
 
 export function FloatingChat() {
   const { user, profile } = useAuthContext()
@@ -46,8 +47,10 @@ export function FloatingChat() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
+  const [showAgreementModal, setShowAgreementModal] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+  const [isUserScrolling, setIsUserScrolling] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   // Sincronizar isOpen do contexto com isExpanded local
@@ -63,9 +66,9 @@ export function FloatingChat() {
         setSelectedConversation(conversation)
         loadMessages(conversation.id)
         markMessagesAsRead(conversation.id)
-        // Forçar scroll para a última mensagem quando selecionar conversa
-        setShouldAutoScroll(true)
-        setTimeout(() => scrollToBottom(), 300)
+        // Não forçar scroll - usuário tem controle total
+        setShouldAutoScroll(false)
+        setIsUserScrolling(false)
       }
     } else {
       setSelectedConversation(null)
@@ -84,9 +87,9 @@ export function FloatingChat() {
     if (selectedConversation && user?.id) {
       loadMessages(selectedConversation.id)
       markMessagesAsRead(selectedConversation.id)
-      // Forçar scroll para a última mensagem quando abrir uma conversa
-      setShouldAutoScroll(true)
-      setTimeout(() => scrollToBottom(), 200)
+      // Não forçar scroll automático ao abrir conversa
+      setShouldAutoScroll(false)
+      setIsUserScrolling(false)
     }
   }, [selectedConversation?.id, user?.id]) // Usar apenas o ID da conversa
 
@@ -107,28 +110,13 @@ export function FloatingChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Scroll inteligente - só rola para baixo se o usuário estiver próximo do final
-  useEffect(() => {
-    if (shouldAutoScroll && isNearBottom()) {
-      scrollToBottom()
-    }
-  }, [messages, shouldAutoScroll])
+  // Removido auto-scroll automático - usuário tem controle total
 
-  // Scroll automático quando mensagens são carregadas pela primeira vez
-  useEffect(() => {
-    if (messages.length > 0 && selectedConversation) {
-      // Pequeno delay para garantir que o DOM foi atualizado
-      setTimeout(() => {
-        setShouldAutoScroll(true)
-        scrollToBottom()
-      }, 100)
-    }
-  }, [messages.length, selectedConversation?.id])
-
-  // Detectar quando o usuário rola manualmente
+  // Detectar quando o usuário rola manualmente - sem interferir
   const handleScroll = () => {
+    // Apenas detectar scroll, sem forçar comportamento
     const nearBottom = isNearBottom()
-    setShouldAutoScroll(nearBottom)
+    setIsUserScrolling(!nearBottom)
   }
 
   // Enviar mensagem
@@ -139,9 +127,7 @@ export function FloatingChat() {
       setSending(true)
       await sendMessage(selectedConversation.id, newMessage.trim())
       setNewMessage('')
-      // Forçar scroll para baixo quando enviar mensagem
-      setShouldAutoScroll(true)
-      setTimeout(() => scrollToBottom(), 100)
+      // Não forçar scroll automático - deixar o usuário decidir
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
     } finally {
@@ -159,7 +145,8 @@ export function FloatingChat() {
   const goBackToConversations = () => {
     setSelectedConversation(null)
     selectConversation(undefined)
-    setShouldAutoScroll(true) // Resetar scroll quando trocar de conversa
+    // Resetar estado de scroll
+    setIsUserScrolling(false)
   }
 
   // Iniciar edição de mensagem
@@ -207,28 +194,8 @@ export function FloatingChat() {
       {/* Chat Flutuante */}
       <div className="fixed bottom-6 right-6 z-50">
         {isExpanded ? (
-          <div className="w-96 max-w-[calc(100vw-3rem)]">
+          <div className="w-80 max-w-[calc(100vw-2rem)]">
           <Card className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
-            {/* Header */}
-            <div className="bg-yellow-400 border-b-4 border-black p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <MessageCircle className="h-6 w-6 text-black" />
-                  <h3 className="font-black text-black text-lg uppercase">
-                    CHAT
-                  </h3>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCloseChat}
-                  className="bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black p-2 rounded-none"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
             <CardContent className="p-0">
               {!selectedConversation ? (
                 /* Lista de Conversas */
@@ -253,7 +220,7 @@ export function FloatingChat() {
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
                       {conversations.map((conversation) => {
                         const otherUser = user.id === conversation.client_id 
                           ? conversation.professional 
@@ -273,8 +240,8 @@ export function FloatingChat() {
                                 src={otherUser.avatar_url}
                                 alt={otherUser.full_name}
                                 fallback={otherUser.full_name.charAt(0).toUpperCase()}
-                                size="lg"
-                                className="w-10 h-10 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                size="md"
+                                className="w-8 h-8 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                               />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
@@ -310,20 +277,42 @@ export function FloatingChat() {
                 </div>
               ) : (
                 /* Chat da Conversa */
-                <div className="flex flex-col h-96">
-                  {/* Header da Conversa */}
-                  <div className="bg-yellow-400 border-b-2 border-black p-3">
+                <div className="flex flex-col h-[360px] md:h-[480px]">
+                  {/* Header Amarelo da Conversa */}
+                  <div className="bg-yellow-400 border-b-2 border-black p-2">
                     <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4 text-black" />
+                        <h3 className="font-black text-black text-sm uppercase">
+                          CHAT
+                        </h3>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={goBackToConversations}
-                          className="bg-black text-yellow-400 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all font-black p-1 rounded-none"
+                          className="bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black p-1 rounded-none"
                           title="Voltar para conversas"
                         >
-                          <ArrowLeft className="h-4 w-4" />
+                          <ArrowLeft className="h-3 w-3" />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCloseChat}
+                          className="bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black p-1 rounded-none"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Header da Conversa */}
+                  <div className="bg-gray-100 border-b-2 border-black p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
                         <UserAvatar
                           src={user.id === selectedConversation.client_id 
                             ? selectedConversation.professional.avatar_url
@@ -337,7 +326,7 @@ export function FloatingChat() {
                           size="md"
                           className="w-8 h-8 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
                         />
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-black text-black text-sm">
                             {user.id === selectedConversation.client_id 
                               ? selectedConversation.professional.full_name
@@ -349,6 +338,21 @@ export function FloatingChat() {
                               : selectedConversation.client.user_type}
                           </p>
                         </div>
+                        
+                        {/* Botão de Acordo */}
+                        <AgreementButton
+                          conversationId={selectedConversation.id}
+                          otherUserId={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.id
+                            : selectedConversation.client.id}
+                          otherUserName={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.full_name
+                            : selectedConversation.client.full_name}
+                          otherUserType={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.user_type as 'professional' | 'client'
+                            : selectedConversation.client.user_type as 'professional' | 'client'}
+                          onAgreementClick={() => setShowAgreementModal(true)}
+                        />
                       </div>
                       <ConversationMenu
                         conversationId={selectedConversation.id}
@@ -363,21 +367,33 @@ export function FloatingChat() {
                     </div>
                   </div>
 
-                  {/* Sistema de Acordos */}
-                  <div className="p-3">
-                    <ContactAgreementChat
-                      conversationId={selectedConversation.id}
-                      otherUserId={user.id === selectedConversation.client_id 
-                        ? selectedConversation.professional.id
-                        : selectedConversation.client.id}
-                      otherUserName={user.id === selectedConversation.client_id 
-                        ? selectedConversation.professional.full_name
-                        : selectedConversation.client.full_name}
-                      otherUserType={user.id === selectedConversation.client_id 
-                        ? selectedConversation.professional.user_type as 'professional' | 'client'
-                        : selectedConversation.client.user_type as 'professional' | 'client'}
-                    />
-                  </div>
+                  {/* Sistema de Acordos - Modal */}
+                  {showAgreementModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                      <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <ContactAgreementChat
+                          conversationId={selectedConversation.id}
+                          otherUserId={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.id
+                            : selectedConversation.client.id}
+                          otherUserName={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.full_name
+                            : selectedConversation.client.full_name}
+                          otherUserType={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.user_type as 'professional' | 'client'
+                            : selectedConversation.client.user_type as 'professional' | 'client'}
+                        />
+                        <div className="bg-gray-100 border-t-4 border-black p-4 flex justify-end">
+                          <Button 
+                            onClick={() => setShowAgreementModal(false)}
+                            className="bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                          >
+                            FECHAR
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Mensagens */}
                   <div 
