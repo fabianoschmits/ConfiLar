@@ -75,16 +75,20 @@ export function useProfileViews() {
     if (!profileId) return null
 
     try {
-      setLoading(true)
-      setError(null)
-
       const { data, error: statsError } = await supabase.rpc('get_profile_view_stats', {
         target_profile_id: profileId
       })
 
       if (statsError) {
-        console.error('Erro ao buscar estatísticas de visualizações:', statsError)
-        return null
+        // Silenciar erros para evitar loops
+        return {
+          total_views: 0,
+          unique_viewers: 0,
+          views_today: 0,
+          views_this_week: 0,
+          views_this_month: 0,
+          last_viewed_at: null
+        }
       }
 
       if (data && data.length > 0) {
@@ -100,11 +104,15 @@ export function useProfileViews() {
         last_viewed_at: null
       }
     } catch (err) {
-      console.error('Erro ao buscar estatísticas:', err)
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
-      return null
-    } finally {
-      setLoading(false)
+      // Silenciar erros e retornar valores padrão
+      return {
+        total_views: 0,
+        unique_viewers: 0,
+        views_today: 0,
+        views_this_week: 0,
+        views_this_month: 0,
+        last_viewed_at: null
+      }
     }
   }, [])
 

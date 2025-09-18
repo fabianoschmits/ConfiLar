@@ -35,14 +35,20 @@ export function RecommendationButton({
   const [recommendationCount, setRecommendationCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [showRecommendationModal, setShowRecommendationModal] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   // Verificar se o usuário atual já recomendou
   useEffect(() => {
-    if (user?.id && userId) {
-      checkCurrentRecommendation()
-      loadRecommendationCount()
+    if (user?.id && userId && user.id !== userId && !hasLoaded) {
+      const timer = setTimeout(() => {
+        checkCurrentRecommendation()
+        loadRecommendationCount()
+        setHasLoaded(true)
+      }, 500) // Debounce de 500ms
+
+      return () => clearTimeout(timer)
     }
-  }, [user?.id, userId])
+  }, [user?.id, userId, hasLoaded])
 
   const checkCurrentRecommendation = async () => {
     // Evitar auto-recomendação
@@ -65,8 +71,9 @@ export function RecommendationButton({
         setIsRecommended(false)
       }
     } catch (error) {
-      // Usuário não recomendou ainda
+      // Silenciar erros e usar valor padrão
       setIsRecommended(false)
+      // Não fazer log do erro para evitar poluição do console
     }
   }
 
@@ -85,9 +92,13 @@ export function RecommendationButton({
 
       if (!error) {
         setRecommendationCount(count || 0)
+      } else {
+        setRecommendationCount(0)
       }
     } catch (error) {
-      console.error('Erro ao carregar contagem de recomendações:', error)
+      // Silenciar erros e usar valor padrão
+      setRecommendationCount(0)
+      // Não fazer log do erro para evitar poluição do console
     }
   }
 
@@ -98,8 +109,12 @@ export function RecommendationButton({
   const handleCloseRecommendationModal = () => {
     setShowRecommendationModal(false)
     // Recarregar dados quando fechar o modal
-    checkCurrentRecommendation()
-    loadRecommendationCount()
+    setHasLoaded(false) // Permite recarregar
+    setTimeout(() => {
+      checkCurrentRecommendation()
+      loadRecommendationCount()
+      setHasLoaded(true)
+    }, 100)
   }
 
   return (

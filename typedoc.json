@@ -1,0 +1,34 @@
+{
+  "entryPoints": ["./src"],
+  "out": "./docs/api",
+  "theme": "default",
+  "name": "ConfiLar - Documentação da API",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "readme": "./README.md",
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Components",
+    "Hooks", 
+    "Utils",
+    "Types",
+    "Services",
+    "*",
+    "Other"
+  ],
+  "sort": ["source-order"],
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "plugin": ["typedoc-plugin-markdown"],
+  "gitRevision": "master",
+  "gitRemote": "origin",
+  "sourceLinkTemplate": "https://github.com/seuusuario/confilar/blob/{gitRevision}/{path}#L{line}",
+  "media": "./docs/media"
+}
+

@@ -35,7 +35,6 @@ export function RecommendationModal({
   const [recommendations, setRecommendations] = useState<RecommendationWithProfile[]>([])
   const [loading, setLoading] = useState(false)
   const [recommending, setRecommending] = useState(false)
-  const [activeTab, setActiveTab] = useState('view')
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -158,102 +157,128 @@ export function RecommendationModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-lg max-h-[80vh] overflow-hidden bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-xl shadow-2xl border border-gray-200">
         {/* Header */}
-        <div className="flex flex-row items-center justify-between p-4 border-b-4 border-black bg-black text-yellow-400">
-          <h3 className="text-lg font-black flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-500" />
-            RECOMENDAÇÕES
-          </h3>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <ThumbsUp className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">Recomendações</h3>
+              <p className="text-sm text-gray-600">Recomendar e ver quem recomendou {userName}</p>
+            </div>
+          </div>
           <Button
             onClick={onClose}
-            className="h-8 w-8 p-0 bg-red-500 text-white border-2 border-black hover:bg-red-600"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
-        
-        {/* Tabs Simples */}
-        <div className="flex bg-gray-100 border-b-2 border-black">
-          <button
-            onClick={() => setActiveTab('view')}
-            className={`flex-1 p-3 font-black border-r-2 border-black transition-all ${
-              activeTab === 'view' 
-                ? 'bg-yellow-400 text-black' 
-                : 'bg-gray-100 text-black hover:bg-yellow-200'
-            }`}
-          >
-            <Eye className="h-4 w-4 mr-2 inline" />
-            QUEM RECOMENDOU
-          </button>
-          <button
-            onClick={() => setActiveTab('recommend')}
-            className={`flex-1 p-3 font-black transition-all ${
-              activeTab === 'recommend' 
-                ? 'bg-green-500 text-white' 
-                : 'bg-gray-100 text-black hover:bg-green-200'
-            }`}
-          >
-            <Heart className="h-4 w-4 mr-2 inline" />
-            RECOMENDAR
-          </button>
-        </div>
 
-        {/* Conteúdo das Abas */}
-        <div className="p-4 space-y-4 overflow-y-auto max-h-[400px]">
-          {activeTab === 'view' ? (
-            /* Aba: Ver Quem Recomendou */
-            <>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-4 border-black"></div>
-                </div>
-              ) : recommendations.length === 0 ? (
-                <div className="text-center py-8 text-black">
-                  <div className="w-16 h-16 bg-black border-4 border-black flex items-center justify-center mx-auto mb-4">
-                    <ThumbsUp className="h-8 w-8 text-yellow-400" />
-                  </div>
-                  <h3 className="text-lg font-black mb-2">NENHUMA RECOMENDAÇÃO AINDA</h3>
-                  <p className="text-sm font-bold">SEJA O PRIMEIRO A RECOMENDAR!</p>
-                </div>
+        {/* Conteúdo em uma única página */}
+        <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+          {/* Seção: Recomendar Usuário */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                <Heart className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">Recomendar {userName}</h4>
+                <p className="text-sm text-gray-600">Mostre seu apoio recomendando este usuário</p>
+              </div>
+            </div>
+            
+            <Button
+              onClick={handleRecommendUser}
+              disabled={recommending || user?.id === userId}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors"
+            >
+              {recommending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Recomendando...
+                </>
               ) : (
-                recommendations.map((rec) => (
-                  <div key={rec.id} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="p-2 bg-black border-2 border-black">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={rec.recommender.avatar_url || ''} />
-                          <AvatarFallback className="bg-yellow-400 text-black font-black">
-                            {rec.recommender.full_name?.charAt(0) || <User className="h-4 w-4" />}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
+                <>
+                  <ThumbsUp className="h-4 w-4 mr-2" />
+                  Recomendar Usuário
+                </>
+              )}
+            </Button>
+            
+            {user?.id === userId && (
+              <p className="text-sm text-gray-500 mt-3 text-center">
+                Você não pode se recomendar
+              </p>
+            )}
+          </div>
+
+          {/* Seção: Quem Recomendou */}
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Eye className="h-4 w-4 text-white" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900">
+                Quem recomendou {userName} ({recommendations.length})
+              </h4>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : recommendations.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ThumbsUp className="h-8 w-8 text-gray-400" />
+                </div>
+                <h5 className="text-lg font-medium text-gray-900 mb-2">Nenhuma recomendação ainda</h5>
+                <p className="text-sm text-gray-600">Seja o primeiro a recomendar este usuário!</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recommendations.map((rec) => (
+                  <div key={rec.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-12 w-12 border-2 border-gray-200">
+                        <AvatarImage src={rec.recommender.avatar_url || ''} />
+                        <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+                          {rec.recommender.full_name?.charAt(0) || <User className="h-5 w-5" />}
+                        </AvatarFallback>
+                      </Avatar>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-black text-sm truncate text-black">
-                            {rec.recommender.full_name?.toUpperCase() || 'USUÁRIO'}
-                          </h4>
+                          <h5 className="font-medium text-gray-900 truncate">
+                            {rec.recommender.full_name || 'Usuário'}
+                          </h5>
                           {rec.recommender.is_verified && (
-                            <div className="px-2 py-1 bg-green-500 text-white border-2 border-black font-black text-xs">
-                              <Star className="h-3 w-3 mr-1 inline" />
-                              VERIFICADO
+                            <div className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              <Star className="h-3 w-3" />
+                              Verificado
                             </div>
                           )}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            rec.recommendation_type === 'professional_to_client' 
+                              ? 'bg-blue-100 text-blue-700' 
+                              : 'bg-green-100 text-green-700'
+                          }`}>
+                            {getRecommendationTypeText(rec.recommendation_type)}
+                          </span>
                         </div>
                         
-                        <div className="flex items-center gap-2 text-xs mb-2">
-                          <div className={`px-2 py-1 border-2 border-black font-black text-xs ${getRecommendationTypeColor(rec.recommendation_type)}`}>
-                            {getRecommendationTypeText(rec.recommendation_type).toUpperCase()}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 text-xs text-black font-bold mb-2">
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
                           {rec.recommender.location_city && rec.recommender.location_state && (
                             <div className="flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              <span>{rec.recommender.location_city.toUpperCase()}, {rec.recommender.location_state.toUpperCase()}</span>
+                              <span>{rec.recommender.location_city}, {rec.recommender.location_state}</span>
                             </div>
                           )}
                           {rec.recommender.rating && (
@@ -262,57 +287,15 @@ export function RecommendationModal({
                               <span>{rec.recommender.rating.toFixed(1)}</span>
                             </div>
                           )}
-                        </div>
-                        
-                        <div className="text-xs text-black font-bold">
-                          {new Date(rec.created_at).toLocaleDateString('pt-BR').toUpperCase()}
+                          <span>{new Date(rec.created_at).toLocaleDateString('pt-BR')}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </>
-          ) : (
-            /* Aba: Recomendar */
-            <div className="text-center py-8">
-              <div className="w-20 h-20 bg-green-500 border-4 border-black flex items-center justify-center mx-auto mb-6">
-                <Heart className="h-10 w-10 text-white" />
+                ))}
               </div>
-              
-              <h3 className="text-xl font-black mb-4 text-black">
-                RECOMENDAR {userName.toUpperCase()}
-              </h3>
-              
-              <p className="text-sm font-bold text-gray-700 mb-6">
-                Mostre seu apoio recomendando este usuário para outros profissionais e clientes!
-              </p>
-              
-              <Button
-                onClick={handleRecommendUser}
-                disabled={recommending || user?.id === userId}
-                className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black px-8 py-3 text-lg"
-              >
-                {recommending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    RECOMENDANDO...
-                  </>
-                ) : (
-                  <>
-                    <ThumbsUp className="h-5 w-5 mr-2" />
-                    RECOMENDAR USUÁRIO
-                  </>
-                )}
-              </Button>
-              
-              {user?.id === userId && (
-                <p className="text-sm text-gray-500 font-bold mt-4">
-                  Você não pode se recomendar
-                </p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

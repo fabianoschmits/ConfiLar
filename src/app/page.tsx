@@ -11,28 +11,30 @@ import { Separator } from '@/components/ui/separator'
 import { MobileFloatingMenu } from '@/components/layout/MobileFloatingMenu'
 import { PWABalloon } from '@/components/pwa/PWABalloon'
 import { PWAStatus } from '@/components/pwa/PWAStatus'
-// Tabler Icons - Estilo Brutalista
+// Lucide Icons - Tema Moderno
 import {
-  IconSearch,
-  IconUsers,
-  IconStar,
-  IconShield,
-  IconCheck,
-  IconArrowRight,
-  IconTrendingUp,
-  IconUserCheck,
-  IconMapPin,
-  IconSparkles,
-  IconMessageCircle,
-  IconAward,
-  IconClock,
-  IconBolt,
-  IconHeart,
-  IconBriefcase,
-  IconPhone,
-  IconMail,
-  IconBuilding
-} from '@tabler/icons-react'
+  Search,
+  Users,
+  Star,
+  Shield,
+  Check,
+  ArrowRight,
+  TrendingUp,
+  UserCheck,
+  MapPin,
+  Sparkles,
+  MessageCircle,
+  Award,
+  Clock,
+  Zap,
+  Heart,
+  Briefcase,
+  Phone,
+  Mail,
+  Building,
+  Eye,
+  ThumbsUp
+} from 'lucide-react'
 import { services } from '@/data/services'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 
@@ -87,17 +89,17 @@ function HomeContent() {
 
   const features = [
     {
-      icon: <IconUsers size={24} stroke={2} />,
+      icon: <Users size={24} strokeWidth={2} />,
       title: "Conexão Direta",
       description: "Sem intermediários. Você conversa diretamente com o profissional"
     },
     {
-      icon: <IconStar size={24} stroke={2} />,
+      icon: <Star size={24} strokeWidth={2} />,
       title: "Recomendações Reais",
       description: "Veja quem outros usuários realmente recomendam e por quê"
     },
     {
-      icon: <IconShield size={24} stroke={2} />,
+      icon: <Shield size={24} strokeWidth={2} />,
       title: "Confiança Garantida",
       description: "Sistema de reputação transparente e verificações de identidade"
     }
@@ -127,197 +129,186 @@ function HomeContent() {
   ]
 
   const stats = [
-    { label: "Profissionais Verificados", value: statsLoading ? "..." : formatStatNumber(professionalsCount), icon: <IconUserCheck size={20} stroke={2} /> },
-    { label: "Avaliações Reais", value: statsLoading ? "..." : formatStatNumber(reviewsCount), icon: <IconStar size={20} stroke={2} /> },
-    { label: "Cidades Atendidas", value: statsLoading ? "..." : formatStatNumber(citiesCount), icon: <IconMapPin size={20} stroke={2} /> },
-    { label: "Serviços Realizados", value: statsLoading ? "..." : formatStatNumber(servicesCount), icon: <IconCheck size={20} stroke={2} /> }
+    { label: "Profissionais Verificados", value: statsLoading ? "..." : formatStatNumber(professionalsCount), icon: <UserCheck size={20} strokeWidth={2} /> },
+    { label: "Avaliações Reais", value: statsLoading ? "..." : formatStatNumber(reviewsCount), icon: <Star size={20} strokeWidth={2} /> },
+    { label: "Cidades Atendidas", value: statsLoading ? "..." : formatStatNumber(citiesCount), icon: <MapPin size={20} strokeWidth={2} /> },
+    { label: "Serviços Realizados", value: statsLoading ? "..." : formatStatNumber(servicesCount), icon: <Check size={20} strokeWidth={2} /> }
   ]
 
   // Selecionar algumas categorias principais para a página inicial
   const mainCategories = services.slice(0, 6).map(cat => ({
     name: cat.name,
     icon: cat.icon,
-    count: "1k+" // Placeholder - pode ser dinâmico no futuro
+    count: statsLoading ? "..." : `${Math.floor(professionalsCount / 6)}+` // Distribuir profissionais entre categorias
   }))
 
   return (
-    <div className="min-h-screen bg-yellow-400">
-      {/* Header Brutalista */}
-      <header className="bg-white border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50 relative overflow-hidden">
-        {/* Efeito de partículas brutais */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 border border-black animate-ping"></div>
-          <div className="absolute top-4 right-8 w-1 h-1 bg-black animate-pulse"></div>
-          <div className="absolute bottom-2 left-12 w-1 h-1 bg-yellow-400 animate-bounce"></div>
-          <div className="absolute top-6 right-16 w-2 h-2 bg-black border border-black animate-ping"></div>
-        </div>
-        
-        <div className="container flex h-16 items-center justify-between px-4 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header Moderno */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-              <span className="text-yellow-400 font-black text-lg">C</span>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">C</span>
             </div>
-            <span className="text-xl font-poetsen-one text-black uppercase tracking-wider animate-fade-in" style={{textShadow: 'none'}}>CONFILAR</span>
+            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
           </div>
           
           {/* Menu desktop */}
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#como-funciona" className="text-sm font-black text-black hover:text-yellow-500 transition-colors uppercase animate-fade-in">
-              COMO FUNCIONA
+            <a href="#como-funciona" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+              Como Funciona
             </a>
-            <a href="#categorias" className="text-sm font-black text-black hover:text-yellow-500 transition-colors uppercase animate-fade-in">
-              SERVIÇOS
+            <a href="#categorias" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+              Serviços
             </a>
-            <a href="#estatisticas" className="text-sm font-black text-black hover:text-yellow-500 transition-colors uppercase animate-fade-in">
-              NÚMEROS
+            <a href="#estatisticas" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+              Números
             </a>
           </nav>
 
           <div className="hidden md:flex items-center space-x-3">
             <PWAStatus />
-            <button 
-              className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all animate-fade-in"
+            <Button 
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 if (mounted) {
                   router.push('/auth')
                 }
               }}
             >
-              ENTRAR
-            </button>
-            <button 
-              className="px-4 py-2 text-sm font-black text-white bg-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all animate-fade-in"
+              Entrar
+            </Button>
+            <Button 
+              size="sm"
               onClick={() => {
                 if (mounted) {
                   router.push('/auth')
                 }
               }}
             >
-              <IconUsers size={16} stroke={2} className="mr-2" />
-              CRIAR CONTA
-            </button>
+              <Users size={16} strokeWidth={2} className="mr-2" />
+              Criar Conta
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section Brutalista */}
-      <section className="container py-12 md:py-24 text-center px-4">
+      {/* Hero Section Moderno */}
+      <section className="container py-16 md:py-24 text-center px-4">
         <div className={`mx-auto max-w-4xl space-y-6 md:space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="space-y-4">
-            <div className="inline-block px-4 py-2 bg-black text-yellow-400 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
-              <div className="flex items-center gap-2">
-                <IconSparkles size={16} stroke={2} />
-                <span className="text-sm font-black uppercase">PLATAFORMA DE CONFIANÇA</span>
-              </div>
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full border border-blue-200">
+              <Sparkles size={16} strokeWidth={2} />
+              <span className="text-sm font-medium">Plataforma de Confiança</span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight leading-tight text-black">
-              CONECTE-SE{' '}
-              <span className="text-black bg-yellow-400 border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] px-1 py-0.5 animate-bounce">DIRETAMENTE</span>{' '}
-              AOS PROFISSIONAIS
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight text-gray-900">
+              Conecte-se{' '}
+              <span className="text-blue-600 relative">
+                diretamente
+                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-blue-100 rounded-full -z-10"></div>
+              </span>{' '}
+              aos profissionais
             </h1>
             
-            <p className="text-lg md:text-xl text-black max-w-3xl mx-auto leading-relaxed px-4 font-bold">
-              <strong>SEM INTERMEDIÁRIOS.</strong> SEM TAXAS OCULTAS. APENAS VOCÊ E O PROFISSIONAL, 
-              CONECTADOS ATRAVÉS DE UM SISTEMA DE CONFIANÇA BASEADO EM <strong>RECOMENDAÇÕES REAIS</strong> DE OUTROS USUÁRIOS.
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              <strong>Sem intermediários.</strong> Sem taxas ocultas. Apenas você e o profissional, 
+              conectados através de um sistema de confiança baseado em <strong>recomendações reais</strong> de outros usuários.
             </p>
             
-            <div className="flex flex-col items-center justify-center gap-3 md:gap-6 text-sm text-black px-4">
-              <div className="flex items-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                <IconCheck size={20} stroke={2} className="text-green-600 flex-shrink-0 animate-pulse" />
-                <span className="text-center font-black uppercase">ENCONTRE PEDREIROS, ELETRICISTAS, ENCANADORES</span>
+            <div className="flex flex-col items-center justify-center gap-3 text-sm text-gray-600 px-4">
+              <div className="flex items-center gap-2" style={{ animationDelay: '0.1s' }}>
+                <Check size={20} strokeWidth={2} className="text-green-600 flex-shrink-0" />
+                <span className="text-center font-medium">Encontre pedreiros, eletricistas, encanadores</span>
               </div>
-              <div className="flex items-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                <IconCheck size={20} stroke={2} className="text-green-600 flex-shrink-0 animate-pulse" />
-                <span className="text-center font-black uppercase">PROFISSIONAIS VERIFICADOS E AVALIADOS</span>
+              <div className="flex items-center gap-2" style={{ animationDelay: '0.2s' }}>
+                <Check size={20} strokeWidth={2} className="text-green-600 flex-shrink-0" />
+                <span className="text-center font-medium">Profissionais verificados e avaliados</span>
               </div>
-              <div className="flex items-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-                <IconCheck size={20} stroke={2} className="text-green-600 flex-shrink-0 animate-pulse" />
-                <span className="text-center font-black uppercase">PREÇOS DIRETOS, SEM SURPRESAS</span>
+              <div className="flex items-center gap-2" style={{ animationDelay: '0.3s' }}>
+                <Check size={20} strokeWidth={2} className="text-green-600 flex-shrink-0" />
+                <span className="text-center font-medium">Preços diretos, sem surpresas</span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-3 md:gap-4 w-full max-w-sm mx-auto">
-            <button 
-              className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none"
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto">
+            <Button 
+              size="lg"
+              className="w-full"
               onClick={() => {
                 if (mounted) {
                   router.push('/buscar')
                 }
               }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <IconSearch size={20} stroke={2} className="animate-bounce" />
-                <span>BUSCAR PROFISSIONAIS</span>
-                <IconArrowRight size={20} stroke={2} className="animate-bounce" />
-              </div>
-            </button>
+              <Search size={20} strokeWidth={2} className="mr-2" />
+              Buscar Profissionais
+            </Button>
             
-            <button 
-              className="w-full px-6 py-4 text-lg font-black text-black bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:animate-pulse"
+            <Button 
+              variant="outline"
+              size="lg" 
+              className="w-full"
               onClick={() => {
                 if (mounted) {
                   router.push('/auth')
                 }
               }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <IconUsers size={20} stroke={2} />
-                <span>CRIAR CONTA</span>
-              </div>
-            </button>
+              <Users size={20} strokeWidth={2} className="mr-2" />
+              Criar Conta
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Features Brutalista */}
-      <section className="container py-12 md:py-16 px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      {/* Features Modernas */}
+      <section className="container py-16 md:py-20 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
-            <div 
+            <Card 
               key={index} 
-              className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all animate-slide-in-up hover:animate-wiggle"
-              style={{ animationDelay: `${index * 0.2}s` }}
+              className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white/50 backdrop-blur-sm"
             >
-              <div className="text-center md:text-left">
-                <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-4 mx-auto md:mx-0 animate-pulse">
-                  <div className="text-yellow-400">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg">
+                  <div className="text-white">
                     {feature.icon}
                   </div>
                 </div>
-                <h3 className="text-lg font-black text-black uppercase mb-3 animate-fade-in">{feature.title}</h3>
-                <p className="text-base text-black font-bold leading-relaxed animate-fade-in">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">
                   {feature.description}
                 </p>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </section>
 
-      <Separator />
-
-      {/* Como Funciona Brutalista */}
-      <section id="como-funciona" className="container py-16 md:py-24 px-4">
+      {/* Como Funciona Moderno */}
+      <section id="como-funciona" className="container py-16 md:py-24 px-4 bg-white/30 backdrop-blur-sm">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-4 text-black uppercase animate-fade-in">
-            COMO FUNCIONA
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
+            Como Funciona
           </h2>
-          <p className="text-base md:text-lg text-black max-w-2xl mx-auto font-bold animate-fade-in">
-            SIMPLES E DIRETO. EM 4 PASSOS VOCÊ RESOLVE SEU PROBLEMA
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            Simples e direto. Em 4 passos você resolve seu problema
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {steps.map((step, index) => (
-            <div key={index} className="text-center space-y-4 animate-slide-in-up" style={{ animationDelay: `${index * 0.3}s` }}>
-              <div className="w-20 h-20 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mx-auto animate-bounce">
-                <span className="text-3xl font-black text-yellow-400">{step.number}</span>
+            <div key={index} className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto shadow-lg">
+                <span className="text-2xl font-bold text-white">{step.number}</span>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-lg font-black text-black uppercase animate-fade-in">{step.title}</h3>
-                <p className="text-black text-sm leading-relaxed px-2 font-bold animate-fade-in">
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-gray-900">{step.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed px-2">
                   {step.description}
                 </p>
               </div>
@@ -325,24 +316,20 @@ function HomeContent() {
           ))}
         </div>
 
-        <div className="text-center mt-8 md:mt-12">
-          <button 
-            className="px-8 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none"
+        <div className="text-center mt-12">
+          <Button 
+            size="lg"
             onClick={() => {
               if (mounted) {
                 router.push('/buscar')
               }
             }}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>COMEÇAR AGORA</span>
-              <IconArrowRight size={20} stroke={2} className="animate-bounce" />
-            </div>
-          </button>
+            <span>Começar Agora</span>
+            <ArrowRight size={20} strokeWidth={2} className="ml-2" />
+          </Button>
         </div>
       </section>
-
-      <Separator />
 
       {/* Benefícios */}
       <section className="container py-16 md:py-24 px-4">
@@ -359,7 +346,7 @@ function HomeContent() {
           <Card className="border-0 shadow-none bg-gradient-to-br from-green-50 to-emerald-50">
             <CardHeader>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <IconTrendingUp size={24} stroke={2} className="text-green-600" />
+                <TrendingUp size={24} strokeWidth={2} className="text-green-600" />
               </div>
               <CardTitle className="text-xl text-green-800">
                 Economia Real
@@ -376,7 +363,7 @@ function HomeContent() {
           <Card className="border-0 shadow-none bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardHeader>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <IconUserCheck size={24} stroke={2} className="text-blue-600" />
+                <UserCheck size={24} strokeWidth={2} className="text-blue-600" />
               </div>
               <CardTitle className="text-xl text-blue-800">
                 Profissionais Verificados
@@ -393,7 +380,7 @@ function HomeContent() {
           <Card className="border-0 shadow-none bg-gradient-to-br from-purple-50 to-violet-50">
             <CardHeader>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <IconMessageCircle size={24} stroke={2} className="text-purple-600" />
+                <MessageCircle size={24} strokeWidth={2} className="text-purple-600" />
               </div>
               <CardTitle className="text-xl text-purple-800">
                 Comunicação Direta
@@ -410,7 +397,7 @@ function HomeContent() {
           <Card className="border-0 shadow-none bg-gradient-to-br from-orange-50 to-amber-50">
             <CardHeader>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                <IconStar size={24} stroke={2} className="text-orange-600" />
+                <Star size={24} strokeWidth={2} className="text-orange-600" />
               </div>
               <CardTitle className="text-xl text-orange-800">
                 Sistema de Reputação
@@ -426,46 +413,42 @@ function HomeContent() {
         </div>
       </section>
 
-      <Separator />
-
-      {/* Estatísticas Brutalista */}
-      <section id="estatisticas" className="container py-16 md:py-24 bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] px-4">
+      {/* Estatísticas Modernas */}
+      <section id="estatisticas" className="container py-16 md:py-24 px-4">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-4 text-black uppercase animate-fade-in">
-            NÚMEROS QUE INSPIRAM CONFIANÇA
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
+            Números que Inspiram Confiança
           </h2>
-          <p className="text-base md:text-lg text-black max-w-3xl mx-auto font-bold animate-fade-in">
-            <strong>MILHARES DE USUÁRIOS</strong> JÁ DESCOBRIRAM COMO É FÁCIL ENCONTRAR PROFISSIONAIS 
-            DE QUALIDADE ATRAVÉS DE RECOMENDAÇÕES REAIS. VEJA POR QUE ELES ESCOLHERAM A CONFILAR.
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+            <strong>Milhares de usuários</strong> já descobriram como é fácil encontrar profissionais 
+            de qualidade através de recomendações reais. Veja por que eles escolheram a ConfiLar.
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat, index) => (
-            <div key={index} className="text-center space-y-3 animate-slide-in-up" style={{ animationDelay: `${index * 0.2}s` }}>
-              <div className="w-16 h-16 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mx-auto animate-pulse">
-                <div className="text-yellow-400">
-                  {stat.icon}
+            <Card key={index} className="border-0 shadow-sm bg-white/50 backdrop-blur-sm">
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                  <div className="text-white">
+                    {stat.icon}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-xl md:text-2xl font-black text-black animate-count-up">{stat.value}</div>
-                <div className="text-xs md:text-sm text-black font-bold uppercase">{stat.label}</div>
-              </div>
-            </div>
+                <div className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                <div className="text-sm text-gray-600">{stat.label}</div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </section>
 
-      <Separator />
-
       {/* Categorias */}
-      <section id="categorias" className="container py-16 md:py-24 px-4">
+      <section id="categorias" className="container py-16 md:py-24 px-4 bg-white/30 backdrop-blur-sm">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
             Categorias de Serviços
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
             Encontre profissionais verificados em todas as áreas que você precisa
           </p>
         </div>
@@ -487,15 +470,13 @@ function HomeContent() {
         </div>
       </section>
 
-      <Separator />
-
       {/* Para Profissionais */}
-      <section className="container py-16 md:py-24 bg-muted/50 px-4">
+      <section className="container py-16 md:py-24 px-4">
         <div className="text-center mb-12 md:mb-16">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 text-gray-900">
             Para Profissionais
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             <strong>Transforme sua carreira</strong> conectando-se diretamente com clientes. 
             Sem taxas de plataforma, sem intermediários. Apenas você e seus clientes, 
             construindo reputação através de trabalho de qualidade.
@@ -505,8 +486,8 @@ function HomeContent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-8 md:mb-12">
           <Card className="border-0 shadow-none">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                <IconTrendingUp size={24} stroke={2} />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+                <TrendingUp size={24} strokeWidth={2} className="text-blue-600" />
               </div>
               <CardTitle>Aumente sua Renda</CardTitle>
             </CardHeader>
@@ -519,8 +500,8 @@ function HomeContent() {
 
           <Card className="border-0 shadow-none">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                <IconAward size={24} stroke={2} />
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3">
+                <Award size={24} strokeWidth={2} className="text-green-600" />
               </div>
               <CardTitle>Construa Reputação</CardTitle>
             </CardHeader>
@@ -533,8 +514,8 @@ function HomeContent() {
 
           <Card className="border-0 shadow-none">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
-                <IconClock size={24} stroke={2} />
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
+                <Clock size={24} strokeWidth={2} className="text-purple-600" />
               </div>
               <CardTitle>Gerencie sua Agenda</CardTitle>
             </CardHeader>
@@ -552,9 +533,9 @@ function HomeContent() {
               router.push('/auth')
             }
           }}>
-            <IconUsers size={20} stroke={2} className="mr-2" />
+            <Users size={20} strokeWidth={2} className="mr-2" />
             Cadastre-se como Profissional
-            <IconArrowRight size={20} stroke={2} className="ml-2" />
+            <ArrowRight size={20} strokeWidth={2} className="ml-2" />
           </Button>
         </div>
       </section>
@@ -578,7 +559,7 @@ function HomeContent() {
                   router.push('/buscar')
                 }
               }}>
-                <IconSearch size={20} stroke={2} className="mr-2" />
+                <Search size={20} strokeWidth={2} className="mr-2" />
                 Buscar Profissionais
               </Button>
               
@@ -587,7 +568,7 @@ function HomeContent() {
                   router.push('/auth')
                 }
               }}>
-                <IconUsers size={20} stroke={2} className="mr-2" />
+                <Users size={20} strokeWidth={2} className="mr-2" />
                 Criar Conta
               </Button>
             </div>
@@ -636,7 +617,6 @@ function HomeContent() {
               <h3 className="font-semibold">Contato</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>contato@confilar.com.br</li>
-                <li>(51) 98427-6564</li>
                 <li>Venâncio Aires, RS</li>
               </ul>
             </div>
@@ -739,8 +719,8 @@ function HomeContent() {
           opacity: 0;
         }
 
-        /* Efeito de hover brutalista */
-        .brutalist-hover:hover {
+        /* Efeito de hover moderno */
+        .modern-hover:hover {
           transform: translate(-2px, -2px);
           box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
         }

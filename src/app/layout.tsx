@@ -8,6 +8,7 @@ import { NotificationProvider } from "@/components/notifications/NotificationPro
 import { AutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { LoadingProvider } from "@/hooks/useLoading"
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
+import { QueryProvider } from "@/lib/queryClient"
 import { Toaster } from "sonner"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
@@ -41,7 +42,7 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Black+Ops+One&family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800;900&family=Poetsen+One&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
@@ -86,22 +87,24 @@ export default async function RootLayout({
                   <body className={inter.className}>
                     <ServiceWorkerCleaner />
                     <ErrorBoundary>
-          <LoadingProvider>
-            <NotificationProvider>
-              <AuthProvider initialSession={session}>
-                <AutoReauthentication>
-                  <FloatingChatProvider>
-                    <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                      {children}
-                    </Suspense>
-                    <FloatingChatWrapper />
-                    <LoadingOverlayProvider />
-                    <Toaster position="top-right" richColors />
-                  </FloatingChatProvider>
-                </AutoReauthentication>
-              </AuthProvider>
-            </NotificationProvider>
-          </LoadingProvider>
+          <QueryProvider>
+            <LoadingProvider>
+              <NotificationProvider>
+                <AuthProvider initialSession={session}>
+                  <AutoReauthentication>
+                    <FloatingChatProvider>
+                      <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
+                        {children}
+                      </Suspense>
+                      <FloatingChatWrapper />
+                      <LoadingOverlayProvider />
+                      <Toaster position="top-right" richColors />
+                    </FloatingChatProvider>
+                  </AutoReauthentication>
+                </AuthProvider>
+              </NotificationProvider>
+            </LoadingProvider>
+          </QueryProvider>
         </ErrorBoundary>
       </body>
     </html>

@@ -12,7 +12,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ReauthenticationGuard } from '@/components/auth/ReauthenticationGuard'
-import { Check, X } from 'lucide-react'
+import { Check, X, ArrowLeft, Shield, Key } from 'lucide-react'
 
 const newPasswordSchema = z.object({
   password: z.string()
@@ -91,9 +91,9 @@ export default function NovaSenhaPage() {
         setPasswordUpdated(true)
         setIsLoading(false)
         
-        // Redirecionar para login após 3 segundos
+        // Redirecionar para home após 3 segundos
         setTimeout(() => {
-          router.push('/auth')
+          router.push('/')
         }, 3000)
       }
     } catch {
@@ -102,260 +102,210 @@ export default function NovaSenhaPage() {
     }
   }
 
-  const handleBackToLogin = () => {
-    router.push('/auth')
+  const handleBackToHome = () => {
+    router.push('/')
   }
 
+  // Loading quando verificando autenticação
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-black border-t-yellow-400 mx-auto mb-6"></div>
-          <h1 className="text-xl font-black text-black uppercase mb-4">
-            VERIFICANDO AUTENTICAÇÃO...
-          </h1>
-          <p className="text-black font-bold">
-            AGUARDE ENQUANTO VERIFICAMOS SUA CONTA.
-          </p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
+          <CardContent className="p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+            <h1 className="text-xl font-semibold text-gray-900 mb-4">
+              Verificando autenticação...
+            </h1>
+            <p className="text-gray-600">
+              Aguarde enquanto verificamos sua conta.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
+  // Sucesso - Senha atualizada
   if (passwordUpdated) {
     return (
-      <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-          <div className="mx-auto w-20 h-20 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
-            <Check className="w-10 h-10 text-yellow-400" />
-          </div>
-          <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-            SENHA ATUALIZADA!
-          </h1>
-          <p className="text-black font-bold mb-8 animate-fade-in">
-            SUA SENHA FOI ALTERADA COM SUCESSO.
-          </p>
-          
-          <div className="bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6">
-            <div className="flex items-center justify-center">
-              <Check className="h-6 w-6 text-black mr-2" />
-              <p className="text-black font-black text-sm">
-                VOCÊ SERÁ REDIRECIONADO PARA O LOGIN EM ALGUNS SEGUNDOS...
-              </p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
+          <CardContent className="p-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+              <Check className="w-10 h-10 text-white" />
             </div>
-          </div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+              Senha atualizada!
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Sua senha foi alterada com sucesso.
+            </p>
+            
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center">
+                <Check className="h-5 w-5 text-green-600 mr-2" />
+                <p className="text-green-700 font-medium text-sm">
+                  Você será redirecionado para a página inicial em alguns segundos...
+                </p>
+              </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={handleBackToLogin}
-            className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none"
-          >
-            IR PARA LOGIN
-          </button>
-        </div>
+            <Button
+              onClick={handleBackToHome}
+              variant="outline"
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+            >
+              Ir para página inicial
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
     <ReauthenticationGuard requiredAction="password">
-      <div className="min-h-screen bg-yellow-400">
-      {/* Header Brutalista */}
-      <header className="bg-white border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 border border-black animate-ping"></div>
-          <div className="absolute top-4 right-8 w-1 h-1 bg-black animate-pulse"></div>
-          <div className="absolute bottom-2 left-12 w-1 h-1 bg-yellow-400 animate-bounce"></div>
-        </div>
-        
-        <div className="container flex h-16 items-center justify-between px-4 relative z-10">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-              <span className="text-yellow-400 font-black text-lg">C</span>
-            </div>
-            <span className="text-xl font-black text-black uppercase tracking-wider animate-fade-in">CONFILAR</span>
-          </div>
-          
-          <button 
-            onClick={handleBackToLogin}
-            className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all animate-fade-in flex items-center space-x-2"
-          >
-            <span>VOLTAR</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Brutalista */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <div className="max-w-md w-full bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
-              <span className="text-yellow-400 font-black text-2xl">🔒</span>
-            </div>
-            <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-              NOVA SENHA
-            </h1>
-            <p className="text-black font-bold animate-fade-in">
-              DEFINA UMA NOVA SENHA SEGURA PARA SUA CONTA
-            </p>
-          </div>
-
-          {/* Informação sobre Reautenticação */}
-          <div className="bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6">
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-black text-yellow-400 font-black text-xs flex items-center justify-center flex-shrink-0 mt-1">
-                !
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Header moderno */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="container flex h-16 items-center justify-between px-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-semibold text-lg">C</span>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-black uppercase mb-2">
-                  SEGURANÇA APRIMORADA
-                </h3>
-                <p className="text-xs text-black font-bold">
-                  Para alterar sua senha, você pode ser solicitado a confirmar sua identidade 
-                  através de um código enviado por email. Isso protege sua conta contra acesso não autorizado.
-                </p>
-              </div>
+              <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
             </div>
-          </div>
-          
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-black text-black uppercase">
-                NOVA SENHA
-              </label>
-              <PasswordInput
-                id="password"
-                placeholder="••••••••"
-                {...register('password')}
-                error={!!errors.password}
-                className="w-full px-4 py-3 text-lg font-bold bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600 font-bold">{errors.password.message}</p>
-              )}
-              
-              {/* Indicador de força da senha */}
-              {password && (
-                <div className="mt-3 space-y-2">
-                  <div className="text-xs font-black text-black uppercase">
-                    FORÇA DA SENHA:
-                  </div>
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-3 flex-1 border-2 border-black ${
-                          level <= passwordStrength.score
-                            ? passwordStrength.strength === 'weak'
-                              ? 'bg-red-500'
-                              : passwordStrength.strength === 'medium'
-                              ? 'bg-yellow-400'
-                              : 'bg-green-500'
-                            : 'bg-white'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-xs text-black font-bold">
-                    {passwordStrength.strength === 'weak' && 'SENHA FRACA'}
-                    {passwordStrength.strength === 'medium' && 'SENHA MÉDIA'}
-                    {passwordStrength.strength === 'strong' && 'SENHA FORTE'}
-                  </div>
-                  
-                  {/* Critérios de senha */}
-                  <div className="space-y-1">
-                    <div className="flex items-center text-xs">
-                      {passwordStrength.checks.length ? (
-                        <Check className="w-3 h-3 text-green-600 mr-2" />
-                      ) : (
-                        <X className="w-3 h-3 text-red-600 mr-2" />
-                      )}
-                      <span className={passwordStrength.checks.length ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        PELO MENOS 8 CARACTERES
-                      </span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      {passwordStrength.checks.uppercase ? (
-                        <Check className="w-3 h-3 text-green-600 mr-2" />
-                      ) : (
-                        <X className="w-3 h-3 text-red-600 mr-2" />
-                      )}
-                      <span className={passwordStrength.checks.uppercase ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        UMA LETRA MAIÚSCULA
-                      </span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      {passwordStrength.checks.lowercase ? (
-                        <Check className="w-3 h-3 text-green-600 mr-2" />
-                      ) : (
-                        <X className="w-3 h-3 text-red-600 mr-2" />
-                      )}
-                      <span className={passwordStrength.checks.lowercase ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        UMA LETRA MINÚSCULA
-                      </span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      {passwordStrength.checks.number ? (
-                        <Check className="w-3 h-3 text-green-600 mr-2" />
-                      ) : (
-                        <X className="w-3 h-3 text-red-600 mr-2" />
-                      )}
-                      <span className={passwordStrength.checks.number ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        UM NÚMERO
-                      </span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      {passwordStrength.checks.special ? (
-                        <Check className="w-3 h-3 text-green-600 mr-2" />
-                      ) : (
-                        <X className="w-3 h-3 text-red-600 mr-2" />
-                      )}
-                      <span className={passwordStrength.checks.special ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        UM CARACTERE ESPECIAL
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-black text-black uppercase">
-                CONFIRMAR SENHA
-              </label>
-              <PasswordInput
-                id="confirmPassword"
-                placeholder="••••••••"
-                {...register('confirmPassword')}
-                error={!!errors.confirmPassword}
-                className="w-full px-4 py-3 text-lg font-bold bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
-              />
-              {errors.confirmPassword && (
-                <p className="text-sm text-red-600 font-bold">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isLoading || passwordStrength.score < 5}
+            
+            <Button 
+              onClick={handleBackToHome}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
             >
-              {isLoading ? 'ATUALIZANDO...' : 'ATUALIZAR SENHA'}
-            </button>
+              <ArrowLeft size={16} />
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </header>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleBackToLogin}
-                className="text-sm text-black hover:text-gray-600 hover:underline font-black uppercase"
-              >
-                VOLTAR PARA O LOGIN
-              </button>
-            </div>
-          </form>
+        {/* Conteúdo principal */}
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
+          <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                <Key className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-2xl font-semibold text-gray-900">
+                Nova senha
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Defina uma nova senha segura para sua conta
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              {/* Aviso de segurança */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <Shield className="h-5 w-5 mr-2 text-blue-600" />
+                  Critérios de segurança
+                </h3>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p>• Mínimo de 8 caracteres</p>
+                  <p>• Pelo menos uma letra maiúscula</p>
+                  <p>• Pelo menos uma letra minúscula</p>
+                  <p>• Pelo menos um número</p>
+                  <p>• Pelo menos um caractere especial</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                    Nova senha
+                  </Label>
+                  <PasswordInput
+                    id="password"
+                    placeholder="Digite sua nova senha"
+                    {...register('password')}
+                    error={!!errors.password}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-500 font-medium">{errors.password.message}</p>
+                  )}
+                  
+                  {/* Indicador de força da senha */}
+                  {password && (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              passwordStrength.strength === 'strong' ? 'bg-green-500' :
+                              passwordStrength.strength === 'medium' ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }`}
+                            style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-600">
+                          {passwordStrength.score}/5
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className={`flex items-center space-x-1 ${passwordStrength.checks.length ? 'text-green-600' : 'text-gray-400'}`}>
+                          {passwordStrength.checks.length ? <Check size={12} /> : <X size={12} />}
+                          <span>8+ caracteres</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.checks.uppercase ? 'text-green-600' : 'text-gray-400'}`}>
+                          {passwordStrength.checks.uppercase ? <Check size={12} /> : <X size={12} />}
+                          <span>Maiúscula</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.checks.lowercase ? 'text-green-600' : 'text-gray-400'}`}>
+                          {passwordStrength.checks.lowercase ? <Check size={12} /> : <X size={12} />}
+                          <span>Minúscula</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.checks.number ? 'text-green-600' : 'text-gray-400'}`}>
+                          {passwordStrength.checks.number ? <Check size={12} /> : <X size={12} />}
+                          <span>Número</span>
+                        </div>
+                        <div className={`flex items-center space-x-1 ${passwordStrength.checks.special ? 'text-green-600' : 'text-gray-400'}`}>
+                          {passwordStrength.checks.special ? <Check size={12} /> : <X size={12} />}
+                          <span>Especial</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                    Confirmar nova senha
+                  </Label>
+                  <PasswordInput
+                    id="confirmPassword"
+                    placeholder="Digite novamente sua nova senha"
+                    {...register('confirmPassword')}
+                    error={!!errors.confirmPassword}
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-red-500 font-medium">{errors.confirmPassword.message}</p>
+                  )}
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading || passwordStrength.strength === 'weak'}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-3"
+                >
+                  {isLoading ? 'Atualizando...' : 'Atualizar senha'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    </div>
     </ReauthenticationGuard>
   )
 }

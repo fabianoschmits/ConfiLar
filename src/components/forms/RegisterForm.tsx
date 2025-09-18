@@ -108,7 +108,9 @@ export function RegisterForm() {
     setIsLoading(true)
     
     try {
-              const result = await signUp(data.email, data.password, {
+              const result = await signUp({
+                email: data.email,
+                password: data.password,
                 full_name: data.fullName,
                 user_type: data.userType
               })
