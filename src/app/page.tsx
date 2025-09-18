@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { MobileFloatingMenu } from '@/components/layout/MobileFloatingMenu'
-import { PWABalloon } from '@/components/pwa/PWABalloon'
 import { PWAStatus } from '@/components/pwa/PWAStatus'
 // Lucide Icons - Tema Moderno
 import {
@@ -632,9 +631,6 @@ function HomeContent() {
 
       {/* Menu flutuante para mobile */}
       <MobileFloatingMenu />
-
-      {/* PWA Balloon */}
-      <PWABalloon />
 
       {/* Animações CSS Customizadas */}
       <style jsx>{`
