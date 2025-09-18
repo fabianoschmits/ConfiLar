@@ -24,6 +24,8 @@ import {
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
 import { useMessages } from '@/hooks/useMessages';
 import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,6 +91,8 @@ const formatTimestamp = (timestamp: string) => {
 
 export const NotificationDropdown: React.FC = () => {
   const { user } = useAuthContext();
+  
+  // Usar o novo hook de tempo real
   const { 
     notifications, 
     unreadCount, 
@@ -97,44 +101,22 @@ export const NotificationDropdown: React.FC = () => {
     removeNotification,
     clearAll,
     isLoading,
+    isConnected,
     addTestNotification
-  } = useSupabaseNotifications();
+  } = useRealtimeNotifications();
+  
+  // Hook para monitorar conexão em tempo real (manter para indicadores visuais)
+  const { isConnected: isRealtimeConnected, isConnecting, lastActivity, connectionError } = useRealtimeConnection();
   
   // Usar o mesmo sistema do chat flutuante para mensagens
   const { conversations, getTotalUnreadCount } = useMessages();
   const { openChat } = useFloatingChat();
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [visualUnreadCount, setVisualUnreadCount] = useState(0);
   
-  // Calcular total de mensagens não lidas (mesmo sistema do chat flutuante)
-  const totalUnreadMessages = getTotalUnreadCount();
-  
-  // Criar notificações de mensagem baseadas nas conversas
-  const messageNotifications = conversations
-    .filter(conv => conv.unread_count && conv.unread_count > 0)
-    .map(conv => ({
-      id: `msg-${conv.id}`,
-      user_id: user?.id || '',
-      title: `Nova mensagem de ${conv.client_id === user?.id ? conv.professional?.full_name : conv.client?.full_name}`,
-      message: conv.last_message_preview || 'Nova mensagem',
-      type: 'message',
-      is_read: false,
-      created_at: conv.last_message_at || conv.created_at,
-      action_url: null,
-      priority: 'normal' as const,
-      metadata: {
-        sender_id: conv.client_id === user?.id ? conv.professional_id : conv.client_id,
-        sender_name: conv.client_id === user?.id ? conv.professional?.full_name : conv.client?.full_name,
-        conversation_id: conv.id
-      }
-    }));
-  
-  // Combinar notificações do banco com notificações de mensagem
-  const allNotifications = [...notifications, ...messageNotifications];
-  const totalUnreadCount = unreadCount + totalUnreadMessages;
-  
-  // Usar o contador total para exibição
-  const displayUnreadCount = totalUnreadCount;
+  // O novo hook já gerencia tudo, incluindo mensagens
+  const displayUnreadCount = unreadCount;
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push_enabled: true,
     message_notifications: true,
@@ -146,7 +128,7 @@ export const NotificationDropdown: React.FC = () => {
   const [tableExists, setTableExists] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const recentNotifications = allNotifications
+  const recentNotifications = notifications
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 8);
 
@@ -228,6 +210,14 @@ export const NotificationDropdown: React.FC = () => {
     }
   }, [user]);
 
+  // Gerenciar contador visual
+  useEffect(() => {
+    if (!isOpen) {
+      setVisualUnreadCount(displayUnreadCount);
+    }
+  }, [displayUnreadCount, isOpen]);
+
+
   const handleMarkAsRead = async (id: string) => {
     await markAsRead(id);
   };
@@ -244,14 +234,21 @@ export const NotificationDropdown: React.FC = () => {
     await clearAll();
   };
 
-  // Marcar todas as notificações como lidas quando abrir o dropdown
+  // Gerenciar abertura/fechamento do dropdown
   const handleOpenChange = async (open: boolean) => {
     setIsOpen(open);
     setSelectedIndex(-1); // Resetar seleção
-    if (open && displayUnreadCount > 0) {
-      // Marcar todas as notificações visíveis como lidas quando abrir
-      await markAllAsRead();
+    
+    if (open) {
+      // Quando abrir o menu, resetar o contador visualmente
+      // Não marcar como lidas automaticamente - só quando usuário clicar explicitamente
+      setVisualUnreadCount(0);
+      console.log('🔔 Menu de notificações aberto - contador resetado visualmente');
+    } else {
+      // Quando fechar, restaurar o contador real
+      setVisualUnreadCount(displayUnreadCount);
     }
+    
     // Resetar configurações quando fechar
     if (!open) {
       setShowSettings(false);
@@ -414,9 +411,25 @@ export const NotificationDropdown: React.FC = () => {
           className="relative p-2 h-10 w-10 bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 shadow-lg hover:shadow-xl hover:bg-white transition-all duration-200 rounded-lg"
         >
           <Bell size={20} className="text-gray-600" />
-          {displayUnreadCount > 0 && (
+          
+          {/* Indicador de conexão em tempo real */}
+          {isConnecting && (
+            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-yellow-500 rounded-full border-2 border-white shadow-sm animate-pulse" 
+                 title="Conectando..." />
+          )}
+          {isConnected && !isConnecting && (
+            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse" 
+                 title="Notificações em tempo real ativas" />
+          )}
+          {!isConnected && !isConnecting && (
+            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white shadow-sm" 
+                 title="Conexão perdida" />
+          )}
+          
+          {/* Contador de notificações não lidas */}
+          {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
             <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-md animate-pulse">
-              {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
+              {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount)}
             </div>
           )}
         </button>
@@ -593,15 +606,43 @@ export const NotificationDropdown: React.FC = () => {
             {/* Header das Notificações Moderno */}
             <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex items-center gap-2 sm:gap-3">
-                <Bell size={14} className="text-blue-600 sm:w-4 sm:h-4" />
+                <div className="flex items-center gap-2">
+                  <Bell size={14} className="text-blue-600 sm:w-4 sm:h-4" />
+                  {/* Indicador de conexão em tempo real */}
+                  {isConnecting && (
+                    <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse" 
+                         title="Conectando..." />
+                  )}
+                  {isConnected && !isConnecting && (
+                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" 
+                         title="Notificações em tempo real ativas" />
+                  )}
+                  {!isConnected && !isConnecting && (
+                    <div className="h-2 w-2 bg-red-500 rounded-full" 
+                         title="Conexão perdida" />
+                  )}
+                </div>
                 <span className="text-xs sm:text-sm font-semibold text-gray-900">Notificações</span>
-                {displayUnreadCount > 0 && (
+                {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                   <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
-                    {displayUnreadCount} não lidas
+                    {isOpen ? visualUnreadCount : displayUnreadCount} não lidas
                   </Badge>
                 )}
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* Botão de teste para notificações em tempo real */}
+                <button
+                  onClick={() => addTestNotification(
+                    'Teste de Notificação',
+                    'Esta é uma notificação de teste para verificar o sistema em tempo real.',
+                    'info'
+                  )}
+                  className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded-lg"
+                  title="Testar notificação em tempo real"
+                >
+                  <Bell size={14} className="sm:w-4 sm:h-4" />
+                </button>
+                
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 rounded-lg"
@@ -639,7 +680,7 @@ export const NotificationDropdown: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-4">
-                        {displayUnreadCount > 0 && (
+                        {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                           <span className="flex items-center gap-1">
                             <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">M</kbd>
                             <span className="hidden sm:inline">Marcar todas</span>
@@ -702,26 +743,26 @@ export const NotificationDropdown: React.FC = () => {
                         <div className="flex items-center gap-1">
                           {!notification.is_read && (
                             <button
-                              className="p-1 h-6 w-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                              className="p-0 h-3 w-3 bg-green-500 text-white rounded-sm hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleMarkAsRead(notification.id);
                               }}
                               title="Marcar como lida"
                             >
-                              <Check size={12} />
+                              <Check size={8} />
                             </button>
                           )}
                           
                           <button
-                            className="p-1 h-6 w-6 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                            className="p-0 h-3 w-3 bg-red-500 text-white rounded-sm hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteNotification(notification.id);
                             }}
                             title="Remover notificação"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={8} />
                           </button>
                         </div>
                       </div>
@@ -735,7 +776,7 @@ export const NotificationDropdown: React.FC = () => {
             {notifications.length > 0 && (
               <div className="p-3 sm:p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
-                  {displayUnreadCount > 0 && (
+                  {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                     <button
                       onClick={handleMarkAllAsRead}
                       className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-green-500 text-white border border-green-600 shadow-sm hover:shadow-md hover:bg-green-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"

@@ -59,33 +59,33 @@ export const useAvailability = () => {
         loading: false
       }))
 
-      // Mostrar mensagem de feedback com tema brutalista
+      // Mostrar mensagem de feedback com tema moderno
       if (newAvailability) {
-        toast.success('🎯 DISPONÍVEL PARA ORÇAMENTOS!', {
-          description: 'AGORA VOCÊ ESTÁ DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS DE CLIENTES',
+        toast.success('✅ Disponível para orçamentos!', {
+          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes',
           style: {
-            background: '#10B981',
+            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
             color: '#FFFFFF',
-            border: '4px solid #000000',
-            borderRadius: '0px',
-            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            fontSize: '16px'
+            border: '1px solid #10B981',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
+            fontWeight: '500',
+            fontSize: '14px',
+            padding: '16px 20px'
           }
         })
       } else {
-        toast.info('🚫 INDISPONÍVEL', {
-          description: 'VOCÊ NÃO ESTÁ MAIS DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS',
+        toast.info('⏸️ Indisponível', {
+          description: 'Você não está mais disponível para receber orçamentos e ofertas',
           style: {
-            background: '#EF4444',
+            background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
             color: '#FFFFFF',
-            border: '4px solid #000000',
-            borderRadius: '0px',
-            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            fontSize: '16px'
+            border: '1px solid #EF4444',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)',
+            fontWeight: '500',
+            fontSize: '14px',
+            padding: '16px 20px'
           }
         })
       }
@@ -99,18 +99,18 @@ export const useAvailability = () => {
         error: error instanceof Error ? error.message : 'Erro ao atualizar disponibilidade'
       }))
       
-      // Mostrar erro com tema brutalista
-      toast.error('❌ ERRO AO ALTERAR DISPONIBILIDADE', {
-        description: 'TENTE NOVAMENTE EM ALGUNS INSTANTES',
+      // Mostrar erro com tema moderno
+      toast.error('❌ Erro ao alterar disponibilidade', {
+        description: 'Tente novamente em alguns instantes',
         style: {
-          background: '#DC2626',
+          background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
           color: '#FFFFFF',
-          border: '4px solid #000000',
-          borderRadius: '0px',
-          boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-          fontWeight: '900',
-          textTransform: 'uppercase',
-          fontSize: '16px'
+          border: '1px solid #DC2626',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px rgba(220, 38, 38, 0.3)',
+          fontWeight: '500',
+          fontSize: '14px',
+          padding: '16px 20px'
         }
       })
       
@@ -145,33 +145,33 @@ export const useAvailability = () => {
         loading: false
       }))
 
-      // Mostrar mensagem de feedback com tema brutalista
+      // Mostrar mensagem de feedback com tema moderno
       if (available) {
-        toast.success('🎯 DISPONÍVEL PARA ORÇAMENTOS!', {
-          description: 'AGORA VOCÊ ESTÁ DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS DE CLIENTES',
+        toast.success('✅ Disponível para orçamentos!', {
+          description: 'Agora você está disponível para receber orçamentos e ofertas de clientes',
           style: {
-            background: '#10B981',
+            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
             color: '#FFFFFF',
-            border: '4px solid #000000',
-            borderRadius: '0px',
-            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            fontSize: '16px'
+            border: '1px solid #10B981',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)',
+            fontWeight: '500',
+            fontSize: '14px',
+            padding: '16px 20px'
           }
         })
       } else {
-        toast.info('🚫 INDISPONÍVEL', {
-          description: 'VOCÊ NÃO ESTÁ MAIS DISPONÍVEL PARA RECEBER ORÇAMENTOS E OFERTAS',
+        toast.info('⏸️ Indisponível', {
+          description: 'Você não está mais disponível para receber orçamentos e ofertas',
           style: {
-            background: '#EF4444',
+            background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
             color: '#FFFFFF',
-            border: '4px solid #000000',
-            borderRadius: '0px',
-            boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-            fontWeight: '900',
-            textTransform: 'uppercase',
-            fontSize: '16px'
+            border: '1px solid #EF4444',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)',
+            fontWeight: '500',
+            fontSize: '14px',
+            padding: '16px 20px'
           }
         })
       }
@@ -185,18 +185,18 @@ export const useAvailability = () => {
         error: error instanceof Error ? error.message : 'Erro ao definir disponibilidade'
       }))
       
-      // Mostrar erro com tema brutalista
-      toast.error('❌ ERRO AO ALTERAR DISPONIBILIDADE', {
-        description: 'TENTE NOVAMENTE EM ALGUNS INSTANTES',
+      // Mostrar erro com tema moderno
+      toast.error('❌ Erro ao alterar disponibilidade', {
+        description: 'Tente novamente em alguns instantes',
         style: {
-          background: '#DC2626',
+          background: 'linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)',
           color: '#FFFFFF',
-          border: '4px solid #000000',
-          borderRadius: '0px',
-          boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
-          fontWeight: '900',
-          textTransform: 'uppercase',
-          fontSize: '16px'
+          border: '1px solid #DC2626',
+          borderRadius: '12px',
+          boxShadow: '0 10px 25px rgba(220, 38, 38, 0.3)',
+          fontWeight: '500',
+          fontSize: '14px',
+          padding: '16px 20px'
         }
       })
       
