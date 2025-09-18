@@ -1,0 +1,27 @@
+ConfiLar - Verificação de Conta
+=====================================
+
+Olá! 👋
+
+Obrigado por se cadastrar no ConfiLar! Para completar seu cadastro e começar a usar nossa plataforma, você precisa verificar seu endereço de email.
+
+🔗 Verificar Email:
+{{ .ConfirmationURL }}
+
+🔒 Por que verificar?
+A verificação garante que você tenha acesso completo à plataforma, incluindo:
+• Receber notificações importantes
+• Recuperar sua senha quando necessário
+• Manter sua conta segura
+
+Não consegue clicar no link?
+Copie e cole este link no seu navegador:
+{{ .ConfirmationURL }}
+
+=====================================
+ConfiLar - Conectando você aos melhores profissionais
+
+📱 App Mobile | 💬 Suporte | 📋 Central de Ajuda
+
+Este email foi enviado automaticamente. Não responda a esta mensagem.
+Se você não se cadastrou no ConfiLar, pode ignorar este email.
