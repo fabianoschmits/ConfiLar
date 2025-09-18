@@ -25,8 +25,12 @@ export function useSupabaseNotifications() {
 
   // Buscar notificações do usuário
   const fetchNotifications = async () => {
-    if (!profile?.id) return
+    if (!profile?.id) {
+      console.log('🔔 useSupabaseNotifications: Profile não disponível:', { profile })
+      return
+    }
 
+    console.log('🔔 useSupabaseNotifications: Buscando notificações para profile:', profile.id)
     setIsLoading(true)
     try {
       const { data, error } = await supabase
@@ -38,6 +42,7 @@ export function useSupabaseNotifications() {
 
       if (error) throw error
 
+      console.log('🔔 useSupabaseNotifications: Notificações encontradas:', data?.length || 0)
       setNotifications(data || [])
       setUnreadCount(data?.filter(n => !n.is_read).length || 0)
     } catch (error) {
@@ -208,9 +213,12 @@ export function useSupabaseNotifications() {
 
   // Sincronização em tempo real
   useEffect(() => {
-    if (!profile?.id) return
+    if (!profile?.id) {
+      console.log('🔔 useSupabaseNotifications: Profile não disponível para canal de tempo real')
+      return
+    }
 
-    console.log('🔔 Iniciando sincronização de notificações em tempo real...')
+    console.log('🔔 Iniciando sincronização de notificações em tempo real para profile:', profile.id)
 
     const channel = supabase
       .channel('notifications')
@@ -227,8 +235,8 @@ export function useSupabaseNotifications() {
           
           if (payload.eventType === 'INSERT') {
             // Nova notificação
-            // Notificação recebida - apenas atualizar estado
             const newNotification = payload.new as SupabaseNotification
+            console.log('🔔 Nova notificação recebida:', newNotification)
             setNotifications(prev => [newNotification, ...prev])
             setUnreadCount(prev => prev + 1)
             
@@ -236,6 +244,7 @@ export function useSupabaseNotifications() {
           } else if (payload.eventType === 'UPDATE') {
             // Notificação atualizada (ex: marcada como lida)
             const updatedNotification = payload.new as SupabaseNotification
+            console.log('🔔 Notificação atualizada:', updatedNotification)
             setNotifications(prev =>
               prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
             )
@@ -245,6 +254,7 @@ export function useSupabaseNotifications() {
           } else if (payload.eventType === 'DELETE') {
             // Notificação removida
             const deletedNotification = payload.old as SupabaseNotification
+            console.log('🔔 Notificação removida:', deletedNotification)
             setNotifications(prev => prev.filter(n => n.id !== deletedNotification.id))
             
             // Recalcular contagem de não lidas
@@ -252,7 +262,9 @@ export function useSupabaseNotifications() {
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('🔔 Status da conexão de notificações:', status)
+      })
 
     return () => {
       console.log('🔔 Desconectando canal de notificações...')
@@ -262,6 +274,7 @@ export function useSupabaseNotifications() {
 
   // Carregar notificações iniciais
   useEffect(() => {
+    console.log('🔔 useSupabaseNotifications: useEffect inicial - profile:', profile?.id)
     if (profile?.id) {
       fetchNotifications()
     }

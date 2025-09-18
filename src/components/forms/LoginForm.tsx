@@ -26,6 +26,8 @@ export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
+  console.log('LoginForm renderizado, signIn:', typeof signIn, 'authLoading:', authLoading)
+  
   // Verificar se a conta foi criada
   const accountCreated = searchParams.get('message') === 'account_created'
   
@@ -42,24 +44,33 @@ export function LoginForm() {
 
 
   const onSubmit = async (data: LoginFormData) => {
+    console.log('Formulário submetido com dados:', data)
+    console.log('signIn function:', typeof signIn)
+    
+    // Validar dados antes de enviar
+    if (!data.email || !data.password) {
+      toast.error('Email e senha são obrigatórios')
+      return
+    }
+    
     setIsLoading(true)
     
     try {
-      const { error } = await signIn(data.email, data.password)
+      const result = await signIn(data.email, data.password)
+      console.log('Resultado do signIn:', result)
       
-      if (error) {
-        toast.error('Erro ao fazer login: ' + error.message)
+      if (result.error) {
+        toast.error('Erro ao fazer login: ' + result.error.message)
         setIsLoading(false)
       } else {
         toast.success('Login realizado com sucesso!')
         
-        // Aguardar o loading do useRobustAuth terminar
-        setTimeout(() => {
-          router.push(decodeURIComponent(redirectPath))
-          setIsLoading(false)
-        }, 2000) // Aguardar 2 segundos para garantir que o auth termine
+        // Redirecionar imediatamente após login bem-sucedido
+        router.push(redirectPath)
+        setIsLoading(false)
       }
-    } catch {
+    } catch (error) {
+      console.error('Erro no login:', error)
       toast.error('Erro inesperado ao fazer login')
       setIsLoading(false)
     }
@@ -91,7 +102,7 @@ export function LoginForm() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-700">
-                    Conta criada com sucesso! Faça login para continuar.
+                    Conta criada com sucesso! Confirme seu email e faça login para continuar.
                   </p>
                 </div>
               </div>
@@ -134,9 +145,9 @@ export function LoginForm() {
           <Button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            disabled={isLoading}
+            disabled={isLoading || authLoading}
           >
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {isLoading || authLoading ? 'Entrando...' : 'Entrar'}
           </Button>
 
           <div className="text-center">

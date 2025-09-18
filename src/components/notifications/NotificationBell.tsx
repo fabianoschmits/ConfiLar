@@ -196,9 +196,9 @@ export const NotificationBell: React.FC = () => {
 
                     {!notification.is_read && (
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
-                        className="h-6 w-6 p-0 ml-2"
+                        className="h-6 w-6 p-0 ml-2 bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm hover:shadow-md transition-all duration-200"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMarkAsRead(notification.id);
@@ -222,10 +222,10 @@ export const NotificationBell: React.FC = () => {
           <div className="flex items-center justify-between gap-2">
             {unreadCount > 0 && (
               <Button
-                variant="ghost"
+                variant="default"
                 size="sm"
                 onClick={handleMarkAllAsRead}
-                className="text-xs h-8"
+                className="text-xs h-8 bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <Check className="h-3 w-3 mr-1" />
                 Marcar todas como lidas

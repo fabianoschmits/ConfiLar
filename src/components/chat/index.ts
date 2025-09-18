@@ -4,7 +4,6 @@ export { StartConversationButton, ContactAgreementCard } from './StartConversati
 export { MessageList } from './MessageList'
 export { MessageInput } from './MessageInput'
 export { ConversationList } from './ConversationList'
-export { RealtimeNotification } from './RealtimeNotification'
 
 // Hook para gerenciar mensagens
 export { useMessages } from '../../hooks/useMessages'

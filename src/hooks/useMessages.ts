@@ -175,35 +175,13 @@ export function useMessages() {
     }
   }, [user?.id])
 
-  // Criar notificação para nova mensagem
+  // Criar notificação para nova mensagem - REMOVIDO para evitar duplicação
+  // A notificação já é criada em useSupabaseMessages.ts
   const createMessageNotification = useCallback(async (message: Message, conversation: Conversation) => {
-    if (!user?.id || message.sender_id === user.id) return // Não notificar mensagens próprias
-
-    try {
-      // Determinar quem é o remetente e destinatário
-      const sender = conversation.client_id === message.sender_id ? conversation.client : conversation.professional
-      const receiver = conversation.client_id === message.receiver_id ? conversation.client : conversation.professional
-
-      // Só criar notificação se o destinatário for o usuário atual
-      if (receiver?.id !== user.id) return
-
-      const senderName = sender?.full_name || 'Usuário'
-      const messagePreview = message.content.length > 50 
-        ? message.content.substring(0, 50) + '...' 
-        : message.content
-
-      await addNotification({
-        user_id: user.id,
-        title: `Nova mensagem de ${senderName}`,
-        message: messagePreview,
-        type: 'message',
-        action_url: `/mensagens?conversation=${conversation.id}`,
-        priority: 'normal'
-      })
-    } catch (error) {
-      console.error('❌ Erro ao criar notificação de mensagem:', error)
-    }
-  }, [user?.id, addNotification])
+    // Função removida para evitar duplicação de notificações
+    // As notificações são criadas em useSupabaseMessages.ts
+    return
+  }, [])
 
   // Criar notificação para acordo
   const createAgreementNotification = useCallback(async (agreement: any, type: 'proposal' | 'accepted' | 'rejected' | 'review_available') => {
@@ -638,15 +616,16 @@ export function useMessages() {
           return
         }
 
-        // Criar notificações para mensagens não lidas
-        if (unreadMessages && unreadMessages.length > 0) {
-          for (const message of unreadMessages) {
-            const conversation = message.conversations
-            if (conversation) {
-              await createMessageNotification(message, conversation)
-            }
-          }
-        }
+        // Criar notificações para mensagens não lidas - REMOVIDO para evitar duplicação
+        // As notificações são criadas em useSupabaseMessages.ts
+        // if (unreadMessages && unreadMessages.length > 0) {
+        //   for (const message of unreadMessages) {
+        //     const conversation = message.conversations
+        //     if (conversation) {
+        //       await createMessageNotification(message, conversation)
+        //     }
+        //   }
+        // }
       } catch (error) {
         console.error('❌ Erro ao verificar mensagens não lidas:', error)
       }
@@ -666,7 +645,7 @@ export function useMessages() {
         setRealtimeChannel(null)
       }
     }
-  }, [user?.id, loadConversations, createMessageNotification])
+  }, [user?.id, loadConversations])
 
   // Calcular total de mensagens não lidas
   const getTotalUnreadCount = useCallback(() => {
