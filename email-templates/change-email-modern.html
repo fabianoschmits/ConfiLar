@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Troca de Email - ConfiLar</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8fafc;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #667eea;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        .logo-icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin-right: 12px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 40px;
+        }
+        .logo-icon span {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .content {
+            padding: 40px 30px;
+            background-color: #ffffff;
+        }
+        .title {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .message {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            text-align: center;
+            line-height: 1.7;
+        }
+        .button-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #667eea;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .security-note {
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 32px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .security-note h3 {
+            color: #1e40af;
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+        .security-note p {
+            color: #374151;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .security-note ul {
+            color: #374151;
+            font-size: 14px;
+            margin: 0;
+            padding-left: 20px;
+        }
+        .security-note li {
+            margin-bottom: 6px;
+        }
+        .time-note {
+            background-color: #fef3c7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 32px 0;
+            border-left: 4px solid #f59e0b;
+        }
+        .time-note p {
+            color: #92400e;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .link-container {
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 32px 0;
+            border-left: 4px solid #3b82f6;
+        }
+        .link-container p {
+            color: #1e40af;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .link-container a {
+            color: #1e40af;
+            font-weight: bold;
+            word-break: break-all;
+            text-decoration: underline;
+            font-size: 12px;
+        }
+        .footer {
+            background-color: #f8fafc;
+            padding: 32px 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 8px 0;
+        }
+        .social-links {
+            margin: 24px 0;
+        }
+        .social-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 24px 0;
+        }
+        .highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .icon {
+            margin-right: 8px;
+        }
+        .email-info {
+            background-color: #f0fdf4;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 32px 0;
+            border-left: 4px solid #22c55e;
+        }
+        .email-info p {
+            color: #166534;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            .header, .content, .footer {
+                padding: 24px 20px;
+            }
+            .title {
+                font-size: 20px;
+            }
+            .button {
+                padding: 14px 28px;
+                font-size: 15px;
+            }
+            .logo {
+                font-size: 24px;
+            }
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+                line-height: 32px;
+            }
+            .logo-icon span {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon"><span>C</span></span>
+                ConfiLar
+            </div>
+            <div class="tagline">Conectando você aos melhores profissionais</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h1 class="title">Confirme sua nova conta de email</h1>
+            <p class="message">
+                Olá! 👋<br><br>
+                Você solicitou a troca do email da sua conta no <span class="highlight">ConfiLar</span>. 
+                Para confirmar esta alteração, clique no botão abaixo.
+            </p>
+
+            <div class="email-info">
+                <p><strong><span class="icon">📧</span> Novo Email:</strong></p>
+                <p>{{ .Email }}</p>
+            </div>
+
+            <div class="button-container">
+                <a href="{{ .ConfirmationURL }}" class="button">
+                    <span class="icon">✅</span>
+                    Confirmar Troca de Email
+                </a>
+            </div>
+
+            <div class="time-note">
+                <p><strong><span class="icon">⏰</span> Tempo Limitado</strong></p>
+                <p>Este link é válido por 24 horas. Após esse período, você precisará solicitar uma nova troca de email.</p>
+            </div>
+
+            <div class="security-note">
+                <h3><span class="icon">🔒</span> Informações de Segurança</h3>
+                <p>
+                    Esta confirmação garante que você tenha controle total sobre sua conta:
+                </p>
+                <ul>
+                    <li>Protege contra alterações não autorizadas</li>
+                    <li>Mantém a segurança dos seus dados</li>
+                    <li>Garante que você receba notificações importantes</li>
+                </ul>
+            </div>
+
+            <div class="link-container">
+                <p><strong>Não consegue clicar no botão?</strong></p>
+                <p>Copie e cole este link no seu navegador:</p>
+                <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+            </div>
+
+            <div class="security-note">
+                <h3><span class="icon">⚠️</span> Não solicitou esta troca?</h3>
+                <p>
+                    Se você não solicitou a troca de email, ignore este email e considere alterar sua senha 
+                    para proteger sua conta contra acesso não autorizado.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">📱 App Mobile</a>
+                <a href="#">💬 Suporte</a>
+                <a href="#">📋 Central de Ajuda</a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p><strong>ConfiLar</strong> - Conectando você aos melhores profissionais</p>
+            <p>Este email foi enviado automaticamente. Não responda a esta mensagem.</p>
+            <p>Para sua segurança, este link expira em 24 horas.</p>
+        </div>
+    </div>
+</body>
+</html>
