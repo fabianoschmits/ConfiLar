@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { Card, CardContent } from '@/components/ui/card'
+import { LogOut } from 'lucide-react'
 
 export default function LogoutPage() {
   const { signOut } = useAuthContext()
@@ -29,33 +31,35 @@ export default function LogoutPage() {
     performSignOut()
   }, [signOut])
 
-  // Tela de logout brutalista
+  // Tela de logout moderna
   return (
-    <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-        <div className="mx-auto w-20 h-20 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
-          <span className="text-yellow-400 font-black text-2xl">🚪</span>
-        </div>
-        <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-          FAZENDO LOGOUT...
-        </h1>
-        <p className="text-black font-bold mb-8 animate-fade-in">
-          AGUARDE ENQUANTO ENCERRAMOS SUA SESSÃO.
-        </p>
-        
-        <div className="bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-4 border-black border-t-yellow-400 mr-3"></div>
-            <p className="text-black font-black text-sm">
-              REDIRECIONANDO PARA A PÁGINA INICIAL...
-            </p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
+        <CardContent className="p-8">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <LogOut className="w-10 h-10 text-white" />
           </div>
-        </div>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+            Fazendo logout...
+          </h1>
+          <p className="text-gray-600 mb-8">
+            Aguarde enquanto encerramos sua sessão.
+          </p>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent mr-3"></div>
+              <p className="text-blue-700 font-medium text-sm">
+                Redirecionando para a página inicial...
+              </p>
+            </div>
+          </div>
 
-        <div className="text-center text-sm text-black font-bold">
-          <p>OBRIGADO POR USAR O CONFILAR!</p>
-        </div>
-      </div>
+          <div className="text-center text-sm text-gray-600">
+            <p>Obrigado por usar o ConfiLar!</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

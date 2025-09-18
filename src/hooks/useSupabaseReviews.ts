@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database'
 
@@ -40,7 +40,7 @@ export function useSupabaseReviews() {
   const [error, setError] = useState<string | null>(null)
 
   // Buscar avaliações de um usuário específico
-  const fetchUserReviews = async (userId: string, type: 'received' | 'given' = 'received') => {
+  const fetchUserReviews = useCallback(async (userId: string, type: 'received' | 'given' = 'received') => {
     setLoading(true)
     setError(null)
     
@@ -75,10 +75,10 @@ export function useSupabaseReviews() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Buscar estatísticas de avaliações de um usuário
-  const fetchUserReviewStats = async (userId: string): Promise<ReviewStats | null> => {
+  const fetchUserReviewStats = useCallback(async (userId: string): Promise<ReviewStats | null> => {
     try {
       const { data, error } = await supabase
         .from('reviews')
@@ -144,7 +144,7 @@ export function useSupabaseReviews() {
       console.error('Erro ao buscar estatísticas de avaliações:', err)
       return null
     }
-  }
+  }, [])
 
   // Criar nova avaliação
   const createReview = async (reviewData: ReviewInsert) => {

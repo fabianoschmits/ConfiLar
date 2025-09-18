@@ -12,12 +12,8 @@ import {
   Shield, 
   Mail, 
   Key, 
-  Clock, 
   CheckCircle, 
-  AlertTriangle, 
   ArrowLeft,
-  Info,
-  Lock,
   Eye,
   EyeOff
 } from 'lucide-react'
@@ -78,7 +74,7 @@ export default function ReauthenticationPage() {
         } else if (action === 'email') {
           router.push('/alterar-email')
         } else {
-          router.push('/home')
+          router.push('/')
         }
       }, 2000)
     }
@@ -93,281 +89,206 @@ export default function ReauthenticationPage() {
     switch (action) {
       case 'password':
         return {
-          title: 'ALTERAR SENHA',
+          title: 'Alterar senha',
           description: 'Para alterar sua senha, precisamos confirmar sua identidade',
           icon: <Key className="h-8 w-8" />,
           color: 'text-red-600'
         }
       case 'email':
         return {
-          title: 'ALTERAR EMAIL',
+          title: 'Alterar email',
           description: 'Para alterar seu email, precisamos confirmar sua identidade',
           icon: <Mail className="h-8 w-8" />,
           color: 'text-blue-600'
         }
       default:
         return {
-          title: 'REAUTENTICAÇÃO',
+          title: 'Verificação de segurança',
           description: 'Confirme sua identidade para continuar',
           icon: <Shield className="h-8 w-8" />,
-          color: 'text-yellow-600'
+          color: 'text-purple-600'
         }
     }
   }
 
   const actionInfo = getActionInfo()
 
+  // Sucesso - Identidade confirmada
   if (isReauthenticated && otpVerified) {
     return (
-      <div className="min-h-screen bg-yellow-400 flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-          <div className="mx-auto w-20 h-20 bg-green-500 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
-            <CheckCircle className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-            REAUTENTICAÇÃO CONFIRMADA!
-          </h1>
-          <p className="text-black font-bold mb-8 animate-fade-in">
-            SUA IDENTIDADE FOI VERIFICADA COM SUCESSO.
-          </p>
-          
-          <div className="bg-green-500 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6">
-            <div className="flex items-center justify-center">
-              <CheckCircle className="h-6 w-6 text-white mr-2" />
-              <p className="text-white font-black text-sm">
-                VOCÊ SERÁ REDIRECIONADO EM ALGUNS SEGUNDOS...
-              </p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
+          <CardContent className="p-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+              <CheckCircle className="h-10 w-10 text-white" />
             </div>
-          </div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+              Identidade confirmada!
+            </h1>
+            <p className="text-gray-600 mb-8">
+              Sua identidade foi verificada com sucesso. Redirecionando...
+            </p>
+            
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <p className="text-green-700 font-medium text-sm">
+                  Você será redirecionado em alguns segundos...
+                </p>
+              </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (action === 'password') {
-                router.push('/nova-senha')
-              } else if (action === 'email') {
-                router.push('/alterar-email')
-              } else {
-                router.push('/home')
-              }
-            }}
-            className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none"
-          >
-            CONTINUAR
-          </button>
-        </div>
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+            >
+              Voltar
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-yellow-400">
-      {/* Header Brutalista */}
-      <header className="bg-white border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 border border-black animate-ping"></div>
-          <div className="absolute top-4 right-8 w-1 h-1 bg-black animate-pulse"></div>
-          <div className="absolute bottom-2 left-12 w-1 h-1 bg-yellow-400 animate-bounce"></div>
-        </div>
-        
-        <div className="container flex h-16 items-center justify-between px-4 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header moderno */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-              <span className="text-yellow-400 font-black text-lg">C</span>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-white font-semibold text-lg">C</span>
             </div>
-            <span className="text-xl font-poetsen-one text-black uppercase tracking-wider animate-fade-in" style={{textShadow: 'none'}}>CONFILAR</span>
+            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
           </div>
           
-          <button 
+          <Button 
             onClick={handleBack}
-            className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all animate-fade-in flex items-center space-x-2"
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>VOLTAR</span>
-          </button>
+            <ArrowLeft size={16} />
+            <span>Voltar</span>
+          </Button>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Conteúdo principal */}
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <div className="max-w-2xl w-full space-y-6">
-          
-          {/* Card Principal */}
-          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-            <div className="text-center mb-8">
-              <div className={`mx-auto w-16 h-16 bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse ${actionInfo.color}`}>
-                {actionInfo.icon}
-              </div>
-              <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-                {actionInfo.title}
-              </h1>
-              <p className="text-black font-bold animate-fade-in">
-                {actionInfo.description}
-              </p>
+        <Card className="max-w-md w-full bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+          <CardHeader className="text-center">
+            <div className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg ${actionInfo.color}`}>
+              {actionInfo.icon}
             </div>
+            <CardTitle className="text-2xl font-semibold text-gray-900">
+              {actionInfo.title}
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              {actionInfo.description}
+            </CardDescription>
+          </CardHeader>
 
-            {/* Explicação do Sistema */}
-            <div className="bg-yellow-400 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 mb-8">
-              <div className="flex items-start space-x-3">
-                <Info className="h-6 w-6 text-black flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="text-lg font-black text-black uppercase mb-3">
-                    O QUE É REAUTENTICAÇÃO?
-                  </h3>
-                  <div className="space-y-2 text-sm text-black font-bold">
-                    <p>
-                      <strong>REAUTENTICAÇÃO</strong> é um sistema de segurança que confirma sua identidade antes de ações sensíveis como:
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li>Alterar senha</li>
-                      <li>Modificar email</li>
-                      <li>Acessar dados críticos</li>
-                    </ul>
-                    <p className="mt-3">
-                      <strong>POR QUE PRECISAMOS DISSO?</strong><br/>
-                      Para proteger sua conta contra acesso não autorizado, mesmo que alguém tenha acesso ao seu dispositivo.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Processo */}
+          <CardContent className="space-y-6">
             {!otpSent ? (
-              <div className="space-y-6">
-                <div className="bg-gray-100 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6">
-                  <h3 className="text-lg font-black text-black uppercase mb-4 flex items-center">
-                    <Lock className="h-5 w-5 mr-2" />
-                    COMO FUNCIONA?
+              // Primeira etapa: Solicitar código
+              <>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                    <Shield className="h-5 w-5 mr-2 text-blue-600" />
+                    Verificação de segurança
                   </h3>
-                  <div className="space-y-3 text-sm text-black font-bold">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-black text-white font-black text-xs flex items-center justify-center">1</div>
-                      <span>Enviamos um código de 6 dígitos para seu email</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-black text-white font-black text-xs flex items-center justify-center">2</div>
-                      <span>Você insere o código na tela</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-6 h-6 bg-black text-white font-black text-xs flex items-center justify-center">3</div>
-                      <span>Sua identidade é confirmada e você pode continuar</span>
-                    </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Por segurança, enviaremos um código de verificação para seu email cadastrado.
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">
+                      • Verifique sua caixa de entrada
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      • O código expira em 10 minutos
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      • Não compartilhe o código
+                    </p>
                   </div>
                 </div>
 
-                <button
+                <Button
                   onClick={handleRequestOTP}
                   disabled={isLoading}
-                  className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                 >
-                  {isLoading ? 'ENVIANDO...' : 'ENVIAR CÓDIGO DE VERIFICAÇÃO'}
-                </button>
-              </div>
+                  {isLoading ? 'Enviando...' : 'Enviar código de verificação'}
+                </Button>
+              </>
             ) : (
-              <div className="space-y-6">
-                <div className="bg-green-500 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6">
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-6 w-6 text-white" />
-                    <div>
-                      <h3 className="text-lg font-black text-white uppercase">
-                        CÓDIGO ENVIADO!
-                      </h3>
-                      <p className="text-white font-bold text-sm">
-                        Verifique seu email e insira o código de 6 dígitos abaixo
-                      </p>
-                    </div>
-                  </div>
+              // Segunda etapa: Verificar código
+              <>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-green-900 mb-2">
+                    Código enviado!
+                  </h3>
+                  <p className="text-sm text-green-700">
+                    Enviamos um código de verificação para seu email. Digite-o abaixo para continuar.
+                  </p>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="otp" className="text-sm font-black text-black uppercase">
-                      CÓDIGO DE VERIFICAÇÃO
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="otp"
-                        type={showOtp ? 'text' : 'password'}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder="000000"
-                        className="w-full px-4 py-3 text-lg font-bold bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all text-center tracking-widest"
-                        maxLength={6}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowOtp(!showOtp)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-gray-600"
-                      >
-                        {showOtp ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                      </button>
-                    </div>
-                    <p className="text-xs text-black font-bold mt-2">
-                      Digite o código de 6 dígitos enviado para seu email
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={handleVerifyOTP}
-                    disabled={isLoading || otp.length !== 6}
-                    className="w-full px-6 py-4 text-lg font-black text-white bg-green-500 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'VERIFICANDO...' : 'VERIFICAR CÓDIGO'}
-                  </button>
-
-                  <div className="text-center">
+                <div className="space-y-2">
+                  <Label htmlFor="otp" className="text-sm font-medium text-gray-700">
+                    Código de verificação
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="otp"
+                      type={showOtp ? 'text' : 'password'}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="Digite o código de 6 dígitos"
+                      className="pr-10 text-center tracking-widest"
+                      maxLength={6}
+                    />
                     <button
-                      onClick={handleRequestOTP}
-                      className="text-sm text-black hover:text-gray-600 hover:underline font-black uppercase"
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      onClick={() => setShowOtp(!showOtp)}
                     >
-                      REENVIAR CÓDIGO
+                      {showOtp ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
                 </div>
-              </div>
+
+                <Button
+                  onClick={handleVerifyOTP}
+                  disabled={isLoading || !otp.trim()}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
+                >
+                  {isLoading ? 'Verificando...' : 'Verificar código'}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetReauthentication()
+                    setOtp('')
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium mx-auto block"
+                >
+                  Solicitar novo código
+                </button>
+              </>
             )}
 
             {error && (
-              <div className="bg-red-500 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mt-6">
-                <div className="flex items-center space-x-3">
-                  <AlertTriangle className="h-5 w-5 text-white" />
-                  <p className="text-white font-black text-sm">
-                    {error}
-                  </p>
-                </div>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-700">
+                  Erro: {error}
+                </p>
               </div>
             )}
-          </div>
-
-          {/* Card de Segurança */}
-          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-6">
-            <h3 className="text-lg font-black text-black uppercase mb-4 flex items-center">
-              <Shield className="h-5 w-5 mr-2" />
-              INFORMAÇÕES DE SEGURANÇA
-            </h3>
-            <div className="space-y-3 text-sm text-black font-bold">
-              <div className="flex items-start space-x-3">
-                <Clock className="h-4 w-4 text-black flex-shrink-0 mt-1" />
-                <div>
-                  <p><strong>TEMPO LIMITADO:</strong> O código expira em 10 minutos</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Lock className="h-4 w-4 text-black flex-shrink-0 mt-1" />
-                <div>
-                  <p><strong>SEGURANÇA:</strong> Este processo protege sua conta contra acesso não autorizado</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Mail className="h-4 w-4 text-black flex-shrink-0 mt-1" />
-                <div>
-                  <p><strong>EMAIL:</strong> Verifique sua caixa de entrada e spam</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

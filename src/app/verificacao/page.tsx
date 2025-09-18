@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { CheckCircle, Mail, ArrowRight, RefreshCw } from 'lucide-react'
+import { CheckCircle, Mail, ArrowRight, RefreshCw, AlertTriangle, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -29,7 +29,7 @@ export default function EmailVerificationSuccess() {
 
         if (currentUser?.email_confirmed_at) {
           setStatus('success')
-          setMessage('🎉 Sua conta foi verificada com sucesso!')
+          setMessage('Sua conta foi verificada com sucesso!')
         } else {
           setStatus('expired')
           setMessage('Link de verificação expirado ou inválido.')
@@ -56,7 +56,7 @@ export default function EmailVerificationSuccess() {
         console.error('Erro ao reenviar email:', error)
         setMessage('Erro ao reenviar email. Tente novamente.')
       } else {
-        setMessage('✅ Email de verificação reenviado! Verifique sua caixa de entrada.')
+        setMessage('Email de verificação reenviado! Verifique sua caixa de entrada.')
       }
     } catch (error) {
       console.error('Erro inesperado:', error)
@@ -70,165 +70,162 @@ export default function EmailVerificationSuccess() {
     router.push('/auth')
   }
 
-  const handleGoToDashboard = () => {
-    router.push('/dashboard')
+  const handleGoToHome = () => {
+    router.push('/')
+  }
+
+  const renderContent = () => {
+    switch (status) {
+      case 'loading':
+        return (
+          <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
+            <CardContent className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
+              <h1 className="text-xl font-semibold text-gray-900 mb-4">
+                Verificando conta...
+              </h1>
+              <p className="text-gray-600">
+                Aguarde enquanto verificamos sua conta.
+              </p>
+            </CardContent>
+          </Card>
+        )
+
+      case 'success':
+        return (
+          <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                <CheckCircle className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+                Email verificado!
+              </h1>
+              <p className="text-gray-600 mb-8">
+                {message}
+              </p>
+              
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p className="text-green-700 font-medium text-sm">
+                  Sua conta está ativa e você já pode fazer login na plataforma.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  onClick={handleGoToLogin}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Fazer Login
+                </Button>
+                <Button 
+                  onClick={handleGoToHome}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+                >
+                  Voltar para página inicial
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )
+
+      case 'expired':
+      case 'error':
+        return (
+          <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                <AlertTriangle className="w-10 h-10 text-white" />
+              </div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+                {status === 'expired' ? 'Link expirado' : 'Erro de verificação'}
+              </h1>
+              <p className="text-gray-600 mb-8">
+                {message}
+              </p>
+              
+              <Alert className="mb-6">
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  {status === 'expired' 
+                    ? 'O link de verificação pode ter expirado. Solicite um novo email de verificação.'
+                    : 'Ocorreu um problema durante a verificação. Tente novamente ou entre em contato com o suporte.'
+                  }
+                </AlertDescription>
+              </Alert>
+
+              <div className="space-y-3">
+                {status === 'expired' && (
+                  <Button 
+                    onClick={handleResendEmail}
+                    disabled={isResending}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                  >
+                    {isResending ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Reenviando...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4 mr-2" />
+                        Reenviar email de verificação
+                      </>
+                    )}
+                  </Button>
+                )}
+                <Button 
+                  onClick={handleGoToLogin}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3"
+                >
+                  Ir para login
+                </Button>
+                <Button 
+                  onClick={handleGoToHome}
+                  variant="ghost"
+                  className="w-full text-gray-600 hover:text-gray-900 py-3"
+                >
+                  Voltar para página inicial
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )
+
+      default:
+        return null
+    }
   }
 
   return (
-    <div className="min-h-screen bg-yellow-400">
-      {/* Header Brutalista */}
-      <header className="bg-white border-b-4 border-black shadow-[0_4px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-50 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-2 left-4 w-2 h-2 bg-yellow-400 border border-black animate-ping"></div>
-          <div className="absolute top-4 right-8 w-1 h-1 bg-black animate-pulse"></div>
-          <div className="absolute bottom-2 left-12 w-1 h-1 bg-yellow-400 animate-bounce"></div>
-        </div>
-        
-        <div className="container flex h-16 items-center justify-between px-4 relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header moderno */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-              <span className="text-yellow-400 font-black text-lg">C</span>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-white font-semibold text-lg">C</span>
             </div>
-            <span className="text-xl font-poetsen-one text-black uppercase tracking-wider animate-fade-in" style={{textShadow: 'none'}}>CONFILAR</span>
+            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
           </div>
+          
+          <Button 
+            onClick={handleGoToHome}
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Página inicial
+          </Button>
         </div>
       </header>
 
-      {/* Main Content Brutalista */}
+      {/* Conteúdo principal */}
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-        <div className="max-w-md w-full bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8">
-          <div className="text-center mb-8">
-            <div className="mx-auto w-20 h-20 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center mb-6 animate-pulse">
-              {status === 'loading' ? (
-                <RefreshCw className="w-10 h-10 text-yellow-400 animate-spin" />
-              ) : status === 'success' ? (
-                <CheckCircle className="w-10 h-10 text-yellow-400" />
-              ) : (
-                <Mail className="w-10 h-10 text-yellow-400" />
-              )}
-            </div>
-            <h1 className="text-2xl font-black text-black uppercase mb-4 animate-fade-in">
-              {status === 'loading' && 'VERIFICANDO...'}
-              {status === 'success' && 'CONTA VERIFICADA!'}
-              {status === 'error' && 'ERRO NA VERIFICAÇÃO'}
-              {status === 'expired' && 'LINK EXPIRADO'}
-            </h1>
-            <p className="text-black font-bold animate-fade-in">
-              {status === 'loading' && 'AGUARDE ENQUANTO VERIFICAMOS SUA CONTA...'}
-              {status === 'success' && 'SUA CONTA FOI VERIFICADA COM SUCESSO!'}
-              {status === 'error' && 'NÃO FOI POSSÍVEL VERIFICAR SUA CONTA.'}
-              {status === 'expired' && 'O LINK DE VERIFICAÇÃO EXPIROU OU É INVÁLIDO.'}
-            </p>
-          </div>
-
-          {message && (
-            <div className={`border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 mb-6 ${
-              status === 'success' ? 'bg-green-400' : 'bg-red-400'
-            }`}>
-              <p className={`text-black font-black text-sm ${
-                status === 'success' ? 'text-black' : 'text-black'
-              }`}>
-                {message}
-              </p>
-            </div>
-          )}
-
-          {status === 'success' && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <p className="text-black font-bold mb-4">
-                  AGORA VOCÊ PODE ACESSAR TODAS AS FUNCIONALIDADES DO CONFILAR!
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <button 
-                  onClick={handleGoToDashboard}
-                  className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all animate-pulse hover:animate-none flex items-center justify-center space-x-2"
-                >
-                  <span>IR PARA DASHBOARD</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-                
-                <button 
-                  onClick={handleGoToLogin}
-                  className="w-full px-6 py-4 text-lg font-black text-black bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
-                >
-                  FAZER LOGIN
-                </button>
-              </div>
-            </div>
-          )}
-
-          {status === 'expired' && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <p className="text-black font-bold mb-4">
-                  O LINK DE VERIFICAÇÃO EXPIROU. CLIQUE NO BOTÃO ABAIXO PARA RECEBER UM NOVO EMAIL.
-                </p>
-              </div>
-              
-              <button 
-                onClick={handleResendEmail}
-                disabled={isResending}
-                className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {isResending ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 animate-spin" />
-                    <span>REENVIANDO...</span>
-                  </>
-                ) : (
-                  <>
-                    <Mail className="w-5 h-5" />
-                    <span>REENVIAR EMAIL</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <p className="text-black font-bold mb-4">
-                  OCORREU UM ERRO AO VERIFICAR SUA CONTA. TENTE NOVAMENTE OU ENTRE EM CONTATO CONOSCO.
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <button 
-                  onClick={handleResendEmail}
-                  disabled={isResending}
-                  className="w-full px-6 py-4 text-lg font-black text-white bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                >
-                  {isResending ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      <span>REENVIANDO...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="w-5 h-5" />
-                      <span>TENTAR NOVAMENTE</span>
-                    </>
-                  )}
-                </button>
-                
-                <button 
-                  onClick={handleGoToLogin}
-                  className="w-full px-6 py-4 text-lg font-black text-black bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all"
-                >
-                  VOLTAR AO LOGIN
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="text-center text-sm text-black font-bold mt-6">
-            <p>PRECISA DE AJUDA? ENTRE EM CONTATO CONOSCO.</p>
-          </div>
-        </div>
+        {renderContent()}
       </div>
     </div>
   )

@@ -1,6 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Modern Design System Variables */
+:root {
+  /* Colors */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Modern Design System Components */
+@layer components {
+  /* Modern Card */
+  .modern-card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* Modern Button */
+  .modern-button {
+    @apply inline-flex items-center justify-center rounded-lg border border-transparent font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .modern-button-primary {
+    @apply modern-button bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .modern-button-secondary {
+    @apply modern-button bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500;
+  }
+
+  .modern-button-outline {
+    @apply modern-button border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500;
+  }
+
+  /* Modern Input */
+  .modern-input {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors duration-200;
+  }
+
+  /* Modern Badge */
+  .modern-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .modern-badge-primary {
+    @apply modern-badge bg-blue-100 text-blue-800;
+  }
+
+  .modern-badge-success {
+    @apply modern-badge bg-green-100 text-green-800;
+  }
+
+  .modern-badge-warning {
+    @apply modern-badge bg-yellow-100 text-yellow-800;
+  }
+
+  .modern-badge-error {
+    @apply modern-badge bg-red-100 text-red-800;
+  }
+
+  /* Modern Typography */
+  .modern-heading-1 {
+    @apply text-3xl font-bold text-gray-900 tracking-tight;
+  }
+
+  .modern-heading-2 {
+    @apply text-2xl font-semibold text-gray-900 tracking-tight;
+  }
+
+  .modern-heading-3 {
+    @apply text-xl font-semibold text-gray-900;
+  }
+
+  .modern-body {
+    @apply text-base text-gray-600 leading-relaxed;
+  }
+
+  .modern-caption {
+    @apply text-sm text-gray-500;
+  }
+}
 
 /* Mobile-first optimizations */
 * {

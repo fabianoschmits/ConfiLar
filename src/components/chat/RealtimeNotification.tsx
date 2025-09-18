@@ -65,19 +65,28 @@ export function RealtimeNotification() {
   if (!user || !isVisible) return null
 
   return (
-    <div className="fixed bottom-24 right-6 z-50">
+    <div className="fixed bottom-24 right-6 z-50 animate-in slide-in-from-right-5 duration-300">
       <div 
-        className="bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-3 rounded-none cursor-pointer hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all"
+        className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg rounded-xl p-4 cursor-pointer hover:shadow-xl hover:bg-white transition-all duration-200 max-w-xs"
         onClick={handleOpenChatWithConversation}
       >
-        <div className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-black" />
-          <span className="font-black text-black text-sm uppercase">
-            {totalUnread} MENSAGEM{totalUnread > 1 ? 'S' : ''} NÃO LIDA{totalUnread > 1 ? 'S' : ''}
-          </span>
-        </div>
-        <div className="text-xs text-black font-bold mt-1">
-          CLIQUE PARA ABRIR CHAT
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+            <MessageCircle className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900 text-sm">
+                {totalUnread} nova{totalUnread > 1 ? 's' : ''} mensagem{totalUnread > 1 ? 's' : ''}
+              </span>
+              {totalUnread > 0 && (
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              )}
+            </div>
+            <p className="text-xs text-gray-600 mt-0.5">
+              Toque para abrir o chat
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -1,90 +1,137 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { IconLoader2, IconBolt, IconRefresh } from '@tabler/icons-react'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LoadingOverlayProps {
   isLoading: boolean
   message?: string
   className?: string
+  variant?: 'default' | 'minimal' | 'navigation' | 'auth' | 'data'
 }
 
 export function LoadingOverlay({ 
   isLoading, 
-  message = 'CARREGANDO...', 
-  className 
+  message = 'Carregando...', 
+  className,
+  variant = 'default'
 }: LoadingOverlayProps) {
   const [showOverlay, setShowOverlay] = useState(false)
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
     if (isLoading) {
-      // Pequeno delay para evitar flash se o loading for muito rápido
+      // Delay mínimo para evitar flash em loadings muito rápidos
       const timer = setTimeout(() => {
         setShowOverlay(true)
-      }, 100)
+      }, 50)
       return () => clearTimeout(timer)
     } else {
-      setShowOverlay(false)
+      // Delay para suavizar a saída
+      const timer = setTimeout(() => {
+        setShowOverlay(false)
+        setProgress(0)
+      }, 150)
+      return () => clearTimeout(timer)
     }
   }, [isLoading])
 
+  // Simulação de progresso para dar sensação de velocidade
+  useEffect(() => {
+    if (showOverlay) {
+      setProgress(0)
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev
+          return prev + Math.random() * 15
+        })
+      }, 100)
+      
+      return () => clearInterval(interval)
+    }
+  }, [showOverlay])
+
   if (!showOverlay) return null
+
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'minimal':
+        return 'bg-white/40 backdrop-blur-md'
+      case 'navigation':
+        return 'bg-blue-500/20 backdrop-blur-lg'
+      case 'auth':
+        return 'bg-purple-500/20 backdrop-blur-lg'
+      case 'data':
+        return 'bg-green-500/20 backdrop-blur-lg'
+      default:
+        return 'bg-gray-900/20 backdrop-blur-lg'
+    }
+  }
+
+  const getSpinnerColor = () => {
+    switch (variant) {
+      case 'navigation':
+        return 'text-blue-600'
+      case 'auth':
+        return 'text-purple-600'
+      case 'data':
+        return 'text-green-600'
+      default:
+        return 'text-blue-600'
+    }
+  }
 
   return (
     <div 
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center',
-        'bg-yellow-400/90 backdrop-blur-sm',
-        'transition-all duration-300 ease-in-out',
+        'fixed inset-0 z-[100] flex items-center justify-center',
+        'transition-all duration-200 ease-out',
+        getVariantStyles(),
         className
       )}
     >
-      {/* Container Principal Brutalista */}
-      <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 flex flex-col items-center space-y-6 max-w-sm mx-4">
-        {/* Logo/Ícone Brutalista */}
+      {/* Container Principal Moderno */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-8 flex flex-col items-center space-y-6 max-w-sm mx-4 animate-in fade-in-0 zoom-in-95 duration-200">
+        
+        {/* Logo/Spinner Moderno */}
         <div className="relative">
-          <div className="w-16 h-16 bg-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
-            <span className="text-yellow-400 font-black text-2xl">C</span>
+          {/* Logo ConfiLar */}
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-2xl">C</span>
           </div>
           
-          {/* Spinner Brutalista */}
-          <div className="absolute inset-0 w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+          {/* Spinner Moderno */}
+          <div className="absolute inset-0">
+            <Loader2 className={cn("w-16 h-16 animate-spin", getSpinnerColor())} strokeWidth={1.5} />
+          </div>
+          
+          {/* Pulse effect */}
+          <div className="absolute inset-0 w-16 h-16 bg-blue-500/20 rounded-xl animate-pulse"></div>
         </div>
         
         {/* Texto Principal */}
         <div className="text-center space-y-2">
-          <p className="text-black font-black text-lg uppercase tracking-wider">{message}</p>
-          <p className="text-sm text-gray-700 font-bold uppercase">
-            AGUARDE UM MOMENTO...
+          <p className="text-gray-900 font-semibold text-lg">{message}</p>
+          <p className="text-sm text-gray-600">
+            Isso será rápido...
           </p>
         </div>
 
-        {/* Barra de Progresso Brutalista */}
-        <div className="w-full bg-gray-200 border-2 border-black rounded-none h-3 overflow-hidden">
-          <div className="h-full bg-black border-2 border-black animate-pulse" 
-               style={{ 
-                 animation: 'brutalist-loading-bar 2s ease-in-out infinite',
-                 width: '70%'
-               }} 
+        {/* Barra de Progresso Moderna */}
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300 ease-out"
+            style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
 
         {/* Indicador de Status */}
-        <div className="flex items-center space-x-2 text-xs font-black text-gray-700">
-          <div className="w-2 h-2 bg-green-500 border border-black"></div>
-          <span>SISTEMA ATIVO</span>
+        <div className="flex items-center space-x-2 text-xs font-medium text-gray-500">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span>Sistema ativo</span>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes brutalist-loading-bar {
-          0% { width: 0%; }
-          30% { width: 40%; }
-          70% { width: 80%; }
-          100% { width: 100%; }
-        }
-      `}</style>
     </div>
   )
 }
@@ -100,8 +147,8 @@ export function NavigationLoadingOverlay({
   return (
     <LoadingOverlay 
       isLoading={isLoading}
-      message={destination ? `NAVEGANDO PARA ${destination.toUpperCase()}...` : 'NAVEGANDO...'}
-      className="bg-yellow-400/80"
+      message={destination ? `Navegando para ${destination}...` : 'Navegando...'}
+      variant="navigation"
     />
   )
 }
@@ -109,7 +156,7 @@ export function NavigationLoadingOverlay({
 // Componente para loading de autenticação
 export function AuthLoadingOverlay({ 
   isLoading, 
-  action = 'AUTENTICANDO...' 
+  action = 'Autenticando...' 
 }: { 
   isLoading: boolean
   action?: string 
@@ -118,7 +165,7 @@ export function AuthLoadingOverlay({
     <LoadingOverlay 
       isLoading={isLoading}
       message={action}
-      className="bg-yellow-400/90"
+      variant="auth"
     />
   )
 }
@@ -126,7 +173,7 @@ export function AuthLoadingOverlay({
 // Componente para loading de dados
 export function DataLoadingOverlay({ 
   isLoading, 
-  message = 'CARREGANDO DADOS...' 
+  message = 'Carregando dados...' 
 }: { 
   isLoading: boolean
   message?: string 
@@ -135,24 +182,131 @@ export function DataLoadingOverlay({
     <LoadingOverlay 
       isLoading={isLoading}
       message={message}
-      className="bg-yellow-400/85"
+      variant="data"
     />
   )
 }
 
-// Componente para loading de upload
-export function UploadLoadingOverlay({ 
-  isLoading, 
-  message = 'ENVIANDO ARQUIVO...' 
+// Componente minimalista para loading rápido
+export function MinimalLoadingOverlay({ 
+  isLoading 
+}: { 
+  isLoading: boolean 
+}) {
+  const [showOverlay, setShowOverlay] = useState(false)
+
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => setShowOverlay(true), 50)
+      return () => clearTimeout(timer)
+    } else {
+      const timer = setTimeout(() => setShowOverlay(false), 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
+
+  if (!showOverlay) return null
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-white/60 backdrop-blur-sm flex items-center justify-center transition-all duration-150">
+      <div className="bg-white rounded-full p-4 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" strokeWidth={2} />
+      </div>
+    </div>
+  )
+}
+
+// Componente para loading de página inteira
+export function PageLoadingOverlay({ 
+  isLoading,
+  message = 'Carregando página...'
 }: { 
   isLoading: boolean
   message?: string 
 }) {
+  const [showOverlay, setShowOverlay] = useState(false)
+
+  useEffect(() => {
+    if (isLoading) {
+      setShowOverlay(true)
+    } else {
+      // Pequeno delay para transição suave
+      const timer = setTimeout(() => setShowOverlay(false), 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
+
+  if (!showOverlay) return null
+
   return (
-    <LoadingOverlay 
-      isLoading={isLoading}
-      message={message}
-      className="bg-yellow-400/90"
-    />
+    <div className="fixed inset-0 z-[100] bg-gradient-to-br from-gray-50/80 to-gray-100/80 backdrop-blur-md flex items-center justify-center transition-all duration-300">
+      <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/50 shadow-2xl p-6 flex flex-col items-center space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+        
+        {/* Spinner com logo */}
+        <div className="relative">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-lg">C</span>
+          </div>
+          <Loader2 className="absolute inset-0 w-12 h-12 text-blue-600/30 animate-spin" strokeWidth={1} />
+        </div>
+        
+        {/* Texto */}
+        <div className="text-center">
+          <p className="text-gray-900 font-medium">{message}</p>
+        </div>
+        
+        {/* Indicador de progresso */}
+        <div className="flex space-x-1">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Componente para loading inline
+export function InlineLoading({ 
+  message = 'Carregando...',
+  size = 'default'
+}: { 
+  message?: string
+  size?: 'sm' | 'default' | 'lg'
+}) {
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-2 text-sm'
+      case 'lg':
+        return 'px-6 py-4 text-lg'
+      default:
+        return 'px-4 py-3'
+    }
+  }
+
+  const getSpinnerSize = () => {
+    switch (size) {
+      case 'sm':
+        return 'w-4 h-4'
+      case 'lg':
+        return 'w-6 h-6'
+      default:
+        return 'w-5 h-5'
+    }
+  }
+
+  return (
+    <div className={cn(
+      "bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center space-x-3",
+      getSizeClasses()
+    )}>
+      <Loader2 className={cn("text-blue-600 animate-spin", getSpinnerSize())} />
+      <span className="text-gray-700 font-medium">{message}</span>
+    </div>
   )
 }

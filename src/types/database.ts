@@ -1001,43 +1001,73 @@ export interface Database {
           id: string
           reviewer_id: string
           reviewed_id: string
-          review_type: 'client' | 'professional'
+          ad_id: string | null
+          review_type: string | null
           rating_person: number
           rating_work: number | null
           punctuality: number | null
           quality: number | null
           comment: string | null
-          is_verified: boolean
-          created_at: string
-          updated_at: string
+          title: string | null
+          pros: string[] | null
+          cons: string[] | null
+          is_recommended: boolean | null
+          service_date: string | null
+          response_text: string | null
+          response_date: string | null
+          is_verified: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          positive_points: string[] | null
+          negative_points: string[] | null
         }
         Insert: {
           id?: string
           reviewer_id: string
           reviewed_id: string
-          review_type: 'client' | 'professional'
+          ad_id?: string | null
+          review_type?: string | null
           rating_person: number
           rating_work?: number | null
           punctuality?: number | null
           quality?: number | null
           comment?: string | null
-          is_verified?: boolean
-          created_at?: string
-          updated_at?: string
+          title?: string | null
+          pros?: string[] | null
+          cons?: string[] | null
+          is_recommended?: boolean | null
+          service_date?: string | null
+          response_text?: string | null
+          response_date?: string | null
+          is_verified?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          positive_points?: string[] | null
+          negative_points?: string[] | null
         }
         Update: {
           id?: string
           reviewer_id?: string
           reviewed_id?: string
-          review_type?: 'client' | 'professional'
+          ad_id?: string | null
+          review_type?: string | null
           rating_person?: number
           rating_work?: number | null
           punctuality?: number | null
           quality?: number | null
           comment?: string | null
-          is_verified?: boolean
-          created_at?: string
-          updated_at?: string
+          title?: string | null
+          pros?: string[] | null
+          cons?: string[] | null
+          is_recommended?: boolean | null
+          service_date?: string | null
+          response_text?: string | null
+          response_date?: string | null
+          is_verified?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          positive_points?: string[] | null
+          negative_points?: string[] | null
         }
       }
       verification_documents: {

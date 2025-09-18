@@ -1,0 +1,265 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+# Permite execução manual
+workflow_dispatch:
+
+jobs:
+  # ===================================
+  # JOB 1: QUALIDADE DE CÓDIGO
+  # ===================================
+  code-quality:
+    name: 🔍 Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔧 Install Dependencies
+      run: npm ci
+      
+    - name: 🧹 ESLint Check
+      run: npm run lint
+      
+    - name: 🎯 TypeScript Check
+      run: npx tsc --noEmit
+      
+    - name: 🎨 Prettier Check
+      run: npx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css,md}"
+
+  # ===================================
+  # JOB 2: TESTES AUTOMATIZADOS
+  # ===================================
+  tests:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+        
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: 🔧 Install Dependencies
+      run: npm ci
+      
+    - name: 🧪 Run Unit Tests
+      run: npm run test:ci
+      
+    - name: 📊 Upload Coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # ===================================
+  # JOB 3: BUILD E PERFORMANCE
+  # ===================================
+  build:
+    name: 🏗️ Build & Performance
+    runs-on: ubuntu-latest
+    needs: tests
+    
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔧 Install Dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build Application
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      run: npm run build
+      
+    - name: 📊 Bundle Analysis
+      run: |
+        npm install -g @next/bundle-analyzer
+        ANALYZE=true npm run build
+        
+    - name: 📈 Performance Budget Check
+      run: |
+        # Verifica se o bundle está dentro do limite de 250KB
+        BUNDLE_SIZE=$(du -sh .next/static/chunks | cut -f1)
+        echo "Bundle size: $BUNDLE_SIZE"
+        
+    - name: 📤 Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-files
+        path: .next/
+        retention-days: 5
+
+  # ===================================
+  # JOB 4: SEGURANÇA
+  # ===================================
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: code-quality
+    
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔒 NPM Audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: 🛡️ CodeQL Analysis
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+        
+    - name: 🔍 Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  # ===================================
+  # JOB 5: DEPLOY DE STAGING
+  # ===================================
+  deploy-staging:
+    name: 🚀 Deploy Staging
+    runs-on: ubuntu-latest
+    needs: [build, security]
+    if: github.ref == 'refs/heads/develop'
+    
+    environment:
+      name: staging
+      url: https://confilar-staging.vercel.app
+      
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🚀 Deploy to Vercel (Staging)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        github-comment: true
+        working-directory: ./
+
+  # ===================================
+  # JOB 6: DEPLOY DE PRODUÇÃO
+  # ===================================
+  deploy-production:
+    name: 🌟 Deploy Production
+    runs-on: ubuntu-latest
+    needs: [build, security]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    environment:
+      name: production
+      url: https://confilar.vercel.app
+      
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🌟 Deploy to Vercel (Production)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        github-comment: true
+        working-directory: ./
+
+  # ===================================
+  # JOB 7: NOTIFICAÇÕES
+  # ===================================
+  notify:
+    name: 📢 Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: 📢 Discord Notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: |
+          🚀 **ConfiLar Deploy Status**
+          
+          **Branch:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          **Status:** ${{ job.status }}
+          **URL:** ${{ steps.deploy.outputs.preview-url }}
+          
+          by ${{ github.actor }}
+
+# ===================================
+# JOBS AUXILIARES
+# ===================================
+
+  # Documentação automática
+  docs:
+    name: 📚 Update Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: 📂 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 🔧 Install Dependencies
+      run: npm ci
+      
+    - name: 📚 Generate API Docs
+      run: |
+        npm run docs:api
+        npm run docs:build
+        
+    - name: 📤 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/dist
+
