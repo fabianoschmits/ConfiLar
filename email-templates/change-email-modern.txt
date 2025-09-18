@@ -1,0 +1,39 @@
+ConfiLar - Confirmação de Troca de Email
+=====================================
+
+Olá! 👋
+
+Você solicitou a troca do email da sua conta no ConfiLar. 
+Para confirmar esta alteração, clique no link abaixo.
+
+📧 Novo Email:
+{{ .Email }}
+
+✅ Confirmar Troca de Email:
+{{ .ConfirmationURL }}
+
+⏰ Tempo Limitado
+Este link é válido por 24 horas. Após esse período, 
+você precisará solicitar uma nova troca de email.
+
+🔒 Informações de Segurança
+Esta confirmação garante que você tenha controle total sobre sua conta:
+• Protege contra alterações não autorizadas
+• Mantém a segurança dos seus dados
+• Garante que você receba notificações importantes
+
+⚠️ Não solicitou esta troca?
+Se você não solicitou a troca de email, ignore este email e considere alterar sua senha 
+para proteger sua conta contra acesso não autorizado.
+
+Não consegue clicar no link?
+Copie e cole este link no seu navegador:
+{{ .ConfirmationURL }}
+
+=====================================
+ConfiLar - Conectando você aos melhores profissionais
+
+📱 App Mobile | 💬 Suporte | 📋 Central de Ajuda
+
+Este email foi enviado automaticamente. Não responda a esta mensagem.
+Para sua segurança, este link expira em 24 horas.
