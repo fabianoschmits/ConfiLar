@@ -142,10 +142,32 @@ export const SignUpSchema = LoginSchema.extend({
   
   user_type: z.enum(['client', 'professional']),
   
+  // Campos opcionais para compatibilidade com formulários complexos
+  phone: z.string().optional(),
+  cpf_cnpj: z.string().optional(),
+  birth_date: z.string().optional(),
+  location_state: z.string().optional(),
+  location_city: z.string().optional(),
+  neighborhood: z.string().optional(),
+  bio: z.string().optional(),
+  services_offered: z.array(z.string()).optional(),
+  experience_years: z.string().optional(),
+  emergency_service: z.boolean().optional(),
+  insurance_coverage: z.boolean().optional(),
+  gender: z.enum(['male', 'female']).optional(),
+  avatar_data: z.any().optional(),
+  
   confirmPassword: z
     .string()
     .min(6, 'Confirmação de senha deve ter pelo menos 6 caracteres')
-}).refine((data) => data.password === data.confirmPassword, {
+    .optional()
+}).refine((data) => {
+  // Só validar confirmação de senha se o campo estiver presente
+  if (data.confirmPassword) {
+    return data.password === data.confirmPassword
+  }
+  return true
+}, {
   message: 'Senhas não coincidem',
   path: ['confirmPassword']
 })

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { FloatingChat, RealtimeNotification } from '@/components/chat'
+import { FloatingChat } from '@/components/chat'
 
 export default function FloatingChatWrapper() {
   const { user, profile } = useAuthContext()
@@ -15,7 +15,6 @@ export default function FloatingChatWrapper() {
   return (
     <>
       <FloatingChat />
-      <RealtimeNotification />
     </>
   )
 }

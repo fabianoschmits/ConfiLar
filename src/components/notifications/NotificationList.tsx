@@ -338,10 +338,10 @@ export const NotificationList: React.FC = () => {
                   <div className="flex items-center gap-2 mt-3">
                     {!notification.is_read && (
                       <Button
-                        variant="ghost"
+                        variant="default"
                         size="sm"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-3 text-xs bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         <Check className="h-3 w-3 mr-1" />
                         Marcar como lida
@@ -353,17 +353,17 @@ export const NotificationList: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => window.open(notification.action_url, '_blank')}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-3 text-xs border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         {(notification as any).action_label || 'Ver detalhes'}
                       </Button>
                     )}
 
                     <Button
-                      variant="ghost"
+                      variant="default"
                       size="sm"
                       onClick={() => handleRemoveNotification(notification.id)}
-                      className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="h-7 px-3 text-xs bg-red-500 hover:bg-red-600 text-white border-0 shadow-sm hover:shadow-md transition-all duration-200"
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
                       Remover

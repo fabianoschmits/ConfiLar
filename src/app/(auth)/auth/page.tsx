@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from '@/components/forms/LoginForm'
 import { SimpleRegistrationForm } from '@/components/forms/SimpleRegistrationForm'
-import { Check, ArrowLeft, Sparkles } from 'lucide-react'
+import { Check, ArrowLeft, Sparkles, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function AuthPage() {
@@ -28,6 +28,13 @@ export default function AuthPage() {
     if (tab === 'register') {
       setActiveTab('register')
     }
+
+    // Verificar se há mensagem de conta criada
+    const message = searchParams.get('message')
+    if (message === 'account_created') {
+      setRegistrationComplete(true)
+      setActiveTab('login')
+    }
   }, [searchParams])
 
   const handleRegistrationComplete = () => {
@@ -41,32 +48,6 @@ export default function AuthPage() {
 
   const handleLoginClick = () => {
     setRegistrationComplete(false)
-  }
-
-  if (registrationComplete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
-          <CardContent className="p-8">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-              <Check size={40} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-              Conta criada com sucesso!
-            </h1>
-            <p className="text-gray-600 mb-8">
-              Agora você pode fazer login e começar a usar a plataforma.
-            </p>
-            <Button 
-              onClick={handleLoginClick}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            >
-              Fazer Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
   }
 
   return (

@@ -8,7 +8,7 @@ interface FloatingChatContextType {
   selectedConversationId?: string
   targetUserId?: string
   targetUserName?: string
-  openChat: (userId?: string, userName?: string) => void
+  openChat: (userIdOrConversationId?: string, userName?: string) => void
   closeChat: () => void
   selectConversation: (conversationId?: string) => void
   setSelectedConversation: (conversationId?: string) => void
@@ -25,24 +25,43 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
   // Usar o hook de mensagens para verificar conversas existentes
   const { checkExistingConversation, setSelectedConversation: setSupabaseConversation, fetchMessages, createConversation } = useSupabaseMessages()
 
-  const openChat = useCallback(async (userId?: string, userName?: string) => {
-    console.log('🔐 Abrindo chat...', { userId, userName })
-    setTargetUserId(userId)
-    setTargetUserName(userName)
-    setIsOpen(true)
+  const openChat = useCallback(async (userIdOrConversationId?: string, userName?: string) => {
+    console.log('🔐 Abrindo chat...', { userIdOrConversationId, userName })
     
-    // Se não há userId, apenas abrir o chat (lista de conversas)
-    if (!userId) {
+    // Se não há parâmetro, apenas abrir o chat (lista de conversas)
+    if (!userIdOrConversationId) {
       console.log('📋 Abrindo lista de conversas')
       setSelectedConversationId(undefined)
       setSupabaseConversation(null)
+      setTargetUserId(undefined)
+      setTargetUserName(undefined)
+      setIsOpen(true)
       return
     }
     
-    // Se há userId, verificar se já existe conversa
+    // Verificar se é um conversationId (UUID) ou userId
+    const isConversationId = userIdOrConversationId.includes('-') && userIdOrConversationId.length > 20
+    
+    if (isConversationId) {
+      // É um conversationId - abrir conversa diretamente
+      console.log('💬 Abrindo conversa existente:', userIdOrConversationId)
+      setSelectedConversationId(userIdOrConversationId)
+      setSupabaseConversation(userIdOrConversationId)
+      setTargetUserId(undefined)
+      setTargetUserName(undefined)
+      setIsOpen(true)
+      await fetchMessages(userIdOrConversationId)
+      return
+    }
+    
+    // É um userId - seguir fluxo normal
+    setTargetUserId(userIdOrConversationId)
+    setTargetUserName(userName)
+    setIsOpen(true)
+    
     try {
-      console.log('🔍 Verificando conversa existente com:', userId)
-      const existingConversationId = await checkExistingConversation(userId)
+      console.log('🔍 Verificando conversa existente com:', userIdOrConversationId)
+      const existingConversationId = await checkExistingConversation(userIdOrConversationId)
       
       if (existingConversationId) {
         console.log('✅ Conversa existente encontrada:', existingConversationId)
@@ -53,7 +72,7 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
       } else {
         console.log('🆕 Nenhuma conversa existente, criando nova conversa automaticamente')
         // Criar nova conversa automaticamente
-        const newConversationId = await createConversation(userId)
+        const newConversationId = await createConversation(userIdOrConversationId)
         if (newConversationId) {
           setSelectedConversationId(newConversationId)
           setSupabaseConversation(newConversationId)

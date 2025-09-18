@@ -1,24 +1,28 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// Tabler Icons - Estilo Brutalista
+// Lucide React Icons - Tema Moderno
 import {
-  IconBell,
-  IconCheck,
-  IconTrash,
-  IconSettings,
-  IconX,
-  IconArrowLeft,
-  IconMessageCircle,
-  IconStar,
-  IconCalendar,
-  IconShield,
-  IconTrophy,
-  IconInfoCircle,
-  IconAlertTriangle,
-  IconLoader2
-} from '@tabler/icons-react'
+  Bell,
+  Check,
+  Trash2,
+  Settings,
+  X,
+  ArrowLeft,
+  MessageCircle,
+  Star,
+  Calendar,
+  Shield,
+  Trophy,
+  Info,
+  AlertTriangle,
+  Loader2,
+  MoreHorizontal,
+  Eye,
+  EyeOff
+} from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
+import { useMessages } from '@/hooks/useMessages';
 import { useFloatingChat } from '@/contexts/FloatingChatContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,24 +45,28 @@ interface NotificationPreferences {
   push_enabled: boolean;
   message_notifications: boolean;
   review_notifications: boolean;
-  booking_notifications: boolean;
-  achievement_notifications: boolean;
+  system_notifications: boolean;
+  info_notifications: boolean;
 }
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'message':
-      return <div className="w-2 h-2 bg-blue-500 rounded-full" />;
+      return <MessageCircle className="h-4 w-4 text-blue-600" />;
     case 'review':
-      return <div className="w-2 h-2 bg-yellow-500 rounded-full" />;
+      return <Star className="h-4 w-4 text-yellow-600" />;
     case 'booking':
-      return <div className="w-2 h-2 bg-green-500 rounded-full" />;
+      return <Calendar className="h-4 w-4 text-green-600" />;
     case 'verification':
-      return <div className="w-2 h-2 bg-purple-500 rounded-full" />;
+      return <Shield className="h-4 w-4 text-purple-600" />;
     case 'achievement':
-      return <div className="w-2 h-2 bg-orange-500 rounded-full" />;
+      return <Trophy className="h-4 w-4 text-orange-600" />;
+    case 'info':
+      return <Info className="h-4 w-4 text-gray-600" />;
+    case 'warning':
+      return <AlertTriangle className="h-4 w-4 text-red-600" />;
     default:
-      return <div className="w-2 h-2 bg-gray-500 rounded-full" />;
+      return <Bell className="h-4 w-4 text-gray-600" />;
   }
 };
 
@@ -88,23 +96,59 @@ export const NotificationDropdown: React.FC = () => {
     markAllAsRead,
     removeNotification,
     clearAll,
-    isLoading 
+    isLoading,
+    addTestNotification
   } = useSupabaseNotifications();
   
+  // Usar o mesmo sistema do chat flutuante para mensagens
+  const { conversations, getTotalUnreadCount } = useMessages();
   const { openChat } = useFloatingChat();
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  
+  // Calcular total de mensagens não lidas (mesmo sistema do chat flutuante)
+  const totalUnreadMessages = getTotalUnreadCount();
+  
+  // Criar notificações de mensagem baseadas nas conversas
+  const messageNotifications = conversations
+    .filter(conv => conv.unread_count && conv.unread_count > 0)
+    .map(conv => ({
+      id: `msg-${conv.id}`,
+      user_id: user?.id || '',
+      title: `Nova mensagem de ${conv.client_id === user?.id ? conv.professional?.full_name : conv.client?.full_name}`,
+      message: conv.last_message_preview || 'Nova mensagem',
+      type: 'message',
+      is_read: false,
+      created_at: conv.last_message_at || conv.created_at,
+      action_url: null,
+      priority: 'normal' as const,
+      metadata: {
+        sender_id: conv.client_id === user?.id ? conv.professional_id : conv.client_id,
+        sender_name: conv.client_id === user?.id ? conv.professional?.full_name : conv.client?.full_name,
+        conversation_id: conv.id
+      }
+    }));
+  
+  // Combinar notificações do banco com notificações de mensagem
+  const allNotifications = [...notifications, ...messageNotifications];
+  const totalUnreadCount = unreadCount + totalUnreadMessages;
+  
+  // Usar o contador total para exibição
+  const displayUnreadCount = totalUnreadCount;
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push_enabled: true,
     message_notifications: true,
     review_notifications: true,
-    booking_notifications: true,
-    achievement_notifications: true,
+    system_notifications: true,
+    info_notifications: true,
   });
   const [saving, setSaving] = useState(false);
   const [tableExists, setTableExists] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  const recentNotifications = notifications.slice(0, 8);
+  const recentNotifications = allNotifications
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 8);
 
   // Carregar preferências do usuário
   const loadPreferences = async () => {
@@ -133,8 +177,8 @@ export const NotificationDropdown: React.FC = () => {
           push_enabled: data.push_enabled ?? true,
           message_notifications: data.message_notifications ?? true,
           review_notifications: data.review_notifications ?? true,
-          booking_notifications: data.booking_notifications ?? true,
-          achievement_notifications: data.achievement_notifications ?? true,
+          system_notifications: data.system_notifications ?? true,
+          info_notifications: data.info_notifications ?? true,
         });
       }
     } catch (error) {
@@ -194,18 +238,17 @@ export const NotificationDropdown: React.FC = () => {
 
   const handleDeleteNotification = async (id: string) => {
     await removeNotification(id);
-    toast.success('Notificação removida');
   };
 
   const handleClearAll = async () => {
     await clearAll();
-    toast.success('Todas as notificações foram removidas');
   };
 
   // Marcar todas as notificações como lidas quando abrir o dropdown
   const handleOpenChange = async (open: boolean) => {
     setIsOpen(open);
-    if (open && unreadCount > 0) {
+    setSelectedIndex(-1); // Resetar seleção
+    if (open && displayUnreadCount > 0) {
       // Marcar todas as notificações visíveis como lidas quando abrir
       await markAllAsRead();
     }
@@ -216,7 +259,7 @@ export const NotificationDropdown: React.FC = () => {
   };
 
   // Lidar com clique em notificação
-  const handleNotificationClick = async (notification: { id: string; is_read: boolean; type: string; metadata?: { sender_id?: string; sender_name?: string }; action_url?: string }) => {
+  const handleNotificationClick = async (notification: { id: string; is_read: boolean; type: string; metadata?: { sender_id?: string; sender_name?: string; conversation_id?: string }; action_url?: string }) => {
     // Marcar como lida se não estiver lida
     if (!notification.is_read) {
       await handleMarkAsRead(notification.id);
@@ -229,30 +272,151 @@ export const NotificationDropdown: React.FC = () => {
     if (notification.type === 'message' && notification.metadata?.sender_id) {
       const senderId = notification.metadata.sender_id as string;
       const senderName = (notification.metadata.sender_name as string) || 'Usuário';
-      openChat(senderId, senderName);
+      
+      // Se tiver conversation_id, usar ele para abrir a conversa específica
+      if (notification.metadata.conversation_id) {
+        openChat(notification.metadata.conversation_id, senderId);
+      } else {
+        openChat(senderId, senderName);
+      }
     } else if (notification.action_url) {
       // Para outros tipos de notificação, usar action_url
       window.open(notification.action_url, '_blank');
     }
   };
 
-  const handleToggle = (key: keyof NotificationPreferences) => {
+  const handleToggle = async (key: keyof NotificationPreferences) => {
+    const newValue = !preferences[key];
+    
+    // Atualizar estado local imediatamente
     setPreferences(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: newValue
     }));
+
+    // Salvar automaticamente no banco sem notificação
+    if (user && tableExists) {
+      try {
+        setSaving(true);
+        
+        const { error } = await supabase
+          .from('notification_preferences')
+          .upsert({
+            user_id: user.id,
+            [key]: newValue,
+            updated_at: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('Erro ao salvar preferência:', error);
+          // Reverter estado local em caso de erro
+          setPreferences(prev => ({
+            ...prev,
+            [key]: !newValue
+          }));
+        }
+      } catch (error) {
+        console.error('Erro ao salvar preferência:', error);
+        // Reverter estado local em caso de erro
+        setPreferences(prev => ({
+          ...prev,
+          [key]: !newValue
+        }));
+      } finally {
+        setSaving(false);
+      }
+    }
   };
+
+  // Hook para gerenciar teclas de seleção
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          if (showSettings) {
+            // Navegar pelas configurações
+            const settingsItems = ['push_enabled', 'message_notifications', 'review_notifications', 'system_notifications', 'info_notifications'];
+            setSelectedIndex(prev => Math.min(prev + 1, settingsItems.length - 1));
+          } else {
+            // Navegar pelas notificações
+            setSelectedIndex(prev => Math.min(prev + 1, recentNotifications.length - 1));
+          }
+          break;
+        
+        case 'ArrowUp':
+          event.preventDefault();
+          setSelectedIndex(prev => Math.max(prev - 1, -1));
+          break;
+        
+        case 'Enter':
+          event.preventDefault();
+          if (showSettings) {
+            // Alternar configuração selecionada
+            const settingsKeys: (keyof NotificationPreferences)[] = ['push_enabled', 'message_notifications', 'review_notifications', 'system_notifications', 'info_notifications'];
+            if (selectedIndex >= 0 && selectedIndex < settingsKeys.length) {
+              handleToggle(settingsKeys[selectedIndex]);
+            }
+          } else if (selectedIndex >= 0 && selectedIndex < recentNotifications.length) {
+            // Abrir notificação selecionada
+            handleNotificationClick(recentNotifications[selectedIndex]);
+          }
+          break;
+        
+        case 'Escape':
+          event.preventDefault();
+          if (showSettings) {
+            setShowSettings(false);
+            setSelectedIndex(-1);
+          } else {
+            setIsOpen(false);
+            setSelectedIndex(-1);
+          }
+          break;
+        
+        case 's':
+        case 'S':
+          if (!showSettings) {
+            event.preventDefault();
+            setShowSettings(true);
+            setSelectedIndex(0);
+          }
+          break;
+        
+        case 'c':
+        case 'C':
+          if (!showSettings && recentNotifications.length > 0) {
+            event.preventDefault();
+            handleClearAll();
+          }
+          break;
+        
+        case 'm':
+        case 'M':
+          if (!showSettings && displayUnreadCount > 0) {
+            event.preventDefault();
+            handleMarkAllAsRead();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, showSettings, selectedIndex, recentNotifications, displayUnreadCount, handleToggle, handleNotificationClick, handleClearAll, handleMarkAllAsRead]);
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative p-2 h-10 w-10 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+          className="relative p-2 h-10 w-10 bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 shadow-lg hover:shadow-xl hover:bg-white transition-all duration-200 rounded-lg"
         >
-          <IconBell size={20} stroke={2} />
-          {unreadCount > 0 && (
-            <div className="absolute -top-1 -right-1 h-6 w-6 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-xs font-black">
-              {unreadCount > 99 ? '99+' : unreadCount}
+          <Bell size={20} className="text-gray-600" />
+          {displayUnreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-md animate-pulse">
+              {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
             </div>
           )}
         </button>
@@ -260,140 +424,163 @@ export const NotificationDropdown: React.FC = () => {
 
       <DropdownMenuContent 
         align="end" 
-        className="w-96 max-h-[500px] overflow-hidden bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+        className="w-80 sm:w-96 max-h-[80vh] overflow-hidden bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-xl mx-2 sm:mx-0"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
           tableExists ? (
-            <div className="w-96">
-              {/* Header das Configurações Brutalista */}
-              <div className="flex items-center justify-between p-4 border-b-4 border-black bg-yellow-400">
-                <div className="flex items-center gap-3">
+            <div className="w-full">
+              {/* Header das Configurações Moderno */}
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="p-2 h-8 w-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 rounded-lg"
                   >
-                    <IconArrowLeft size={14} stroke={2} />
+                    <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5" />
                   </button>
-                  <IconSettings size={16} stroke={2} className="text-black" />
-                  <span className="text-sm font-black text-black uppercase">CONFIGURAÇÕES</span>
+                  <Settings size={14} className="text-gray-600 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm font-semibold text-gray-900">Configurações</span>
                 </div>
                 <button
                   onClick={savePreferences}
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-black text-white bg-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 rounded-lg"
                 >
                   {saving ? (
-                    <div className="flex items-center gap-2">
-                      <IconLoader2 size={12} stroke={2} className="animate-spin" />
-                      <span>SALVANDO</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Loader2 size={10} className="animate-spin sm:w-3 sm:h-3" />
+                      <span>Salvando</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={12} stroke={2} />
-                      <span>SALVAR</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Check size={10} className="sm:w-3 sm:h-3" />
+                      <span>Salvar</span>
                     </div>
                   )}
                 </button>
               </div>
 
-              {/* Conteúdo das Configurações Brutalista */}
-              <div className="p-4 space-y-6 max-h-80 overflow-y-auto bg-white">
+              {/* Conteúdo das Configurações Moderno */}
+              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white">
                 {/* Canais de Notificação */}
                 <div className="space-y-4">
-                  <div className="px-3 py-2 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                    <h4 className="text-sm font-black uppercase">CANAIS DE NOTIFICAÇÃO</h4>
+                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
+                    <h4 className="text-xs sm:text-sm font-semibold text-blue-900">Canais de Notificação</h4>
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="push_enabled" className="text-sm font-black text-black">NOTIFICAÇÕES PUSH</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <label htmlFor="push_enabled" className="text-xs sm:text-sm font-medium text-gray-900">Notificações Push</label>
+                      <div className="flex items-center gap-2">
+                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
-                        id="push_enabled"
                         onClick={() => handleToggle('push_enabled')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.push_enabled ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.push_enabled ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
+                          disabled={saving}
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            preferences.push_enabled ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              preferences.push_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
                       </button>
+                      </div>
                     </div>
-
                   </div>
                 </div>
 
-                {/* Separador Brutalista */}
-                <div className="h-2 bg-black border-2 border-black"></div>
+                {/* Separador Moderno */}
+                <div className="h-px bg-gray-200"></div>
 
                 {/* Tipos de Notificação */}
                 <div className="space-y-4">
-                  <div className="px-3 py-2 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                    <h4 className="text-sm font-black uppercase">TIPOS DE NOTIFICAÇÃO</h4>
+                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+                    <h4 className="text-xs sm:text-sm font-semibold text-green-900">Tipos de Notificação</h4>
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="message_notifications" className="text-sm font-black text-black">MENSAGENS</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <label htmlFor="message_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Mensagens</label>
+                      <div className="flex items-center gap-2">
+                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
-                        id="message_notifications"
                         onClick={() => handleToggle('message_notifications')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.message_notifications ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.message_notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
+                          disabled={saving}
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            preferences.message_notifications ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              preferences.message_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
                       </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="review_notifications" className="text-sm font-black text-black">AVALIAÇÕES</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <label htmlFor="review_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Avaliações</label>
+                      <div className="flex items-center gap-2">
+                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
-                        id="review_notifications"
                         onClick={() => handleToggle('review_notifications')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.review_notifications ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.review_notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
+                          disabled={saving}
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            preferences.review_notifications ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              preferences.review_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
                       </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="booking_notifications" className="text-sm font-black text-black">AGENDAMENTOS</label>
-                      <button
-                        id="booking_notifications"
-                        onClick={() => handleToggle('booking_notifications')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.booking_notifications ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.booking_notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
-                      </button>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <label htmlFor="system_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Sistema</label>
+                      <div className="flex items-center gap-2">
+                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
+                        <button
+                          onClick={() => handleToggle('system_notifications')}
+                          disabled={saving}
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            preferences.system_notifications ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              preferences.system_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-gray-100 border-2 border-black">
-                      <label htmlFor="achievement_notifications" className="text-sm font-black text-black">CONQUISTAS</label>
-                      <button
-                        id="achievement_notifications"
-                        onClick={() => handleToggle('achievement_notifications')}
-                        className={`w-12 h-6 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.achievement_notifications ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 bg-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all ${
-                          preferences.achievement_notifications ? 'translate-x-6' : 'translate-x-0'
-                        }`} />
-                      </button>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <label htmlFor="info_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Informações</label>
+                      <div className="flex items-center gap-2">
+                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
+                        <button
+                          onClick={() => handleToggle('info_notifications')}
+                          disabled={saving}
+                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            preferences.info_notifications ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                              preferences.info_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -403,55 +590,90 @@ export const NotificationDropdown: React.FC = () => {
           )
         ) : (
           <>
-            {/* Header das Notificações Brutalista */}
-            <div className="flex items-center justify-between p-4 border-b-4 border-black bg-yellow-400">
-              <div className="flex items-center gap-3">
-                <IconBell size={16} stroke={2} className="text-black" />
-                <span className="text-sm font-black text-black uppercase">NOTIFICAÇÕES</span>
-                {unreadCount > 0 && (
-                  <div className="px-2 py-1 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-xs font-black">
-                    {unreadCount} NÃO LIDAS
-                  </div>
+            {/* Header das Notificações Moderno */}
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Bell size={14} className="text-blue-600 sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-semibold text-gray-900">Notificações</span>
+                {displayUnreadCount > 0 && (
+                  <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                    {displayUnreadCount} não lidas
+                  </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="p-2 h-8 w-8 bg-black text-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                  className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 rounded-lg"
+                  title="Configurações (S)"
                 >
-                  <IconSettings size={16} stroke={2} />
+                  <Settings size={14} className="sm:w-4 sm:h-4" />
                 </button>
                 {notifications.length > 0 && (
                   <button
                     onClick={handleClearAll}
-                    className="p-2 h-8 w-8 bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg"
+                    title="Limpar todas (C)"
                   >
-                    <IconTrash size={16} stroke={2} />
+                    <Trash2 size={14} className="sm:w-4 sm:h-4" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Lista de Notificações Brutalista */}
+            {/* Instruções de Teclado */}
+                  <div className="px-3 sm:px-4 py-2 bg-gray-50 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 gap-2 sm:gap-0">
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        <span className="flex items-center gap-1">
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">↑↓</kbd>
+                          <span className="hidden sm:inline">Navegar</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">Enter</kbd>
+                          <span className="hidden sm:inline">Selecionar</span>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">S</kbd>
+                          <span className="hidden sm:inline">Configurações</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 sm:gap-4">
+                        {displayUnreadCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">M</kbd>
+                            <span className="hidden sm:inline">Marcar todas</span>
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">Esc</kbd>
+                          <span className="hidden sm:inline">Fechar</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+            {/* Lista de Notificações Moderna */}
             <div className="max-h-80 overflow-y-auto bg-white">
               {isLoading ? (
-                <div className="text-center py-8 bg-gray-100 border-2 border-black m-4">
-                  <div className="w-8 h-8 border-4 border-black border-t-transparent animate-spin mx-auto mb-4"></div>
-                  <p className="text-sm font-black text-black uppercase">CARREGANDO NOTIFICAÇÕES...</p>
+                <div className="text-center py-8 bg-gray-50 m-4 rounded-lg">
+                  <Loader2 size={32} className="mx-auto mb-4 text-gray-400 animate-spin" />
+                  <p className="text-sm font-medium text-gray-600">Carregando notificações...</p>
                 </div>
               ) : recentNotifications.length === 0 ? (
-                <div className="text-center py-8 bg-gray-100 border-2 border-black m-4">
-                  <IconBell size={32} stroke={2} className="mx-auto mb-4 text-gray-600" />
-                  <p className="text-sm font-black text-black uppercase">NENHUMA NOTIFICAÇÃO</p>
+                <div className="text-center py-8 bg-gray-50 m-4 rounded-lg">
+                  <Bell size={32} className="mx-auto mb-4 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-600">Nenhuma notificação</p>
                 </div>
               ) : (
-                <div className="space-y-2 p-2">
+                <div className="space-y-1 p-2">
                   {recentNotifications.map((notification, index) => (
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "flex items-start gap-3 p-4 cursor-pointer border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all",
-                          !notification.is_read ? "bg-blue-100" : "bg-gray-100"
+                          "flex items-start gap-3 p-3 cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg",
+                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white hover:bg-gray-50",
+                          selectedIndex === index && "ring-2 ring-blue-500 bg-blue-50"
                         )}
                         onClick={() => handleNotificationClick(notification)}
                       >
@@ -461,17 +683,17 @@ export const NotificationDropdown: React.FC = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <h4 className={cn(
-                                "text-sm font-black line-clamp-2 uppercase",
+                                "text-sm font-semibold line-clamp-2",
                                 !notification.is_read && "text-blue-900"
                               )}>
                                 {notification.title}
                               </h4>
-                              <span className="text-xs font-black text-gray-700 whitespace-nowrap ml-2">
+                              <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                                 {formatTimestamp(notification.created_at)}
                               </span>
                             </div>
                             
-                            <p className="text-xs font-bold text-gray-800 mt-1 line-clamp-2">
+                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                               {notification.message}
                             </p>
                           </div>
@@ -480,60 +702,58 @@ export const NotificationDropdown: React.FC = () => {
                         <div className="flex items-center gap-1">
                           {!notification.is_read && (
                             <button
-                              className="p-1 h-6 w-6 bg-green-500 text-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                              className="p-1 h-6 w-6 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleMarkAsRead(notification.id);
                               }}
+                              title="Marcar como lida"
                             >
-                              <IconCheck size={12} stroke={2} />
+                              <Check size={12} />
                             </button>
                           )}
                           
                           <button
-                            className="p-1 h-6 w-6 bg-red-500 text-white border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+                            className="p-1 h-6 w-6 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteNotification(notification.id);
                             }}
+                            title="Remover notificação"
                           >
-                            <IconX size={12} stroke={2} />
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </div>
-                      
-                      {index < recentNotifications.length - 1 && (
-                        <div className="h-1 bg-black mx-2"></div>
-                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Footer Brutalista */}
+            {/* Footer Moderno */}
             {notifications.length > 0 && (
-              <div className="p-4 border-t-4 border-black bg-yellow-400">
-                <div className="flex items-center justify-between gap-3">
-                  {unreadCount > 0 && (
+              <div className="p-3 sm:p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
+                  {displayUnreadCount > 0 && (
                     <button
                       onClick={handleMarkAllAsRead}
-                      className="px-4 py-2 text-xs font-black text-white bg-green-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                      className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-green-500 text-white border border-green-600 shadow-sm hover:shadow-md hover:bg-green-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"
                     >
-                      <div className="flex items-center gap-2">
-                        <IconCheck size={12} stroke={2} />
-                        <span>MARCAR TODAS COMO LIDAS</span>
+                      <div className="flex items-center justify-center gap-2">
+                        <Check size={10} className="sm:w-3 sm:h-3" />
+                        <span>Marcar todas como lidas</span>
                       </div>
                     </button>
                   )}
                   
                   <button
                     onClick={handleClearAll}
-                    className="px-4 py-2 text-xs font-black text-white bg-red-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ml-auto"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium sm:ml-auto"
                   >
-                    <div className="flex items-center gap-2">
-                      <IconTrash size={12} stroke={2} />
-                      <span>LIMPAR TODAS</span>
+                    <div className="flex items-center justify-center gap-2">
+                      <Trash2 size={10} className="sm:w-3 sm:h-3" />
+                      <span>Limpar todas</span>
                     </div>
                   </button>
                 </div>
