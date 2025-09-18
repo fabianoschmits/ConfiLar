@@ -1,0 +1,27 @@
+ConfiLar - Código de Reautenticação
+=====================================
+
+Olá! 👋
+
+Para sua segurança, solicitamos que você confirme sua identidade. 
+Use o código abaixo para continuar acessando sua conta no ConfiLar.
+
+🔐 Código de Verificação:
+{{ .Token }}
+
+⏰ Tempo Limitado
+Este código é válido por 10 minutos. Após esse período, 
+você precisará solicitar um novo código.
+
+🔒 Informações de Segurança
+Este código foi gerado para proteger sua conta. Nunca compartilhe este código com ninguém.
+
+Se você não solicitou este código, ignore este email e considere alterar sua senha.
+
+=====================================
+ConfiLar - Conectando você aos melhores profissionais
+
+📱 App Mobile | 💬 Suporte | 📋 Central de Ajuda
+
+Este email foi enviado automaticamente. Não responda a esta mensagem.
+Para sua segurança, este código expira em 10 minutos.
