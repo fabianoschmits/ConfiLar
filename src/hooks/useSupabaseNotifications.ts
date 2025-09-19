@@ -211,12 +211,16 @@ export function useSupabaseNotifications() {
     }
   }
 
-  // Sincronização em tempo real melhorada
+  // Sincronização em tempo real DESABILITADA TEMPORARIAMENTE
   useEffect(() => {
     if (!profile?.id) {
       console.log('🔔 useSupabaseNotifications: Profile não disponível para canal de tempo real')
       return
     }
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LIMITE DO SUPABASE
+    console.log('🔕 Realtime desabilitado temporariamente em useSupabaseNotifications - limite do Supabase atingido')
+    return
 
     console.log('🔔 Iniciando sincronização de notificações em tempo real para profile:', profile.id)
 
