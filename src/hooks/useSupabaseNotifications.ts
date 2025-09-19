@@ -300,7 +300,7 @@ export function useSupabaseNotifications() {
       console.log('🔔 Desconectando canal de notificações...')
       supabase.removeChannel(channel)
     }
-  }, [profile?.id, notifications, unreadCount])
+  }, [profile?.id]) // Removido notifications e unreadCount das dependências para evitar loop
 
   // Carregar notificações iniciais
   useEffect(() => {

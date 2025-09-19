@@ -308,7 +308,7 @@ export function useRobustAuth(initialSession?: Session | null): AuthState & Auth
       subscription.unsubscribe()
       clearAllTimeouts()
     }
-  }, [initializeAuth, supabase, fetchUserProfile, clearAllTimeouts, loading])
+  }, [initializeAuth, supabase, fetchUserProfile, clearAllTimeouts]) // Removido loading das dependências para evitar loop
 
   // Função de login robusta
   const signIn = useCallback(async (email: string, password: string) => {

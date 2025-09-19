@@ -244,7 +244,7 @@ export function useContactAgreements() {
       console.error('❌ Erro completo ao criar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Aceitar acordo
   const acceptAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -284,7 +284,7 @@ export function useContactAgreements() {
       console.error('Erro ao aceitar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Rejeitar acordo
   const rejectAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -316,7 +316,7 @@ export function useContactAgreements() {
       console.error('Erro ao rejeitar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Cancelar acordo
   const cancelAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -342,7 +342,7 @@ export function useContactAgreements() {
       console.error('Erro ao cancelar acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Marcar acordo como concluído
   const completeAgreement = useCallback(async (agreementId: string): Promise<void> => {
@@ -368,14 +368,14 @@ export function useContactAgreements() {
       console.error('Erro ao concluir acordo:', error)
       throw error
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Buscar acordos na inicialização
   useEffect(() => {
     if (profile?.id) {
       fetchAgreements()
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   // Subscription para atualizações em tempo real
   useEffect(() => {
@@ -400,7 +400,7 @@ export function useContactAgreements() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [profile?.id, fetchAgreements, agreements, createAgreementNotification])
+  }, [profile?.id, fetchAgreements]) // Removido agreements e createAgreementNotification das dependências
 
   return {
     agreements,
