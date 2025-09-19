@@ -84,9 +84,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
-  // Conectar ao canal de notificações em tempo real
+  // Conectar ao canal de notificações em tempo real DESABILITADO TEMPORARIAMENTE
   useEffect(() => {
     if (!user) return;
+
+    // REALTIME DESABILITADO TEMPORARIAMENTE PARA EVITAR LIMITE DO SUPABASE
+    console.log('🔕 Realtime desabilitado temporariamente em NotificationProvider - limite do Supabase atingido')
+    return
 
     const channel = supabase
       .channel('notifications')
