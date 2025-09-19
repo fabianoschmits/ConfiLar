@@ -203,6 +203,50 @@ export function FloatingChat() {
         />
       )}
 
+      {/* Modal de Acordo - Tela Principal */}
+      {showAgreementModal && selectedConversation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Handshake className="h-6 w-6 text-white" />
+                  <h2 className="text-xl font-semibold text-white">
+                    Propor Acordo de Serviço
+                  </h2>
+                </div>
+                <Button
+                  onClick={() => setShowAgreementModal(false)}
+                  className="text-white hover:bg-white/20 p-1 rounded-lg"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-white/90 mt-2">
+                Crie uma proposta de trabalho para {user.id === selectedConversation.client_id 
+                  ? selectedConversation.professional.full_name
+                  : selectedConversation.client.full_name}. 
+                Após o acordo ser aceito, vocês poderão se avaliar após 20 horas.
+              </p>
+            </div>
+            <ContactAgreementChat
+              conversationId={selectedConversation.id}
+              otherUserId={user.id === selectedConversation.client_id 
+                ? selectedConversation.professional.id
+                : selectedConversation.client.id}
+              otherUserName={user.id === selectedConversation.client_id 
+                ? selectedConversation.professional.full_name
+                : selectedConversation.client.full_name}
+              otherUserType={user.id === selectedConversation.client_id 
+                ? selectedConversation.professional.user_type as 'professional' | 'client'
+                : selectedConversation.client.user_type as 'professional' | 'client'}
+              isInModal={true}
+              onClose={() => setShowAgreementModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Chat Flutuante */}
       <div className="fixed bottom-6 right-6 z-50 md:bottom-20">
         {isExpanded ? (
@@ -380,41 +424,6 @@ export function FloatingChat() {
                     </div>
                   </div>
 
-                  {/* Sistema de Acordos - Modal */}
-                  {showAgreementModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-2xl">
-                          <div className="flex items-center gap-3">
-                            <Handshake className="h-6 w-6 text-white" />
-                            <h2 className="text-xl font-semibold text-white">
-                              Propor Acordo de Serviço
-                            </h2>
-                          </div>
-                          <p className="text-white/90 mt-2">
-                            Crie uma proposta de trabalho para {user.id === selectedConversation.client_id 
-                              ? selectedConversation.professional.full_name
-                              : selectedConversation.client.full_name}. 
-                            Após o acordo ser aceito, vocês poderão se avaliar após 20 horas.
-                          </p>
-                        </div>
-                        <ContactAgreementChat
-                          conversationId={selectedConversation.id}
-                          otherUserId={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.id
-                            : selectedConversation.client.id}
-                          otherUserName={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.full_name
-                            : selectedConversation.client.full_name}
-                          otherUserType={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.user_type as 'professional' | 'client'
-                            : selectedConversation.client.user_type as 'professional' | 'client'}
-                          isInModal={true}
-                          onClose={() => setShowAgreementModal(false)}
-                        />
-                      </div>
-                    </div>
-                  )}
 
                   {/* Mensagens */}
                   <div 
