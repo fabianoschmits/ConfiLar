@@ -356,7 +356,7 @@ export function useRealtimeNotifications() {
     if (profile?.id) {
       fetchNotifications()
     }
-  }, [profile?.id, fetchNotifications])
+  }, [profile?.id]) // Removido fetchNotifications das dependências para evitar loop
 
   // Calcular total de mensagens não lidas
   const totalUnreadMessages = getTotalUnreadCount()

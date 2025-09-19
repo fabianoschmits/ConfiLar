@@ -636,7 +636,7 @@ export function useSupabaseMessages() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [profile?.id, selectedConversation, fetchConversations])
+  }, [profile?.id, selectedConversation]) // Removido fetchConversations das dependências para evitar loop
 
   // Sincronização em tempo real para conversas (DESABILITADO TEMPORARIAMENTE)
   useEffect(() => {
