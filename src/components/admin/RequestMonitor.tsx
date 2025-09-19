@@ -45,78 +45,74 @@ export function RequestMonitor() {
   const fetchRequestStats = async () => {
     setIsLoading(true)
     try {
-      // Buscar estatísticas de requisições
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_request_stats')
-
-      if (statsError) {
-        console.error('Erro ao buscar estatísticas:', statsError)
-        // Fallback: buscar diretamente da tabela
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('notifications')
-          .select('user_id, created_at')
-          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-
-        if (fallbackError) throw fallbackError
-
-        // Processar dados localmente
-        const processedStats = fallbackData.reduce((acc, notification) => {
-          const userId = notification.user_id
-          if (!acc[userId]) {
-            acc[userId] = {
-              user_id: userId,
-              total_requests: 0,
-              requests_last_hour: 0,
-              requests_last_10min: 0,
-              first_request: notification.created_at,
-              last_request: notification.created_at
-            }
-          }
-          acc[userId].total_requests++
-          
-          const now = new Date()
-          const notificationTime = new Date(notification.created_at)
-          const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-          const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000)
-          
-          if (notificationTime > oneHourAgo) {
-            acc[userId].requests_last_hour++
-          }
-          if (notificationTime > tenMinutesAgo) {
-            acc[userId].requests_last_10min++
-          }
-          
-          if (notificationTime < new Date(acc[userId].first_request)) {
-            acc[userId].first_request = notification.created_at
-          }
-          if (notificationTime > new Date(acc[userId].last_request)) {
-            acc[userId].last_request = notification.created_at
-          }
-          
-          return acc
-        }, {} as Record<string, RequestStats>)
-
-        setStats(Object.values(processedStats).sort((a, b) => b.total_requests - a.total_requests))
-      } else {
-        setStats(statsData || [])
-      }
-
-      // Buscar padrões de loop
-      const { data: loopsData, error: loopsError } = await supabase
+      // Buscar dados completos da tabela notifications
+      const { data: notificationsData, error: notificationsError } = await supabase
         .from('notifications')
         .select('user_id, title, message, created_at')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(10000) // Limitar para evitar sobrecarga
 
-      if (loopsError) throw loopsError
+      if (notificationsError) {
+        console.error('Erro ao buscar notificações:', notificationsError)
+        throw notificationsError
+      }
 
-      // Processar padrões de loop localmente
-      const loopPatterns = loopsData.reduce((acc, notification) => {
-        const key = `${notification.user_id}-${notification.title}-${notification.message}`
+      if (!notificationsData || notificationsData.length === 0) {
+        setStats([])
+        setLoops([])
+        setLastUpdate(new Date())
+        toast.success('Nenhuma notificação encontrada nas últimas 24 horas')
+        return
+      }
+
+      // Processar estatísticas por usuário
+      const processedStats = notificationsData.reduce((acc, notification) => {
+        const userId = notification.user_id
+        if (!acc[userId]) {
+          acc[userId] = {
+            user_id: userId,
+            total_requests: 0,
+            requests_last_hour: 0,
+            requests_last_10min: 0,
+            first_request: notification.created_at,
+            last_request: notification.created_at
+          }
+        }
+        acc[userId].total_requests++
+        
+        const now = new Date()
+        const notificationTime = new Date(notification.created_at)
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+        const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000)
+        
+        if (notificationTime > oneHourAgo) {
+          acc[userId].requests_last_hour++
+        }
+        if (notificationTime > tenMinutesAgo) {
+          acc[userId].requests_last_10min++
+        }
+        
+        if (notificationTime < new Date(acc[userId].first_request)) {
+          acc[userId].first_request = notification.created_at
+        }
+        if (notificationTime > new Date(acc[userId].last_request)) {
+          acc[userId].last_request = notification.created_at
+        }
+        
+        return acc
+      }, {} as Record<string, RequestStats>)
+
+      setStats(Object.values(processedStats).sort((a, b) => b.total_requests - a.total_requests))
+
+      // Processar padrões de loop
+      const loopPatterns = notificationsData.reduce((acc, notification) => {
+        const key = `${notification.user_id}-${notification.title || 'sem-titulo'}-${notification.message || 'sem-mensagem'}`
         if (!acc[key]) {
           acc[key] = {
             user_id: notification.user_id,
-            title: notification.title,
-            message: notification.message,
+            title: notification.title || 'Sem título',
+            message: notification.message || 'Sem mensagem',
             duplicate_count: 0,
             first_occurrence: notification.created_at,
             last_occurrence: notification.created_at
@@ -136,7 +132,7 @@ export function RequestMonitor() {
       }, {} as Record<string, LoopPattern>)
 
       const loopArray = Object.values(loopPatterns)
-        .filter(pattern => pattern.duplicate_count > 10)
+        .filter(pattern => pattern.duplicate_count > 5)
         .map(pattern => ({
           ...pattern,
           avg_seconds_between: (new Date(pattern.last_occurrence).getTime() - new Date(pattern.first_occurrence).getTime()) / (pattern.duplicate_count * 1000)
@@ -146,7 +142,7 @@ export function RequestMonitor() {
       setLoops(loopArray)
 
       setLastUpdate(new Date())
-      toast.success('Estatísticas atualizadas!')
+      toast.success(`Estatísticas atualizadas! ${notificationsData.length} notificações analisadas`)
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error)
       toast.error('Erro ao buscar estatísticas')
