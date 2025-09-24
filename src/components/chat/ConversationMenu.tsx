@@ -61,19 +61,16 @@ export function ConversationMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={disabled}
-            className="p-1 hover:bg-gray-200 rounded-none"
+          <div
+            className="p-1 hover:bg-gray-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreVertical className="h-4 w-4 text-gray-600" />
-          </Button>
+            <MoreVertical className="h-3 w-3 text-gray-500 hover:text-gray-700" />
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end" 
-          className="w-48 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none"
+          className="w-48 bg-white border border-gray-200 shadow-lg rounded-lg p-1"
         >
           {onPin && (
             <DropdownMenuItem
@@ -81,9 +78,9 @@ export function ConversationMenu({
                 e.stopPropagation()
                 onPin(conversationId)
               }}
-              className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 font-black text-black"
+              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
             >
-              <Pin className="h-4 w-4" />
+              <Pin className="h-3.5 w-3.5" />
               Fixar Conversa
             </DropdownMenuItem>
           )}
@@ -94,15 +91,15 @@ export function ConversationMenu({
                 e.stopPropagation()
                 onArchive(conversationId)
               }}
-              className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 font-black text-black"
+              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
             >
-              <Archive className="h-4 w-4" />
+              <Archive className="h-3.5 w-3.5" />
               Arquivar
             </DropdownMenuItem>
           )}
           
           {(onPin || onArchive) && (
-            <DropdownMenuSeparator className="bg-black" />
+            <DropdownMenuSeparator className="bg-gray-200 my-1" />
           )}
           
           <DropdownMenuItem
@@ -110,9 +107,9 @@ export function ConversationMenu({
               e.stopPropagation()
               setShowDeleteDialog(true)
             }}
-            className="flex items-center gap-2 cursor-pointer hover:bg-red-100 focus:bg-red-100 font-black text-red-600"
+            className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 text-sm rounded-md px-2 py-1.5"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
             Deletar Conversa
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -120,27 +117,37 @@ export function ConversationMenu({
 
       {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+        <AlertDialogContent className="bg-white border border-gray-200 shadow-xl rounded-lg max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 font-black text-black text-lg">
+            <AlertDialogTitle className="flex items-center gap-2 font-semibold text-gray-900 text-lg">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              DELETAR CONVERSA
+              Deletar Conversa
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-bold text-gray-700">
-              Tem certeza que deseja deletar esta conversa? Esta ação não pode ser desfeita e todas as mensagens serão perdidas permanentemente.
+            <AlertDialogDescription className="text-gray-600 space-y-3">
+              <p>Tem certeza que deseja deletar esta conversa?</p>
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                <p className="text-sm font-medium text-amber-800 mb-2">
+                  ⚠️ Importante:
+                </p>
+                <ul className="text-sm text-amber-700 space-y-1">
+                  <li>• Esta ação não pode ser desfeita</li>
+                  <li>• Todas as mensagens serão perdidas permanentemente</li>
+                  <li>• A conversa será removida para todos os participantes</li>
+                </ul>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
+          <AlertDialogFooter className="gap-3">
             <AlertDialogCancel 
               onClick={() => setShowDeleteDialog(false)}
-              className="bg-gray-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black rounded-none"
+              className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black rounded-none disabled:opacity-50"
+              className="bg-red-500 text-white hover:bg-red-600 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? 'Deletando...' : 'Deletar'}
             </AlertDialogAction>

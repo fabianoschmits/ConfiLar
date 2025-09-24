@@ -88,9 +88,9 @@ export function useFavorites() {
         .select('id')
         .eq('user_id', user.id)
         .eq('professional_id', professionalId)
-        .single()
+        .maybeSingle()
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         throw checkError
       }
 
@@ -123,7 +123,7 @@ export function useFavorites() {
             professional_services
           )
         `)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
 
@@ -179,12 +179,14 @@ export function useFavorites() {
   const toggleFavorite = useCallback(async (professionalId: string) => {
     if (!user?.id) return false
 
-    const isFavorite = favoriteIds.has(professionalId)
+    const isCurrentlyFavorite = favoriteIds.has(professionalId)
     
-    if (isFavorite) {
-      return await removeFavorite(professionalId)
+    if (isCurrentlyFavorite) {
+      const success = await removeFavorite(professionalId)
+      return success ? false : isCurrentlyFavorite // Retorna false se removeu com sucesso, ou mantém o status atual se falhou
     } else {
-      return await addFavorite(professionalId)
+      const success = await addFavorite(professionalId)
+      return success ? true : isCurrentlyFavorite // Retorna true se adicionou com sucesso, ou mantém o status atual se falhou
     }
   }, [user?.id, favoriteIds, addFavorite, removeFavorite])
 

@@ -115,7 +115,8 @@ export function RequestMonitor() {
             message: notification.message || 'Sem mensagem',
             duplicate_count: 0,
             first_occurrence: notification.created_at,
-            last_occurrence: notification.created_at
+            last_occurrence: notification.created_at,
+            avg_seconds_between: 0
           }
         }
         acc[key].duplicate_count++

@@ -265,19 +265,41 @@ export function useSupabaseMessages() {
       // Adicionar mensagem temporária à lista local (otimistic update)
       setMessages(prev => [...prev, tempMessage])
 
+      // Buscar o outro participante da conversa primeiro
+      const { data: conversationData } = await supabase
+        .from('conversations')
+        .select('client_id, professional_id')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      if (!conversationData) {
+        throw new Error('Conversa não encontrada')
+      }
+
+      const receiverId = conversationData.client_id === profile.id 
+        ? conversationData.professional_id 
+        : conversationData.client_id
+
       // Enviar mensagem para o servidor
       const { data, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: profile.id,
+          receiver_id: receiverId,
           content: content.trim()
         })
-        .select('id, conversation_id, sender_id, content, created_at')
+        .select('id, conversation_id, sender_id, receiver_id, content, created_at, read_at, is_read')
         .single()
 
       if (error) {
         console.error('❌ Erro ao enviar mensagem:', error)
+        console.error('❌ Detalhes do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
         // Remover mensagem temporária em caso de erro
         setMessages(prev => prev.filter(msg => msg.id !== tempMessage.id))
         throw error
@@ -298,91 +320,81 @@ export function useSupabaseMessages() {
         .update({ last_message_at: new Date().toISOString() })
         .eq('id', conversationId)
 
-      // Buscar o outro participante da conversa para notificação
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('client_id, professional_id')
-        .eq('id', conversationId)
-        .single()
-
-      if (conversation) {
-        const otherUserId = conversation.client_id === profile.id 
-          ? conversation.professional_id 
-          : conversation.client_id
+      // Usar os dados da conversa que já buscamos
+      const otherUserId = receiverId
         
-        // Buscar informações dos perfis
-        const [senderProfile, recipientProfile] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', profile.id)
-            .single(),
-          supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', otherUserId)
-            .single()
-        ])
+      // Buscar informações dos perfis
+      const [senderProfile, recipientProfile] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', profile.id)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', otherUserId)
+          .maybeSingle()
+      ])
 
-        // Criar notificação (não vai falhar se der erro)
-        const notificationTitle = `Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'}`
-        const notificationMessage = content.length > 50 ? `${content.substring(0, 50)}...` : content
+      // Criar notificação (não vai falhar se der erro)
+      const notificationTitle = `Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'}`
+      const notificationMessage = content.length > 50 ? `${content.substring(0, 50)}...` : content
+      
+      // Tentar criar notificação, mas não falhar se der erro
+      try {
+        await createNotification(
+          otherUserId,
+          notificationTitle,
+          notificationMessage,
+          conversationId,
+          profile.id,
+          senderProfile.data?.full_name || 'Usuário'
+        )
         
-        // Tentar criar notificação, mas não falhar se der erro
-        try {
-          await createNotification(
-            otherUserId,
-            notificationTitle,
-            notificationMessage,
-            conversationId,
-            profile.id,
-            senderProfile.data?.full_name || 'Usuário'
-          )
-          
-          console.log('✅ Notificação enviada para:', otherUserId)
-        } catch (notificationError) {
-          console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
-          // Não vamos falhar o envio da mensagem por causa da notificação
-        }
+        console.log('✅ Notificação enviada para:', otherUserId)
+      } catch (notificationError) {
+        console.warn('⚠️ Erro ao criar notificação (não crítico):', notificationError)
+        // Não vamos falhar o envio da mensagem por causa da notificação
+      }
 
-        // Enviar notificação por email (não crítico)
-        try {
-          // Buscar email do destinatário
-          const { data: recipientData } = await supabase
-            .from('profiles')
-            .select('email, user_type')
-            .eq('id', otherUserId)
-            .single()
+      // Enviar notificação por email (não crítico)
+      try {
+        // Buscar email do destinatário
+        const { data: recipientData } = await supabase
+          .from('profiles')
+          .select('email, user_type')
+          .eq('id', otherUserId)
+          .maybeSingle()
 
-          if (recipientData?.email) {
-            // Enviar email diretamente usando a Edge Function
-            const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
-              body: {
-                to: recipientData.email,
-                subject: `💬 Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'} - ConfiLar`,
-                template: 'message',
-                data: {
-                  userName: recipientProfile.data?.full_name || 'Usuário',
-                  senderName: senderProfile.data?.full_name || 'Usuário',
-                  senderNameInitial: (senderProfile.data?.full_name || 'U').charAt(0).toUpperCase(),
-                  senderType: profile.user_type === 'professional' ? 'Profissional' : 'Cliente',
-                  messagePreview: notificationMessage,
-                  messageTime: new Date().toLocaleString('pt-BR'),
-                  chatUrl: `${window.location.origin}/mensagens`
-                }
+        if (recipientData?.email) {
+          // Enviar email diretamente usando a Edge Function
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-email', {
+            body: {
+              to: recipientData.email,
+              subject: `💬 Nova mensagem de ${senderProfile.data?.full_name || 'Usuário'} - ConfiLar`,
+              template: 'message',
+              data: {
+                userName: recipientProfile.data?.full_name || 'Usuário',
+                senderName: senderProfile.data?.full_name || 'Usuário',
+                senderNameInitial: (senderProfile.data?.full_name || 'U').charAt(0).toUpperCase(),
+                senderType: profile.user_type === 'professional' ? 'Profissional' : 'Cliente',
+                messagePreview: notificationMessage,
+                messageTime: new Date().toLocaleString('pt-BR'),
+                chatUrl: `${window.location.origin}/mensagens`
               }
-            })
-
-            if (emailError) {
-              console.warn('⚠️ Erro ao enviar email de notificação:', emailError)
-            } else {
-              console.log('✅ Email de notificação enviado para:', recipientData.email)
             }
+          })
+
+          if (emailError) {
+            console.warn('⚠️ Erro ao enviar email de notificação:', emailError)
+          } else {
+            console.log('✅ Email de notificação enviado para:', recipientData.email)
           }
-        } catch (emailError) {
-          console.warn('⚠️ Erro ao enviar email de notificação (não crítico):', emailError)
-          // Não vamos falhar o envio da mensagem por causa do email
         }
+      } catch (emailError) {
+        console.warn('⚠️ Erro ao enviar email de notificação (não crítico):', emailError)
+        // Não vamos falhar o envio da mensagem por causa do email
       }
 
       // Recarregar conversas para atualizar ordem
@@ -753,6 +765,78 @@ export function useSupabaseMessages() {
     }
   }, [profile?.id, fetchConversations])
 
+  // Marcar mensagens como lidas
+  const markMessagesAsRead = useCallback(async (conversationId: string) => {
+    if (!profile?.id) return
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          read_at: new Date().toISOString(),
+          is_read: true 
+        })
+        .eq('conversation_id', conversationId)
+        .eq('receiver_id', profile.id)
+        .eq('is_read', false)
+
+      if (error) {
+        console.error('❌ Erro ao marcar mensagens como lidas:', error)
+      } else {
+        console.log('✅ Mensagens marcadas como lidas')
+      }
+    } catch (error) {
+      console.error('❌ Erro geral ao marcar mensagens:', error)
+    }
+  }, [profile?.id])
+
+  // Deletar mensagem
+  const deleteMessage = useCallback(async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', profile?.id) // Apenas o remetente pode deletar
+
+      if (error) {
+        console.error('❌ Erro ao deletar mensagem:', error)
+        return false
+      }
+
+      console.log('✅ Mensagem deletada')
+      return true
+    } catch (error) {
+      console.error('❌ Erro geral ao deletar mensagem:', error)
+      return false
+    }
+  }, [profile?.id])
+
+  // Editar mensagem
+  const editMessage = useCallback(async (messageId: string, newContent: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          content: newContent,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', messageId)
+        .eq('sender_id', profile?.id) // Apenas o remetente pode editar
+
+      if (error) {
+        console.error('❌ Erro ao editar mensagem:', error)
+        return false
+      }
+
+      console.log('✅ Mensagem editada')
+      return true
+    } catch (error) {
+      console.error('❌ Erro geral ao editar mensagem:', error)
+      return false
+    }
+  }, [profile?.id])
+
   return {
     conversations,
     messages,
@@ -766,6 +850,9 @@ export function useSupabaseMessages() {
     checkExistingConversation,
     deleteConversation,
     setSelectedConversation,
-    markNotificationsAsRead
+    markNotificationsAsRead,
+    markMessagesAsRead,
+    deleteMessage,
+    editMessage
   }
 }

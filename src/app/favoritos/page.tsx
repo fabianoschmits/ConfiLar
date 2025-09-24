@@ -82,13 +82,21 @@ export default function FavoritesPage() {
     router.push(`/perfil/${userId}`)
   }
 
-  const handleStartChat = (userId: string, userName: string) => {
+  const handleStartChat = async (userId: string, userName: string) => {
     if (!user) {
       router.push('/auth')
       return
     }
-    // Usar chat flutuante em vez de redirecionar
-    openChat(userId, userName)
+    
+    console.log('💬 Iniciando chat com favorito:', { userId, userName })
+    
+    try {
+      // Usar chat flutuante para iniciar conversa diretamente
+      await openChat(userId, userName)
+      console.log('✅ Chat iniciado com sucesso')
+    } catch (error) {
+      console.error('❌ Erro ao iniciar chat:', error)
+    }
   }
 
   if (!user) {
