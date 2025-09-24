@@ -120,7 +120,7 @@ export function useMessages() {
             .eq('conversation_id', conversation.id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
+            .maybeSingle()
 
           // Contador de mensagens não lidas
           const { count: unreadCount } = await supabase
@@ -390,7 +390,7 @@ export function useMessages() {
         .from('conversations')
         .select('id')
         .or(`and(client_id.eq.${clientId},professional_id.eq.${professionalId}),and(client_id.eq.${professionalId},professional_id.eq.${clientId})`)
-        .single()
+        .maybeSingle()
 
       if (existingConversation) {
         return existingConversation.id
@@ -429,7 +429,7 @@ export function useMessages() {
         .from('conversations')
         .select('client_id, professional_id')
         .eq('id', conversationId)
-        .single()
+        .maybeSingle()
 
       if (!conversation) {
         throw new Error('Conversa não encontrada')
@@ -490,7 +490,7 @@ export function useMessages() {
         .from('messages')
         .select('id, sender_id, conversation_id')
         .eq('id', messageId)
-        .single()
+        .maybeSingle()
 
       if (messageError) throw messageError
 
@@ -537,7 +537,7 @@ export function useMessages() {
         .from('messages')
         .select('id, sender_id, conversation_id, content')
         .eq('id', messageId)
-        .single()
+        .maybeSingle()
 
       if (messageError) throw messageError
 

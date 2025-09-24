@@ -15,11 +15,13 @@ import {
   Clock,
   Edit3,
   X as XIcon,
-  Handshake
+  Handshake,
+  Search
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useMessages } from '@/hooks/useMessages'
+import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
@@ -28,7 +30,7 @@ import { AgreementButton } from './AgreementButton'
 
 export function FloatingChat() {
   const { user, profile } = useAuthContext()
-  const { isOpen, closeChat, selectedConversationId, selectConversation } = useFloatingChat()
+  const { isOpen, closeChat, selectedConversationId, selectConversation, openChat } = useFloatingChat()
   const { 
     conversations, 
     messages, 
@@ -43,15 +45,77 @@ export function FloatingChat() {
     sendNewConversationNotification 
   } = useMessages()
   
+  const { favorites, isFavorite } = useFavorites()
+  
+  // Estados do componente
   const [selectedConversation, setSelectedConversation] = useState<any>(null)
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFavoritesSearch, setShowFavoritesSearch] = useState(false)
+  const [lastConversationId, setLastConversationId] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Função para fazer scroll automático para o final
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  
+  // Filtrar favoritos baseado na busca
+  const filteredFavorites = favorites.filter(favorite => {
+    if (!searchQuery) return true
+    const name = favorite.professional?.full_name?.toLowerCase() || ''
+    const services = favorite.professional?.professional_services?.join(' ').toLowerCase() || ''
+    const location = `${favorite.professional?.location_city || ''} ${favorite.professional?.location_state || ''}`.toLowerCase()
+    const query = searchQuery.toLowerCase()
+    
+    return name.includes(query) || services.includes(query) || location.includes(query)
+  })
+  
+  // Função para formatar tempo de forma amigável
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+    
+    if (diffInMinutes < 1) return 'Agora'
+    if (diffInMinutes < 60) return `${diffInMinutes}min`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d`
+    
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  }
+
+  // Função para iniciar conversa com favorito
+  const startConversationWithFavorite = async (favorite: any) => {
+    if (!favorite.professional?.id) return
+    
+    try {
+      // Verificar se já existe conversa
+      const existingConversation = conversations.find(conv => 
+        (conv.client_id === user?.id && conv.professional_id === favorite.professional.id) ||
+        (conv.professional_id === user?.id && conv.client_id === favorite.professional.id)
+      )
+      
+      if (existingConversation) {
+        // Abrir conversa existente
+        selectConversation(existingConversation.id)
+      } else {
+        // Criar nova conversa usando o contexto
+        await openChat(favorite.professional.id, favorite.professional.full_name)
+      }
+      
+      // Fechar busca de favoritos
+      setShowFavoritesSearch(false)
+      setSearchQuery('')
+    } catch (error) {
+      console.error('❌ Erro ao iniciar conversa com favorito:', error)
+    }
+  }
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
   const [showAgreementModal, setShowAgreementModal] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const [isUserScrolling, setIsUserScrolling] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -65,12 +129,16 @@ export function FloatingChat() {
     if (selectedConversationId) {
       const conversation = conversations.find(c => c.id === selectedConversationId)
       if (conversation) {
+        console.log('💬 Conversa encontrada na lista, carregando mensagens:', conversation.id)
         setSelectedConversation(conversation)
         loadMessages(conversation.id)
         markMessagesAsRead(conversation.id)
-        // Não forçar scroll - usuário tem controle total
-        setShouldAutoScroll(false)
         setIsUserScrolling(false)
+      } else {
+        // Se a conversa não está na lista ainda, carregar mensagens diretamente
+        console.log('💬 Conversa não encontrada na lista, carregando mensagens diretamente:', selectedConversationId)
+        loadMessages(selectedConversationId)
+        markMessagesAsRead(selectedConversationId)
       }
     } else {
       setSelectedConversation(null)
@@ -80,17 +148,77 @@ export function FloatingChat() {
   // Carregar conversas quando o chat expande
   useEffect(() => {
     if (isExpanded && user?.id) {
+      console.log('💬 Chat expandido, carregando conversas...')
       loadConversations()
     }
   }, [isExpanded, user?.id])
+
+  // Carregar conversas quando selectedConversationId é definido mas conversas não estão carregadas
+  useEffect(() => {
+    if (selectedConversationId && user?.id && conversations.length === 0) {
+      console.log('💬 selectedConversationId definido mas conversas não carregadas, carregando...')
+      loadConversations()
+    }
+  }, [selectedConversationId, user?.id, conversations.length])
+
+  // Aguardar carregamento das conversas quando selectedConversationId é definido
+  useEffect(() => {
+    if (selectedConversationId && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === selectedConversationId)
+      if (conversation && !selectedConversation) {
+        console.log('💬 Conversa encontrada após carregamento, definindo como selecionada:', conversation.id)
+        setSelectedConversation(conversation)
+        loadMessages(conversation.id)
+        markMessagesAsRead(conversation.id)
+      }
+    }
+  }, [selectedConversationId, conversations, selectedConversation])
+
+  // Fechar busca de favoritos quando não há query
+  useEffect(() => {
+    if (!searchQuery) {
+      setShowFavoritesSearch(false)
+    }
+  }, [searchQuery])
+
+  // Recarregar conversas quando selectedConversationId muda (nova conversa criada)
+  useEffect(() => {
+    if (selectedConversationId && user?.id) {
+      console.log('💬 selectedConversationId mudou, recarregando conversas:', selectedConversationId)
+      loadConversations()
+    }
+  }, [selectedConversationId, user?.id])
+
+  // Auto-scroll quando receber novas mensagens (apenas se for mensagem nova)
+  useEffect(() => {
+    if (messages.length > 0 && selectedConversation) {
+      const lastMessage = messages[messages.length - 1]
+      // Fazer scroll apenas se a última mensagem não foi enviada pelo usuário atual
+      if (lastMessage.sender_id !== user?.id) {
+        console.log('📨 Nova mensagem recebida, fazendo scroll')
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
+    }
+  }, [messages.length, selectedConversation, user?.id])
+
+  // Auto-scroll apenas quando uma NOVA conversa for selecionada
+  useEffect(() => {
+    if (selectedConversation && selectedConversation.id !== lastConversationId) {
+      console.log('🆕 Nova conversa selecionada, fazendo scroll:', selectedConversation.id)
+      setLastConversationId(selectedConversation.id)
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [selectedConversation, lastConversationId])
 
   // Atualizar mensagens quando conversa muda (SEM LOOP)
   useEffect(() => {
     if (selectedConversation && user?.id) {
       loadMessages(selectedConversation.id)
       markMessagesAsRead(selectedConversation.id)
-      // Não forçar scroll automático ao abrir conversa
-      setShouldAutoScroll(false)
       setIsUserScrolling(false)
     }
   }, [selectedConversation?.id, user?.id]) // Usar apenas o ID da conversa
@@ -107,16 +235,11 @@ export function FloatingChat() {
     return distanceFromBottom <= threshold
   }
 
-  // Scroll para última mensagem
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   // Removido auto-scroll automático - usuário tem controle total
 
-  // Detectar quando o usuário rola manualmente - sem interferir
+  // Detectar quando o usuário rola manualmente (apenas para controle visual)
   const handleScroll = () => {
-    // Apenas detectar scroll, sem forçar comportamento
     const nearBottom = isNearBottom()
     setIsUserScrolling(!nearBottom)
   }
@@ -139,7 +262,8 @@ export function FloatingChat() {
       }
       
       setNewMessage('')
-      // Não forçar scroll automático - deixar o usuário decidir
+      // Fazer scroll automático para a nova mensagem
+      setTimeout(() => scrollToBottom(), 100)
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
     } finally {
@@ -264,6 +388,60 @@ export function FloatingChat() {
                       {conversations.length}
                     </Badge>
                   </div>
+                  
+                  {/* Campo de busca para favoritos */}
+                  <div className="mb-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Buscar favoritos para conversar..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setShowFavoritesSearch(true)}
+                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    
+                    {/* Lista de favoritos filtrados */}
+                    {showFavoritesSearch && searchQuery && (
+                      <div className="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-lg">
+                        {filteredFavorites.length > 0 ? (
+                          filteredFavorites.map((favorite) => (
+                            <div
+                              key={favorite.id}
+                              onClick={() => startConversationWithFavorite(favorite)}
+                              className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="flex items-center gap-3">
+                                <UserAvatar
+                                  src={favorite.professional?.avatar_url}
+                                  alt={favorite.professional?.full_name || 'Usuário'}
+                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
+                                  size="sm"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-900 text-sm truncate">
+                                    {favorite.professional?.full_name || 'Usuário'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 truncate">
+                                    {favorite.professional?.location_city && favorite.professional?.location_state
+                                      ? `${favorite.professional.location_city}, ${favorite.professional.location_state}`
+                                      : 'Localização não informada'
+                                    }
+                                  </p>
+                                </div>
+                                <MessageCircle className="h-4 w-4 text-blue-500" />
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-center text-gray-500 text-sm">
+                            Nenhum favorito encontrado
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {conversations.length === 0 ? (
                     <div className="text-center py-8">
@@ -281,15 +459,17 @@ export function FloatingChat() {
                         const otherUser = user.id === conversation.client_id 
                           ? conversation.professional 
                           : conversation.client
-                        const unreadCount = user.id === conversation.client_id 
-                          ? conversation.unread_count_client 
-                          : conversation.unread_count_professional
+                        const unreadCount = conversation.unread_count || 0
 
                         return (
                           <div
                             key={conversation.id}
                             onClick={() => selectConversation(conversation.id)}
-                            className="bg-white border border-gray-200 rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200"
+                            className={`bg-white border rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 ${
+                              unreadCount > 0 
+                                ? 'border-blue-200 bg-blue-50/30' 
+                                : 'border-gray-200'
+                            }`}
                           >
                             <div className="flex items-center gap-3">
                               <UserAvatar
@@ -297,30 +477,46 @@ export function FloatingChat() {
                                 alt={otherUser.full_name}
                                 fallback={otherUser.full_name.charAt(0).toUpperCase()}
                                 size="md"
-                                className="w-10 h-10"
+                                className="w-12 h-12"
                               />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h5 className="font-medium text-gray-900 text-sm truncate">
+                                <div className="flex items-center justify-between mb-1">
+                                  <h5 className="font-semibold text-gray-900 text-sm truncate">
                                     {otherUser.full_name}
                                   </h5>
-                                  {unreadCount > 0 && (
-                                    <Badge className="bg-red-500 text-white font-medium text-xs px-2 py-1 rounded-full">
-                                      {unreadCount}
-                                    </Badge>
-                                  )}
+                                  <div className="flex items-center gap-2">
+                                    {conversation.last_message?.created_at && (
+                                      <span className="text-xs text-gray-400 font-medium">
+                                        {formatTime(conversation.last_message.created_at)}
+                                      </span>
+                                    )}
+                                    {unreadCount > 0 && (
+                                      <Badge className="bg-red-500 text-white font-medium text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
+                                        {unreadCount}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 </div>
-                                {conversation.last_message_preview && (
-                                  <p className="text-xs text-gray-600 truncate mt-1">
-                                    {conversation.last_message_preview}
-                                  </p>
-                                )}
-                                {conversation.last_message_at && (
-                                  <p className="text-xs text-gray-400 mt-1">
-                                    {new Date(conversation.last_message_at).toLocaleTimeString('pt-BR', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
+                                
+                                {conversation.last_message ? (
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-xs text-gray-600 truncate flex-1">
+                                      {conversation.last_message.sender_id === user?.id ? (
+                                        <span className="text-gray-500">Você: </span>
+                                      ) : (
+                                        <span className="text-gray-500">{otherUser.full_name.split(' ')[0]}: </span>
+                                      )}
+                                      <span className={conversation.last_message.sender_id !== user?.id && unreadCount > 0 ? 'font-medium text-gray-900' : ''}>
+                                        {conversation.last_message.content}
+                                      </span>
+                                    </p>
+                                    {conversation.last_message.sender_id === user?.id && (
+                                      <CheckCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-xs text-gray-400 italic">
+                                    Nenhuma mensagem ainda
                                   </p>
                                 )}
                               </div>
@@ -441,10 +637,10 @@ export function FloatingChat() {
                           className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}
                         >
                           <div
-                            className={`max-w-[80%] p-3 rounded-2xl relative ${
+                            className={`max-w-[80%] rounded-2xl relative ${
                               isOwn 
-                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white' 
-                                : 'bg-gray-100 text-gray-900'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white p-2' 
+                                : 'bg-gray-100 text-gray-900 p-3'
                             }`}
                           >
                             {isEditing ? (
@@ -490,20 +686,21 @@ export function FloatingChat() {
                               // Modo normal de visualização
                               <>
                                 <p className="text-sm leading-relaxed break-words pr-8">{message.content}</p>
-                                <div className="flex items-center justify-between mt-2">
+                                <div className="flex items-center justify-end gap-2 mt-2">
                                   <div className="flex items-center gap-1">
                                     {message.is_read ? (
-                                      <CheckCheck className="h-3 w-3 text-green-500" />
+                                      <CheckCheck className="h-2.5 w-2.5 text-green-500" />
                                     ) : (
-                                      <Check className="h-3 w-3 text-gray-400" />
+                                      <Check className="h-2.5 w-2.5 text-gray-400" />
                                     )}
-                                    <span className="text-xs opacity-70">
+                                    <span className="text-[10px] opacity-70">
                                       {new Date(message.created_at).toLocaleTimeString('pt-BR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
                                       })}
                                       {message.updated_at && 
-                                       new Date(message.updated_at).getTime() - new Date(message.created_at).getTime() > 1000 && (
+                                       message.updated_at !== message.created_at &&
+                                       new Date(message.updated_at).getTime() - new Date(message.created_at).getTime() > 5000 && (
                                         <span className="ml-1 text-xs opacity-50">(editado)</span>
                                       )}
                                     </span>

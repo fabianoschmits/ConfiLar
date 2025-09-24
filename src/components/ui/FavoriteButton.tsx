@@ -31,9 +31,9 @@ export function FavoriteButton({
 
   // Verificar se está nos favoritos
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
+    const checkFavoriteStatus = () => {
       try {
-        const favoriteStatus = await isFavorite(userId)
+        const favoriteStatus = isFavorite(userId)
         setIsFavorited(favoriteStatus)
       } catch (error) {
         console.error('Erro ao verificar favorito:', error)

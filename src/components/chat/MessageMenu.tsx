@@ -66,28 +66,25 @@ export function MessageMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={disabled}
-            className="p-1 hover:bg-black/10 rounded-none opacity-0 group-hover:opacity-100 transition-opacity"
+          <div
+            className="p-1 hover:bg-gray-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
+            <MoreHorizontal className="h-2.5 w-2.5 text-gray-500 hover:text-gray-700" />
+          </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent 
           align="end" 
-          className="w-40 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none"
+          className="w-40 bg-white border border-gray-200 shadow-lg rounded-lg p-1"
         >
           <DropdownMenuItem
             onClick={(e) => {
               e.stopPropagation()
               handleCopy()
             }}
-            className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 font-black text-black text-xs"
+            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
           >
-            <Copy className="h-3 w-3" />
+            <Copy className="h-3.5 w-3.5" />
             Copiar
           </DropdownMenuItem>
           
@@ -97,15 +94,15 @@ export function MessageMenu({
                 e.stopPropagation()
                 onEdit(messageId, messageContent)
               }}
-              className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 focus:bg-gray-100 font-black text-black text-xs"
+              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 focus:bg-gray-50 text-gray-700 text-sm rounded-md px-2 py-1.5"
             >
-              <Edit className="h-3 w-3" />
+              <Edit className="h-3.5 w-3.5" />
               Editar
             </DropdownMenuItem>
           )}
           
           {onEdit && (
-            <DropdownMenuSeparator className="bg-black" />
+            <DropdownMenuSeparator className="bg-gray-200 my-1" />
           )}
           
           <DropdownMenuItem
@@ -113,9 +110,9 @@ export function MessageMenu({
               e.stopPropagation()
               setShowDeleteDialog(true)
             }}
-            className="flex items-center gap-2 cursor-pointer hover:bg-red-100 focus:bg-red-100 font-black text-red-600 text-xs"
+            className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 text-sm rounded-md px-2 py-1.5"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
             Deletar
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -123,41 +120,37 @@ export function MessageMenu({
 
       {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-none">
+        <AlertDialogContent className="bg-white border border-gray-200 shadow-xl rounded-lg max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 font-black text-black text-lg">
+            <AlertDialogTitle className="flex items-center gap-2 font-semibold text-gray-900 text-lg">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              DELETAR MENSAGEM
+              Deletar Mensagem
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-bold text-gray-700 space-y-2">
+            <AlertDialogDescription className="text-gray-600 space-y-3">
               <p>Tem certeza que deseja deletar esta mensagem?</p>
-              <div className="bg-yellow-100 border-2 border-yellow-400 p-3 rounded">
-                <p className="text-sm font-black text-yellow-800">
-                  ⚠️ IMPORTANTE:
+              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                <p className="text-sm font-medium text-amber-800 mb-2">
+                  ⚠️ Importante:
                 </p>
-                <p className="text-sm text-yellow-700">
-                  • Esta ação não pode ser desfeita
-                </p>
-                <p className="text-sm text-yellow-700">
-                  • A mensagem será removida para você E para o outro usuário
-                </p>
-                <p className="text-sm text-yellow-700">
-                  • Ambos não conseguirão mais ver esta mensagem
-                </p>
+                <ul className="text-sm text-amber-700 space-y-1">
+                  <li>• Esta ação não pode ser desfeita</li>
+                  <li>• A mensagem será removida para você e para o outro usuário</li>
+                  <li>• Ambos não conseguirão mais ver esta mensagem</li>
+                </ul>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
+          <AlertDialogFooter className="gap-3">
             <AlertDialogCancel 
               onClick={() => setShowDeleteDialog(false)}
-              className="bg-gray-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black rounded-none text-sm"
+              className="bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="bg-red-500 text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all font-black rounded-none text-sm disabled:opacity-50"
+              className="bg-red-500 text-white hover:bg-red-600 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isDeleting ? 'Deletando...' : 'Deletar'}
             </AlertDialogAction>

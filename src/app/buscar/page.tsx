@@ -46,6 +46,7 @@ import { useProfileViews } from '@/hooks/useProfileViews'
 import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
+import { FavoriteButton } from '@/components/ui/FavoriteButton'
 
 export default function BuscarPage() {
   const router = useRouter()
@@ -750,9 +751,12 @@ export default function BuscarPage() {
                         </div>
                         
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline">
-                            <Heart className="h-4 w-4" />
-                          </Button>
+                          <FavoriteButton 
+                            userId={profile.id}
+                            userName={profile.full_name || 'Usuário'}
+                            size="sm"
+                            variant="outline"
+                          />
                           <RecommendationButton 
                             userId={profile.id}
                             userName={profile.full_name || 'Usuário'}
@@ -771,7 +775,7 @@ export default function BuscarPage() {
                           </Button>
                           <Button 
                             size="sm"
-                            onClick={() => openChat()}
+                            onClick={() => openChat(profile.id, profile.full_name || 'Usuário')}
                             className="bg-blue-600 hover:bg-blue-700"
                             title="Contatar"
                           >

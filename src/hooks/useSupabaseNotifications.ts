@@ -56,19 +56,36 @@ export function useSupabaseNotifications() {
   // Marcar notificação como lida
   const markAsRead = async (notificationId: string) => {
     try {
+      console.log('🔔 Marcando notificação como lida:', notificationId)
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Erro ao marcar notificação como lida:', error)
+        throw error
+      }
 
+      // Atualizar estado local imediatamente
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       )
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      
+      // Decrementar contador apenas se a notificação não estava lida
+      setUnreadCount(prev => {
+        const notification = notifications.find(n => n.id === notificationId)
+        if (notification && !notification.is_read) {
+          return Math.max(0, prev - 1)
+        }
+        return prev
+      })
+      
+      console.log('✅ Notificação marcada como lida com sucesso')
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error)
+      console.error('❌ Erro ao marcar notificação como lida:', error)
+      toast.error('Erro ao marcar notificação como lida')
     }
   }
 
@@ -77,20 +94,29 @@ export function useSupabaseNotifications() {
     if (!profile?.id) return
 
     try {
+      console.log('🔔 Marcando todas as notificações como lidas para profile:', profile.id)
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .eq('user_id', profile.id)
         .eq('is_read', false)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Erro ao marcar todas as notificações como lidas:', error)
+        throw error
+      }
 
+      // Atualizar estado local imediatamente
       setNotifications(prev =>
         prev.map(n => ({ ...n, is_read: true }))
       )
       setUnreadCount(0)
+      
+      console.log('✅ Todas as notificações marcadas como lidas')
     } catch (error) {
-      console.error('Erro ao marcar todas como lidas:', error)
+      console.error('❌ Erro ao marcar todas as notificações como lidas:', error)
+      toast.error('Erro ao marcar notificações como lidas')
     }
   }
 
@@ -264,10 +290,10 @@ export function useSupabaseNotifications() {
               prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
             )
             
-            // Recalcular contagem de não lidas localmente
+            // Recalcular contagem de não lidas
             setUnreadCount(prev => {
-              const currentNotification = notifications.find(n => n.id === updatedNotification.id)
-              if (currentNotification && !currentNotification.is_read && updatedNotification.is_read) {
+              // Se a notificação foi marcada como lida, decrementar contador
+              if (updatedNotification.is_read) {
                 return Math.max(0, prev - 1)
               }
               return prev

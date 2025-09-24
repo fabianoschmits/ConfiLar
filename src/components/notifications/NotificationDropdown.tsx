@@ -25,7 +25,7 @@ import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
 import { useMessages } from '@/hooks/useMessages';
 import { useFloatingChat } from '@/contexts/FloatingChatContext';
 import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
-import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
+// import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'; // Desabilitado temporariamente
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,10 +100,14 @@ export const NotificationDropdown: React.FC = () => {
     markAllAsRead,
     removeNotification,
     clearAll,
-    isLoading,
-    isConnected,
-    addTestNotification
-  } = useRealtimeNotifications();
+    isLoading
+  } = useSupabaseNotifications();
+  
+  // Desabilitado temporariamente para evitar conflitos
+  const isConnected = false;
+  const addTestNotification = (title: string, message: string, type: string) => {
+    console.log('Teste de notificação desabilitado:', { title, message, type });
+  };
   
   // Hook para monitorar conexão em tempo real (manter para indicadores visuais)
   const { isConnected: isRealtimeConnected, isConnecting, lastActivity, connectionError } = useRealtimeConnection();

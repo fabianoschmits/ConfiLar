@@ -50,13 +50,13 @@ export function RealtimeNotification() {
   const handleOpenChatWithConversation = async () => {
     const unreadConversation = getConversationWithUnread()
     if (unreadConversation) {
-      // Primeiro definir a conversa selecionada
-      setSelectedConversation(unreadConversation.id)
-      // Depois abrir o chat
-      await openChat()
+      // Abrir chat diretamente com a conversa específica
+      console.log('🔔 Abrindo chat com conversa específica:', unreadConversation.id)
+      await openChat(unreadConversation.id)
       // Esconder a notificação
       setIsVisible(false)
     } else {
+      // Abrir lista de conversas
       await openChat()
       setIsVisible(false)
     }
