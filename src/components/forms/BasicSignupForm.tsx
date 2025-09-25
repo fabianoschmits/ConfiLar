@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
-// Schema simplificado para cadastro básico
+// Schema simplificado para cadastro básico - apenas email e senha
 const basicSignupSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string()
@@ -21,7 +21,6 @@ const basicSignupSchema = z.object({
     .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
     .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
     .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
-  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').optional(),
 })
 
 type BasicSignupFormData = z.infer<typeof basicSignupSchema>
@@ -37,9 +36,6 @@ export function BasicSignupForm() {
     formState: { errors, isValid },
   } = useForm<BasicSignupFormData>({
     resolver: zodResolver(basicSignupSchema),
-    defaultValues: {
-      full_name: '',
-    },
   })
 
   const watchedValues = watch()
@@ -64,7 +60,6 @@ export function BasicSignupForm() {
       const { error } = await signUpBasic({
         email: data.email,
         password: data.password,
-        full_name: data.full_name || '',
       })
 
       if (error) {
@@ -97,28 +92,10 @@ export function BasicSignupForm() {
           Criar Conta
         </h3>
         <p className="text-sm text-gray-600">
-          Comece criando sua conta com os dados básicos. Você poderá completar seu perfil após o primeiro login.
+          Crie sua conta com email e senha. Após o primeiro login, você completará seu perfil com nome e outros dados.
         </p>
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
-              Nome completo (opcional)
-            </Label>
-            <Input
-              id="full_name"
-              placeholder="Digite seu nome completo"
-              {...register('full_name')}
-              className={cn(
-                "transition-colors",
-                errors.full_name ? 'border-red-500 focus:border-red-500' : ''
-              )}
-            />
-            {errors.full_name && <p className="text-sm text-red-500 font-medium">{errors.full_name.message}</p>}
-            {watchedValues.full_name && watchedValues.full_name.length >= 2 && !errors.full_name && (
-              <p className="text-sm text-green-600 font-medium">✓ Nome válido</p>
-            )}
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">

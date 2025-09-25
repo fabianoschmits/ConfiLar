@@ -58,6 +58,7 @@ const validateCPF = (cpf: string): boolean => {
 }
 
 const onboardingSchema = z.object({
+  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   phone: z.string().min(10, 'Telefone inválido'),
   cpf_cnpj: z.string()
     .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
@@ -262,6 +263,7 @@ export default function OnboardingPage() {
 
       // Log dos dados que serão enviados
       const profileData = {
+        full_name: data.full_name,
         phone: data.phone,
         cpf_cnpj: data.cpf_cnpj,
         birth_date: data.birth_date || '',
@@ -438,6 +440,21 @@ export default function OnboardingPage() {
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Dados Pessoais</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
+                        Nome completo *
+                      </Label>
+                      <Input
+                        id="full_name"
+                        placeholder="Digite seu nome completo"
+                        {...register('full_name')}
+                        className={cn(
+                          "transition-colors",
+                          errors.full_name ? 'border-red-500 focus:border-red-500' : ''
+                        )}
+                      />
+                      {errors.full_name && <p className="text-sm text-red-500 font-medium">{errors.full_name.message}</p>}
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
                         Telefone *

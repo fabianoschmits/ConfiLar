@@ -65,10 +65,10 @@ export type SignUpData = {
 export type BasicSignUpData = {
   email: string
   password: string
-  full_name?: string
 }
 
 export type CompleteProfileData = {
+  full_name: string
   phone: string
   cpf_cnpj: string
   birth_date: string
@@ -399,7 +399,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         password: userData.password,
         options: {
           data: {
-            full_name: userData.full_name || '',
+            // Nome será preenchido no onboarding
           }
         }
       })
@@ -457,7 +457,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       const profileInsertData = {
         id: state.user.id,
         email: state.user.email!,
-        full_name: (state.user as any).user_metadata?.full_name || 'Usuário',
+        full_name: profileData.full_name,
         user_type: profileData.user_type,
         phone: profileData.phone,
         cpf_cnpj: profileData.cpf_cnpj,
