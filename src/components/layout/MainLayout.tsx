@@ -53,7 +53,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       {/* Header Moderno */}
       <ModernHeader />
       
-      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 lg:ml-64 pb-20 lg:pb-0 pt-16`}>
+      <main className={`min-h-screen bg-gray-50 transition-colors duration-200 lg:ml-64 pb-20 lg:pb-0 pt-12 sm:pt-16`}>
         {loading || !isReady || isCheckingProfile ? (
           <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : isCheckingProfile ? 'Verificando perfil...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (

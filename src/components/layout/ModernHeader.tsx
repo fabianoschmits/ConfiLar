@@ -35,7 +35,8 @@ import {
   Shield,
   Award,
   Eye,
-  ThumbsUp
+  ThumbsUp,
+  BarChart3
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -178,7 +179,7 @@ export function ModernHeader({
       {/* Header Moderno */}
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-12 sm:h-16">
             {/* Left side */}
             <div className="flex items-center space-x-4">
               {showBackButton && (
@@ -252,8 +253,8 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-80 sm:w-80 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[85vh] overflow-hidden">
-                    <div className="p-3 sm:p-4 overflow-y-auto max-h-[85vh]">
+                  <div className="absolute top-full right-0 mt-2 w-80 sm:w-80 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden">
+                    <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200">
                         <UserAvatar 
@@ -329,36 +330,41 @@ export function ModernHeader({
                         </div>
                       </div>
 
-                      {/* Ações Rápidas */}
+                      {/* Principal */}
                       <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2 sm:mb-3">Ações Rápidas</h4>
+                        <h4 className="text-xs sm:text-sm font-medium text-blue-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <Home className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Principal
+                        </h4>
                         <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              openChat()
-                              setIsMenuExpanded(false)
-                            }}
+                            onClick={() => handleNavigation('/home')}
                             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
-                            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Mensagens</span>
-                            {unreadCount > 0 && (
-                              <Badge variant="destructive" className="ml-auto text-xs scale-75 sm:scale-100">
-                                {unreadCount}
-                              </Badge>
-                            )}
+                            <Home className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Dashboard</span>
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleNavigation('/favoritos')}
+                            onClick={() => handleNavigation('/dashboard')}
                             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
-                            <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Favoritos</span>
+                            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Métricas</span>
                           </Button>
+                        </div>
+                      </div>
+
+                      {/* Descobrir */}
+                      <div className="py-3 sm:py-4 border-b border-gray-200">
+                        <h4 className="text-xs sm:text-sm font-medium text-green-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <Search className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Descobrir
+                        </h4>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                           <Button
                             variant="outline"
                             size="sm"
@@ -377,50 +383,146 @@ export function ModernHeader({
                             <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span className="truncate">Classificados</span>
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleNavigation('/feed')}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
+                          >
+                            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Feed</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleNavigation('/avaliacoes')}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
+                          >
+                            <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Avaliações</span>
+                          </Button>
                         </div>
                       </div>
 
-                      {/* Menu de Conta */}
-                      <div className="py-3 sm:py-4">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2 sm:mb-3">Minha Conta</h4>
-                        <div className="space-y-0.5 sm:space-y-1">
+                      {/* Gestão */}
+                      <div className="py-3 sm:py-4 border-b border-gray-200">
+                        <h4 className="text-xs sm:text-sm font-medium text-orange-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Gestão
+                        </h4>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
-                            className="w-full justify-start text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3"
+                            onClick={() => handleNavigation('/favoritos')}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
-                            <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                            Ver Perfil
+                            <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Favoritos</span>
                           </Button>
+                        </div>
+                      </div>
+
+                      {/* Comunicação */}
+                      <div className="py-3 sm:py-4 border-b border-gray-200">
+                        <h4 className="text-xs sm:text-sm font-medium text-purple-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Comunicação
+                        </h4>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleNavigation('/editarperfil')}
-                            className="w-full justify-start text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3"
+                            onClick={() => {
+                              openChat()
+                              setIsMenuExpanded(false)
+                            }}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
-                            <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                            Editar Perfil
+                            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Mensagens</span>
+                            {unreadCount > 0 && (
+                              <Badge variant="destructive" className="ml-auto text-xs scale-75 sm:scale-100">
+                                {unreadCount}
+                              </Badge>
+                            )}
                           </Button>
-                          {profile?.user_type === 'professional' && (
+                        </div>
+                      </div>
+
+                      {/* Profissional */}
+                      {profile?.user_type === 'professional' && (
+                        <div className="py-3 sm:py-4 border-b border-gray-200">
+                          <h4 className="text-xs sm:text-sm font-medium text-indigo-600 mb-2 sm:mb-3 flex items-center gap-2">
+                            <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                            Profissional
+                          </h4>
+                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => handleNavigation('/portfolio')}
-                              className="w-full justify-start text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3"
+                              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                             >
-                              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                              Portfólio
+                              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="truncate">Portfólio</span>
                             </Button>
-                          )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleNavigation('/reputacao')}
+                              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
+                            >
+                              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="truncate">Reputação</span>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Suporte */}
+                      <div className="py-3 sm:py-4 border-b border-gray-200">
+                        <h4 className="text-xs sm:text-sm font-medium text-red-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Suporte
+                        </h4>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => handleNavigation('/ajuda')}
-                            className="w-full justify-start text-xs sm:text-sm py-1.5 sm:py-2 px-2 sm:px-3"
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
-                            <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                            Ajuda
+                            <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Ajuda</span>
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Conta */}
+                      <div className="py-3 sm:py-4">
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2 sm:mb-3 flex items-center gap-2">
+                          <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Conta
+                        </h4>
+                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
+                          >
+                            <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Perfil</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleNavigation('/editarperfil')}
+                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
+                          >
+                            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="truncate">Editar</span>
                           </Button>
                         </div>
                       </div>
