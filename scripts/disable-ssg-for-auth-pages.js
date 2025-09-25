@@ -65,3 +65,4 @@ authPages.forEach(addDynamicExport);
 
 console.log('\n✅ Processamento concluído!');
 
+

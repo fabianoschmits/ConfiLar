@@ -119,7 +119,7 @@ export function RecommendationModal({
         .from('profiles')
         .select('user_type')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       const recommendationType = currentUserProfile?.user_type === 'professional' 
         ? 'professional_to_client' 

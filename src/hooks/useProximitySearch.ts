@@ -112,7 +112,7 @@ export const useProximitySearch = () => {
         .from('profiles')
         .select('latitude, longitude')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError || !profile?.latitude || !profile?.longitude) {
         throw new Error('Localização do usuário não encontrada');

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from '@/components/forms/LoginForm'
-import { SimpleRegistrationForm } from '@/components/forms/SimpleRegistrationForm'
+import { BasicSignupForm } from '@/components/forms/BasicSignupForm'
 import { Check, ArrowLeft, Sparkles, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -129,7 +129,7 @@ export default function AuthPage() {
                       <p className="text-gray-600 font-medium mt-2">Carregando...</p>
                     </div>
                   }>
-                    <SimpleRegistrationForm />
+                    <BasicSignupForm />
                   </Suspense>
                 </TabsContent>
               </Tabs>

@@ -73,7 +73,7 @@ export function useDashboardMetrics() {
         .from('profiles')
         .select('rating, total_reviews, is_verified, badge')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (profileError) {
         console.error('Erro ao buscar dados do perfil:', profileError)

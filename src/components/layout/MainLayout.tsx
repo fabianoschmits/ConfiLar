@@ -9,6 +9,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { PageLoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
+import { useProfileCheck } from '@/hooks/useProfileCheck';
 import { usePathname } from 'next/navigation';
 
 interface MainLayoutProps {
@@ -24,6 +25,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
   
   // Hook para redirecionamento automático
   useAutoRedirect();
+  
+  // Hook para verificar se o perfil está completo
+  const { isChecking: isCheckingProfile } = useProfileCheck();
   
   useEffect(() => {
     setMounted(true);
@@ -50,8 +54,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       <ModernHeader />
       
       <main className={`min-h-screen bg-gray-50 transition-colors duration-200 lg:ml-64 pb-20 lg:pb-0 pt-16`}>
-        {loading || !isReady ? (
-          <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
+        {loading || !isReady || isCheckingProfile ? (
+          <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : isCheckingProfile ? 'Verificando perfil...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
