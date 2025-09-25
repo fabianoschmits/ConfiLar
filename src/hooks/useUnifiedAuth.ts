@@ -447,6 +447,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         location_state: profileData.location_state,
         location_city: profileData.location_city,
         neighborhood: profileData.neighborhood,
+        address: profileData.address || '',
         bio: profileData.bio || '',
         professional_services: profileData.services_offered || [],
         professional_experience_years: profileData.experience_years ? 
@@ -476,10 +477,10 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         updated_at: new Date().toISOString()
       }
 
-      // Criar perfil e preferências em paralelo
+      // Criar/atualizar perfil e preferências em paralelo
       const [profileResult, preferencesResult] = await Promise.allSettled([
-        supabase.from('profiles').insert(profileInsertData),
-        supabase.from('notification_preferences').insert(preferencesData)
+        supabase.from('profiles').upsert(profileInsertData, { onConflict: 'id' }),
+        supabase.from('notification_preferences').upsert(preferencesData, { onConflict: 'user_id' })
       ])
 
       // Verificar resultado do perfil
@@ -489,6 +490,9 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           throw new Error(`Erro ao criar perfil: ${profileResult.value.error.message}`)
         } else {
           Logger.info('auth', `Profile completed successfully`)
+          
+          // Atualizar o contexto com o perfil criado
+          dispatch({ type: 'SET_PROFILE', payload: profileInsertData as Profile })
         }
       } else {
         Logger.error('auth', profileResult.reason, { context: 'completeProfile - profile creation' })

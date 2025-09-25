@@ -94,6 +94,9 @@ export async function middleware(request: NextRequest) {
 
   // Rotas de autenticação (redirecionar se já logado)
   const authRoutes = ['/auth', '/login', '/register', '/recuperar-senha', '/nova-senha']
+  
+  // Rotas que não devem ser redirecionadas automaticamente
+  const specialRoutes = ['/onboarding', '/verificacao', '/reautenticacao']
 
   const { pathname } = request.nextUrl
 
@@ -109,6 +112,16 @@ export async function middleware(request: NextRequest) {
 
   // Permitir acesso às rotas de teste sem verificação de autenticação
   if (isTestRoute) {
+    return response
+  }
+
+  // Verificar se é uma rota especial (não redirecionar automaticamente)
+  const isSpecialRoute = specialRoutes.some(route => 
+    pathname.startsWith(route)
+  )
+
+  // Permitir acesso às rotas especiais sem redirecionamento automático
+  if (isSpecialRoute) {
     return response
   }
 
