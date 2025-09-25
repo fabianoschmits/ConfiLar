@@ -390,7 +390,50 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
       if (data.user) {
         Logger.info('auth', `Signup successful for ${userData.email}`)
-        // Usuário criado - aguardar verificação de email
+        
+        // Aguardar um pouco para o trigger do banco criar o perfil básico
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Salvar dados adicionais no perfil
+        try {
+          const profileUpdates: Partial<Profile> = {}
+          
+          // Mapear dados do formulário para campos do perfil
+          if (validation.data.phone) profileUpdates.phone = validation.data.phone
+          if (validation.data.cpf_cnpj) profileUpdates.cpf_cnpj = validation.data.cpf_cnpj
+          if (validation.data.birth_date) profileUpdates.birth_date = validation.data.birth_date
+          if (validation.data.location_state) profileUpdates.location_state = validation.data.location_state
+          if (validation.data.location_city) profileUpdates.location_city = validation.data.location_city
+          if (validation.data.neighborhood) profileUpdates.neighborhood = validation.data.neighborhood
+          if (validation.data.bio) profileUpdates.bio = validation.data.bio
+          if (validation.data.services_offered) profileUpdates.professional_services = validation.data.services_offered
+          if (validation.data.experience_years) profileUpdates.professional_experience_years = parseInt(validation.data.experience_years) || 0
+          
+          // Se há dados do avatar, salvar
+          if (validation.data.avatar_data) {
+            profileUpdates.avatar_url = validation.data.avatar_data
+          }
+
+          // Atualizar perfil com dados adicionais
+          if (Object.keys(profileUpdates).length > 0) {
+            Logger.info('auth', `Updating profile with additional data for ${userData.email}`)
+            
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update(profileUpdates)
+              .eq('id', data.user.id)
+
+            if (updateError) {
+              Logger.error('auth', updateError, { context: 'signUp - profile update' })
+              // Não falhar o registro se a atualização do perfil falhar
+            } else {
+              Logger.info('auth', `Profile updated successfully for ${userData.email}`)
+            }
+          }
+        } catch (profileError) {
+          Logger.error('auth', profileError as Error, { context: 'signUp - profile update' })
+          // Não falhar o registro se a atualização do perfil falhar
+        }
       }
 
       return { error: null }
