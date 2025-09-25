@@ -24,6 +24,8 @@ export interface AuthState {
 export interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>
   signUp: (data: SignUpData) => Promise<{ error: { message: string } | null }>
+  signUpBasic: (data: BasicSignUpData) => Promise<{ error: { message: string } | null }>
+  completeProfile: (data: CompleteProfileData) => Promise<{ error: { message: string } | null }>
   signOut: () => Promise<{ error: { message: string } | null }>
   updateProfile: (updates: Partial<Profile>) => Promise<{ data: Profile | null; error: { message: string } | null }>
   uploadAvatar: (file: File) => Promise<{ data: string | null; error: { message: string } | null }>
@@ -51,13 +53,41 @@ export type SignUpData = {
   experience_years?: string
   emergency_service?: boolean
   insurance_coverage?: boolean
-  gender?: 'male' | 'female'
+  gender?: 'male' | 'female' | 'other'
   avatar_data?: {
     type: 'upload' | 'dicebear'
     file?: File
     url?: string
     preview: string
   } | null
+}
+
+export type BasicSignUpData = {
+  email: string
+  password: string
+  full_name?: string
+}
+
+export type CompleteProfileData = {
+  phone: string
+  cpf_cnpj: string
+  birth_date: string
+  location_state: string
+  location_city: string
+  neighborhood: string
+  bio?: string
+  services_offered?: string[]
+  experience_years?: string
+  emergency_service?: boolean
+  insurance_coverage?: boolean
+  gender: 'male' | 'female'
+  user_type: 'client' | 'professional'
+  avatar_data?: {
+    type: 'upload' | 'dicebear'
+    file?: File
+    url?: string
+    preview: string
+  }
 }
 
 // ===================================
@@ -197,7 +227,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       const duration = Date.now() - startTime
       Logger.api.request('profiles', 'GET', duration)
@@ -356,6 +386,139 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     }
   }, [fetchUserProfile, addTimeout])
 
+  const signUpBasic = useCallback(async (userData: BasicSignUpData) => {
+    try {
+      Logger.info('auth', `Attempting basic signup for ${userData.email}`)
+      
+      dispatch({ type: 'SET_LOADING', payload: true })
+      dispatch({ type: 'SET_ERROR', payload: null })
+
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            full_name: userData.full_name || '',
+          }
+        }
+      })
+
+      if (error) {
+        Logger.error('auth', error, { context: 'signUpBasic' })
+        dispatch({ type: 'SET_ERROR', payload: error.message })
+        return { error }
+      }
+
+      if (data.user) {
+        Logger.info('auth', `Basic signup successful for ${userData.email}`)
+      }
+
+      return { error: null }
+    } catch (error) {
+      Logger.error('auth', error as Error, { context: 'signUpBasic' })
+      const errorMessage = (error as Error).message
+      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      return { error: { message: errorMessage } }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [])
+
+  const completeProfile = useCallback(async (profileData: CompleteProfileData) => {
+    try {
+      Logger.info('auth', `Completing profile for user`)
+      
+      dispatch({ type: 'SET_LOADING', payload: true })
+      dispatch({ type: 'SET_ERROR', payload: null })
+
+      if (!state.user) {
+        throw new Error('Usuário não autenticado')
+      }
+
+      // Preparar dados do perfil
+      const profileInsertData = {
+        id: state.user.id,
+        email: state.user.email!,
+        full_name: (state.user as any).user_metadata?.full_name || 'Usuário',
+        user_type: profileData.user_type,
+        phone: profileData.phone,
+        cpf_cnpj: profileData.cpf_cnpj,
+        birth_date: profileData.birth_date || null,
+        location_state: profileData.location_state,
+        location_city: profileData.location_city,
+        neighborhood: profileData.neighborhood,
+        bio: profileData.bio || '',
+        professional_services: profileData.services_offered || [],
+        professional_experience_years: profileData.experience_years ? 
+          (isNaN(parseInt(profileData.experience_years)) ? 0 : parseInt(profileData.experience_years)) : 0,
+        professional_certifications: [],
+        avatar_url: null,
+        is_verified: false,
+        badge: 'bronze' as const,
+        rating: 0,
+        total_reviews: 0,
+        is_available: true,
+        profile_completed: true,
+        profile_completion_score: 100,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Preparar dados das preferências
+      const preferencesData = {
+        user_id: state.user.id,
+        push_enabled: true,
+        message_notifications: true,
+        review_notifications: true,
+        booking_notifications: true,
+        achievement_notifications: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      // Criar perfil e preferências em paralelo
+      const [profileResult, preferencesResult] = await Promise.allSettled([
+        supabase.from('profiles').insert(profileInsertData),
+        supabase.from('notification_preferences').insert(preferencesData)
+      ])
+
+      // Verificar resultado do perfil
+      if (profileResult.status === 'fulfilled') {
+        if (profileResult.value.error) {
+          Logger.error('auth', profileResult.value.error, { context: 'completeProfile - profile creation' })
+          throw new Error(`Erro ao criar perfil: ${profileResult.value.error.message}`)
+        } else {
+          Logger.info('auth', `Profile completed successfully`)
+        }
+      } else {
+        Logger.error('auth', profileResult.reason, { context: 'completeProfile - profile creation' })
+        throw new Error(`Erro ao criar perfil: ${profileResult.reason}`)
+      }
+
+      // Verificar resultado das preferências
+      if (preferencesResult.status === 'fulfilled') {
+        if (preferencesResult.value.error) {
+          Logger.error('auth', preferencesResult.value.error, { context: 'completeProfile - preferences creation' })
+          // Não falhar se as preferências não forem criadas
+        } else {
+          Logger.info('auth', `Notification preferences created successfully`)
+        }
+      } else {
+        Logger.error('auth', preferencesResult.reason, { context: 'completeProfile - preferences creation' })
+        // Não falhar se as preferências não forem criadas
+      }
+
+      return { error: null }
+    } catch (error) {
+      Logger.error('auth', error as Error, { context: 'completeProfile' })
+      const errorMessage = (error as Error).message
+      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      return { error: { message: errorMessage } }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [state.user])
+
   const signUp = useCallback(async (userData: SignUpData) => {
     try {
       Logger.info('auth', `Attempting signup for ${userData.email}`)
@@ -391,48 +554,76 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       if (data.user) {
         Logger.info('auth', `Signup successful for ${userData.email}`)
         
-        // Aguardar um pouco para o trigger do banco criar o perfil básico
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Criar perfil e preferências diretamente no frontend (solução recomendada pelo ChatGPT)
+        Logger.info('auth', `Creating profile and preferences directly for ${userData.email}`)
         
-        // Salvar dados adicionais no perfil
-        try {
-          const profileUpdates: Partial<Profile> = {}
-          
-          // Mapear dados do formulário para campos do perfil
-          if (validation.data.phone) profileUpdates.phone = validation.data.phone
-          if (validation.data.cpf_cnpj) profileUpdates.cpf_cnpj = validation.data.cpf_cnpj
-          if (validation.data.birth_date) profileUpdates.birth_date = validation.data.birth_date
-          if (validation.data.location_state) profileUpdates.location_state = validation.data.location_state
-          if (validation.data.location_city) profileUpdates.location_city = validation.data.location_city
-          if (validation.data.neighborhood) profileUpdates.neighborhood = validation.data.neighborhood
-          if (validation.data.bio) profileUpdates.bio = validation.data.bio
-          if (validation.data.services_offered) profileUpdates.professional_services = validation.data.services_offered
-          if (validation.data.experience_years) profileUpdates.professional_experience_years = parseInt(validation.data.experience_years) || 0
-          
-          // Se há dados do avatar, salvar
-          if (validation.data.avatar_data) {
-            profileUpdates.avatar_url = validation.data.avatar_data
-          }
+        // Preparar dados do perfil
+        const profileData = {
+          id: data.user.id,
+          email: data.user.email!,
+          full_name: validation.data.full_name,
+          user_type: validation.data.user_type,
+          phone: validation.data.phone || '',
+          cpf_cnpj: validation.data.cpf_cnpj || '',
+          birth_date: validation.data.birth_date || null,
+          location_state: validation.data.location_state || '',
+          location_city: validation.data.location_city || '',
+          neighborhood: validation.data.neighborhood || '',
+          bio: validation.data.bio || '',
+          professional_services: validation.data.services_offered || [],
+          professional_experience_years: validation.data.experience_years ? 
+            (isNaN(parseInt(validation.data.experience_years)) ? 0 : parseInt(validation.data.experience_years)) : 0,
+          professional_certifications: [], // Adicionar coluna que estava faltando
+          avatar_url: null, // Adicionar coluna que estava faltando
+          is_verified: false,
+          badge: 'bronze' as const,
+          rating: 0,
+          total_reviews: 0,
+          is_available: true,
+          profile_completed: false,
+          profile_completion_score: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
 
-          // Atualizar perfil com dados adicionais
-          if (Object.keys(profileUpdates).length > 0) {
-            Logger.info('auth', `Updating profile with additional data for ${userData.email}`)
-            
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update(profileUpdates)
-              .eq('id', data.user.id)
+        // Preparar dados das preferências
+        const preferencesData = {
+          user_id: data.user.id,
+          push_enabled: true,
+          message_notifications: true,
+          review_notifications: true,
+          booking_notifications: true,
+          achievement_notifications: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
 
-            if (updateError) {
-              Logger.error('auth', updateError, { context: 'signUp - profile update' })
-              // Não falhar o registro se a atualização do perfil falhar
-            } else {
-              Logger.info('auth', `Profile updated successfully for ${userData.email}`)
-            }
+        // Criar perfil e preferências em paralelo para melhor performance
+        const [profileResult, preferencesResult] = await Promise.allSettled([
+          supabase.from('profiles').insert(profileData),
+          supabase.from('notification_preferences').insert(preferencesData)
+        ])
+
+        // Verificar resultado do perfil
+        if (profileResult.status === 'fulfilled') {
+          if (profileResult.value.error) {
+            Logger.error('auth', profileResult.value.error, { context: 'signUp - profile creation' })
+          } else {
+            Logger.info('auth', `Profile created successfully for ${userData.email}`)
           }
-        } catch (profileError) {
-          Logger.error('auth', profileError as Error, { context: 'signUp - profile update' })
-          // Não falhar o registro se a atualização do perfil falhar
+        } else {
+          Logger.error('auth', profileResult.reason, { context: 'signUp - profile creation' })
+        }
+
+        // Verificar resultado das preferências
+        if (preferencesResult.status === 'fulfilled') {
+          if (preferencesResult.value.error) {
+            Logger.error('auth', preferencesResult.value.error, { context: 'signUp - preferences creation' })
+          } else {
+            Logger.info('auth', `Notification preferences created successfully for ${userData.email}`)
+          }
+        } else {
+          Logger.error('auth', preferencesResult.reason, { context: 'signUp - preferences creation' })
         }
       }
 
@@ -725,6 +916,8 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     ...state,
     signIn,
     signUp,
+    signUpBasic,
+    completeProfile,
     signOut,
     updateProfile,
     uploadAvatar,

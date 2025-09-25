@@ -472,7 +472,7 @@ export function useClassifiedAds() {
         .from('profiles')
         .select('avatar_url, profile_photo_url')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
       
       if (error) return null
       return data?.avatar_url || data?.profile_photo_url || null

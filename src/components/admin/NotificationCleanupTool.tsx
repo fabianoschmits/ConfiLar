@@ -40,7 +40,7 @@ export function NotificationCleanupTool() {
         .from('profiles')
         .select('id, full_name, email')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (userError || !userData) {
         setUserStats({
