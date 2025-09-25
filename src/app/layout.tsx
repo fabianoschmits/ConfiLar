@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
+
+// Forçar todas as páginas a serem dinâmicas
+export const dynamic = 'force-dynamic'
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { AuthProvider } from "@/contexts/AuthContext"
-import { FloatingChatProvider } from "@/contexts/FloatingChatContext"
-import { NotificationProvider } from "@/components/notifications/NotificationProvider"
-import { AutoReauthentication } from '@/components/auth/AutoReauthentication'
+import { FloatingChatProviderSimple } from "@/contexts/FloatingChatContextSimple"
+import { NotificationProviderSimple } from "@/components/notifications/NotificationProviderSimple"
+// import { AutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { LoadingProvider } from "@/hooks/useLoading"
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
 import { QueryProvider } from "@/lib/queryClient"
@@ -14,7 +17,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { Suspense } from "react"
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
-import { FloatingChatWrapper } from "@/components/layout/ClientComponents"
+import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
+// import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -89,20 +93,21 @@ export default async function RootLayout({
                     <ErrorBoundary>
           <QueryProvider>
             <LoadingProvider>
-              <NotificationProvider>
-                <AuthProvider initialSession={session}>
-                  <AutoReauthentication>
-                    <FloatingChatProvider>
+              <AuthProvider initialSession={session}>
+                {/* <AutoReauthentication> */}
+                  <NotificationProviderSimple>
+                    <FloatingChatProviderSimple>
                       <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
                         {children}
                       </Suspense>
                       <FloatingChatWrapper />
                       <LoadingOverlayProvider />
                       <Toaster position="top-right" richColors />
-                    </FloatingChatProvider>
-                  </AutoReauthentication>
-                </AuthProvider>
-              </NotificationProvider>
+                      {/* <AuthContextDebug /> */}
+                    </FloatingChatProviderSimple>
+                  </NotificationProviderSimple>
+                {/* </AutoReauthentication> */}
+              </AuthProvider>
             </LoadingProvider>
           </QueryProvider>
         </ErrorBoundary>

@@ -7,7 +7,7 @@ import { ModernBottomNavigation } from './ModernBottomNavigation'
 import { LoginPrompt } from './LoginPrompt';
 import { useAuthContext } from '@/contexts/AuthContext'
 import { PageLoadingOverlay } from "@/components/ui/LoadingOverlay";
-import { PageTransition } from "@/components/ui/PageTransition";
+import { PageTransition } from "@/components/animations/PageTransition";
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { usePathname } from 'next/navigation';
 

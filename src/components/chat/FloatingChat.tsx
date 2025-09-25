@@ -12,14 +12,13 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
-  Clock,
   Edit3,
   X as XIcon,
   Handshake,
   Search
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useMessages } from '@/hooks/useMessages'
 import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
@@ -116,7 +115,6 @@ export function FloatingChat() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
   const [showAgreementModal, setShowAgreementModal] = useState(false)
-  const [isUserScrolling, setIsUserScrolling] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   // Sincronizar isOpen do contexto com isExpanded local
@@ -133,7 +131,6 @@ export function FloatingChat() {
         setSelectedConversation(conversation)
         loadMessages(conversation.id)
         markMessagesAsRead(conversation.id)
-        setIsUserScrolling(false)
       } else {
         // Se a conversa não está na lista ainda, carregar mensagens diretamente
         console.log('💬 Conversa não encontrada na lista, carregando mensagens diretamente:', selectedConversationId)
@@ -161,18 +158,6 @@ export function FloatingChat() {
     }
   }, [selectedConversationId, user?.id, conversations.length])
 
-  // Aguardar carregamento das conversas quando selectedConversationId é definido
-  useEffect(() => {
-    if (selectedConversationId && conversations.length > 0) {
-      const conversation = conversations.find(c => c.id === selectedConversationId)
-      if (conversation && !selectedConversation) {
-        console.log('💬 Conversa encontrada após carregamento, definindo como selecionada:', conversation.id)
-        setSelectedConversation(conversation)
-        loadMessages(conversation.id)
-        markMessagesAsRead(conversation.id)
-      }
-    }
-  }, [selectedConversationId, conversations, selectedConversation])
 
   // Fechar busca de favoritos quando não há query
   useEffect(() => {
@@ -181,13 +166,6 @@ export function FloatingChat() {
     }
   }, [searchQuery])
 
-  // Recarregar conversas quando selectedConversationId muda (nova conversa criada)
-  useEffect(() => {
-    if (selectedConversationId && user?.id) {
-      console.log('💬 selectedConversationId mudou, recarregando conversas:', selectedConversationId)
-      loadConversations()
-    }
-  }, [selectedConversationId, user?.id])
 
   // Auto-scroll quando receber novas mensagens (apenas se for mensagem nova)
   useEffect(() => {
@@ -214,34 +192,15 @@ export function FloatingChat() {
     }
   }, [selectedConversation, lastConversationId])
 
-  // Atualizar mensagens quando conversa muda (SEM LOOP)
-  useEffect(() => {
-    if (selectedConversation && user?.id) {
-      loadMessages(selectedConversation.id)
-      markMessagesAsRead(selectedConversation.id)
-      setIsUserScrolling(false)
-    }
-  }, [selectedConversation?.id, user?.id]) // Usar apenas o ID da conversa
 
 
-  // Verificar se o usuário está próximo do final do chat
-  const isNearBottom = () => {
-    if (!messagesContainerRef.current) return true
-    
-    const container = messagesContainerRef.current
-    const threshold = 100 // pixels do final
-    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
-    
-    return distanceFromBottom <= threshold
-  }
 
 
   // Removido auto-scroll automático - usuário tem controle total
 
   // Detectar quando o usuário rola manualmente (apenas para controle visual)
   const handleScroll = () => {
-    const nearBottom = isNearBottom()
-    setIsUserScrolling(!nearBottom)
+    // Função mantida para compatibilidade, mas não faz nada
   }
 
   // Enviar mensagem
@@ -281,8 +240,6 @@ export function FloatingChat() {
   const goBackToConversations = () => {
     setSelectedConversation(null)
     selectConversation(undefined)
-    // Resetar estado de scroll
-    setIsUserScrolling(false)
   }
 
   // Iniciar edição de mensagem

@@ -1,6 +1,9 @@
 'use client'
 
-import { Suspense } from 'react'
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,21 +28,30 @@ import {
   Target,
   Zap
 } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 
 // Dynamic imports para componentes pesados do dashboard
-const DashboardCharts = dynamic(() => import('@/components/dashboard/DashboardCharts'), {
+const DashboardCharts = dynamicImport(() => import('@/components/dashboard/DashboardCharts'), {
   ssr: false,
   loading: () => <Card className="h-64 animate-pulse"><CardContent className="p-6"><div className="h-52 bg-gray-200 rounded" /></CardContent></Card>
 })
 
-const RecentActivity = dynamic(() => import('@/components/dashboard/RecentActivity'), {
+const RecentActivity = dynamicImport(() => import('@/components/dashboard/RecentActivity'), {
   ssr: false,
   loading: () => <Card className="h-48 animate-pulse"><CardContent className="p-6"><div className="h-36 bg-gray-200 rounded" /></CardContent></Card>
 })
 
 export default function DashboardPage() {
   const { user, profile } = useAuthContext()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   // Dados mockados para demonstração
   const stats = {

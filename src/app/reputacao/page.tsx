@@ -48,16 +48,20 @@ interface UserRecommendation {
 
 
 export default function ReputacaoPage() {
-  const { profile: currentUser } = useAuthContext()
-  const [reviews, setReviews] = useState<UserReview[]>([])
-  const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
-  const [viewStats, setViewStats] = useState<any>(null)
   const [mounted, setMounted] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const { profile: currentUser } = useAuthContext()
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  if (!mounted) {
+    return null
+  }
+  const [reviews, setReviews] = useState<UserReview[]>([])
+  const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
+  const [viewStats, setViewStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   // Carregar dados da reputação do usuário
   useEffect(() => {

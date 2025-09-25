@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface NotificationPreferences {
   push_enabled: boolean;
@@ -26,7 +26,7 @@ interface NotificationSettingsInlineProps {
 }
 
 export const NotificationSettingsInline: React.FC<NotificationSettingsInlineProps> = ({ onBack }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push_enabled: true,
     email_enabled: true,

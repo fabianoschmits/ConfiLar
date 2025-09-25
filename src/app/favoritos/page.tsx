@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,14 +22,15 @@ import {
 import { PageTransition } from '@/components/animations/PageTransition'
 import { FadeIn } from '@/components/animations/FadeIn'
 import { useFavorites } from '@/hooks/useFavorites'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 
 export default function FavoritesPage() {
-  const { user, profile } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  const { user, profile } = useAuthContext()
   const router = useRouter()
   const { openChat } = useFloatingChat()
   const { 
@@ -38,6 +40,14 @@ export default function FavoritesPage() {
     getFavoritesByType, 
     getFavoritesStats 
   } = useFavorites()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   const stats = getFavoritesStats()
   const professionalFavorites = getFavoritesByType('professional')

@@ -126,17 +126,19 @@ export function MessageMenu({
               <AlertTriangle className="h-5 w-5 text-red-500" />
               Deletar Mensagem
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 space-y-3">
-              <p>Tem certeza que deseja deletar esta mensagem?</p>
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                <p className="text-sm font-medium text-amber-800 mb-2">
-                  ⚠️ Importante:
-                </p>
-                <ul className="text-sm text-amber-700 space-y-1">
-                  <li>• Esta ação não pode ser desfeita</li>
-                  <li>• A mensagem será removida para você e para o outro usuário</li>
-                  <li>• Ambos não conseguirão mais ver esta mensagem</li>
-                </ul>
+            <AlertDialogDescription asChild>
+              <div className="text-gray-600 space-y-3">
+                <p>Tem certeza que deseja deletar esta mensagem?</p>
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">
+                    ⚠️ Importante:
+                  </p>
+                  <ul className="text-sm text-amber-700 space-y-1">
+                    <li>• Esta ação não pode ser desfeita</li>
+                    <li>• A mensagem será removida para você e para o outro usuário</li>
+                    <li>• Ambos não conseguirão mais ver esta mensagem</li>
+                  </ul>
+                </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { useNotifications } from '@/components/notifications/NotificationProvider'
+import { useNotifications } from '@/components/notifications/NotificationProviderSimple'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
 export interface Message {
@@ -176,10 +176,8 @@ export function useMessages() {
   }, [user?.id])
 
   // Criar notificação para nova mensagem - REMOVIDO para evitar duplicação
-  // A notificação já é criada em useSupabaseMessages.ts
   const createMessageNotification = useCallback(async (message: Message, conversation: Conversation) => {
     // Função removida para evitar duplicação de notificações
-    // As notificações são criadas em useSupabaseMessages.ts
     return
   }, [])
 
@@ -617,7 +615,6 @@ export function useMessages() {
         }
 
         // Criar notificações para mensagens não lidas - REMOVIDO para evitar duplicação
-        // As notificações são criadas em useSupabaseMessages.ts
         // if (unreadMessages && unreadMessages.length > 0) {
         //   for (const message of unreadMessages) {
         //     const conversation = message.conversations

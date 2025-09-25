@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, Smartphone, Mail, Settings } from 'lucide-react';
-import { useNotifications } from './NotificationProvider';
-import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from './NotificationProviderSimple';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +28,7 @@ interface NotificationPreferences {
 
 export const NotificationSettings: React.FC = () => {
   const { hasPermission, requestPermission } = useNotifications();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push: hasPermission,
     email: true,

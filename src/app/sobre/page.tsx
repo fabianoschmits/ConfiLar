@@ -1,6 +1,9 @@
 'use client'
 
 import { Shield, Users, Zap, MapPin, Phone, Mail, CheckCircle } from 'lucide-react'
+
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 

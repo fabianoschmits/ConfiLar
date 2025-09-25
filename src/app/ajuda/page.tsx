@@ -1,241 +1,266 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { 
-  IconMessageCircle, 
-  IconShield, 
-  IconUsers, 
-  IconStar, 
-  IconAward, 
-  IconSettings, 
-  IconBolt, 
-  IconTrendingUp, 
-  IconChartBar, 
-  IconInfoCircle, 
-  IconCheck, 
-  IconAlertCircle, 
-  IconFileText, 
-  IconCalendar, 
-  IconPhone, 
-  IconMail, 
-  IconMapPin, 
-  IconCreditCard, 
-  IconDeviceMobile, 
-  IconHome, 
-  IconBuilding, 
-  IconWorld, 
-  IconChevronsDown, 
-  IconPhoto, 
-  IconLayout, 
-  IconBold, 
-  IconItalic, 
-  IconUnderline, 
-  IconLogout 
-} from '@tabler/icons-react'
+  MessageCircle, 
+  Shield, 
+  Users, 
+  Star, 
+  Award, 
+  Settings, 
+  Zap, 
+  TrendingUp, 
+  BarChart3, 
+  Info, 
+  Check, 
+  AlertCircle, 
+  FileText, 
+  Calendar, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  CreditCard, 
+  Smartphone, 
+  Home, 
+  Building, 
+  Globe, 
+  ChevronsDown, 
+  Image, 
+  Layout, 
+  Bold, 
+  Italic, 
+  Underline, 
+  LogOut 
+} from 'lucide-react'
+import { ClientOnly } from '@/components/ClientOnly'
 
 export default function AjudaPage() {
   return (
-    <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-yellow-400">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 animate-slide-in-up">
-                <h1 className="text-4xl font-black mb-4 text-black uppercase animate-fade-in">CENTRAL DE AJUDA</h1>
-                <p className="text-xl text-black font-bold animate-fade-in">
-                  Encontre respostas para suas dúvidas sobre o ConfiLar
-                </p>
+    <ClientOnly>
+      <MainLayout requireAuth={true}>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Header da Página */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Info className="h-8 w-8 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Central de Ajuda
+                  </h1>
+                  <p className="text-gray-600 mt-1">
+                    Encontre respostas para suas dúvidas sobre o ConfiLar
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="grid gap-6">
               {/* Seção: Como Funciona */}
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 animate-slide-in-up">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconInfoCircle size={24} stroke={2} className="text-yellow-400 animate-spin" />
-                  </div>
-                  <h2 className="text-xl font-black text-black uppercase">COMO FUNCIONA O CONFILAR?</h2>
-                </div>
-                <div className="space-y-4">
-                  <p className="text-black font-bold">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Info className="h-6 w-6 text-blue-600" />
+                    </div>
+                    Como Funciona o ConfiLar?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 mb-6">
                     O ConfiLar é uma plataforma que conecta clientes diretamente com profissionais 
                     qualificados, eliminando intermediários e facilitando a contratação de serviços.
                   </p>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                        <IconUsers size={20} stroke={2} className="text-yellow-400 animate-spin" />
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-green-100 rounded-lg">
+                        <Users className="h-6 w-6 text-green-600" />
                       </div>
                       <div>
-                        <h4 className="font-black text-black uppercase">PARA CLIENTES</h4>
-                        <p className="text-sm text-black font-bold">
+                        <h4 className="font-semibold text-gray-900 mb-2">Para Clientes</h4>
+                        <p className="text-sm text-gray-600">
                           Encontre profissionais verificados, compare preços e contrate com segurança
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                        <IconStar size={20} stroke={2} className="text-yellow-400 animate-spin" />
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-purple-100 rounded-lg">
+                        <Star className="h-6 w-6 text-purple-600" />
                       </div>
                       <div>
-                        <h4 className="font-black text-black uppercase">PARA PROFISSIONAIS</h4>
-                        <p className="text-sm text-black font-bold">
+                        <h4 className="font-semibold text-gray-900 mb-2">Para Profissionais</h4>
+                        <p className="text-sm text-gray-600">
                           Divulgue seus serviços, receba pedidos e gerencie sua agenda
                         </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Seção: Recursos Principais */}
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 animate-slide-in-up" style={{animationDelay: '0.1s'}}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconBolt size={24} stroke={2} className="text-yellow-400 animate-spin" />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Zap className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    Recursos Principais
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Busca inteligente de profissionais</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Sistema de mensagens integrado</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Agendamento online</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Avaliações e recomendações</span>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Perfis verificados e seguros</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Sistema de classificação de serviços</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Notificações em tempo real</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600" />
+                        <span className="text-gray-700">Sistema de favoritos</span>
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-black text-black uppercase">RECURSOS PRINCIPAIS</h2>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Busca inteligente de profissionais</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Sistema de mensagens integrado</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Agendamento online</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Avaliações e recomendações</span>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Perfis verificados e seguros</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Sistema de classificação de serviços</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Notificações em tempo real</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <IconCheck size={16} stroke={2} className="text-black" />
-                      <span className="font-bold text-black">Suporte ao cliente 24/7</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              {/* Seção: Dúvidas Frequentes */}
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 animate-slide-in-up" style={{animationDelay: '0.2s'}}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconMessageCircle size={24} stroke={2} className="text-yellow-400 animate-spin" />
+              {/* Seção: Como Usar */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <MessageCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    Como Usar a Plataforma
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-blue-600">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Crie sua conta</h4>
+                        <p className="text-gray-600">
+                          Registre-se como cliente ou profissional e complete seu perfil com informações detalhadas.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-blue-600">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Busque ou ofereça serviços</h4>
+                        <p className="text-gray-600">
+                          Use nossa busca inteligente para encontrar profissionais ou divulgue seus serviços.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-blue-600">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Converse e negocie</h4>
+                        <p className="text-gray-600">
+                          Use nosso sistema de mensagens para conversar diretamente com profissionais ou clientes.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-semibold text-blue-600">4</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Contrate e avalie</h4>
+                        <p className="text-gray-600">
+                          Feche o acordo e após o serviço, avalie a experiência para ajudar outros usuários.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-black text-black uppercase">DÚVIDAS FREQUENTES</h2>
-                </div>
-                <div className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-black mb-2 text-black uppercase">COMO POSSO CONTRATAR UM PROFISSIONAL?</h4>
-                      <p className="text-black font-bold text-sm">
-                        Use a busca para encontrar profissionais, visualize seus perfis e avaliações, 
-                        e inicie uma conversa através do chat integrado.
-                      </p>
-                    </div>
-                    <div className="h-1 bg-black border border-black"></div>
-                    <div>
-                      <h4 className="font-black mb-2 text-black uppercase">COMO FUNCIONA O SISTEMA DE PAGAMENTOS?</h4>
-                      <p className="text-black font-bold text-sm">
-                        Os pagamentos são negociados diretamente entre cliente e profissional. 
-                        O ConfiLar não cobra taxas sobre transações.
-                      </p>
-                    </div>
-                    <div className="h-1 bg-black border border-black"></div>
-                    <div>
-                      <h4 className="font-black mb-2 text-black uppercase">COMO POSSO VERIFICAR A QUALIDADE DE UM PROFISSIONAL?</h4>
-                      <p className="text-black font-bold text-sm">
-                        Verifique as avaliações, recomendações de outros usuários, histórico de trabalho 
-                        e documentos de verificação no perfil do profissional.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {/* Seção: Contato */}
-              <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all p-6 animate-slide-in-up" style={{animationDelay: '0.3s'}}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center animate-pulse">
-                    <IconMessageCircle size={24} stroke={2} className="text-yellow-400 animate-spin" />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <MessageCircle className="h-6 w-6 text-orange-600" />
+                    </div>
+                    Precisa de Mais Ajuda?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 mb-6">
+                    Nossa equipe de suporte está sempre pronta para ajudar você.
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                      <Mail className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Email</p>
+                        <p className="text-sm text-gray-600">suporte@confilar.com</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                      <MessageCircle className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Chat</p>
+                        <p className="text-sm text-gray-600">Suporte online</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                      <Phone className="h-5 w-5 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-gray-900">Telefone</p>
+                        <p className="text-sm text-gray-600">(11) 99999-9999</p>
+                      </div>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-black text-black uppercase">PRECISA DE MAIS AJUDA?</h2>
-                </div>
-                <p className="text-black font-bold mb-4">
-                  Nossa equipe de suporte está sempre pronta para ajudar você.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <button className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 uppercase">
-                    <IconMail size={16} stroke={2} />
-                    EMAIL DE SUPORTE
-                  </button>
-                  <button className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 uppercase">
-                    <IconMessageCircle size={16} stroke={2} />
-                    CHAT ONLINE
-                  </button>
-                  <button className="px-4 py-2 text-sm font-black text-black bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-2 uppercase">
-                    <IconPhone size={16} stroke={2} />
-                    TELEFONE
-                  </button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
-        
-        {/* Animações CSS Brutalistas */}
-        <style jsx>{`
-          @keyframes fade-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          
-          @keyframes slide-in-up {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          
-          .animate-fade-in {
-            animation: fade-in 0.8s ease-out forwards;
-          }
-          
-          .animate-slide-in-up {
-            animation: slide-in-up 0.8s ease-out forwards;
-            opacity: 0;
-          }
-        `}</style>
-      </div>
-    </MainLayout>
+      </MainLayout>
+    </ClientOnly>
   )
 }
-
-
-
-
-
-

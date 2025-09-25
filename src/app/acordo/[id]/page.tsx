@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
@@ -56,6 +59,7 @@ interface AgreementDetails {
 }
 
 export default function AgreementPage() {
+  const [mounted, setMounted] = useState(false)
   const params = useParams()
   const router = useRouter()
   const { profile } = useAuthContext()
@@ -63,6 +67,14 @@ export default function AgreementPage() {
   const [loading, setLoading] = useState(true)
   const [timeUntilReview, setTimeUntilReview] = useState<string>('')
   const [canReview, setCanReview] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   const agreementId = params.id as string
 

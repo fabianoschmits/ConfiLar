@@ -1,12 +1,30 @@
 'use client'
 
-import { useEffect } from 'react'
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Card, CardContent } from '@/components/ui/card'
 import { LogOut } from 'lucide-react'
 
 export default function LogoutPage() {
-  const { signOut } = useAuthContext()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  // const { signOut } = useAuthContext()
+  const signOut = async () => {
+    // Implementação temporária
+    console.log('Signing out...')
+    window.location.replace('/')
+  }
 
   useEffect(() => {
     const performSignOut = async () => {

@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   X
 } from 'lucide-react';
-import { useNotifications } from './NotificationProvider';
+import { useNotifications } from './NotificationProviderSimple';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

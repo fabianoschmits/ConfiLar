@@ -35,7 +35,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { Profile } from '@/types/database'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
 import { useProximitySearch } from '@/hooks/useProximitySearch'
 import { useGeolocation } from '@/hooks/useGeolocation'

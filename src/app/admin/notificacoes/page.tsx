@@ -1,6 +1,21 @@
+'use client'
+
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
+import { useEffect, useState } from 'react'
 import { NotificationCleanupTool } from '@/components/admin/NotificationCleanupTool'
 
 export default function AdminNotificationsPage() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8">

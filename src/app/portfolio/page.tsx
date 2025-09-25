@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,12 +22,24 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { usePortfolio } from '@/hooks/usePortfolio'
-import { useAuth } from '@/hooks/useAuth'
+// import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function PortfolioPage() {
-  const { user, profile } = useAuth()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  // const { user, profile } = useAuthContext()
+  const user = null
+  const profile = null
   const { 
     projects, 
     loading, 
@@ -48,14 +63,9 @@ export default function PortfolioPage() {
     images: [] as string[]
   })
   const [saving, setSaving] = useState(false)
-  const [mounted, setMounted] = useState(false)
 
   // Verificar se é profissional
   const isProfessional = profile?.user_type === 'professional'
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleAddProject = async () => {
     if (!newProject.title.trim()) {

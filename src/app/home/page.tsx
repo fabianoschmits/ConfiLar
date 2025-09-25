@@ -1,5 +1,9 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,8 +34,17 @@ import {
 } from 'lucide-react'
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { user, profile } = useAuthContext()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   const handleNavigateTo = (path: string) => {
     console.log('🔄 Navegando para:', path)

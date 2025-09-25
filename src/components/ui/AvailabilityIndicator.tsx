@@ -3,11 +3,11 @@
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { 
-  IconCircleCheck, 
-  IconCircleX, 
-  IconClock,
-  IconLoader2
-} from '@tabler/icons-react'
+  CheckCircle, 
+  XCircle, 
+  Clock,
+  Loader2
+} from 'lucide-react'
 
 interface AvailabilityIndicatorProps {
   isAvailable: boolean
@@ -56,7 +56,7 @@ export function AvailabilityIndicator({
         variant="secondary" 
         className={`${sizeClasses.badge} bg-gray-100 text-gray-600 border border-gray-300 ${className}`}
       >
-        <IconLoader2 className={`${sizeClasses.icon} animate-spin mr-1`} />
+        <Loader2 className={`${sizeClasses.icon} animate-spin mr-1`} />
         {showText && <span className={sizeClasses.text}>Carregando...</span>}
       </Badge>
     )
@@ -67,7 +67,7 @@ export function AvailabilityIndicator({
       <Badge 
         className={`${sizeClasses.badge} bg-green-500 text-white border-2 border-green-600 font-black ${className}`}
       >
-        <IconCircleCheck className={`${sizeClasses.icon} mr-1`} />
+        <CheckCircle className={`${sizeClasses.icon} mr-1`} />
         {showText && <span className={sizeClasses.text}>DISPONÍVEL</span>}
       </Badge>
     )
@@ -77,7 +77,7 @@ export function AvailabilityIndicator({
     <Badge 
       className={`${sizeClasses.badge} bg-red-500 text-white border-2 border-red-600 font-black ${className}`}
     >
-      <IconCircleX className={`${sizeClasses.icon} mr-1`} />
+      <XCircle className={`${sizeClasses.icon} mr-1`} />
       {showText && <span className={sizeClasses.text}>INDISPONÍVEL</span>}
     </Badge>
   )

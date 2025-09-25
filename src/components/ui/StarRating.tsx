@@ -59,8 +59,8 @@ export function StarRating({
           className={cn(
             getSizeClasses(),
             {
-              'text-yellow-400 fill-current': isFullStar,
-              'text-yellow-400 fill-current opacity-50': isHalfStar,
+              'text-yellow-500 fill-current': isFullStar,
+              'text-yellow-500 fill-current opacity-50': isHalfStar,
               'text-gray-300': !isFullStar && !isHalfStar,
             }
           )}
@@ -151,7 +151,7 @@ export function StarCount({
 
   return (
     <div className={cn('flex items-center', className)}>
-      <Star className={cn(getSizeClasses(), 'text-yellow-400 fill-current mr-1')} />
+      <Star className={cn(getSizeClasses(), 'text-yellow-500 fill-current mr-1')} />
       <span className="font-medium text-gray-700">{count}</span>
     </div>
   )
@@ -208,8 +208,8 @@ export function InteractiveStarRating({
               className={cn(
                 getSizeClasses(),
                 {
-                  'text-yellow-400 fill-current': isActive,
-                  'text-gray-300 hover:text-yellow-300': !isActive && !disabled,
+                  'text-yellow-500 fill-current': isActive,
+                  'text-gray-300 hover:text-yellow-400': !isActive && !disabled,
                 }
               )}
             />

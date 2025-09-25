@@ -30,7 +30,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 
 interface SidebarItem {
   id: string
