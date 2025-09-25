@@ -75,6 +75,7 @@ export type CompleteProfileData = {
   location_state: string
   location_city: string
   neighborhood: string
+  address?: string
   bio?: string
   services_offered?: string[]
   experience_years?: string
