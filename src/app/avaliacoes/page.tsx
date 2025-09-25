@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,19 +20,23 @@ import { TimeCounter } from '@/components/ui/TimeCounter'
 import { toast } from 'sonner'
 
 export default function AvaliacoesPage() {
+  const [mounted, setMounted] = useState(false)
   const { profile: currentUser } = useAuthContext()
   const [filter, setFilter] = useState<'all' | 'received' | 'given'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; avatar?: string; userType?: 'client' | 'professional' } | null>(null)
   const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
-  const [mounted, setMounted] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isHowItWorksExpanded, setIsHowItWorksExpanded] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   const {
     reviews,

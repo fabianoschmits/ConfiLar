@@ -37,9 +37,13 @@ export function useProfileViews() {
 
   // Registrar visualização de um perfil
   const recordView = useCallback(async (profileId: string): Promise<boolean> => {
-    if (!profileId) return false
+    if (!profileId) {
+      console.log('❌ recordView: profileId não fornecido')
+      return false
+    }
 
     try {
+      console.log('🔍 recordView: Iniciando registro de visualização para:', profileId)
       setLoading(true)
       setError(null)
 
@@ -47,6 +51,7 @@ export function useProfileViews() {
       const userAgent = navigator.userAgent
       const referrer = document.referrer || null
 
+      console.log('🔍 recordView: Chamando função do banco para registrar visualização')
       // Chamar função do banco para registrar visualização
       const { data, error: recordError } = await supabase.rpc('record_profile_view', {
         target_profile_id: profileId,
@@ -56,13 +61,14 @@ export function useProfileViews() {
       })
 
       if (recordError) {
-        console.error('Erro ao registrar visualização:', recordError)
+        console.error('❌ recordView: Erro ao registrar visualização:', recordError)
         return false
       }
 
+      console.log('✅ recordView: Visualização registrada com sucesso para:', profileId)
       return data === true
     } catch (err) {
-      console.error('Erro ao registrar visualização:', err)
+      console.error('❌ recordView: Erro ao registrar visualização:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
       return false
     } finally {
@@ -212,17 +218,28 @@ export function useProfileViews() {
 
   // Função para registrar visualização automaticamente quando um perfil é visualizado
   const useAutoRecordView = useCallback((profileId: string) => {
-    if (!profileId || !user?.id) return
+    if (!profileId || !user?.id) {
+      console.log('❌ useAutoRecordView: profileId ou user.id não disponível')
+      return
+    }
 
     // Não registrar visualização do próprio perfil
-    if (profileId === user?.id) return
+    if (profileId === user?.id) {
+      console.log('❌ useAutoRecordView: Tentativa de registrar visualização do próprio perfil')
+      return
+    }
 
+    console.log('✅ useAutoRecordView: Agendando registro de visualização para:', profileId)
     // Registrar visualização com delay para evitar spam
     const timer = setTimeout(() => {
+      console.log('🔍 Executando registro de visualização para:', profileId)
       recordView(profileId)
     }, 2000) // 2 segundos de delay
 
-    return () => clearTimeout(timer)
+    return () => {
+      console.log('🧹 Limpando timer de visualização para:', profileId)
+      clearTimeout(timer)
+    }
   }, [recordView, user?.id])
 
   return {

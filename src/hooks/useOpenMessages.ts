@@ -1,6 +1,6 @@
 'use client'
 
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 
 /**
  * Hook personalizado para gerenciar a abertura do sistema de mensagens flutuante

@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,10 +33,19 @@ const newPasswordSchema = z.object({
 type NewPasswordFormData = z.infer<typeof newPasswordSchema>
 
 export default function NovaSenhaPage() {
+  const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [passwordUpdated, setPasswordUpdated] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const { updatePassword, user } = useAuthContext()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
   const router = useRouter()
 
   const {

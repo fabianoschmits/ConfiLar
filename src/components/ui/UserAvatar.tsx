@@ -49,7 +49,7 @@ export function UserAvatar({
     return (
       <Avatar className={cn(sizeClasses[size], className)}>
         <AvatarFallback className={cn(
-          "bg-yellow-400 text-black font-black border-2 border-black",
+          "bg-blue-100 text-blue-600 font-semibold border border-gray-300",
           fallbackSize[size]
         )}>
           {fallback}
@@ -67,7 +67,7 @@ export function UserAvatar({
         onLoad={handleImageLoad}
       />
       <AvatarFallback className={cn(
-        "bg-yellow-400 text-black font-black border-2 border-black",
+        "bg-blue-100 text-blue-600 font-semibold border border-gray-300",
         fallbackSize[size]
       )}>
         {fallback}

@@ -5,55 +5,45 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { NavigationLink } from '@/components/ui/NavigationLink';
-import { 
+import {
+  Home,
+  Search,
+  User,
+  Settings,
+  Bell,
+  Heart,
+  Calendar,
+  CreditCard,
+  HelpCircle,
+  Phone,
+  Building,
+  MapPin,
+  Briefcase,
+  TrendingUp,
+  MessageCircle,
+  Star,
+  Clock,
+  Wallet,
+  TrendingUp as TrendingUpIcon,
   FileText,
   Shield,
   Zap,
   Globe,
+  Book,
+  Trophy,
+  ChevronRight,
+  ChevronLeft,
+  Users,
+  LogOut,
+  Edit,
+  BarChart3,
   BookOpen,
-  Award,
-  Clock,
-  Wallet
+  Award
 } from 'lucide-react';
-
-// Tabler Icons - Estilo Brutalista
-import {
-  IconHome,
-  IconSearch,
-  IconUser,
-  IconSettings,
-  IconBell,
-  IconHeart,
-  IconCalendar,
-  IconCreditCard,
-  IconHelp,
-  IconPhone,
-  IconBuilding,
-  IconMapPin,
-  IconBriefcase,
-  IconChartLine,
-  IconMessageCircle,
-  IconStar,
-  IconClock,
-  IconWallet,
-  IconTrendingUp,
-  IconFileText,
-  IconShield,
-  IconBolt,
-  IconWorld,
-  IconBook,
-  IconTrophy,
-  IconChevronRight,
-  IconChevronLeft,
-  IconUsers,
-  IconLogout,
-  IconEdit,
-  IconChartBar
-} from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
-import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 
 interface SidebarItem {
   id: string
@@ -89,21 +79,21 @@ export function Sidebar() {
     {
       id: 'main',
       title: 'PRINCIPAL',
-      icon: <IconHome size={20} stroke={2} />,
+      icon: <Home size={20} strokeWidth={2} />,
       color: 'blue',
       items: [
         {
           id: 'home',
           title: 'HOME',
           href: '/home',
-          icon: <IconHome size={16} stroke={2} />,
+          icon: <Home size={16} strokeWidth={2} />,
           description: 'Página inicial'
         },
         {
           id: 'dashboard',
           title: 'DASHBOARD',
           href: '/dashboard',
-          icon: <IconChartBar size={16} stroke={2} />,
+          icon: <BarChart3 size={16} strokeWidth={2} />,
           description: 'Visão geral e métricas'
         },
       ]
@@ -111,35 +101,35 @@ export function Sidebar() {
     {
       id: 'discovery',
       title: 'DESCOBRIR',
-      icon: <IconSearch size={20} stroke={2} />,
+      icon: <Search size={20} strokeWidth={2} />,
       color: 'green',
       items: [
         {
           id: 'search',
           title: 'BUSCAR PROFISSIONAIS',
           href: '/buscar',
-          icon: <IconSearch size={16} stroke={2} />,
+          icon: <Search size={16} strokeWidth={2} />,
           description: 'Encontre profissionais'
         },
         {
           id: 'classificados',
           title: 'CLASSIFICADOS',
           href: '/classificados',
-          icon: <IconBriefcase size={16} stroke={2} />,
+          icon: <Briefcase size={16} strokeWidth={2} />,
           description: 'Anúncios e ofertas'
         },
         {
           id: 'feed',
           title: 'FEED SOCIAL',
           href: '/feed',
-          icon: <IconUsers size={16} stroke={2} />,
+          icon: <Users size={16} strokeWidth={2} />,
           description: 'Atualizações da comunidade'
         },
         {
           id: 'reviews',
           title: 'AVALIAÇÕES',
           href: '/avaliacoes',
-          icon: <IconStar size={16} stroke={2} />,
+          icon: <Star size={16} strokeWidth={2} />,
           description: 'Avalie e veja reviews'
         }
       ]
@@ -147,14 +137,14 @@ export function Sidebar() {
     {
       id: 'communication',
       title: 'COMUNICAÇÃO',
-      icon: <IconMessageCircle size={20} stroke={2} />,
+      icon: <MessageCircle size={20} strokeWidth={2} />,
       color: 'purple',
       items: [
         ...(isLoggedIn ? [{
           id: 'messages',
           title: 'MENSAGENS',
           href: '#',
-          icon: <IconMessageCircle size={16} stroke={2} />,
+          icon: <MessageCircle size={16} strokeWidth={2} />,
           badge: unreadCount > 0 ? unreadCount.toString() : undefined,
           badgeColor: 'bg-red-500',
           description: 'Chat com profissionais',
@@ -163,7 +153,7 @@ export function Sidebar() {
           id: 'login',
           title: 'FAZER LOGIN',
           href: '/auth',
-          icon: <IconUser size={16} stroke={2} />,
+          icon: <User size={16} strokeWidth={2} />,
           description: 'Acesse sua conta'
         }])
       ]
@@ -171,14 +161,14 @@ export function Sidebar() {
     ...(isLoggedIn ? [{
       id: 'management',
       title: 'GESTÃO',
-      icon: <IconCalendar size={20} stroke={2} />,
+      icon: <Calendar size={20} strokeWidth={2} />,
       color: 'orange',
       items: [
         {
           id: 'favorites',
           title: 'FAVORITOS',
           href: '/favoritos',
-          icon: <IconHeart size={16} stroke={2} />,
+          icon: <Heart size={16} strokeWidth={2} />,
           description: 'Profissionais favoritos'
         },
       ]
@@ -186,21 +176,21 @@ export function Sidebar() {
     ...(isLoggedIn && profile?.user_type === 'professional' ? [{
       id: 'professional',
       title: 'PROFISSIONAL',
-      icon: <IconBriefcase size={20} stroke={2} />,
+      icon: <Briefcase size={20} strokeWidth={2} />,
       color: 'indigo',
       items: [
         {
           id: 'portfolio',
           title: 'MEU PORTFÓLIO',
           href: '/portfolio',
-          icon: <IconFileText size={16} stroke={2} />,
+          icon: <FileText size={16} strokeWidth={2} />,
           description: 'Mostre seu trabalho'
         },
         {
           id: 'reputation',
           title: 'REPUTAÇÃO',
           href: '/reputacao',
-          icon: <IconTrophy size={16} stroke={2} />,
+          icon: <Trophy size={16} strokeWidth={2} />,
           description: 'Sua avaliação'
         }
       ]
@@ -208,28 +198,28 @@ export function Sidebar() {
     {
       id: 'support',
       title: 'SUPORTE',
-      icon: <IconHelp size={20} stroke={2} />,
+      icon: <HelpCircle size={20} strokeWidth={2} />,
       color: 'red',
       items: [
         {
           id: 'help',
           title: 'CENTRAL DE AJUDA',
           href: '/ajuda',
-          icon: <IconHelp size={16} stroke={2} />,
+          icon: <HelpCircle size={16} strokeWidth={2} />,
           description: 'Tire suas dúvidas'
         },
         {
           id: 'contact',
           title: 'CONTATO',
           href: '/contato',
-          icon: <IconPhone size={16} stroke={2} />,
+          icon: <Phone size={16} strokeWidth={2} />,
           description: 'Fale conosco'
         },
         {
           id: 'about',
           title: 'SOBRE NÓS',
           href: '/sobre',
-          icon: <IconBuilding size={16} stroke={2} />,
+          icon: <Building size={16} strokeWidth={2} />,
           description: 'Conheça a ConfiLar'
         }
       ]
@@ -237,35 +227,35 @@ export function Sidebar() {
     ...(isLoggedIn ? [{
       id: 'account',
       title: 'CONTA',
-      icon: <IconUser size={20} stroke={2} />,
+      icon: <User size={20} strokeWidth={2} />,
       color: 'gray',
       items: [
         {
           id: 'profile',
           title: 'MEU PERFIL',
           href: '/perfil',
-          icon: <IconUser size={16} stroke={2} />,
+          icon: <User size={16} strokeWidth={2} />,
           description: 'Editar perfil'
         },
         {
           id: 'edit-profile',
           title: 'EDITAR PERFIL',
           href: '/editarperfil',
-          icon: <IconEdit size={16} stroke={2} />,
+          icon: <Edit size={16} strokeWidth={2} />,
           description: 'Atualizar informações'
         },
         {
           id: 'verification',
           title: 'VERIFICAÇÃO',
           href: '/verificacao',
-          icon: <IconShield size={16} stroke={2} />,
+          icon: <Shield size={16} strokeWidth={2} />,
           description: 'Verificar identidade'
         },
         {
           id: 'logout',
           title: 'SAIR',
           href: '/logout',
-          icon: <IconLogout size={16} stroke={2} />,
+          icon: <LogOut size={16} strokeWidth={2} />,
           description: 'Desconectar'
         }
       ]
@@ -300,26 +290,26 @@ export function Sidebar() {
       {/* Overlay Mobile */}
       {isMobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-40"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Brutalista */}
       <div className={`
-        fixed left-0 top-0 h-full bg-yellow-400 border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-[60]
+        fixed left-0 top-0 h-full bg-blue-600 border-r border-gray-200 shadow-lg z-[60]
         ${sidebarWidth} ${sidebarTransition}
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar Brutalista */}
-        <div className="flex items-center justify-between p-4 border-b-4 border-black bg-black">
+        <div className="flex items-center justify-between p-4 border-b-4 border-black bg-gray-900">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-yellow-400 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
-              <span className="text-black font-black text-xl">C</span>
+            <div className="w-10 h-10 bg-blue-600 border border-gray-300 shadow-sm flex items-center justify-center">
+              <span className="text-gray-900 font-semibold text-xl">C</span>
             </div>
             <div>
-              <span className="font-black text-yellow-400 text-lg">CONFILAR</span>
-              <p className="text-xs text-yellow-400 font-bold">MARKETPLACE PROFISSIONAL</p>
+              <span className="font-semibold text-white text-lg">CONFILAR</span>
+              <p className="text-xs text-white font-bold">MARKETPLACE PROFISSIONAL</p>
             </div>
           </div>
         </div>
@@ -331,7 +321,7 @@ export function Sidebar() {
               <div key={category.id} className="space-y-2">
                 {/* Cabeçalho da Categoria Brutalista */}
                 <div className="px-2 py-1">
-                  <div className={`flex items-center space-x-2 text-xs font-black uppercase tracking-wider px-3 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${getCategoryColor(category.color || 'blue')}`}>
+                  <div className={`flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider px-3 py-2 border border-gray-300 shadow-sm ${getCategoryColor(category.color || 'blue')}`}>
                     {category.icon}
                     <span>{category.title}</span>
                   </div>
@@ -348,20 +338,20 @@ export function Sidebar() {
                           setIsMobileOpen(false)
                         }}
                         className={`
-                          group flex items-center px-3 py-2 text-sm font-black transition-all duration-200 w-full text-left border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                          group flex items-center px-3 py-2 text-sm font-semibold transition-all duration-200 w-full text-left border border-gray-300 shadow-sm hover:shadow-md
                           ${isActive(item.href)
-                            ? 'bg-black text-yellow-400'
-                            : 'bg-white text-black hover:bg-yellow-400'
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-white text-gray-900 hover:bg-blue-600'
                           }
                         `}
                       >
-                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-yellow-400' : 'text-black group-hover:text-black'}`}>
+                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-white' : 'text-gray-900 group-hover:text-gray-900'}`}>
                           {item.icon}
                         </div>
                         
                         <div className="flex-1 flex items-center justify-between">
                           <div className="flex-1">
-                            <span className="block text-xs font-black">{item.title}</span>
+                            <span className="block text-xs font-semibold">{item.title}</span>
                             {item.description && (
                               <span className="text-xs opacity-70 block mt-0.5 font-bold">
                                 {item.description}
@@ -369,7 +359,7 @@ export function Sidebar() {
                             )}
                           </div>
                           {item.badge && (
-                            <span className={`text-xs px-2 py-1 font-black border-2 border-black ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
+                            <span className={`text-xs px-2 py-1 font-semibold border border-gray-300 ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
                               {item.badge}
                             </span>
                           )}
@@ -382,20 +372,20 @@ export function Sidebar() {
                         destination={item.title}
                         onClick={() => setIsMobileOpen(false)}
                         className={`
-                          group flex items-center px-3 py-2 text-sm font-black transition-all duration-200 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]
+                          group flex items-center px-3 py-2 text-sm font-semibold transition-all duration-200 border border-gray-300 shadow-sm hover:shadow-md
                           ${isActive(item.href)
-                            ? 'bg-black text-yellow-400'
-                            : 'bg-white text-black hover:bg-yellow-400'
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-white text-gray-900 hover:bg-blue-600'
                           }
                         `}
                       >
-                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-yellow-400' : 'text-black group-hover:text-black'}`}>
+                        <div className={`flex-shrink-0 mr-3 ${isActive(item.href) ? 'text-white' : 'text-gray-900 group-hover:text-gray-900'}`}>
                           {item.icon}
                         </div>
                         
                         <div className="flex-1 flex items-center justify-between">
                           <div className="flex-1">
-                            <span className="block text-xs font-black">{item.title}</span>
+                            <span className="block text-xs font-semibold">{item.title}</span>
                             {item.description && (
                               <span className="text-xs opacity-70 block mt-0.5 font-bold">
                                 {item.description}
@@ -403,7 +393,7 @@ export function Sidebar() {
                             )}
                           </div>
                           {item.badge && (
-                            <span className={`text-xs px-2 py-1 font-black border-2 border-black ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
+                            <span className={`text-xs px-2 py-1 font-semibold border border-gray-300 ${item.badgeColor || 'bg-gray-500'} text-white ml-2`}>
                               {item.badge}
                             </span>
                           )}
@@ -418,20 +408,20 @@ export function Sidebar() {
         </div>
 
         {/* Informações do Usuário Brutalista */}
-        <div className="p-4 border-t-4 border-black bg-black">
+        <div className="p-4 border-t-4 border-black bg-gray-900">
             <div className="space-y-3">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-500 border-2 border-black"></div>
-                <span className="text-xs text-yellow-400 font-black">
+                <div className="w-3 h-3 bg-green-500 border border-gray-300"></div>
+                <span className="text-xs text-white font-semibold">
                   {profile?.user_type === 'professional' ? 'PROFISSIONAL ATIVO' : 'CLIENTE ATIVO'}
                 </span>
               </div>
               
               {/* Localização */}
               {profile?.location_city && profile?.location_state && (
-                <div className="flex items-center space-x-2 text-xs text-yellow-400 font-bold">
-                  <IconMapPin size={12} stroke={2} />
+                <div className="flex items-center space-x-2 text-xs text-white font-bold">
+                  <MapPin size={12} strokeWidth={2} />
                   <span className="truncate">
                     {profile.location_city.toUpperCase()}, {profile.location_state.toUpperCase()}
                   </span>
@@ -439,8 +429,8 @@ export function Sidebar() {
               )}
               
               {/* Membro desde */}
-              <div className="flex items-center space-x-2 text-xs text-yellow-400 font-bold">
-                <IconCalendar size={12} stroke={2} />
+              <div className="flex items-center space-x-2 text-xs text-white font-bold">
+                <Calendar size={12} strokeWidth={2} />
                 <span>
                   MEMBRO DESDE {profile?.created_at 
                     ? new Date(profile.created_at).getFullYear() 

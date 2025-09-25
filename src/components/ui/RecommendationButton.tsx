@@ -63,7 +63,7 @@ export function RecommendationButton({
         .select('id')
         .eq('recommender_id', user?.id)
         .eq('recommended_id', userId)
-        .single()
+        .maybeSingle() // Usar maybeSingle para evitar erro quando não encontra
 
       if (!error && data) {
         setIsRecommended(true)

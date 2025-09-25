@@ -1,8 +1,12 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { ProfilePageLayout, ProfileSection, ProfileInfo, ProfileStats } from '@/components/layout/ProfilePageLayout'
+import { Profile } from '@/types/database'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +14,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AvatarUpload } from '@/components/ui/AvatarUpload'
-import { IconUpload, IconRefresh } from '@tabler/icons-react'
+import { Upload, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { 
   User, 
@@ -29,13 +35,17 @@ import {
   BarChart3,
   CheckCircle,
   Calendar,
-  Award
+  Award,
+  Check,
+  ChevronDown
 } from 'lucide-react'
 import { useAutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { toast } from 'sonner'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
+import { services } from '@/data/services'
 
 export default function EditarPerfilPage() {
+  const [mounted, setMounted] = useState(false)
   const { profile, updateProfile, uploadAvatar } = useAuthContext()
   const { checkAndRedirect } = useAutoReauthentication()
   const [isEditing, setIsEditing] = useState(false)
@@ -44,7 +54,32 @@ export default function EditarPerfilPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isSavingLocation, setIsSavingLocation] = useState(false)
   const [_selectedState, setSelectedState] = useState(profile?.location_state || '')
-  const [mounted, setMounted] = useState(false)
+  const [servicesOpen, setServicesOpen] = useState(false)
+  
+  // Converter categorias para formato de string simples
+  const serviceCategoryNames = services.map(cat => cat.name)
+  
+  // Funções para manipular serviços
+  const handleServiceToggle = (service: string) => {
+    const currentServices = formData.professional_services || []
+    const newSelectedServices = currentServices.includes(service) 
+      ? currentServices.filter(s => s !== service)
+      : [...currentServices, service]
+    
+    setFormData({
+      ...formData,
+      professional_services: newSelectedServices
+    })
+  }
+
+  const removeService = (serviceToRemove: string) => {
+    const currentServices = formData.professional_services || []
+    const newSelectedServices = currentServices.filter(s => s !== serviceToRemove)
+    setFormData({
+      ...formData,
+      professional_services: newSelectedServices
+    })
+  }
   
   // Estados para sistema de upload avançado
   const [selectedAvatar, setSelectedAvatar] = useState<{
@@ -110,6 +145,10 @@ export default function EditarPerfilPage() {
       })
     }
   }, [dicebearAvatar])
+
+  if (!mounted) {
+    return null
+  }
 
   const handleEditClick = () => {
     setFormData({
@@ -249,19 +288,38 @@ export default function EditarPerfilPage() {
 
   const handleSaveProfessional = async () => {
     try {
-      const professionalData = {
+      const wasClient = profile?.user_type === 'client'
+      const hasServices = formData.professional_services && formData.professional_services.length > 0
+      
+      // Validação: se está tentando se tornar profissional, deve ter pelo menos um serviço
+      if (wasClient && hasServices && formData.professional_services.length === 0) {
+        toast.error('Para se tornar um profissional, você deve selecionar pelo menos um serviço.')
+        return
+      }
+      
+      // Preparar dados profissionais
+      const professionalData: Partial<Profile> = {
         professional_experience_years: formData.professional_experience_years,
         professional_services: formData.professional_services
       }
+      
+      // Se era cliente e agora tem serviços, mudar para profissional
+      if (wasClient && hasServices) {
+        professionalData.user_type = 'professional'
+      }
+      
       const result = await updateProfile(professionalData)
       if (result.error) {
         toast.error('Erro ao atualizar dados profissionais: ' + result.error.message)
       } else {
-        const wasClient = profile?.user_type === 'client'
-        const hasServices = formData.professional_services && formData.professional_services.length > 0
-        
         if (wasClient && hasServices) {
-          toast.success('🎉 Parabéns! Você agora é um profissional!')
+          toast.success('🎉 Parabéns! Você agora é um profissional! Seu perfil foi atualizado automaticamente.')
+          // Recarregar a página para atualizar o contexto e mostrar as mudanças
+          setTimeout(() => {
+            window.location.reload()
+          }, 2000)
+        } else if (wasClient && !hasServices) {
+          toast.success('Dados profissionais atualizados! Adicione serviços para se tornar um profissional.')
         } else {
           toast.success('Dados profissionais atualizados com sucesso!')
         }
@@ -349,7 +407,7 @@ export default function EditarPerfilPage() {
   // Função para salvar avatar selecionado
   const handleAvatarSave = async () => {
     if (!selectedAvatar) {
-      toast.error('NENHUM AVATAR SELECIONADO')
+      toast.error('NENHUM AVATAR Selecionado')
       return
     }
 
@@ -373,11 +431,11 @@ export default function EditarPerfilPage() {
           return
         }
         setFormData(prevData => ({ ...prevData, avatar_url: selectedAvatar.value as string }))
-        toast.success('AVATAR ATUALIZADO COM SUCESSO!')
+        toast.success('Avatar atualIZADO COM SUCESSO!')
       }
     } catch (error) {
       console.error('Erro ao salvar avatar:', error)
-      toast.error('ERRO INESPERADO AO SALVAR AVATAR')
+      toast.error('ERRO INESPERADO AO Salvar AVATAR')
     }
   }
 
@@ -404,7 +462,7 @@ export default function EditarPerfilPage() {
       <ProfilePageLayout title="Carregando..." showBackButton={false}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
               Carregando...
             </h1>
           </div>
@@ -423,63 +481,34 @@ export default function EditarPerfilPage() {
       isSaving={isSaving || isSavingLocation}
       isEditing={isEditing || isEditingLocation || isEditingProfessional}
     >
-      {/* Card de Foto do Perfil */}
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <ProfileSection
-            title="Foto do Perfil"
-            description="Atualize sua foto de perfil"
-            icon={<User className="h-5 w-5 text-yellow-400" />}
-          >
-            <div className="space-y-4">
-              {/* Preview do Avatar Selecionado */}
-              {selectedAvatar && (
-                <div className="flex items-center gap-3 p-3 bg-yellow-400 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="w-12 h-12 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                    <img
-                      src={selectedAvatar.preview}
-                      alt="Avatar selecionado"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-black uppercase">
-                      {selectedAvatar.type === 'upload' ? 'FOTO ENVIADA' : 'AVATAR GERADO'}
-                    </p>
-                    <p className="text-xs text-black font-bold">
-                      {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
-                      {selectedAvatar.type === 'dicebear' && 'GERADO AUTOMATICAMENTE'}
-                    </p>
-                  </div>
-                </div>
-              )}
-
+      {/* Avatar Section - Compacto e Moderno */}
+      <Card className="mb-4">
+        <CardContent className="p-3">
+          <div className="flex items-center gap-4">
               {/* Avatar Atual */}
-              <div className="flex items-center gap-3 p-3 bg-gray-100 border-2 border-black">
-                <div className="w-12 h-12 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                  <Avatar className="w-full h-full">
+            <div className="relative">
+              <Avatar className="w-16 h-16">
                     <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
-                    <AvatarFallback className="text-sm bg-yellow-400 text-black font-black">
+                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
                       {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
+              {selectedAvatar && (
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
-                <div>
-                  <p className="text-sm font-black text-black uppercase">AVATAR ATUAL</p>
-                  <p className="text-xs text-black font-bold">
-                    {profile?.avatar_url ? 'FOTO PERSONALIZADA' : 'AVATAR PADRÃO'}
-                  </p>
-                </div>
+              )}
               </div>
 
-              {/* Opções de Avatar */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Upload de Foto */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <IconUpload size={12} stroke={2} className="text-black" />
-                    <span className="text-xs font-black text-black uppercase">UPLOAD</span>
-                  </div>
+            {/* Informações e Ações */}
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-1">Foto do Perfil</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                {selectedAvatar ? 'Nova foto selecionada' : 'Atualize sua foto de perfil'}
+              </p>
+              
+              {/* Botões de Ação */}
+              <div className="flex gap-2">
                   <input
                     type="file"
                     accept="image/*"
@@ -489,210 +518,217 @@ export default function EditarPerfilPage() {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className={cn(
-                      "block w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white",
-                      selectedAvatar?.type === 'upload' && "bg-yellow-400"
-                    )}
+                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer transition-colors"
                   >
-                    <div className="text-xs text-black font-black uppercase">
-                      {selectedAvatar?.type === 'upload' ? '✓ SELECIONADO' : 'ESCOLHER ARQUIVO'}
-                    </div>
+                  <Upload className="w-3 h-3 mr-1" />
+                  Upload
                   </label>
-                </div>
-
-                {/* Avatar Pixel-Art */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <IconRefresh size={12} stroke={2} className={cn("text-black", isGeneratingAvatar && "animate-spin")} />
-                    <span className="text-xs font-black text-black uppercase">PIXEL-ART</span>
-                  </div>
-                  {profile?.full_name && profile.full_name.length >= 2 ? (
+                
+                {profile?.full_name && profile.full_name.length >= 2 && (
                     <button
                       type="button"
                       onClick={handleDicebearSelect}
                       disabled={isGeneratingAvatar || !dicebearAvatar}
                       className={cn(
-                        "w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-center bg-white hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
-                        selectedAvatar?.type === 'dicebear' && "bg-yellow-400",
+                      "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
+                      selectedAvatar?.type === 'dicebear' 
+                        ? "text-green-600 bg-green-50 border border-green-200" 
+                        : "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100",
                         (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {isGeneratingAvatar ? (
-                        <div className="text-xs text-black font-black uppercase">GERANDO...</div>
-                      ) : dicebearAvatar ? (
-                        <div className="text-xs text-black font-black uppercase">✓ SELECIONADO AUTOMATICAMENTE</div>
-                      ) : (
-                        <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
-                      )}
+                    <RefreshCw className={cn("w-3 h-3 mr-1", isGeneratingAvatar && "animate-spin")} />
+                    {isGeneratingAvatar ? 'Gerando...' : 'Pixel Art'}
                     </button>
-                  ) : (
-                    <div className="w-full p-2 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-center bg-white">
-                      <div className="text-xs text-black font-black uppercase">DIGITE NOME</div>
-                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Botão de Salvar */}
+            {/* Botão Salvar */}
               {selectedAvatar && (
                 <Button
                   onClick={handleAvatarSave}
-                  className="w-full bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700"
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  SALVAR AVATAR
+                <Save className="w-4 h-4 mr-1" />
+                Salvar
                 </Button>
               )}
-
-              {/* Informações */}
-              <div className="text-xs text-black font-bold text-center">
-                <p>FORMATOS SUPORTADOS: JPEG, PNG, WEBP</p>
-                <p>TAMANHO MÁXIMO: 5MB</p>
               </div>
-            </div>
-          </ProfileSection>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Grid de Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Coluna Esquerda */}
-        <div className="space-y-6">
-          {/* Informações Básicas */}
-          <ProfileSection
-            title="Informações Básicas"
-            description="Dados pessoais e informações de contato"
-            icon={<User className="h-5 w-5 text-yellow-400" />}
-          >
             <div className="space-y-4">
+          {/* Informações Básicas - Compacto */}
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
+                </div>
+                {!isEditing && (
+                  <Button
+                    onClick={handleEditClick}
+                    size="sm"
+                    variant="outline"
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {/* Email */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-gray-500" />
               <div>
-                <Label htmlFor="email" className="text-sm font-black text-black">EMAIL</Label>
-                <div className="mt-1 p-3 bg-gray-100 border-4 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-black" />
-                      <span className="text-sm font-bold text-black">{profile.email || 'Não informado'}</span>
+                      <p className="text-sm font-medium text-gray-900">Email</p>
+                      <p className="text-sm text-gray-600">{profile.email || 'Não informado'}</p>
                     </div>
-                    <button
+                  </div>
+                  <Button
                       onClick={async () => {
                         const needsReauth = await checkAndRedirect('email')
                         if (!needsReauth) {
-                          // Se não precisa de reautenticação, redirecionar para página de alterar email
                           window.location.href = '/alterar-email'
                         }
                       }}
-                      className="px-3 py-1 text-xs font-black text-white bg-blue-500 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all"
-                    >
-                      ALTERAR
-                    </button>
-                  </div>
-                  <div className="mt-2 text-xs text-black font-bold">
-                    ⚠️ Para alterar o email, será necessário confirmar sua identidade
-                  </div>
-                </div>
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                  >
+                    Alterar
+                  </Button>
               </div>
 
+                {/* Nome */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <User className="w-4 h-4 text-gray-500" />
               <div>
-                <Label htmlFor="full_name" className="text-sm font-black text-black">NOME COMPLETO</Label>
+                      <p className="text-sm font-medium text-gray-900">Nome</p>
                 {isEditing ? (
                   <Input
-                    id="full_name"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
-                    placeholder="DIGITE SEU NOME COMPLETO"
+                          className="mt-1 h-8 text-sm"
+                          placeholder="Digite seu nome completo"
                   />
                 ) : (
-                  <ProfileInfo
-                    label="Nome Completo"
-                    value={profile.full_name || 'Não informado'}
-                    icon={<User className="h-4 w-4" />}
-                    editable={true}
-                    onEdit={handleEditClick}
-                  />
-                )}
+                        <p className="text-sm text-gray-600">{profile.full_name || 'Não informado'}</p>
+                      )}
+                    </div>
+                  </div>
               </div>
 
+                {/* Telefone */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-gray-500" />
               <div>
-                <Label htmlFor="phone" className="text-sm font-black text-black">TELEFONE</Label>
+                      <p className="text-sm font-medium text-gray-900">Telefone</p>
                 {isEditing ? (
                   <Input
-                    id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
+                          className="mt-1 h-8 text-sm"
                     placeholder="(11) 99999-9999"
                   />
                 ) : (
-                  <ProfileInfo
-                    label="Telefone"
-                    value={profile.phone || 'Não informado'}
-                    icon={<Phone className="h-4 w-4" />}
-                    editable={true}
-                    onEdit={handleEditClick}
-                  />
-                )}
+                        <p className="text-sm text-gray-600">{profile.phone || 'Não informado'}</p>
+                      )}
+                    </div>
+                  </div>
               </div>
 
-              <div>
-                <Label htmlFor="bio" className="text-sm font-black text-black">BIOGRAFIA</Label>
+                {/* Biografia */}
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <p className="text-sm font-medium text-gray-900">Biografia</p>
+                  </div>
                 {isEditing ? (
                   <Textarea
-                    id="bio"
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
-                    placeholder="CONTE UM POUCO SOBRE VOCÊ..."
-                    rows={3}
+                      className="text-sm"
+                      placeholder="Conte um pouco sobre você..."
+                      rows={2}
                   />
                 ) : (
-                  <ProfileInfo
-                    label="Biografia"
-                    value={profile.bio || 'Não informado'}
-                    icon={<User className="h-4 w-4" />}
-                    editable={true}
-                    onEdit={handleEditClick}
-                  />
-                )}
+                    <p className="text-sm text-gray-600">{profile.bio || 'Não informado'}</p>
+                  )}
+                </div>
               </div>
 
               {/* Botões de ação */}
               {isEditing && (
-                <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
                   <Button
                     onClick={handleCancel}
-                    className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                   >
-                    <X className="h-4 w-4 mr-2" />
-                    CANCELAR
+                    <X className="w-4 h-4 mr-1" />
+                    Cancelar
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     {isSaving ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
                     ) : (
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="w-4 h-4 mr-1" />
                     )}
-                    SALVAR
+                    Salvar
                   </Button>
                 </div>
               )}
-            </div>
-          </ProfileSection>
+            </CardContent>
+          </Card>
 
-          {/* Localização */}
-          <ProfileSection
-            title="Localização"
-            description="Informações de endereço e localização"
-            icon={<MapPin className="h-5 w-5 text-yellow-400" />}
-          >
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="location_state" className="text-sm font-black text-black">ESTADO</Label>
+          {/* Localização - Compacto */}
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-green-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Localização</h3>
+                </div>
+                {!isEditingLocation && (
+                  <Button
+                    onClick={handleEditLocationClick}
+                    size="sm"
+                    variant="outline"
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {/* Estado e Cidade */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Estado</p>
                   {isEditingLocation ? (
                     <EstadoCombobox
                       value={formData.location_state}
@@ -700,22 +736,15 @@ export default function EditarPerfilPage() {
                         setSelectedState(value)
                         setFormData({ ...formData, location_state: value, location_city: '' })
                       }}
-                      placeholder="SELECIONE O ESTADO"
-                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black"
+                        placeholder="Selecione"
+                        className="h-8 text-sm"
                     />
                   ) : (
-                    <ProfileInfo
-                      label="Estado"
-                      value={profile.location_state || 'Não informado'}
-                      icon={<MapPin className="h-4 w-4" />}
-                      editable={true}
-                      onEdit={handleEditLocationClick}
-                    />
+                      <p className="text-sm text-gray-900">{profile.location_state || 'Não informado'}</p>
                   )}
                 </div>
-
-                <div>
-                  <Label htmlFor="location_city" className="text-sm font-black text-black">CIDADE</Label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Cidade</p>
                   {isEditingLocation ? (
                     <CidadeCombobox
                       value={formData.location_city}
@@ -723,290 +752,352 @@ export default function EditarPerfilPage() {
                         setFormData({ ...formData, location_city: value })
                       }}
                       estadoSigla={formData.location_state}
-                      placeholder="SELECIONE A CIDADE"
+                        placeholder="Selecione"
                       disabled={!formData.location_state}
-                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black"
+                        className="h-8 text-sm"
                     />
                   ) : (
-                    <ProfileInfo
-                      label="Cidade"
-                      value={profile.location_city || 'Não informado'}
-                      icon={<MapPin className="h-4 w-4" />}
-                      editable={true}
-                      onEdit={handleEditLocationClick}
-                    />
+                      <p className="text-sm text-gray-900">{profile.location_city || 'Não informado'}</p>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="neighborhood" className="text-sm font-black text-black">BAIRRO</Label>
+                {/* Bairro e Endereço */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Bairro</p>
                   {isEditingLocation ? (
                     <Input
-                      id="neighborhood"
                       value={formData.neighborhood}
                       onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
-                      placeholder="DIGITE SEU BAIRRO"
+                        className="h-8 text-sm"
+                        placeholder="Digite o bairro"
                     />
                   ) : (
-                    <ProfileInfo
-                      label="Bairro"
-                      value={profile.neighborhood || 'Não informado'}
-                      icon={<MapPin className="h-4 w-4" />}
-                      editable={true}
-                      onEdit={handleEditLocationClick}
-                    />
+                      <p className="text-sm text-gray-900">{profile.neighborhood || 'Não informado'}</p>
                   )}
                 </div>
-
-                <div>
-                  <Label htmlFor="address" className="text-sm font-black text-black">ENDEREÇO</Label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Endereço</p>
                   {isEditingLocation ? (
                     <Input
-                      id="address"
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-black"
-                      placeholder="DIGITE SEU ENDEREÇO COMPLETO"
+                        className="h-8 text-sm"
+                        placeholder="Digite o endereço"
                     />
                   ) : (
-                    <ProfileInfo
-                      label="Endereço"
-                      value={profile.address || 'Não informado'}
-                      icon={<MapPin className="h-4 w-4" />}
-                      editable={true}
-                      onEdit={handleEditLocationClick}
-                    />
-                  )}
+                      <p className="text-sm text-gray-900">{profile.address || 'Não informado'}</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Botões de ação */}
               {isEditingLocation && (
-                <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
                   <Button
                     onClick={handleCancelLocation}
-                    className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                   >
-                    <X className="h-4 w-4 mr-2" />
-                    CANCELAR
+                    <X className="w-4 h-4 mr-1" />
+                    Cancelar
                   </Button>
                   <Button
                     onClick={handleSaveLocation}
                     disabled={isSavingLocation}
-                    className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
                   >
                     {isSavingLocation ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
                     ) : (
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="w-4 h-4 mr-1" />
                     )}
-                    SALVAR
+                    Salvar
                   </Button>
                 </div>
               )}
-            </div>
-          </ProfileSection>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Coluna Direita */}
-        <div className="space-y-6">
-          {/* Dados Profissionais */}
-          <ProfileSection
-            title="Dados Profissionais"
-            description="Informações sobre seus serviços e experiência"
-            icon={<Building2 className="h-5 w-5 text-yellow-400" />}
-          >
             <div className="space-y-4">
+          {/* Dados Profissionais - Compacto */}
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Dados Profissionais</h3>
+                </div>
+                {!isEditingProfessional && (
+                  <Button
+                    onClick={handleEditProfessional}
+                    size="sm"
+                    variant="outline"
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Editar
+                  </Button>
+                )}
+              </div>
+
               {isEditingProfessional ? (
-                <>
-                  <div>
-                    <Label htmlFor="experience_years" className="text-sm font-black text-black">ANOS DE EXPERIÊNCIA</Label>
+                <div className="space-y-3">
+                  {/* Experiência */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-2">Anos de experiência</p>
                     <Select
                       value={formData.professional_experience_years.toString()}
                       onValueChange={(value) => setFormData({ ...formData, professional_experience_years: parseInt(value, 10) })}
                     >
-                      <SelectTrigger className="mt-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black">
-                        <SelectValue placeholder="SELECIONE" />
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
-                      <SelectContent className="border-4 border-black">
+                      <SelectContent>
                         {Array.from({ length: 51 }, (_, i) => (
-                          <SelectItem key={i} value={i.toString()} className="font-black">
-                            {i} {i === 1 ? 'ANO' : 'ANOS'}
+                          <SelectItem key={i} value={i.toString()}>
+                            {i} {i === 1 ? 'ano' : 'anos'}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
+                  {/* Serviços */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs font-medium text-gray-500 mb-2">Serviços oferecidos</p>
+                    <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between"
+                        >
+                          <span className="text-gray-900">
+                            {formData.professional_services?.length === 0
+                              ? "Selecione os serviços..."
+                              : `${formData.professional_services?.length || 0} serviço(s) selecionado(s)`}
+                          </span>
+                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <Command>
+                          <CommandInput placeholder="Buscar serviços..." className="border-b border-gray-200" />
+                          <CommandList>
+                            <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                            <CommandGroup>
+                              {serviceCategoryNames.map((service) => (
+                                <CommandItem
+                                  key={service}
+                                  value={service}
+                                  onSelect={() => {
+                                    handleServiceToggle(service)
+                                  }}
+                                  className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
+                                >
+                                  <Check
+                                    size={16} className={cn(
+                                      "mr-2",
+                                      formData.professional_services?.includes(service) ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {service}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    
+                    {/* Serviços selecionados */}
+                    {formData.professional_services && formData.professional_services.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-xs text-gray-700 font-medium">Serviços selecionados:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {formData.professional_services.map((service) => (
+                            <Badge
+                              key={service}
+                              variant="secondary"
+                              className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 flex items-center gap-1 text-xs"
+                            >
+                              <span className="text-xs">{service}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeService(service)}
+                                className="text-blue-700 hover:text-red-600 ml-1"
+                              >
+                                <X size={10} />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Aviso sobre conversão para profissional */}
+                  {profile?.user_type === 'client' && formData.professional_services && formData.professional_services.length > 0 && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-blue-600" />
+                        <p className="text-sm text-blue-800 font-medium">
+                          🎉 Você se tornará um profissional ao salvar!
+                        </p>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Ao salvar com serviços selecionados, seu perfil será automaticamente convertido para profissional.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Botões de ação */}
+                  <div className="flex justify-end gap-2 pt-4 border-t">
+                    <Button
+                      onClick={handleCancelProfessional}
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleSaveProfessional}
+                      size="sm"
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      {profile?.user_type === 'client' && formData.professional_services && formData.professional_services.length > 0 
+                        ? 'Tornar-se Profissional' 
+                        : 'Salvar'}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Experiência */}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-4 h-4 text-gray-500" />
                   <div>
-                    <Label htmlFor="services" className="text-sm font-black text-black">SERVIÇOS OFERECIDOS</Label>
-                    <div className="mt-1 p-3 border-4 border-black bg-gray-100 max-h-32 overflow-y-auto">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        {['Diarista', 'Faxineira', 'Pedreiro', 'Pintor', 'Eletricista', 'Encanador', 'Jardineiro', 'Cabeleireiro'].map((service) => (
-                          <div key={service} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={service}
-                              checked={formData.professional_services?.includes(service) || false}
-                              onChange={(e) => {
-                                const currentServices = formData.professional_services || []
-                                if (e.target.checked) {
-                                  setFormData({
-                                    ...formData,
-                                    professional_services: [...currentServices, service]
-                                  })
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    professional_services: currentServices.filter(s => s !== service)
-                                  })
-                                }
-                              }}
-                              className="rounded border-2 border-black"
-                            />
-                            <label htmlFor={service} className="text-sm font-bold text-black">{service}</label>
-                          </div>
-                        ))}
+                        <p className="text-sm font-medium text-gray-900">Experiência</p>
+                        <p className="text-sm text-gray-600">{profile.professional_experience_years || 0} anos</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Botões de ação */}
-                  <div className="flex justify-end space-x-2 pt-4 border-t-4 border-black">
-                    <Button
-                      onClick={handleCancelProfessional}
-                      className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      CANCELAR
-                    </Button>
-                    <Button
-                      onClick={handleSaveProfessional}
-                      className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      SALVAR
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <ProfileInfo
-                    label="Experiência"
-                    value={`${profile.professional_experience_years || 0} anos`}
-                    icon={<Clock className="h-4 w-4" />}
-                    editable={true}
-                    onEdit={handleEditProfessional}
-                  />
-
-                  <div>
-                    <Label className="text-sm font-black text-black">SERVIÇOS OFERECIDOS</Label>
-                    <div className="mt-2">
+                  {/* Serviços */}
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium text-gray-900 mb-2">Serviços oferecidos</p>
                       {profile.professional_services && profile.professional_services.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {profile.professional_services.map((service, index) => (
-                            <div key={index} className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
+                          <Badge key={index} variant="secondary" className="text-xs">
                               {service}
-                            </div>
+                          </Badge>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-black font-bold text-sm">NENHUM SERVIÇO CADASTRADO</p>
+                      <p className="text-sm text-gray-500">Nenhum serviço cadastrado</p>
                       )}
                     </div>
-                    <Button
-                      onClick={handleEditProfessional}
-                      className="mt-2 bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      EDITAR SERVIÇOS
-                    </Button>
                   </div>
-                </>
               )}
-            </div>
-          </ProfileSection>
+            </CardContent>
+          </Card>
 
-          {/* Perfil Público */}
-          <ProfileSection
-            title="Perfil Público"
-            description="Compartilhe seu perfil com outros usuários"
-            icon={<Share2 className="h-5 w-5 text-yellow-400" />}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-black border-2 border-black">
+          {/* Perfil Público - Compacto */}
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Share2 className="w-4 h-4 text-orange-600" />
+            </div>
+                <h3 className="font-semibold text-gray-900">Perfil Público</h3>
+              </div>
+
+              <div className="flex items-center gap-3 mb-3">
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
-                    <AvatarFallback className="text-sm bg-yellow-400 text-black font-black">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
                       {profile?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                </div>
                 <div>
-                  <p className="font-black text-black">{profile?.full_name}</p>
-                  <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
-                    {profile?.user_type === 'professional' ? 'PROFISSIONAL' : 'CLIENTE'}
+                  <p className="font-semibold text-gray-900">{profile?.full_name}</p>
+                  <Badge variant="secondary" className="text-xs">
+                    {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                  </Badge>
                   </div>
                 </div>
-              </div>
-              <div className="flex space-x-2">
+
+              <div className="flex gap-2">
                 <Button
                   onClick={copyProfileLink}
-                  className="flex-1 bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
                 >
-                  <Copy className="h-4 w-4 mr-2" />
-                  COPIAR LINK
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copiar link
                 </Button>
                 <Button
                   onClick={shareProfile}
-                  className="flex-1 bg-blue-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                  size="sm"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700"
                 >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  COMPARTILHAR
+                  <Share2 className="w-4 h-4 mr-1" />
+                  Compartilhar
                 </Button>
               </div>
-            </div>
-          </ProfileSection>
+            </CardContent>
+          </Card>
 
-          {/* Estatísticas */}
-          <ProfileSection
-            title="Estatísticas"
-            description="Informações sobre seu perfil"
-            icon={<BarChart3 className="h-5 w-5 text-yellow-400" />}
-          >
-            <ProfileStats
-              stats={[
-                {
-                  label: 'Badge',
-                  value: profile?.badge || 'Bronze',
-                  icon: <Award className="h-5 w-5" />,
-                  color: 'text-yellow-600'
-                },
-                {
-                  label: 'Perfil Completo',
-                  value: profile?.profile_completion_score || '25%',
-                  icon: <CheckCircle className="h-5 w-5" />,
-                  color: 'text-green-600'
-                },
-                {
-                  label: 'Membro desde',
-                  value: getMemberSince(),
-                  icon: <Calendar className="h-5 w-5" />,
-                  color: 'text-blue-600'
-                },
-                {
-                  label: 'Última atualização',
-                  value: profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('pt-BR') : 'Nunca',
-                  icon: <Clock className="h-5 w-5" />,
-                  color: 'text-gray-600'
-                }
-              ]}
-            />
-          </ProfileSection>
+          {/* Estatísticas - Compacto */}
+          <Card>
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-indigo-600" />
+            </div>
+                <h3 className="font-semibold text-gray-900">Estatísticas</h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-3 bg-gray-50 rounded-lg text-center">
+                  <Award className="w-5 h-5 text-yellow-600 mx-auto mb-1" />
+                  <p className="text-xs text-gray-500">Badge</p>
+                  <p className="text-sm font-semibold text-gray-900">{profile?.badge || 'Bronze'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg text-center">
+                  <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-1" />
+                  <p className="text-xs text-gray-500">Perfil</p>
+                  <p className="text-sm font-semibold text-gray-900">{profile?.profile_completion_score || '25%'}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg text-center">
+                  <Calendar className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+                  <p className="text-xs text-gray-500">Membro desde</p>
+                  <p className="text-sm font-semibold text-gray-900">{getMemberSince().split(' ')[2]}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg text-center">
+                  <Clock className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                  <p className="text-xs text-gray-500">Atualizado</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : 'Nunca'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </ProfilePageLayout>

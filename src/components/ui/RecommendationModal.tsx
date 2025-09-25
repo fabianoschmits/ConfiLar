@@ -101,6 +101,19 @@ export function RecommendationModal({
     try {
       setRecommending(true)
       
+      // Verificar se já existe uma recomendação
+      const { data: existingRecommendation } = await supabase
+        .from('user_recommendations')
+        .select('id')
+        .eq('recommender_id', user.id)
+        .eq('recommended_id', userId)
+        .single()
+
+      if (existingRecommendation) {
+        toast.info('Você já recomendou este usuário!')
+        return
+      }
+      
       // Determinar o tipo de recomendação baseado no tipo do usuário atual
       const { data: currentUserProfile } = await supabase
         .from('profiles')
@@ -120,7 +133,14 @@ export function RecommendationModal({
           recommendation_type: recommendationType
         })
 
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') { // Violação de constraint única
+          toast.info('Você já recomendou este usuário!')
+        } else {
+          throw error
+        }
+        return
+      }
 
       toast.success(`Você recomendou ${userName}!`)
       loadRecommendations() // Recarregar a lista

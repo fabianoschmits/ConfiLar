@@ -5,12 +5,12 @@ import { toast } from 'sonner'
 import { MessageCircle, Bell } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useMessages } from '@/hooks/useMessages'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 
 export function RealtimeNotification() {
   const { user } = useAuthContext()
   const { conversations, getTotalUnreadCount } = useMessages()
-  const { isOpen, openChat, setSelectedConversation } = useFloatingChat()
+  const { isOpen, openChat } = useFloatingChat()
   const [lastUnreadCount, setLastUnreadCount] = useState(0)
   const [isVisible, setIsVisible] = useState(false)
   const [lastNotificationConversation, setLastNotificationConversation] = useState<string | null>(null)

@@ -123,17 +123,19 @@ export function ConversationMenu({
               <AlertTriangle className="h-5 w-5 text-red-500" />
               Deletar Conversa
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 space-y-3">
-              <p>Tem certeza que deseja deletar esta conversa?</p>
-              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                <p className="text-sm font-medium text-amber-800 mb-2">
-                  ⚠️ Importante:
-                </p>
-                <ul className="text-sm text-amber-700 space-y-1">
-                  <li>• Esta ação não pode ser desfeita</li>
-                  <li>• Todas as mensagens serão perdidas permanentemente</li>
-                  <li>• A conversa será removida para todos os participantes</li>
-                </ul>
+            <AlertDialogDescription asChild>
+              <div className="text-gray-600 space-y-3">
+                <p>Tem certeza que deseja deletar esta conversa?</p>
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 mb-2">
+                    ⚠️ Importante:
+                  </p>
+                  <ul className="text-sm text-amber-700 space-y-1">
+                    <li>• Esta ação não pode ser desfeita</li>
+                    <li>• Todas as mensagens serão perdidas permanentemente</li>
+                    <li>• A conversa será removida para todos os participantes</li>
+                  </ul>
+                </div>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

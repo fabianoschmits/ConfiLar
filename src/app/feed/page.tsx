@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -30,8 +33,17 @@ import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
 // Perfis serão resolvidos do Supabase quando necessário
 
 export default function FeedPage() {
+  const [mounted, setMounted] = useState(false)
   const { profile, isMockMode } = useAuthContext()
   const [posts, setPosts] = useState<FeedPost[]>([])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   useEffect(() => {
     const load = async () => {

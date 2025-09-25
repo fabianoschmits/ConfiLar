@@ -29,7 +29,7 @@ import {
   Info as InfoPhosphor
 } from '@phosphor-icons/react';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/UserAvatar';

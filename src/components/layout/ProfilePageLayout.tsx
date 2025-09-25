@@ -45,25 +45,27 @@ export function ProfilePageLayout({
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-yellow-400">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header da Página */}
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
                 {showBackButton && (
                   <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => router.back()}
-                    className="bg-white text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                    className="flex items-center space-x-1"
                   >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    VOLTAR
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>Voltar</span>
                   </Button>
                 )}
                 <div>
-                  <h1 className="text-4xl md:text-6xl lg:text-8xl font-poetsen-one text-black uppercase tracking-wider leading-tight sm:drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" style={{textShadow: 'none'}}>{title.toUpperCase()}</h1>
+                  <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
                   {description && (
-                    <p className="text-black font-bold mt-1 text-xl md:text-2xl font-poetsen-one uppercase tracking-wide" style={{textShadow: 'none'}}>{description.toUpperCase()}</p>
+                    <p className="text-sm text-gray-600 mt-1">{description}</p>
                   )}
                 </div>
               </div>
@@ -75,24 +77,27 @@ export function ProfilePageLayout({
                     <Button
                       onClick={onCancel}
                       disabled={isSaving}
-                      className="bg-red-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
                     >
-                      <X className="h-4 w-4 mr-2" />
-                      CANCELAR
+                      <X className="h-4 w-4 mr-1" />
+                      Cancelar
                     </Button>
                   )}
                   {onSave && (
                     <Button
                       onClick={onSave}
                       disabled={isSaving}
-                      className="bg-green-500 text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all font-black"
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       {isSaving ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
                       ) : (
-                        <Save className="h-4 w-4 mr-2" />
+                        <Save className="h-4 w-4 mr-1" />
                       )}
-                      SALVAR
+                      Salvar
                     </Button>
                   )}
                 </div>
@@ -100,24 +105,24 @@ export function ProfilePageLayout({
             </div>
             
             {/* Breadcrumb/Status */}
-            <div className="flex items-center space-x-2 text-sm text-black font-bold">
-              <User className="h-4 w-4" />
-              <span>PERFIL</span>
+            <div className="flex items-center space-x-2 text-xs text-gray-500">
+              <User className="h-3 w-3" />
+              <span>Perfil</span>
               <span>•</span>
-              <span>{title.toUpperCase()}</span>
+              <span>{title}</span>
               {isEditing && (
                 <>
                   <span>•</span>
-                  <div className="px-2 py-1 bg-yellow-400 text-black border-2 border-black font-black text-xs">
-                    MODO EDIÇÃO
-                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    Modo edição
+                  </Badge>
                 </>
               )}
             </div>
           </div>
 
           {/* Conteúdo Principal */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {children}
           </div>
         </div>

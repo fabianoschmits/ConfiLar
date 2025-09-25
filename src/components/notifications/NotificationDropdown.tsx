@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
 import { useMessages } from '@/hooks/useMessages';
-import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
 // import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'; // Desabilitado temporariamente
 import { Button } from '@/components/ui/button';

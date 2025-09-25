@@ -65,11 +65,11 @@ function HomeContent() {
   // Não renderizar nada até estar montado no cliente
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-yellow-400 flex items-center justify-center">
-        <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white border border-gray-300 shadow-sm p-6">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 border-4 border-black border-t-transparent animate-spin"></div>
-            <span className="font-black text-black">CARREGANDO...</span>
+            <div className="w-6 h-6 border border-gray-300 border-t-transparent animate-spin"></div>
+            <span className="font-semibold text-gray-900">CARREGANDO...</span>
           </div>
         </div>
       </div>

@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { Bell, Check, Trash2, Settings } from 'lucide-react';
 import { Bell as BellPhosphor, Check as CheckPhosphor, Trash as TrashPhosphor, Gear } from '@phosphor-icons/react';
-import { useNotifications, Notification } from './NotificationProvider';
-import { useFloatingChat } from '@/contexts/FloatingChatContext';
+import { useNotifications, Notification } from './NotificationProviderSimple';
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 import { NotificationSettingsInline } from './NotificationSettingsInline';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

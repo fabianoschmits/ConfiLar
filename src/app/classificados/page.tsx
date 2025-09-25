@@ -1,5 +1,8 @@
 'use client'
 
+// Desabilitar SSG para esta página
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
@@ -13,8 +16,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
 import { useIBGE } from '@/hooks/useIBGE'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useFloatingChat } from '@/contexts/FloatingChatContext'
+// import { useAuthContext } from '@/contexts/AuthContext'
+// import { useFloatingChat } from '@/contexts/FloatingChatContext'
 import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -40,13 +43,12 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
+import { ClientOnly } from '@/components/ClientOnly'
 
 type AdType = 'all' | 'offers' | 'requests'
 
 export default function ClassificadosPage() {
-  const { user, profile } = useAuthContext()
-  const { openChat } = useFloatingChat()
-  
+  const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [isCreatingAd, setIsCreatingAd] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -96,6 +98,19 @@ export default function ClassificadosPage() {
   useEffect(() => {
     executeSearch(filters)
   }, [filters, executeSearch])
+
+  // useEffect para mounted
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // const { user, profile } = useAuthContext()
+  const user = null
+  const profile = null
+
+  if (!mounted) {
+    return null
+  }
 
   // Paginação
   const totalPages = Math.ceil(filteredAds.length / itemsPerPage)
@@ -183,7 +198,8 @@ export default function ClassificadosPage() {
       toast.error('Você precisa estar logado para entrar em contato')
       return
     }
-    openChat()
+    // TODO: Implementar abertura do chat
+    toast.info('Funcionalidade de chat temporariamente desabilitada')
   }
 
   // Formatar data
@@ -207,7 +223,8 @@ export default function ClassificadosPage() {
   }
 
     return (
-    <MainLayout requireAuth={false}>
+    <ClientOnly>
+      <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header da Página */}
@@ -729,5 +746,6 @@ export default function ClassificadosPage() {
         </div>
       </div>
     </MainLayout>
+    </ClientOnly>
   )
 }
