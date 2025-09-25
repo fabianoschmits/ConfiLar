@@ -428,12 +428,29 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
   const completeProfile = useCallback(async (profileData: CompleteProfileData) => {
     try {
       Logger.info('auth', `Completing profile for user`)
+      console.log('🔍 CompleteProfile recebeu dados:', profileData)
       
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
 
       if (!state.user) {
         throw new Error('Usuário não autenticado')
+      }
+      
+      console.log('👤 Usuário autenticado:', state.user.id)
+
+      // Processar avatar se fornecido
+      let avatarUrl = null
+      if (profileData.avatar_data) {
+        if (profileData.avatar_data.type === 'dicebear' && profileData.avatar_data.url) {
+          avatarUrl = profileData.avatar_data.url
+        } else if (profileData.avatar_data.type === 'upload' && profileData.avatar_data.file) {
+          // Upload do arquivo para o storage
+          const uploadResult = await uploadAvatar(profileData.avatar_data.file)
+          if (uploadResult.data) {
+            avatarUrl = uploadResult.data
+          }
+        }
       }
 
       // Preparar dados do perfil
@@ -454,7 +471,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         professional_experience_years: profileData.experience_years ? 
           (isNaN(parseInt(profileData.experience_years)) ? 0 : parseInt(profileData.experience_years)) : 0,
         professional_certifications: [],
-        avatar_url: null,
+        avatar_url: avatarUrl,
         is_verified: false,
         badge: 'bronze' as const,
         rating: 0,
@@ -478,6 +495,8 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         updated_at: new Date().toISOString()
       }
 
+      console.log('💾 Dados que serão salvos no banco:', profileInsertData)
+      
       // Criar/atualizar perfil e preferências em paralelo
       const [profileResult, preferencesResult] = await Promise.allSettled([
         supabase.from('profiles').upsert(profileInsertData, { onConflict: 'id' }),

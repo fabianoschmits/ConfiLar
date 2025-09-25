@@ -260,13 +260,15 @@ export default function OnboardingPage() {
         }
       }
 
-      const { error } = await completeProfile({
+      // Log dos dados que serão enviados
+      const profileData = {
         phone: data.phone,
         cpf_cnpj: data.cpf_cnpj,
         birth_date: data.birth_date || '',
         location_state: data.location_state || '',
         location_city: data.location_city || '',
         neighborhood: data.neighborhood || '',
+        address: data.address || '',
         bio: data.bio || '',
         services_offered: selectedServices || [],
         experience_years: data.experience_years || '',
@@ -275,7 +277,11 @@ export default function OnboardingPage() {
         gender: data.gender || 'male',
         user_type: data.user_type,
         avatar_data: avatarData,
-      })
+      }
+      
+      console.log('📝 Dados do perfil que serão enviados:', profileData)
+      
+      const { error } = await completeProfile(profileData)
 
       if (error) {
         console.error('❌ Erro detalhado:', error)
