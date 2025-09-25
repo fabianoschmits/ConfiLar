@@ -17,11 +17,33 @@ export function useProfileCheck() {
         return
       }
 
+      // Se já temos o perfil no contexto, verificar se está completo
+      if (profile) {
+        // Verificar se o perfil tem dados essenciais
+        const hasEssentialData = profile.full_name && 
+                                profile.phone && 
+                                profile.location_state && 
+                                profile.location_city
+
+        // Se não tem dados essenciais, redirecionar para onboarding
+        if (!hasEssentialData) {
+          // Verificar se já está na página de onboarding para evitar loop
+          if (window.location.pathname !== '/onboarding') {
+            console.log('🔍 Perfil incompleto, redirecionando para onboarding')
+            router.push('/onboarding')
+          }
+        } else {
+          console.log('✅ Perfil completo, permitindo acesso')
+        }
+        setIsChecking(false)
+        return
+      }
+
       try {
-        // Verificar se o usuário tem perfil completo
+        // Se não temos perfil no contexto, buscar no banco
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('id, profile_completed')
+          .select('id, full_name, phone, location_state, location_city, profile_completed')
           .eq('id', user.id)
           .maybeSingle()
 
@@ -31,12 +53,30 @@ export function useProfileCheck() {
           return
         }
 
-        // Se não tem perfil ou perfil não está completo, redirecionar para onboarding
-        if (!profileData || !profileData.profile_completed) {
-          // Verificar se já está na página de onboarding para evitar loop
+        // Se não tem perfil no banco, redirecionar para onboarding
+        if (!profileData) {
           if (window.location.pathname !== '/onboarding') {
+            console.log('🔍 Perfil não encontrado, redirecionando para onboarding')
             router.push('/onboarding')
           }
+          setIsChecking(false)
+          return
+        }
+
+        // Verificar se tem dados essenciais
+        const hasEssentialData = profileData.full_name && 
+                                profileData.phone && 
+                                profileData.location_state && 
+                                profileData.location_city
+
+        // Se não tem dados essenciais, redirecionar para onboarding
+        if (!hasEssentialData) {
+          if (window.location.pathname !== '/onboarding') {
+            console.log('🔍 Perfil incompleto (dados essenciais faltando), redirecionando para onboarding')
+            router.push('/onboarding')
+          }
+        } else {
+          console.log('✅ Perfil completo, permitindo acesso')
         }
       } catch (error) {
         console.error('Erro ao verificar perfil:', error)
@@ -46,7 +86,7 @@ export function useProfileCheck() {
     }
 
     checkProfile()
-  }, [user, router])
+  }, [user, profile, router])
 
   return { isChecking }
 }
