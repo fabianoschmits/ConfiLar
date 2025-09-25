@@ -356,7 +356,7 @@ button, a, input, select, textarea {
   .floating-chat {
     width: 256px !important;
     height: 480px !important;
-    bottom: 6rem !important;
+    bottom: 5.5rem !important;
     right: 1rem !important;
     left: auto !important;
   }

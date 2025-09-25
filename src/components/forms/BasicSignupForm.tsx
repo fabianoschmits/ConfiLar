@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
-// Schema simplificado para cadastro básico - apenas email e senha
+// Schema simplificado para cadastro básico - email, senha e confirmação
 const basicSignupSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string()
@@ -21,6 +21,10 @@ const basicSignupSchema = z.object({
     .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
     .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
     .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 })
 
 type BasicSignupFormData = z.infer<typeof basicSignupSchema>
@@ -147,35 +151,53 @@ export function BasicSignupForm() {
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className={`flex items-center space-x-1 ${checkPasswordStrength(watchedValues.password).checks.length ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className={checkPasswordStrength(watchedValues.password).checks.length ? 'text-green-500' : 'text-gray-400'}>✓</span>
-                    <span>8+ caracteres</span>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-2">
+                    <span className={`${checkPasswordStrength(watchedValues.password).checks.length ? 'text-green-500' : 'text-gray-400'}`}>✓</span>
+                    <span className={`${checkPasswordStrength(watchedValues.password).checks.uppercase ? 'text-green-500' : 'text-gray-400'}`}>✓</span>
+                    <span className={`${checkPasswordStrength(watchedValues.password).checks.lowercase ? 'text-green-500' : 'text-gray-400'}`}>✓</span>
+                    <span className={`${checkPasswordStrength(watchedValues.password).checks.number ? 'text-green-500' : 'text-gray-400'}`}>✓</span>
+                    <span className={`${checkPasswordStrength(watchedValues.password).checks.special ? 'text-green-500' : 'text-gray-400'}`}>✓</span>
                   </div>
-                  <div className={`flex items-center space-x-1 ${checkPasswordStrength(watchedValues.password).checks.uppercase ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className={checkPasswordStrength(watchedValues.password).checks.uppercase ? 'text-green-500' : 'text-gray-400'}>✓</span>
-                    <span>Maiúscula</span>
-                  </div>
-                  <div className={`flex items-center space-x-1 ${checkPasswordStrength(watchedValues.password).checks.lowercase ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className={checkPasswordStrength(watchedValues.password).checks.lowercase ? 'text-green-500' : 'text-gray-400'}>✓</span>
-                    <span>Minúscula</span>
-                  </div>
-                  <div className={`flex items-center space-x-1 ${checkPasswordStrength(watchedValues.password).checks.number ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className={checkPasswordStrength(watchedValues.password).checks.number ? 'text-green-500' : 'text-gray-400'}>✓</span>
-                    <span>Número</span>
-                  </div>
-                  <div className={`flex items-center space-x-1 ${checkPasswordStrength(watchedValues.password).checks.special ? 'text-green-600' : 'text-gray-400'}`}>
-                    <span className={checkPasswordStrength(watchedValues.password).checks.special ? 'text-green-500' : 'text-gray-400'}>✓</span>
-                    <span>Especial</span>
-                  </div>
+                  <span className={`font-medium ${
+                    checkPasswordStrength(watchedValues.password).score === 5 ? 'text-green-600' :
+                    checkPasswordStrength(watchedValues.password).score >= 3 ? 'text-yellow-600' :
+                    'text-red-600'
+                  }`}>
+                    {checkPasswordStrength(watchedValues.password).score === 5 ? 'Senha forte' :
+                     checkPasswordStrength(watchedValues.password).score >= 3 ? 'Senha média' :
+                     'Senha fraca'}
+                  </span>
                 </div>
               </div>
             )}
             
             {errors.password && <p className="text-sm text-red-500 font-medium">{errors.password.message}</p>}
-            {watchedValues.password && !errors.password && checkPasswordStrength(watchedValues.password).isStrong && (
-              <p className="text-sm text-green-600 font-medium">✓ Senha forte</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+              Confirmar Senha *
+            </Label>
+            <PasswordInput
+              id="confirmPassword"
+              placeholder="Digite a senha novamente"
+              {...register('confirmPassword')}
+              error={!!errors.confirmPassword}
+            />
+            
+            {/* Indicador de confirmação */}
+            {watchedValues.confirmPassword && (
+              <div className="space-y-1">
+                {watchedValues.password === watchedValues.confirmPassword ? (
+                  <p className="text-sm text-green-600 font-medium">✓ Senhas coincidem</p>
+                ) : (
+                  <p className="text-sm text-red-500 font-medium">✗ As senhas não coincidem</p>
+                )}
+              </div>
             )}
+            
+            {errors.confirmPassword && <p className="text-sm text-red-500 font-medium">{errors.confirmPassword.message}</p>}
           </div>
         </div>
       </div>
@@ -185,7 +207,7 @@ export function BasicSignupForm() {
         <Button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-          disabled={isLoading || !isValid}
+          disabled={isLoading || !isValid || watchedValues.password !== watchedValues.confirmPassword}
         >
           {isLoading ? 'Criando conta...' : 'Criar conta'}
         </Button>
