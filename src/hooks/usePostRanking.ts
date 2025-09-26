@@ -52,7 +52,7 @@ export function usePostRanking(filters: {
             user_type
           )
         `)
-        .eq('is_active', true)
+        // .eq('is_active', true) // Coluna não existe
         .order('created_at', { ascending: false })
 
       if (error) throw error

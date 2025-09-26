@@ -25,7 +25,12 @@ export function ImageUploadFeed({
   const { user } = useAuthContext()
 
   const handleFileUpload = async (files: FileList) => {
-    if (files.length === 0) return
+    console.log('Iniciando upload de', files.length, 'arquivos')
+    
+    if (files.length === 0) {
+      console.log('Nenhum arquivo selecionado')
+      return
+    }
 
     if (!user) {
       alert('Você precisa estar logado para fazer upload de imagens')
@@ -44,10 +49,12 @@ export function ImageUploadFeed({
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
+        console.log(`Processando arquivo ${i + 1}:`, file.name, file.type, file.size)
 
         // Validar tipo de arquivo
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
         if (!allowedTypes.includes(file.type)) {
+          console.log('Tipo de arquivo não permitido:', file.type)
           alert('Por favor, selecione apenas imagens (JPG, PNG ou WebP)')
           continue
         }
@@ -55,41 +62,51 @@ export function ImageUploadFeed({
         // Validar tamanho (máximo 5MB)
         const maxSize = 5 * 1024 * 1024 // 5MB
         if (file.size > maxSize) {
+          console.log('Arquivo muito grande:', file.size)
           alert('A imagem deve ter no máximo 5MB')
           continue
         }
 
         // Gerar nome único para o arquivo
         const fileExt = file.name.split('.').pop()
-        const fileName = `feed/${Date.now()}-${i}.${fileExt}`
+        const fileName = `feed/${Date.now()}-${Math.random().toString(36).substring(2)}-${i}.${fileExt}`
+        console.log('Nome do arquivo gerado:', fileName)
 
-        // Upload para o bucket de imagens de serviços
+        // Upload para o bucket de imagens do feed
+        console.log('Iniciando upload para Supabase...')
         const { data, error } = await supabase.storage
-          .from('service-images')
+          .from('feed-images')
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
           })
 
         if (error) {
+          console.error('Erro no upload do Supabase:', error)
           throw error
         }
 
+        console.log('Upload bem-sucedido:', data)
+
         // Obter URL pública da imagem
         const { data: { publicUrl } } = supabase.storage
-          .from('service-images')
+          .from('feed-images')
           .getPublicUrl(fileName)
 
+        console.log('URL pública gerada:', publicUrl)
         uploadedUrls.push(publicUrl)
       }
 
+      console.log('Todas as imagens foram processadas:', uploadedUrls)
+
       // Adicionar novas imagens às existentes
       const allImages = [...currentImages, ...uploadedUrls]
+      console.log('Imagens finais:', allImages)
       onImagesUpload(allImages)
 
     } catch (error) {
       console.error('Erro no upload:', error)
-      alert('Erro ao fazer upload das imagens. Tente novamente.')
+      alert(`Erro ao fazer upload das imagens: ${error.message || 'Tente novamente.'}`)
     } finally {
       setIsUploading(false)
     }
@@ -99,6 +116,8 @@ export function ImageUploadFeed({
     const files = event.target.files
     if (files) {
       handleFileUpload(files)
+      // Reset do input para permitir selecionar o mesmo arquivo novamente
+      event.target.value = ''
     }
   }
 
@@ -129,32 +148,49 @@ export function ImageUploadFeed({
   }
 
   const openFileDialog = () => {
-    fileInputRef.current?.click()
+    console.log('Abrindo diálogo de arquivo')
+    if (fileInputRef.current) {
+      fileInputRef.current.click()
+    }
   }
 
   const canAddMore = currentImages.length < maxImages
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Preview das imagens atuais */}
+      {/* Preview das imagens atuais - Estilo Instagram */}
       {currentImages.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {currentImages.map((imageUrl, index) => (
-            <div key={index} className="relative group">
-              <img
-                src={imageUrl}
-                alt={`Imagem ${index + 1} do trabalho`}
-                className="w-full h-32 object-cover rounded-lg border border-gray-200"
-              />
-              <button
-                onClick={() => handleRemoveImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                title="Remover imagem"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700">
+            Preview ({currentImages.length}/{maxImages} imagens)
+          </div>
+          <div className={`grid gap-1 ${
+            currentImages.length === 1 ? 'grid-cols-1' :
+            currentImages.length === 2 ? 'grid-cols-2' :
+            currentImages.length === 3 ? 'grid-cols-2' :
+            'grid-cols-2'
+          }`}>
+            {currentImages.map((imageUrl, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={imageUrl}
+                  alt={`Imagem ${index + 1} do trabalho`}
+                  className={`w-full object-cover rounded-lg border border-gray-200 ${
+                    currentImages.length === 1 ? 'h-48' :
+                    currentImages.length === 2 ? 'h-32' :
+                    currentImages.length === 3 && index === 0 ? 'h-48' : 'h-24'
+                  }`}
+                />
+                <button
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Remover imagem"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -216,7 +252,9 @@ export function ImageUploadFeed({
                   type="button"
                   variant="outline"
                   onClick={(e) => {
+                    e.preventDefault()
                     e.stopPropagation()
+                    console.log('Botão clicado - abrindo diálogo')
                     openFileDialog()
                   }}
                   className="mt-2"

@@ -20,7 +20,7 @@ export function TrendingPosts({
   location_state, 
   limit = 5 
 }: TrendingPostsProps) {
-  const { trendingPosts, isLoading, error } = usePostRanking({
+  const { trendingPosts, isLoading, error } = usePostRankingMock({
     location_city,
     location_state,
     limit

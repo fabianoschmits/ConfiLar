@@ -54,6 +54,26 @@ export function ServiceAutocomplete({
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
+  // Lidar com digitação no campo
+  const handleInputChange = (value: string) => {
+    setSearchTerm(value)
+    setIsOpen(true)
+    
+    // Se o usuário digitou algo, tentar encontrar serviço correspondente
+    if (value.trim()) {
+      const matchingService = services.find(service => 
+        service.name.toLowerCase().includes(value.toLowerCase())
+      )
+      if (matchingService) {
+        setSelectedService(matchingService)
+        onChange(matchingService.id)
+      }
+    } else {
+      setSelectedService(null)
+      onChange('')
+    }
+  }
+
   // Fechar dropdown
   const handleClose = () => {
     setIsOpen(false)
@@ -89,28 +109,24 @@ export function ServiceAutocomplete({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      {/* Input/Button Trigger */}
-      <div
-        onClick={handleOpen}
-        className={`
-          w-full px-3 py-2 border border-gray-200 rounded-lg
-          bg-white cursor-pointer flex items-center justify-between
-          hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500
-          transition-colors duration-200
-          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
-      >
-        <div className="flex items-center space-x-2 flex-1 min-w-0">
-          {selectedService ? (
-            <>
-              <span className="text-lg">{selectedService.icon}</span>
-              <span className="text-gray-900 truncate">{selectedService.name}</span>
-            </>
-          ) : (
-            <span className="text-gray-500">{placeholder}</span>
-          )}
-        </div>
-        <div className="flex items-center space-x-1">
+      {/* Input Field */}
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={selectedService ? selectedService.name : searchTerm}
+          onChange={(e) => handleInputChange(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`
+            w-full px-3 py-2 pr-10 border border-gray-200 rounded-lg
+            bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            transition-colors duration-200
+            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+          `}
+        />
+        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
           {selectedService && (
             <button
               onClick={(e) => {
@@ -129,23 +145,8 @@ export function ServiceAutocomplete({
       {/* Dropdown */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-hidden">
-          {/* Campo de busca */}
-          <div className="p-2 border-b border-gray-100">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder="Buscar serviços..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-
           {/* Lista de serviços */}
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-60 overflow-y-auto">
             {filteredServices.length > 0 ? (
               filteredServices.map((service) => (
                 <button
@@ -157,7 +158,6 @@ export function ServiceAutocomplete({
                     ${selectedService?.id === service.id ? 'bg-blue-50 text-blue-700' : 'text-gray-900'}
                   `}
                 >
-                  <span className="text-lg">{service.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{service.name}</div>
                     {service.description && (

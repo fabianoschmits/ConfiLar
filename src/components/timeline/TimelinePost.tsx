@@ -6,21 +6,30 @@ import Image from 'next/image'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
 import { ReactionButton } from './ReactionButton'
 import { CommentSection } from './CommentSection'
+import { PostOptionsMenu } from './PostOptionsMenu'
 
 interface TimelinePostProps {
   post: TimelinePostType
   onShare: (postId: string) => void
+  onLike?: (postId: string) => void
+  onEdit?: (postId: string) => void
+  onDelete?: (postId: string) => void
   showComments?: boolean
   isTrending?: boolean
   trendingReason?: string
+  isDeleting?: boolean
 }
 
 export function TimelinePost({
   post,
   onShare,
+  onLike,
+  onEdit,
+  onDelete,
   showComments = true,
   isTrending = false,
-  trendingReason
+  trendingReason,
+  isDeleting = false
 }: TimelinePostProps) {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
@@ -59,109 +68,160 @@ export function TimelinePost({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+      <CardHeader className="pb-3 p-3 md:p-6">
+        <div className="flex items-center space-x-2 md:space-x-3">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center">
             {post.user_avatar ? (
               <Image
                 src={post.user_avatar}
                 alt={post.user_name || 'Usuário'}
                 width={48}
                 height={48}
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
               />
             ) : (
-              <User className="h-6 w-6 text-blue-600" />
+              <User className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
             )}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-900">{post.user_name}</h3>
-              <span className="text-sm text-gray-500">•</span>
-              <span className="text-sm text-gray-500">{post.user_type === 'professional' ? 'Profissional' : 'Cliente'}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-1 md:space-x-2 flex-wrap">
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">{post.user_name}</h3>
+              <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">•</span>
+              <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">{post.user_type === 'professional' ? 'Profissional' : 'Cliente'}</span>
               {getTrendingBadge()}
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <MapPin className="h-3 w-3" />
-              <span>{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
-              <span>•</span>
-              <span>{formatTimeAgo(post.created_at)}</span>
+            <div className="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm text-gray-500 flex-wrap">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">{formatTimeAgo(post.created_at)}</span>
             </div>
           </div>
+          <PostOptionsMenu
+            postId={post.id}
+            postUserId={post.user_id}
+            onEdit={onEdit || (() => {})}
+            onDelete={onDelete || (() => {})}
+            isDeleting={isDeleting}
+          />
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-3 md:p-6">
         <div>
-          <h4 className="text-lg font-semibold text-gray-900 mb-2">
+          <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
             {post.title}
           </h4>
-          <p className="text-gray-700">{post.description}</p>
+          <p className="text-sm md:text-base text-gray-700">{post.description}</p>
         </div>
 
-        {/* Galeria de Imagens */}
+        {/* Galeria de Imagens - Estilo Instagram */}
         {post.images && post.images.length > 0 && (
-          <div className={`grid gap-2 ${
-            post.images.length === 1 ? 'grid-cols-1' :
-            post.images.length === 2 ? 'grid-cols-2' :
-            post.images.length === 3 ? 'grid-cols-3' :
-            post.images.length === 4 ? 'grid-cols-2' : 'grid-cols-3'
-          }`}>
-            {post.images.map((image, index) => (
-              <div 
-                key={index} 
-                className={`relative overflow-hidden rounded-lg ${
-                  post.images!.length === 1 ? 'h-96' :
-                  post.images!.length === 2 ? 'h-64' :
-                  post.images!.length === 3 ? 'h-48' :
-                  post.images!.length === 4 ? 'h-48' : 'h-32'
-                }`}
-              >
+          <div className="mt-4">
+            {post.images.length === 1 ? (
+              // Uma imagem - tamanho médio quadrado
+              <div className="relative w-full">
                 <Image
-                  src={image}
-                  alt={`Imagem ${index + 1} do trabalho`}
-                  width={400}
-                  height={300}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
+                  src={post.images[0]}
+                  alt="Imagem do post"
+                  width={500}
+                  height={500}
+                  className="w-full h-[400px] object-cover rounded-lg"
                 />
-                {post.images!.length > 4 && index === 3 && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      +{post.images!.length - 4}
-                    </span>
-                  </div>
-                )}
               </div>
-            ))}
+            ) : post.images.length === 2 ? (
+              // Duas imagens - lado a lado
+              <div className="grid grid-cols-2 gap-1">
+                {post.images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <Image
+                      src={image}
+                      alt={`Imagem ${index + 1}`}
+                      width={250}
+                      height={250}
+                      className="w-full h-[300px] object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : post.images.length === 3 ? (
+              // Três imagens - uma grande e duas pequenas
+              <div className="grid grid-cols-2 gap-1">
+                <div className="row-span-2">
+                  <Image
+                    src={post.images[0]}
+                    alt="Imagem principal"
+                    width={250}
+                    height={400}
+                    className="w-full h-[400px] object-cover rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  {post.images.slice(1, 3).map((image, index) => (
+                    <div key={index} className="relative">
+                      <Image
+                        src={image}
+                        alt={`Imagem ${index + 2}`}
+                        width={250}
+                        height={195}
+                        className="w-full h-[195px] object-cover rounded-lg"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // Quatro ou mais imagens - grid 2x2
+              <div className="grid grid-cols-2 gap-1">
+                {post.images.slice(0, 4).map((image, index) => (
+                  <div key={index} className="relative">
+                    <Image
+                      src={image}
+                      alt={`Imagem ${index + 1}`}
+                      width={250}
+                      height={250}
+                      className="w-full h-[250px] object-cover rounded-lg"
+                    />
+                    {index === 3 && post.images.length > 4 && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold">
+                          +{post.images.length - 4}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Ações do Post */}
+        {/* Ações do Post - Responsivas */}
         <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3 md:space-x-6">
             <ReactionButton postId={post.id} />
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
-              <MessageCircle className="h-5 w-5" />
-              <span>{post.comments_count}</span>
+            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
+              <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">{post.comments_count}</span>
             </button>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
-              <Eye className="h-5 w-5" />
-              <span>0</span>
+            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
+              <Eye className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">0</span>
             </button>
             <button 
               onClick={() => onShare(post.id)}
-              className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-colors"
+              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-green-500 transition-colors"
             >
-              <Share2 className="h-5 w-5" />
-              <span>Compartilhar</span>
+              <Share2 className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline text-sm md:text-base">Compartilhar</span>
             </button>
           </div>
         </div>
 
-        {/* Comentários */}
-        {showComments && (
-          <CommentSection postId={post.id} />
-        )}
+      {/* Comentários */}
+      {showComments && (
+        <CommentSection postId={post.id} />
+      )}
       </CardContent>
     </Card>
   )

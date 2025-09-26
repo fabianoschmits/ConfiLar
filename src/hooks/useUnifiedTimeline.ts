@@ -30,8 +30,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .from('feed_posts')
         .select(`
           id,
-          user_id,
-          content,
+          professional_id,
+          title,
+          description,
           images,
           location_state,
           location_city,
@@ -39,20 +40,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           comments_count,
           created_at,
           updated_at,
-          user:profiles!feed_posts_user_id_fkey(
+          professional:profiles!feed_posts_professional_id_fkey(
             id,
             full_name,
             avatar_url,
             user_type
           )
         `)
-        .eq('is_active', true)
+        // .eq('is_active', true) // Coluna não existe
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
-        postsQuery = postsQuery.or(`content.ilike.%${filters.search}%,user.full_name.ilike.%${filters.search}%,service_category.ilike.%${filters.search}%`)
+        postsQuery = postsQuery.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,professional.full_name.ilike.%${filters.search}%`)
       }
 
       const { data: posts, error: postsError } = await postsQuery
@@ -80,7 +81,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
-      if (activitiesError) throw activitiesError
+      if (activitiesError) {
+        console.warn('Erro ao buscar atividades:', activitiesError)
+        // Continuar sem atividades se houver erro
+      }
 
       // Buscar notificações públicas relevantes
       const { data: notifications, error: notificationsError } = await supabase
@@ -107,19 +111,22 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
-      if (notificationsError) throw notificationsError
+      if (notificationsError) {
+        console.warn('Erro ao buscar notificações:', notificationsError)
+        // Continuar sem notificações se houver erro
+      }
 
       // Transformar posts em TimelinePost
       const timelinePosts = (posts || []).map(post => ({
         id: post.id,
         type: 'post' as const,
         created_at: post.created_at,
-        user_id: post.user_id,
-        user_name: (post.user as any)?.full_name || 'Usuário',
-        user_avatar: (post.user as any)?.avatar_url,
-        user_type: (post.user as any)?.user_type,
-        title: post.content, // Usar content como título
-        description: post.content, // Usar content como descrição
+        user_id: post.professional_id,
+        user_name: (post.professional as any)?.full_name || 'Usuário',
+        user_avatar: (post.professional as any)?.avatar_url,
+        user_type: (post.professional as any)?.user_type,
+        title: post.title,
+        description: post.description || '',
         images: post.images || [],
         location_state: post.location_state,
         location_city: post.location_city,
@@ -220,21 +227,131 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     })
   }, [queryClient, queryKey, likedPosts])
 
-  const addPost = useCallback((newPost: any) => {
-    const timelinePost = {
-      ...newPost,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString()
-    } as UnifiedTimelineItem
+         const addPost = useCallback(async (newPost: any) => {
+           try {
+             // Salvar no banco de dados
+             const { data, error } = await supabase
+               .from('feed_posts')
+               .insert({
+                 professional_id: newPost.user_id,
+                 title: newPost.title,
+                 description: newPost.description,
+                 images: newPost.images || [],
+                 location_state: newPost.location_state,
+                 location_city: newPost.location_city,
+                 likes_count: 0,
+                 comments_count: 0
+               })
+               .select()
+               .single()
 
-    queryClient.setQueryData(queryKey, (oldData: any) => {
-      if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
-      return {
-        ...oldData,
-        pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
-      }
-    })
-  }, [queryClient, queryKey])
+             if (error) throw error
+
+             // Atualizar cache local
+             const timelinePost = {
+               id: data.id,
+               type: 'post' as const,
+               created_at: data.created_at,
+               user_id: data.professional_id,
+               user_name: newPost.user_name,
+               user_avatar: newPost.user_avatar,
+               user_type: newPost.user_type,
+               title: data.title,
+               description: data.description || '',
+               images: data.images || [],
+               location_state: data.location_state,
+               location_city: data.location_city,
+               likes_count: data.likes_count || 0,
+               comments_count: data.comments_count || 0,
+               is_liked: false
+             } as UnifiedTimelineItem
+
+             queryClient.setQueryData(queryKey, (oldData: any) => {
+               if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
+               return {
+                 ...oldData,
+                 pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
+               }
+             })
+
+             return timelinePost
+           } catch (error) {
+             console.error('Erro ao criar post:', error)
+             throw error
+           }
+         }, [queryClient, queryKey])
+
+         const editPost = useCallback(async (postId: string, updatedPost: any) => {
+           try {
+             // Atualizar no banco de dados
+             const { data, error } = await supabase
+               .from('feed_posts')
+               .update({
+                 title: updatedPost.title,
+                 description: updatedPost.description,
+                 images: updatedPost.images || [],
+                 updated_at: new Date().toISOString()
+               })
+               .eq('id', postId)
+               .select()
+               .single()
+
+             if (error) throw error
+
+             // Atualizar cache local
+             queryClient.setQueryData(queryKey, (oldData: any) => {
+               if (!oldData) return oldData
+               return {
+                 ...oldData,
+                 pages: oldData.pages.map((page: any[]) =>
+                   page.map((item: any) =>
+                     item.id === postId && item.type === 'post'
+                       ? {
+                           ...item,
+                           title: data.title,
+                           description: data.description,
+                           images: data.images || []
+                         }
+                       : item
+                   )
+                 )
+               }
+             })
+
+             return data
+           } catch (error) {
+             console.error('Erro ao editar post:', error)
+             throw error
+           }
+         }, [queryClient, queryKey])
+
+         const deletePost = useCallback(async (postId: string) => {
+           try {
+             // Deletar do banco de dados
+             const { error } = await supabase
+               .from('feed_posts')
+               .delete()
+               .eq('id', postId)
+
+             if (error) throw error
+
+             // Atualizar cache local - remover o post
+             queryClient.setQueryData(queryKey, (oldData: any) => {
+               if (!oldData) return oldData
+               return {
+                 ...oldData,
+                 pages: oldData.pages.map((page: any[]) =>
+                   page.filter((item: any) => !(item.id === postId && item.type === 'post'))
+                 )
+               }
+             })
+
+             return true
+           } catch (error) {
+             console.error('Erro ao deletar post:', error)
+             throw error
+           }
+         }, [queryClient, queryKey])
 
   return {
     items,
@@ -245,6 +362,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     isFetchingNextPage,
     likePost,
     addPost,
+    editPost,
+    deletePost,
     refetch
   }
 }
