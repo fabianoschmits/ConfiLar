@@ -50,9 +50,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
-      // Aplicar filtro por tipo de usuário se especificado
-      if (filters.user_type && filters.user_type !== 'all') {
-        postsQuery = postsQuery.eq('user.user_type', filters.user_type)
+      // Aplicar filtro de busca se especificado
+      if (filters.search && filters.search.trim()) {
+        postsQuery = postsQuery.or(`content.ilike.%${filters.search}%,user.full_name.ilike.%${filters.search}%`)
       }
 
       const { data: posts, error: postsError } = await postsQuery

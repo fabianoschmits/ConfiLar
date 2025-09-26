@@ -52,7 +52,7 @@ export type UnifiedTimelineItem = TimelinePost | TimelineActivity | TimelineNoti
 export interface TimelineFilters {
   category?: string
   location?: string
-  user_type?: 'client' | 'professional' | 'all'
+  search?: string
   activity_types?: string[]
 }
 
