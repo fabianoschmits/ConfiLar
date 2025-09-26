@@ -67,6 +67,10 @@ export function useSupabaseReviews() {
         .eq(column, userId)
         .order('created_at', { ascending: false })
 
+      console.log('📊 Hook useSupabaseReviews - Query executada:', { column, userId })
+      console.log('📊 Hook useSupabaseReviews - Dados retornados:', data?.length || 0)
+      console.log('📊 Hook useSupabaseReviews - Erro:', error)
+
       if (error) throw error
       setReviews(data || [])
     } catch (err) {

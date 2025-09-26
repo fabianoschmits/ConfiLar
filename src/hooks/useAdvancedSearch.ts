@@ -3,7 +3,23 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Profile } from '@/types/database'
 import { supabase } from '@/lib/supabase'
-import { SearchFilters } from '@/components/search/AdvancedSearchFilters'
+export interface SearchFilters {
+  searchTerm: string
+  category: string
+  state: string
+  city: string
+  userType: string
+  minRating: number
+  maxRating: number
+  verifiedOnly: boolean
+  availableOnly: boolean
+  sortBy: string
+  sortOrder: string
+  priceRange: [number, number]
+  experienceYears: number
+  hasPortfolio: boolean
+  hasReviews: boolean
+}
 
 const DEFAULT_FILTERS: SearchFilters = {
   searchTerm: '',

@@ -18,15 +18,11 @@ import {
   MapPin,
   Star,
   Users,
-  TrendingUp,
-  Clock,
   ChevronDown,
   ChevronUp,
   X,
   MessageCircle,
-  Heart,
   Eye,
-  Award,
   CheckCircle,
   Briefcase,
   User,
@@ -36,9 +32,8 @@ import {
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { useAvailabilityContext } from '@/contexts/AvailabilityContext'
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
-import { useProximitySearch } from '@/hooks/useProximitySearch'
-import { useGeolocation } from '@/hooks/useGeolocation'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
 import { useIBGE } from '@/hooks/useIBGE'
 import { services } from '@/data/services'
@@ -52,8 +47,6 @@ export default function BuscarPage() {
   const router = useRouter()
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [mounted, setMounted] = useState(false)
-  const [searchMode, setSearchMode] = useState<'advanced' | 'proximity'>('advanced')
   const [profileViews, setProfileViews] = useState<Record<string, number>>({})
   const [profileStats, setProfileStats] = useState<Record<string, { rating: number; reviewCount: number }>>({})
   const [activeTab, setActiveTab] = useState<'all' | 'clients' | 'professionals'>('all')
@@ -74,12 +67,10 @@ export default function BuscarPage() {
 
   const { estados, cidades, loadCidades } = useIBGE()
   const { openChat } = useFloatingChat()
+  const { userAvailability } = useAvailabilityContext()
   const { getViewStats, recordView } = useProfileViews()
   const { fetchUserReviewStats } = useSupabaseReviews()
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Hook para busca avançada
   const {
@@ -95,15 +86,6 @@ export default function BuscarPage() {
     executeSearch()
   }, [executeSearch])
 
-  // Hook para busca por proximidade
-  const {
-    results: proximityResults,
-    loading: proximityLoading,
-    searchNearLocation
-  } = useProximitySearch()
-
-  // Hook para geolocalização
-  const { location } = useGeolocation()
 
   // Função para executar busca
   const handleSearch = useCallback(() => {
@@ -695,13 +677,29 @@ export default function BuscarPage() {
                               {profile.full_name}
                             </h3>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge 
-                              variant={profile.is_available ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {profile.is_available ? 'Disponível' : 'Ocupado'}
-                            </Badge>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {(() => {
+                              // Usar disponibilidade do contexto se disponível, senão usar do perfil
+                              const isAvailable = userAvailability[profile.id] !== undefined 
+                                ? userAvailability[profile.id] 
+                                : profile.is_available
+                              
+                              return (
+                                <Badge 
+                                  variant={isAvailable ? 'default' : 'secondary'}
+                                  className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
+                                    isAvailable 
+                                      ? 'bg-green-100 text-green-800 border border-green-200 shadow-sm' 
+                                      : 'bg-red-100 text-red-800 border border-red-200 shadow-sm'
+                                  }`}
+                                >
+                                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                    isAvailable ? 'bg-green-500' : 'bg-red-500'
+                                  }`}></div>
+                                  {isAvailable ? 'Disponível' : 'Ocupado'}
+                                </Badge>
+                              )
+                            })()}
                             <div className="flex items-center text-xs text-gray-500">
                               <MapPin className="h-3 w-3 mr-1" />
                               {profile.location_city}, {profile.location_state}

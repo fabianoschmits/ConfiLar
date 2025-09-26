@@ -18,6 +18,7 @@ interface ClassifiedAd {
   is_active: boolean
   views: number
   user_avatar_url: string | null
+  ad_type: string
 }
 
 interface ClassifiedFilters {
@@ -51,37 +52,43 @@ export function useClassifiedSearch() {
     try {
       setLoading(true)
       
-      // Buscar anúncios com informações do usuário
+      // Buscar anúncios (sem join para evitar erro 400)
       const { data, error } = await supabase
         .from('classified_ads')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            avatar_url,
-            profile_photo_url
-          )
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      const adsWithUserInfo = data?.map(ad => ({
-        id: ad.id,
-        user_id: ad.user_id,
-        user_name: ad.profiles?.full_name || ad.user_name || 'Usuário',
-        user_type: ad.user_type || 'client',
-        title: ad.title,
-        description: ad.description,
-        category: ad.category,
-        location_state: ad.location_state,
-        location_city: ad.location_city,
-        created_at: ad.created_at,
-        is_active: ad.is_active,
-        views: ad.views || ad.views_count || 0,
-        user_avatar_url: ad.profiles?.avatar_url || ad.profiles?.profile_photo_url || ad.user_avatar_url || null
-      })) || []
+      // Buscar fotos dos usuários separadamente
+      const userIds = Array.from(new Set(data?.map(ad => ad.user_id) || []))    
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, profile_photo_url')
+        .in('id', userIds)
+
+      const profilesMap = new Map(profilesData?.map(profile => [profile.id, profile]) || [])
+
+      const adsWithUserInfo = data?.map(ad => {
+        const profile = profilesMap.get(ad.user_id)
+        return {
+          id: ad.id,
+          user_id: ad.user_id,
+          user_name: profile?.full_name || ad.user_name || 'Usuário',
+          user_type: ad.user_type || 'client',
+          title: ad.title,
+          description: ad.description,
+          category: ad.category,
+          location_state: ad.location_state,
+          location_city: ad.location_city,
+          created_at: ad.created_at,
+          is_active: ad.is_active,
+          views: ad.views || ad.views_count || 0,
+          user_avatar_url: profile?.avatar_url || profile?.profile_photo_url || ad.user_avatar_url || null,
+          ad_type: ad.ad_type
+        }
+      }) || []
 
       // Se não há dados reais, adicionar dados de exemplo
       let finalAds = adsWithUserInfo
@@ -100,7 +107,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 45,
-            user_avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'oferecer'
           },
           {
             id: 'mock-2',
@@ -115,7 +123,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 23,
-            user_avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'procurar'
           },
           {
             id: 'mock-3',
@@ -130,7 +139,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 67,
-            user_avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'oferecer'
           },
           {
             id: 'mock-4',
@@ -145,7 +155,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 34,
-            user_avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'procurar'
           },
           {
             id: 'mock-5',
@@ -160,7 +171,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 28,
-            user_avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'oferecer'
           },
           {
             id: 'mock-6',
@@ -175,7 +187,8 @@ export function useClassifiedSearch() {
             created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
             is_active: true,
             views: 19,
-            user_avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face'
+            user_avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+            ad_type: 'procurar'
           }
         ]
         finalAds = mockAds
@@ -208,9 +221,9 @@ export function useClassifiedSearch() {
     if (filters.adType !== 'all') {
       filtered = filtered.filter(ad => {
         if (filters.adType === 'offers') {
-          return ad.user_type === 'professional'
+          return ad.user_type === 'professional' || ad.ad_type === 'oferecer'
         } else if (filters.adType === 'requests') {
-          return ad.user_type === 'client'
+          return ad.user_type === 'client' || ad.ad_type === 'procurar'
         }
         return true
       })

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   Heart, 
   User, 
@@ -17,19 +17,19 @@ import {
   Users,
   Loader2,
   AlertCircle,
-  Eye
+  Eye,
+  TrendingUp,
+  CheckCircle
 } from 'lucide-react'
-import { PageTransition } from '@/components/animations/PageTransition'
-import { FadeIn } from '@/components/animations/FadeIn'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { UserAvatar } from '@/components/ui/UserAvatar'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 
 export default function FavoritesPage() {
   const [mounted, setMounted] = useState(false)
+  const [activeTab, setActiveTab] = useState<'all' | 'professionals' | 'clients'>('all')
   const { user, profile } = useAuthContext()
   const router = useRouter()
   const { openChat } = useFloatingChat()
@@ -52,6 +52,18 @@ export default function FavoritesPage() {
   const stats = getFavoritesStats()
   const professionalFavorites = getFavoritesByType('professional')
   const clientFavorites = getFavoritesByType('client')
+
+  // Filtrar favoritos baseado na aba ativa
+  const getFilteredFavorites = () => {
+    switch (activeTab) {
+      case 'professionals':
+        return professionalFavorites
+      case 'clients':
+        return clientFavorites
+      default:
+        return favorites
+    }
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-BR')
@@ -112,428 +124,297 @@ export default function FavoritesPage() {
   if (!user) {
     return (
       <MainLayout requireAuth={false}>
-        <PageTransition>
-          <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <FadeIn>
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Faça Login para Ver Seus Favoritos
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    Você precisa estar logado para acessar sua lista de favoritos.
-                  </p>
-                  <Button asChild>
-                    <a href="/auth">Fazer Login</a>
-                  </Button>
-                </CardContent>
-              </Card>
-            </FadeIn>
-          </div>
-        </PageTransition>
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Faça Login para Ver Seus Favoritos
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Você precisa estar logado para acessar sua lista de favoritos.
+              </p>
+              <Button asChild>
+                <a href="/auth">Fazer Login</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </MainLayout>
     )
   }
 
   return (
     <MainLayout requireAuth={true}>
-      <PageTransition>
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <FadeIn>
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Heart className="h-8 w-8 text-red-500" />
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Meus Favoritos</h1>
-                  <p className="text-gray-600">
-                    Pessoas que você adicionou aos seus favoritos
-                  </p>
-                </div>
-              </div>
-
-              {/* Estatísticas */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-red-600">{stats.totalFavorites}</div>
-                    <div className="text-sm text-gray-600">Total de Favoritos</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.professionalFavorites}</div>
-                    <div className="text-sm text-gray-600">Profissionais</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-green-600">{stats.clientFavorites}</div>
-                    <div className="text-sm text-gray-600">Clientes</div>
-                  </CardContent>
-                </Card>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header da Página */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Heart className="h-8 w-8 text-red-500" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Meus Favoritos</h1>
+                <p className="text-gray-600">
+                  Pessoas que você adicionou aos seus favoritos
+                </p>
               </div>
             </div>
-          </FadeIn>
+
+            {/* Estatísticas Compactas */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Heart className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-red-600">{stats.totalFavorites}</div>
+                  <div className="text-xs text-gray-600">Total</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Briefcase className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{stats.professionalFavorites}</div>
+                  <div className="text-xs text-gray-600">Profissionais</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <User className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">{stats.clientFavorites}</div>
+                  <div className="text-xs text-gray-600">Clientes</div>
+                </CardContent>
+              </Card>
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardContent className="p-4 text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <CheckCircle className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-purple-600">{stats.totalFavorites}</div>
+                  <div className="text-xs text-gray-600">Ativos</div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           {/* Estados de Loading e Erro */}
           {loading && (
-            <FadeIn>
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Loader2 className="h-8 w-8 mx-auto animate-spin text-red-600 mb-4" />
-                  <p className="text-gray-600">Carregando seus favoritos...</p>
-                </CardContent>
-              </Card>
-            </FadeIn>
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 mx-auto animate-spin text-red-600 mb-4" />
+                <p className="text-gray-600">Carregando seus favoritos...</p>
+              </div>
+            </div>
           )}
 
           {error && (
-            <FadeIn>
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-4" />
-                  <p className="text-red-600 mb-4">{error}</p>
-                  <Button onClick={() => window.location.reload()}>
-                    Tentar Novamente
-                  </Button>
-                </CardContent>
-              </Card>
-            </FadeIn>
+            <Card>
+              <CardContent className="p-8 text-center">
+                <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-4" />
+                <p className="text-red-600 mb-4">{error}</p>
+                <Button onClick={() => window.location.reload()}>
+                  Tentar Novamente
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Abas de Filtro */}
+          {!loading && !error && favorites.length > 0 && (
+            <div className="mb-6">
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 rounded-lg">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    activeTab === 'all'
+                      ? 'bg-white text-red-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Todos</span>
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {stats.totalFavorites}
+                  </Badge>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('professionals')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    activeTab === 'professionals'
+                      ? 'bg-white text-red-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Briefcase className="h-4 w-4" />
+                  <span>Profissionais</span>
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {stats.professionalFavorites}
+                  </Badge>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('clients')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                    activeTab === 'clients'
+                      ? 'bg-white text-red-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Clientes</span>
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {stats.clientFavorites}
+                  </Badge>
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Lista de Favoritos */}
           {!loading && !error && (
             <>
               {favorites.length === 0 ? (
-                <FadeIn>
-                  <Card>
-                    <CardContent className="p-8 text-center">
-                      <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        Nenhum favorito ainda
-                      </h3>
-                      <p className="text-gray-600 mb-6">
-                        Comece adicionando pessoas aos seus favoritos para encontrá-las facilmente depois.
-                      </p>
-                      <Button asChild>
-                        <a href="/buscar">Buscar Profissionais</a>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </FadeIn>
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      Nenhum favorito ainda
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      Comece adicionando pessoas aos seus favoritos para encontrá-las facilmente depois.
+                    </p>
+                    <Button asChild>
+                      <a href="/buscar">Buscar Profissionais</a>
+                    </Button>
+                  </CardContent>
+                </Card>
               ) : (
-                <Tabs defaultValue="all" className="space-y-6">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="all" className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Todos ({stats.totalFavorites})
-                    </TabsTrigger>
-                    <TabsTrigger value="professionals" className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4" />
-                      Profissionais ({stats.professionalFavorites})
-                    </TabsTrigger>
-                    <TabsTrigger value="clients" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Clientes ({stats.clientFavorites})
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="all" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {favorites.map((favorite, index) => (
-                        <FadeIn key={favorite.id} delay={index * 0.1}>
-                          <Card className="hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6">
-                              <div className="flex items-start gap-4 mb-4">
-                                <UserAvatar
-                                  src={favorite.professional?.avatar_url}
-                                  alt={favorite.professional?.full_name}
-                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
-                                  size="md"
-                                  className="w-12 h-12"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.professional?.full_name}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge 
-                                      variant="outline" 
-                                      className="text-xs capitalize"
-                                    >
-                                      {favorite.professional?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                    </Badge>
-                                    {favorite.professional?.is_verified && (
-                                      <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
-                                        Verificado
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <FavoriteButton 
-                                  userId={favorite.professional?.id || ''}
-                                  userName={favorite.professional?.full_name || ''}
-                                  size="sm"
-                                  variant="ghost"
-                                />
-                              </div>
-
-                              {favorite.professional?.bio && (
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.professional.bio}
-                                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {getFilteredFavorites().map((favorite) => (
+                    <Card 
+                      key={favorite.id} 
+                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+                        favorite.professional?.user_type === 'professional' 
+                          ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' 
+                          : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                      }`}
+                    >
+                      <CardContent className="p-3 sm:p-4">
+                        {/* Header do Card com Avatar e Info do Usuário */}
+                        <div className="flex items-start space-x-3 mb-3">
+                          <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
+                            <AvatarImage src={favorite.professional?.avatar_url} />
+                            <AvatarFallback className={`font-medium ${
+                              favorite.professional?.user_type === 'professional' 
+                                ? 'bg-blue-100 text-blue-700' 
+                                : 'bg-green-100 text-green-700'
+                            }`}>
+                              {favorite.professional?.full_name?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate">
+                              {favorite.professional?.full_name}
+                            </h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge 
+                                variant={favorite.professional?.user_type === 'professional' ? 'default' : 'secondary'}
+                                className={`text-xs ${
+                                  favorite.professional?.user_type === 'professional' 
+                                    ? 'bg-blue-600 hover:bg-blue-700' 
+                                    : 'bg-green-600 hover:bg-green-700'
+                                }`}
+                              >
+                                {favorite.professional?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                              </Badge>
+                              {favorite.professional?.is_verified && (
+                                <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                  Verificado
+                                </Badge>
                               )}
+                            </div>
+                          </div>
+                          <FavoriteButton 
+                            userId={favorite.professional?.id || ''}
+                            userName={favorite.professional?.full_name || ''}
+                            size="sm"
+                            variant="ghost"
+                          />
+                        </div>
 
-                              <div className="space-y-2 mb-4">
-                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>
-                                      {favorite.professional?.location_city}
-                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
-                                      {favorite.professional?.location_state}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>Favoritado em {formatDate(favorite.created_at)}</span>
-                                </div>
-
-                                {favorite.professional?.user_type === 'professional' && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <Star className="h-4 w-4" />
-                                    <div className="flex items-center gap-1">
-                                      <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>
-                                      <div className="flex">{renderStars(favorite.professional?.rating || 0)}</div>
-                                      <span>({favorite.professional?.total_reviews})</span>
-                                    </div>
-                                  </div>
-                                )}
+                        {/* Conteúdo do Card */}
+                        <div className="mb-3">
+                          {favorite.professional?.bio && (
+                            <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                              {favorite.professional.bio}
+                            </p>
+                          )}
+                          
+                          <div className="space-y-1">
+                            {(favorite.professional?.location_city || favorite.professional?.location_state) && (
+                              <div className="flex items-center text-xs text-gray-500">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {favorite.professional?.location_city}
+                                {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
+                                {favorite.professional?.location_state}
                               </div>
+                            )}
 
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Ver Perfil
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
-                                >
-                                  <MessageCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </FadeIn>
-                      ))}
-                    </div>
-                  </TabsContent>
+                            <div className="flex items-center text-xs text-gray-500">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Favoritado em {formatDate(favorite.created_at)}
+                            </div>
 
-                  <TabsContent value="professionals" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {professionalFavorites.map((favorite, index) => (
-                        <FadeIn key={favorite.id} delay={index * 0.1}>
-                          <Card className="hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6">
-                              <div className="flex items-start gap-4 mb-4">
-                                <UserAvatar
-                                  src={favorite.professional?.avatar_url}
-                                  alt={favorite.professional?.full_name}
-                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
-                                  size="md"
-                                  className="w-12 h-12"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.professional?.full_name}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge className={`${getBadgeColor(favorite.professional?.badge || 'bronze')} text-xs`}>
-                                      {getBadgeName(favorite.professional?.badge || 'bronze')}
-                                    </Badge>
-                                    {favorite.professional?.is_verified && (
-                                      <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
-                                        Verificado
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <FavoriteButton 
-                                  userId={favorite.professional?.id || ''}
-                                  userName={favorite.professional?.full_name || ''}
-                                  size="sm"
-                                  variant="ghost"
-                                />
-                              </div>
-
-                              {favorite.professional?.bio && (
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.professional.bio}
-                                </p>
-                              )}
-
-                              {favorite.professional?.professional_services && favorite.professional.professional_services.length > 0 && (
-                                <div className="mb-3">
-                                  <div className="flex flex-wrap gap-1">
-                                    {favorite.professional.professional_services.slice(0, 3).map((service, idx) => (
-                                      <Badge key={idx} variant="outline" className="text-xs">
-                                        {service}
-                                      </Badge>
-                                    ))}
-                                    {favorite.professional.professional_services.length > 3 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        +{favorite.professional.professional_services.length - 3}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="space-y-2 mb-4">
-                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>
-                                      {favorite.professional?.location_city}
-                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
-                                      {favorite.professional?.location_state}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                  <Star className="h-4 w-4" />
-                                  <div className="flex items-center gap-1">
-                                    <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>
-                                    <div className="flex">{renderStars(favorite.professional?.rating || 0)}</div>
-                                    <span>({favorite.professional?.total_reviews})</span>
-                                  </div>
+                            {favorite.professional?.user_type === 'professional' && (
+                              <div className="flex items-center text-xs text-gray-500">
+                                <Star className="h-3 w-3 mr-1" />
+                                <div className="flex items-center gap-1">
+                                  <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>
+                                  <div className="flex">{renderStars(favorite.professional?.rating || 0)}</div>
+                                  <span>({favorite.professional?.total_reviews})</span>
                                 </div>
                               </div>
+                            )}
+                          </div>
+                        </div>
 
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Ver Perfil
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
-                                >
-                                  <MessageCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </FadeIn>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="clients" className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {clientFavorites.map((favorite, index) => (
-                        <FadeIn key={favorite.id} delay={index * 0.1}>
-                          <Card className="hover:shadow-lg transition-shadow">
-                            <CardContent className="p-6">
-                              <div className="flex items-start gap-4 mb-4">
-                                <UserAvatar
-                                  src={favorite.professional?.avatar_url}
-                                  alt={favorite.professional?.full_name}
-                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
-                                  size="md"
-                                  className="w-12 h-12"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">
-                                    {favorite.professional?.full_name}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      Cliente
-                                    </Badge>
-                                    {favorite.professional?.is_verified && (
-                                      <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
-                                        Verificado
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <FavoriteButton 
-                                  userId={favorite.professional?.id || ''}
-                                  userName={favorite.professional?.full_name || ''}
-                                  size="sm"
-                                  variant="ghost"
-                                />
-                              </div>
-
-                              {favorite.professional?.bio && (
-                                <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                                  {favorite.professional.bio}
-                                </p>
-                              )}
-
-                              <div className="space-y-2 mb-4">
-                                {(favorite.professional?.location_city || favorite.professional?.location_state) && (
-                                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>
-                                      {favorite.professional?.location_city}
-                                      {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
-                                      {favorite.professional?.location_state}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="flex items-center gap-2 text-sm text-gray-500">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>Favoritado em {formatDate(favorite.created_at)}</span>
-                                </div>
-                              </div>
-
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  className="flex-1"
-                                  onClick={() => handleViewProfile(favorite.professional?.id || '')}
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Ver Perfil
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
-                                >
-                                  <MessageCircle className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </FadeIn>
-                      ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
+                        {/* Footer do Card */}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleViewProfile(favorite.professional?.id || '')}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Perfil
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
+                            className={`${
+                              favorite.professional?.user_type === 'professional' 
+                                ? 'bg-blue-600 hover:bg-blue-700' 
+                                : 'bg-green-600 hover:bg-green-700'
+                            } text-white`}
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </>
           )}
         </div>
-      </PageTransition>
+      </div>
     </MainLayout>
   )
 }

@@ -105,7 +105,7 @@ export default function DashboardPage() {
     const now = new Date()
     const time = new Date(timestamp)
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
-    
+
     if (diffInMinutes < 1) return 'Agora'
     if (diffInMinutes < 60) return `${diffInMinutes}min atrás`
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h atrás`
@@ -127,9 +127,9 @@ export default function DashboardPage() {
   return (
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto p-3">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6">
           {/* Header da Página */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
@@ -154,9 +154,9 @@ export default function DashboardPage() {
           </div>
 
           {/* Estatísticas Principais - Cards Pequenos */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 justify-items-center">
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardContent className="p-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 h-full">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-blue-700 mb-1">Visualizações</p>
@@ -178,9 +178,9 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardContent className="p-3">
+
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200 h-full">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-green-700 mb-1">Contatos</p>
@@ -202,9 +202,9 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-              <CardContent className="p-3">
+
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 h-full">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-yellow-700 mb-1">Avaliações</p>
@@ -221,16 +221,16 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardContent className="p-3">
+
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 h-full">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-purple-700 mb-1">
                       {profile?.user_type === 'professional' ? 'Serviços' : 'Acordos'}
                     </p>
                     <p className="text-xl font-bold text-purple-900">
-                      {profile?.user_type === 'professional' 
+                      {profile?.user_type === 'professional'
                         ? (metrics?.professionalMetrics?.totalServices || 0)
                         : (metrics?.clientMetrics?.totalAgreements || 0)
                       }
@@ -246,9 +246,9 @@ export default function DashboardPage() {
 
           {/* Métricas Específicas por Tipo de Usuário */}
           {profile?.user_type === 'professional' && metrics?.professionalMetrics && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4 justify-items-center">
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-blue-700 mb-1">Acordos Ativos</p>
@@ -262,9 +262,9 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-3">
+
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-green-700 mb-1">Concluídos</p>
@@ -278,9 +278,9 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-3">
+
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-purple-700 mb-1">Total</p>
@@ -298,9 +298,9 @@ export default function DashboardPage() {
           )}
 
           {profile?.user_type === 'client' && metrics?.clientMetrics && (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-4 justify-items-center">
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-blue-700 mb-1">Acordos Ativos</p>
@@ -314,9 +314,9 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-3">
+
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-green-700 mb-1">Concluídos</p>
@@ -330,9 +330,9 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                <CardContent className="p-3">
+
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-red-50 to-red-100 border-red-200 h-full">
+                <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs font-medium text-red-700 mb-1">Profissionais</p>
@@ -350,12 +350,12 @@ export default function DashboardPage() {
           )}
 
           {/* Ações Rápidas */}
-          <div className="mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">Ações Rápidas</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 justify-items-center">
+          <div className="mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Ações Rápidas</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Link href="/editarperfil">
-                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-3">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border-green-200 h-full">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="p-2 bg-green-200 rounded-full">
                         <User className="h-4 w-4 text-green-700" />
@@ -370,8 +370,8 @@ export default function DashboardPage() {
 
               {profile?.user_type === 'professional' && (
                 <Link href="/portfolio">
-                  <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                    <CardContent className="p-3">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 h-full">
+                  <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="p-2 bg-purple-200 rounded-full">
                           <Briefcase className="h-4 w-4 text-purple-700" />
@@ -386,8 +386,8 @@ export default function DashboardPage() {
               )}
 
               <Link href="/avaliacoes">
-                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                  <CardContent className="p-3">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 h-full">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="p-2 bg-yellow-200 rounded-full">
                         <Star className="h-4 w-4 text-yellow-700" />
@@ -401,8 +401,8 @@ export default function DashboardPage() {
               </Link>
 
               <Link href="/buscar">
-                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                  <CardContent className="p-3">
+                <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 h-full">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="p-2 bg-blue-200 rounded-full">
                         <Zap className="h-4 w-4 text-blue-700" />
@@ -421,8 +421,8 @@ export default function DashboardPage() {
 
           {/* Atividade Recente */}
           {metrics?.recentActivity && metrics.recentActivity.length > 0 && (
-            <div className="mb-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">Atividade Recente</h2>
+            <div className="mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Atividade Recente</h2>
               <Card>
                 <CardContent className="p-4">
                   <div className="space-y-3">
@@ -455,11 +455,11 @@ export default function DashboardPage() {
           )}
 
           {/* Informações do Perfil */}
-          <div className="mb-4">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3">Informações do Perfil</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 justify-items-center">
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
-                <CardContent className="p-3">
+          <div className="mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Informações do Perfil</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 h-full">
+                <CardContent className="p-4">
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <div className="p-1 bg-gray-200 rounded-full">
@@ -498,8 +498,8 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
-                <CardContent className="p-3">
+              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200 h-full">
+                <CardContent className="p-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-indigo-600 font-medium">Badge</span>

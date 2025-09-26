@@ -5,6 +5,16 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
+// Função helper para usar o contexto de disponibilidade de forma opcional
+const useAvailabilityContextOptional = () => {
+  try {
+    const { useAvailabilityContext } = require('@/contexts/AvailabilityContext')
+    return useAvailabilityContext()
+  } catch {
+    return null
+  }
+}
+
 export interface AvailabilityState {
   isAvailable: boolean
   loading: boolean
@@ -13,6 +23,7 @@ export interface AvailabilityState {
 
 export const useAvailability = () => {
   const { user, profile } = useAuthContext()
+  const availabilityContext = useAvailabilityContextOptional()
   const [state, setState] = useState<AvailabilityState>({
     isAvailable: false,
     loading: true,
@@ -58,6 +69,11 @@ export const useAvailability = () => {
         isAvailable: newAvailability,
         loading: false
       }))
+
+      // Atualizar contexto global se disponível
+      if (availabilityContext && user) {
+        availabilityContext.updateUserAvailability(user.id, newAvailability)
+      }
 
       // Mostrar mensagem de feedback com tema moderno
       if (newAvailability) {
@@ -144,6 +160,11 @@ export const useAvailability = () => {
         isAvailable: available,
         loading: false
       }))
+
+      // Atualizar contexto global se disponível
+      if (availabilityContext && user) {
+        availabilityContext.updateUserAvailability(user.id, available)
+      }
 
       // Mostrar mensagem de feedback com tema moderno
       if (available) {
