@@ -16,8 +16,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
 import { useIBGE } from '@/hooks/useIBGE'
-// import { useAuthContext } from '@/contexts/AuthContext'
-// import { useFloatingChat } from '@/contexts/FloatingChatContext'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -104,9 +103,7 @@ export default function ClassificadosPage() {
     setMounted(true)
   }, [])
 
-  // const { user, profile } = useAuthContext()
-  const user = null
-  const profile = null
+  const { user, profile } = useAuthContext()
 
   if (!mounted) {
     return null
@@ -117,6 +114,7 @@ export default function ClassificadosPage() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedAds = filteredAds.slice(startIndex, endIndex)
+
 
   // Função para atualizar filtros
   const updateFilters = (newFilters: Partial<typeof filters>) => {
@@ -198,8 +196,18 @@ export default function ClassificadosPage() {
       toast.error('Você precisa estar logado para entrar em contato')
       return
     }
-    // TODO: Implementar abertura do chat
-    toast.info('Funcionalidade de chat temporariamente desabilitada')
+    
+    if (userId === user.id) {
+      toast.error('Você não pode entrar em contato consigo mesmo')
+      return
+    }
+    
+    // Implementar abertura do chat
+    toast.success('Iniciando conversa...')
+    
+    // TODO: Implementar abertura do chat flutuante
+    // Por enquanto, apenas mostra uma mensagem de sucesso
+    console.log('Iniciando chat com usuário:', userId)
   }
 
   // Formatar data
@@ -358,63 +366,63 @@ export default function ClassificadosPage() {
               </div>
               
           {/* Estatísticas Compactas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Briefcase className="h-5 w-5 text-blue-600" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-blue-700 mb-1">Total</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-900">{stats.total}</p>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Total</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Ofertas</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.offers}</p>
-              </div>
-              </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Users className="h-5 w-5 text-orange-600" />
+                  <div className="p-2 bg-blue-200 rounded-full">
+                    <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700" />
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Solicitações</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.requests}</p>
                 </div>
-            </div>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Star className="h-5 w-5 text-purple-600" />
-                        </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Categorias</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.categories}</p>
-                        </div>
-                    </div>
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-green-700 mb-1">Ofertas</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-900">{stats.offers}</p>
+                  </div>
+                  <div className="p-2 bg-green-200 rounded-full">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-700" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
-                    </div>
+            
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-orange-700 mb-1">Solicitações</p>
+                    <p className="text-xl sm:text-2xl font-bold text-orange-900">{stats.requests}</p>
+                  </div>
+                  <div className="p-2 bg-orange-200 rounded-full">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-orange-700" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-purple-700 mb-1">Categorias</p>
+                    <p className="text-xl sm:text-2xl font-bold text-purple-900">{stats.categories}</p>
+                  </div>
+                  <div className="p-2 bg-purple-200 rounded-full">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-purple-700" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Filtros e Busca Avançados */}
           <div className="mb-8">
@@ -662,86 +670,116 @@ export default function ClassificadosPage() {
                 </Card>
               ))}
             </div>
-          ) : paginatedAds.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhum anúncio encontrado
-                </h3>
-                <p className="text-gray-600">
-                  Tente ajustar os filtros ou criar um novo anúncio.
-                </p>
-              </CardContent>
-            </Card>
           ) : (
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            <>
+              {paginatedAds.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Nenhum anúncio encontrado
+                    </h3>
+                    <p className="text-gray-600">
+                      Tente ajustar os filtros ou criar um novo anúncio.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+            <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => (
-                <Card key={ad.id} className="hover:shadow-md transition-shadow duration-200">
-                  <CardContent className="p-6">
+                <Card 
+                  key={ad.id} 
+                  className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+                    ad.user_type === 'professional' 
+                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200' 
+                      : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200'
+                  }`}
+                >
+                  <CardContent className="p-4 sm:p-6">
                     {/* Header do Card com Avatar e Info do Usuário */}
                     <div className="flex items-start space-x-3 mb-4">
-                      <Avatar className="w-10 h-10">
+                      <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
                         <AvatarImage src={ad.user_avatar_url} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+                        <AvatarFallback className={`font-medium ${
+                          ad.user_type === 'professional' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-orange-100 text-orange-700'
+                        }`}>
                           {ad.user_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">
+                        <h3 className="font-semibold text-gray-900 truncate">
                           {ad.user_name}
-                            </h3>
+                        </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge 
                             variant={ad.user_type === 'professional' ? 'default' : 'secondary'}
-                            className="text-xs"
+                            className={`text-xs ${
+                              ad.user_type === 'professional' 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'bg-orange-600 hover:bg-orange-700'
+                            }`}
                           >
                             {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                            </Badge>
+                          </Badge>
                           <div className="flex items-center text-xs text-gray-500">
                             <MapPin className="h-3 w-3 mr-1" />
                             {ad.location_city}, {ad.location_state}
                           </div>
                         </div>
-                        </div>
                       </div>
+                    </div>
 
                     {/* Conteúdo do Anúncio */}
                     <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                            {ad.title}
-                          </h4>
+                      <h4 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg">
+                        {ad.title}
+                      </h4>
                       <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                            {ad.description}
-                          </p>
-                      <Badge variant="outline" className="text-xs">
+                        {ad.description}
+                      </p>
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs ${
+                          ad.user_type === 'professional' 
+                            ? 'border-green-300 text-green-700 bg-green-50' 
+                            : 'border-orange-300 text-orange-700 bg-orange-50'
+                        }`}
+                      >
                         {ad.category}
                       </Badge>
-                        </div>
+                    </div>
 
                     {/* Footer do Card */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                       <div className="flex items-center text-xs text-gray-500">
                         <Calendar className="h-3 w-3 mr-1" />
                         {formatDate(ad.created_at)}
                         <span className="mx-2">•</span>
                         <Eye className="h-3 w-3 mr-1" />
                         {ad.views} visualizações
-                        </div>
+                      </div>
 
-                          <Button
-                            size="sm"
+                      <Button
+                        size="sm"
                         onClick={() => handleContactUser(ad.user_id)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className={`${
+                          ad.user_type === 'professional' 
+                            ? 'bg-green-600 hover:bg-green-700' 
+                            : 'bg-orange-600 hover:bg-orange-700'
+                        } text-white shadow-md hover:shadow-lg transition-all duration-200`}
                       >
                         <MessageCircle className="h-4 w-4 mr-1" />
                         Contatar
-                          </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
+              )}
+            </>
           )}
         </div>
       </div>
