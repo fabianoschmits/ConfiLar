@@ -52,7 +52,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
-        postsQuery = postsQuery.or(`content.ilike.%${filters.search}%,user.full_name.ilike.%${filters.search}%`)
+        postsQuery = postsQuery.or(`content.ilike.%${filters.search}%,user.full_name.ilike.%${filters.search}%,service_category.ilike.%${filters.search}%`)
       }
 
       const { data: posts, error: postsError } = await postsQuery

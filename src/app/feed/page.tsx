@@ -22,6 +22,8 @@ import { NewPostForm } from '@/components/timeline/NewPostForm'
 import { Modal } from '@/components/ui/modal'
 import { TrendingPosts } from '@/components/timeline/TrendingPosts'
 import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
+import { services, getCategories } from '@/data/services'
+import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -68,18 +70,10 @@ export default function FeedPage() {
   // Notificações inteligentes
   const { notifications, unreadCount } = useSmartNotifications()
 
+  // Usar categorias reais dos serviços
   const categories = [
     { id: 'all', name: 'Todos' },
-    { id: 'Construção e Reforma', name: 'Construção e Reforma' },
-    { id: 'Limpeza', name: 'Limpeza' },
-    { id: 'Tecnologia', name: 'Tecnologia' },
-    { id: 'Beleza', name: 'Beleza' },
-    { id: 'Transporte', name: 'Transporte' },
-    { id: 'Educação', name: 'Educação' },
-    { id: 'Saúde', name: 'Saúde' },
-    { id: 'Eventos', name: 'Eventos' },
-    { id: 'Jardinagem', name: 'Jardinagem' },
-    { id: 'Pet Care', name: 'Pet Care' }
+    ...getCategories().map(category => ({ id: category, name: category }))
   ]
 
 
@@ -122,7 +116,7 @@ export default function FeedPage() {
     console.log('Compartilhar post:', postId)
   }
 
-  const handleNewPost = async (postData: { title: string; description: string; images: string[]; category: string }) => {
+  const handleNewPost = async (postData: { title: string; description: string; images: string[]; service: string }) => {
     setIsPosting(true)
     try {
       await addPost({
@@ -134,7 +128,7 @@ export default function FeedPage() {
         title: postData.title,
         description: postData.description,
         images: postData.images,
-        service_category: postData.category,
+        service_category: postData.service,
         location_state: profile?.location_state,
         location_city: profile?.location_city,
         likes_count: 0,
@@ -250,7 +244,7 @@ export default function FeedPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Buscar posts, usuários ou palavras-chave..."
+              placeholder="Buscar posts, usuários, serviços ou palavras-chave..."
               value={filters.search || ''}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               className="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
