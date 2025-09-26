@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Plus, Filter, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Filter, Loader2, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
 import { useUnifiedTimelineMock } from '@/hooks/useUnifiedTimelineMock'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
@@ -30,7 +30,7 @@ export default function FeedPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<TimelineFilters>({
     category: 'all',
-    user_type: 'all'
+    search: ''
   })
   
   // Estados para formulário de novo post
@@ -41,7 +41,7 @@ export default function FeedPage() {
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
 
   // Hook da timeline unificada
-  // Usar dados mock para demonstração
+  // Usar dados reais do Supabase
   const {
     items,
     isLoading,
@@ -51,20 +51,20 @@ export default function FeedPage() {
     isFetchingNextPage,
     likePost,
     addPost
-  } = useUnifiedTimelineMock(filters)
+  } = useUnifiedTimeline(filters)
 
   // Realtime para timeline
   useTimelineRealtime()
 
-  // Ranking de posts em alta (mock)
-  const { trendingPosts } = usePostRankingMock({
+  // Ranking de posts em alta
+  const { trendingPosts } = usePostRanking({
     location_city: profile?.location_city,
     location_state: profile?.location_state,
     limit: 5
   })
 
-  // Notificações inteligentes (mock)
-  const { notifications, unreadCount } = useSmartNotificationsMock()
+  // Notificações inteligentes
+  const { notifications, unreadCount } = useSmartNotifications()
 
   const categories = [
     { id: 'all', name: 'Todos' },
@@ -80,11 +80,6 @@ export default function FeedPage() {
     { id: 'Pet Care', name: 'Pet Care' }
   ]
 
-  const userTypes = [
-    { id: 'all', name: 'Todos os usuários' },
-    { id: 'professional', name: 'Profissionais' },
-    { id: 'client', name: 'Clientes' }
-  ]
 
   useEffect(() => {
     setMounted(true)
@@ -239,6 +234,20 @@ export default function FeedPage() {
           </Button>
         </div>
 
+        {/* Campo de Busca */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Buscar posts, usuários ou palavras-chave..."
+              value={filters.search || ''}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              className="w-full pl-10 pr-4 py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+        </div>
+
         {/* Filtros Colapsáveis */}
         {showFilters && (
           <div className="mb-8 animate-in slide-in-from-top-2 duration-200">
@@ -247,48 +256,21 @@ export default function FeedPage() {
                 <Filter className="h-5 w-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Categorias</label>
-                  <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Categoria</label>
+                  <select
+                    value={filters.category || 'all'}
+                    onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  >
                     {categories.map((category) => (
-                      <Button
-                        key={category.id}
-                        variant={filters.category === category.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilters({ ...filters, category: category.id })}
-                        className={`whitespace-nowrap transition-all duration-200 ${
-                          filters.category === category.id 
-                            ? 'bg-blue-600 text-white shadow-lg' 
-                            : 'hover:bg-blue-50 hover:border-blue-300'
-                        }`}
-                      >
+                      <option key={category.id} value={category.id}>
                         {category.name}
-                      </Button>
+                      </option>
                     ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Tipo de Usuário</label>
-                  <div className="flex items-center space-x-2">
-                    {userTypes.map((userType) => (
-                      <Button
-                        key={userType.id}
-                        variant={filters.user_type === userType.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setFilters({ ...filters, user_type: userType.id as any })}
-                        className={`whitespace-nowrap transition-all duration-200 ${
-                          filters.user_type === userType.id 
-                            ? 'bg-blue-600 text-white shadow-lg' 
-                            : 'hover:bg-blue-50 hover:border-blue-300'
-                        }`}
-                      >
-                        {userType.name}
-                      </Button>
-                    ))}
-                  </div>
+                  </select>
                 </div>
               </div>
             </div>
