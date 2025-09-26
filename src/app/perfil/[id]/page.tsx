@@ -155,9 +155,7 @@ export default function PublicProfilePage() {
                     total_reviews,
                     is_verified,
                     is_available,
-                    created_at,
-                    phone,
-                    email
+                    created_at
                 `)
                 .eq('id', userId)
                 .single()

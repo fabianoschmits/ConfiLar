@@ -68,7 +68,7 @@ export function useDashboardMetrics() {
       setLoading(true)
       setError(null)
 
-      // Buscar métricas básicas do perfil
+      // Buscar métricas básicas do perfil (otimizado)
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('rating, total_reviews, is_verified, badge')
@@ -83,18 +83,18 @@ export function useDashboardMetrics() {
       const viewStats = await getViewStats(user.id)
       const viewsCount = viewStats?.total_views || 0
       
-      // Buscar contatos/mensagens
+      // Buscar contatos/mensagens (otimizado)
       const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select('id, created_at')
+        .select('id')
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
 
       const contactsCount = messagesData?.length || 0
 
-      // Buscar avaliações
+      // Buscar avaliações (otimizado)
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
-        .select('id, rating_person, created_at')
+        .select('id, rating_person')
         .eq('reviewed_id', user.id)
 
       const reviewsCount = reviewsData?.length || 0
@@ -188,13 +188,13 @@ export function useDashboardMetrics() {
     const activities = []
 
     try {
-      // Buscar mensagens recentes
+      // Buscar mensagens recentes (otimizado)
       const { data: recentMessages } = await supabase
         .from('messages')
-        .select('id, content, created_at, sender_id, receiver_id')
+        .select('id, content, created_at')
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false })
-        .limit(5)
+        .limit(3) // Reduzir para 3 mensagens
 
       recentMessages?.forEach(message => {
         activities.push({
@@ -207,13 +207,13 @@ export function useDashboardMetrics() {
         })
       })
 
-      // Buscar avaliações recentes
+      // Buscar avaliações recentes (otimizado)
       const { data: recentReviews } = await supabase
         .from('reviews')
         .select('id, rating_person, comment, created_at')
         .eq('reviewed_id', userId)
         .order('created_at', { ascending: false })
-        .limit(3)
+        .limit(2) // Reduzir para 2 avaliações
 
       recentReviews?.forEach(review => {
         activities.push({
@@ -226,13 +226,13 @@ export function useDashboardMetrics() {
         })
       })
 
-      // Buscar acordos recentes
+      // Buscar acordos recentes (otimizado)
       const { data: recentAgreements } = await supabase
         .from('contact_agreements')
         .select('id, status, service_description, created_at')
         .or(`client_id.eq.${userId},professional_id.eq.${userId}`)
         .order('created_at', { ascending: false })
-        .limit(3)
+        .limit(2) // Reduzir para 2 acordos
 
       recentAgreements?.forEach(agreement => {
         activities.push({

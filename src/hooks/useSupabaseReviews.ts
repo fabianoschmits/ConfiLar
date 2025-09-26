@@ -50,7 +50,12 @@ export function useSupabaseReviews() {
       const { data, error } = await supabase
         .from('reviews')
         .select(`
-          *,
+          id,
+          reviewer_id,
+          reviewed_id,
+          rating_person,
+          comment,
+          created_at,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
             full_name,
@@ -66,13 +71,14 @@ export function useSupabaseReviews() {
         `)
         .eq(column, userId)
         .order('created_at', { ascending: false })
+        .limit(20) // Limitar a 20 avaliações por vez
 
       console.log('📊 Hook useSupabaseReviews - Query executada:', { column, userId })
       console.log('📊 Hook useSupabaseReviews - Dados retornados:', data?.length || 0)
       console.log('📊 Hook useSupabaseReviews - Erro:', error)
 
       if (error) throw error
-      setReviews(data || [])
+      setReviews(data as any || [])
     } catch (err) {
       console.error('Erro ao buscar avaliações:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')

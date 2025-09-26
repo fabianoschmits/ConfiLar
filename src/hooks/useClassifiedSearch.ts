@@ -52,21 +52,38 @@ export function useClassifiedSearch() {
     try {
       setLoading(true)
       
-      // Buscar anúncios (sem join para evitar erro 400)
+      // Buscar anúncios (otimizado)
       const { data, error } = await supabase
         .from('classified_ads')
-        .select('*')
+        .select(`
+          id,
+          user_id,
+          user_name,
+          user_type,
+          title,
+          description,
+          category,
+          location_state,
+          location_city,
+          created_at,
+          is_active,
+          views,
+          user_avatar_url,
+          ad_type
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
+        .limit(50) // Limitar a 50 anúncios por vez
 
       if (error) throw error
 
-      // Buscar fotos dos usuários separadamente
+      // Buscar fotos dos usuários separadamente (otimizado)
       const userIds = Array.from(new Set(data?.map(ad => ad.user_id) || []))    
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('id, full_name, avatar_url, profile_photo_url')
         .in('id', userIds)
+        .limit(20) // Limitar a 20 perfis por vez
 
       const profilesMap = new Map(profilesData?.map(profile => [profile.id, profile]) || [])
 
@@ -84,7 +101,7 @@ export function useClassifiedSearch() {
           location_city: ad.location_city,
           created_at: ad.created_at,
           is_active: ad.is_active,
-          views: ad.views || ad.views_count || 0,
+          views: ad.views || 0,
           user_avatar_url: profile?.avatar_url || profile?.profile_photo_url || ad.user_avatar_url || null,
           ad_type: ad.ad_type
         }
