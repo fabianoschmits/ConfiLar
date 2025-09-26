@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
+import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 interface NewPostFormProps {
@@ -12,7 +12,7 @@ interface NewPostFormProps {
     title: string
     description: string
     images: string[]
-    category: string
+    service: string
   }) => void
   onCancel: () => void
   isLoading?: boolean
@@ -24,26 +24,13 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
     title: '',
     description: '',
     images: [] as string[],
-    category: ''
+    service: ''
   })
 
-  const categories = [
-    'Construção e Reforma',
-    'Limpeza',
-    'Tecnologia',
-    'Beleza',
-    'Transporte',
-    'Educação',
-    'Saúde',
-    'Eventos',
-    'Jardinagem',
-    'Pet Care'
-  ]
-
   const handleSubmit = () => {
-    if (post.title.trim() && post.description.trim() && post.category) {
+    if (post.title.trim() && post.description.trim() && post.service) {
       onSubmit(post)
-      setPost({ title: '', description: '', images: [], category: '' })
+      setPost({ title: '', description: '', images: [], service: '' })
     }
   }
 
@@ -59,19 +46,13 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Categoria do Serviço</label>
-          <Select value={post.category} onValueChange={(value) => setPost({ ...post, category: value })}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione uma categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Serviço</label>
+          <ServiceAutocomplete
+            value={post.service}
+            onChange={(value) => setPost({ ...post, service: value })}
+            placeholder="Selecione um serviço..."
+            disabled={isLoading}
+          />
         </div>
 
         <div>
@@ -115,7 +96,7 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
         </Button>
         <Button 
           onClick={handleSubmit} 
-          disabled={!post.title.trim() || !post.description.trim() || !post.category || isLoading}
+          disabled={!post.title.trim() || !post.description.trim() || !post.service || isLoading}
           className="min-w-[120px]"
         >
           {isLoading ? (
