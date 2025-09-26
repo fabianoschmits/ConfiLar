@@ -29,14 +29,17 @@ export default function AvaliacoesPage() {
   const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [isHowItWorksExpanded, setIsHowItWorksExpanded] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
+  const [reviewableUsers, setReviewableUsers] = useState<Array<{
+    id: string
+    name: string
+    avatar?: string
+    userType?: 'client' | 'professional'
+    timeRemaining?: number
+    reviewAvailableAt?: string
+    agreement?: any
+    canReview?: boolean
+    hasReviewed?: boolean
+  }>>([])
 
   const {
     reviews,
@@ -51,17 +54,9 @@ export default function AvaliacoesPage() {
   // Monitorar notificações de avaliação disponível
   useReviewNotificationMonitor()
 
-  const [reviewableUsers, setReviewableUsers] = useState<Array<{
-    id: string
-    name: string
-    avatar?: string
-    userType?: 'client' | 'professional'
-    timeRemaining?: number
-    reviewAvailableAt?: string
-    agreement?: any
-    canReview?: boolean
-    hasReviewed?: boolean
-  }>>([])
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const loadReviewableUsers = useCallback(async () => {
     if (!currentUser?.id) return
@@ -147,6 +142,7 @@ export default function AvaliacoesPage() {
 
     try {
       setIsLoadingData(true)
+      console.log('📊 Avaliações - Carregando avaliações para usuário:', currentUser.id)
       // Carregar avaliações recebidas
       await fetchUserReviews(currentUser.id, 'received')
       
@@ -237,6 +233,10 @@ export default function AvaliacoesPage() {
     loadReviewableUsers() // Recarregar usuários para atualizar status
   }
 
+  if (!mounted) {
+    return null
+  }
+
   if (loading || isLoadingData) {
     return (
       <MainLayout requireAuth={true}>
@@ -252,21 +252,6 @@ export default function AvaliacoesPage() {
     )
   }
 
-  if (!mounted) {
-    return (
-      <MainLayout requireAuth={true}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <div className="modern-card p-8 inline-block">
-              <h1 className="modern-heading-2 text-gray-900 mb-4">
-                Carregando...
-              </h1>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    )
-  }
 
   return (
     <MainLayout requireAuth={true}>

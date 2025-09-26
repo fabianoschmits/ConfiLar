@@ -11,12 +11,15 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
+import { Combobox } from '@/components/ui/Combobox'
 import { useIBGE } from '@/hooks/useIBGE'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -40,7 +43,10 @@ import {
   Grid3X3,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  MoreVertical,
+  Edit
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
 
@@ -50,6 +56,11 @@ export default function ClassificadosPage() {
   const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [isCreatingAd, setIsCreatingAd] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [isEditingAd, setIsEditingAd] = useState(false)
+  const [editingAdId, setEditingAdId] = useState<string | null>(null)
+  const [showAdModal, setShowAdModal] = useState(false)
+  const [selectedAd, setSelectedAd] = useState<any>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [currentPage, setCurrentPage] = useState(1)
@@ -77,6 +88,7 @@ export default function ClassificadosPage() {
   })
 
   const { estados, cidades, loading: loadingIBGE, loadCidades } = useIBGE()
+  const { openChat } = useFloatingChat()
   
   // Hook para busca de classificados
   const {
@@ -87,6 +99,12 @@ export default function ClassificadosPage() {
     executeSearch,
     loadClassifiedAds
   } = useClassifiedSearch()
+
+  // Opções de categorias para o Combobox
+  const categoryOptions = services.map(service => ({
+    value: service.name,
+    label: service.name
+  }))
 
   // Executar busca inicial
   useEffect(() => {
@@ -114,6 +132,7 @@ export default function ClassificadosPage() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedAds = filteredAds.slice(startIndex, endIndex)
+
 
 
   // Função para atualizar filtros
@@ -151,12 +170,14 @@ export default function ClassificadosPage() {
 
       const adData = {
         user_id: user.id,
+        user_name: profile?.full_name || user.email?.split('@')[0] || 'Usuário',
+        user_type: profile?.user_type || 'client',
         title: formData.title,
         description: formData.description,
         category: formData.category,
         location_state: formData.location_state,
         location_city: formData.location_city,
-        ad_type: formData.ad_type,
+        ad_type: formData.ad_type === 'offer' ? 'oferecer' : 'procurar',
         is_active: true,
         views: 0
       }
@@ -191,7 +212,7 @@ export default function ClassificadosPage() {
   }
 
   // Abrir chat com usuário
-  const handleContactUser = (userId: string) => {
+  const handleContactUser = (userId: string, userName?: string) => {
     if (!user) {
       toast.error('Você precisa estar logado para entrar em contato')
       return
@@ -202,12 +223,117 @@ export default function ClassificadosPage() {
       return
     }
     
-    // Implementar abertura do chat
+    // Abrir chat flutuante
+    openChat(userId, userName || 'Usuário')
     toast.success('Iniciando conversa...')
-    
-    // TODO: Implementar abertura do chat flutuante
-    // Por enquanto, apenas mostra uma mensagem de sucesso
-    console.log('Iniciando chat com usuário:', userId)
+  }
+
+  // Deletar anúncio
+  const handleDeleteAd = async (adId: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para deletar anúncios')
+      return
+    }
+
+    if (!confirm('Tem certeza que deseja deletar este anúncio? Esta ação não pode ser desfeita.')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('classified_ads')
+        .delete()
+        .eq('id', adId)
+        .eq('user_id', user.id) // Garantir que só o dono pode deletar
+
+      if (error) throw error
+
+      toast.success('Anúncio deletado com sucesso!')
+      
+      // Recarregar anúncios
+      await loadClassifiedAds()
+    } catch (error) {
+      console.error('Erro ao deletar anúncio:', error)
+      toast.error('Erro ao deletar anúncio')
+    }
+  }
+
+  // Editar anúncio
+  const handleEditAd = (ad: any) => {
+    setEditingAdId(ad.id)
+    setFormData({
+      title: ad.title,
+      description: ad.description,
+      category: ad.category,
+      location_state: ad.location_state,
+      location_city: ad.location_city,
+      price_range: '',
+      urgency_level: 'normal',
+      ad_type: ad.ad_type === 'oferecer' ? 'offer' : 'request'
+    })
+    setShowEditDialog(true)
+  }
+
+  // Abrir modal do anúncio
+  const handleOpenAdModal = (ad: any) => {
+    setSelectedAd(ad)
+    setShowAdModal(true)
+  }
+
+  // Salvar edição do anúncio
+  const handleSaveEdit = async () => {
+    if (!user || !editingAdId) {
+      toast.error('Erro ao editar anúncio')
+      return
+    }
+
+    if (!formData.title || !formData.description || !formData.category || !formData.ad_type) {
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    try {
+      setIsEditingAd(true)
+
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        location_state: formData.location_state,
+        location_city: formData.location_city,
+        ad_type: formData.ad_type === 'offer' ? 'oferecer' : 'procurar'
+      }
+
+      const { error } = await supabase
+        .from('classified_ads')
+        .update(updateData)
+        .eq('id', editingAdId)
+        .eq('user_id', user.id) // Garantir que só o dono pode editar
+
+      if (error) throw error
+
+      toast.success('Anúncio atualizado com sucesso!')
+      setShowEditDialog(false)
+      setEditingAdId(null)
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        location_state: '',
+        location_city: '',
+        price_range: '',
+        urgency_level: 'normal',
+        ad_type: 'offer'
+      })
+      
+      // Recarregar anúncios
+      await loadClassifiedAds()
+    } catch (error) {
+      console.error('Erro ao editar anúncio:', error)
+      toast.error('Erro ao editar anúncio')
+    } finally {
+      setIsEditingAd(false)
+    }
   }
 
   // Formatar data
@@ -237,133 +363,15 @@ export default function ClassificadosPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header da Página */}
           <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Classificados
-                </h1>
-                <p className="text-gray-600">
-                  Encontre serviços ou ofereça seus serviços profissionais
-                </p>
-            </div>
-            
-              {user && (
-                <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Novo Anúncio
-              </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Criar Novo Anúncio</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="title">Título *</Label>
-                        <Input
-                          id="title"
-                          value={formData.title}
-                          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: Preciso de um pedreiro"
-                        />
-        </div>
-
-                      <div>
-                        <Label htmlFor="description">Descrição *</Label>
-                        <Textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Descreva o que você precisa ou oferece..."
-                          rows={4}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="ad_type">Tipo de Anúncio *</Label>
-                        <Select 
-                          value={formData.ad_type} 
-                          onValueChange={(value: 'offer' | 'request') => setFormData(prev => ({ ...prev, ad_type: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o tipo de anúncio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="offer">
-                              <div className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span>Oferta - Estou oferecendo um serviço</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="request">
-                              <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-orange-600" />
-                                <span>Solicitação - Preciso de um serviço</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="category">Categoria *</Label>
-                          <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione uma categoria" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[300px] overflow-y-auto">
-                              {services.map((service) => (
-                                <SelectItem key={service.id} value={service.name}>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span>{service.name}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="state">Estado</Label>
-                          <EstadoCombobox
-                            value={formData.location_state}
-                            onValueChange={(value) => {
-                              setFormData(prev => ({ ...prev, location_state: value, location_city: '' }))
-                              if (value) loadCidades(value)
-                            }}
-                          />
-                  </div>
-                </div>
-
-                      {formData.location_state && (
-                        <div>
-                          <Label htmlFor="city">Cidade</Label>
-                          <CidadeCombobox
-                            value={formData.location_city}
-                            onValueChange={(value) => setFormData(prev => ({ ...prev, location_city: value }))}
-                            estadoSigla={formData.location_state}
-                          />
-            </div>
-          )}
-
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-                          Cancelar
-              </Button>
-                        <Button onClick={handleCreateAd} disabled={isCreatingAd}>
-                          {isCreatingAd ? 'Criando...' : 'Criar Anúncio'}
-              </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Classificados
+              </h1>
+              <p className="text-gray-600">
+                Encontre serviços ou ofereça seus serviços profissionais
+              </p>
             </div>
           </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-          </div>
-              </div>
               
           {/* Estatísticas Compactas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
@@ -518,19 +526,17 @@ export default function ClassificadosPage() {
                       {/* Categoria */}
                       <div>
                         <Label className="text-sm font-medium text-gray-700">Categoria</Label>
-                        <Select value={filters.category} onValueChange={(value) => updateFilters({ category: value })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todas as categorias" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todas as categorias</SelectItem>
-                            {services.map((service) => (
-                              <SelectItem key={service.id} value={service.name}>
-                                {service.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Combobox
+                          options={[
+                            { value: 'all', label: 'Todas as categorias' },
+                            ...categoryOptions
+                          ]}
+                          value={filters.category}
+                          onValueChange={(value) => updateFilters({ category: value })}
+                          placeholder="Todas as categorias"
+                          searchPlaceholder="Buscar categoria..."
+                          emptyMessage="Nenhuma categoria encontrada."
+                        />
                       </div>
                     </div>
 
@@ -585,68 +591,390 @@ export default function ClassificadosPage() {
               Mostrando {startIndex + 1}-{Math.min(endIndex, filteredAds.length)} de {filteredAds.length} anúncios
             </div>
             
-            {totalPages > 1 && (
-              <div className="flex items-center gap-2">
-                {/* Botão Anterior */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-
-                {/* Números das páginas */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
-                  // Mostrar no máximo 7 números: atual, 2 antes, 2 depois, primeira e última
-                  const shouldShow = 
-                    pageNumber === 1 || 
-                    pageNumber === totalPages || 
-                    (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
-
-                  if (!shouldShow) {
-                    // Mostrar reticências apenas entre intervalos
-                    if (pageNumber === currentPage - 3 || pageNumber === currentPage + 3) {
-                      return (
-                        <span key={pageNumber} className="px-2 text-gray-500">
-                          ...
-                        </span>
-                      )
-                    }
-                    return null
-                  }
-
-                  return (
-                    <Button
-                      key={pageNumber}
-                      variant={currentPage === pageNumber ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => goToPage(pageNumber)}
-                      className={`px-3 ${
-                        currentPage === pageNumber 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                          : ''
-                      }`}
-                    >
-                      {pageNumber}
+            <div className="flex items-center gap-4">
+              {/* Botão Novo Anúncio */}
+              {user && (
+                <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Novo Anúncio
                     </Button>
-                  )
-                })}
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Criar Novo Anúncio</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="title">Título *</Label>
+                        <Input
+                          id="title"
+                          value={formData.title}
+                          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Ex: Preciso de um pedreiro"
+                        />
+                      </div>
 
-                {/* Botão Próximo */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-3"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+                      <div>
+                        <Label htmlFor="description">Descrição *</Label>
+                        <Textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Descreva o que você precisa ou oferece..."
+                          rows={4}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="ad_type">Tipo de Anúncio *</Label>
+                        <Select 
+                          value={formData.ad_type} 
+                          onValueChange={(value: 'offer' | 'request') => setFormData(prev => ({ ...prev, ad_type: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo de anúncio" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="offer">
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                                <span>Oferta - Estou oferecendo um serviço</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="request">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-orange-600" />
+                                <span>Solicitação - Preciso de um serviço</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="category">Serviços *</Label>
+                          <Combobox
+                            options={categoryOptions}
+                            value={formData.category}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                            placeholder="Selecione"
+                            searchPlaceholder="Buscar categoria..."
+                            emptyMessage="Nenhuma categoria encontrada."
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="state">Estado</Label>
+                          <EstadoCombobox
+                            value={formData.location_state}
+                            onValueChange={(value) => {
+                              setFormData(prev => ({ ...prev, location_state: value, location_city: '' }))
+                              if (value) loadCidades(value)
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {formData.location_state && (
+                        <div>
+                          <Label htmlFor="city">Cidade</Label>
+                          <CidadeCombobox
+                            value={formData.location_city}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, location_city: value }))}
+                            estadoSigla={formData.location_state}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleCreateAd} disabled={isCreatingAd}>
+                          {isCreatingAd ? 'Criando...' : 'Criar Anúncio'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              {/* Dialog de Edição */}
+              <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Editar Anúncio</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-title">Título *</Label>
+                      <Input
+                        id="edit-title"
+                        value={formData.title}
+                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Ex: Preciso de um pedreiro"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-description">Descrição *</Label>
+                      <Textarea
+                        id="edit-description"
+                        value={formData.description}
+                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Descreva o que você precisa ou oferece..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-ad_type">Tipo de Anúncio *</Label>
+                      <Select 
+                        value={formData.ad_type} 
+                        onValueChange={(value: 'offer' | 'request') => setFormData(prev => ({ ...prev, ad_type: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de anúncio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="offer">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span>Oferta - Estou oferecendo um serviço</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="request">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 text-orange-600" />
+                              <span>Solicitação - Preciso de um serviço</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="edit-category">Serviços *</Label>
+                        <Combobox
+                          options={categoryOptions}
+                          value={formData.category}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                          placeholder="Selecione"
+                          searchPlaceholder="Buscar categoria..."
+                          emptyMessage="Nenhuma categoria encontrada."
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="edit-state">Estado</Label>
+                        <EstadoCombobox
+                          value={formData.location_state}
+                          onValueChange={(value) => {
+                            setFormData(prev => ({ ...prev, location_state: value, location_city: '' }))
+                            if (value) loadCidades(value)
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {formData.location_state && (
+                      <div>
+                        <Label htmlFor="edit-city">Cidade</Label>
+                        <CidadeCombobox
+                          value={formData.location_city}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, location_city: value }))}
+                          estadoSigla={formData.location_state}
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveEdit} disabled={isEditingAd}>
+                        {isEditingAd ? 'Salvando...' : 'Salvar Alterações'}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Modal de Visualização do Anúncio */}
+              <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
+                <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+                  <DialogHeader className="pb-4">
+                    <DialogTitle className="text-lg sm:text-xl font-bold leading-tight">
+                      {selectedAd?.title}
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  {selectedAd && (
+                    <div className="space-y-4 sm:space-y-6">
+                      {/* Header com Avatar e Info do Usuário */}
+                      <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md self-center sm:self-start">
+                          <AvatarImage src={selectedAd.user_avatar_url} />
+                          <AvatarFallback className={`font-medium text-sm sm:text-lg ${
+                            selectedAd.user_type === 'professional' 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-orange-100 text-orange-700'
+                          }`}>
+                            {selectedAd.user_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 w-full text-center sm:text-left">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
+                            {selectedAd.user_name}
+                          </h3>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                            <Badge 
+                              variant={selectedAd.user_type === 'professional' ? 'default' : 'secondary'}
+                              className={`text-xs ${
+                                selectedAd.user_type === 'professional' 
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-orange-600 hover:bg-orange-700'
+                              }`}
+                            >
+                              {selectedAd.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                            </Badge>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                selectedAd.user_type === 'professional' 
+                                  ? 'border-green-300 text-green-700 bg-green-50' 
+                                  : 'border-orange-300 text-orange-700 bg-orange-50'
+                              }`}
+                            >
+                              {selectedAd.category}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600">
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            {selectedAd.location_city}, {selectedAd.location_state}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Descrição Completa */}
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">Descrição</h4>
+                        <div className="prose max-w-none">
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {selectedAd.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Informações Adicionais */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                          <span>Publicado em {formatDate(selectedAd.created_at)}</span>
+                        </div>
+                        <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                          <span>{selectedAd.views} visualizações</span>
+                        </div>
+                      </div>
+
+                      {/* Botões de Ação */}
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAdModal(false)}
+                          className="w-full sm:w-auto order-2 sm:order-1"
+                        >
+                          Fechar
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setShowAdModal(false)
+                            handleContactUser(selectedAd.user_id, selectedAd.user_name)
+                          }}
+                          className={`w-full sm:w-auto order-1 sm:order-2 ${
+                            selectedAd.user_type === 'professional' 
+                              ? 'bg-green-600 hover:bg-green-700' 
+                              : 'bg-orange-600 hover:bg-orange-700'
+                          } text-white`}
+                        >
+                          <MessageCircle className="h-4 w-4 mr-2" />
+                          Entrar em Contato
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+
+              {/* Paginação */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  {/* Botão Anterior */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+
+                  {/* Números das páginas */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                    // Mostrar no máximo 7 números: atual, 2 antes, 2 depois, primeira e última
+                    const shouldShow = 
+                      pageNumber === 1 || 
+                      pageNumber === totalPages || 
+                      (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
+
+                    if (!shouldShow) {
+                      // Mostrar reticências apenas entre intervalos
+                      if (pageNumber === currentPage - 3 || pageNumber === currentPage + 3) {
+                        return (
+                          <span key={pageNumber} className="px-2 text-gray-500">
+                            ...
+                          </span>
+                        )
+                      }
+                      return null
+                    }
+
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={currentPage === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => goToPage(pageNumber)}
+                        className={`px-3 ${
+                          currentPage === pageNumber 
+                            ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                            : ''
+                        }`}
+                      >
+                        {pageNumber}
+                      </Button>
+                    )
+                  })}
+
+                  {/* Botão Próximo */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Lista de Anúncios */}
@@ -729,6 +1057,32 @@ export default function ClassificadosPage() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Menu de ações (só aparece para o dono do anúncio) */}
+                      {user && ad.user_id === user.id && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => handleEditAd(ad)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar anúncio
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteAd(ad.id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Deletar anúncio
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
 
                     {/* Conteúdo do Anúncio */}
@@ -736,7 +1090,13 @@ export default function ClassificadosPage() {
                       <h4 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg">
                         {ad.title}
                       </h4>
-                      <p className="text-gray-600 text-sm line-clamp-3 mb-3">
+                      <p 
+                        className="text-gray-600 text-sm line-clamp-3 mb-3 cursor-pointer hover:text-gray-800 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleOpenAdModal(ad)
+                        }}
+                      >
                         {ad.description}
                       </p>
                       <Badge 
@@ -761,18 +1121,18 @@ export default function ClassificadosPage() {
                         {ad.views} visualizações
                       </div>
 
-                      <Button
-                        size="sm"
-                        onClick={() => handleContactUser(ad.user_id)}
-                        className={`${
-                          ad.user_type === 'professional' 
-                            ? 'bg-green-600 hover:bg-green-700' 
-                            : 'bg-orange-600 hover:bg-orange-700'
-                        } text-white shadow-md hover:shadow-lg transition-all duration-200`}
-                      >
-                        <MessageCircle className="h-4 w-4 mr-1" />
-                        Contatar
-                      </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleContactUser(ad.user_id, ad.user_name)}
+                          className={`${
+                            ad.user_type === 'professional' 
+                              ? 'bg-green-600 hover:bg-green-700' 
+                              : 'bg-orange-600 hover:bg-orange-700'
+                          } text-white shadow-md hover:shadow-lg transition-all duration-200`}
+                        >
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          Contatar
+                        </Button>
                     </div>
                   </CardContent>
                 </Card>

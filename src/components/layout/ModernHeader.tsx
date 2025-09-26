@@ -95,9 +95,24 @@ export function ModernHeader({
 
       if (viewsError) throw viewsError
 
+      // Carregar recomendações da tabela user_recommendations
+      const { data: recommendationsData, error: recommendationsError } = await supabase
+        .from('user_recommendations')
+        .select('id')
+        .eq('recommended_id', profile.id)
+
+      if (recommendationsError) {
+        console.error('📊 Header - Erro ao carregar recomendações:', recommendationsError)
+      }
+
+      console.log('📊 Header - Avaliações carregadas:', reviewsData?.length || 0)
+      console.log('📊 Header - Dados das avaliações:', reviewsData)
+      console.log('📊 Header - Recomendações carregadas:', recommendationsData?.length || 0)
+      console.log('📊 Header - Dados das recomendações:', recommendationsData)
+
       // Calcular estatísticas
       const totalReviews = reviewsData?.length || 0
-      const totalRecommendations = reviewsData?.filter(r => r.is_recommended === true).length || 0
+      const totalRecommendations = recommendationsData?.length || 0
       const averageRating = totalReviews > 0 
         ? parseFloat((reviewsData.reduce((sum, r) => sum + r.rating_person, 0) / totalReviews).toFixed(1))
         : 0

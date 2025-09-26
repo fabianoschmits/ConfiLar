@@ -28,14 +28,21 @@ import Link from 'next/link'
 
 export default function PortfolioPage() {
   const [mounted, setMounted] = useState(false)
+  const [isAddingProject, setIsAddingProject] = useState(false)
+  const [editingProject, setEditingProject] = useState<string | null>(null)
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    category: '',
+    location: '',
+    budget_range: '',
+    images: [] as string[]
+  })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  if (!mounted) {
-    return null
-  }
 
   // const { user, profile } = useAuthContext()
   const user = null
@@ -52,17 +59,10 @@ export default function PortfolioPage() {
     getPortfolioStats 
   } = usePortfolio(user?.id)
 
-  const [isAddingProject, setIsAddingProject] = useState(false)
-  const [editingProject, setEditingProject] = useState<string | null>(null)
-  const [newProject, setNewProject] = useState({
-    title: '',
-    description: '',
-    category: '',
-    location: '',
-    budget_range: '',
-    images: [] as string[]
-  })
-  const [saving, setSaving] = useState(false)
+  // Conditional return moved here, after all hooks
+  if (!mounted) {
+    return null
+  }
 
   // Verificar se é profissional
   const isProfessional = profile?.user_type === 'professional'

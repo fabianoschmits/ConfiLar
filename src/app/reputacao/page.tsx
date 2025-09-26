@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -49,28 +49,14 @@ interface UserRecommendation {
 
 export default function ReputacaoPage() {
   const [mounted, setMounted] = useState(false)
-  const { profile: currentUser } = useAuthContext()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
   const [reviews, setReviews] = useState<UserReview[]>([])
   const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
   const [viewStats, setViewStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  
+  const { profile: currentUser } = useAuthContext()
 
-  // Carregar dados da reputação do usuário
-  useEffect(() => {
-    if (currentUser?.id && mounted) {
-      loadUserReputation()
-    }
-  }, [currentUser, mounted])
-
-  const loadUserReputation = async () => {
+  const loadUserReputation = useCallback(async () => {
     if (!currentUser?.id) return
 
     setLoading(true)
@@ -89,8 +75,43 @@ export default function ReputacaoPage() {
 
       if (reviewsError) throw reviewsError
 
-      // Carregar recomendações (filtrar da tabela reviews onde is_recommended = true)
-      const recommendationsData = reviewsData?.filter(review => (review as any).is_recommended) || []
+      console.log('📊 Avaliações carregadas:', reviewsData?.length || 0)
+      console.log('📊 Dados das avaliações:', reviewsData)
+      
+
+      // Carregar recomendações da tabela user_recommendations (igual à página de busca)
+      const { data: recommendationsData, error: recommendationsError } = await supabase
+        .from('user_recommendations')
+        .select(`
+          *,
+          recommender:profiles!user_recommendations_recommender_id_fkey(
+            id, full_name, avatar_url, user_type
+          )
+        `)
+        .eq('recommended_id', currentUser.id)
+        .order('created_at', { ascending: false })
+
+      if (recommendationsError) {
+        console.error('📊 Erro ao carregar recomendações:', recommendationsError)
+      }
+
+      console.log('📊 Recomendações carregadas da tabela user_recommendations:', recommendationsData?.length || 0)
+      console.log('📊 Dados das recomendações:', recommendationsData)
+      
+      // Mapear recomendações para o formato esperado
+      const mappedRecommendations = recommendationsData?.map(rec => ({
+        id: rec.id,
+        recommender_id: rec.recommender_id,
+        recommended_id: rec.recommended_id,
+        recommendation_type: rec.recommendation_type as 'client_to_professional' | 'professional_to_client',
+        created_at: rec.created_at || new Date().toISOString(),
+        recommender: {
+          id: rec.recommender.id,
+          full_name: rec.recommender.full_name,
+          avatar_url: rec.recommender.avatar_url,
+          user_type: rec.recommender.user_type
+        }
+      })) || []
 
       // Carregar estatísticas de visualização
       const { data: viewStatsData, error: viewStatsError } = await supabase
@@ -103,25 +124,42 @@ export default function ReputacaoPage() {
       }
 
       setReviews(reviewsData || [])
-      setRecommendations(recommendationsData)
+      setRecommendations(mappedRecommendations)
       setViewStats({ total_views: viewStatsData?.length || 0 })
     } catch (error) {
       console.error('Erro ao carregar reputação:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentUser?.id])
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Carregar dados da reputação do usuário
+  useEffect(() => {
+    if (currentUser?.id && mounted) {
+      loadUserReputation()
+    }
+  }, [currentUser, mounted, loadUserReputation])
+
+  // Conditional return moved here, after all hooks
+  if (!mounted) {
+    return null
+  }
 
   // Calcular estatísticas
   const stats = {
-    averageRating: reviews.length > 0 
-      ? parseFloat((reviews.reduce((sum, r) => sum + ((r as any).rating_person || 0), 0) / reviews.length).toFixed(1))
+    averageRating: reviews.length > 0
+      ? parseFloat((reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1))
       : 0,
     totalReviews: reviews.length,
     totalRecommendations: recommendations.length,
     totalViews: viewStats?.total_views || 0
   }
+  
+  console.log('📊 Estatísticas calculadas:', stats)
 
   const isProfessional = currentUser?.user_type === 'professional'
 
@@ -287,18 +325,18 @@ export default function ReputacaoPage() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <StarRating 
-                              rating={(review as any).rating_person || 0} 
-                              size="sm" 
+                            <StarRating
+                              rating={review.rating || 0}        
+                              size="sm"
                               variant="compact"
                               showValue={true}
                             />
                           </div>
                         </div>
                         
-                        {(review as any).comment_text && (
+                        {review.comment && (
                           <p className="text-gray-700 mt-2 bg-gray-50 p-3 rounded-md">
-                            "{(review as any).comment_text}"
+                            "{review.comment}"
                           </p>
                         )}
                       </div>

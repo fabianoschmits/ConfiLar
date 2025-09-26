@@ -9,6 +9,7 @@ import { cookies } from 'next/headers'
 import { AuthProvider } from "@/contexts/AuthContext"
 import { FloatingChatProviderSimple } from "@/contexts/FloatingChatContextSimple"
 import { NotificationProviderSimple } from "@/components/notifications/NotificationProviderSimple"
+import { AvailabilityProvider } from "@/contexts/AvailabilityContext"
 // import { AutoReauthentication } from '@/components/auth/AutoReauthentication'
 import { LoadingProvider } from "@/hooks/useLoading"
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
@@ -107,17 +108,19 @@ export default async function RootLayout({
             <LoadingProvider>
               <AuthProvider initialSession={session}>
                 {/* <AutoReauthentication> */}
-                  <NotificationProviderSimple>
-                    <FloatingChatProviderSimple>
-                      <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                        {children}
-                      </Suspense>
-                      <FloatingChatWrapper />
-                      <LoadingOverlayProvider />
-                      <Toaster position="top-right" richColors />
-                      {/* <AuthContextDebug /> */}
-                    </FloatingChatProviderSimple>
-                  </NotificationProviderSimple>
+                  <AvailabilityProvider>
+                    <NotificationProviderSimple>
+                      <FloatingChatProviderSimple>
+                        <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
+                          {children}
+                        </Suspense>
+                        <FloatingChatWrapper />
+                        <LoadingOverlayProvider />
+                        <Toaster position="top-right" richColors />
+                        {/* <AuthContextDebug /> */}
+                      </FloatingChatProviderSimple>
+                    </NotificationProviderSimple>
+                  </AvailabilityProvider>
                 {/* </AutoReauthentication> */}
               </AuthProvider>
             </LoadingProvider>

@@ -58,7 +58,16 @@ export function FloatingChat() {
   
   // Função para fazer scroll automático para o final
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  // Função para fazer scroll imediato para o final (sem animação)
+  const scrollToBottomImmediate = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' })
+    }
   }
   
   // Filtrar favoritos baseado na busca
@@ -142,6 +151,17 @@ export function FloatingChat() {
     }
   }, [selectedConversationId, conversations])
 
+  // Scroll automático quando mensagens são carregadas pela primeira vez
+  useEffect(() => {
+    if (selectedConversation && messages.length > 0) {
+      console.log('📨 Mensagens carregadas, fazendo scroll para última mensagem')
+      // Usar scroll imediato para carregamento inicial
+      setTimeout(() => {
+        scrollToBottomImmediate()
+      }, 100)
+    }
+  }, [selectedConversation?.id, messages.length])
+
   // Carregar conversas quando o chat expande
   useEffect(() => {
     if (isExpanded && user?.id) {
@@ -181,14 +201,16 @@ export function FloatingChat() {
     }
   }, [messages.length, selectedConversation, user?.id])
 
-  // Auto-scroll apenas quando uma NOVA conversa for selecionada
+
+  // Auto-scroll quando uma NOVA conversa for selecionada
   useEffect(() => {
     if (selectedConversation && selectedConversation.id !== lastConversationId) {
       console.log('🆕 Nova conversa selecionada, fazendo scroll:', selectedConversation.id)
       setLastConversationId(selectedConversation.id)
+      // Aguardar um pouco mais para garantir que as mensagens foram carregadas
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+      }, 300)
     }
   }, [selectedConversation, lastConversationId])
 
