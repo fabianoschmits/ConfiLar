@@ -3,39 +3,88 @@
 // Desabilitar SSG para esta página
 export const dynamic = 'force-dynamic'
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  Plus, 
-  Filter,
-  MapPin,
-  Star,
-  User,
-  Image as ImageIcon,
-  Send
-} from 'lucide-react'
-import { FeedPost, Profile } from '@/types/database'
-import { supabase } from '@/lib/supabase'
-import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
-
-// Posts serão carregados do Supabase
-
-// Perfis serão resolvidos do Supabase quando necessário
+import { Plus, Filter, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
+import { useUnifiedTimelineMock } from '@/hooks/useUnifiedTimelineMock'
+import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
+import { usePostRanking } from '@/hooks/usePostRanking'
+import { usePostRankingMock } from '@/hooks/usePostRankingMock'
+import { useSmartNotifications } from '@/hooks/useSmartNotifications'
+import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock'
+import { TimelinePost } from '@/components/timeline/TimelinePost'
+import { TimelineActivity } from '@/components/timeline/TimelineActivity'
+import { TimelineNotification } from '@/components/timeline/TimelineNotification'
+import { NewPostForm } from '@/components/timeline/NewPostForm'
+import { TrendingPosts } from '@/components/timeline/TrendingPosts'
+import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
   const { profile, isMockMode } = useAuthContext()
-  const [posts, setPosts] = useState<FeedPost[]>([])
+  
+  // Estados para filtros
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<TimelineFilters>({
+    category: 'all',
+    user_type: 'all'
+  })
+  
+  // Estados para formulário de novo post
+  const [showNewPostForm, setShowNewPostForm] = useState(false)
+  
+  // Estados para comentários
+  const [postComments, setPostComments] = useState<Record<string, string[]>>({})
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
+
+  // Hook da timeline unificada
+  // Usar dados mock para demonstração
+  const {
+    items,
+    isLoading,
+    error,
+    loadMore,
+    hasNextPage,
+    isFetchingNextPage,
+    likePost,
+    addPost
+  } = useUnifiedTimelineMock(filters)
+
+  // Realtime para timeline
+  useTimelineRealtime()
+
+  // Ranking de posts em alta (mock)
+  const { trendingPosts } = usePostRankingMock({
+    location_city: profile?.location_city,
+    location_state: profile?.location_state,
+    limit: 5
+  })
+
+  // Notificações inteligentes (mock)
+  const { notifications, unreadCount } = useSmartNotificationsMock()
+
+  const categories = [
+    { id: 'all', name: 'Todos' },
+    { id: 'Construção e Reforma', name: 'Construção e Reforma' },
+    { id: 'Limpeza', name: 'Limpeza' },
+    { id: 'Tecnologia', name: 'Tecnologia' },
+    { id: 'Beleza', name: 'Beleza' },
+    { id: 'Transporte', name: 'Transporte' },
+    { id: 'Educação', name: 'Educação' },
+    { id: 'Saúde', name: 'Saúde' },
+    { id: 'Eventos', name: 'Eventos' },
+    { id: 'Jardinagem', name: 'Jardinagem' },
+    { id: 'Pet Care', name: 'Pet Care' }
+  ]
+
+  const userTypes = [
+    { id: 'all', name: 'Todos os usuários' },
+    { id: 'professional', name: 'Profissionais' },
+    { id: 'client', name: 'Clientes' }
+  ]
 
   useEffect(() => {
     setMounted(true)
@@ -45,84 +94,18 @@ export default function FeedPage() {
     return null
   }
 
-  useEffect(() => {
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('feed_posts')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(50)
-
-      if (!error && data) setPosts(data as FeedPost[])
-    }
-    load()
-  }, [])
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [showNewPostForm, setShowNewPostForm] = useState(false)
-  const [newPost, setNewPost] = useState({
-    title: '',
-    description: '',
-    images: [] as string[]
-  })
-
-  // Estados para curtidas e comentários
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
-  const [postComments, setPostComments] = useState<Record<string, string[]>>({})
-  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
-
-  const categories = [
-    { id: 'all', name: 'Todos', icon: '🏠' },
-    { id: 'cat-1', name: 'Reformas', icon: '🔨' },
-    { id: 'cat-2', name: 'Limpeza', icon: '🧹' },
-    { id: 'cat-3', name: 'Tecnologia', icon: '💻' },
-    { id: 'cat-4', name: 'Beleza', icon: '💄' },
-    { id: 'cat-5', name: 'Transporte', icon: '🚗' }
-  ]
-
+  // Handlers para interações
   const handleLike = (postId: string) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
-              likes_count: likedPosts.has(postId) 
-                ? post.likes_count - 1 
-                : post.likes_count + 1 
-            }
-          : post
-      )
-    )
-    
-    setLikedPosts(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(postId)) {
-        newSet.delete(postId)
-      } else {
-        newSet.add(postId)
-      }
-      return newSet
-    })
+    likePost(postId)
   }
 
   const handleComment = (postId: string, comment: string) => {
     if (comment.trim()) {
-      // Adicionar comentário à lista
       setPostComments(prev => ({
         ...prev,
         [postId]: [...(prev[postId] || []), comment]
       }))
       
-      // Atualizar contador de comentários
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { ...post, comments_count: post.comments_count + 1 }
-            : post
-        )
-      )
-      
-      // Limpar input do comentário
       setCommentInputs(prev => ({
         ...prev,
         [postId]: ''
@@ -137,310 +120,306 @@ export default function FeedPage() {
     }))
   }
 
-  const handleCommentSubmit = (postId: string) => {
-    const comment = commentInputs[postId]
-    if (comment?.trim()) {
-      handleComment(postId, comment)
-    }
+  const handleShare = (postId: string) => {
+    // Implementar compartilhamento
+    console.log('Compartilhar post:', postId)
   }
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
-    if (diffInHours < 1) return 'Agora mesmo'
-    if (diffInHours === 1) return '1 hora atrás'
-    if (diffInHours < 24) return `${diffInHours} horas atrás`
-    
-    const diffInDays = Math.floor(diffInHours / 24)
-    if (diffInDays === 1) return '1 dia atrás'
-    return `${diffInDays} dias atrás`
+  const handleNewPost = (postData: { title: string; description: string; images: string[]; category: string }) => {
+    addPost({
+      type: 'post',
+      user_id: profile?.id || '',
+      user_name: profile?.full_name || 'Usuário',
+      user_avatar: profile?.avatar_url,
+      user_type: profile?.user_type,
+      title: postData.title,
+      description: postData.description,
+      images: postData.images,
+      location_state: profile?.location_state,
+      location_city: profile?.location_city,
+      likes_count: 0,
+      comments_count: 0,
+      is_liked: false
+    })
+    setShowNewPostForm(false)
   }
 
-  const getBadgeColor = (badge: string) => {
-    switch (badge) {
-      case 'gold': return 'bg-yellow-500 text-white'
-      case 'silver': return 'bg-gray-400 text-white'
-      case 'bronze': return 'bg-amber-600 text-white'
-      default: return 'bg-gray-500 text-white'
-    }
+  const handleNotificationAction = (url: string) => {
+    // Implementar ação da notificação
+    console.log('Ação da notificação:', url)
   }
 
-  const getBadgeText = (badge: string) => {
-    switch (badge) {
-      case 'gold': return '🥇 Ouro'
-      case 'silver': return '🥈 Prata'
-      case 'bronze': return '🥉 Bronze'
-      default: return 'Sem Badge'
+  // Verificar se um post está em alta
+  const isPostTrending = (postId: string) => {
+    return trendingPosts.some(trending => trending.id === postId)
+  }
+
+  const getTrendingReason = (postId: string) => {
+    const trending = trendingPosts.find(trending => trending.id === postId)
+    return trending?.trending_reason
+  }
+
+  // Renderizar item da timeline baseado no tipo
+  const renderTimelineItem = (item: UnifiedTimelineItem) => {
+    switch (item.type) {
+      case 'post':
+        return (
+          <TimelinePost
+            key={item.id}
+            post={item}
+            onShare={handleShare}
+            isTrending={isPostTrending(item.id)}
+            trendingReason={getTrendingReason(item.id)}
+          />
+        )
+      case 'activity':
+        return (
+          <TimelineActivity
+            key={item.id}
+            activity={item}
+          />
+        )
+      case 'notification':
+        return (
+          <TimelineNotification
+            key={item.id}
+            notification={item}
+            onAction={handleNotificationAction}
+          />
+        )
+      default:
+        return null
     }
   }
 
   return (
     <MainLayout requireAuth={true}>
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">Feed Social</h1>
-              <span className="text-sm text-gray-500">Descubra trabalhos incríveis</span>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Header Moderno */}
+        <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg">C</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Timeline ConfiLar</h1>
+                  <p className="text-sm text-gray-600">Comunidade em movimento</p>
+                </div>
+              </div>
+              {profile?.user_type === 'professional' && (
+                <Button 
+                  onClick={() => setShowNewPostForm(!showNewPostForm)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Post
+                </Button>
+              )}
             </div>
-            {profile?.user_type === 'professional' && (
-              <Button 
-                onClick={() => setShowNewPostForm(!showNewPostForm)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Post
-              </Button>
-            )}
           </div>
         </div>
-      </header>
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Filtros */}
+        <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Botão de Filtros */}
         <div className="mb-6">
-          <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="whitespace-nowrap"
-              >
-                <span className="mr-2">{category.icon}</span>
-                {category.name}
-              </Button>
-            ))}
-          </div>
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outline"
+            className="bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtros
+            {showFilters ? (
+              <ChevronUp className="h-4 w-4 ml-2" />
+            ) : (
+              <ChevronDown className="h-4 w-4 ml-2" />
+            )}
+          </Button>
         </div>
+
+        {/* Filtros Colapsáveis */}
+        {showFilters && (
+          <div className="mb-8 animate-in slide-in-from-top-2 duration-200">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-4">
+              <div className="flex items-center space-x-4 mb-4">
+                <Filter className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Categorias</label>
+                  <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                    {categories.map((category) => (
+                      <Button
+                        key={category.id}
+                        variant={filters.category === category.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilters({ ...filters, category: category.id })}
+                        className={`whitespace-nowrap transition-all duration-200 ${
+                          filters.category === category.id 
+                            ? 'bg-blue-600 text-white shadow-lg' 
+                            : 'hover:bg-blue-50 hover:border-blue-300'
+                        }`}
+                      >
+                        {category.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Tipo de Usuário</label>
+                  <div className="flex items-center space-x-2">
+                    {userTypes.map((userType) => (
+                      <Button
+                        key={userType.id}
+                        variant={filters.user_type === userType.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setFilters({ ...filters, user_type: userType.id as any })}
+                        className={`whitespace-nowrap transition-all duration-200 ${
+                          filters.user_type === userType.id 
+                            ? 'bg-blue-600 text-white shadow-lg' 
+                            : 'hover:bg-blue-50 hover:border-blue-300'
+                        }`}
+                      >
+                        {userType.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Formulário de Novo Post */}
         {showNewPostForm && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Compartilhar Trabalho</CardTitle>
-              <CardDescription>
-                Mostre aos clientes o que você é capaz de fazer
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Título do Trabalho</label>
-                <Input
-                  placeholder="Ex: Reforma de Cozinha Moderna"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Descrição</label>
-                <Input
-                  placeholder="Descreva o trabalho realizado, materiais usados, tempo de execução..."
-                  value={newPost.description}
-                  onChange={(e) => setNewPost({ ...newPost, description: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Fotos do Trabalho</label>
-                <ImageUploadFeed
-                  onImagesUpload={(imageUrls) => setNewPost({ ...newPost, images: imageUrls })}
-                  currentImages={newPost.images}
-                  maxImages={5}
-                />
-              </div>
-              <div className="flex space-x-2">
-                <Button 
-                  className="flex-1"
-                  disabled={!newPost.title.trim() || !newPost.description.trim() || newPost.images.length === 0}
-                  onClick={() => {
-                    // Simular criação de post
-                    const newPostData: FeedPost = {
-                      id: Date.now().toString(),
-                      professional_id: profile?.id || 'mock-prof',
-                      title: newPost.title,
-                      description: newPost.description,
-                      images: newPost.images,
-                      service_category_id: null,
-                      location_state: profile?.location_state || null,
-                      location_city: profile?.location_city || null,
-                      likes_count: 0,
-                      comments_count: 0,
-                      is_active: true,
-                      created_at: new Date().toISOString(),
-                      updated_at: new Date().toISOString()
-                    }
-                    setPosts([newPostData, ...posts])
-                    setNewPost({ title: '', description: '', images: [] })
-                    setShowNewPostForm(false)
-                  }}
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {newPost.images.length === 0 ? 'Adicione fotos primeiro' : 'Publicar Trabalho'}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowNewPostForm(false)}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <NewPostForm
+            onSubmit={handleNewPost}
+            onCancel={() => setShowNewPostForm(false)}
+          />
         )}
 
-        {/* Feed de Posts */}
-        <div className="space-y-6">
-          {posts.map((post) => {
-            const isLiked = likedPosts.has(post.id)
-            const postCommentsList = postComments[post.id] || []
-            const commentInput = commentInputs[post.id] || ''
+        {/* Layout com Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Timeline Principal */}
+          <div className="lg:col-span-3 space-y-6">
+            {isLoading && items.length === 0 ? (
+              <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12">
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                  <span className="ml-3 text-gray-600 font-medium">Carregando timeline...</span>
+                </div>
+              </div>
+            ) : error ? (
+              <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar timeline</h3>
+                <p className="text-gray-600 mb-4">Tente novamente em alguns instantes.</p>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  Recarregar
+                </Button>
+              </div>
+            ) : items.length === 0 ? (
+              <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum item encontrado</h3>
+                <p className="text-gray-600">Tente ajustar os filtros ou criar um novo post.</p>
+              </div>
+            ) : (
+              <>
+                {items.map(renderTimelineItem)}
+                
+                {/* Botão Carregar Mais */}
+                {hasNextPage && (
+                  <div className="flex justify-center py-6">
+                    <Button 
+                      onClick={loadMore}
+                      disabled={isFetchingNextPage}
+                      variant="outline"
+                      className="min-w-[200px] bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      {isFetchingNextPage ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Carregando...
+                        </>
+                      ) : (
+                        'Carregar mais'
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
-            return (
-              <Card key={post.id} className="overflow-hidden">
-                {/* Header do Post */}
-                <CardHeader className="pb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="h-6 w-6 text-blue-600" />
+          {/* Sidebar com Posts em Alta */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-20 space-y-6">
+              <TrendingPosts 
+                location_city={profile?.location_city}
+                location_state={profile?.location_state}
+                limit={5}
+              />
+              
+              {/* Notificações */}
+              {unreadCount > 0 && (
+                <div className="bg-white/80 backdrop-blur-md rounded-xl border border-blue-200 shadow-sm p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
+                      </svg>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900">Profissional</h3>
+                    <h3 className="font-semibold text-blue-900">
+                      Notificações ({unreadCount})
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {notifications.slice(0, 3).map(notification => (
+                      <div key={notification.id} className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                        <p className="font-medium text-blue-800 text-sm">{notification.title}</p>
+                        <p className="text-blue-600 text-xs mt-1">{notification.message}</p>
                       </div>
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <MapPin className="h-3 w-3" />
-                        <span>{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
-                        <span>•</span>
-                        <span>{formatTimeAgo(post.created_at)}</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                </CardHeader>
-
-                {/* Conteúdo do Post */}
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                      {post.title}
-                    </h4>
-                    <p className="text-gray-700">{post.description}</p>
-                  </div>
-
-                  {/* Galeria de Imagens */}
-                  {post.images && post.images.length > 0 && (
-                    <div className={`grid gap-2 ${
-                      post.images.length === 1 ? 'grid-cols-1' :
-                      post.images.length === 2 ? 'grid-cols-2' :
-                      post.images.length === 3 ? 'grid-cols-3' :
-                      post.images.length === 4 ? 'grid-cols-2' : 'grid-cols-3'
-                    }`}>
-                      {post.images.map((image, index) => (
-                        <div 
-                          key={index} 
-                          className={`relative overflow-hidden rounded-lg ${
-                            post.images!.length === 1 ? 'h-96' :
-                            post.images!.length === 2 ? 'h-64' :
-                            post.images!.length === 3 ? 'h-48' :
-                            post.images!.length === 4 ? 'h-48' : 'h-32'
-                          }`}
-                        >
-                          <Image
-                            src={image}
-                            alt={`Imagem ${index + 1} do trabalho`}
-                            width={400}
-                            height={300}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
-                          />
-                          {post.images!.length > 4 && index === 3 && (
-                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                              <span className="text-white font-semibold text-lg">
-                                +{post.images!.length - 4}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Ações do Post */}
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="flex items-center space-x-6">
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className={`flex items-center space-x-2 transition-colors ${
-                          isLiked 
-                            ? 'text-red-500 hover:text-red-600' 
-                            : 'text-gray-600 hover:text-red-500'
-                        }`}
-                      >
-                        <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
-                        <span>{post.likes_count}</span>
-                      </button>
-                      <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
-                        <MessageCircle className="h-5 w-5" />
-                        <span>{post.comments_count}</span>
-                      </button>
-                      <button className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-colors">
-                        <Share2 className="h-5 w-5" />
-                        <span>Compartilhar</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Comentários */}
-                  <div className="pt-4 border-t">
-                    {/* Lista de comentários existentes */}
-                    {postCommentsList.length > 0 && (
-                      <div className="mb-4 space-y-2">
-                        {postCommentsList.map((comment, index) => (
-                          <div key={index} className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-sm text-gray-700">{comment}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Input para novo comentário */}
-                    <div className="flex space-x-2">
-                      <Input
-                        placeholder="Adicione um comentário..."
-                        className="flex-1"
-                        value={commentInput}
-                        onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleCommentSubmit(post.id)
-                          }
-                        }}
-                      />
-                      <Button 
-                        size="sm"
-                        onClick={() => handleCommentSubmit(post.id)}
-                        disabled={!commentInput.trim()}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Aviso de Modo Mock */}
         {isMockMode && (
-          <div className="mt-8 p-4 bg-yellow-100 border border-yellow-300 rounded-lg text-center">
-            <p className="text-yellow-800 text-sm">
-              ⚠️ Modo de desenvolvimento ativo - Dados simulados para demonstração
-            </p>
+          <div className="mt-8 bg-yellow-50/80 backdrop-blur-md border border-yellow-200 rounded-xl shadow-sm p-4 text-center">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-6 h-6 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <p className="text-yellow-800 text-sm font-medium">
+                Modo de desenvolvimento ativo - Dados simulados para demonstração
+              </p>
+            </div>
           </div>
         )}
+        </div>
       </div>
     </MainLayout>
   )

@@ -107,6 +107,7 @@ export function useMessages() {
         `)
         .or(`client_id.eq.${user.id},professional_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false })
+        .limit(20) // Limitar a 20 conversas por vez
 
       if (error) throw error
 
@@ -150,7 +151,7 @@ export function useMessages() {
     }
   }, [user?.id, supabase])
 
-  // Carregar mensagens de uma conversa
+  // Carregar mensagens de uma conversa (otimizado)
   const loadMessages = useCallback(async (conversationId: string) => {
     if (!user?.id) return
 
@@ -160,9 +161,10 @@ export function useMessages() {
 
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, conversation_id, sender_id, receiver_id, content, created_at, is_read, updated_at')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true })
+        .limit(50) // Limitar a 50 mensagens por vez
 
       if (error) throw error
 
@@ -594,7 +596,12 @@ export function useMessages() {
         const { data: unreadMessages, error } = await supabase
           .from('messages')
           .select(`
-            *,
+            id,
+            conversation_id,
+            sender_id,
+            receiver_id,
+            content,
+            created_at,
             conversations!inner(
               id,
               client_id,
@@ -607,7 +614,7 @@ export function useMessages() {
           .eq('is_read', false)
           .neq('sender_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(5) // Reduzir para 5 mensagens não lidas
 
         if (error) {
           console.error('❌ Erro ao verificar mensagens não lidas:', error)
