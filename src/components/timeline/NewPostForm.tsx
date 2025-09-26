@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Send, X, Image as ImageIcon } from 'lucide-react'
+import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
 import { useAuthContext } from '@/contexts/AuthContext'
 
@@ -16,9 +15,10 @@ interface NewPostFormProps {
     category: string
   }) => void
   onCancel: () => void
+  isLoading?: boolean
 }
 
-export function NewPostForm({ onSubmit, onCancel }: NewPostFormProps) {
+export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFormProps) {
   const { profile } = useAuthContext()
   const [post, setPost] = useState({
     title: '',
@@ -48,21 +48,20 @@ export function NewPostForm({ onSubmit, onCancel }: NewPostFormProps) {
   }
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <ImageIcon className="h-5 w-5" />
-          <span>Compartilhar Trabalho</span>
-        </CardTitle>
-        <CardDescription>
-          Mostre aos clientes o que você é capaz de fazer
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-full">
+          <ImageIcon className="h-6 w-6 text-blue-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900">Compartilhar Trabalho</h3>
+        <p className="text-sm text-gray-500">Mostre aos clientes o que você é capaz de fazer</p>
+      </div>
+
+      <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Categoria do Serviço</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Categoria do Serviço</label>
           <Select value={post.category} onValueChange={(value) => setPost({ ...post, category: value })}>
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecione uma categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -76,55 +75,62 @@ export function NewPostForm({ onSubmit, onCancel }: NewPostFormProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700">Título do Trabalho</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
           <Input
             placeholder="Ex: Reforma de Cozinha Moderna"
             value={post.title}
             onChange={(e) => setPost({ ...post, title: e.target.value })}
-            className="mt-1"
+            disabled={isLoading}
           />
         </div>
-        
+
         <div>
-          <label className="text-sm font-medium text-gray-700">Descrição</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
           <Textarea
-            placeholder="Descreva o trabalho realizado, materiais usados, tempo de execução..."
+            placeholder="Descreva o trabalho realizado, materiais usados, desafios superados..."
             value={post.description}
             onChange={(e) => setPost({ ...post, description: e.target.value })}
-            className="mt-1"
-            rows={3}
+            className="min-h-[100px]"
+            disabled={isLoading}
           />
         </div>
-        
+
         <div>
-          <label className="text-sm font-medium text-gray-700">Fotos do Trabalho</label>
-          <div className="mt-1">
-            <ImageUploadFeed
-              onImagesUpload={(imageUrls) => setPost({ ...post, images: imageUrls })}
-              currentImages={post.images}
-              maxImages={5}
-            />
-          </div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Fotos do Trabalho</label>
+          <ImageUploadFeed
+            currentImages={post.images}
+            onImagesUpload={(images) => setPost({ ...post, images })}
+            maxImages={5}
+          />
         </div>
-        
-        <div className="flex space-x-2">
-          <Button 
-            className="flex-1"
-            disabled={!post.title.trim() || !post.description.trim() || post.images.length === 0}
-            onClick={handleSubmit}
-          >
-            <Send className="h-4 w-4 mr-2" />
-            {post.images.length === 0 ? 'Adicione fotos primeiro' : 'Publicar Trabalho'}
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={onCancel}
-          >
-            <X className="h-4 w-4 mr-2" />
-            Cancelar
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+          disabled={isLoading}
+        >
+          Cancelar
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          disabled={!post.title.trim() || !post.description.trim() || !post.category || isLoading}
+          className="min-w-[120px]"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Publicando...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4 mr-2" />
+              Publicar
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   )
 }
