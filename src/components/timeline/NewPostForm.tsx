@@ -36,13 +36,18 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-full">
-          <ImageIcon className="h-6 w-6 text-blue-600" />
-        </div>
-        <h3 className="text-lg font-semibold text-gray-900">Compartilhar Trabalho</h3>
-        <p className="text-sm text-gray-500">Mostre aos clientes o que você é capaz de fazer</p>
-      </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg">
+                <ImageIcon className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Compartilhe seu trabalho!</h3>
+              <p className="text-gray-600 mb-4">
+                {profile?.user_type === 'professional' 
+                  ? 'Mostre aos clientes o que você é capaz de fazer e inspire outros profissionais'
+                  : 'Compartilhe trabalhos que foram feitos para você e ajude outros a encontrar bons profissionais'
+                }
+              </p>
+            </div>
 
       <div className="space-y-4">
         <div>
@@ -58,22 +63,34 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
         <div>
           <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
           <Input
-            placeholder="Ex: Reforma de Cozinha Moderna"
+            placeholder={profile?.user_type === 'professional' 
+              ? "Ex: Reforma de Cozinha Moderna - Antes e Depois"
+              : "Ex: Serviço de Limpeza Incrível!"
+            }
             value={post.title}
             onChange={(e) => setPost({ ...post, title: e.target.value })}
             disabled={isLoading}
           />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Dica: Use um título que chame atenção e descreva o resultado
+          </p>
         </div>
 
         <div>
           <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
           <Textarea
-            placeholder="Descreva o trabalho realizado, materiais usados, desafios superados..."
+            placeholder={profile?.user_type === 'professional'
+              ? "Descreva o trabalho realizado, materiais usados, tempo de execução, desafios superados..."
+              : "Conte como foi a experiência, o que mais gostou, recomendações para outros clientes..."
+            }
             value={post.description}
             onChange={(e) => setPost({ ...post, description: e.target.value })}
             className="min-h-[100px]"
             disabled={isLoading}
           />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Dica: Seja específico! Detalhes ajudam outros a entenderem melhor o trabalho
+          </p>
         </div>
 
         <div>
@@ -83,6 +100,9 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
             onImagesUpload={(images) => setPost({ ...post, images })}
             maxImages={5}
           />
+          <p className="text-xs text-gray-500 mt-1">
+            📸 Dica: Fotos de antes e depois são muito valorizadas! Mostre o processo e o resultado final
+          </p>
         </div>
       </div>
 

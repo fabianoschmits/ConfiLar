@@ -62,9 +62,9 @@ export function ReactionButton({ postId, className }: ReactionButtonProps) {
           className={`flex items-center space-x-1 hover:bg-gray-100 ${className} ${displayReaction.color}`}
           disabled={isLoading || countsLoading}
         >
-          <span className="text-lg">{displayReaction.emoji}</span>
+          <span className="text-base md:text-lg">{displayReaction.emoji}</span>
           {displayReaction.count > 0 && (
-            <span className="text-sm font-medium">{displayReaction.count}</span>
+            <span className="text-xs md:text-sm font-medium">{displayReaction.count}</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -75,13 +75,13 @@ export function ReactionButton({ postId, className }: ReactionButtonProps) {
               key={reactionType}
               variant="ghost"
               size="sm"
-              className={`w-10 h-10 p-0 hover:bg-gray-100 ${
+              className={`w-8 h-8 md:w-10 md:h-10 p-0 hover:bg-gray-100 ${
                 userReaction === reactionType ? 'bg-blue-100' : ''
               }`}
               onClick={() => handleReaction(reactionType)}
               title={`${REACTION_EMOJIS[reactionType]} ${reactionCounts[reactionType] || 0}`}
             >
-              <span className="text-xl">{REACTION_EMOJIS[reactionType]}</span>
+              <span className="text-base md:text-xl">{REACTION_EMOJIS[reactionType]}</span>
             </Button>
           ))}
         </div>

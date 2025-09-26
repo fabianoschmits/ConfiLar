@@ -64,7 +64,7 @@ export function useTimeline(filters: TimelineFilters = {}) {
             user_type
           )
         `)
-        .eq('is_active', true)
+        // .eq('is_active', true) // Coluna não existe
         .order('created_at', { ascending: false })
         .range(page * POSTS_PER_PAGE, (page + 1) * POSTS_PER_PAGE - 1)
 
@@ -122,7 +122,7 @@ export function useTimelineStats() {
       const { data, error } = await supabase
         .from('feed_posts')
         .select('id, likes_count, comments_count')
-        .eq('is_active', true)
+        // .eq('is_active', true) // Coluna não existe
 
       if (error) throw error
 
