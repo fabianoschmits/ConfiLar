@@ -19,6 +19,7 @@ import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
 import { NewPostForm } from '@/components/timeline/NewPostForm'
+import { Modal } from '@/components/ui/modal'
 import { TrendingPosts } from '@/components/timeline/TrendingPosts'
 import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 
@@ -35,6 +36,7 @@ export default function FeedPage() {
   
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
+  const [isPosting, setIsPosting] = useState(false)
   
   // Estados para comentários
   const [postComments, setPostComments] = useState<Record<string, string[]>>({})
@@ -120,23 +122,31 @@ export default function FeedPage() {
     console.log('Compartilhar post:', postId)
   }
 
-  const handleNewPost = (postData: { title: string; description: string; images: string[]; category: string }) => {
-    addPost({
-      type: 'post',
-      user_id: profile?.id || '',
-      user_name: profile?.full_name || 'Usuário',
-      user_avatar: profile?.avatar_url,
-      user_type: profile?.user_type,
-      title: postData.title,
-      description: postData.description,
-      images: postData.images,
-      location_state: profile?.location_state,
-      location_city: profile?.location_city,
-      likes_count: 0,
-      comments_count: 0,
-      is_liked: false
-    })
-    setShowNewPostForm(false)
+  const handleNewPost = async (postData: { title: string; description: string; images: string[]; category: string }) => {
+    setIsPosting(true)
+    try {
+      await addPost({
+        type: 'post',
+        user_id: profile?.id || '',
+        user_name: profile?.full_name || 'Usuário',
+        user_avatar: profile?.avatar_url,
+        user_type: profile?.user_type,
+        title: postData.title,
+        description: postData.description,
+        images: postData.images,
+        service_category: postData.category,
+        location_state: profile?.location_state,
+        location_city: profile?.location_city,
+        likes_count: 0,
+        comments_count: 0,
+        is_liked: false
+      })
+      setShowNewPostForm(false)
+    } catch (error) {
+      console.error('Erro ao criar post:', error)
+    } finally {
+      setIsPosting(false)
+    }
   }
 
   const handleNotificationAction = (url: string) => {
@@ -277,13 +287,19 @@ export default function FeedPage() {
           </div>
         )}
 
-        {/* Formulário de Novo Post */}
-        {showNewPostForm && (
+        {/* Modal de Novo Post */}
+        <Modal
+          isOpen={showNewPostForm}
+          onClose={() => setShowNewPostForm(false)}
+          title="Novo Post"
+          size="lg"
+        >
           <NewPostForm
             onSubmit={handleNewPost}
             onCancel={() => setShowNewPostForm(false)}
+            isLoading={isPosting}
           />
-        )}
+        </Modal>
 
         {/* Layout com Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
