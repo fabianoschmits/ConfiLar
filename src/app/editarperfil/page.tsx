@@ -146,6 +146,29 @@ export default function EditarPerfilPage() {
     }
   }, [dicebearAvatar])
 
+  // Gerar avatar em tempo real baseado no nome digitado (com debounce)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    
+    const handleNameChange = () => {
+      if (formData.full_name && formData.full_name.length >= 2) {
+        // Debounce de 500ms para evitar muitas chamadas
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          // Usar gênero padrão 'male' (não temos campo gender no Profile)
+          const gender = 'male'
+          generateDicebearAvatar(formData.full_name, gender)
+        }, 500)
+      }
+    }
+    
+    handleNameChange()
+    
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [formData.full_name])
+
   if (!mounted) {
     return null
   }
@@ -363,13 +386,19 @@ export default function EditarPerfilPage() {
 
   // Função para gerar avatar Dicebear
   const generateDicebearAvatar = async (name: string, gender: string = 'male') => {
+    if (!name || name.length < 2) return
+    
     setIsGeneratingAvatar(true)
     try {
-      const encodedName = encodeURIComponent(name)
+      const encodedName = encodeURIComponent(name.trim())
       const facialHairProbability = gender === 'male' ? '30' : gender === 'female' ? '0' : '15'
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}`
+      const hairColor = gender === 'male' ? 'brown,black,blonde' : 'brown,black,blonde,red'
+      const skinColor = 'fdbcb4,edb98a,fd9841,f8d25c'
+      
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}&hairColor=${hairColor}&skinColor=${skinColor}`
+      
       setDicebearAvatar(avatarUrl)
-      console.log('🎨 Avatar atualizado:', avatarUrl)
+      console.log('🎨 Avatar atualizado para:', name, 'Gênero:', gender)
     } catch (error) {
       console.error('Erro ao gerar avatar Dicebear:', error)
     } finally {
