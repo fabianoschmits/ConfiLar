@@ -426,6 +426,9 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     }
   }, [])
 
+  // Hook para notificações automáticas
+  const { createWelcomePost } = useAutoNotifications()
+
   const completeProfile = useCallback(async (profileData: CompleteProfileData) => {
     try {
       Logger.info('auth', `Completing profile for user`)
@@ -517,7 +520,6 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           
           // Criar post de boas-vindas
           try {
-            const { createWelcomePost } = useAutoNotifications()
             await createWelcomePost(
               state.user.id,
               profileData.full_name,

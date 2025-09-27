@@ -15,7 +15,7 @@ function createTestWrapper() {
     },
   })
 
-  return function TestWrapper({ children }: { children: React.ReactNode }) {
+  const TestWrapper = ({ children }: { children: React.ReactNode }) => {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
@@ -24,6 +24,8 @@ function createTestWrapper() {
       </QueryClientProvider>
     )
   }
+  
+  return TestWrapper
 }
 
 describe('UserAvatar Component', () => {

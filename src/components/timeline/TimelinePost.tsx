@@ -12,6 +12,8 @@ import { CommentSection } from './CommentSection'
 import { PostOptionsMenu } from './PostOptionsMenu'
 import { AutomaticPost } from './AutomaticPost'
 import { WelcomePost } from './WelcomePost'
+import { SimpleAutomaticPost } from './SimpleAutomaticPost'
+import { WelcomeUserPost } from './WelcomeUserPost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 
@@ -47,14 +49,32 @@ export function TimelinePost({
   // usePostViewTracker(post.id) // Registra visualização automaticamente
   const viewsCount = 0 // Valor temporário
 
-  // Verificar se é um post automático
-  const isAutomaticPost = post.metadata?.type && ['favorite', 'recommendation', 'review'].includes(post.metadata.type)
-  const isWelcomePost = post.metadata?.type === 'welcome'
+  // Verificar tipos de posts automáticos
+  const postType = post.metadata?.type
+  const isSimpleAutomaticPost = postType && ['favorite', 'recommendation'].includes(postType)
+  const isWelcomeUserPost = postType === 'welcome'
+  const isOldAutomaticPost = postType && ['review'].includes(postType)
   
-  // Se for um post de boas-vindas, renderizar o componente WelcomePost
-  if (isWelcomePost) {
+  // Verificação adicional: se o título contém emojis de sistema, também considerar como post automático
+  const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
+  const isSystemPost = isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
+  
+  // Debug: Log para verificar o tipo de post
+  console.log('🔍 TimelinePost Debug:', {
+    postId: post.id,
+    title: post.title,
+    metadata: post.metadata,
+    type: postType,
+    isSimpleAutomaticPost,
+    isWelcomeUserPost,
+    isOldAutomaticPost,
+    shouldUseSimpleComponent: isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost
+  })
+  
+  // Se for um post de boas-vindas de novo usuário, renderizar o componente WelcomeUserPost
+  if (isWelcomeUserPost) {
     return (
-      <WelcomePost
+      <WelcomeUserPost
         post={post}
         onDelete={onDelete}
         isDeleting={isDeleting}
@@ -63,10 +83,32 @@ export function TimelinePost({
     )
   }
   
-  // Se for um post automático, renderizar o componente AutomaticPost
-  if (isAutomaticPost) {
+  // Se for um post automático simples (favoritos/recomendações), renderizar o componente SimpleAutomaticPost
+  if (isSimpleAutomaticPost || (isSystemPostByTitle && post.title.includes('💡'))) {
+    return (
+      <SimpleAutomaticPost
+        post={post}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+      />
+    )
+  }
+  
+  // Se for um post automático antigo (avaliações), renderizar o componente AutomaticPost
+  if (isOldAutomaticPost || (isSystemPostByTitle && post.title.includes('⭐'))) {
     return (
       <AutomaticPost
+        post={post}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+      />
+    )
+  }
+  
+  // Se for um post de favorito (detectado pelo título), renderizar o componente SimpleAutomaticPost
+  if (isSystemPostByTitle && post.title.includes('❤️')) {
+    return (
+      <SimpleAutomaticPost
         post={post}
         onDelete={onDelete}
         isDeleting={isDeleting}

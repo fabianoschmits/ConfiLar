@@ -23,6 +23,7 @@ interface AutomaticPostProps {
     id: string
     title: string
     user_id?: string
+    professional_id?: string
     created_at: string
     metadata?: {
       type?: string
@@ -80,19 +81,19 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
       case 'favorite':
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{user}</Link> favoritou <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{favorited}</Link>
+            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{user}</Link> favoritou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{favorited}</Link>
           </span>
         )
       case 'recommendation':
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{from_user}</Link> recomendou <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{to_user}</Link>
+            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{from_user}</Link> recomendou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{to_user}</Link>
           </span>
         )
       case 'review':
         return (
           <span className="text-sm">
-            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewer}</Link> avaliou <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewed}</Link>
+            {getPostIcon(type)} <Link href={`/perfil/${post.user_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewer}</Link> avaliou <Link href={`/perfil/${post.professional_id || ''}`} className="text-blue-600 hover:text-blue-800 font-medium">{reviewed}</Link>
           </span>
         )
       case 'welcome':
@@ -117,10 +118,10 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
 
   return (
     <>
-      <Card className="bg-gray-50 border-gray-200 hover:bg-gray-100 transition-colors">
-        <CardContent className="p-3">
+      <Card className="mb-2 bg-gray-50 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <CardContent className="py-2 px-3">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {getPostMessage()}
             </div>
             

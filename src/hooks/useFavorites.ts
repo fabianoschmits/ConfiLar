@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useAutoNotifications } from './useAutoNotifications'
 
 export interface Favorite {
   id: string
@@ -26,11 +27,14 @@ export interface Favorite {
 }
 
 export function useFavorites() {
-  const { user } = useAuthContext()
+  const { user, profile } = useAuthContext()
   const [favorites, setFavorites] = useState<Favorite[]>([])
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Hook para notificações automáticas
+  const { createFavoritePost } = useAutoNotifications()
 
   // Carregar favoritos do usuário
   const loadFavorites = useCallback(async () => {
@@ -131,6 +135,23 @@ export function useFavorites() {
       setFavorites(prev => [data, ...prev])
       setFavoriteIds(prev => new Set(Array.from(prev).concat(professionalId)))
 
+      // Criar post automático no feed social
+      try {
+        if (profile?.full_name && data?.professional?.full_name) {
+          console.log('❤️ Criando post automático de favorito...')
+          await createFavoritePost(
+            user.id,
+            profile.full_name,
+            professionalId,
+            data.professional.full_name
+          )
+          console.log('✅ Post de favorito criado com sucesso!')
+        }
+      } catch (postError) {
+        console.error('⚠️ Erro ao criar post de favorito:', postError)
+        // Não falhar a operação se o post não for criado
+      }
+
       return true
     } catch (err) {
       console.error('❌ Erro ao adicionar favorito:', err)
@@ -139,7 +160,7 @@ export function useFavorites() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, profile?.full_name, createFavoritePost])
 
   // Remover usuário dos favoritos
   const removeFavorite = useCallback(async (professionalId: string) => {

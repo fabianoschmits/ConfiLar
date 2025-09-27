@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 
 interface RecommendationModalProps {
   userId: string
@@ -31,10 +32,13 @@ export function RecommendationModal({
   isOpen, 
   onClose
 }: RecommendationModalProps) {
-  const { user } = useAuthContext()
+  const { user, profile } = useAuthContext()
   const [recommendations, setRecommendations] = useState<RecommendationWithProfile[]>([])
   const [loading, setLoading] = useState(false)
   const [recommending, setRecommending] = useState(false)
+  
+  // Hook para notificações automáticas
+  const { createRecommendationPost } = useAutoNotifications()
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -143,6 +147,24 @@ export function RecommendationModal({
       }
 
       toast.success(`Você recomendou ${userName}!`)
+      
+      // Criar post automático no feed social
+      try {
+        if (profile?.full_name) {
+          console.log('💡 Criando post automático de recomendação...')
+          await createRecommendationPost(
+            user.id,
+            profile.full_name,
+            userId,
+            userName
+          )
+          console.log('✅ Post de recomendação criado com sucesso!')
+        }
+      } catch (postError) {
+        console.error('⚠️ Erro ao criar post de recomendação:', postError)
+        // Não falhar a operação se o post não for criado
+      }
+      
       loadRecommendations() // Recarregar a lista
     } catch (error) {
       console.error('Erro ao recomendar usuário:', error)
