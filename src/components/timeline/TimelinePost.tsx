@@ -72,7 +72,7 @@ export function TimelinePost({
   })
   
   // Se for um post de boas-vindas de novo usuário, renderizar o componente WelcomeUserPost
-  if (isWelcomeUserPost) {
+  if (isWelcomeUserPost || (isSystemPostByTitle && post.title.includes('🎉'))) {
     return (
       <WelcomeUserPost
         post={post}
@@ -84,7 +84,7 @@ export function TimelinePost({
   }
   
   // Se for um post automático simples (favoritos/recomendações), renderizar o componente SimpleAutomaticPost
-  if (isSimpleAutomaticPost || (isSystemPostByTitle && post.title.includes('💡'))) {
+  if (isSimpleAutomaticPost || (isSystemPostByTitle && (post.title.includes('💡') || post.title.includes('❤️')))) {
     return (
       <SimpleAutomaticPost
         post={post}
