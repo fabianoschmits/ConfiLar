@@ -14,6 +14,7 @@ import { AutomaticPost } from './AutomaticPost'
 import { WelcomePost } from './WelcomePost'
 import { SimpleAutomaticPost } from './SimpleAutomaticPost'
 import { WelcomeUserPost } from './WelcomeUserPost'
+import { NewUserWelcomePost } from './NewUserWelcomePost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 
@@ -71,14 +72,13 @@ export function TimelinePost({
     shouldUseSimpleComponent: isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost
   })
   
-  // Se for um post de boas-vindas de novo usuário, renderizar o componente WelcomeUserPost
+  // Se for um post de boas-vindas de novo usuário, renderizar o componente NewUserWelcomePost
   if (isWelcomeUserPost || (isSystemPostByTitle && post.title.includes('🎉'))) {
     return (
-      <WelcomeUserPost
+      <NewUserWelcomePost
         post={post}
         onDelete={onDelete}
         isDeleting={isDeleting}
-        showComments={showComments}
       />
     )
   }
