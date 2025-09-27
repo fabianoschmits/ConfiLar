@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { User, MapPin } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { TimelineActivity as TimelineActivityType } from '@/types/timeline'
 
 interface TimelineActivityProps {
@@ -28,19 +29,26 @@ export function TimelineActivity({ activity }: TimelineActivityProps) {
     <Card className="overflow-hidden border-l-4 border-l-blue-500">
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-3">
-          <Avatar className="w-12 h-12">
-            <AvatarImage src={activity.user_avatar || ''} />
-            <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-              {activity.user_name?.charAt(0).toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={`/perfil/${activity.user_id}`} className="hover:opacity-80 transition-opacity">
+            <Avatar className="w-12 h-12 cursor-pointer">
+              <AvatarImage src={activity.user_avatar || ''} />
+              <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+                {activity.user_name?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">{activity.icon}</span>
               <h3 className="font-semibold text-gray-900">{activity.title}</h3>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>{activity.user_name}</span>
+              <Link 
+                href={`/perfil/${activity.user_id}`}
+                className="hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                {activity.user_name}
+              </Link>
               <span>•</span>
               <span>{formatTimeAgo(activity.created_at)}</span>
             </div>

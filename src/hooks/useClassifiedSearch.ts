@@ -52,7 +52,9 @@ export function useClassifiedSearch() {
     try {
       setLoading(true)
       
-      // Buscar anúncios (otimizado)
+      console.log('📋 Tentando carregar dados reais da tabela classified_ads')
+      
+      // Tentar buscar dados reais primeiro (usando apenas colunas que existem)
       const { data, error } = await supabase
         .from('classified_ads')
         .select(`
@@ -68,48 +70,19 @@ export function useClassifiedSearch() {
           created_at,
           is_active,
           views,
-          user_avatar_url,
           ad_type
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(50) // Limitar a 50 anúncios por vez
+        .limit(50)
 
-      if (error) throw error
+      console.log('🔍 Resultado da query:', { data: data?.length || 0, error: error?.message || 'Nenhum erro' })
 
-      // Buscar fotos dos usuários separadamente (otimizado)
-      const userIds = Array.from(new Set(data?.map(ad => ad.user_id) || []))    
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, profile_photo_url')
-        .in('id', userIds)
-        .limit(20) // Limitar a 20 perfis por vez
-
-      const profilesMap = new Map(profilesData?.map(profile => [profile.id, profile]) || [])
-
-      const adsWithUserInfo = data?.map(ad => {
-        const profile = profilesMap.get(ad.user_id)
-        return {
-          id: ad.id,
-          user_id: ad.user_id,
-          user_name: profile?.full_name || ad.user_name || 'Usuário',
-          user_type: ad.user_type || 'client',
-          title: ad.title,
-          description: ad.description,
-          category: ad.category,
-          location_state: ad.location_state,
-          location_city: ad.location_city,
-          created_at: ad.created_at,
-          is_active: ad.is_active,
-          views: ad.views || 0,
-          user_avatar_url: profile?.avatar_url || profile?.profile_photo_url || ad.user_avatar_url || null,
-          ad_type: ad.ad_type
-        }
-      }) || []
-
-      // Se não há dados reais, adicionar dados de exemplo
-      let finalAds = adsWithUserInfo
-      if (adsWithUserInfo.length === 0) {
+      if (error) {
+        console.warn('⚠️ Erro ao buscar dados reais da tabela classified_ads:', error)
+        console.log('📋 Usando dados de exemplo como fallback')
+        
+        // Usar dados de exemplo apenas se houver erro
         const mockAds: ClassifiedAd[] = [
           {
             id: 'mock-1',
@@ -208,17 +181,62 @@ export function useClassifiedSearch() {
             ad_type: 'procurar'
           }
         ]
-        finalAds = mockAds
+        
+        setClassifiedAds(mockAds)
+        setFilteredAds(mockAds)
+        
+        // Calcular estatísticas
+        const total = mockAds.length
+        const offers = mockAds.filter(ad => ad.user_type === 'professional').length
+        const requests = mockAds.filter(ad => ad.user_type === 'client').length
+        const categories = Array.from(new Set(mockAds.map(ad => ad.category))).length
+
+        setStats({ total, offers, requests, categories })
+        setLoading(false)
+        return
       }
 
-      setClassifiedAds(finalAds)
-      setFilteredAds(finalAds)
+      // Se chegou aqui, os dados reais foram carregados com sucesso
+      console.log('✅ Dados reais carregados com sucesso:', data?.length || 0, 'anúncios')
+      
+      // Buscar fotos dos usuários separadamente (otimizado)
+      const userIds = Array.from(new Set(data?.map(ad => ad.user_id) || []))    
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, profile_photo_url')
+        .in('id', userIds)
+        .limit(20)
+
+      const profilesMap = new Map(profilesData?.map(profile => [profile.id, profile]) || [])
+
+      const adsWithUserInfo = data?.map(ad => {
+        const profile = profilesMap.get(ad.user_id)
+        return {
+          id: ad.id,
+          user_id: ad.user_id,
+          user_name: profile?.full_name || ad.user_name || 'Usuário',
+          user_type: ad.user_type || 'client',
+          title: ad.title,
+          description: ad.description,
+          category: ad.category,
+          location_state: ad.location_state,
+          location_city: ad.location_city,
+          created_at: ad.created_at,
+          is_active: ad.is_active,
+          views: ad.views || 0,
+          user_avatar_url: profile?.avatar_url || profile?.profile_photo_url || null,
+          ad_type: ad.ad_type
+        }
+      }) || []
+
+      setClassifiedAds(adsWithUserInfo)
+      setFilteredAds(adsWithUserInfo)
 
       // Calcular estatísticas
-      const total = finalAds.length
-      const offers = finalAds.filter(ad => ad.user_type === 'professional').length
-      const requests = finalAds.filter(ad => ad.user_type === 'client').length
-      const categories = Array.from(new Set(finalAds.map(ad => ad.category))).length
+      const total = adsWithUserInfo.length
+      const offers = adsWithUserInfo.filter(ad => ad.user_type === 'professional').length
+      const requests = adsWithUserInfo.filter(ad => ad.user_type === 'client').length
+      const categories = Array.from(new Set(adsWithUserInfo.map(ad => ad.category))).length
 
       setStats({ total, offers, requests, categories })
 

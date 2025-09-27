@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useNavigationWithLoading } from '@/hooks/useLoading'
 import { ReactNode } from 'react'
 
 interface NavigationLinkProps {
@@ -21,7 +20,6 @@ export function NavigationLink({
   destination 
 }: NavigationLinkProps) {
   const router = useRouter()
-  const { navigateWithLoading } = useNavigationWithLoading()
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -31,15 +29,13 @@ export function NavigationLink({
     }
 
     try {
-      // Usar window.location para navegação mais confiável
-      window.location.href = href
+      console.log('🔗 Navegando para:', href)
+      // Navegação direta com router.push
+      router.push(href)
     } catch (error) {
       console.error('Erro na navegação:', error)
-      // Fallback para router.push
-      await navigateWithLoading(
-        destination || href.replace('/', '').replace('_public/', ''),
-        () => router.push(href)
-      )
+      // Fallback para window.location
+      window.location.href = href
     }
   }
 

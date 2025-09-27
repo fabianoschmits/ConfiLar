@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
 import { ReactionButton } from './ReactionButton'
 import { CommentSection } from './CommentSection'
@@ -92,15 +93,22 @@ export function TimelinePost({
     <Card className="overflow-hidden">
       <CardHeader className="pb-2 p-3 md:p-6">
         <div className="flex items-center space-x-2 md:space-x-3">
-          <Avatar className="w-10 h-10 md:w-12 md:h-12">
-            <AvatarImage src={post.user_avatar || ''} />
-            <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-              {post.user_name?.charAt(0).toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
+            <Avatar className="w-10 h-10 md:w-12 md:h-12 cursor-pointer">
+              <AvatarImage src={post.user_avatar || ''} />
+              <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+                {post.user_name?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-1 md:space-x-2 flex-wrap">
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">{post.user_name}</h3>
+              <Link 
+                href={`/perfil/${post.user_id}`}
+                className="font-semibold text-gray-900 text-sm md:text-base truncate hover:text-blue-600 transition-colors cursor-pointer"
+              >
+                {post.user_name}
+              </Link>
               <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">•</span>
               <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">{post.user_type === 'professional' ? 'Profissional' : 'Cliente'}</span>
               {getTrendingBadge()}

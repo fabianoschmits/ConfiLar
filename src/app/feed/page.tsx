@@ -516,19 +516,6 @@ export default function FeedPage() {
           </div>
         </div>
 
-        {/* Aviso de Funcionalidades */}
-        <div className="mt-8 bg-green-50/80 backdrop-blur-md border border-green-200 rounded-xl shadow-sm p-4 text-center">
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <p className="text-green-800 text-sm font-medium">
-              ✅ Feed social funcionando! Curtidas ativas. Comentários e reactions em desenvolvimento.
-            </p>
-          </div>
-        </div>
       </div>
     </div>
     </MainLayout>

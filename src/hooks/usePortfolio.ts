@@ -19,16 +19,16 @@ export function usePortfolio(professionalId?: string) {
       setLoading(true)
       setError(null)
 
-      // Verificar se a tabela portfolio_projects existe
-      const { data, error } = await supabase
+      // Verificar se a tabela portfolio_projects existe primeiro
+      const { data: testData, error: testError } = await supabase
         .from('portfolio_projects')
-        .select('*')
+        .select('id')
         .limit(1)
 
-      if (error) {
-        console.warn('Sistema de portfólio não disponível - tabela portfolio_projects não encontrada')
-        setError(null) // Não mostrar erro para o usuário
-        setProjects([]) // Retornar array vazio
+      if (testError) {
+        console.warn('⚠️ Tabela portfolio_projects não encontrada - sistema de portfólio desabilitado')
+        setProjects([])
+        setLoading(false)
         return
       }
 
@@ -44,16 +44,14 @@ export function usePortfolio(professionalId?: string) {
       const { data: projectsData, error: projectsError } = await query
 
       if (projectsError) {
-        console.warn('Erro ao buscar projetos do portfólio:', projectsError)
-        setError(null) // Não mostrar erro para o usuário
+        console.warn('⚠️ Erro ao buscar projetos do portfólio:', projectsError)
         setProjects([])
         return
       }
 
       setProjects(projectsData || [])
     } catch (err) {
-      console.warn('Erro ao buscar projetos do portfólio:', err)
-      setError(null) // Não mostrar erro para o usuário
+      console.warn('⚠️ Erro ao buscar projetos do portfólio:', err)
       setProjects([])
     } finally {
       setLoading(false)
