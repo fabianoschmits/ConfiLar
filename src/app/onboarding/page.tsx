@@ -125,7 +125,7 @@ export default function OnboardingPage() {
 
   const watchedValues = watch()
   const isProfessional = watchedValues.user_type === 'professional'
-  const fullName = (user as any)?.user_metadata?.full_name || 'Usuário'
+  const fullName = watchedValues.full_name || (user as any)?.user_metadata?.full_name || 'Usuário'
 
   // Verificar se usuário está logado
   useEffect(() => {
@@ -171,10 +171,10 @@ export default function OnboardingPage() {
     try {
       const encodedName = encodeURIComponent(name.trim())
       
-      // URL simplificada sem parâmetros problemáticos
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100`
+      // URL com parâmetros básicos para pixel art
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent`
       
-      console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
+      console.log('🎨 Gerando avatar para:', name)
       console.log('🔗 URL do avatar:', avatarUrl)
       
       // Testar se a URL é válida
@@ -183,14 +183,39 @@ export default function OnboardingPage() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
+      // Verificar se o conteúdo é válido (SVG)
+      const content = await response.text()
+      if (!content || content.includes('error') || !content.includes('<svg')) {
+        throw new Error('Conteúdo SVG inválido retornado')
+      }
+      
       setDicebearAvatar(avatarUrl)
       console.log('✅ Avatar gerado com sucesso!')
+      
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      // Fallback: usar avatar básico sem parâmetros extras
-      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&size=100`
-      console.log('🔄 Usando fallback:', fallbackUrl)
-      setDicebearAvatar(fallbackUrl)
+      
+      // Fallback: usar avatar básico
+      try {
+        const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}`
+        console.log('🔄 Usando fallback:', fallbackUrl)
+        
+        const fallbackResponse = await fetch(fallbackUrl)
+        if (fallbackResponse.ok) {
+          const fallbackContent = await fallbackResponse.text()
+          if (fallbackContent && fallbackContent.includes('<svg')) {
+            setDicebearAvatar(fallbackUrl)
+            console.log('✅ Fallback funcionou!')
+          } else {
+            throw new Error('Fallback também retornou conteúdo inválido')
+          }
+        } else {
+          throw new Error('Fallback falhou')
+        }
+      } catch (fallbackError) {
+        console.error('❌ Erro no fallback:', fallbackError)
+        // Se tudo falhar, não definir avatar
+      }
     } finally {
       setIsGeneratingAvatar(false)
     }

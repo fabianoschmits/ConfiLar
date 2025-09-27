@@ -212,8 +212,9 @@ export default function EditarPerfilPage() {
 
     setIsSaving(true)
     try {
-      // Preparar dados do avatar se selecionado
-      let avatarData = null
+      let avatarUrl = formData.avatar_url
+
+      // Processar avatar se selecionado
       if (selectedAvatar) {
         if (selectedAvatar.type === 'upload') {
           // Upload de arquivo
@@ -223,33 +224,27 @@ export default function EditarPerfilPage() {
             setIsSaving(false)
             return
           }
-          avatarData = {
-            type: 'upload',
-            url: result.data,
-            preview: selectedAvatar.preview
-          }
+          avatarUrl = result.data || ''
         } else if (selectedAvatar.type === 'dicebear') {
-          // Avatar Dicebear
-          avatarData = {
-            type: 'dicebear',
-            url: selectedAvatar.value as string,
-            preview: selectedAvatar.preview
-          }
+          // Avatar Dicebear - usar diretamente a URL
+          avatarUrl = selectedAvatar.value as string
         }
       }
 
-      // Incluir avatar nos dados do perfil
-      const profileDataWithAvatar = {
+      // Atualizar perfil com nova URL do avatar
+      const profileData = {
         ...formData,
-        avatar_data: avatarData
+        avatar_url: avatarUrl
       }
 
-      const result = await updateProfile(profileDataWithAvatar)
+      const result = await updateProfile(profileData)
       if (result?.error) {
         toast.error('Erro ao atualizar perfil: ' + result.error.message)
       } else {
         toast.success('Perfil atualizado com sucesso!')
         setIsEditing(false)
+        // Limpar avatar selecionado após salvar
+        setSelectedAvatar(null)
       }
     } catch (_error) {
       toast.error('Erro inesperado ao atualizar perfil')
@@ -424,10 +419,10 @@ export default function EditarPerfilPage() {
     try {
       const encodedName = encodeURIComponent(name.trim())
       
-      // URL simplificada sem parâmetros problemáticos
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100`
+      // URL com parâmetros básicos para pixel art
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent`
       
-      console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
+      console.log('🎨 Gerando avatar para:', name)
       console.log('🔗 URL do avatar:', avatarUrl)
       
       // Testar se a URL é válida
@@ -436,14 +431,51 @@ export default function EditarPerfilPage() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
+      // Verificar se o conteúdo é válido (SVG)
+      const content = await response.text()
+      if (!content || content.includes('error') || !content.includes('<svg')) {
+        throw new Error('Conteúdo SVG inválido retornado')
+      }
+      
       setDicebearAvatar(avatarUrl)
       console.log('✅ Avatar gerado com sucesso!')
+      
+      // Auto-selecionar o avatar gerado
+      setSelectedAvatar({
+        type: 'dicebear',
+        value: avatarUrl,
+        preview: avatarUrl
+      })
+      
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      // Fallback: usar avatar básico sem parâmetros extras
-      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&size=100`
-      console.log('🔄 Usando fallback:', fallbackUrl)
-      setDicebearAvatar(fallbackUrl)
+      
+      // Fallback: usar avatar básico
+      try {
+        const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}`
+        console.log('🔄 Usando fallback:', fallbackUrl)
+        
+        const fallbackResponse = await fetch(fallbackUrl)
+        if (fallbackResponse.ok) {
+          const fallbackContent = await fallbackResponse.text()
+          if (fallbackContent && fallbackContent.includes('<svg')) {
+            setDicebearAvatar(fallbackUrl)
+            setSelectedAvatar({
+              type: 'dicebear',
+              value: fallbackUrl,
+              preview: fallbackUrl
+            })
+            console.log('✅ Fallback funcionou!')
+          } else {
+            throw new Error('Fallback também retornou conteúdo inválido')
+          }
+        } else {
+          throw new Error('Fallback falhou')
+        }
+      } catch (fallbackError) {
+        console.error('❌ Erro no fallback:', fallbackError)
+        // Se tudo falhar, não definir avatar
+      }
     } finally {
       setIsGeneratingAvatar(false)
     }
@@ -476,59 +508,6 @@ export default function EditarPerfilPage() {
     }
   }
 
-  // Função para salvar avatar selecionado
-  const handleAvatarSave = async () => {
-    if (!selectedAvatar) {
-      toast.error('NENHUM AVATAR Selecionado')
-      return
-    }
-
-    try {
-      if (selectedAvatar.type === 'upload') {
-        // Upload de arquivo
-        const result = await uploadAvatar(selectedAvatar.value as File)
-        if (result.error) {
-          toast.error(result.error.message)
-          return
-        }
-        if (result.data) {
-          setFormData(prevData => ({ ...prevData, avatar_url: result.data || '' }))
-          toast.success('FOTO DO PERFIL ATUALIZADA COM SUCESSO!')
-        }
-      } else if (selectedAvatar.type === 'dicebear') {
-        // Avatar Dicebear - atualizar diretamente no perfil
-        const result = await updateProfile({ avatar_url: selectedAvatar.value as string })
-        if (result?.error) {
-          toast.error('ERRO AO ATUALIZAR AVATAR: ' + result.error.message)
-          return
-        }
-        setFormData(prevData => ({ ...prevData, avatar_url: selectedAvatar.value as string }))
-        toast.success('Avatar atualIZADO COM SUCESSO!')
-      }
-    } catch (error) {
-      console.error('Erro ao salvar avatar:', error)
-      toast.error('ERRO INESPERADO AO Salvar AVATAR')
-    }
-  }
-
-  const handleAvatarUpload = async (file: File) => {
-    try {
-      const result = await uploadAvatar(file)
-      if (result.error) {
-        toast.error(result.error.message)
-        return result
-      }
-      if (result.data) {
-        setFormData(prevData => ({ ...prevData, avatar_url: result.data || '' }))
-        toast.success('Foto do perfil atualizada com sucesso!')
-      }
-      return result
-    } catch (_error) {
-      toast.error('Erro inesperado ao fazer upload da foto')
-      return { data: null, error: { message: 'Erro inesperado' } }
-    }
-  }
-
   if (!mounted) {
     return (
       <ProfilePageLayout title="Carregando..." showBackButton={false}>
@@ -553,71 +532,111 @@ export default function EditarPerfilPage() {
       isSaving={isSaving || isSavingLocation}
       isEditing={isEditing || isEditingLocation || isEditingProfessional}
     >
-      {/* Avatar Section - Compacto e Moderno */}
+      {/* Avatar Section - Integrado com Informações Básicas */}
       <Card className="mb-4">
         <CardContent className="p-3">
-          <div className="flex items-center gap-4">
-              {/* Avatar Atual */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
+            </div>
+            {!isEditing && (
+              <Button
+                onClick={handleEditClick}
+                size="sm"
+                variant="outline"
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Edit className="w-4 h-4 mr-1" />
+                Editar
+              </Button>
+            )}
+          </div>
+
+          {/* Avatar e Upload Integrados */}
+          <div className="flex items-start gap-4 mb-4">
+            {/* Avatar Atual */}
             <div className="relative">
               <Avatar className="w-16 h-16">
-                    <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
+                <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
               {selectedAvatar && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
               )}
-              </div>
+            </div>
 
-            {/* Informações e Ações */}
+            {/* Controles de Avatar */}
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">Foto do Perfil</h3>
-              <p className="text-sm text-gray-600 mb-2">
-                {selectedAvatar ? 'Nova foto selecionada' : 'Atualize sua foto de perfil'}
+              <h4 className="font-medium text-gray-900 mb-2">Foto do Perfil</h4>
+              <p className="text-sm text-gray-600 mb-3">
+                {selectedAvatar ? 'Nova foto selecionada' : 'Escolha uma foto ou use o pixel art gerado automaticamente'}
               </p>
               
               {/* Botões de Ação */}
-              <div className="flex gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="avatar-upload"
-                  />
-                  <label
-                    htmlFor="avatar-upload"
+              <div className="flex gap-2 flex-wrap">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <label
+                  htmlFor="avatar-upload"
                   className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer transition-colors"
-                  >
+                >
                   <Upload className="w-3 h-3 mr-1" />
-                  Upload
-                  </label>
+                  Upload Foto
+                </label>
                 
-                {profile?.full_name && profile.full_name.length >= 2 && (
-                    <button
-                      type="button"
-                      onClick={handleDicebearSelect}
-                      disabled={isGeneratingAvatar || !dicebearAvatar}
-                      className={cn(
+                {formData.full_name && formData.full_name.length >= 2 && (
+                  <button
+                    type="button"
+                    onClick={handleDicebearSelect}
+                    disabled={isGeneratingAvatar || !dicebearAvatar}
+                    className={cn(
                       "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
                       selectedAvatar?.type === 'dicebear' 
                         ? "text-green-600 bg-green-50 border border-green-200" 
                         : "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100",
-                        (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
-                      )}
-                    >
+                      (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
+                    )}
+                  >
                     <RefreshCw className={cn("w-3 h-3 mr-1", isGeneratingAvatar && "animate-spin")} />
                     {isGeneratingAvatar ? 'Gerando...' : 'Pixel Art'}
-                    </button>
-                  )}
-                </div>
+                  </button>
+                )}
               </div>
 
-            {/* Avatar será salvo automaticamente quando o usuário salvar o perfil */}
-              </div>
+              {/* Preview do Avatar Selecionado */}
+              {selectedAvatar && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={selectedAvatar.preview || ''}
+                      alt="Preview"
+                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-300"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {selectedAvatar.type === 'upload' ? 'Foto selecionada' : 'Pixel Art gerado'}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Será salva automaticamente ao salvar o perfil
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -628,25 +647,6 @@ export default function EditarPerfilPage() {
           {/* Informações Básicas - Compacto */}
           <Card>
             <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <User className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
-                </div>
-                {!isEditing && (
-                  <Button
-                    onClick={handleEditClick}
-                    size="sm"
-                    variant="outline"
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar
-                  </Button>
-                )}
-              </div>
 
               <div className="space-y-2">
                 {/* Email */}
