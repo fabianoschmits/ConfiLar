@@ -165,11 +165,18 @@ export default function OnboardingPage() {
   }, [dicebearAvatar])
 
   const generateDicebearAvatar = async (name: string, gender: string) => {
+    if (!name || name.length < 2) return
+    
     setIsGeneratingAvatar(true)
     try {
-      const encodedName = encodeURIComponent(name)
+      const encodedName = encodeURIComponent(name.trim())
       const facialHairProbability = gender === 'male' ? '30' : gender === 'female' ? '0' : '15'
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}`
+      const hairColor = gender === 'male' ? 'brown,black,blonde' : 'brown,black,blonde,red'
+      const skinColor = 'fdbcb4,edb98a,fd9841,f8d25c'
+      
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}&hairColor=${hairColor}&skinColor=${skinColor}`
+      
+      console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
       setDicebearAvatar(avatarUrl)
     } catch (error) {
       console.error('Erro ao gerar avatar Dicebear:', error)
@@ -233,12 +240,33 @@ export default function OnboardingPage() {
     }
   }
 
-  // Gerar avatar quando o nome estiver disponível
+  // Gerar avatar quando o nome estiver disponível (tempo real)
   useEffect(() => {
     if (fullName && fullName.length >= 2) {
       generateDicebearAvatar(fullName, 'male')
     }
   }, [fullName])
+
+  // Gerar avatar em tempo real baseado no nome digitado (com debounce)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    
+    const subscription = watch((value, { name }) => {
+      if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
+        // Debounce de 500ms para evitar muitas chamadas
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          const gender = value.gender || 'male'
+          generateDicebearAvatar(value.full_name, gender)
+        }, 500)
+      }
+    })
+    
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeoutId)
+    }
+  }, [watch])
 
   const onSubmit = async (data: OnboardingFormData) => {
     setIsLoading(true)
