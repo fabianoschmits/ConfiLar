@@ -1,12 +1,16 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, MessageCircle, Share2, MapPin, User, Eye, TrendingUp, Star } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star } from 'lucide-react'
 import Image from 'next/image'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
 import { ReactionButton } from './ReactionButton'
 import { CommentSection } from './CommentSection'
 import { PostOptionsMenu } from './PostOptionsMenu'
+import { ImageModal } from '@/components/ui/ImageModal'
+import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -31,6 +35,14 @@ export function TimelinePost({
   trendingReason,
   isDeleting = false
 }: TimelinePostProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showCommentSection, setShowCommentSection] = useState(false)
+  
+  // Hook para gerenciar visualizações (desabilitado temporariamente)
+  // const { viewsCount } = usePostViews(post.id)
+  // usePostViewTracker(post.id) // Registra visualização automaticamente
+  const viewsCount = 0 // Valor temporário
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -66,23 +78,26 @@ export function TimelinePost({
     )
   }
 
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedImage(null)
+  }
+
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-3 p-3 md:p-6">
+      <CardHeader className="pb-2 p-3 md:p-6">
         <div className="flex items-center space-x-2 md:space-x-3">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            {post.user_avatar ? (
-              <Image
-                src={post.user_avatar}
-                alt={post.user_name || 'Usuário'}
-                width={48}
-                height={48}
-                className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover"
-              />
-            ) : (
-              <User className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
-            )}
-          </div>
+          <Avatar className="w-10 h-10 md:w-12 md:h-12">
+            <AvatarImage src={post.user_avatar || ''} />
+            <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+              {post.user_name?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-1 md:space-x-2 flex-wrap">
               <h3 className="font-semibold text-gray-900 text-sm md:text-base truncate">{post.user_name}</h3>
@@ -107,13 +122,13 @@ export function TimelinePost({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 p-3 md:p-6">
-        <div>
-          <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
-            {post.title}
-          </h4>
-          <p className="text-sm md:text-base text-gray-700">{post.description}</p>
-        </div>
+            <CardContent className="space-y-3 p-3 md:p-6 pt-2">
+              <div className="mt-1">
+                <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
+                  {post.title}
+                </h4>
+                <p className="text-sm md:text-base text-gray-700">{post.description}</p>
+              </div>
 
         {/* Galeria de Imagens - Estilo Instagram */}
         {post.images && post.images.length > 0 && (
@@ -126,7 +141,8 @@ export function TimelinePost({
                   alt="Imagem do post"
                   width={500}
                   height={500}
-                  className="w-full h-[400px] object-cover rounded-lg"
+                  className="w-full h-[400px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => handleImageClick(post.images[0])}
                 />
               </div>
             ) : post.images.length === 2 ? (
@@ -139,7 +155,8 @@ export function TimelinePost({
                       alt={`Imagem ${index + 1}`}
                       width={250}
                       height={250}
-                      className="w-full h-[300px] object-cover rounded-lg"
+                      className="w-full h-[300px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(image)}
                     />
                   </div>
                 ))}
@@ -153,7 +170,8 @@ export function TimelinePost({
                     alt="Imagem principal"
                     width={250}
                     height={400}
-                    className="w-full h-[400px] object-cover rounded-lg"
+                    className="w-full h-[400px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => handleImageClick(post.images[0])}
                   />
                 </div>
                 <div className="space-y-1">
@@ -164,7 +182,8 @@ export function TimelinePost({
                         alt={`Imagem ${index + 2}`}
                         width={250}
                         height={195}
-                        className="w-full h-[195px] object-cover rounded-lg"
+                        className="w-full h-[195px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => handleImageClick(image)}
                       />
                     </div>
                   ))}
@@ -180,7 +199,8 @@ export function TimelinePost({
                       alt={`Imagem ${index + 1}`}
                       width={250}
                       height={250}
-                      className="w-full h-[250px] object-cover rounded-lg"
+                      className="w-full h-[250px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => handleImageClick(image)}
                     />
                     {index === 3 && post.images.length > 4 && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
@@ -200,29 +220,36 @@ export function TimelinePost({
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="flex items-center space-x-3 md:space-x-6">
             <ReactionButton postId={post.id} />
-            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors">
+            <button 
+              onClick={() => setShowCommentSection(!showCommentSection)}
+              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
+            >
               <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">{post.comments_count}</span>
+              <span className="text-sm md:text-base">{post.comments_count || 0}</span>
             </button>
             <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
               <Eye className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">0</span>
-            </button>
-            <button 
-              onClick={() => onShare(post.id)}
-              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-green-500 transition-colors"
-            >
-              <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="hidden sm:inline text-sm md:text-base">Compartilhar</span>
+              <span className="text-sm md:text-base">{viewsCount}</span>
             </button>
           </div>
         </div>
 
       {/* Comentários */}
-      {showComments && (
+      {showComments && showCommentSection && (
         <CommentSection postId={post.id} />
       )}
       </CardContent>
+
+      {/* Modal de visualização de imagem */}
+      {selectedImage && (
+        <ImageModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          imageUrl={selectedImage}
+          alt="Imagem do post"
+          title={post.title}
+        />
+      )}
     </Card>
   )
 }

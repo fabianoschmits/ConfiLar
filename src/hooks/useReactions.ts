@@ -3,6 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { ReactionType, ReactionCounts, UserReaction } from '@/types/reactions'
 
+export interface ReactionUser {
+  id: string
+  name: string
+  reaction_type: ReactionType
+  created_at: string
+}
+
 export function useReactions(postId: string) {
   const queryClient = useQueryClient()
   const [userReactions, setUserReactions] = useState<Record<string, ReactionType | null>>({})
@@ -104,12 +111,9 @@ export function useReactionCounts(postId: string) {
 
       const counts: ReactionCounts = {
         like: 0,
-        love: 0,
+        heart: 0,
         laugh: 0,
-        thumbs_up: 0,
-        thumbs_down: 0,
         fire: 0,
-        star: 0,
         total: 0
       }
 
@@ -127,14 +131,49 @@ export function useReactionCounts(postId: string) {
   return {
     reactionCounts: reactionCounts || {
       like: 0,
-      love: 0,
+      heart: 0,
       laugh: 0,
-      thumbs_up: 0,
-      thumbs_down: 0,
       fire: 0,
-      star: 0,
       total: 0
     },
+    isLoading
+  }
+}
+
+// Hook para buscar usuários que reagiram
+export function useReactionUsers(postId: string) {
+  const { data: reactionUsers, isLoading } = useQuery({
+    queryKey: ['reaction-users', postId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('post_reactions')
+        .select(`
+          id,
+          reaction_type,
+          created_at,
+          profiles!inner(
+            id,
+            name
+          )
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return data?.map(reaction => ({
+        id: reaction.id,
+        name: (reaction.profiles as any).name,
+        reaction_type: reaction.reaction_type as ReactionType,
+        created_at: reaction.created_at
+      })) || []
+    },
+    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
+    gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
+  })
+
+  return {
+    reactionUsers: reactionUsers || [],
     isLoading
   }
 }

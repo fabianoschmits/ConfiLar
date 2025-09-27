@@ -5,6 +5,7 @@ import { Camera, X, Loader2, Image as ImageIcon } from 'lucide-react'
 import { Button } from './button'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useImageCompression } from '@/hooks/useImageCompression'
 
 interface ImageUploadFeedProps {
   onImagesUpload: (imageUrls: string[]) => void
@@ -23,6 +24,7 @@ export function ImageUploadFeed({
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { user } = useAuthContext()
+  const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
   const handleFileUpload = async (files: FileList) => {
     console.log('Iniciando upload de', files.length, 'arquivos')
@@ -59,13 +61,18 @@ export function ImageUploadFeed({
           continue
         }
 
-        // Validar tamanho (máximo 5MB)
-        const maxSize = 5 * 1024 * 1024 // 5MB
-        if (file.size > maxSize) {
-          console.log('Arquivo muito grande:', file.size)
-          alert('A imagem deve ter no máximo 5MB')
-          continue
-        }
+        // Comprimir imagem antes do upload
+        console.log('Comprimindo imagem...')
+        const compressedFile = await compressImage(file, {
+          maxSizeMB: 1, // 1MB máximo após compressão
+          maxWidthOrHeight: 1080 // 1080px máximo
+        })
+        
+        console.log('Imagem comprimida:', {
+          original: file.size,
+          compressed: compressedFile.size,
+          reduction: Math.round((1 - compressedFile.size / file.size) * 100) + '%'
+        })
 
         // Gerar nome único para o arquivo
         const fileExt = file.name.split('.').pop()
@@ -76,7 +83,7 @@ export function ImageUploadFeed({
         console.log('Iniciando upload para Supabase...')
         const { data, error } = await supabase.storage
           .from('feed-images')
-          .upload(fileName, file, {
+          .upload(fileName, compressedFile, {
             cacheControl: '3600',
             upsert: false
           })
@@ -221,10 +228,12 @@ export function ImageUploadFeed({
           />
 
           <div className="space-y-3">
-            {isUploading ? (
+            {isUploading || isCompressing ? (
               <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                <span className="text-blue-600">Fazendo upload...</span>
+                <span className="text-blue-600">
+                  {isCompressing ? `Comprimindo... ${compressionProgress}%` : 'Fazendo upload...'}
+                </span>
               </div>
             ) : (
               <>
@@ -244,7 +253,7 @@ export function ImageUploadFeed({
                     }
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    JPG, PNG ou WebP • Máximo 5MB cada • {currentImages.length}/{maxImages} imagens
+                    JPG, PNG ou WebP • Será comprimido para 1MB e 1080px • {currentImages.length}/{maxImages} imagens
                   </p>
                 </div>
 
