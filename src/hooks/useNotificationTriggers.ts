@@ -97,13 +97,13 @@ export function useNotificationTriggers() {
       }
 
       const { data, error } = await supabase
-        .from('recommendations')
+        .from('user_recommendations')
         .select(`
           id,
-          reason,
+          recommendation_type,
           created_at,
-          from_user_id,
-          to_user_id
+          recommender_id,
+          recommended_id
         `)
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
         .order('created_at', { ascending: false })
@@ -118,18 +118,18 @@ export function useNotificationTriggers() {
       // Buscar informações dos usuários
       for (const recommendation of data) {
         try {
-          // Buscar dados do from_user
+          // Buscar dados do recommender
           const { data: fromUserData, error: fromUserError } = await supabase
             .from('profiles')
             .select('id, full_name')
-            .eq('id', recommendation.from_user_id)
+            .eq('id', recommendation.recommender_id)
             .single()
 
-          // Buscar dados do to_user
+          // Buscar dados do recommended
           const { data: toUserData, error: toUserError } = await supabase
             .from('profiles')
             .select('id, full_name')
-            .eq('id', recommendation.to_user_id)
+            .eq('id', recommendation.recommended_id)
             .single()
 
           if (fromUserError || toUserError) {
@@ -143,7 +143,7 @@ export function useNotificationTriggers() {
               fromUserData.full_name,
               toUserData.id,
               toUserData.full_name,
-              recommendation.reason || 'Sem motivo especificado.'
+              'Sem motivo especificado.'
             )
           }
         } catch (recommendationError) {
@@ -205,7 +205,7 @@ export function useNotificationTriggers() {
             .single()
 
           if (userError || favoritedError) {
-            console.log('⚠️ Dados de usuário não encontrados para favorito:', favorite.id)
+            console.log('⚠️ Dados de usuário não encontrados para favorito')
             continue
           }
 

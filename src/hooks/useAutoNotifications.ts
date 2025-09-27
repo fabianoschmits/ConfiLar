@@ -8,6 +8,17 @@ export function useAutoNotifications() {
     try {
       console.log('🎉 Criando post de boas-vindas para:', userName)
       
+      // Buscar informações completas do usuário
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('full_name, bio, location_city, location_state, avatar_url, user_type')
+        .eq('id', userId)
+        .single()
+
+      if (userError) {
+        console.log('⚠️ Erro ao buscar dados do usuário:', userError.message)
+      }
+
       const message = `🎉 ${userName} se juntou à comunidade`
       
       const { data, error } = await supabase
@@ -18,15 +29,23 @@ export function useAutoNotifications() {
           title: `🎉 ${userName} se juntou à comunidade`,
           description: message,
           images: [],
-          location_state: 'SP',
-          location_city: 'São Paulo',
+          location_state: userData?.location_state || 'SP',
+          location_city: userData?.location_city || 'São Paulo',
           likes_count: 0,
           comments_count: 0,
           is_active: true,
           is_public: true,
           is_featured: false,
           tags: ['sistema', 'boas-vindas'],
-          metadata: { type: 'welcome', user_type: userType }
+          metadata: { 
+            type: 'welcome', 
+            user: userName,
+            user_type: userData?.user_type || userType,
+            location_city: userData?.location_city,
+            location_state: userData?.location_state,
+            bio: userData?.bio,
+            avatar_url: userData?.avatar_url
+          }
         })
         .select()
         .single()
