@@ -42,7 +42,8 @@ import {
   Target
 } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { useOpenMessages } from '@/hooks/useOpenMessages'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { toast } from 'sonner'
 import { usePortfolio } from '@/hooks/usePortfolio'
 import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { useProfileViews } from '@/hooks/useProfileViews'
@@ -76,7 +77,7 @@ export default function PublicProfilePage() {
     const params = useParams()
     const router = useRouter()
     const { user } = useAuthContext()
-    const { openMessages } = useOpenMessages()
+    const { openChat } = useFloatingChat()
     const userId = params.id as string
     const [profile, setProfile] = useState<PublicProfile | null>(null)
     const [loading, setLoading] = useState(true)
@@ -216,10 +217,18 @@ export default function PublicProfilePage() {
 
     const handleContact = () => {
         if (!user) {
-            router.push('/auth')
+            toast.error('Você precisa estar logado para entrar em contato')
             return
         }
-        openMessages(userId)
+        
+        if (userId === user.id) {
+            toast.error('Você não pode entrar em contato consigo mesmo')
+            return
+        }
+        
+        // Abrir chat flutuante
+        openChat(userId, profile?.full_name || 'Usuário')
+        toast.success('Iniciando conversa...')
     }
 
     // Retornos condicionais após todos os hooks
@@ -284,21 +293,24 @@ export default function PublicProfilePage() {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Header do Perfil */}
                     <Card className="mb-8">
-                        <CardContent className="p-8">
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                                <div className="flex items-center space-x-6 mb-6 lg:mb-0">
-                                    <UserAvatar
-                                        src={profile.avatar_url}
-                                        alt={profile.full_name}
-                                        fallback={profile.full_name.charAt(0)}
-                                        size="lg"
-                                        className="w-24 h-24"
-                                    />
-                                    <div>
-                                        <div className="flex items-center space-x-2 mb-2">
-                                            <h1 className="text-3xl font-bold text-gray-900">
-                                                {profile.full_name}
-                                            </h1>
+                        <CardContent className="p-4 sm:p-6 lg:p-8">
+                            <div className="flex flex-col items-center text-center space-y-6">
+                                {/* Avatar Centralizado */}
+                                <UserAvatar
+                                    src={profile.avatar_url}
+                                    alt={profile.full_name}
+                                    fallback={profile.full_name.charAt(0)}
+                                    size="lg"
+                                    className="w-24 h-24"
+                                />
+                                
+                                {/* Nome e Badges Centralizados */}
+                                <div className="space-y-3">
+                                    <div className="flex flex-col items-center space-y-2">
+                                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                                            {profile.full_name}
+                                        </h1>
+                                        <div className="flex flex-wrap justify-center items-center gap-2">
                                             {profile.is_verified && (
                                                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                                                     <CheckCircle className="w-3 h-3 mr-1" />
@@ -320,31 +332,37 @@ export default function PublicProfilePage() {
                                                 </Badge>
                                             )}
                                         </div>
-                                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                            <div className="flex items-center space-x-1">
-                                                <Star className="w-4 h-4 text-yellow-500" />
-                                                <span className="font-medium">{profile.rating.toFixed(1)}</span>
-                                                <span>({profile.total_reviews} avaliações)</span>
-                                            </div>
-                                            {isProfessional && (
-                                                <div className="flex items-center space-x-1">
-                                                    <Briefcase className="w-4 h-4" />
-                                                    <span>Profissional</span>
-                                                </div>
-                                            )}
-                                            <div className="flex items-center space-x-1">
-                                                <Eye className="w-4 h-4" />
-                                                <span>{viewStats?.total_views || 0} visualizações</span>
-                                            </div>
-                                        </div>
-                                        {profile.bio && (
-                                            <p className="text-gray-700 mt-3 max-w-2xl">
-                                                {profile.bio}
-                                            </p>
-                                        )}
                                     </div>
+                                    
+                                    {/* Informações de Rating e Tipo Centralizadas */}
+                                    <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600">
+                                        <div className="flex items-center space-x-1">
+                                            <Star className="w-4 h-4 text-yellow-500" />
+                                            <span className="font-medium">{profile.rating.toFixed(1)}</span>
+                                            <span>({profile.total_reviews} avaliações)</span>
+                                        </div>
+                                        {isProfessional && (
+                                            <div className="flex items-center space-x-1">
+                                                <Briefcase className="w-4 h-4" />
+                                                <span>Profissional</span>
+                                            </div>
+                                        )}
+                                        <div className="flex items-center space-x-1">
+                                            <Eye className="w-4 h-4" />
+                                            <span>{viewStats?.total_views || 0} visualizações</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Bio Centralizada */}
+                                    {profile.bio && (
+                                        <p className="text-gray-700 max-w-2xl mx-auto">
+                                            {profile.bio}
+                                        </p>
+                                    )}
                                 </div>
-                                <div className="flex flex-col space-y-3">
+                                
+                                {/* Botões de Ação Centralizados */}
+                                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
                                     {!isOwnProfile && (
                                         <Button
                                             onClick={handleContact}
@@ -417,22 +435,22 @@ export default function PublicProfilePage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                         <div className="text-center">
-                                            <div className="text-2xl font-bold text-blue-600">{profile.rating.toFixed(1)}</div>
-                                            <div className="text-sm text-gray-600">Avaliação</div>
+                                            <div className="text-xl sm:text-2xl font-bold text-blue-600">{profile.rating.toFixed(1)}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Avaliação</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-2xl font-bold text-green-600">{profile.total_reviews}</div>
-                                            <div className="text-sm text-gray-600">Avaliações</div>
+                                            <div className="text-xl sm:text-2xl font-bold text-green-600">{profile.total_reviews}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Avaliações</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-2xl font-bold text-purple-600">{viewStats?.total_views || 0}</div>
-                                            <div className="text-sm text-gray-600">Visualizações</div>
+                                            <div className="text-xl sm:text-2xl font-bold text-purple-600">{viewStats?.total_views || 0}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Visualizações</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-2xl font-bold text-orange-600">{viewStats?.views_today || 0}</div>
-                                            <div className="text-sm text-gray-600">Hoje</div>
+                                            <div className="text-xl sm:text-2xl font-bold text-orange-600">{viewStats?.views_today || 0}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Hoje</div>
                                         </div>
                                     </div>
                                 </CardContent>

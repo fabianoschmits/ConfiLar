@@ -8,11 +8,11 @@ import { NavigationLink } from '@/components/ui/NavigationLink'
 import { cn } from '@/lib/utils'
 import { 
   Home,
-  BarChart3,
   Search,
   Briefcase,
   MessageCircle,
-  User
+  User,
+  Users
 } from 'lucide-react'
 
 export function ModernBottomNavigation() {
@@ -39,10 +39,10 @@ export function ModernBottomNavigation() {
       active: isActive('/home')
     },
     {
-      href: '/dashboard',
-      label: 'Dashboard',
-      icon: BarChart3,
-      active: isActive('/dashboard')
+      href: '/feed',
+      label: 'Feed',
+      icon: Users,
+      active: isActive('/feed')
     },
     {
       href: '/buscar',
@@ -57,7 +57,7 @@ export function ModernBottomNavigation() {
       active: isActive('/classificados')
     },
     {
-      href: '/perfil',
+      href: `/perfil/${profile.id}`,
       label: 'Perfil',
       icon: User,
       active: isActive('/perfil')

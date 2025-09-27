@@ -237,95 +237,15 @@ export function useSupabaseNotifications() {
     }
   }
 
-  // Sincronização em tempo real REATIVADA
+  // Sincronização em tempo real DESABILITADA temporariamente
   useEffect(() => {
     if (!profile?.id) {
       console.log('🔔 useSupabaseNotifications: Profile não disponível para canal de tempo real')
       return
     }
 
-    console.log('🔔 Iniciando sincronização de notificações em tempo real para profile:', profile.id)
-
-    const channel = supabase
-      .channel(`notifications-${profile.id}`) // Canal único por usuário
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${profile.id}`
-        },
-        (payload) => {
-          console.log('🔔 Mudança detectada nas notificações:', payload)
-          
-          if (payload.eventType === 'INSERT') {
-            // Nova notificação recebida em tempo real
-            const newNotification = payload.new as SupabaseNotification
-            console.log('🔔 Nova notificação recebida em tempo real:', newNotification)
-            
-            // Adicionar à lista existente
-            setNotifications(prev => {
-              // Evitar duplicatas
-              const exists = prev.some(n => n.id === newNotification.id)
-              if (exists) {
-                console.log('🔔 Notificação já existe, ignorando duplicata')
-                return prev
-              }
-              return [newNotification, ...prev]
-            })
-            
-            // Atualizar contador apenas se não estiver lida
-            if (!newNotification.is_read) {
-              setUnreadCount(prev => prev + 1)
-              console.log('🔔 Contador de não lidas atualizado:', unreadCount + 1)
-            }
-            
-          } else if (payload.eventType === 'UPDATE') {
-            // Notificação atualizada (ex: marcada como lida)
-            const updatedNotification = payload.new as SupabaseNotification
-            console.log('🔔 Notificação atualizada em tempo real:', updatedNotification)
-            
-            setNotifications(prev =>
-              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-            )
-            
-            // Recalcular contagem de não lidas
-            setUnreadCount(prev => {
-              // Se a notificação foi marcada como lida, decrementar contador
-              if (updatedNotification.is_read) {
-                return Math.max(0, prev - 1)
-              }
-              return prev
-            })
-            
-          } else if (payload.eventType === 'DELETE') {
-            // Notificação removida
-            const deletedNotification = payload.old as SupabaseNotification
-            console.log('🔔 Notificação removida em tempo real:', deletedNotification)
-            
-            setNotifications(prev => prev.filter(n => n.id !== deletedNotification.id))
-            
-            // Atualizar contador se a notificação removida não estava lida
-            if (!deletedNotification.is_read) {
-              setUnreadCount(prev => Math.max(0, prev - 1))
-            }
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log('🔔 Status da conexão de notificações:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Canal de notificações conectado com sucesso')
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Erro na conexão do canal de notificações')
-        }
-      })
-
-    return () => {
-      console.log('🔔 Desconectando canal de notificações...')
-      supabase.removeChannel(channel)
-    }
+    console.log('🔔 Canal de notificações desabilitado temporariamente para evitar erros')
+    return
   }, [profile?.id]) // Removido notifications e unreadCount das dependências para evitar loop
 
   // Carregar notificações iniciais
