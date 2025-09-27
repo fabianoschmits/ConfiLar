@@ -593,6 +593,17 @@ export function useMessages() {
     // Verificar mensagens não lidas periodicamente
     const checkUnreadMessages = async () => {
       try {
+        // Verificar se a tabela messages existe primeiro
+        const { data: testData, error: testError } = await supabase
+          .from('messages')
+          .select('id')
+          .limit(1)
+
+        if (testError) {
+          console.log('⚠️ Tabela messages não encontrada, pulando verificação de mensagens não lidas')
+          return
+        }
+
         const { data: unreadMessages, error } = await supabase
           .from('messages')
           .select(`
@@ -601,45 +612,33 @@ export function useMessages() {
             sender_id,
             receiver_id,
             content,
-            created_at,
-            conversations!inner(
-              id,
-              client_id,
-              professional_id,
-              client:profiles!conversations_client_id_fkey(id, full_name, avatar_url, user_type),
-              professional:profiles!conversations_professional_id_fkey(id, full_name, avatar_url, user_type)
-            )
+            created_at
           `)
           .eq('receiver_id', user.id)
           .eq('is_read', false)
           .neq('sender_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(5) // Reduzir para 5 mensagens não lidas
+          .limit(5)
 
         if (error) {
-          console.error('❌ Erro ao verificar mensagens não lidas:', error)
+          console.log('⚠️ Erro ao verificar mensagens não lidas:', error.message)
           return
         }
 
-        // Criar notificações para mensagens não lidas - REMOVIDO para evitar duplicação
-        // if (unreadMessages && unreadMessages.length > 0) {
-        //   for (const message of unreadMessages) {
-        //     const conversation = message.conversations
-        //     if (conversation) {
-        //       await createMessageNotification(message, conversation)
-        //     }
-        //   }
-        // }
+        // Log apenas se houver mensagens não lidas
+        if (unreadMessages && unreadMessages.length > 0) {
+          console.log(`📨 ${unreadMessages.length} mensagens não lidas encontradas`)
+        }
       } catch (error) {
-        console.error('❌ Erro ao verificar mensagens não lidas:', error)
+        console.log('⚠️ Erro ao verificar mensagens não lidas:', error.message)
       }
     }
 
     // Verificar imediatamente
     checkUnreadMessages()
 
-    // Verificar a cada 30 segundos
-    const interval = setInterval(checkUnreadMessages, 30000)
+    // Verificar a cada 5 minutos (reduzido de 30 segundos)
+    const interval = setInterval(checkUnreadMessages, 5 * 60 * 1000)
 
     // Cleanup
     return () => {
