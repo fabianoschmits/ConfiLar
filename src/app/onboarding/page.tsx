@@ -293,7 +293,7 @@ export default function OnboardingPage() {
       }
 
       toast.success('🎉 Perfil completado com sucesso!')
-      router.push('/dashboard')
+      router.push('/feed')
     } catch (error) {
       console.error('Erro no onboarding:', error)
       toast.error('Erro inesperado ao completar perfil')

@@ -31,8 +31,8 @@ export function LoginForm() {
   // Verificar se a conta foi criada
   const accountCreated = searchParams.get('message') === 'account_created'
   
-  // Obter o parâmetro de redirecionamento - redireciona para dashboard por padrão
-  const redirectPath = searchParams.get('redirect') || '/dashboard'
+  // Obter o parâmetro de redirecionamento - redireciona para feed por padrão
+  const redirectPath = searchParams.get('redirect') || '/feed'
 
   const {
     register,
