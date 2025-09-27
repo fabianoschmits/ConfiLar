@@ -19,6 +19,7 @@ export function useRealtimeConnection() {
     lastActivity: null,
     connectionError: null
   })
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     if (!profile?.id) {
@@ -67,6 +68,7 @@ export function useRealtimeConnection() {
             isConnecting: false,
             connectionError: null
           }))
+          setRetryCount(0) // Reset contador de retry
           console.log('✅ Conexão em tempo real estabelecida')
         } else if (subscriptionStatus === 'CHANNEL_ERROR') {
           setStatus(prev => ({
@@ -84,6 +86,18 @@ export function useRealtimeConnection() {
             connectionError: 'Timeout na conexão'
           }))
           console.error('⏰ Timeout na conexão')
+          
+          // Implementar retry com backoff exponencial
+          if (retryCount < 3) {
+            const delay = Math.pow(2, retryCount) * 1000 // 1s, 2s, 4s
+            console.log(`🔄 Tentando reconectar em ${delay}ms (tentativa ${retryCount + 1}/3)`)
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1)
+            }, delay)
+          } else {
+            console.log('❌ Máximo de tentativas de reconexão atingido')
+            setRetryCount(0)
+          }
         } else if (subscriptionStatus === 'CLOSED') {
           setStatus(prev => ({
             ...prev,
@@ -95,14 +109,14 @@ export function useRealtimeConnection() {
         }
       })
 
-    // Verificar conectividade periodicamente
+    // Verificar conectividade periodicamente (otimizado para 10 segundos)
     const healthCheck = setInterval(() => {
       if (status.lastActivity) {
         const timeSinceLastActivity = Date.now() - status.lastActivity.getTime()
-        const isStale = timeSinceLastActivity > 60000 // 1 minuto sem atividade
+        const isStale = timeSinceLastActivity > 30000 // 30 segundos sem atividade (reduzido)
         
         if (isStale && status.isConnected) {
-          console.log('⚠️ Conexão pode estar inativa há mais de 1 minuto')
+          console.log('⚠️ Conexão pode estar inativa há mais de 30 segundos')
           setStatus(prev => ({
             ...prev,
             isConnected: false,
@@ -110,14 +124,14 @@ export function useRealtimeConnection() {
           }))
         }
       }
-    }, 30000) // Verificar a cada 30 segundos
+    }, 10000) // Verificar a cada 10 segundos (otimizado)
 
     return () => {
       console.log('🔗 Limpando monitoramento de conexão...')
       clearInterval(healthCheck)
       supabase.removeChannel(testChannel)
     }
-  }, [profile?.id, status.lastActivity])
+  }, [profile?.id, status.lastActivity, retryCount])
 
   return status
 }
