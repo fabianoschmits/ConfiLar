@@ -8,19 +8,14 @@ export function useAutoNotifications() {
     try {
       console.log('🎉 Criando post de boas-vindas para:', userName)
       
-      const welcomeMessages = {
-        professional: `🎉 **${userName}** acabou de se juntar à nossa comunidade! Como profissional, ele está pronto para oferecer seus serviços e ajudar outros usuários com seus projetos. Seja bem-vindo! 👋`,
-        client: `🎉 **${userName}** acabou de se juntar à nossa comunidade! Como cliente, ele está em busca de profissionais qualificados para seus projetos. Seja bem-vindo! 👋`
-      }
-      
-      const message = welcomeMessages[userType as keyof typeof welcomeMessages] || welcomeMessages.client
+      const message = `🎉 ${userName} se juntou à comunidade`
       
       const { data, error } = await supabase
         .from('feed_posts')
         .insert({
           professional_id: userId,
           user_id: userId,
-          title: `🎉 Novo membro: ${userName}`,
+          title: `🎉 ${userName} se juntou à comunidade`,
           description: message,
           images: [],
           location_state: 'SP',
@@ -50,16 +45,14 @@ export function useAutoNotifications() {
     try {
       console.log('💡 Criando post de recomendação:', fromUserName, '→', toUserName)
       
-      const message = reason 
-        ? `💡 **${fromUserName}** recomendou **${toUserName}**! \n\n*"${reason}"*\n\nQue tal conhecer este profissional?`
-        : `💡 **${fromUserName}** recomendou **${toUserName}**! \n\nQue tal conhecer este profissional?`
+      const message = `💡 ${fromUserName} recomendou ${toUserName}`
       
       const { data, error } = await supabase
         .from('feed_posts')
         .insert({
           professional_id: fromUserId,
           user_id: fromUserId,
-          title: `💡 Recomendação: ${toUserName}`,
+          title: `💡 ${fromUserName} recomendou ${toUserName}`,
           description: message,
           images: [],
           location_state: 'SP',
@@ -89,17 +82,15 @@ export function useAutoNotifications() {
     try {
       console.log('⭐ Criando post de avaliação:', reviewerName, '→', reviewedName, rating, 'estrelas')
       
-      const stars = '⭐'.repeat(rating)
-      const message = comment 
-        ? `⭐ **${reviewerName}** avaliou **${reviewedName}** com ${stars} (${rating}/5)\n\n*"${comment}"*\n\nParabéns pelo excelente trabalho!`
-        : `⭐ **${reviewerName}** avaliou **${reviewedName}** com ${stars} (${rating}/5)\n\nParabéns pelo excelente trabalho!`
+      const stars = '⭐'.repeat(Math.min(rating, 5))
+      const message = `⭐ ${reviewerName} avaliou ${reviewedName} com ${stars} (${rating}/5)`
       
       const { data, error } = await supabase
         .from('feed_posts')
         .insert({
           professional_id: reviewerId,
           user_id: reviewerId,
-          title: `⭐ Avaliação: ${reviewedName} - ${stars}`,
+          title: `⭐ ${reviewerName} avaliou ${reviewedName}`,
           description: message,
           images: [],
           location_state: 'SP',
@@ -129,14 +120,14 @@ export function useAutoNotifications() {
     try {
       console.log('❤️ Criando post de favorito:', userName, '→', favoritedName)
       
-      const message = `❤️ **${userName}** adicionou **${favoritedName}** aos favoritos!\n\nQue tal conhecer este profissional também?`
+      const message = `❤️ ${userName} adicionou ${favoritedName} aos favoritos`
       
       const { data, error } = await supabase
         .from('feed_posts')
         .insert({
           professional_id: userId,
           user_id: userId,
-          title: `❤️ Favorito: ${favoritedName}`,
+          title: `❤️ ${userName} favoritou ${favoritedName}`,
           description: message,
           images: [],
           location_state: 'SP',
