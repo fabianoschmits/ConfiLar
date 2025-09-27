@@ -40,37 +40,42 @@ export function useNotificationTriggers() {
         return // Nenhuma avaliação nova
       }
 
-      // Buscar informações dos usuários
-      for (const review of data) {
-        try {
-          // Buscar dados do reviewer
-          const { data: reviewerData } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .eq('id', review.reviewer_id)
-            .single()
+           // Buscar informações dos usuários
+           for (const review of data) {
+             try {
+               // Buscar dados do reviewer
+               const { data: reviewerData, error: reviewerError } = await supabase
+                 .from('profiles')
+                 .select('id, full_name')
+                 .eq('id', review.reviewer_id)
+                 .single()
 
-          // Buscar dados do reviewed
-          const { data: reviewedData } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .eq('id', review.reviewed_id)
-            .single()
+               // Buscar dados do reviewed
+               const { data: reviewedData, error: reviewedError } = await supabase
+                 .from('profiles')
+                 .select('id, full_name')
+                 .eq('id', review.reviewed_id)
+                 .single()
 
-          if (reviewerData && reviewedData) {
-            await createReviewPost(
-              reviewerData.id,
-              reviewerData.full_name,
-              reviewedData.id,
-              reviewedData.full_name,
-              review.rating_person || 5,
-              review.comment || 'Sem comentário.'
-            )
-          }
-        } catch (reviewError) {
-          console.error('❌ Erro ao processar review:', reviewError)
-        }
-      }
+               if (reviewerError || reviewedError) {
+                 console.log('⚠️ Dados de usuário não encontrados para review:', review.id)
+                 continue
+               }
+
+               if (reviewerData && reviewedData) {
+                 await createReviewPost(
+                   reviewerData.id,
+                   reviewerData.full_name,
+                   reviewedData.id,
+                   reviewedData.full_name,
+                   review.rating_person || 5,
+                   review.comment || 'Sem comentário.'
+                 )
+               }
+             } catch (reviewError) {
+               console.error('❌ Erro ao processar review:', reviewError)
+             }
+           }
     } catch (error) {
       console.error('❌ Erro ao monitorar avaliações:', error)
     }
@@ -114,18 +119,23 @@ export function useNotificationTriggers() {
       for (const recommendation of data) {
         try {
           // Buscar dados do from_user
-          const { data: fromUserData } = await supabase
+          const { data: fromUserData, error: fromUserError } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', recommendation.from_user_id)
             .single()
 
           // Buscar dados do to_user
-          const { data: toUserData } = await supabase
+          const { data: toUserData, error: toUserError } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', recommendation.to_user_id)
             .single()
+
+          if (fromUserError || toUserError) {
+            console.log('⚠️ Dados de usuário não encontrados para recomendação:', recommendation.id)
+            continue
+          }
 
           if (fromUserData && toUserData) {
             await createRecommendationPost(
@@ -181,18 +191,23 @@ export function useNotificationTriggers() {
       for (const favorite of data) {
         try {
           // Buscar dados do user
-          const { data: userData } = await supabase
+          const { data: userData, error: userError } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', favorite.user_id)
             .single()
 
           // Buscar dados do favorited
-          const { data: favoritedData } = await supabase
+          const { data: favoritedData, error: favoritedError } = await supabase
             .from('profiles')
             .select('id, full_name')
             .eq('id', favorite.professional_id)
             .single()
+
+          if (userError || favoritedError) {
+            console.log('⚠️ Dados de usuário não encontrados para favorito:', favorite.id)
+            continue
+          }
 
           if (userData && favoritedData) {
             await createFavoritePost(
@@ -236,24 +251,19 @@ export function useNotificationTriggers() {
     }
   }, [createStatsPost])
 
-  // Executar monitoramento
+  // Executar monitoramento apenas uma vez por sessão
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Executar apenas uma vez ao carregar a página
+    const timeout = setTimeout(() => {
       monitorReviews()
       monitorRecommendations()
       monitorFavorites()
-    }, 5 * 60 * 1000) // Verificar a cada 5 minutos (reduzido de 30 segundos)
-
-    // Postar estatísticas uma vez por dia
-    const dailyStats = setInterval(() => {
-      postStats()
-    }, 24 * 60 * 60 * 1000) // 24 horas
+    }, 2000) // Aguardar 2 segundos após carregar
 
     return () => {
-      clearInterval(interval)
-      clearInterval(dailyStats)
+      clearTimeout(timeout)
     }
-  }, [monitorReviews, monitorRecommendations, monitorFavorites, postStats])
+  }, []) // Executar apenas uma vez
 
   return {
     monitorReviews,
