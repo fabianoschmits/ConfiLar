@@ -91,7 +91,7 @@ export function WelcomeUserPost({
           <div className="flex items-start space-x-3 mb-4">
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
-                <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
+                <Avatar className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
                   <AvatarImage src={post.metadata?.avatar_url || ''} />
                   <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                     {post.metadata?.user?.charAt(0).toUpperCase() || 'N'}
@@ -101,7 +101,7 @@ export function WelcomeUserPost({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
                   <Link href={`/perfil/${post.user_id || ''}`}>
                     {post.metadata?.user}
                   </Link>
