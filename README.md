@@ -40,37 +40,6 @@
 - **Row Level Security (RLS)** - Segurança a nível de linha
 - **Real-time Subscriptions** - Atualizações em tempo real
 
-## 🚀 Instalação
-
-### 1. Clone o Repositório
-```bash
-git clone https://github.com/fabianoschmits/ConfiLar.git
-cd ConfiLar
-```
-
-### 2. Instale as Dependências
-```bash
-npm install
-```
-
-### 3. Configure as Variáveis de Ambiente
-```bash
-cp .env.example .env.local
-```
-
-Preencha o arquivo `.env.local`:
-```env
-NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
-SUPABASE_SERVICE_ROLE_KEY=sua_chave_de_servico
-```
-
-### 4. Execute o Projeto
-```bash
-npm run dev
-```
-
-Acesse [http://localhost:3000](http://localhost:3000)
 
 ## 📱 Páginas Principais
 
@@ -138,44 +107,7 @@ const handleContact = (userId: string, userName: string) => {
 - **Lazy loading** de componentes
 - **Otimização de imagens** automática
 
-## 🧪 Testes
 
-```bash
-# Testes unitários
-npm run test
-
-# Testes com coverage
-npm run test:coverage
-
-# Build de produção
-npm run build
-```
-
-## 📦 Deploy
-
-### 🚀 Vercel (Recomendado)
-```bash
-# Instalar Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
-```
-
-### ⚙️ Variáveis de Ambiente (Produção)
-```env
-NEXT_PUBLIC_SUPABASE_URL=sua_url_producao
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_producao
-SUPABASE_SERVICE_ROLE_KEY=sua_chave_servico_producao
-```
-
-## 🤝 Contribuição
-
-1. **Fork** o repositório
-2. **Crie** uma branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
-5. **Abra** um Pull Request
 
 ## 📄 Licença
 
