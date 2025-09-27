@@ -142,10 +142,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Se há usuário e tentando acessar rota de auth, redirecionar para dashboard
+  // Se há usuário e tentando acessar rota de auth, redirecionar para feed social
   // Mas apenas se não for um redirecionamento interno
   if (user && isAuthRoute && !request.headers.get('x-middleware-redirect')) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/feed', request.url))
   }
 
   return response

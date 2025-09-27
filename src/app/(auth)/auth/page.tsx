@@ -14,7 +14,7 @@ export default function AuthPage() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('login')
   const [registrationComplete, setRegistrationComplete] = useState(false)
-  const [redirectPath, setRedirectPath] = useState('/dashboard')
+  const [redirectPath, setRedirectPath] = useState('/feed')
 
   useEffect(() => {
     // Obter o parâmetro de redirecionamento da URL

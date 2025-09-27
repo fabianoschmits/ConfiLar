@@ -48,10 +48,10 @@ function HomeContent() {
     setMounted(true)
   }, [])
 
-  // Redirecionar usuários logados para o dashboard
+  // Redirecionar usuários logados para o feed social
   useEffect(() => {
     if (mounted && isReady && user) {
-      router.push('/dashboard')
+      router.push('/feed')
       return
     }
   }, [user, isReady, router, mounted])
