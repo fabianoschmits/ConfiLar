@@ -212,7 +212,39 @@ export default function EditarPerfilPage() {
 
     setIsSaving(true)
     try {
-      const result = await updateProfile(formData)
+      // Preparar dados do avatar se selecionado
+      let avatarData = null
+      if (selectedAvatar) {
+        if (selectedAvatar.type === 'upload') {
+          // Upload de arquivo
+          const result = await uploadAvatar(selectedAvatar.value as File)
+          if (result.error) {
+            toast.error(result.error.message)
+            setIsSaving(false)
+            return
+          }
+          avatarData = {
+            type: 'upload',
+            url: result.data,
+            preview: selectedAvatar.preview
+          }
+        } else if (selectedAvatar.type === 'dicebear') {
+          // Avatar Dicebear
+          avatarData = {
+            type: 'dicebear',
+            url: selectedAvatar.value as string,
+            preview: selectedAvatar.preview
+          }
+        }
+      }
+
+      // Incluir avatar nos dados do perfil
+      const profileDataWithAvatar = {
+        ...formData,
+        avatar_data: avatarData
+      }
+
+      const result = await updateProfile(profileDataWithAvatar)
       if (result?.error) {
         toast.error('Erro ao atualizar perfil: ' + result.error.message)
       } else {
@@ -397,10 +429,20 @@ export default function EditarPerfilPage() {
       
       const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}&hairColor=${hairColor}&skinColor=${skinColor}`
       
+      console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
+      
+      // Testar se a URL é válida
+      const response = await fetch(avatarUrl)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       setDicebearAvatar(avatarUrl)
-      console.log('🎨 Avatar atualizado para:', name, 'Gênero:', gender)
     } catch (error) {
-      console.error('Erro ao gerar avatar Dicebear:', error)
+      console.error('❌ Erro ao gerar avatar Dicebear:', error)
+      // Fallback: usar avatar padrão
+      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=transparent&size=100`
+      setDicebearAvatar(fallbackUrl)
     } finally {
       setIsGeneratingAvatar(false)
     }
@@ -573,17 +615,7 @@ export default function EditarPerfilPage() {
                 </div>
               </div>
 
-            {/* Botão Salvar */}
-              {selectedAvatar && (
-                <Button
-                  onClick={handleAvatarSave}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
-                >
-                <Save className="w-4 h-4 mr-1" />
-                Salvar
-                </Button>
-              )}
+            {/* Avatar será salvo automaticamente quando o usuário salvar o perfil */}
               </div>
         </CardContent>
       </Card>
