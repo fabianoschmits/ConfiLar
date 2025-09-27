@@ -177,9 +177,19 @@ export default function OnboardingPage() {
       const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}&hairColor=${hairColor}&skinColor=${skinColor}`
       
       console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
+      
+      // Testar se a URL é válida
+      const response = await fetch(avatarUrl)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       setDicebearAvatar(avatarUrl)
     } catch (error) {
-      console.error('Erro ao gerar avatar Dicebear:', error)
+      console.error('❌ Erro ao gerar avatar Dicebear:', error)
+      // Fallback: usar avatar padrão
+      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=transparent&size=100`
+      setDicebearAvatar(fallbackUrl)
     } finally {
       setIsGeneratingAvatar(false)
     }
