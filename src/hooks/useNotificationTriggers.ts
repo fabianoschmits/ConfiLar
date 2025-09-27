@@ -8,6 +8,18 @@ export function useNotificationTriggers() {
   // Monitorar novas avaliações
   const monitorReviews = useCallback(async () => {
     try {
+      // Verificar se já existem posts de avaliação recentes para evitar duplicatas
+      const { data: existingPosts } = await supabase
+        .from('feed_posts')
+        .select('id')
+        .eq('metadata->>type', 'review')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
+        .limit(1)
+
+      if (existingPosts && existingPosts.length > 0) {
+        return // Já processou recentemente
+      }
+
       const { data, error } = await supabase
         .from('reviews')
         .select(`
@@ -18,13 +30,18 @@ export function useNotificationTriggers() {
           reviewer_id,
           reviewed_id
         `)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(5)
 
       if (error) throw error
 
+      if (!data || data.length === 0) {
+        return // Nenhuma avaliação nova
+      }
+
       // Buscar informações dos usuários
-      for (const review of data || []) {
+      for (const review of data) {
         try {
           // Buscar dados do reviewer
           const { data: reviewerData } = await supabase
@@ -62,6 +79,18 @@ export function useNotificationTriggers() {
   // Monitorar recomendações
   const monitorRecommendations = useCallback(async () => {
     try {
+      // Verificar se já existem posts de recomendação recentes para evitar duplicatas
+      const { data: existingPosts } = await supabase
+        .from('feed_posts')
+        .select('id')
+        .eq('metadata->>type', 'recommendation')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
+        .limit(1)
+
+      if (existingPosts && existingPosts.length > 0) {
+        return // Já processou recentemente
+      }
+
       const { data, error } = await supabase
         .from('recommendations')
         .select(`
@@ -71,13 +100,18 @@ export function useNotificationTriggers() {
           from_user_id,
           to_user_id
         `)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(5)
 
       if (error) throw error
 
+      if (!data || data.length === 0) {
+        return // Nenhuma recomendação nova
+      }
+
       // Buscar informações dos usuários
-      for (const recommendation of data || []) {
+      for (const recommendation of data) {
         try {
           // Buscar dados do from_user
           const { data: fromUserData } = await supabase
@@ -114,6 +148,18 @@ export function useNotificationTriggers() {
   // Monitorar favoritos
   const monitorFavorites = useCallback(async () => {
     try {
+      // Verificar se já existem posts de favorito recentes para evitar duplicatas
+      const { data: existingPosts } = await supabase
+        .from('feed_posts')
+        .select('id')
+        .eq('metadata->>type', 'favorite')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
+        .limit(1)
+
+      if (existingPosts && existingPosts.length > 0) {
+        return // Já processou recentemente
+      }
+
       const { data, error } = await supabase
         .from('favorites')
         .select(`
@@ -121,13 +167,18 @@ export function useNotificationTriggers() {
           professional_id,
           created_at
         `)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Últimas 24 horas
         .order('created_at', { ascending: false })
-        .limit(10)
+        .limit(5)
 
       if (error) throw error
 
+      if (!data || data.length === 0) {
+        return // Nenhum favorito novo
+      }
+
       // Buscar informações dos usuários
-      for (const favorite of data || []) {
+      for (const favorite of data) {
         try {
           // Buscar dados do user
           const { data: userData } = await supabase
@@ -191,7 +242,7 @@ export function useNotificationTriggers() {
       monitorReviews()
       monitorRecommendations()
       monitorFavorites()
-    }, 30000) // Verificar a cada 30 segundos
+    }, 5 * 60 * 1000) // Verificar a cada 5 minutos (reduzido de 30 segundos)
 
     // Postar estatísticas uma vez por dia
     const dailyStats = setInterval(() => {
