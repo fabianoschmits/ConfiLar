@@ -18,6 +18,20 @@ export interface TimelinePost extends TimelineItem {
   likes_count: number
   comments_count: number
   is_liked?: boolean
+  metadata?: {
+    type?: string
+    user?: string
+    favorited?: string
+    from_user?: string
+    to_user?: string
+    reviewer?: string
+    reviewed?: string
+    user_type?: string
+    location_city?: string
+    location_state?: string
+    bio?: string
+    avatar_url?: string
+  }
 }
 
 export interface TimelineActivity extends TimelineItem {

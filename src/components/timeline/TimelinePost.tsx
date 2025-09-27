@@ -10,6 +10,8 @@ import { TimelinePost as TimelinePostType } from '@/types/timeline'
 import { ReactionButton } from './ReactionButton'
 import { CommentSection } from './CommentSection'
 import { PostOptionsMenu } from './PostOptionsMenu'
+import { AutomaticPost } from './AutomaticPost'
+import { WelcomePost } from './WelcomePost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 
@@ -44,6 +46,33 @@ export function TimelinePost({
   // const { viewsCount } = usePostViews(post.id)
   // usePostViewTracker(post.id) // Registra visualização automaticamente
   const viewsCount = 0 // Valor temporário
+
+  // Verificar se é um post automático
+  const isAutomaticPost = post.metadata?.type && ['favorite', 'recommendation', 'review'].includes(post.metadata.type)
+  const isWelcomePost = post.metadata?.type === 'welcome'
+  
+  // Se for um post de boas-vindas, renderizar o componente WelcomePost
+  if (isWelcomePost) {
+    return (
+      <WelcomePost
+        post={post}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+        showComments={showComments}
+      />
+    )
+  }
+  
+  // Se for um post automático, renderizar o componente AutomaticPost
+  if (isAutomaticPost) {
+    return (
+      <AutomaticPost
+        post={post}
+        onDelete={onDelete}
+        isDeleting={isDeleting}
+      />
+    )
+  }
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
