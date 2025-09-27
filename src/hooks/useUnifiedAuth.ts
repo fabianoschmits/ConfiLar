@@ -6,6 +6,7 @@ import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 import { Logger } from '@/lib/logger'
 import { ProfileSchema, LoginSchema, SignUpSchema } from '@/lib/validation'
+import { useAutoNotifications } from './useAutoNotifications'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -513,6 +514,20 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           
           // Atualizar o contexto com o perfil criado
           dispatch({ type: 'SET_PROFILE', payload: profileInsertData as Profile })
+          
+          // Criar post de boas-vindas
+          try {
+            const { createWelcomePost } = useAutoNotifications()
+            await createWelcomePost(
+              state.user.id,
+              profileData.full_name,
+              profileData.user_type
+            )
+            Logger.info('auth', `Welcome post created for ${profileData.full_name}`)
+          } catch (welcomeError) {
+            Logger.warn('auth', `Failed to create welcome post: ${welcomeError}`)
+            // Não falhar o cadastro se o post de boas-vindas falhar
+          }
         }
       } else {
         Logger.error('auth', profileResult.reason, { context: 'completeProfile - profile creation' })

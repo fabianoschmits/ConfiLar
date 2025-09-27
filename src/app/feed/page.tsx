@@ -15,6 +15,7 @@ import { usePostRanking } from '@/hooks/usePostRanking'
 import { usePostRankingMock } from '@/hooks/usePostRankingMock'
 import { useSmartNotifications } from '@/hooks/useSmartNotifications'
 import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock'
+import { useNotificationTriggers } from '@/hooks/useNotificationTriggers'
 import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
@@ -76,6 +77,9 @@ export default function FeedPage() {
 
   // Notificações inteligentes
   const { notifications, unreadCount } = useSmartNotifications()
+  
+  // Sistema de notificações automáticas
+  useNotificationTriggers()
 
   // Usar categorias reais dos serviços
   const categories = [

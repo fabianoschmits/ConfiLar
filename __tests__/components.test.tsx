@@ -15,7 +15,7 @@ function createTestWrapper() {
     },
   })
 
-  return function TestWrapper({ children }: { children: React.ReactNode }) {
+  return function TestWrapper({ children }) {
     return (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
