@@ -78,8 +78,8 @@ export default function FeedPage() {
   // Notificações inteligentes
   const { notifications, unreadCount } = useSmartNotifications()
   
-  // Sistema de notificações automáticas
-  useNotificationTriggers()
+  // Sistema de notificações automáticas - DESABILITADO temporariamente
+  // useNotificationTriggers()
 
   // Usar categorias reais dos serviços
   const categories = [
