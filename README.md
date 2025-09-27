@@ -80,6 +80,7 @@ O sistema gera automaticamente posts baseados nas ações dos usuários:
 - Links diretos para os perfis
 - Sistema de confiança baseado em indicações
 
+<<<<<<< HEAD
 **⭐ Posts de Avaliações**
 - Gerados quando alguém avalia um profissional
 - Incluem a nota e comentário
@@ -101,6 +102,31 @@ O sistema gera automaticamente posts baseados nas ações dos usuários:
 - **Fallbacks Seguros**: Evita erros se dados não existirem
 
 #### 🎯 Características Técnicas
+=======
+
+## 📱 Páginas Principais
+
+### 🏠 Públicas
+- **`/`** - Landing page
+- **`/auth`** - Autenticação
+- **`/sobre`** - Sobre a plataforma
+
+### 👤 Usuário
+- **`/feed`** - Feed social principal
+- **`/perfil/[id]`** - Perfil público
+- **`/editarperfil`** - Edição de perfil
+- **`/onboarding`** - Completar cadastro
+- **`/favoritos`** - Lista de favoritos
+
+### 🔍 Busca
+- **`/buscar`** - Busca de profissionais
+- **`/classificados`** - Anúncios e ofertas
+- **`/avaliacoes`** - Sistema de avaliações
+
+## 🔧 Funcionalidades Avançadas
+
+### 🎨 Sistema de Avatars
+>>>>>>> 540f3aed76a3c8946c8eaf79adbfd2a36534e3d4
 ```typescript
 // Geração baseada no nome e gênero
 const generateDicebearAvatar = async (name: string, gender: string) => {
@@ -220,6 +246,7 @@ const generateDicebearAvatar = async (name: string, gender: string) => {
 - **Lazy Loading**: Componentes carregados quando necessário
 - **Cache Inteligente**: Redução de chamadas à API
 
+<<<<<<< HEAD
 ## 📱 Estrutura de Páginas
 
 ### 🏠 Páginas Públicas
@@ -276,6 +303,9 @@ const generateDicebearAvatar = async (name: string, gender: string) => {
 3. Analytics mostram métricas de performance
 4. Notificações mantêm usuários engajados
 5. Plataforma se torna referência de confiança
+=======
+
+>>>>>>> 540f3aed76a3c8946c8eaf79adbfd2a36534e3d4
 
 ## 🎨 Design System
 
