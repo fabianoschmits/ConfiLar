@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useImageCompression } from '@/hooks/useImageCompression'
 import { toast } from 'sonner'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 
@@ -36,6 +37,7 @@ export function ImageUpload({
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { profile } = useAuthContext()
+  const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
   const handleFileSelect = async (file: File) => {
     if (!profile?.id) {
@@ -49,7 +51,7 @@ export function ImageUpload({
       return
     }
 
-    // Validar tamanho
+    // Validar tamanho inicial
     const fileSizeMB = file.size / (1024 * 1024)
     if (fileSizeMB > maxSize) {
       toast.error(`Arquivo muito grande. Máximo: ${maxSize}MB`)
@@ -59,8 +61,22 @@ export function ImageUpload({
     setIsUploading(true)
 
     try {
+      // Comprimir imagem antes do upload
+      console.log('🗜️ Comprimindo imagem...')
+      const compressedFile = await compressImage(file, {
+        maxSizeMB: 0.5, // 500KB máximo para avatares
+        maxWidthOrHeight: 512, // 512px máximo
+        useWebWorker: true
+      })
+
+      console.log('✅ Imagem comprimida:', {
+        original: `${(file.size / 1024).toFixed(1)}KB`,
+        compressed: `${(compressedFile.size / 1024).toFixed(1)}KB`,
+        reduction: `${Math.round((1 - compressedFile.size / file.size) * 100)}%`
+      })
+
       // Gerar nome único para o arquivo
-      const fileExtension = file.name.split('.').pop()
+      const fileExtension = compressedFile.name.split('.').pop()
       const fileName = `${profile.id}/${Date.now()}.${fileExtension}`
 
       console.log('🚀 Iniciando upload...')
@@ -71,7 +87,7 @@ export function ImageUpload({
       // Fazer upload para o Supabase Storage
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(fileName, file, {
+        .upload(fileName, compressedFile, {
           cacheControl: '3600',
           upsert: false
         })
@@ -99,7 +115,7 @@ export function ImageUpload({
         onImageUploaded(publicUrl)
       }
 
-      toast.success('Imagem enviada com sucesso!')
+      toast.success('Imagem comprimida e enviada com sucesso!')
 
     } catch (error) {
       console.error('💥 Erro no upload:', error)
@@ -222,13 +238,13 @@ export function ImageUpload({
           <Button
             type="button"
             onClick={openFileDialog}
-            disabled={isUploading}
+            disabled={isUploading || isCompressing}
             className="w-full"
           >
-            {isUploading ? (
+            {(isUploading || isCompressing) ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" style={{ animationDuration: '0.6s' }} />
-                Enviando...
+                {isCompressing ? `Comprimindo... ${compressionProgress}%` : 'Enviando...'}
               </>
             ) : (
               <>

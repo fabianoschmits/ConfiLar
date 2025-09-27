@@ -1,14 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Heart, MessageCircle, Reply, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Reply, MoreHorizontal, ChevronDown, Check, X } from 'lucide-react'
 import { useComments } from '@/hooks/useComments'
 import { Comment as CommentType } from '@/types/comments'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { CommentOptionsMenu } from './CommentOptionsMenu'
 
 interface CommentSectionProps {
   postId: string
@@ -17,19 +18,27 @@ interface CommentSectionProps {
 
 export function CommentSection({ postId, className }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('')
-  const [showAllComments, setShowAllComments] = useState(false)
+  const [visibleComments, setVisibleComments] = useState(3)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [editingComment, setEditingComment] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const observerRef = useRef<HTMLDivElement>(null)
   
   const {
     comments,
     isLoading,
     addComment,
     likeComment,
+    editComment,
+    deleteComment,
     startReply,
     cancelReply,
     replyTo,
     isAddingComment,
-    isLikingComment
-  } = useComments({ post_id: postId, limit: showAllComments ? undefined : 3 })
+    isLikingComment,
+    isEditingComment,
+    isDeletingComment
+  } = useComments({ post_id: postId, limit: 50 }) // Carregar mais comentários
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {
@@ -44,6 +53,59 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       handleSubmitComment()
     }
   }
+
+  const handleEditComment = (commentId: string, currentContent: string) => {
+    setEditingComment(commentId)
+    setEditContent(currentContent)
+  }
+
+  const handleSaveEdit = () => {
+    if (editingComment && editContent.trim()) {
+      editComment(editingComment, editContent)
+      setEditingComment(null)
+      setEditContent('')
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingComment(null)
+    setEditContent('')
+  }
+
+  const handleDeleteComment = (commentId: string) => {
+    if (confirm('Tem certeza que deseja deletar este comentário?')) {
+      deleteComment(commentId)
+    }
+  }
+
+  // Função para carregar mais comentários
+  const loadMoreComments = useCallback(() => {
+    if (isLoadingMore || visibleComments >= comments.length) return
+    
+    setIsLoadingMore(true)
+    setTimeout(() => {
+      setVisibleComments(prev => Math.min(prev + 10, comments.length))
+      setIsLoadingMore(false)
+    }, 500)
+  }, [visibleComments, comments.length, isLoadingMore])
+
+  // Observer para scroll infinito
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleComments < comments.length) {
+          loadMoreComments()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [loadMoreComments, visibleComments, comments.length])
 
   const formatTimeAgo = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), { 
@@ -75,51 +137,90 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
               </span>
             </div>
             
-            <div className="text-sm text-gray-700 mb-2">
-              {comment.content.split(' ').map((word, index) => {
-                if (word.startsWith('@')) {
-                  return (
-                    <span key={index} className="text-blue-600 font-medium">
-                      {word}{' '}
-                    </span>
-                  )
-                }
-                if (word.startsWith('#')) {
-                  return (
-                    <span key={index} className="text-purple-600 font-medium">
-                      {word}{' '}
-                    </span>
-                  )
-                }
-                return <span key={index}>{word} </span>
-              })}
-            </div>
+            {/* Conteúdo do comentário - modo edição ou visualização */}
+            {editingComment === comment.id ? (
+              <div className="mb-2">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="min-h-[60px] resize-none"
+                  placeholder="Editar comentário..."
+                />
+                <div className="flex items-center space-x-2 mt-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveEdit}
+                    disabled={!editContent.trim() || isEditingComment}
+                    className="h-7 px-2"
+                  >
+                    <Check className="h-3 w-3 mr-1" />
+                    Salvar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    className="h-7 px-2"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-700 mb-2">
+                {comment.content.split(' ').map((word, index) => {
+                  if (word.startsWith('@')) {
+                    return (
+                      <span key={index} className="text-blue-600 font-medium">
+                        {word}{' '}
+                      </span>
+                    )
+                  }
+                  if (word.startsWith('#')) {
+                    return (
+                      <span key={index} className="text-purple-600 font-medium">
+                        {word}{' '}
+                      </span>
+                    )
+                  }
+                  return <span key={index}>{word} </span>
+                })}
+              </div>
+            )}
             
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => likeComment(comment.id)}
-                disabled={isLikingComment}
-                className={`flex items-center space-x-1 text-xs hover:text-red-500 transition-colors ${
-                  comment.is_liked ? 'text-red-500' : 'text-gray-500'
-                }`}
-              >
-                <Heart className={`w-3 h-3 ${comment.is_liked ? 'fill-current' : ''}`} />
-                <span>{comment.likes_count}</span>
-              </button>
-              
-              {!isReply && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => startReply(comment.id)}
-                  className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-500 transition-colors"
+                  onClick={() => likeComment(comment.id)}
+                  disabled={isLikingComment}
+                  className={`flex items-center space-x-1 text-xs hover:text-red-500 transition-colors ${
+                    comment.is_liked ? 'text-red-500' : 'text-gray-500'
+                  }`}
                 >
-                  <Reply className="w-3 h-3" />
-                  <span>Responder</span>
+                  <Heart className={`w-3 h-3 ${comment.is_liked ? 'fill-current' : ''}`} />
+                  <span>{comment.likes_count}</span>
                 </button>
-              )}
+                
+                {!isReply && (
+                  <button
+                    onClick={() => startReply(comment.id)}
+                    className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-500 transition-colors"
+                  >
+                    <Reply className="w-3 h-3" />
+                    <span>Responder</span>
+                  </button>
+                )}
+              </div>
               
-              <button className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
-                <MoreHorizontal className="w-3 h-3" />
-              </button>
+              {/* Menu de opções */}
+              <CommentOptionsMenu
+                commentId={comment.id}
+                commentUserId={comment.user.id}
+                onEdit={() => handleEditComment(comment.id, comment.content)}
+                onDelete={() => handleDeleteComment(comment.id)}
+                isDeleting={isDeletingComment}
+              />
             </div>
           </div>
         </div>
@@ -144,19 +245,27 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
           </div>
         ) : (
           <>
-            {comments.slice(0, showAllComments ? comments.length : 3).map(comment => 
+            {comments.slice(0, visibleComments).map(comment => 
               renderComment(comment)
             )}
             
-            {comments.length > 3 && !showAllComments && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAllComments(true)}
-                className="text-blue-600 hover:text-blue-700"
-              >
-                Ver mais {comments.length - 3} comentários
-              </Button>
+            {/* Botão para carregar mais comentários */}
+            {visibleComments < comments.length && (
+              <div ref={observerRef} className="text-center py-4">
+                {isLoadingMore ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={loadMoreComments}
+                    className="text-blue-600 hover:text-blue-700"
+                  >
+                    <ChevronDown className="h-4 w-4 mr-2" />
+                    Carregar mais comentários ({comments.length - visibleComments} restantes)
+                  </Button>
+                )}
+              </div>
             )}
           </>
         )}

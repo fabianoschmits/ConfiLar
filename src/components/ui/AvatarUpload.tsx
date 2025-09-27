@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Upload, X, Check, AlertCircle } from 'lucide-react'
+import { useImageCompression } from '@/hooks/useImageCompression'
 import { cn } from '@/lib/utils'
 
 interface AvatarUploadProps {
@@ -23,8 +24,9 @@ export function AvatarUpload({
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -35,23 +37,44 @@ export function AvatarUpload({
       return
     }
 
-    // Validar tamanho (máximo 5MB)
+    // Validar tamanho inicial (máximo 5MB)
     const maxSize = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSize) {
       setUploadError('Arquivo muito grande. Máximo 5MB.')
       return
     }
 
-    setSelectedFile(file)
     setUploadError(null)
     setUploadSuccess(false)
 
-    // Criar preview
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string)
+    try {
+      // Comprimir imagem
+      console.log('🗜️ Comprimindo avatar...')
+      const compressedFile = await compressImage(file, {
+        maxSizeMB: 0.5, // 500KB máximo para avatares
+        maxWidthOrHeight: 512, // 512px máximo
+        useWebWorker: true
+      })
+
+      console.log('✅ Avatar comprimido:', {
+        original: `${(file.size / 1024).toFixed(1)}KB`,
+        compressed: `${(compressedFile.size / 1024).toFixed(1)}KB`,
+        reduction: `${Math.round((1 - compressedFile.size / file.size) * 100)}%`
+      })
+
+      setSelectedFile(compressedFile)
+
+      // Criar preview com arquivo comprimido
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string)
+      }
+      reader.readAsDataURL(compressedFile)
+
+    } catch (error) {
+      console.error('Erro ao comprimir imagem:', error)
+      setUploadError('Erro ao processar imagem. Tente novamente.')
     }
-    reader.readAsDataURL(file)
   }
 
   const handleUpload = async () => {
@@ -133,7 +156,7 @@ export function AvatarUpload({
           <Button
             onClick={handleClickUpload}
             className="w-full bg-blue-500 text-white border-2 border-black hover:bg-blue-600 font-black"
-            disabled={isUploading}
+            disabled={isUploading || isCompressing}
           >
             <Upload className="w-4 h-4 mr-2" />
             SELECIONAR NOVA FOTO
@@ -165,12 +188,12 @@ export function AvatarUpload({
               <Button
                 onClick={handleUpload}
                 className="flex-1 bg-green-500 text-white border-2 border-black hover:bg-green-600 font-black"
-                disabled={isUploading}
+                disabled={isUploading || isCompressing}
               >
-                {isUploading ? (
+                {(isUploading || isCompressing) ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    FAZENDO UPLOAD...
+                    {isCompressing ? `COMPRIMINDO... ${compressionProgress}%` : 'FAZENDO UPLOAD...'}
                   </>
                 ) : (
                   <>

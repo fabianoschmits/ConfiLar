@@ -65,6 +65,7 @@
     "@tanstack/react-query-devtools": "^5.89.0",
     "@use-gesture/react": "^10.3.1",
     "autoprefixer": "^10.4.16",
+    "browser-image-compression": "^2.0.2",
     "chart.js": "^4.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

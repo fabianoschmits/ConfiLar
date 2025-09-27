@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { User, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import { TimelineActivity as TimelineActivityType } from '@/types/timeline'
@@ -27,19 +28,12 @@ export function TimelineActivity({ activity }: TimelineActivityProps) {
     <Card className="overflow-hidden border-l-4 border-l-blue-500">
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-            {activity.user_avatar ? (
-              <Image
-                src={activity.user_avatar}
-                alt={activity.user_name || 'Usuário'}
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-            ) : (
-              <User className="h-6 w-6 text-blue-600" />
-            )}
-          </div>
+          <Avatar className="w-12 h-12">
+            <AvatarImage src={activity.user_avatar || ''} />
+            <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
+              {activity.user_name?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">{activity.icon}</span>

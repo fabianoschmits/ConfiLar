@@ -155,6 +155,71 @@ export function useComments(filters: CommentFilters) {
     }
   })
 
+  const editCommentMutation = useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: string; content: string }) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Usuário não autenticado')
+
+      // Extrair menções e hashtags do conteúdo
+      const mentions = extractMentions(content)
+      const hashtags = extractHashtags(content)
+
+      const { data, error } = await supabase
+        .from('post_comments')
+        .update({
+          content,
+          mentions,
+          hashtags,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', commentId)
+        .eq('user_id', user.id) // Garantir que só o autor pode editar
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      // Invalidar cache de comentários
+      queryClient.invalidateQueries({
+        queryKey: ['comments', filters]
+      })
+    }
+  })
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Usuário não autenticado')
+
+      // Soft delete - marcar como deletado
+      const { error } = await supabase
+        .from('post_comments')
+        .update({
+          is_deleted: true,
+          content: '[Comentário removido]',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', commentId)
+        .eq('user_id', user.id) // Garantir que só o autor pode deletar
+
+      if (error) throw error
+      return { success: true }
+    },
+    onSuccess: () => {
+      // Invalidar cache de comentários
+      queryClient.invalidateQueries({
+        queryKey: ['comments', filters]
+      })
+      
+      // Invalidar cache da timeline
+      queryClient.invalidateQueries({
+        queryKey: ['unified-timeline']
+      })
+    }
+  })
+
   const addComment = useCallback((content: string, parentId?: string) => {
     addCommentMutation.mutate({
       content,
@@ -174,17 +239,29 @@ export function useComments(filters: CommentFilters) {
     setReplyTo(null)
   }, [])
 
+  const editComment = useCallback((commentId: string, content: string) => {
+    editCommentMutation.mutate({ commentId, content })
+  }, [editCommentMutation])
+
+  const deleteComment = useCallback((commentId: string) => {
+    deleteCommentMutation.mutate(commentId)
+  }, [deleteCommentMutation])
+
   return {
     comments: comments || [],
     isLoading,
     error,
     addComment,
     likeComment,
+    editComment,
+    deleteComment,
     startReply,
     cancelReply,
     replyTo,
     isAddingComment: addCommentMutation.isPending,
     isLikingComment: likeCommentMutation.isPending,
+    isEditingComment: editCommentMutation.isPending,
+    isDeletingComment: deleteCommentMutation.isPending,
     refetch
   }
 }
