@@ -374,63 +374,40 @@ export default function ClassificadosPage() {
           </div>
               
           {/* Estatísticas Compactas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-blue-700 mb-1">Total</p>
-                    <p className="text-xl sm:text-2xl font-bold text-blue-900">{stats.total}</p>
-                  </div>
-                  <div className="p-2 bg-blue-200 rounded-full">
-                    <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700" />
-                  </div>
+          {/* Estatísticas - Card Compacto */}
+          <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+            <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+              <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                {/* Total de Anúncios */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.total}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-green-700 mb-1">Ofertas</p>
-                    <p className="text-xl sm:text-2xl font-bold text-green-900">{stats.offers}</p>
-                  </div>
-                  <div className="p-2 bg-green-200 rounded-full">
-                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-700" />
-                  </div>
+                
+                {/* Ofertas */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Ofertas</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.offers}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-orange-700 mb-1">Solicitações</p>
-                    <p className="text-xl sm:text-2xl font-bold text-orange-900">{stats.requests}</p>
-                  </div>
-                  <div className="p-2 bg-orange-200 rounded-full">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-orange-700" />
-                  </div>
+                
+                {/* Solicitações */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Solicitações</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.requests}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-purple-700 mb-1">Categorias</p>
-                    <p className="text-xl sm:text-2xl font-bold text-purple-900">{stats.categories}</p>
-                  </div>
-                  <div className="p-2 bg-purple-200 rounded-full">
-                    <Star className="h-4 w-4 sm:h-5 sm:w-5 text-purple-700" />
-                  </div>
+                
+                {/* Categorias */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Categorias</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.categories}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Filtros e Busca Avançados */}
           <div className="mb-8">

@@ -369,64 +369,40 @@ export default function BuscarPage() {
             </p>
           </div>
 
-          {/* Estatísticas Compactas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Users className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Profissionais</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats?.totalUsers || 847}</p>
+          {/* Estatísticas - Card Compacto */}
+          <Card className="mb-8 hover:shadow-xl transition-all duration-300">
+            <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+              <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                {/* Profissionais */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 847}</p>
+                </div>
+                
+                {/* Disponíveis */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Disponíveis</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 623}</p>
+                </div>
+                
+                {/* Serviços */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Serviços</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">45</p>
+                </div>
+                
+                {/* Avaliação */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Avaliação</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">4.8</p>
+                </div>
               </div>
-            </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Disponíveis</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats?.professionalsCount || 623}</p>
-          </div>
-        </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Briefcase className="h-5 w-5 text-purple-600" />
-            </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Serviços</p>
-                    <p className="text-2xl font-bold text-gray-900">45</p>
-          </div>
-        </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <Star className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-600">Avaliação</p>
-                    <p className="text-2xl font-bold text-gray-900">4.8</p>
-                  </div>
-            </div>
-              </CardContent>
-            </Card>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Barra de Busca e Filtros */}
           <div className="mb-8">
