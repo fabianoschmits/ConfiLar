@@ -197,7 +197,7 @@ export default function OnboardingPage() {
       
       // Fallback: usar avatar básico
       try {
-        const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}`
+        const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.trim())}`
         console.log('🔄 Usando fallback:', fallbackUrl)
         
         const fallbackResponse = await fetch(fallbackUrl)
