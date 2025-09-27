@@ -423,13 +423,12 @@ export default function EditarPerfilPage() {
     setIsGeneratingAvatar(true)
     try {
       const encodedName = encodeURIComponent(name.trim())
-      const facialHairProbability = gender === 'male' ? '30' : gender === 'female' ? '0' : '15'
-      const hairColor = gender === 'male' ? 'brown,black,blonde' : 'brown,black,blonde,red'
-      const skinColor = 'fdbcb4,edb98a,fd9841,f8d25c'
       
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100&facialHairProbability=${facialHairProbability}&hairColor=${hairColor}&skinColor=${skinColor}`
+      // URL simplificada sem parâmetros problemáticos
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent&size=100`
       
       console.log('🎨 Gerando avatar para:', name, 'Gênero:', gender)
+      console.log('🔗 URL do avatar:', avatarUrl)
       
       // Testar se a URL é válida
       const response = await fetch(avatarUrl)
@@ -438,10 +437,12 @@ export default function EditarPerfilPage() {
       }
       
       setDicebearAvatar(avatarUrl)
+      console.log('✅ Avatar gerado com sucesso!')
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      // Fallback: usar avatar padrão
-      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.trim())}&backgroundColor=transparent&size=100`
+      // Fallback: usar avatar básico sem parâmetros extras
+      const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&size=100`
+      console.log('🔄 Usando fallback:', fallbackUrl)
       setDicebearAvatar(fallbackUrl)
     } finally {
       setIsGeneratingAvatar(false)
