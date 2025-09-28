@@ -68,6 +68,12 @@ export interface TimelineFilters {
   location?: string
   search?: string
   activity_types?: string[]
+  location_filter?: {
+    type: 'local' | 'state' | 'country' | 'all'
+    city?: string
+    state?: string
+    country?: string
+  }
 }
 
 export interface TimelineStats {

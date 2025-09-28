@@ -23,6 +23,8 @@ import { NewPostForm } from '@/components/timeline/NewPostForm'
 import { EditPostModal } from '@/components/timeline/EditPostModal'
 import { Modal } from '@/components/ui/modal'
 import { TrendingPosts } from '@/components/timeline/TrendingPosts'
+import { LocationFilterSelector } from '@/components/timeline/LocationFilterSelector'
+import { useLocationFilters } from '@/hooks/useLocationFilters'
 import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 import { services, getCategories } from '@/data/services'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
@@ -37,6 +39,9 @@ export default function FeedPage() {
     category: 'all',
     search: ''
   })
+  
+  // Hook para filtros de localização
+  const { currentFilter, setFilter } = useLocationFilters()
   
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
@@ -63,7 +68,10 @@ export default function FeedPage() {
     addPost,
     editPost,
     deletePost
-  } = useUnifiedTimeline(filters)
+  } = useUnifiedTimeline({
+    ...filters,
+    location_filter: currentFilter
+  })
 
   // Realtime para timeline
   useTimelineRealtime()
@@ -283,8 +291,15 @@ export default function FeedPage() {
               </Button>
         </div>
 
-        {/* Campo de Busca - Responsivo */}
-        <div className="mb-4 md:mb-6">
+        {/* Filtros de Localização e Busca - Responsivo */}
+        <div className="mb-4 md:mb-6 space-y-3">
+          {/* Filtro de Localização */}
+          <LocationFilterSelector
+            onFilterChange={(filter) => setFilter(filter)}
+            className="w-full"
+          />
+          
+          {/* Campo de Busca */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
