@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { UnifiedTimelineItem, TimelineFilters, TimelineStats } from '@/types/timeline'
+import { LocationFilter } from '@/hooks/useLocationFilters'
 
 const ITEMS_PER_PAGE = 20
 
@@ -54,6 +55,34 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
         postsQuery = postsQuery.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,professional.full_name.ilike.%${filters.search}%`)
+      }
+
+      // Aplicar filtros de localização
+      if (filters.location_filter) {
+        const locationFilter = filters.location_filter
+        
+        switch (locationFilter.type) {
+          case 'local':
+            if (locationFilter.city && locationFilter.state) {
+              postsQuery = postsQuery
+                .eq('location_city', locationFilter.city)
+                .eq('location_state', locationFilter.state)
+            }
+            break
+          case 'state':
+            if (locationFilter.state) {
+              postsQuery = postsQuery.eq('location_state', locationFilter.state)
+            }
+            break
+          case 'country':
+            if (locationFilter.country) {
+              postsQuery = postsQuery.eq('location_state', locationFilter.country)
+            }
+            break
+          case 'all':
+            // Não aplicar filtro de localização
+            break
+        }
       }
 
       const { data: posts, error: postsError } = await postsQuery
