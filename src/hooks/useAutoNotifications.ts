@@ -6,6 +6,12 @@ export function useAutoNotifications() {
   // Post de boas-vindas para novos usuários (NOVO SISTEMA)
   const createWelcomePost = useCallback(async (userId: string, userName: string, userType: string) => {
     try {
+      // Validar se temos um nome válido
+      if (!userName || userName.trim() === '') {
+        console.error('❌ Nome do usuário inválido ou vazio:', userName)
+        return { success: false, error: 'Nome do usuário inválido' }
+      }
+      
       console.log('🎉 Criando post de boas-vindas para:', userName)
       
       // Verificar se já existe um post de boas-vindas para este usuário
@@ -30,9 +36,21 @@ export function useAutoNotifications() {
 
       if (userError) {
         console.log('⚠️ Erro ao buscar dados do usuário:', userError.message)
+        console.log('🔍 userId usado na busca:', userId)
+      } else {
+        console.log('✅ Dados do usuário encontrados:', {
+          full_name: userData?.full_name,
+          user_type: userData?.user_type,
+          location_city: userData?.location_city,
+          location_state: userData?.location_state
+        })
       }
 
       const message = `🎉 ${userName} se juntou à comunidade`
+      
+      // Garantir que temos um nome válido para o metadata
+      const finalUserName = userData?.full_name || userName
+      console.log('🔍 Nome final que será usado:', finalUserName)
       
       const { data, error } = await supabase
         .from('feed_posts')
@@ -52,7 +70,7 @@ export function useAutoNotifications() {
           tags: ['sistema', 'boas-vindas'],
           metadata: { 
             type: 'welcome', 
-            user: userName,
+            user: finalUserName, // Usar o nome final validado
             user_type: userData?.user_type || userType,
             location_city: userData?.location_city,
             location_state: userData?.location_state,
@@ -65,6 +83,12 @@ export function useAutoNotifications() {
 
       if (error) throw error
       console.log('✅ Post de boas-vindas criado:', data.id)
+      console.log('📊 Dados salvos no post:', {
+        title: data.title,
+        metadata: data.metadata,
+        user_name_in_metadata: data.metadata?.user,
+        user_name_passed: userName
+      })
       return { success: true, data }
     } catch (error) {
       console.error('❌ Erro ao criar post de boas-vindas:', error)

@@ -62,10 +62,10 @@ export function ConversationMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div
-            className="p-1 hover:bg-gray-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
+            className="p-1 cursor-pointer text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreVertical className="h-3 w-3 text-gray-500 hover:text-gray-700" />
+            <MoreVertical className="h-3 w-3" />
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent 

@@ -17,7 +17,24 @@ import {
   AlertCircle,
   X
 } from 'lucide-react'
-import { ContactAgreement } from '@/hooks/useContactAgreements'
+// import { ContactAgreement } from '@/hooks/useContactAgreements' // Removido - sistema antigo
+
+// Tipo local para compatibilidade
+interface ContactAgreement {
+  id: string
+  proposed_by: string
+  client_id: string
+  professional_id: string
+  service_description: string
+  agreed_price: number
+  proposed_date: string
+  proposed_time: string
+  estimated_duration?: string
+  notes?: string
+  client?: { full_name: string }
+  professional?: { full_name: string }
+  // Adicione outras propriedades conforme necessário
+}
 
 interface ProposalModalProps {
   isOpen: boolean
