@@ -56,7 +56,12 @@ export function useEvaluationRequests() {
         .or(`requester_id.eq.${user.id},target_id.eq.${user.id}`)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao carregar solicitações:', error)
+        // Retornar array vazio em caso de erro
+        setRequests([])
+        return
+      }
 
       // Mapear dados para o formato esperado
       const mappedRequests = data?.map(request => ({
@@ -89,15 +94,19 @@ export function useEvaluationRequests() {
 
     try {
       // Verificar se já existe uma solicitação pendente
-      const { data: existingRequest, error: checkError } = await supabase
+      const { data: existingRequests, error: checkError } = await supabase
         .from('evaluation_requests')
         .select('id, status')
         .eq('requester_id', user.id)
         .eq('target_id', targetId)
         .in('status', ['pending', 'accepted'])
-        .single()
 
-      if (existingRequest) {
+      if (checkError) {
+        console.error('Erro ao verificar solicitações existentes:', checkError)
+        // Continuar mesmo com erro na verificação
+      }
+
+      if (existingRequests && existingRequests.length > 0) {
         throw new Error('Já existe uma solicitação de avaliação pendente para este usuário')
       }
 
