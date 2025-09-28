@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
 import { Logger } from '@/lib/logger'
+import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
 import { ProfileSchema, LoginSchema, SignUpSchema } from '@/lib/validation'
 import { useAutoNotifications } from './useAutoNotifications'
 
@@ -159,6 +160,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
   const [state, dispatch] = useReducer(authReducer, initialAuthState)
   const initializationRef = useRef(false)
   const timeoutRefs = useRef<NodeJS.Timeout[]>([])
+  const { checkRateLimit, recordAttempt } = useRateLimit()
 
   // ===================================
   // UTILITÁRIOS
@@ -334,6 +336,22 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     try {
       Logger.info('auth', `Attempting login for ${email}`)
       
+      // Verificar rate limiting
+      const rateLimitResult = checkRateLimit(email, RateLimitConfigs.LOGIN)
+      if (!rateLimitResult.allowed) {
+        const errorMessage = rateLimitResult.isBlocked 
+          ? `Muitas tentativas de login. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
+          : `Muitas tentativas de login. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
+        
+        Logger.warn('auth', `Rate limit exceeded for ${email}`, {
+          attempts: rateLimitResult.remainingAttempts,
+          isBlocked: rateLimitResult.isBlocked,
+          retryAfter: rateLimitResult.retryAfter
+        })
+        
+        return { error: { message: errorMessage } }
+      }
+      
       // Validar dados de entrada
       const validation = LoginSchema.safeParse({ email, password })
       if (!validation.success) {
@@ -355,6 +373,9 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       Logger.api.request('auth/sign-in', 'POST', duration)
 
       if (error) {
+        // Registrar tentativa de login falhada
+        recordAttempt(email, RateLimitConfigs.LOGIN)
+        
         Logger.auth.login(email, false, { error: error.message })
         dispatch({ type: 'SET_ERROR', payload: error.message })
         return { error }
