@@ -127,11 +127,53 @@ export const useAdvancedSearch = () => {
       )
     }
 
-    // Filtro por estado
+    // Filtro por estado (aceita tanto sigla quanto nome completo)
     if (currentFilters.state) {
-      filtered = filtered.filter(user => 
-        user.location_state === currentFilters.state
-      )
+      filtered = filtered.filter(user => {
+        const userState = user.location_state
+        const filterState = currentFilters.state
+        
+        // Verificar se é uma sigla (2 caracteres) ou nome completo
+        if (filterState.length === 2) {
+          // É uma sigla, comparar diretamente
+          return userState === filterState
+        } else {
+          // É um nome completo, verificar se corresponde à sigla do usuário
+          // Mapear nomes para siglas
+          const stateMapping: { [key: string]: string } = {
+            'Rio Grande do Sul': 'RS',
+            'São Paulo': 'SP',
+            'Rio de Janeiro': 'RJ',
+            'Minas Gerais': 'MG',
+            'Bahia': 'BA',
+            'Paraná': 'PR',
+            'Santa Catarina': 'SC',
+            'Goiás': 'GO',
+            'Pernambuco': 'PE',
+            'Ceará': 'CE',
+            'Pará': 'PA',
+            'Maranhão': 'MA',
+            'Paraíba': 'PB',
+            'Amazonas': 'AM',
+            'Espírito Santo': 'ES',
+            'Piauí': 'PI',
+            'Alagoas': 'AL',
+            'Tocantins': 'TO',
+            'Rio Grande do Norte': 'RN',
+            'Acre': 'AC',
+            'Amapá': 'AP',
+            'Rondônia': 'RO',
+            'Roraima': 'RR',
+            'Sergipe': 'SE',
+            'Mato Grosso': 'MT',
+            'Mato Grosso do Sul': 'MS',
+            'Distrito Federal': 'DF'
+          }
+          
+          const expectedSigla = stateMapping[filterState]
+          return expectedSigla ? userState === expectedSigla : userState === filterState
+        }
+      })
     }
 
     // Filtro por cidade

@@ -36,7 +36,8 @@ import {
   Award,
   Eye,
   ThumbsUp,
-  BarChart3
+  BarChart3,
+  ShieldCheck
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -61,6 +62,10 @@ export function ModernHeader({
   const { unreadCount } = useSupabaseNotifications()
   const { isAvailable } = useAvailability()
   const [isMenuExpanded, setIsMenuExpanded] = useState(false)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
+  
+  // Verificar se o usuário é admin
+  const isAdmin = user?.id === 'f7444305-a3bd-4d71-874a-bb95fd27f96a'
   const [reputationStats, setReputationStats] = useState({
     totalViews: 0,
     totalRecommendations: 0,
@@ -139,6 +144,19 @@ export function ModernHeader({
     console.log('Navegando para:', path)
     setIsMenuExpanded(false)
     window.location.href = path
+  }
+
+  // Função para alternar seções
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(section)) {
+        newSet.delete(section)
+      } else {
+        newSet.add(section)
+      }
+      return newSet
+    })
   }
 
   const getPageTitle = () => {
@@ -346,173 +364,268 @@ export function ModernHeader({
                       </div>
 
                       {/* Principal */}
-                      <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-blue-600 mb-2 sm:mb-3 flex items-center gap-2">
-                          <Home className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Principal
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/home')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Home className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Dashboard</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Métricas</span>
-                          </Button>
-                        </div>
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => toggleSection('principal')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Home className="h-3 w-3" />
+                            Principal
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('principal') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('principal') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/home')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Home className="h-3 w-3" />
+                              <span className="truncate">Dashboard</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/dashboard')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <BarChart3 className="h-3 w-3" />
+                              <span className="truncate">Métricas</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Descobrir */}
-                      <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-green-600 mb-2 sm:mb-3 flex items-center gap-2">
-                          <Search className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Descobrir
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/buscar')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Search className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Buscar</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/classificados')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Classificados</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/feed')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Feed</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/avaliacoes')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Star className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Avaliações</span>
-                          </Button>
-                        </div>
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => toggleSection('descobrir')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-green-600 hover:bg-green-50 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Search className="h-3 w-3" />
+                            Descobrir
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('descobrir') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('descobrir') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/buscar')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Search className="h-3 w-3" />
+                              <span className="truncate">Buscar</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Briefcase className="h-3 w-3" />
+                              <span className="truncate">Classificados</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/feed')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Users className="h-3 w-3" />
+                              <span className="truncate">Feed</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/avaliacoes')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Star className="h-3 w-3" />
+                              <span className="truncate">Avaliações</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Gestão */}
-                      <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-orange-600 mb-2 sm:mb-3 flex items-center gap-2">
-                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Gestão
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/favoritos')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Favoritos</span>
-                          </Button>
-                        </div>
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => toggleSection('gestao')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            Gestão
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('gestao') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('gestao') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/favoritos')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Heart className="h-3 w-3" />
+                              <span className="truncate">Favoritos</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Comunicação */}
-                      <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-purple-600 mb-2 sm:mb-3 flex items-center gap-2">
-                          <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Comunicação
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              openChat()
-                              setIsMenuExpanded(false)
-                            }}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Mensagens</span>
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => toggleSection('comunicacao')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <MessageCircle className="h-3 w-3" />
+                            Comunicação
                             {unreadCount > 0 && (
-                              <Badge variant="destructive" className="ml-auto text-xs scale-75 sm:scale-100">
+                              <Badge variant="destructive" className="text-xs scale-75">
                                 {unreadCount}
                               </Badge>
                             )}
-                          </Button>
-                        </div>
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('comunicacao') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('comunicacao') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                openChat()
+                                setIsMenuExpanded(false)
+                              }}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              <span className="truncate">Mensagens</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
-                        <div className="py-3 sm:py-4 border-b border-gray-200">
-                          <h4 className="text-xs sm:text-sm font-medium text-indigo-600 mb-2 sm:mb-3 flex items-center gap-2">
-                            <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Profissional
-                          </h4>
-                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleNavigation('/portfolio')}
-                              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                            >
-                              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
-                              <span className="truncate">Portfólio</span>
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleNavigation('/reputacao')}
-                              className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                            >
-                              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
-                              <span className="truncate">Reputação</span>
-                            </Button>
-                          </div>
+                        <div className="border-b border-gray-200">
+                          <button
+                            onClick={() => toggleSection('profissional')}
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md px-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="h-3 w-3" />
+                              Profissional
+                            </div>
+                            <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('profissional') ? 'rotate-180' : ''}`} />
+                          </button>
+                          {expandedSections.has('profissional') && (
+                            <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNavigation('/portfolio')}
+                                className="flex items-center gap-1 text-xs py-1 h-7"
+                              >
+                                <Briefcase className="h-3 w-3" />
+                                <span className="truncate">Portfólio</span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNavigation('/reputacao')}
+                                className="flex items-center gap-1 text-xs py-1 h-7"
+                              >
+                                <Award className="h-3 w-3" />
+                                <span className="truncate">Reputação</span>
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* Suporte */}
-                      <div className="py-3 sm:py-4 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-red-600 mb-2 sm:mb-3 flex items-center gap-2">
-                          <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Suporte
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/ajuda')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <HelpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Ajuda</span>
-                          </Button>
-                        </div>
+                      <div className="border-b border-gray-200">
+                        <button
+                          onClick={() => toggleSection('suporte')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <HelpCircle className="h-3 w-3" />
+                            Suporte
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('suporte') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('suporte') && (
+                          <div className="grid grid-cols-1 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/ajuda')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <HelpCircle className="h-3 w-3" />
+                              <span className="truncate">Central de Ajuda</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/contato')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              <span className="truncate">Contato</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/sobre')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <Users className="h-3 w-3" />
+                              <span className="truncate">Sobre Nós</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Administração - Apenas para Admin */}
+                      {isAdmin && (
+                        <div className="border-b border-gray-200">
+                          <button
+                            onClick={() => toggleSection('administracao')}
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-md px-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="h-3 w-3" />
+                              Administração
+                            </div>
+                            <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('administracao') ? 'rotate-180' : ''}`} />
+                          </button>
+                          {expandedSections.has('administracao') && (
+                            <div className="grid grid-cols-1 gap-1 px-2 pb-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNavigation('/admin/dashboard')}
+                                className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 hover:bg-purple-100"
+                              >
+                                <ShieldCheck className="h-3 w-3" />
+                                <span className="truncate">Painel Admin</span>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Conta */}
                       <div className="py-3 sm:py-4">

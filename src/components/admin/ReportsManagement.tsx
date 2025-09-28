@@ -32,8 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 // Interfaces para tipagem
 interface Report {
   id: string
-  type: 'user' | 'post' | 'message' | 'review' | 'other'
-  reason: string
+  report_type: 'user' | 'post' | 'message' | 'review' | 'other'
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
   priority: 'low' | 'medium' | 'high' | 'urgent'
@@ -93,15 +92,10 @@ export function ReportsManagement() {
   const fetchReports = async () => {
     setIsLoading(true)
     try {
-      // Buscar denúncias com informações relacionadas
+      // Buscar denúncias sem foreign keys complexas
       const { data: reportsData, error } = await supabase
         .from('reports')
-        .select(`
-          *,
-          reporter:profiles!reports_reporter_id_fkey(id, full_name, email, user_type),
-          reported_user:profiles!reports_reported_user_id_fkey(id, full_name, email, user_type),
-          reported_post:feed_posts!reports_reported_post_id_fkey(id, title, content, professional_id)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (error) {
@@ -110,7 +104,53 @@ export function ReportsManagement() {
         return
       }
 
-      setReports(reportsData || [])
+      // Buscar informações dos usuários separadamente
+      const enrichedReports = await Promise.all(
+        (reportsData || []).map(async (report) => {
+          let reporter = null
+          let reportedUser = null
+          let reportedPost = null
+
+          // Buscar informações do denunciante
+          if (report.reporter_id) {
+            const { data: reporterData } = await supabase
+              .from('profiles')
+              .select('id, full_name, email, user_type')
+              .eq('id', report.reporter_id)
+              .single()
+            reporter = reporterData
+          }
+
+          // Buscar informações do usuário denunciado
+          if (report.reported_user_id) {
+            const { data: reportedUserData } = await supabase
+              .from('profiles')
+              .select('id, full_name, email, user_type')
+              .eq('id', report.reported_user_id)
+              .single()
+            reportedUser = reportedUserData
+          }
+
+          // Buscar informações do post denunciado
+          if (report.reported_post_id) {
+            const { data: reportedPostData } = await supabase
+              .from('feed_posts')
+              .select('id, title, content, professional_id')
+              .eq('id', report.reported_post_id)
+              .single()
+            reportedPost = reportedPostData
+          }
+
+          return {
+            ...report,
+            reporter,
+            reported_user: reportedUser,
+            reported_post: reportedPost
+          }
+        })
+      )
+
+      setReports(enrichedReports)
     } catch (error) {
       console.error('Erro ao buscar denúncias:', error)
       toast.error('Erro ao carregar denúncias')
@@ -154,10 +194,10 @@ export function ReportsManagement() {
       // Denúncias por tipo
       const { data: reportsByType } = await supabase
         .from('reports')
-        .select('type')
+        .select('report_type')
 
       const typeCounts = reportsByType?.reduce((acc: any, report: any) => {
-        acc[report.type] = (acc[report.type] || 0) + 1
+        acc[report.report_type] = (acc[report.report_type] || 0) + 1
         return acc
       }, {}) || {}
 
@@ -193,19 +233,17 @@ export function ReportsManagement() {
 
   const updateReportStatus = async (reportId: string, status: string, notes?: string, resolution?: string) => {
     try {
+      console.log('Atualizando denúncia:', { reportId, status })
+      
+      // Atualização apenas com status - mais simples e confiável
       const { error } = await supabase
         .from('reports')
-        .update({
-          status,
-          admin_notes: notes,
-          resolution,
-          updated_at: new Date().toISOString()
-        })
+        .update({ status })
         .eq('id', reportId)
 
       if (error) {
         console.error('Erro ao atualizar denúncia:', error)
-        toast.error('Erro ao atualizar denúncia')
+        toast.error(`Erro ao atualizar denúncia: ${error.message}`)
         return
       }
 
@@ -223,15 +261,17 @@ export function ReportsManagement() {
     const report = reports.find(r => r.id === reportId)
     if (!report) return
 
+    console.log('Ação solicitada:', action, 'para denúncia:', reportId)
+
     switch (action) {
       case 'resolve':
-        await updateReportStatus(reportId, 'resolved', adminNotes, resolution)
+        await updateReportStatus(reportId, 'resolved')
         break
       case 'dismiss':
-        await updateReportStatus(reportId, 'dismissed', adminNotes)
+        await updateReportStatus(reportId, 'dismissed')
         break
       case 'review':
-        await updateReportStatus(reportId, 'reviewing', adminNotes)
+        await updateReportStatus(reportId, 'reviewing')
         break
       case 'ban_user':
         if (report.reported_user_id) {
@@ -268,8 +308,8 @@ export function ReportsManagement() {
     }
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
+  const getTypeIcon = (report_type: string) => {
+    switch (report_type) {
       case 'user': return <User className="h-4 w-4" />
       case 'post': return <FileText className="h-4 w-4" />
       case 'message': return <MessageCircle className="h-4 w-4" />
@@ -280,10 +320,9 @@ export function ReportsManagement() {
 
   const filteredReports = reports.filter(report => {
     if (filters.status !== 'all' && report.status !== filters.status) return false
-    if (filters.type !== 'all' && report.type !== filters.type) return false
+    if (filters.type !== 'all' && report.report_type !== filters.type) return false
     if (filters.priority !== 'all' && report.priority !== filters.priority) return false
-    if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase()) && 
-        !report.reason.toLowerCase().includes(filters.search.toLowerCase())) return false
+    if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
   })
 
@@ -456,52 +495,38 @@ export function ReportsManagement() {
         </CardContent>
       </Card>
 
-      {/* Lista de denúncias */}
+      {/* Grid de denúncias */}
       <Card>
         <CardHeader>
           <CardTitle>Denúncias ({filteredReports.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      {getTypeIcon(report.type)}
-                      <div>
-                        <div className="font-medium">
-                          Denúncia de {report.type === 'user' ? 'Usuário' : 
-                                       report.type === 'post' ? 'Post' :
-                                       report.type === 'message' ? 'Mensagem' :
-                                       report.type === 'review' ? 'Avaliação' : 'Outros'}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Por: {report.reporter?.full_name || 'Usuário anônimo'}
-                        </div>
+              <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50 hover:shadow-md transition-all duration-200 bg-white">
+                {/* Header do Card */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    {getTypeIcon(report.report_type)}
+                    <div>
+                      <div className="font-medium text-sm">
+                        {report.report_type === 'user' ? 'Usuário' : 
+                         report.report_type === 'post' ? 'Post' :
+                         report.report_type === 'message' ? 'Mensagem' :
+                         report.report_type === 'review' ? 'Avaliação' : 'Outros'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {report.reporter?.full_name || 'Anônimo'}
                       </div>
                     </div>
-
-                    <div className="mb-2">
-                      <div className="text-sm font-medium text-gray-700">Motivo: {report.reason}</div>
-                      <div className="text-sm text-gray-600 mt-1">{report.description}</div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>Criado em: {new Date(report.created_at).toLocaleString()}</span>
-                      {report.updated_at !== report.created_at && (
-                        <span>• Atualizado em: {new Date(report.updated_at).toLocaleString()}</span>
-                      )}
-                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge className={getStatusColor(report.status)}>
+                  <div className="flex flex-col gap-1">
+                    <Badge className={`text-xs ${getStatusColor(report.status)}`}>
                       {report.status === 'pending' ? 'Pendente' :
-                       report.status === 'reviewing' ? 'Em Revisão' :
+                       report.status === 'reviewing' ? 'Revisão' :
                        report.status === 'resolved' ? 'Resolvida' : 'Dispensada'}
                     </Badge>
-                    <Badge className={getPriorityColor(report.priority)}>
+                    <Badge className={`text-xs ${getPriorityColor(report.priority)}`}>
                       {report.priority === 'urgent' ? 'Urgente' :
                        report.priority === 'high' ? 'Alta' :
                        report.priority === 'medium' ? 'Média' : 'Baixa'}
@@ -509,16 +534,34 @@ export function ReportsManagement() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-3">
+                {/* Descrição */}
+                <div className="mb-3">
+                  <p className="text-sm text-gray-700 overflow-hidden" style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical'
+                  }}>
+                    {report.description}
+                  </p>
+                </div>
+
+                {/* Data */}
+                <div className="text-xs text-gray-500 mb-3">
+                  {new Date(report.created_at).toLocaleDateString('pt-BR')}
+                </div>
+
+                {/* Ações */}
+                <div className="flex gap-1">
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button 
                         variant="outline" 
                         size="sm"
+                        className="flex-1 text-xs"
                         onClick={() => setSelectedReport(report)}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver Detalhes
+                        <Eye className="h-3 w-3 mr-1" />
+                        Ver
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
@@ -530,8 +573,7 @@ export function ReportsManagement() {
                           <div>
                             <h4 className="font-medium">Informações da Denúncia</h4>
                             <div className="text-sm text-gray-600 mt-1">
-                              <p><strong>Tipo:</strong> {selectedReport.type}</p>
-                              <p><strong>Motivo:</strong> {selectedReport.reason}</p>
+                              <p><strong>Tipo:</strong> {selectedReport.report_type}</p>
                               <p><strong>Descrição:</strong> {selectedReport.description}</p>
                               <p><strong>Status:</strong> {selectedReport.status}</p>
                               <p><strong>Prioridade:</strong> {selectedReport.priority}</p>
@@ -561,26 +603,9 @@ export function ReportsManagement() {
 
                           <div>
                             <h4 className="font-medium">Ações Administrativas</h4>
-                            <div className="space-y-3 mt-2">
-                              <div>
-                                <label className="text-sm font-medium">Notas do Admin</label>
-                                <Textarea
-                                  placeholder="Adicione suas observações..."
-                                  value={adminNotes}
-                                  onChange={(e) => setAdminNotes(e.target.value)}
-                                  className="mt-1"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-sm font-medium">Resolução</label>
-                                <Textarea
-                                  placeholder="Descreva a resolução..."
-                                  value={resolution}
-                                  onChange={(e) => setResolution(e.target.value)}
-                                  className="mt-1"
-                                />
-                              </div>
-                            </div>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Use os botões abaixo para alterar o status da denúncia.
+                            </p>
                           </div>
 
                           <div className="flex gap-2">
@@ -615,9 +640,10 @@ export function ReportsManagement() {
                     <Button 
                       variant="outline" 
                       size="sm"
+                      className="text-xs"
                       onClick={() => handleReportAction(report.id, 'review')}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Eye className="h-3 w-3 mr-1" />
                       Revisar
                     </Button>
                   )}
@@ -626,7 +652,7 @@ export function ReportsManagement() {
             ))}
 
             {filteredReports.length === 0 && (
-              <div className="text-center py-8">
+              <div className="col-span-full text-center py-8">
                 <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">Nenhuma denúncia encontrada com os filtros aplicados.</p>
               </div>

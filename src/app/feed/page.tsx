@@ -28,6 +28,7 @@ import { useLocationFilters } from '@/hooks/useLocationFilters'
 import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 import { services, getCategories } from '@/data/services'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
+import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
