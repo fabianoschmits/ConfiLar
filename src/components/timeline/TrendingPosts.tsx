@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Flame, TrendingUp, Star, MapPin, Eye, Heart, MessageCircle } from 'luci
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { TrendingPostModal } from './TrendingPostModal'
 
 interface TrendingPostsProps {
   location_city?: string
@@ -20,11 +22,19 @@ export function TrendingPosts({
   location_state, 
   limit = 5 
 }: TrendingPostsProps) {
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
+  const [showModal, setShowModal] = useState(false)
+  
   const { trendingPosts, isLoading, error } = usePostRankingMock({
     location_city,
     location_state,
     limit
   })
+
+  const handlePostClick = (postId: string) => {
+    setSelectedPostId(postId)
+    setShowModal(true)
+  }
 
   const getTrendingIcon = (reason: TrendingPost['trending_reason']) => {
     switch (reason) {
@@ -137,7 +147,11 @@ export function TrendingPosts({
       <CardContent>
         <div className="space-y-4">
           {trendingPosts.map((post, index) => (
-            <div key={post.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+            <div 
+              key={post.id} 
+              className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => handlePostClick(post.id)}
+            >
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
@@ -225,6 +239,18 @@ export function TrendingPosts({
           </Button>
         </div>
       </CardContent>
+      
+      {/* Modal do Post em Alta */}
+      {selectedPostId && (
+        <TrendingPostModal
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false)
+            setSelectedPostId(null)
+          }}
+          postId={selectedPostId}
+        />
+      )}
     </Card>
   )
 }

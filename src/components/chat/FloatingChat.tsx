@@ -492,7 +492,7 @@ export function FloatingChat() {
                   {/* Header da Conversa */}
                   <div className="bg-gray-50 border-b border-gray-200 p-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <UserAvatar
                           src={user.id === selectedConversation.client_id 
                             ? selectedConversation.professional.avatar_url
@@ -518,28 +518,28 @@ export function FloatingChat() {
                               : selectedConversation.client.user_type}
                           </p>
                         </div>
-                        
-                        {/* Botão de Avaliação e Menu da Conversa */}
-                        <div className="flex items-center gap-1">
-                          <RequestEvaluationButton
-                            targetUserId={user.id === selectedConversation.client_id 
-                              ? selectedConversation.professional.id
-                              : selectedConversation.client.id}
-                            targetUserName={user.id === selectedConversation.client_id 
-                              ? selectedConversation.professional.full_name
-                              : selectedConversation.client.full_name}
-                          />
-                          <ConversationMenu
-                            conversationId={selectedConversation.id}
-                            onDelete={async (conversationId) => {
-                              const success = await deleteConversation(conversationId)
-                              if (success) {
-                                goBackToConversations()
-                              }
-                            }}
-                            disabled={sending}
-                          />
-                        </div>
+                      </div>
+                      
+                      {/* Botões de Ação - Canto Direito */}
+                      <div className="flex items-center gap-0.5 ml-4">
+                        <RequestEvaluationButton
+                          targetUserId={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.id
+                            : selectedConversation.client.id}
+                          targetUserName={user.id === selectedConversation.client_id 
+                            ? selectedConversation.professional.full_name
+                            : selectedConversation.client.full_name}
+                        />
+                        <ConversationMenu
+                          conversationId={selectedConversation.id}
+                          onDelete={async (conversationId) => {
+                            const success = await deleteConversation(conversationId)
+                            if (success) {
+                              goBackToConversations()
+                            }
+                          }}
+                          disabled={sending}
+                        />
                       </div>
                     </div>
                   </div>

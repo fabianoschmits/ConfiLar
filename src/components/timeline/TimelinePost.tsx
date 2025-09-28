@@ -17,6 +17,7 @@ import { WelcomeUserPost } from './WelcomeUserPost'
 import { NewUserWelcomePost } from './NewUserWelcomePost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
+import { useCommentsCount } from '@/hooks/useCommentsCount'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -45,10 +46,12 @@ export function TimelinePost({
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showCommentSection, setShowCommentSection] = useState(false)
   
-  // Hook para gerenciar visualizações (desabilitado temporariamente)
-  // const { viewsCount } = usePostViews(post.id)
-  // usePostViewTracker(post.id) // Registra visualização automaticamente
-  const viewsCount = 0 // Valor temporário
+  // Hook para gerenciar visualizações
+  const { viewsCount } = usePostViews(post.id)
+  usePostViewTracker(post.id) // Registra visualização automaticamente
+  
+  // Hook para gerenciar contagem de comentários
+  const { count: commentsCount } = useCommentsCount(post.id)
 
   // Verificar tipos de posts automáticos
   const postType = post.metadata?.type
@@ -304,7 +307,7 @@ export function TimelinePost({
               className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
             >
               <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">{post.comments_count || 0}</span>
+              <span className="text-sm md:text-base">{commentsCount}</span>
             </button>
             <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
               <Eye className="h-4 w-4 md:h-5 md:w-5" />
