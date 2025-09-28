@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { ReportButton } from '@/components/ReportButton'
 
 interface MessageMenuProps {
   messageId: string
@@ -101,9 +102,18 @@ export function MessageMenu({
             </DropdownMenuItem>
           )}
           
-          {onEdit && (
-            <DropdownMenuSeparator className="bg-gray-200 my-1" />
-          )}
+          <DropdownMenuSeparator className="bg-gray-200 my-1" />
+          
+          <DropdownMenuItem className="p-0">
+            <ReportButton 
+              type="message" 
+              targetId={messageId}
+              targetName="Mensagem"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+            />
+          </DropdownMenuItem>
           
           <DropdownMenuItem
             onClick={(e) => {

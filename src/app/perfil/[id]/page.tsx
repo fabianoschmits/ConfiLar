@@ -48,6 +48,7 @@ import { usePortfolio } from '@/hooks/usePortfolio'
 import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { useProfileViews } from '@/hooks/useProfileViews'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
+import { ReportButton } from '@/components/ReportButton'
 
 interface PublicProfile {
     id: string
@@ -376,6 +377,15 @@ export default function PublicProfilePage() {
                                         <Share2 className="w-4 h-4 mr-2" />
                                         Compartilhar
                                     </Button>
+                                    {!isOwnProfile && (
+                                        <ReportButton 
+                                            type="user" 
+                                            targetId={profile.id}
+                                            targetName={profile.full_name}
+                                            variant="outline"
+                                            size="sm"
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </CardContent>

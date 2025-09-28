@@ -26,6 +26,7 @@ import { ReviewWithProfiles } from '@/hooks/useSupabaseReviews'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { ReportButton } from '@/components/ReportButton'
 
 interface ReviewCardProps {
   review: ReviewWithProfiles
@@ -324,6 +325,14 @@ export function ReviewCard({
                   Útil
                 </button>
               )}
+              
+              <ReportButton 
+                type="review" 
+                targetId={review.id}
+                targetName="Avaliação"
+                variant="outline"
+                size="sm"
+              />
             </div>
           )}
         </div>
