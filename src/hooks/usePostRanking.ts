@@ -57,8 +57,21 @@ export function usePostRanking(filters: {
 
       if (error) throw error
 
+      // Buscar contagens de visualizações para cada post
+      const postsWithViews = await Promise.all((data || []).map(async (post) => {
+        const { data: viewsData } = await supabase
+          .from('post_views')
+          .select('id')
+          .eq('post_id', post.id)
+        
+        return {
+          ...post,
+          views_count: viewsData?.length || 0
+        }
+      }))
+
       // Calcular score de engajamento
-      const postsWithScore = (data || []).map(post => {
+      const postsWithScore = postsWithViews.map(post => {
         const engagementScore = calculateEngagementScore(post)
         const trendingReason = determineTrendingReason(post, engagementScore)
         
@@ -104,11 +117,11 @@ function calculateEngagementScore(post: any): number {
   const comments = post.comments_count || 0
   const views = post.views_count || 0
   
-  // Fórmula de engajamento: likes * 2 + comments * 3 + views * 0.1
-  const engagementScore = (likes * 2) + (comments * 3) + (views * 0.1)
+  // Fórmula de engajamento: likes * 2 + comments * 3 + views * 0.5
+  const engagementScore = (likes * 2) + (comments * 3) + (views * 0.5)
   
   // Bonus por profissional verificado
-  const verifiedBonus = (post.professional as any)?.is_verified ? 10 : 0
+  const verifiedBonus = (post.user as any)?.user_type === 'professional' ? 10 : 0
   
   // Bonus por post recente (últimas 24h)
   const isRecent = new Date().getTime() - new Date(post.created_at).getTime() < 24 * 60 * 60 * 1000
@@ -119,7 +132,7 @@ function calculateEngagementScore(post: any): number {
 
 // Função para determinar motivo do trending
 function determineTrendingReason(post: any, score: number): TrendingPost['trending_reason'] {
-  if ((post.professional as any)?.is_verified) {
+  if ((post.user as any)?.user_type === 'professional') {
     return 'verified_professional'
   }
   
