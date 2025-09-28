@@ -103,8 +103,19 @@ export default function ClassificadosPage() {
   // Opções de categorias para o Combobox
   const categoryOptions = services.map(service => ({
     value: service.name,
-    label: service.name
+    label: `${service.icon} ${service.name}` // Adicionar ícone para melhor visualização
   }))
+
+  // Função para validar se a categoria é válida
+  const isValidCategory = (category: string): boolean => {
+    return services.some(service => service.name === category)
+  }
+
+  // Função para obter o ícone da categoria
+  const getCategoryIcon = (category: string): string => {
+    const service = services.find(service => service.name === category)
+    return service?.icon || '🔧'
+  }
 
   // Executar busca inicial
   useEffect(() => {
@@ -162,6 +173,12 @@ export default function ClassificadosPage() {
 
     if (!formData.title || !formData.description || !formData.category || !formData.ad_type) {
       toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    // Validar se a categoria escolhida é válida
+    if (!isValidCategory(formData.category)) {
+      toast.error('Categoria selecionada não é válida')
       return
     }
 
@@ -827,7 +844,7 @@ export default function ClassificadosPage() {
                                   : 'border-orange-300 text-orange-700 bg-orange-50'
                               }`}
                             >
-                              {selectedAd.category}
+                              {getCategoryIcon(selectedAd.category)} {selectedAd.category}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600">
@@ -1084,7 +1101,7 @@ export default function ClassificadosPage() {
                             : 'border-orange-300 text-orange-700 bg-orange-50'
                         }`}
                       >
-                        {ad.category}
+                        {getCategoryIcon(ad.category)} {ad.category}
                       </Badge>
                     </div>
 

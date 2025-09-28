@@ -43,7 +43,7 @@ export const services: Service[] = [
   { id: 'technology', name: 'Tecnologia', icon: '💻', description: 'Serviços de TI e informática', category: 'Tecnologia e Informática' },
   { id: 'computer-repair', name: 'Manutenção de Computadores', icon: '🖥️', description: 'Reparos e manutenção', category: 'Tecnologia e Informática' },
   { id: 'network', name: 'Redes e Internet', icon: '🌐', description: 'Instalação e configuração de redes', category: 'Tecnologia e Informática' },
-  { id: 'software', name: 'Software', icon: '📱', description: 'Desenvolvimento e suporte', category: 'Tecnologia e Informática' },
+  { id: 'software', name: 'Desenvolvimento de Software', icon: '📱', description: 'Desenvolvimento e suporte', category: 'Tecnologia e Informática' },
 
   // Transporte e Logística
   { id: 'transport', name: 'Transporte', icon: '🚗', description: 'Serviços de transporte', category: 'Transporte e Logística' },
@@ -61,9 +61,9 @@ export const services: Service[] = [
   { id: 'care', name: 'Cuidados e Assistência', icon: '🤱', description: 'Cuidados pessoais e assistência', category: 'Cuidados e Assistência' },
   { id: 'babysitting', name: 'Babá', icon: '👶', description: 'Cuidados com crianças', category: 'Cuidados e Assistência' },
   { id: 'elderly-care', name: 'Cuidador de Idosos', icon: '👴', description: 'Assistência para idosos', category: 'Cuidados e Assistência' },
-  { id: 'pet-care', name: 'Cuidados com Pets', icon: '🐕', description: 'Cuidados com animais domésticos', category: 'Cuidados e Assistência' },
-  { id: 'dog-walking', name: 'Dog Walker', icon: '🦮', description: 'Passeios com cães', category: 'Cuidados e Assistência' },
-  { id: 'pet-grooming', name: 'Tosador', icon: '✂️', description: 'Tosa e higiene de pets', category: 'Cuidados e Assistência' },
+  { id: 'pet-care', name: 'Cuidados com Animais', icon: '🐕', description: 'Cuidados com animais domésticos', category: 'Cuidados e Assistência' },
+  { id: 'dog-walking', name: 'Passeador de Cães', icon: '🦮', description: 'Passeios com cães', category: 'Cuidados e Assistência' },
+  { id: 'pet-grooming', name: 'Tosador', icon: '✂️', description: 'Tosa e higiene de animais', category: 'Cuidados e Assistência' },
 
   // Lavanderia e Costura
   { id: 'laundry', name: 'Lavanderia', icon: '👕', description: 'Lavagem e passadoria', category: 'Lavanderia e Costura' },

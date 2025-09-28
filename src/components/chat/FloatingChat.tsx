@@ -14,7 +14,6 @@ import {
   CheckCheck,
   Edit3,
   X as XIcon,
-  Handshake,
   Search
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -24,8 +23,7 @@ import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
-import { ContactAgreementChat } from './ContactAgreementChat'
-import { AgreementButton } from './AgreementButton'
+import { RequestEvaluationButton } from './RequestEvaluationButton'
 
 export function FloatingChat() {
   const { user, profile } = useAuthContext()
@@ -123,7 +121,6 @@ export function FloatingChat() {
   }
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
-  const [showAgreementModal, setShowAgreementModal] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   // Sincronizar isOpen do contexto com isExpanded local
@@ -214,10 +211,6 @@ export function FloatingChat() {
     }
   }, [selectedConversation, lastConversationId])
 
-
-
-
-
   // Removido auto-scroll automático - usuário tem controle total
 
   // Detectar quando o usuário rola manualmente (apenas para controle visual)
@@ -304,50 +297,6 @@ export function FloatingChat() {
           className="fixed inset-0 z-40"
           onClick={handleCloseChat}
         />
-      )}
-
-      {/* Modal de Acordo - Tela Principal */}
-      {showAgreementModal && selectedConversation && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Handshake className="h-6 w-6 text-white" />
-                  <h2 className="text-xl font-semibold text-white">
-                    Propor Acordo de Serviço
-                  </h2>
-                </div>
-                <Button
-                  onClick={() => setShowAgreementModal(false)}
-                  className="text-white hover:bg-white/20 p-1 rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <p className="text-white/90 mt-2">
-                Crie uma proposta de trabalho para {user.id === selectedConversation.client_id 
-                  ? selectedConversation.professional.full_name
-                  : selectedConversation.client.full_name}. 
-                Após o acordo ser aceito, vocês poderão se avaliar após 20 horas.
-              </p>
-            </div>
-            <ContactAgreementChat
-              conversationId={selectedConversation.id}
-              otherUserId={user.id === selectedConversation.client_id 
-                ? selectedConversation.professional.id
-                : selectedConversation.client.id}
-              otherUserName={user.id === selectedConversation.client_id 
-                ? selectedConversation.professional.full_name
-                : selectedConversation.client.full_name}
-              otherUserType={user.id === selectedConversation.client_id 
-                ? selectedConversation.professional.user_type as 'professional' | 'client'
-                : selectedConversation.client.user_type as 'professional' | 'client'}
-              isInModal={true}
-              onClose={() => setShowAgreementModal(false)}
-            />
-          </div>
-        </div>
       )}
 
       {/* Chat Flutuante */}
@@ -570,35 +519,30 @@ export function FloatingChat() {
                           </p>
                         </div>
                         
-                        {/* Botão de Acordo */}
-                        <AgreementButton
-                          conversationId={selectedConversation.id}
-                          otherUserId={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.id
-                            : selectedConversation.client.id}
-                          otherUserName={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.full_name
-                            : selectedConversation.client.full_name}
-                          otherUserType={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.user_type as 'professional' | 'client'
-                            : selectedConversation.client.user_type as 'professional' | 'client'}
-                          onAgreementClick={() => setShowAgreementModal(true)}
-                          onProposeAgreement={() => setShowAgreementModal(true)}
-                        />
+                        {/* Botão de Avaliação e Menu da Conversa */}
+                        <div className="flex items-center gap-1">
+                          <RequestEvaluationButton
+                            targetUserId={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.id
+                              : selectedConversation.client.id}
+                            targetUserName={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.full_name
+                              : selectedConversation.client.full_name}
+                          />
+                          <ConversationMenu
+                            conversationId={selectedConversation.id}
+                            onDelete={async (conversationId) => {
+                              const success = await deleteConversation(conversationId)
+                              if (success) {
+                                goBackToConversations()
+                              }
+                            }}
+                            disabled={sending}
+                          />
+                        </div>
                       </div>
-                      <ConversationMenu
-                        conversationId={selectedConversation.id}
-                        onDelete={async (conversationId) => {
-                          const success = await deleteConversation(conversationId)
-                          if (success) {
-                            goBackToConversations()
-                          }
-                        }}
-                        disabled={sending}
-                      />
                     </div>
                   </div>
-
 
                   {/* Mensagens */}
                   <div 

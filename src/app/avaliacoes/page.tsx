@@ -4,608 +4,671 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Star, Search, Plus, RefreshCw, Info, Handshake, Clock, CheckCircle, ChevronDown } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { 
+  Star, 
+  Search, 
+  Plus, 
+  RefreshCw, 
+  CheckCircle, 
+  XCircle, 
+  Clock,
+  User,
+  MessageCircle,
+  Calendar
+} from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useEvaluationRequests, EvaluationRequest } from '@/hooks/useEvaluationRequests'
 import { useSupabaseReviews, ReviewWithProfiles } from '@/hooks/useSupabaseReviews'
-import { useContactAgreements } from '@/hooks/useContactAgreements'
-import { useReviewNotificationMonitor } from '@/hooks/useReviewNotificationMonitor'
-import { supabase } from '@/lib/supabase'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
-import { ReviewForm } from '@/components/reviews/ReviewForm'
-import { TimeCounter } from '@/components/ui/TimeCounter'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { X } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
 
 export default function AvaliacoesPage() {
   const [mounted, setMounted] = useState(false)
-  const { profile: currentUser } = useAuthContext()
-  const [filter, setFilter] = useState<'all' | 'received' | 'given'>('all')
+  const { user, profile } = useAuthContext()
+  const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [showCreateForm, setShowCreateForm] = useState(false)
   const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; avatar?: string; userType?: 'client' | 'professional' } | null>(null)
   const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
-  const [isLoadingData, setIsLoadingData] = useState(false)
-  const [isHowItWorksExpanded, setIsHowItWorksExpanded] = useState(false)
-  const [reviewableUsers, setReviewableUsers] = useState<Array<{
-    id: string
-    name: string
-    avatar?: string
-    userType?: 'client' | 'professional'
-    timeRemaining?: number
-    reviewAvailableAt?: string
-    agreement?: any
-    canReview?: boolean
-    hasReviewed?: boolean
-  }>>([])
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
+  const [evaluationData, setEvaluationData] = useState({
+    rating: 5,
+    title: '',
+    comment: '',
+    isRecommended: true
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const {
+    requests,
+    isLoading: requestsLoading,
+    createRequest,
+    acceptRequest,
+    rejectRequest,
+    completeRequest
+  } = useEvaluationRequests()
 
   const {
     reviews,
-    loading,
+    loading: reviewsLoading,
     fetchUserReviews,
     deleteReview,
     respondToReview
   } = useSupabaseReviews()
 
-  const { canReviewUser } = useContactAgreements()
-
-  // Monitorar notificações de avaliação disponível
-  useReviewNotificationMonitor()
-
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const loadReviewableUsers = useCallback(async () => {
-    if (!currentUser?.id) return
-
-    try {
-      // Buscar usuários com quem há acordos aceitos
-      const { data: agreements, error } = await supabase
-        .from('contact_agreements')
-        .select(`
-          *,
-          client:profiles!client_id(id, full_name, avatar_url),
-          professional:profiles!professional_id(id, full_name, avatar_url)
-        `)
-        .or(`client_id.eq.${currentUser.id},professional_id.eq.${currentUser.id}`)
-        .eq('status', 'accepted')
-
-      if (error) {
-        console.error('Erro ao carregar acordos:', error)
-        return
-      }
-
-      const users: Array<{
-        id: string
-        name: string
-        avatar?: string
-        userType?: 'client' | 'professional'
-        timeRemaining?: number
-        reviewAvailableAt?: string
-        agreement?: any
-        canReview?: boolean
-        hasReviewed?: boolean
-      }> = []
-
-      for (const agreement of agreements || []) {
-        const otherUserId = agreement.client_id === currentUser.id 
-          ? agreement.professional_id 
-          : agreement.client_id
-        
-        const otherUser = agreement.client_id === currentUser.id 
-          ? agreement.professional 
-          : agreement.client
-
-        if (otherUser) {
-          const reviewStatus = await canReviewUser(otherUserId)
-          
-          // Verificar se já existe avaliação para este usuário
-          const { data: existingReview } = await supabase
-            .from('reviews')
-            .select('id')
-            .eq('reviewer_id', currentUser.id)
-            .eq('reviewed_id', otherUserId)
-            .single()
-          
-          const hasReviewed = !!existingReview
-          
-          users.push({
-            id: otherUserId,
-            name: otherUser.full_name || 'Usuário',
-            avatar: otherUser.avatar_url,
-            userType: otherUser.user_type,
-            timeRemaining: reviewStatus.timeRemaining,
-            reviewAvailableAt: reviewStatus.agreement?.review_available_at,
-            agreement: reviewStatus.agreement,
-            canReview: reviewStatus.canReview && !hasReviewed,
-            hasReviewed: hasReviewed
-          })
-        }
-      }
-
-      setReviewableUsers(users)
-    } catch (error) {
-      console.error('Erro ao carregar usuários avaliáveis:', error)
-    }
-  }, [currentUser?.id, canReviewUser])
-
-  // Função para recarregar usuários quando o tempo expirar
-  const handleTimeExpired = useCallback(() => {
-    loadReviewableUsers()
-  }, [loadReviewableUsers])
-
-  const loadReviews = useCallback(async () => {
-    if (!currentUser?.id) return
-
-    try {
-      setIsLoadingData(true)
-      console.log('📊 Avaliações - Carregando avaliações para usuário:', currentUser.id)
-      // Carregar avaliações recebidas
-      await fetchUserReviews(currentUser.id, 'received')
-      
-      // Carregar avaliações dadas
-      await fetchUserReviews(currentUser.id, 'given')
-    } catch (error) {
-      console.error('Erro ao carregar avaliações:', error)
-      toast.error('Erro ao carregar avaliações')
-    } finally {
-      setIsLoadingData(false)
-    }
-  }, [currentUser?.id, fetchUserReviews])
-
-
-  // Carregar dados iniciais - removendo dependências que causam loop
+  // Carregar avaliações do usuário
   useEffect(() => {
-    if (currentUser?.id && mounted) {
-      loadReviews()
-      loadReviewableUsers()
+    if (user?.id) {
+      fetchUserReviews(user.id)
     }
-  }, [currentUser?.id, mounted]) // Removendo loadReviews e loadStats das dependências
-
-  const handleEditReview = (review: ReviewWithProfiles) => {
-    setEditingReview(review)
-  }
-
-  const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return
-
-    try {
-      const { error } = await deleteReview(reviewId)
-      if (error) {
-        toast.error('Erro ao excluir avaliação: ' + error)
-        return
-      }
-      toast.success('Avaliação excluída com sucesso!')
-      loadReviews()
-    } catch {
-      toast.error('Erro ao excluir avaliação')
-    }
-  }
-
-  const handleRespondToReview = async (reviewId: string, response: string) => {
-    try {
-      const { error } = await respondToReview(reviewId, response)
-      if (error) {
-        toast.error('Erro ao responder avaliação: ' + error)
-        return
-      }
-      loadReviews()
-    } catch {
-      toast.error('Erro ao responder avaliação')
-    }
-  }
-
-
-  const getFilteredReviews = () => {
-    let filteredReviews: ReviewWithProfiles[] = []
-
-    switch (filter) {
-      case 'received':
-        filteredReviews = reviews.filter(review => review.reviewed_id === currentUser?.id)
-        break
-      case 'given':
-        filteredReviews = reviews.filter(review => review.reviewer_id === currentUser?.id)
-        break
-      default:
-        filteredReviews = reviews
-    }
-
-    if (searchTerm) {
-      filteredReviews = filteredReviews.filter(review =>
-        review.reviewer.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        review.reviewed.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        review.comment?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    return filteredReviews.sort((a, b) => 
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    )
-  }
-
-  const handleCreateReviewSuccess = () => {
-    setShowCreateForm(false)
-    setSelectedUser(null)
-    loadReviews()
-    loadReviewableUsers() // Recarregar usuários para atualizar status
-  }
+  }, [user?.id, fetchUserReviews])
 
   if (!mounted) {
     return null
   }
 
-  if (loading || isLoadingData) {
+  if (!user) {
     return (
-      <MainLayout requireAuth={true}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="modern-card p-6 flex items-center space-x-3">
-              <RefreshCw className="h-5 w-5 animate-spin text-blue-600" />
-              <span className="text-gray-700 font-medium">Carregando avaliações...</span>
-            </div>
-          </div>
+      <MainLayout requireAuth={false}>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-6 text-center">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Acesso Restrito
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Você precisa estar logado para acessar as avaliações.
+              </p>
+              <Button asChild>
+                <a href="/auth">Fazer Login</a>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     )
   }
 
+  // Filtrar solicitações
+  const filteredRequests = requests.filter(request => {
+    const matchesFilter = filter === 'all' || request.status === filter
+    const matchesSearch = searchTerm === '' || 
+      request.requester_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.target_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    return matchesFilter && matchesSearch
+  })
+
+  // Solicitações pendentes (recebidas)
+  const pendingRequests = requests.filter(request => 
+    request.target_id === user.id && request.status === 'pending'
+  )
+
+  // Solicitações aceitas (que podem ser avaliadas)
+  const acceptedRequests = requests.filter(request => 
+    request.status === 'accepted' && 
+    (request.requester_id === user.id || request.target_id === user.id)
+  )
+
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      await acceptRequest(requestId)
+      toast.success('Solicitação aceita! Agora vocês podem se avaliar mutuamente.')
+    } catch (error) {
+      toast.error('Erro ao aceitar solicitação')
+    }
+  }
+
+  const handleRejectRequest = async (requestId: string) => {
+    try {
+      await rejectRequest(requestId)
+      toast.success('Solicitação rejeitada')
+    } catch (error) {
+      toast.error('Erro ao rejeitar solicitação')
+    }
+  }
+
+  const handleCompleteRequest = async (requestId: string) => {
+    try {
+      await completeRequest(requestId)
+      toast.success('Avaliações concluídas!')
+    } catch (error) {
+      toast.error('Erro ao marcar como concluída')
+    }
+  }
+
+  // Função para abrir modal de avaliação
+  const handleOpenEvaluationModal = (request: EvaluationRequest) => {
+    const otherUserId = request.requester_id === user.id ? request.target_id : request.requester_id
+    const otherUserName = request.requester_id === user.id ? request.target_name : request.requester_name
+    
+    setSelectedUser({
+      id: otherUserId,
+      name: otherUserName || 'Usuário',
+      avatar: request.requester_id === user.id ? request.target_avatar : request.requester_avatar
+    })
+    setShowEvaluationModal(true)
+  }
+
+  // Função para fechar modal
+  const handleCloseEvaluationModal = () => {
+    setShowEvaluationModal(false)
+    setSelectedUser(null)
+    setEvaluationData({
+      rating: 5,
+      title: '',
+      comment: '',
+      isRecommended: true
+    })
+  }
+
+  // Função para submeter avaliação
+  const handleSubmitEvaluation = async () => {
+    if (!selectedUser || !user?.id) return
+
+    try {
+      setIsSubmitting(true)
+      
+      // Criar a avaliação no sistema de reviews
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert({
+          reviewer_id: user.id,
+          reviewed_id: selectedUser.id,
+          rating_person: evaluationData.rating,
+          title: evaluationData.title || null,
+          comment: evaluationData.comment || null,
+          is_recommended: evaluationData.isRecommended,
+          review_type: 'professional',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      // Atualizar as estatísticas do usuário avaliado
+      await updateUserRating(selectedUser.id)
+      
+      toast.success(`Avaliação enviada para ${selectedUser.name}!`)
+      handleCloseEvaluationModal()
+      
+      // Recarregar dados
+      fetchUserReviews(user.id)
+      
+    } catch (error) {
+      console.error('Erro ao enviar avaliação:', error)
+      toast.error('Erro ao enviar avaliação')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Função para atualizar a avaliação do usuário
+  const updateUserRating = async (userId: string) => {
+    try {
+      // Buscar todas as avaliações do usuário
+      const { data: userReviews, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating_person')
+        .eq('reviewed_id', userId)
+
+      if (reviewsError) throw reviewsError
+
+      if (userReviews && userReviews.length > 0) {
+        // Calcular média das avaliações
+        const totalRating = userReviews.reduce((sum, review) => sum + review.rating_person, 0)
+        const averageRating = totalRating / userReviews.length
+
+        // Atualizar o perfil do usuário com a nova avaliação
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            rating: Math.round(averageRating * 10) / 10, // Arredondar para 1 casa decimal
+            total_reviews: userReviews.length,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+
+        if (updateError) throw updateError
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar avaliação do usuário:', error)
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Pendente</Badge>
+      case 'accepted':
+        return <Badge variant="outline" className="text-green-600 border-green-600">Aceita</Badge>
+      case 'rejected':
+        return <Badge variant="outline" className="text-red-600 border-red-600">Rejeitada</Badge>
+      case 'completed':
+        return <Badge variant="outline" className="text-blue-600 border-blue-600">Concluída</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Cabeçalho Moderno */}
-        <div className="mb-8">
-          <div className="mb-6">
-            <h1 className="modern-heading-1 text-gray-900 mb-2 flex items-center gap-3">
-              <Star className="h-8 w-8 text-yellow-500" />
-              Avaliações
-            </h1>
-            <p className="modern-body text-gray-600">
-              Gerencie suas avaliações e feedback de serviços prestados
+    <MainLayout>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Avaliações</h1>
+            <p className="text-gray-600">
+              Gerencie suas solicitações de avaliação e visualize suas avaliações recebidas.
             </p>
           </div>
-        </div>
 
-        {/* Como Funciona o Sistema - Moderno */}
-        <div className="mb-8 modern-card">
-          <button
-            onClick={() => setIsHowItWorksExpanded(!isHowItWorksExpanded)}
-            className="w-full border-b border-gray-200 px-6 py-4 bg-blue-50 hover:bg-blue-100 transition-colors duration-200"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Info className="h-5 w-5 text-blue-600" />
-                <h2 className="modern-heading-3 text-gray-900">
-                  Como funciona o sistema de avaliações
-                </h2>
-              </div>
-              <ChevronDown 
-                className={`h-5 w-5 text-blue-600 transition-transform duration-200 ${
-                  isHowItWorksExpanded ? 'transform rotate-180' : ''
-                }`}
-              />
-            </div>
-            <p className="modern-body text-gray-600 mt-2 text-left">
-              Entenda como você pode avaliar outros usuários e receber avaliações.
-            </p>
-          </button>
-          
-          {isHowItWorksExpanded && (
-            <div className="p-6">
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Passo 1 */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    1
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Inicie uma conversa</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                  Entre em contato com outro usuário através do chat para discutir serviços.
-                </p>
-                <div className="flex items-center gap-2 text-xs text-blue-600 font-medium">
-                  <Handshake className="w-4 h-4" />
-                  <span>Converse sobre o serviço</span>
-                </div>
-              </div>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-yellow-600">{pendingRequests.length}</div>
+                <div className="text-sm text-gray-600">Pendentes</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">{acceptedRequests.length}</div>
+                <div className="text-sm text-gray-600">Aceitas</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">{reviews.length}</div>
+                <div className="text-sm text-gray-600">Avaliações Recebidas</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600">{filteredRequests.length}</div>
+                <div className="text-sm text-gray-600">Total de Solicitações</div>
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Passo 2 */}
-              <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    2
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Faça um acordo</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                  Um dos usuários propõe um acordo de contato. O outro pode aceitar ou rejeitar.
-                </p>
-                <div className="flex items-center gap-2 text-xs text-amber-600 font-medium">
-                  <Clock className="w-4 h-4" />
-                  <span>Aguarde a resposta</span>
-                </div>
-              </div>
-
-              {/* Passo 3 */}
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    3
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Avalie após o serviço</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                  Após 20 horas do acordo aceito, ambos podem avaliar a experiência.
-                </p>
-                <div className="flex items-center gap-2 text-xs text-green-600 font-medium">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Deixe sua avaliação</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-semibold text-orange-900 mb-2">
-                    Regras importantes:
-                  </h4>
-                  <ul className="text-sm text-orange-800 space-y-1 leading-relaxed">
-                    <li>• Você só pode avaliar usuários com quem teve um acordo aceito</li>
-                    <li>• É necessário aguardar 20 horas após o acordo para poder avaliar</li>
-                    <li>• Cada usuário pode avaliar o outro apenas uma vez por acordo</li>
-                    <li>• As avaliações ajudam a construir confiança na plataforma</li>
-                    <li>• Os dados de contato são sempre visíveis</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            </div>
-          )}
-        </div>
-
-        {/* Seção de Usuários que Podem ser Avaliados */}
-        {reviewableUsers.length > 0 && (
-          <div className="mb-8 modern-card">
-            <div className="border-b border-gray-200 px-6 py-4 bg-green-50">
-              <div className="flex items-center gap-3">
-                <Star className="h-5 w-5 text-green-600" />
-                <h2 className="modern-heading-3 text-gray-900">Usuários disponíveis para avaliação</h2>
-              </div>
-              <p className="modern-body text-gray-600 mt-2">
-                Estes usuários têm acordos aceitos com você e podem ser avaliados:
-              </p>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="flex gap-2">
+              <Button
+                variant={filter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter('all')}
+              >
+                Todas
+              </Button>
+              <Button
+                variant={filter === 'pending' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter('pending')}
+              >
+                Pendentes
+              </Button>
+              <Button
+                variant={filter === 'accepted' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter('accepted')}
+              >
+                Aceitas
+              </Button>
+              <Button
+                variant={filter === 'completed' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilter('completed')}
+              >
+                Concluídas
+              </Button>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
-                {reviewableUsers.map((user) => (
-                  <div key={user.id} className="modern-card p-4">
-                    <div className="flex items-center gap-4">
-                      {/* Foto do usuário */}
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-blue-200">
-                        {user.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-                        ) : (
-                          <span className="text-blue-600 font-semibold text-xl">
-                            {user.name.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      
-                      {/* Informações do usuário */}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 text-lg">{user.name}</h3>
-                        <p className="text-gray-600 text-sm">
-                          Acordo aceito - {user.agreement?.service_description || 'Serviço'}
-                        </p>
-                      </div>
-                      
-                      {/* Contador de tempo ou botão de avaliar */}
-                      <div className="flex-shrink-0">
-                        {user.reviewAvailableAt ? (
-                          <TimeCounter
-                            targetDate={user.reviewAvailableAt}
-                            onExpired={handleTimeExpired}
-                            onReviewClick={() => {
-                              if (user.canReview) {
-                                setSelectedUser(user)
-                                setShowCreateForm(true)
-                              } else {
-                                toast.error('Aguarde o tempo necessário para poder avaliar este usuário.')
-                              }
-                            }}
-                            className="min-w-[160px]"
-                          />
-                        ) : user.hasReviewed ? (
-                          <div className="space-y-2">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 min-w-[160px]">
-                              <div className="flex items-center gap-2 mb-1">
-                                <CheckCircle className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800 text-sm">Avaliado</span>
-                              </div>
-                              <p className="text-blue-700 font-medium text-sm">
-                                Você já avaliou!
-                              </p>
-                            </div>
-                            <div className="text-center text-xs text-gray-500 pt-1">
-                              Exclua a avaliação para avaliar novamente
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Solicitações de Avaliação */}
+          <div className="space-y-4 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900">Solicitações de Avaliação</h2>
+            
+            {requestsLoading ? (
+              <div className="flex justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : filteredRequests.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Nenhuma solicitação encontrada
+                  </h3>
+                  <p className="text-gray-600">
+                    {filter === 'all' 
+                      ? 'Você ainda não tem solicitações de avaliação.'
+                      : `Nenhuma solicitação com status "${filter}" encontrada.`
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredRequests.map((request) => (
+                <Card key={request.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex -space-x-2">
+                          <Avatar className="w-10 h-10 border-2 border-white">
+                            <AvatarImage src={request.requester_avatar} />
+                            <AvatarFallback>
+                              {request.requester_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <Avatar className="w-10 h-10 border-2 border-white">
+                            <AvatarImage src={request.target_avatar} />
+                            <AvatarFallback>
+                              {request.target_name?.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="font-medium text-gray-900">
+                              {request.requester_id === user.id ? 'Você' : request.requester_name} 
+                              {' '}↔️{' '}
+                              {request.target_id === user.id ? 'Você' : request.target_name}
+                            </h3>
+                            {getStatusBadge(request.status)}
+                          </div>
+                          
+                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {formatDistanceToNow(new Date(request.created_at), { 
+                                addSuffix: true, 
+                                locale: ptBR 
+                              })}
                             </div>
                           </div>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 min-w-[160px]">
-                              <div className="flex items-center gap-2 mb-1">
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800 text-sm">Disponível</span>
-                              </div>
-                              <p className="text-green-700 font-medium text-sm">
-                                Pode avaliar agora!
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (user.canReview) {
-                                  setSelectedUser({
-                                    id: user.id,
-                                    name: user.name,
-                                    avatar: user.avatar,
-                                    userType: user.userType
-                                  })
-                                  setShowCreateForm(true)
-                                } else {
-                                  toast.error('Aguarde o tempo necessário para poder avaliar este usuário.')
-                                }
-                              }}
-                              disabled={!user.canReview}
-                              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                                user.canReview 
-                                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              }`}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        {request.status === 'pending' && request.target_id === user.id && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAcceptRequest(request.id)}
+                              className="bg-green-600 hover:bg-green-700"
                             >
-                              <Star className="h-4 w-4" />
-                              Avaliar agora
-                            </button>
-                          </div>
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Aceitar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRejectRequest(request.id)}
+                              className="text-red-600 border-red-600 hover:bg-red-50"
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Rejeitar
+                            </Button>
+                          </>
+                        )}
+                        
+                        {request.status === 'accepted' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleOpenEvaluationModal(request)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <Star className="h-4 w-4 mr-1" />
+                            Avaliar
+                          </Button>
+                        )}
+                        
+                        {request.status === 'accepted' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCompleteRequest(request.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Concluir
+                          </Button>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+
+          {/* Avaliações Recebidas */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">Avaliações Recebidas</h2>
+            
+            {reviewsLoading ? (
+              <div className="flex justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : reviews.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Nenhuma avaliação recebida
+                  </h3>
+                  <p className="text-gray-600">
+                    Você ainda não recebeu avaliações de outros usuários.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    onEdit={() => setEditingReview(review)}
+                    onDelete={() => deleteReview(review.id)}
+                    onRespond={(response) => respondToReview(review.id, response)}
+                  />
                 ))}
               </div>
-            </div>
-          </div>
-        )}
-
-
-        {/* Filtros e Busca - Moderno */}
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'all' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => setFilter('received')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'received' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Recebidas ({reviews.filter(review => review.reviewed_id === currentUser?.id).length})
-            </button>
-            <button
-              onClick={() => setFilter('given')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filter === 'given' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Enviadas ({reviews.filter(review => review.reviewer_id === currentUser?.id).length})
-            </button>
-          </div>
-
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              placeholder="Buscar avaliações..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="modern-input pl-10 w-full"
-            />
+            )}
           </div>
         </div>
-
-        {/* Lista de Avaliações */}
-        <div className="space-y-4">
-          {getFilteredReviews().length === 0 ? (
-            <div className="modern-card p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="modern-heading-3 text-gray-900 mb-2">
-                Nenhuma avaliação encontrada
-              </h3>
-              <p className="modern-body text-gray-600">
-                {filter === 'all' 
-                  ? 'Você ainda não tem avaliações.'
-                  : filter === 'received'
-                  ? 'Você ainda não recebeu avaliações.'
-                  : 'Você ainda não enviou avaliações.'
-                }
-              </p>
-            </div>
-          ) : (
-            getFilteredReviews().map((review) => (
-              <ReviewCard
-                key={review.id}
-                review={review}
-                currentUserId={currentUser?.id}
-                onEdit={handleEditReview}
-                onDelete={handleDeleteReview}
-                onRespond={handleRespondToReview}
-                showActions={true}
-              />
-            ))
-          )}
-        </div>
-
-        {/* Modal de Criação de Avaliação - Moderno */}
-        {showCreateForm && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <ReviewForm
-                reviewerId={currentUser?.id || ''}
-                reviewedId={selectedUser?.id || ''}
-                reviewedName={selectedUser?.name || ''}
-                reviewedAvatar={selectedUser?.avatar}
-                reviewedUserType={selectedUser?.userType}
-                onSuccess={handleCreateReviewSuccess}
-                onCancel={() => {
-                  setShowCreateForm(false)
-                  setSelectedUser(null)
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Modal de Edição de Avaliação - Moderno */}
-        {editingReview && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <ReviewForm
-                reviewerId={currentUser?.id || ''}
-                reviewedId={editingReview.reviewed.id}
-                reviewedName={editingReview.reviewed.full_name}
-                reviewedAvatar={editingReview.reviewed.avatar_url}
-                reviewedUserType={editingReview.reviewed.user_type}
-                editingReview={editingReview}
-                isEditing={true}
-                onSuccess={() => {
-                  setEditingReview(null)
-                  loadReviews() // Recarregar as avaliações
-                }}
-                onCancel={() => setEditingReview(null)}
-              />
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Modal de Avaliação Responsivo */}
+      {showEvaluationModal && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            {/* Header do Modal */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={selectedUser.avatar} />
+                    <AvatarFallback>
+                      {selectedUser.name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Avaliar {selectedUser.name}
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Deixe sua avaliação sobre o serviço
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseEvaluationModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Conteúdo do Modal */}
+            <div className="p-6 space-y-6">
+              {/* Avaliação por Estrelas */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">
+                  Avaliação (1-5 estrelas)
+                </Label>
+                <div className="flex items-center space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setEvaluationData(prev => ({ ...prev, rating: star }))}
+                      className={`p-1 rounded-full transition-colors ${
+                        star <= evaluationData.rating
+                          ? 'text-yellow-400 hover:text-yellow-500'
+                          : 'text-gray-300 hover:text-gray-400'
+                      }`}
+                    >
+                      <Star className="h-6 w-6 fill-current" />
+                    </button>
+                  ))}
+                  <span className="ml-2 text-sm text-gray-600">
+                    {evaluationData.rating} de 5 estrelas
+                  </span>
+                </div>
+              </div>
+
+              {/* Título da Avaliação */}
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+                  Título da Avaliação (opcional)
+                </Label>
+                <Input
+                  id="title"
+                  value={evaluationData.title}
+                  onChange={(e) => setEvaluationData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Ex: Excelente serviço!"
+                  className="w-full"
+                />
+              </div>
+
+              {/* Comentário */}
+              <div className="space-y-2">
+                <Label htmlFor="comment" className="text-sm font-medium text-gray-700">
+                  Comentário
+                </Label>
+                <Textarea
+                  id="comment"
+                  value={evaluationData.comment}
+                  onChange={(e) => setEvaluationData(prev => ({ ...prev, comment: e.target.value }))}
+                  placeholder="Conte mais sobre sua experiência..."
+                  rows={4}
+                  className="w-full resize-none"
+                />
+              </div>
+
+              {/* Recomendação */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">
+                  Você recomendaria este profissional?
+                </Label>
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setEvaluationData(prev => ({ ...prev, isRecommended: true }))}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
+                      evaluationData.isRecommended
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Sim, recomendo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEvaluationData(prev => ({ ...prev, isRecommended: false }))}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
+                      !evaluationData.isRecommended
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    <span>Não recomendo</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer do Modal */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-4 rounded-b-2xl">
+              <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseEvaluationModal}
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSubmitEvaluation}
+                  disabled={isSubmitting || evaluationData.rating === 0}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Star className="h-4 w-4 mr-2" />
+                      Enviar Avaliação
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   )
 }
