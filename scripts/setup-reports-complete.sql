@@ -55,23 +55,23 @@ CREATE POLICY "Users can insert their own reports" ON reports
 CREATE POLICY "Users can update their own reports" ON reports
   FOR UPDATE USING (auth.uid() = reporter_id AND status = 'pending');
 
--- Política para admins verem todas as denúncias
+-- Política para administradores verem todas as denúncias
 CREATE POLICY "Admins can view all reports" ON reports
   FOR SELECT USING (
     EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.user_type = 'admin'
+      SELECT 1 FROM admins 
+      WHERE admins.user_id = auth.uid() 
+      AND admins.is_active = true
     )
   );
 
--- Política para admins atualizarem todas as denúncias
+-- Política para administradores atualizarem todas as denúncias
 CREATE POLICY "Admins can update all reports" ON reports
   FOR UPDATE USING (
     EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.user_type = 'admin'
+      SELECT 1 FROM admins 
+      WHERE admins.user_id = auth.uid() 
+      AND admins.is_active = true
     )
   );
 
