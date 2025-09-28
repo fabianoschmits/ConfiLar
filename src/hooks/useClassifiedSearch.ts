@@ -80,118 +80,14 @@ export function useClassifiedSearch() {
 
       if (error) {
         console.warn('⚠️ Erro ao buscar dados reais da tabela classified_ads:', error)
-        console.log('📋 Usando dados de exemplo como fallback')
+        console.log('📋 Nenhum anúncio encontrado no banco de dados')
         
-        // Usar dados de exemplo apenas se houver erro
-        const mockAds: ClassifiedAd[] = [
-          {
-            id: 'mock-1',
-            user_id: 'mock-user-1',
-            user_name: 'João Silva',
-            user_type: 'professional',
-            title: 'Pedreiro Experiente - Construção e Reforma',
-            description: 'Ofereço serviços de pedreiro com mais de 10 anos de experiência. Trabalho com construção, reforma, alvenaria e acabamentos. Orçamento gratuito.',
-            category: 'Construção e Reforma',
-            location_state: 'SP',
-            location_city: 'São Paulo',
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 45,
-            user_avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'oferecer'
-          },
-          {
-            id: 'mock-2',
-            user_id: 'mock-user-2',
-            user_name: 'Maria Santos',
-            user_type: 'client',
-            title: 'Preciso de Eletricista Urgente',
-            description: 'Preciso de um eletricista para resolver um problema na fiação da minha casa. O problema é urgente e preciso de alguém confiável.',
-            category: 'Elétrica',
-            location_state: 'RJ',
-            location_city: 'Rio de Janeiro',
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 23,
-            user_avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'procurar'
-          },
-          {
-            id: 'mock-3',
-            user_id: 'mock-user-3',
-            user_name: 'Carlos Oliveira',
-            user_type: 'professional',
-            title: 'Encanador - Serviços Residenciais',
-            description: 'Encanador especializado em serviços residenciais. Desentupimento, reparos, instalações. Atendo emergências 24h.',
-            category: 'Hidráulica',
-            location_state: 'MG',
-            location_city: 'Belo Horizonte',
-            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 67,
-            user_avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'oferecer'
-          },
-          {
-            id: 'mock-4',
-            user_id: 'mock-user-4',
-            user_name: 'Ana Costa',
-            user_type: 'client',
-            title: 'Busco Pintor para Casa Nova',
-            description: 'Acabei de comprar uma casa e preciso de um pintor experiente para pintar todos os cômodos. Orçamento flexível.',
-            category: 'Pintura',
-            location_state: 'RS',
-            location_city: 'Porto Alegre',
-            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 34,
-            user_avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'procurar'
-          },
-          {
-            id: 'mock-5',
-            user_id: 'mock-user-5',
-            user_name: 'Roberto Lima',
-            user_type: 'professional',
-            title: 'Jardineiro e Paisagista',
-            description: 'Serviços de jardinagem, poda, plantio e paisagismo. Crio jardins lindos e mantenho áreas verdes. Orçamento personalizado.',
-            category: 'Jardinagem',
-            location_state: 'PR',
-            location_city: 'Curitiba',
-            created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 28,
-            user_avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'oferecer'
-          },
-          {
-            id: 'mock-6',
-            user_id: 'mock-user-6',
-            user_name: 'Fernanda Alves',
-            user_type: 'client',
-            title: 'Preciso de Limpeza Pós-Obra',
-            description: 'Terminei uma reforma e preciso de uma equipe de limpeza para deixar a casa impecável. Preferência por empresa com referências.',
-            category: 'Limpeza',
-            location_state: 'BA',
-            location_city: 'Salvador',
-            created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-            is_active: true,
-            views: 19,
-            user_avatar_url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
-            ad_type: 'procurar'
-          }
-        ]
+        // Usar array vazio se não houver dados
+        setClassifiedAds([])
+        setFilteredAds([])
         
-        setClassifiedAds(mockAds)
-        setFilteredAds(mockAds)
-        
-        // Calcular estatísticas
-        const total = mockAds.length
-        const offers = mockAds.filter(ad => ad.user_type === 'professional').length
-        const requests = mockAds.filter(ad => ad.user_type === 'client').length
-        const categories = Array.from(new Set(mockAds.map(ad => ad.category))).length
-
-        setStats({ total, offers, requests, categories })
+        // Estatísticas zeradas
+        setStats({ total: 0, offers: 0, requests: 0, categories: 0 })
         setLoading(false)
         return
       }
@@ -275,9 +171,53 @@ export function useClassifiedSearch() {
       )
     }
 
-    // Filtrar por estado
+    // Filtrar por estado (aceita tanto sigla quanto nome completo)
     if (filters.state) {
-      filtered = filtered.filter(ad => ad.location_state === filters.state)
+      filtered = filtered.filter(ad => {
+        const adState = ad.location_state
+        const filterState = filters.state
+        
+        // Verificar se é uma sigla (2 caracteres) ou nome completo
+        if (filterState.length === 2) {
+          // É uma sigla, comparar diretamente
+          return adState === filterState
+        } else {
+          // É um nome completo, verificar se corresponde à sigla do anúncio
+          // Mapear nomes para siglas
+          const stateMapping: { [key: string]: string } = {
+            'Rio Grande do Sul': 'RS',
+            'São Paulo': 'SP',
+            'Rio de Janeiro': 'RJ',
+            'Minas Gerais': 'MG',
+            'Bahia': 'BA',
+            'Paraná': 'PR',
+            'Santa Catarina': 'SC',
+            'Goiás': 'GO',
+            'Pernambuco': 'PE',
+            'Ceará': 'CE',
+            'Pará': 'PA',
+            'Maranhão': 'MA',
+            'Paraíba': 'PB',
+            'Amazonas': 'AM',
+            'Espírito Santo': 'ES',
+            'Piauí': 'PI',
+            'Alagoas': 'AL',
+            'Tocantins': 'TO',
+            'Rio Grande do Norte': 'RN',
+            'Acre': 'AC',
+            'Amapá': 'AP',
+            'Rondônia': 'RO',
+            'Roraima': 'RR',
+            'Sergipe': 'SE',
+            'Mato Grosso': 'MT',
+            'Mato Grosso do Sul': 'MS',
+            'Distrito Federal': 'DF'
+          }
+          
+          const expectedSigla = stateMapping[filterState]
+          return expectedSigla ? adState === expectedSigla : adState === filterState
+        }
+      })
     }
 
     // Filtrar por cidade

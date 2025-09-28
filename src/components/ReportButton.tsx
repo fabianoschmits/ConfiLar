@@ -67,7 +67,6 @@ export function ReportButton({
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
-    reason: '',
     description: '',
     priority: 'medium'
   })
@@ -81,8 +80,8 @@ export function ReportButton({
       return
     }
 
-    if (!formData.reason || !formData.description.trim()) {
-      toast.error('Por favor, preencha todos os campos obrigatórios')
+    if (!formData.description.trim()) {
+      toast.error('Por favor, preencha a descrição')
       return
     }
 
@@ -90,8 +89,7 @@ export function ReportButton({
 
     try {
       const reportData = {
-        type,
-        reason: formData.reason,
+        report_type: type,  // Usar report_type em vez de type
         description: formData.description.trim(),
         priority: formData.priority,
         reporter_id: user.id,
@@ -113,7 +111,7 @@ export function ReportButton({
 
       toast.success('Denúncia enviada com sucesso! Nossa equipe irá analisá-la.')
       setIsOpen(false)
-      setFormData({ reason: '', description: '', priority: 'medium' })
+      setFormData({ description: '', priority: 'medium' })
     } catch (error) {
       console.error('Erro ao enviar denúncia:', error)
       toast.error('Erro ao enviar denúncia. Tente novamente.')
@@ -169,26 +167,6 @@ export function ReportButton({
             </Label>
           </div>
 
-          <div>
-            <Label htmlFor="reason" className="text-sm font-medium">
-              Motivo da denúncia *
-            </Label>
-            <Select 
-              value={formData.reason} 
-              onValueChange={(value) => setFormData({...formData, reason: value})}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecione o motivo" />
-              </SelectTrigger>
-              <SelectContent>
-                {REPORT_REASONS[type].map((reason) => (
-                  <SelectItem key={reason} value={reason}>
-                    {reason}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div>
             <Label htmlFor="description" className="text-sm font-medium">
@@ -244,7 +222,7 @@ export function ReportButton({
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting || !formData.reason || !formData.description.trim()}
+              disabled={isSubmitting || !formData.description.trim()}
               className="flex-1 bg-red-600 hover:bg-red-700"
             >
               {isSubmitting ? 'Enviando...' : 'Enviar Denúncia'}

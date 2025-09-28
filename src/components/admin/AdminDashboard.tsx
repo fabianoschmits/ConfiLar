@@ -303,7 +303,12 @@ export function AdminDashboard() {
           })
         )
 
-        setActiveUsers(usersWithStats)
+        setActiveUsers(usersWithStats.map(user => ({
+          ...user,
+          last_activity: user.updated_at,
+          state: user.location_state,
+          city: user.location_city
+        })))
       }
     } catch (error) {
       console.error('Erro ao buscar usuários ativos:', error)
@@ -382,7 +387,12 @@ export function AdminDashboard() {
 
         // Ordenar por score de atividade
         usersWithActivity.sort((a, b) => b.activity_score - a.activity_score)
-        setTopUsers(usersWithActivity.slice(0, 10))
+        setTopUsers(usersWithActivity.slice(0, 10).map(user => ({
+          ...user,
+          login_count: 0,
+          state: user.location_state,
+          city: user.location_city
+        })))
       }
     } catch (error) {
       console.error('Erro ao buscar top usuários:', error)

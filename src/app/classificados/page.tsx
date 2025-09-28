@@ -24,6 +24,7 @@ import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
+import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 import { 
   Search, 
   MapPin, 
@@ -426,158 +427,73 @@ export default function ClassificadosPage() {
             </CardContent>
           </Card>
 
-          {/* Filtros e Busca Avançados */}
-          <div className="mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Barra de Busca */}
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Buscar anúncios por título, descrição ou categoria..."
-                        value={filters.searchTerm}
-                        onChange={(e) => updateFilters({ searchTerm: e.target.value })}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Controles de Visualização */}
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant={viewMode === 'grid' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('grid')}
-                    >
-                      <Grid3X3 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Botão de Filtros */}
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2"
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filtros
-                    {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
-                </div>
-
-                {/* Filtros Expandíveis */}
-                {showFilters && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {/* Tipo de Anúncio */}
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Tipo de anúncio</Label>
-                        <Select value={filters.adType} onValueChange={(value) => updateFilters({ adType: value as AdType })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todos os tipos" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todos os tipos</SelectItem>
-                            <SelectItem value="offers">Ofertas (Profissionais)</SelectItem>
-                            <SelectItem value="requests">Solicitações (Clientes)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Estado */}
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Estado</Label>
-                        <EstadoCombobox
-                          value={filters.state}
-                          onValueChange={(value) => {
-                            updateFilters({ state: value, city: '' })
-                            if (value) loadCidades(value)
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Cidade */}
-                      {filters.state && (
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">Cidade</Label>
-                          <CidadeCombobox
-                            value={filters.city}
-                            onValueChange={(value) => updateFilters({ city: value })}
-                            estadoSigla={filters.state}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Categoria */}
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Categoria</Label>
-                        <Combobox
-                          options={[
-                            { value: 'all', label: 'Todas as categorias' },
-                            ...categoryOptions
-                          ]}
-                          value={filters.category}
-                          onValueChange={(value) => updateFilters({ category: value })}
-                          placeholder="Todas as categorias"
-                          searchPlaceholder="Buscar categoria..."
-                          emptyMessage="Nenhuma categoria encontrada."
-                        />
-                      </div>
-                    </div>
-
-                    {/* Botão Limpar Filtros */}
-                    <div className="mt-4 flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearFilters}
-                      >
-                        <X className="h-4 w-4 mr-2" />
-                        Limpar Filtros
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Barra de Busca Inteligente */}
+          <div className="mb-6">
+            <SmartSearchBar
+              onSearch={(query, searchFilters) => {
+                const newFilters = {
+                  searchTerm: searchFilters.searchTerm,
+                  state: searchFilters.state,
+                  city: searchFilters.city,
+                  category: searchFilters.service,
+                  adType: 'all' as AdType
+                }
+                setFilters(newFilters)
+                executeSearch(newFilters)
+              }}
+              onFiltersChange={(searchFilters) => {
+                const newFilters = {
+                  searchTerm: searchFilters.searchTerm,
+                  state: searchFilters.state,
+                  city: searchFilters.city,
+                  category: searchFilters.service,
+                  adType: 'all' as AdType
+                }
+                setFilters(newFilters)
+                executeSearch(newFilters)
+              }}
+              initialFilters={{
+                searchTerm: filters.searchTerm,
+                state: filters.state,
+                city: filters.city,
+                service: filters.category,
+                userType: 'all',
+                rating: 'all',
+                availability: 'all'
+              }}
+              placeholder="Buscar anúncios, serviços, categorias..."
+              className="w-full"
+            />
           </div>
 
-          {/* Tabs de Tipo */}
-          <div className="mb-6">
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
-                {[
-                  { id: 'all', label: 'Todos', count: stats.total },
-                  { id: 'offers', label: 'Ofertas', count: stats.offers },
-                  { id: 'requests', label: 'Solicitações', count: stats.requests }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => updateFilters({ adType: tab.id as AdType })}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                      filters.adType === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {tab.label}
-                    <Badge variant="secondary" className="text-xs">
-                      {tab.count}
-                    </Badge>
-                  </button>
-                ))}
-              </nav>
+          {/* Controles de Visualização */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                {filteredAds.length} resultado{filteredAds.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            
+            <div className="flex border border-gray-200 rounded-lg">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-r-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
+
 
           {/* Resultados e Paginação */}
           <div className="mb-6 flex items-center justify-between">
@@ -992,21 +908,39 @@ export default function ClassificadosPage() {
                 </Card>
               ))}
             </div>
+          ) : paginatedAds.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Search className="h-12 w-12 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Nenhum anúncio encontrado
+              </h3>
+              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                {filters.searchTerm || filters.state || filters.city || filters.category !== 'all' 
+                  ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
+                  : 'Não há anúncios cadastrados no sistema ainda.'}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Limpar Filtros
+                </Button>
+                <Button
+                  onClick={() => setFilters(prev => ({ ...prev, searchTerm: '', state: '', city: '', category: 'all' }))}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Search className="h-4 w-4" />
+                  Nova Busca
+                </Button>
+              </div>
+            </div>
           ) : (
-            <>
-              {paginatedAds.length === 0 ? (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      Nenhum anúncio encontrado
-                    </h3>
-                    <p className="text-gray-600">
-                      Tente ajustar os filtros ou criar um novo anúncio.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
             <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => (
                 <Card 
@@ -1132,8 +1066,6 @@ export default function ClassificadosPage() {
                 </Card>
               ))}
             </div>
-              )}
-            </>
           )}
         </div>
       </div>

@@ -42,6 +42,7 @@ import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
+import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 
 export default function BuscarPage() {
   const router = useRouter()
@@ -62,7 +63,8 @@ export default function BuscarPage() {
     city: '',
     service: 'all',
     rating: 'all',
-    availability: 'all'
+    availability: 'all',
+    userType: 'all'
   })
 
   const { estados, cidades, loadCidades } = useIBGE()
@@ -120,7 +122,8 @@ export default function BuscarPage() {
       city: '',
       service: 'all',
       rating: 'all',
-      availability: 'all'
+      availability: 'all',
+      userType: 'all'
     })
     
     // Limpar filtros do hook de busca avançada
@@ -155,85 +158,12 @@ export default function BuscarPage() {
     router.push(`/perfil/${profileId}`)
   }
 
-  // Dados mockados para demonstração
-  const mockProfiles = [
-    {
-      id: '1',
-      full_name: 'João Silva',
-      user_type: 'professional' as const,
-      location_city: 'São Paulo',
-      location_state: 'SP',
-      bio: 'Pedreiro com 15 anos de experiência em construção e reformas.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_available: true
-    },
-    {
-      id: '2',
-      full_name: 'Maria Santos',
-      user_type: 'professional' as const,
-      location_city: 'Rio de Janeiro',
-      location_state: 'RJ',
-      bio: 'Eletricista especializada em instalações residenciais e comerciais.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_available: true
-    },
-    {
-      id: '3',
-      full_name: 'Carlos Oliveira',
-      user_type: 'professional' as const,
-      location_city: 'Belo Horizonte',
-      location_state: 'MG',
-      bio: 'Encanador com certificação e experiência em manutenção preventiva.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_available: false
-    },
-    {
-      id: '4',
-      full_name: 'Pedro Lima',
-      user_type: 'client' as const,
-      location_city: 'São Paulo',
-      location_state: 'SP',
-      bio: 'Procuro profissionais qualificados para reformas residenciais.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      is_available: true
-    },
-    {
-      id: '5',
-      full_name: 'Lucia Ferreira',
-      user_type: 'client' as const,
-      location_city: 'Rio de Janeiro',
-      location_state: 'RJ',
-      bio: 'Buscando eletricistas para instalação de ar condicionado.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-        is_available: true
-    },
-    {
-      id: '6',
-      full_name: 'Roberto Santos',
-      user_type: 'client' as const,
-      location_city: 'Belo Horizonte',
-      location_state: 'MG',
-      bio: 'Preciso de pedreiros para construção de muro.',
-      avatar_url: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-        is_available: true
-    }
-  ]
+  // Removido dados mockados - usando apenas dados reais do Supabase
 
   // Filtrar por tipo de usuário baseado na aba ativa
   const getFilteredProfilesByTab = () => {
-    const baseProfiles = filteredUsers.length > 0 ? filteredUsers : mockProfiles
+    // Usar apenas dados reais do Supabase
+    const baseProfiles = filteredUsers
     
     switch (activeTab) {
       case 'clients':
@@ -373,174 +303,94 @@ export default function BuscarPage() {
           <Card className="mb-8 hover:shadow-xl transition-all duration-300">
             <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
               <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
-                {/* Profissionais */}
+                {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 847}</p>
+                  <p className="text-xs text-gray-500 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 0}</p>
                 </div>
                 
-                {/* Disponíveis */}
+                {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Disponíveis</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 623}</p>
+                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 0}</p>
                 </div>
                 
-                {/* Serviços */}
+                {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Serviços</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">45</p>
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Clientes</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.clientsCount || 0}</p>
                 </div>
                 
-                {/* Avaliação */}
+                {/* Resultados Filtrados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Avaliação</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">4.8</p>
+                  <p className="text-xs text-gray-500 text-center">Resultados</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.filteredCount || 0}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Barra de Busca e Filtros */}
-          <div className="mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Barra de Busca */}
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Buscar profissionais..."
-                        value={filters.searchTerm}
-                        onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                        className="pl-10"
-                      />
-              </div>
-            </div>
-                  
-                  {/* Botões de Ação */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowFilters(!showFilters)}
-                      className="flex items-center gap-2"
-                    >
-                      <Filter className="h-4 w-4" />
-                      Filtros
-                      {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                    
-                    <div className="flex border border-gray-200 rounded-lg">
-              <Button
-                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                        onClick={() => setViewMode('grid')}
-                        className="rounded-r-none"
-                      >
-                        <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                        variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                        onClick={() => setViewMode('list')}
-                        className="rounded-l-none"
-                      >
-                        <List className="h-4 w-4" />
-              </Button>
-            </div>
-                  </div>
-                </div>
-                
-                {/* Filtros Expandíveis */}
-                {showFilters && (
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                        <EstadoCombobox
-                          value={filters.state}
-                          onValueChange={(value) => handleFilterChange('state', value)}
-                        />
+          {/* Barra de Busca Inteligente */}
+          <div className="mb-6">
+            <SmartSearchBar
+              onSearch={(query, searchFilters) => {
+                setFilters(searchFilters)
+                updateFilters({
+                  searchTerm: searchFilters.searchTerm,
+                  state: searchFilters.state,
+                  city: searchFilters.city,
+                  userType: searchFilters.userType,
+                  category: searchFilters.service
+                })
+                executeSearch()
+              }}
+              onFiltersChange={(searchFilters) => {
+                setFilters(searchFilters)
+                updateFilters({
+                  searchTerm: searchFilters.searchTerm,
+                  state: searchFilters.state,
+                  city: searchFilters.city,
+                  userType: searchFilters.userType,
+                  category: searchFilters.service
+                })
+              }}
+              initialFilters={filters}
+              placeholder="Buscar profissionais, serviços..."
+              className="w-full"
+            />
           </div>
 
-                      {filters.state && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
-                          <CidadeCombobox
-                            value={filters.city}
-                            onValueChange={(value) => handleFilterChange('city', value)}
-                            estadoSigla={filters.state}
-                          />
-                        </div>
-                      )}
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Serviço</label>
-                        <Select value={filters.service} onValueChange={(value) => handleFilterChange('service', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todos os serviços" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todos os serviços</SelectItem>
-                            {services.map((service) => (
-                              <SelectItem key={service.id} value={service.name}>
-                                {service.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Avaliação</label>
-                        <Select value={filters.rating} onValueChange={(value) => handleFilterChange('rating', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todas" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todas</SelectItem>
-                            <SelectItem value="5">5 estrelas</SelectItem>
-                            <SelectItem value="4">4+ estrelas</SelectItem>
-                            <SelectItem value="3">3+ estrelas</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Disponibilidade</label>
-                        <Select value={filters.availability} onValueChange={(value) => handleFilterChange('availability', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todos" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todos</SelectItem>
-                            <SelectItem value="available">Disponíveis</SelectItem>
-                            <SelectItem value="busy">Ocupados</SelectItem>
-                          </SelectContent>
-                        </Select>
+          {/* Controles de Visualização */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                {allFilteredProfiles.length} resultado{allFilteredProfiles.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            
+            <div className="flex border border-gray-200 rounded-lg">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-r-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-
-                    {/* Botões de Ação dos Filtros */}
-                    <div className="mt-4 flex gap-2">
-                      <Button onClick={handleSearch}>
-                        <Search className="h-4 w-4 mr-2" />
-                        Buscar
-                      </Button>
-                      <Button variant="outline" onClick={clearFilters}>
-                        <X className="h-4 w-4 mr-2" />
-                        Limpar Filtros
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-              </div>
 
           {/* Abas de Filtro por Tipo de Usuário */}
           <div className="mb-6">
@@ -571,7 +421,7 @@ export default function BuscarPage() {
                 <User className="h-4 w-4" />
                 <span>Clientes</span>
                 <Badge variant="secondary" className="ml-1 text-xs">
-                  {(filteredUsers.length > 0 ? filteredUsers : mockProfiles).filter(p => p.user_type === 'client').length}
+                  {filteredUsers.filter(p => p.user_type === 'client').length}
                 </Badge>
               </button>
               
@@ -586,7 +436,7 @@ export default function BuscarPage() {
                 <UserCheck className="h-4 w-4" />
                 <span>Profissionais</span>
                 <Badge variant="secondary" className="ml-1 text-xs">
-                  {(filteredUsers.length > 0 ? filteredUsers : mockProfiles).filter(p => p.user_type === 'professional').length}
+                  {filteredUsers.filter(p => p.user_type === 'professional').length}
                 </Badge>
               </button>
             </div>
@@ -621,6 +471,38 @@ export default function BuscarPage() {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            ) : displayProfiles.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <Search className="h-12 w-12 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Nenhum resultado encontrado
+                </h3>
+                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                  {filters.searchTerm || filters.state || filters.city || filters.service !== 'all' 
+                    ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
+                    : 'Não há usuários cadastrados no sistema ainda.'}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button
+                    onClick={clearFilters}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Limpar Filtros
+                  </Button>
+                  <Button
+                    onClick={() => setFilters(prev => ({ ...prev, searchTerm: '', state: '', city: '', service: 'all' }))}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Nova Busca
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className={`grid gap-6 ${
