@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useMessageRateLimit } from '@/hooks/useApiRateLimit'
 import { useNotifications } from '@/components/notifications/NotificationProviderSimple'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -77,6 +78,7 @@ export interface ContactAgreement {
 export function useMessages() {
   const { user } = useAuthContext()
   const { addNotification } = useNotifications()
+  const { checkMessageRateLimit, recordMessageAttempt } = useMessageRateLimit()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [contactAgreements, setContactAgreements] = useState<ContactAgreement[]>([])
@@ -298,6 +300,17 @@ export function useMessages() {
     if (!user?.id) return false
 
     try {
+      // Verificar rate limiting para mensagens
+      const rateLimitResult = await checkMessageRateLimit()
+      if (!rateLimitResult.allowed) {
+        const errorMessage = rateLimitResult.retryAfter 
+          ? `Muitas mensagens enviadas. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
+          : 'Muitas mensagens enviadas. Tente novamente mais tarde.'
+        
+        setError(errorMessage)
+        return false
+      }
+
       setSending(true)
       setError(null)
 
@@ -334,13 +347,16 @@ export function useMessages() {
       
       return true
     } catch (err) {
+      // Registrar tentativa falhada
+      recordMessageAttempt()
+      
       console.error('❌ Erro ao enviar mensagem:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
       return false
     } finally {
       setSending(false)
     }
-  }, [user?.id, conversations, loadMessages])
+  }, [user?.id, conversations, loadMessages, checkMessageRateLimit, recordMessageAttempt])
 
   // Marcar mensagens como lidas
   const markMessagesAsRead = useCallback(async (conversationId: string) => {
