@@ -6,9 +6,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Eye, MessageCircle, Loader2, MoreHorizontal } from 'lucide-react'
+import { MapPin, Eye, MessageCircle, Loader2, MoreHorizontal, User } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
+import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -62,6 +64,13 @@ export function NewUserWelcomePost({
   const { user } = useAuthContext()
   const { openChat } = useFloatingChat()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  // Hook para gerenciar visualizações
+  const { viewsCount } = usePostViews(post.id)
+  usePostViewTracker(post.id) // Registra visualização automaticamente
+  
+  // Hook para gerenciar contagem de comentários
+  const { count: commentsCount } = useCommentsCount(post.id)
 
   const canDelete = user?.id === post.user_id
 
@@ -141,6 +150,18 @@ export function NewUserWelcomePost({
                   <span className="hidden sm:inline">Disponível</span>
                   <span className="sm:hidden">Ativo</span>
                 </Badge>
+                <Badge 
+                  variant="outline"
+                  className="text-xs font-medium px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-1"
+                >
+                  <User className="h-3 w-3" />
+                  <span className="hidden sm:inline">
+                    {userType === 'professional' ? 'Profissional' : 'Cliente'}
+                  </span>
+                  <span className="sm:hidden">
+                    {userType === 'professional' ? 'Prof' : 'Cliente'}
+                  </span>
+                </Badge>
               </div>
               
               <div className="flex items-center text-xs text-gray-500 mb-2">
@@ -214,7 +235,11 @@ export function NewUserWelcomePost({
             <div className="flex items-center gap-3">
               <div className="flex items-center text-gray-500">
                 <Eye className="h-3 w-3 mr-1" />
-                <span className="text-xs">12</span>
+                <span className="text-xs">{viewsCount || 0}</span>
+              </div>
+              <div className="flex items-center text-gray-500">
+                <MessageCircle className="h-3 w-3 mr-1" />
+                <span className="text-xs">{commentsCount || 0}</span>
               </div>
             </div>
             
