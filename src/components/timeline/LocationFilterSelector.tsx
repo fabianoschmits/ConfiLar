@@ -38,6 +38,9 @@ export function LocationFilterSelector({
 
   const handleFilterSelect = (filter: LocationFilter) => {
     if (filter.type === 'custom') {
+      // Resetar estados quando abrir o seletor custom
+      setCustomState('')
+      setCustomCity('')
       setShowCustomSelector(true)
       setIsOpen(false)
     } else {
@@ -48,6 +51,11 @@ export function LocationFilterSelector({
   }
 
   const handleCustomLocationSelect = () => {
+    console.log('🎯 Selecionando localização custom:', {
+      customState,
+      customCity
+    })
+    
     if (customState && customCity) {
       const customFilter: LocationFilter = {
         type: 'custom',
@@ -55,10 +63,22 @@ export function LocationFilterSelector({
         city: customCity,
         country: 'Brasil'
       }
+      console.log('🎯 Filtro custom criado:', customFilter)
       setFilter(customFilter)
       onFilterChange?.(customFilter)
       setShowCustomSelector(false)
+    } else {
+      console.log('⚠️ Dados incompletos:', {
+        customState,
+        customCity
+      })
     }
+  }
+
+  const handleCancelCustom = () => {
+    setCustomState('')
+    setCustomCity('')
+    setShowCustomSelector(false)
   }
 
   return (
@@ -152,7 +172,12 @@ export function LocationFilterSelector({
                   </label>
                   <EstadoCombobox
                     value={customState}
-                    onValueChange={setCustomState}
+                    onValueChange={(value) => {
+                      console.log('🏙️ Estado selecionado:', value)
+                      setCustomState(value)
+                      // Limpar cidade quando estado mudar
+                      setCustomCity('')
+                    }}
                     className="w-full"
                   />
                 </div>
@@ -163,7 +188,10 @@ export function LocationFilterSelector({
                   </label>
                   <CidadeCombobox
                     value={customCity}
-                    onValueChange={setCustomCity}
+                    onValueChange={(value) => {
+                      console.log('🏘️ Cidade selecionada:', value)
+                      setCustomCity(value)
+                    }}
                     estadoSelecionado={customState}
                     className="w-full"
                   />
@@ -179,7 +207,7 @@ export function LocationFilterSelector({
                   Aplicar Filtro
                 </Button>
                 <Button
-                  onClick={() => setShowCustomSelector(false)}
+                  onClick={handleCancelCustom}
                   variant="outline"
                   className="flex-1 text-sm"
                 >
