@@ -376,6 +376,7 @@ export default function ClassificadosPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+
     return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
@@ -1017,7 +1018,7 @@ export default function ClassificadosPage() {
                           
                           {/* Botão de denunciar (para todos os usuários, exceto o dono) */}
                           {user && ad.user_id !== user.id && (
-                            <DropdownMenuItem className="p-0">
+                            <DropdownMenuItem asChild>
                               <ReportButton 
                                 type="classified" 
                                 targetId={ad.id}
@@ -1031,6 +1032,7 @@ export default function ClassificadosPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+
 
                     {/* Conteúdo do Anúncio */}
                     <div className="mb-4">
@@ -1087,6 +1089,7 @@ export default function ClassificadosPage() {
             </div>
           )}
         </div>
+
       </div>
     </MainLayout>
     </ClientOnly>
