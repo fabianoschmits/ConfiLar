@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -57,7 +57,7 @@ export function ModernSidebar() {
   const { unreadCount } = useSupabaseNotifications()
   const { openChat } = useFloatingChat()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['main', 'discovery'])
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([])
 
   // Sempre renderizar o componente para navegação
   const isLoggedIn = user && profile
@@ -69,6 +69,11 @@ export function ModernSidebar() {
         : [...prev, categoryId]
     )
   }
+
+  // Recolher todos os menus a cada atualização da página
+  useEffect(() => {
+    setExpandedCategories([])
+  }, [pathname])
 
   // Categorias principais da sidebar
   const sidebarCategories: SidebarCategory[] = [
@@ -267,15 +272,15 @@ export function ModernSidebar() {
 
   const getCategoryColor = (color: string) => {
     const colors = {
-      blue: 'text-blue-600 bg-blue-50',
-      green: 'text-green-600 bg-green-50',
-      purple: 'text-purple-600 bg-purple-50',
-      orange: 'text-orange-600 bg-orange-50',
-      indigo: 'text-indigo-600 bg-indigo-50',
-      red: 'text-red-600 bg-red-50',
-      gray: 'text-gray-600 bg-gray-50'
+      blue: 'text-gray-600 bg-gray-100',
+      green: 'text-gray-600 bg-gray-100',
+      purple: 'text-gray-600 bg-gray-100',
+      orange: 'text-gray-600 bg-gray-100',
+      indigo: 'text-gray-600 bg-gray-100',
+      red: 'text-gray-600 bg-gray-100',
+      gray: 'text-gray-600 bg-gray-100'
     }
-    return colors[color as keyof typeof colors] || colors.blue
+    return colors[color as keyof typeof colors] || colors.gray
   }
 
   return (
@@ -290,18 +295,18 @@ export function ModernSidebar() {
 
       {/* Sidebar Moderna */}
       <div className={`
-        fixed left-0 top-0 h-full bg-white border-r border-gray-200 shadow-sm z-50
+        fixed left-0 top-0 h-full bg-gray-50 border-r border-gray-200 shadow-sm z-50
         w-64 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-100">
           <Link href="/home" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gray-400 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">C</span>
             </div>
             <div>
-              <span className="font-semibold text-gray-900">ConfiLar</span>
+              <span className="font-semibold text-gray-700">ConfiLar</span>
               <p className="text-xs text-gray-500">Marketplace</p>
             </div>
           </Link>
@@ -342,13 +347,13 @@ export function ModernSidebar() {
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors w-full text-left
                             ${isActive(item.href)
-                              ? 'bg-blue-50 text-blue-700 font-medium'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? 'bg-gray-200 text-gray-800 font-medium'
+                              : 'text-gray-600 hover:bg-gray-100'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                            <div className={`${isActive(item.href) ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-700'}`}>
                               {item.icon}
                             </div>
                             <div>
@@ -375,13 +380,13 @@ export function ModernSidebar() {
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors
                             ${isActive(item.href)
-                              ? 'bg-blue-50 text-blue-700 font-medium'
+                              ? 'bg-gray-200 text-gray-800 font-medium'
                               : 'text-gray-700 hover:bg-gray-50'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                            <div className={`${isActive(item.href) ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-700'}`}>
                               {item.icon}
                             </div>
                             <div>
