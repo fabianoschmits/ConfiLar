@@ -6,9 +6,16 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Eye, MessageCircle, Loader2 } from 'lucide-react'
+import { MapPin, Eye, MessageCircle, Loader2, MoreHorizontal } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import { ReportButton } from '@/components/ReportButton'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,6 +171,45 @@ export function NewUserWelcomePost({
                 {formatTimeAgo(post.created_at)}
               </div>
             </div>
+            
+            {/* Menu de opções */}
+            <div className="flex-shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {canDelete ? (
+                    // Opções para o dono do post
+                    <DropdownMenuItem 
+                      onClick={() => setShowDeleteDialog(true)}
+                      className="cursor-pointer text-red-600 focus:text-red-600"
+                    >
+                      <Loader2 className="h-4 w-4 mr-2" />
+                      Deletar Post
+                    </DropdownMenuItem>
+                  ) : (
+                    // Opções para outros usuários
+                    <DropdownMenuItem asChild>
+                      <ReportButton 
+                        type="post" 
+                        targetId={post.id}
+                        targetName={post.title}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                      />
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Botões de ação - Estilo da imagem */}
@@ -197,27 +243,6 @@ export function NewUserWelcomePost({
             </div>
           </div>
 
-          {/* Botão de deletar - Estilo da imagem */}
-          {canDelete && (
-            <div className="flex justify-end mt-4">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Deletando...
-                  </>
-                ) : (
-                  'Deletar'
-                )}
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
 

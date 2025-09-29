@@ -18,7 +18,6 @@ import { NewUserWelcomePost } from './NewUserWelcomePost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
-import { ReportButton } from '@/components/ReportButton'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -198,6 +197,7 @@ export function TimelinePost({
           <PostOptionsMenu
             postId={post.id}
             postUserId={post.user_id}
+            postTitle={post.title}
             onEdit={onEdit || (() => {})}
             onDelete={onDelete || (() => {})}
             isDeleting={isDeleting}
@@ -316,14 +316,6 @@ export function TimelinePost({
             </button>
           </div>
           
-          {/* Botão de Denúncia */}
-          <ReportButton 
-            type="post" 
-            targetId={post.id}
-            targetName={post.title}
-            variant="ghost"
-            size="sm"
-          />
         </div>
 
       {/* Comentários */}
