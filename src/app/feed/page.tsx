@@ -74,6 +74,9 @@ export default function FeedPage() {
     location_filter: currentFilter
   })
 
+  // Debug: log do filtro atual
+  console.log('🔍 Feed - currentFilter:', currentFilter)
+
   // Realtime para timeline
   useTimelineRealtime()
 
@@ -296,7 +299,10 @@ export default function FeedPage() {
         <div className="mb-4 md:mb-6 space-y-3">
           {/* Filtro de Localização */}
           <LocationFilterSelector
-            onFilterChange={(filter) => setFilter(filter)}
+            onFilterChange={(filter) => {
+              console.log('🔄 Feed recebeu filtro:', filter)
+              setFilter(filter)
+            }}
             className="w-full"
           />
           
