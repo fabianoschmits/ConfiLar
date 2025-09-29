@@ -55,12 +55,9 @@ export function LocationFilterSelector({
         city: customCity,
         country: 'Brasil'
       }
-      console.log('🎯 Aplicando filtro custom:', customFilter)
       setFilter(customFilter)
       onFilterChange?.(customFilter)
       setShowCustomSelector(false)
-    } else {
-      console.log('⚠️ Filtro custom incompleto:', { customState, customCity })
     }
   }
 

@@ -68,12 +68,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Aplicar filtros de localização
       if (filters.location_filter) {
         const locationFilter = filters.location_filter
-        console.log('🔍 Aplicando filtro de localização:', locationFilter)
         
         switch (locationFilter.type) {
           case 'local':
             if (locationFilter.city && locationFilter.state) {
-              console.log('🏠 Filtro local:', { city: locationFilter.city, state: locationFilter.state })
               postsQuery = postsQuery
                 .ilike('location_city', locationFilter.city)
                 .ilike('location_state', locationFilter.state)
@@ -81,28 +79,22 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             break
           case 'state':
             if (locationFilter.state) {
-              console.log('🏙️ Filtro estado:', { state: locationFilter.state })
               postsQuery = postsQuery.ilike('location_state', locationFilter.state)
             }
             break
           case 'country':
             if (locationFilter.country) {
-              console.log('🌎 Filtro país:', { country: locationFilter.country })
               postsQuery = postsQuery.ilike('location_state', locationFilter.country)
             }
             break
           case 'custom':
             if (locationFilter.city && locationFilter.state) {
-              console.log('🎯 Filtro custom:', { city: locationFilter.city, state: locationFilter.state })
               postsQuery = postsQuery
                 .ilike('location_city', locationFilter.city)
                 .ilike('location_state', locationFilter.state)
-            } else {
-              console.log('⚠️ Filtro custom sem cidade/estado:', { city: locationFilter.city, state: locationFilter.state })
             }
             break
           case 'all':
-            console.log('🌍 Sem filtro de localização')
             // Não aplicar filtro de localização
             break
         }
