@@ -20,7 +20,12 @@ import {
   RefreshCw,
   Ban,
   Shield,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  CheckSquare,
+  Square,
+  Check,
+  UserX
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -28,6 +33,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 
 // Interfaces para tipagem
 interface Report {
@@ -97,6 +103,15 @@ export function ReportsManagement() {
   })
   const [adminNotes, setAdminNotes] = useState('')
   const [resolution, setResolution] = useState('')
+  const [selectedReports, setSelectedReports] = useState<string[]>([])
+  const [isSelectMode, setIsSelectMode] = useState(false)
+  const [showBanModal, setShowBanModal] = useState(false)
+  const [banForm, setBanForm] = useState({
+    reason: '',
+    ban_type: 'temporary' as 'temporary' | 'permanent',
+    duration_days: 7,
+    admin_notes: ''
+  })
 
   const fetchReports = async () => {
     setIsLoading(true)
@@ -268,6 +283,25 @@ export function ReportsManagement() {
         return
       }
 
+      // Se a denúncia foi marcada como "reviewing", criar banimento pendente
+      if (status === 'reviewing') {
+        try {
+          const { error: banError } = await supabase.rpc('create_pending_ban_from_report', {
+            report_id: reportId
+          })
+
+          if (banError) {
+            console.error('Erro ao criar banimento pendente:', banError)
+            // Não mostrar erro para o usuário, apenas log
+          } else {
+            toast.success('Banimento pendente criado automaticamente!')
+          }
+        } catch (banError) {
+          console.error('Erro ao criar banimento pendente:', banError)
+          // Não mostrar erro para o usuário, apenas log
+        }
+      }
+
       toast.success('Status da denúncia atualizado com sucesso!')
       fetchReports()
       fetchReportStats()
@@ -276,6 +310,114 @@ export function ReportsManagement() {
       console.error('Erro ao atualizar denúncia:', error)
       toast.error('Erro ao atualizar denúncia')
     }
+  }
+
+  const deleteReport = async (reportId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', reportId)
+
+      if (error) {
+        console.error('Erro ao deletar denúncia:', error)
+        toast.error('Erro ao deletar denúncia')
+        return
+      }
+
+      toast.success('Denúncia deletada com sucesso!')
+      fetchReports()
+      fetchReportStats()
+    } catch (error) {
+      console.error('Erro ao deletar denúncia:', error)
+      toast.error('Erro ao deletar denúncia')
+    }
+  }
+
+  const deleteSelectedReports = async () => {
+    if (selectedReports.length === 0) return
+
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .in('id', selectedReports)
+
+      if (error) {
+        console.error('Erro ao deletar denúncias:', error)
+        toast.error('Erro ao deletar denúncias selecionadas')
+        return
+      }
+
+      toast.success(`${selectedReports.length} denúncias deletadas com sucesso!`)
+      setSelectedReports([])
+      setIsSelectMode(false)
+      fetchReports()
+      fetchReportStats()
+    } catch (error) {
+      console.error('Erro ao deletar denúncias:', error)
+      toast.error('Erro ao deletar denúncias selecionadas')
+    }
+  }
+
+  const banUser = async (userId: string) => {
+    if (!banForm.reason.trim()) {
+      toast.error('Preencha o motivo do banimento')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('ban_user', {
+        target_user_id: userId,
+        ban_reason: banForm.reason,
+        ban_type: banForm.ban_type,
+        duration_days: banForm.ban_type === 'temporary' ? banForm.duration_days : null,
+        admin_notes: banForm.admin_notes || null,
+        related_report_id: selectedReport?.id || null
+      })
+
+      if (error) {
+        console.error('Erro ao banir usuário:', error)
+        toast.error('Erro ao banir usuário')
+        return
+      }
+
+      toast.success('Usuário banido com sucesso!')
+      setShowBanModal(false)
+      setBanForm({
+        reason: '',
+        ban_type: 'temporary',
+        duration_days: 7,
+        admin_notes: ''
+      })
+      fetchReports()
+      fetchReportStats()
+    } catch (error) {
+      console.error('Erro ao banir usuário:', error)
+      toast.error('Erro ao banir usuário')
+    }
+  }
+
+  const toggleSelectMode = () => {
+    setIsSelectMode(!isSelectMode)
+    setSelectedReports([])
+  }
+
+  const toggleReportSelection = (reportId: string) => {
+    setSelectedReports(prev => 
+      prev.includes(reportId) 
+        ? prev.filter(id => id !== reportId)
+        : [...prev, reportId]
+    )
+  }
+
+  const selectAllReports = () => {
+    const allReportIds = filteredReports.map(report => report.id)
+    setSelectedReports(allReportIds)
+  }
+
+  const clearSelection = () => {
+    setSelectedReports([])
   }
 
   const handleReportAction = async (reportId: string, action: string) => {
@@ -293,6 +435,11 @@ export function ReportsManagement() {
         break
       case 'review':
         await updateReportStatus(reportId, 'reviewing')
+        break
+      case 'delete':
+        if (confirm('Tem certeza que deseja deletar esta denúncia? Esta ação não pode ser desfeita.')) {
+          await deleteReport(reportId)
+        }
         break
       case 'ban_user':
         if (report.reported_user_id) {
@@ -521,12 +668,81 @@ export function ReportsManagement() {
       {/* Grid de denúncias */}
       <Card>
         <CardHeader>
-          <CardTitle>Denúncias ({filteredReports.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Denúncias ({filteredReports.length})</CardTitle>
+            <div className="flex items-center gap-2">
+              {isSelectMode && (
+                <>
+                  <Button 
+                    onClick={selectAllReports}
+                    variant="outline"
+                    size="sm"
+                    disabled={selectedReports.length === filteredReports.length}
+                  >
+                    <CheckSquare className="h-4 w-4 mr-1" />
+                    Selecionar Todas
+                  </Button>
+                  <Button 
+                    onClick={clearSelection}
+                    variant="outline"
+                    size="sm"
+                    disabled={selectedReports.length === 0}
+                  >
+                    <Square className="h-4 w-4 mr-1" />
+                    Limpar
+                  </Button>
+                  <Button 
+                    onClick={deleteSelectedReports}
+                    variant="destructive"
+                    size="sm"
+                    disabled={selectedReports.length === 0}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Deletar ({selectedReports.length})
+                  </Button>
+                </>
+              )}
+              <Button 
+                onClick={toggleSelectMode}
+                variant={isSelectMode ? "default" : "outline"}
+                size="sm"
+              >
+                {isSelectMode ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1" />
+                    Sair da Seleção
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="h-4 w-4 mr-1" />
+                    Selecionar
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredReports.map((report) => (
-              <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50 hover:shadow-md transition-all duration-200 bg-white">
+              <div key={report.id} className={`border rounded-lg p-4 hover:bg-gray-50 hover:shadow-md transition-all duration-200 bg-white ${isSelectMode ? 'border-blue-300' : ''} ${selectedReports.includes(report.id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}>
+                {/* Checkbox de Seleção */}
+                {isSelectMode && (
+                  <div className="flex items-center mb-3">
+                    <button
+                      onClick={() => toggleReportSelection(report.id)}
+                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      {selectedReports.includes(report.id) ? (
+                        <CheckSquare className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Square className="h-4 w-4 text-gray-400" />
+                      )}
+                      <span>Selecionar</span>
+                    </button>
+                  </div>
+                )}
+                
                 {/* Header do Card */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -644,7 +860,7 @@ export function ReportsManagement() {
                             </p>
                           </div>
 
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button 
                               onClick={() => handleReportAction(selectedReport.id, 'resolve')}
                               className="bg-green-600 hover:bg-green-700"
@@ -666,6 +882,27 @@ export function ReportsManagement() {
                               <Eye className="h-4 w-4 mr-1" />
                               Em Revisão
                             </Button>
+                            {/* Botão de banir usuário - só aparece se houver usuário reportado */}
+                            {selectedReport.reported_user_id && (
+                              <Button 
+                                onClick={() => setShowBanModal(true)}
+                                variant="destructive"
+                                className="bg-orange-600 hover:bg-orange-700"
+                              >
+                                <UserX className="h-4 w-4 mr-1" />
+                                Banir Usuário
+                              </Button>
+                            )}
+                            {selectedReport.status === 'resolved' && (
+                              <Button 
+                                onClick={() => handleReportAction(selectedReport.id, 'delete')}
+                                variant="destructive"
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Deletar
+                              </Button>
+                            )}
                           </div>
                         </div>
                       )}
@@ -696,6 +933,125 @@ export function ReportsManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal para Banir Usuário */}
+      <Dialog open={showBanModal} onOpenChange={setShowBanModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserX className="h-5 w-5 text-red-500" />
+              Banir Usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {selectedReport?.reported_user && (
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Usuário a ser banido:</h4>
+                <p className="text-sm text-gray-600">
+                  <strong>Nome:</strong> {selectedReport.reported_user.full_name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Email:</strong> {selectedReport.reported_user.email}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Tipo:</strong> {selectedReport.reported_user.user_type}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="ban_reason" className="text-sm font-medium">
+                Motivo do Banimento *
+              </Label>
+              <Textarea
+                id="ban_reason"
+                placeholder="Descreva o motivo do banimento..."
+                value={banForm.reason}
+                onChange={(e) => setBanForm({...banForm, reason: e.target.value})}
+                className="mt-1"
+                rows={3}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="ban_type" className="text-sm font-medium">
+                Tipo de Banimento
+              </Label>
+              <Select 
+                value={banForm.ban_type} 
+                onValueChange={(value: 'temporary' | 'permanent') => setBanForm({...banForm, ban_type: value})}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="temporary">Temporário</SelectItem>
+                  <SelectItem value="permanent">Permanente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {banForm.ban_type === 'temporary' && (
+              <div>
+                <Label htmlFor="duration_days" className="text-sm font-medium">
+                  Duração (dias)
+                </Label>
+                <Input
+                  id="duration_days"
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={banForm.duration_days}
+                  onChange={(e) => setBanForm({...banForm, duration_days: parseInt(e.target.value) || 7})}
+                  className="mt-1"
+                />
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="admin_notes" className="text-sm font-medium">
+                Notas do Administrador
+              </Label>
+              <Textarea
+                id="admin_notes"
+                placeholder="Notas adicionais (opcional)..."
+                value={banForm.admin_notes}
+                onChange={(e) => setBanForm({...banForm, admin_notes: e.target.value})}
+                className="mt-1"
+                rows={2}
+              />
+            </div>
+
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Atenção:</strong> Esta ação é irreversível. O usuário será banido imediatamente e não poderá acessar a plataforma.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowBanModal(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => selectedReport?.reported_user_id && banUser(selectedReport.reported_user_id)}
+                disabled={!banForm.reason.trim() || !selectedReport?.reported_user_id}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                <UserX className="h-4 w-4 mr-1" />
+                Banir Usuário
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

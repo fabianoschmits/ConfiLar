@@ -70,14 +70,15 @@ CREATE POLICY "Users can insert their own reports" ON reports
 CREATE POLICY "Users can update their own reports" ON reports
     FOR UPDATE USING (auth.uid() = reporter_id);
 
-CREATE POLICY "Admins can view all reports" ON reports
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM profiles
-            WHERE profiles.id = auth.uid()
-            AND profiles.role = 'admin'
-        )
-    );
+-- Política para admins (ajuste conforme sua estrutura de usuários)
+-- CREATE POLICY "Admins can view all reports" ON reports
+--     FOR ALL USING (
+--         EXISTS (
+--             SELECT 1 FROM profiles
+--             WHERE profiles.id = auth.uid()
+--             AND profiles.is_admin = true
+--         )
+--     );
 
 -- 7. Verificar estrutura final
 DO $$
