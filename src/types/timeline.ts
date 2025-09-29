@@ -69,7 +69,7 @@ export interface TimelineFilters {
   search?: string
   activity_types?: string[]
   location_filter?: {
-    type: 'local' | 'state' | 'country' | 'all'
+    type: 'local' | 'state' | 'country' | 'all' | 'custom'
     city?: string
     state?: string
     country?: string

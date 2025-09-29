@@ -6,6 +6,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, ChevronDown, ChevronUp } from 'lucide-react'
 import { useLocationFilters, LocationFilter } from '@/hooks/useLocationFilters'
+import { EstadoCombobox } from '@/components/search/EstadoCombobox'
+import { CidadeCombobox } from '@/components/search/CidadeCombobox'
+import { useIBGE } from '@/hooks/useIBGE'
 
 interface LocationFilterSelectorProps {
   className?: string
@@ -17,21 +20,45 @@ export function LocationFilterSelector({
   onFilterChange 
 }: LocationFilterSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [customState, setCustomState] = useState('')
+  const [customCity, setCustomCity] = useState('')
+  const [showCustomSelector, setShowCustomSelector] = useState(false)
+  
   const {
     currentFilter,
     getFilterLabel,
     getFilterIcon,
     getFilterDescription,
     getAvailableFilters,
-    setFilter
+    setFilter,
+    isCustomFilter
   } = useLocationFilters()
 
   const availableFilters = getAvailableFilters()
 
   const handleFilterSelect = (filter: LocationFilter) => {
-    setFilter(filter)
-    onFilterChange?.(filter)
-    setIsOpen(false)
+    if (filter.type === 'custom') {
+      setShowCustomSelector(true)
+      setIsOpen(false)
+    } else {
+      setFilter(filter)
+      onFilterChange?.(filter)
+      setIsOpen(false)
+    }
+  }
+
+  const handleCustomLocationSelect = () => {
+    if (customState && customCity) {
+      const customFilter: LocationFilter = {
+        type: 'custom',
+        state: customState,
+        city: customCity,
+        country: 'Brasil'
+      }
+      setFilter(customFilter)
+      onFilterChange?.(customFilter)
+      setShowCustomSelector(false)
+    }
   }
 
   return (
@@ -103,6 +130,61 @@ export function LocationFilterSelector({
             <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="text-xs text-gray-500">
                 💡 <strong>Dica:</strong> Filtros locais mostram posts mais relevantes para você
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Seletor Custom de Localização */}
+      {showCustomSelector && (
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 backdrop-blur-md border-gray-200 shadow-lg">
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              <div className="text-sm font-medium text-gray-700 mb-3">
+                🎯 Escolher localização específica
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">
+                    Estado
+                  </label>
+                  <EstadoCombobox
+                    value={customState}
+                    onValueChange={setCustomState}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">
+                    Cidade
+                  </label>
+                  <CidadeCombobox
+                    value={customCity}
+                    onValueChange={setCustomCity}
+                    estadoSelecionado={customState}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={handleCustomLocationSelect}
+                  disabled={!customState || !customCity}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                >
+                  Aplicar Filtro
+                </Button>
+                <Button
+                  onClick={() => setShowCustomSelector(false)}
+                  variant="outline"
+                  className="flex-1 text-sm"
+                >
+                  Cancelar
+                </Button>
               </div>
             </div>
           </CardContent>

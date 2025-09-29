@@ -87,6 +87,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               postsQuery = postsQuery.eq('location_state', locationFilter.country)
             }
             break
+          case 'custom':
+            if (locationFilter.city && locationFilter.state) {
+              postsQuery = postsQuery
+                .eq('location_city', locationFilter.city)
+                .eq('location_state', locationFilter.state)
+            }
+            break
           case 'all':
             // Não aplicar filtro de localização
             break
