@@ -32,7 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 // Interfaces para tipagem
 interface Report {
   id: string
-  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  report_type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
   reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -215,10 +215,10 @@ export function ReportsManagement() {
       // Denúncias por tipo
       const { data: reportsByType } = await supabase
         .from('reports')
-        .select('type')
+        .select('report_type')
 
       const typeCounts = reportsByType?.reduce((acc: any, report: any) => {
-        acc[report.type] = (acc[report.type] || 0) + 1
+        acc[report.report_type] = (acc[report.report_type] || 0) + 1
         return acc
       }, {}) || {}
 
@@ -329,8 +329,8 @@ export function ReportsManagement() {
     }
   }
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
+  const getTypeIcon = (report_type: string) => {
+    switch (report_type) {
       case 'user': return <User className="h-4 w-4" />
       case 'post': return <FileText className="h-4 w-4" />
       case 'message': return <MessageCircle className="h-4 w-4" />
@@ -342,7 +342,7 @@ export function ReportsManagement() {
 
   const filteredReports = reports.filter(report => {
     if (filters.status !== 'all' && report.status !== filters.status) return false
-    if (filters.type !== 'all' && report.type !== filters.type) return false
+    if (filters.type !== 'all' && report.report_type !== filters.type) return false
     if (filters.priority !== 'all' && report.priority !== filters.priority) return false
     if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
@@ -530,14 +530,14 @@ export function ReportsManagement() {
                 {/* Header do Card */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    {getTypeIcon(report.type)}
+                    {getTypeIcon(report.report_type)}
                     <div>
                       <div className="font-medium text-sm">
-                        {report.type === 'user' ? 'Usuário' : 
-                         report.type === 'post' ? 'Post' :
-                         report.type === 'message' ? 'Mensagem' :
-                         report.type === 'review' ? 'Avaliação' :
-                         report.type === 'classified' ? 'Classificado' : 'Outros'}
+                        {report.report_type === 'user' ? 'Usuário' : 
+                         report.report_type === 'post' ? 'Post' :
+                         report.report_type === 'message' ? 'Mensagem' :
+                         report.report_type === 'review' ? 'Avaliação' :
+                         report.report_type === 'classified' ? 'Classificado' : 'Outros'}
                       </div>
                       <div className="text-xs text-gray-500">
                         {report.reporter?.full_name || 'Anônimo'}
@@ -597,7 +597,7 @@ export function ReportsManagement() {
                           <div>
                             <h4 className="font-medium">Informações da Denúncia</h4>
                             <div className="text-sm text-gray-600 mt-1">
-                              <p><strong>Tipo:</strong> {selectedReport.type}</p>
+                              <p><strong>Tipo:</strong> {selectedReport.report_type}</p>
                               <p><strong>Motivo:</strong> {selectedReport.reason}</p>
                               <p><strong>Descrição:</strong> {selectedReport.description}</p>
                               <p><strong>Status:</strong> {selectedReport.status}</p>

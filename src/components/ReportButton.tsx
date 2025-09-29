@@ -97,7 +97,7 @@ export function ReportButton({
 
     try {
       const reportData = {
-        type: type,
+        report_type: type,
         reason: 'Denúncia de conteúdo', // Motivo padrão
         description: formData.description.trim(),
         priority: formData.priority,
