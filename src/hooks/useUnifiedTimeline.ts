@@ -32,6 +32,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .select(`
           id,
           professional_id,
+          user_id,
           title,
           description,
           images,
@@ -41,7 +42,14 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           comments_count,
           created_at,
           updated_at,
+          metadata,
           professional:profiles!feed_posts_professional_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          user:profiles!feed_posts_user_id_fkey(
             id,
             full_name,
             avatar_url,
@@ -146,23 +154,39 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
 
       // Transformar posts em TimelinePost
-      const timelinePosts = (posts || []).map(post => ({
-        id: post.id,
-        type: 'post' as const,
-        created_at: post.created_at,
-        user_id: post.professional_id,
-        user_name: (post.professional as any)?.full_name || 'Usuário',
-        user_avatar: (post.professional as any)?.avatar_url,
-        user_type: (post.professional as any)?.user_type,
-        title: post.title,
-        description: post.description || '',
-        images: post.images || [],
-        location_state: post.location_state,
-        location_city: post.location_city,
-        likes_count: post.likes_count || 0,
-        comments_count: post.comments_count || 0,
-        is_liked: likedPosts.has(post.id)
-      }))
+      const timelinePosts = (posts || []).map(post => {
+        // Para posts de boas-vindas, usar dados do metadata ou do user
+        const isWelcomePost = post.metadata?.type === 'welcome'
+        const userData = isWelcomePost ? 
+          (post.user as any) || (post.professional as any) :
+          (post.professional as any) || (post.user as any)
+        
+        // Se for post de boas-vindas e tiver metadata, usar dados do metadata
+        const finalUserData = isWelcomePost && post.metadata ? {
+          full_name: post.metadata.user || userData?.full_name || 'Usuário',
+          avatar_url: post.metadata.avatar_url || userData?.avatar_url,
+          user_type: post.metadata.user_type || userData?.user_type
+        } : userData
+
+        return {
+          id: post.id,
+          type: 'post' as const,
+          created_at: post.created_at,
+          user_id: post.user_id || post.professional_id,
+          user_name: finalUserData?.full_name || 'Usuário',
+          user_avatar: finalUserData?.avatar_url,
+          user_type: finalUserData?.user_type,
+          title: post.title,
+          description: post.description || '',
+          images: post.images || [],
+          location_state: post.location_state,
+          location_city: post.location_city,
+          likes_count: post.likes_count || 0,
+          comments_count: post.comments_count || 0,
+          is_liked: likedPosts.has(post.id),
+          metadata: post.metadata
+        }
+      })
 
       // Transformar atividades em TimelineActivity
       const timelineActivities = (activities || []).map(activity => {
