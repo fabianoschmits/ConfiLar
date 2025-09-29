@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
+import { UserReportsModal } from '@/components/UserReportsModal'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 import { useAvailability } from '@/hooks/useAvailability'
@@ -37,7 +38,8 @@ import {
   Eye,
   ThumbsUp,
   BarChart3,
-  ShieldCheck
+  ShieldCheck,
+  Flag
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -594,6 +596,16 @@ export function ModernHeader({
                               <Users className="h-3 w-3" />
                               <span className="truncate">Sobre Nós</span>
                             </Button>
+                            <UserReportsModal>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
+                              >
+                                <Flag className="h-3 w-3" />
+                                <span className="truncate">Minhas Denúncias</span>
+                              </Button>
+                            </UserReportsModal>
                           </div>
                         )}
                       </div>

@@ -27,6 +27,7 @@ import {
   Zap
 } from 'lucide-react'
 import { ReportsManagement } from './ReportsManagement'
+import { BansManagement } from './BansManagement'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -512,11 +513,12 @@ export function AdminDashboard() {
 
       {/* Tabs principais */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="activity">Atividade</TabsTrigger>
           <TabsTrigger value="reports">Denúncias</TabsTrigger>
+          <TabsTrigger value="bans">Banimentos</TabsTrigger>
           <TabsTrigger value="system">Sistema</TabsTrigger>
           <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
           <TabsTrigger value="tools">Ferramentas</TabsTrigger>
@@ -809,6 +811,11 @@ export function AdminDashboard() {
         {/* Tab: Denúncias */}
         <TabsContent value="reports" className="space-y-6">
           <ReportsManagement />
+        </TabsContent>
+
+        {/* Tab: Banimentos */}
+        <TabsContent value="bans" className="space-y-6">
+          <BansManagement />
         </TabsContent>
 
         {/* Tab: Sistema */}

@@ -20,6 +20,7 @@ import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { Suspense } from "react"
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
+import { BanNotification } from "@/components/BanNotification"
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -75,7 +76,9 @@ export default async function RootLayout({
                     <NotificationProviderSimple>
                       <FloatingChatProviderSimple>
                         <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                          {children}
+                          <BanNotification>
+                            {children}
+                          </BanNotification>
                         </Suspense>
                         <FloatingChatWrapper />
                         <LoadingOverlayProvider />
