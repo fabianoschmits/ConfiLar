@@ -89,9 +89,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             break
           case 'custom':
             if (locationFilter.city && locationFilter.state) {
+              console.log('🎯 Aplicando filtro custom:', {
+                city: locationFilter.city,
+                state: locationFilter.state
+              })
               postsQuery = postsQuery
                 .ilike('location_city', locationFilter.city)
                 .ilike('location_state', locationFilter.state)
+            } else {
+              console.log('⚠️ Filtro custom sem dados:', {
+                city: locationFilter.city,
+                state: locationFilter.state
+              })
             }
             break
           case 'all':
