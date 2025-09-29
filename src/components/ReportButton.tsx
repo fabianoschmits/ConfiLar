@@ -98,7 +98,7 @@ export function ReportButton({
     try {
       const reportData = {
         report_type: type,
-        reason: 'Denúncia de conteúdo', // Motivo padrão
+        reason: 'Denúncia de conteúdo',
         description: formData.description.trim(),
         priority: formData.priority,
         reporter_id: user.id,
@@ -108,6 +108,8 @@ export function ReportButton({
         ...(type === 'review' && { reported_review_id: targetId }),
         ...(type === 'classified' && { reported_classified_id: targetId })
       }
+
+      console.log('Enviando dados da denúncia:', reportData)
 
       const { error } = await supabase
         .from('reports')
