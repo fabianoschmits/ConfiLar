@@ -32,7 +32,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 // Interfaces para tipagem
 interface Report {
   id: string
-  report_type: 'user' | 'post' | 'message' | 'review' | 'other'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
   priority: 'low' | 'medium' | 'high' | 'urgent'
@@ -40,6 +41,7 @@ interface Report {
   reported_user_id?: string
   reported_post_id?: string
   reported_message_id?: string
+  reported_classified_id?: string
   created_at: string
   updated_at: string
   admin_notes?: string
@@ -61,6 +63,13 @@ interface Report {
     title: string
     content: string
     professional_id: string
+  }
+  classified_ad?: {
+    id: string
+    title: string
+    description: string
+    user_name: string
+    user_id: string
   }
 }
 
@@ -141,11 +150,23 @@ export function ReportsManagement() {
             reportedPost = reportedPostData
           }
 
+          // Buscar informações do anúncio classificado denunciado
+          let classifiedAd = null
+          if (report.reported_classified_id) {
+            const { data: classifiedAdData } = await supabase
+              .from('classified_ads')
+              .select('id, title, description, user_name, user_id')
+              .eq('id', report.reported_classified_id)
+              .single()
+            classifiedAd = classifiedAdData
+          }
+
           return {
             ...report,
             reporter,
             reported_user: reportedUser,
-            reported_post: reportedPost
+            reported_post: reportedPost,
+            classified_ad: classifiedAd
           }
         })
       )
@@ -194,10 +215,10 @@ export function ReportsManagement() {
       // Denúncias por tipo
       const { data: reportsByType } = await supabase
         .from('reports')
-        .select('report_type')
+        .select('type')
 
       const typeCounts = reportsByType?.reduce((acc: any, report: any) => {
-        acc[report.report_type] = (acc[report.report_type] || 0) + 1
+        acc[report.type] = (acc[report.type] || 0) + 1
         return acc
       }, {}) || {}
 
@@ -308,19 +329,20 @@ export function ReportsManagement() {
     }
   }
 
-  const getTypeIcon = (report_type: string) => {
-    switch (report_type) {
+  const getTypeIcon = (type: string) => {
+    switch (type) {
       case 'user': return <User className="h-4 w-4" />
       case 'post': return <FileText className="h-4 w-4" />
       case 'message': return <MessageCircle className="h-4 w-4" />
       case 'review': return <Flag className="h-4 w-4" />
+      case 'classified': return <FileText className="h-4 w-4" />
       default: return <AlertTriangle className="h-4 w-4" />
     }
   }
 
   const filteredReports = reports.filter(report => {
     if (filters.status !== 'all' && report.status !== filters.status) return false
-    if (filters.type !== 'all' && report.report_type !== filters.type) return false
+    if (filters.type !== 'all' && report.type !== filters.type) return false
     if (filters.priority !== 'all' && report.priority !== filters.priority) return false
     if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
@@ -458,6 +480,7 @@ export function ReportsManagement() {
                   <SelectItem value="post">Post</SelectItem>
                   <SelectItem value="message">Mensagem</SelectItem>
                   <SelectItem value="review">Avaliação</SelectItem>
+                  <SelectItem value="classified">Classificado</SelectItem>
                   <SelectItem value="other">Outros</SelectItem>
                 </SelectContent>
               </Select>
@@ -507,13 +530,14 @@ export function ReportsManagement() {
                 {/* Header do Card */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    {getTypeIcon(report.report_type)}
+                    {getTypeIcon(report.type)}
                     <div>
                       <div className="font-medium text-sm">
-                        {report.report_type === 'user' ? 'Usuário' : 
-                         report.report_type === 'post' ? 'Post' :
-                         report.report_type === 'message' ? 'Mensagem' :
-                         report.report_type === 'review' ? 'Avaliação' : 'Outros'}
+                        {report.type === 'user' ? 'Usuário' : 
+                         report.type === 'post' ? 'Post' :
+                         report.type === 'message' ? 'Mensagem' :
+                         report.type === 'review' ? 'Avaliação' :
+                         report.type === 'classified' ? 'Classificado' : 'Outros'}
                       </div>
                       <div className="text-xs text-gray-500">
                         {report.reporter?.full_name || 'Anônimo'}
@@ -573,7 +597,8 @@ export function ReportsManagement() {
                           <div>
                             <h4 className="font-medium">Informações da Denúncia</h4>
                             <div className="text-sm text-gray-600 mt-1">
-                              <p><strong>Tipo:</strong> {selectedReport.report_type}</p>
+                              <p><strong>Tipo:</strong> {selectedReport.type}</p>
+                              <p><strong>Motivo:</strong> {selectedReport.reason}</p>
                               <p><strong>Descrição:</strong> {selectedReport.description}</p>
                               <p><strong>Status:</strong> {selectedReport.status}</p>
                               <p><strong>Prioridade:</strong> {selectedReport.priority}</p>
@@ -597,6 +622,17 @@ export function ReportsManagement() {
                               <div className="text-sm text-gray-600 mt-1">
                                 <p><strong>Título:</strong> {selectedReport.reported_post.title}</p>
                                 <p><strong>Conteúdo:</strong> {selectedReport.reported_post.content.substring(0, 200)}...</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {selectedReport.classified_ad && (
+                            <div>
+                              <h4 className="font-medium">Anúncio Classificado Denunciado</h4>
+                              <div className="text-sm text-gray-600 mt-1">
+                                <p><strong>Título:</strong> {selectedReport.classified_ad.title}</p>
+                                <p><strong>Descrição:</strong> {selectedReport.classified_ad.description.substring(0, 200)}...</p>
+                                <p><strong>Usuário:</strong> {selectedReport.classified_ad.user_name}</p>
                               </div>
                             </div>
                           )}

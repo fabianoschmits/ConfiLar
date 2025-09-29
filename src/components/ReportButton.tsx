@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 interface ReportButtonProps {
-  type: 'user' | 'post' | 'message' | 'review'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified'
   targetId: string
   targetName?: string
   className?: string
@@ -53,6 +53,14 @@ const REPORT_REASONS = {
     'Spam',
     'Avaliação inadequada',
     'Outros'
+  ],
+  classified: [
+    'Anúncio falso ou enganoso',
+    'Preços abusivos',
+    'Spam ou propaganda excessiva',
+    'Conteúdo inapropriado',
+    'Serviço não prestado',
+    'Outros'
   ]
 }
 
@@ -89,14 +97,16 @@ export function ReportButton({
 
     try {
       const reportData = {
-        report_type: type,  // Usar report_type em vez de type
+        type: type,
+        reason: 'Denúncia de conteúdo', // Motivo padrão
         description: formData.description.trim(),
         priority: formData.priority,
         reporter_id: user.id,
         ...(type === 'user' && { reported_user_id: targetId }),
         ...(type === 'post' && { reported_post_id: targetId }),
         ...(type === 'message' && { reported_message_id: targetId }),
-        ...(type === 'review' && { reported_review_id: targetId })
+        ...(type === 'review' && { reported_review_id: targetId }),
+        ...(type === 'classified' && { reported_classified_id: targetId })
       }
 
       const { error } = await supabase
@@ -126,6 +136,7 @@ export function ReportButton({
       case 'post': return <FileText className="h-4 w-4" />
       case 'message': return <MessageCircle className="h-4 w-4" />
       case 'review': return <Star className="h-4 w-4" />
+      case 'classified': return <FileText className="h-4 w-4" />
       default: return <Flag className="h-4 w-4" />
     }
   }
@@ -136,6 +147,7 @@ export function ReportButton({
       case 'post': return 'Post'
       case 'message': return 'Mensagem'
       case 'review': return 'Avaliação'
+      case 'classified': return 'Anúncio'
       default: return 'Item'
     }
   }

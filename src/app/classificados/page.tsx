@@ -47,9 +47,11 @@ import {
   ChevronRight,
   Trash2,
   MoreVertical,
-  Edit
+  Edit,
+  Flag
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
+import { ReportButton } from '@/components/ReportButton'
 
 type AdType = 'all' | 'offers' | 'requests'
 
@@ -986,31 +988,48 @@ export default function ClassificadosPage() {
                         </div>
                       </div>
                       
-                      {/* Menu de ações (só aparece para o dono do anúncio) */}
-                      {user && ad.user_id === user.id && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
-                              onClick={() => handleEditAd(ad)}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar anúncio
+                      {/* Menu de ações */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {/* Ações do dono do anúncio */}
+                          {user && ad.user_id === user.id && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => handleEditAd(ad)}
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar anúncio
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteAd(ad.id)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Deletar anúncio
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          
+                          {/* Botão de denunciar (para todos os usuários, exceto o dono) */}
+                          {user && ad.user_id !== user.id && (
+                            <DropdownMenuItem className="p-0">
+                              <ReportButton 
+                                type="classified" 
+                                targetId={ad.id}
+                                targetName={ad.title}
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                              />
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleDeleteAd(ad.id)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Deletar anúncio
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
                     {/* Conteúdo do Anúncio */}
