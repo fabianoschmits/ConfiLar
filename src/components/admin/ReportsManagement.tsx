@@ -804,52 +804,129 @@ export function ReportsManagement() {
                         Ver
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Detalhes da Denúncia</DialogTitle>
                       </DialogHeader>
                       {selectedReport && (
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="font-medium">Informações da Denúncia</h4>
-                            <div className="text-sm text-gray-600 mt-1">
-                              <p><strong>Tipo:</strong> {selectedReport.report_type}</p>
-                              <p><strong>Motivo:</strong> {selectedReport.reason}</p>
-                              <p><strong>Descrição:</strong> {selectedReport.description}</p>
-                              <p><strong>Status:</strong> {selectedReport.status}</p>
-                              <p><strong>Prioridade:</strong> {selectedReport.priority}</p>
+                        <div className="space-y-6">
+                          {/* Informações da Denúncia */}
+                          <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                              <Flag className="h-5 w-5 text-blue-600" />
+                              Informações da Denúncia
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p><strong className="text-gray-700">ID da Denúncia:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.id}</code></p>
+                                <p><strong className="text-gray-700">Tipo:</strong> <span className="capitalize">{selectedReport.report_type}</span></p>
+                                <p><strong className="text-gray-700">Motivo:</strong> {selectedReport.reason}</p>
+                              </div>
+                              <div>
+                                <p><strong className="text-gray-700">Status:</strong> <span className={`px-2 py-1 rounded text-xs ${getStatusColor(selectedReport.status)}`}>{selectedReport.status}</span></p>
+                                <p><strong className="text-gray-700">Prioridade:</strong> <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(selectedReport.priority)}`}>{selectedReport.priority}</span></p>
+                                <p><strong className="text-gray-700">Data:</strong> {new Date(selectedReport.created_at).toLocaleString('pt-BR')}</p>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              <p><strong className="text-gray-700">Descrição:</strong></p>
+                              <p className="text-gray-600 bg-white p-3 rounded border mt-1">{selectedReport.description}</p>
                             </div>
                           </div>
 
+                          {/* Denunciante */}
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                              <User className="h-5 w-5 text-blue-600" />
+                              Denunciante
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p><strong className="text-gray-700">ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reporter_id}</code></p>
+                                <p><strong className="text-gray-700">Nome:</strong> {selectedReport.reporter?.full_name || 'Não disponível'}</p>
+                                <p><strong className="text-gray-700">Email:</strong> {selectedReport.reporter?.email || 'Não disponível'}</p>
+                              </div>
+                              <div>
+                                <p><strong className="text-gray-700">Tipo de Usuário:</strong> {selectedReport.reporter?.user_type || 'Não disponível'}</p>
+                                <p><strong className="text-gray-700">Status:</strong> <span className="text-green-600">Ativo</span></p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Usuário Denunciado */}
                           {selectedReport.reported_user && (
-                            <div>
-                              <h4 className="font-medium">Usuário Denunciado</h4>
-                              <div className="text-sm text-gray-600 mt-1">
-                                <p><strong>Nome:</strong> {selectedReport.reported_user.full_name}</p>
-                                <p><strong>Email:</strong> {selectedReport.reported_user.email}</p>
-                                <p><strong>Tipo:</strong> {selectedReport.reported_user.user_type}</p>
+                            <div className="bg-red-50 p-4 rounded-lg">
+                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                <UserX className="h-5 w-5 text-red-600" />
+                                Usuário Denunciado
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <p><strong className="text-gray-700">ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_user_id}</code></p>
+                                  <p><strong className="text-gray-700">Nome:</strong> {selectedReport.reported_user.full_name}</p>
+                                  <p><strong className="text-gray-700">Email:</strong> {selectedReport.reported_user.email}</p>
+                                </div>
+                                <div>
+                                  <p><strong className="text-gray-700">Tipo de Usuário:</strong> {selectedReport.reported_user.user_type}</p>
+                                  <p><strong className="text-gray-700">Status:</strong> <span className="text-red-600">Reportado</span></p>
+                                </div>
                               </div>
                             </div>
                           )}
 
+                          {/* Post Denunciado */}
                           {selectedReport.reported_post && (
-                            <div>
-                              <h4 className="font-medium">Post Denunciado</h4>
-                              <div className="text-sm text-gray-600 mt-1">
-                                <p><strong>Título:</strong> {selectedReport.reported_post.title}</p>
-                                <p><strong>Conteúdo:</strong> {selectedReport.reported_post.content.substring(0, 200)}...</p>
+                            <div className="bg-yellow-50 p-4 rounded-lg">
+                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-yellow-600" />
+                                Post Denunciado
+                              </h4>
+                              <div className="text-sm">
+                                <p><strong className="text-gray-700">ID do Post:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_post_id}</code></p>
+                                <p><strong className="text-gray-700">Título:</strong> {selectedReport.reported_post.title}</p>
+                                <p><strong className="text-gray-700">Conteúdo:</strong></p>
+                                <p className="text-gray-600 bg-white p-3 rounded border mt-1 max-h-32 overflow-y-auto">{selectedReport.reported_post.content}</p>
                               </div>
                             </div>
                           )}
 
+                          {/* Anúncio Classificado Denunciado */}
                           {selectedReport.classified_ad && (
-                            <div>
-                              <h4 className="font-medium">Anúncio Classificado Denunciado</h4>
-                              <div className="text-sm text-gray-600 mt-1">
-                                <p><strong>Título:</strong> {selectedReport.classified_ad.title}</p>
-                                <p><strong>Descrição:</strong> {selectedReport.classified_ad.description.substring(0, 200)}...</p>
-                                <p><strong>Usuário:</strong> {selectedReport.classified_ad.user_name}</p>
+                            <div className="bg-purple-50 p-4 rounded-lg">
+                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-purple-600" />
+                                Anúncio Classificado Denunciado
+                              </h4>
+                              <div className="text-sm">
+                                <p><strong className="text-gray-700">ID do Anúncio:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_classified_id}</code></p>
+                                <p><strong className="text-gray-700">ID do Usuário:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.classified_ad.user_id}</code></p>
+                                <p><strong className="text-gray-700">Título:</strong> {selectedReport.classified_ad.title}</p>
+                                <p><strong className="text-gray-700">Usuário:</strong> {selectedReport.classified_ad.user_name}</p>
+                                <p><strong className="text-gray-700">Descrição:</strong></p>
+                                <p className="text-gray-600 bg-white p-3 rounded border mt-1 max-h-32 overflow-y-auto">{selectedReport.classified_ad.description}</p>
                               </div>
+                            </div>
+                          )}
+
+                          {/* Notas Administrativas */}
+                          {selectedReport.admin_notes && (
+                            <div className="bg-orange-50 p-4 rounded-lg">
+                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                                Notas Administrativas
+                              </h4>
+                              <p className="text-gray-600 bg-white p-3 rounded border">{selectedReport.admin_notes}</p>
+                            </div>
+                          )}
+
+                          {/* Resolução */}
+                          {selectedReport.resolution && (
+                            <div className="bg-green-50 p-4 rounded-lg">
+                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                <CheckCircle className="h-5 w-5 text-green-600" />
+                                Resolução
+                              </h4>
+                              <p className="text-gray-600 bg-white p-3 rounded border">{selectedReport.resolution}</p>
                             </div>
                           )}
 

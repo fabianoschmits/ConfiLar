@@ -480,96 +480,96 @@ export function BansManagement() {
       {/* Lista de Banimentos */}
       <Card>
         <CardHeader>
-          <CardTitle>Banimentos ({filteredBans.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Gerenciamento de Banimentos ({filteredBans.length})</CardTitle>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={fetchBans} 
+                disabled={isLoading}
+                variant="outline"
+                size="sm"
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredBans.map((ban) => (
-              <Card key={ban.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex items-center gap-2">
-                          <User className="h-5 w-5 text-gray-500" />
-                          <div>
-                            <h3 className="font-semibold text-lg">{ban.banned_user_name}</h3>
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                              <Mail className="h-3 w-3" />
-                              {ban.banned_user_email}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge className={`${getStatusColor(ban.ban_status)}`}>
-                          {ban.ban_status}
-                        </Badge>
-                        <Badge className={`${getTypeColor(ban.ban_type)}`}>
-                          {ban.ban_type === 'permanent' ? 'Permanente' : 'Temporário'}
-                        </Badge>
+              <Card key={ban.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-orange-500">
+                <CardContent className="p-4">
+                  {/* Header do Card */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <div>
+                        <h3 className="font-semibold text-base">{ban.banned_user_name}</h3>
+                        <p className="text-xs text-gray-500">{ban.banned_user_email}</p>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            <strong>Motivo:</strong> {ban.reason}
-                          </p>
-                          {ban.admin_notes && (
-                            <p className="text-sm text-gray-600 mb-1">
-                              <strong>Notas do Admin:</strong> {ban.admin_notes}
-                            </p>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            <strong>Banido por:</strong> {ban.banned_by_name}
-                          </p>
-                          <p className="text-sm text-gray-600 mb-1">
-                            <strong>Data:</strong> {new Date(ban.created_at).toLocaleDateString('pt-BR')}
-                          </p>
-                          {ban.expires_at && (
-                            <p className="text-sm text-gray-600 mb-1">
-                              <strong>Expira em:</strong> {new Date(ban.expires_at).toLocaleDateString('pt-BR')}
-                              {ban.days_remaining && ban.days_remaining > 0 && (
-                                <span className="ml-2 text-orange-600">
-                                  ({ban.days_remaining} dias restantes)
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {ban.related_report_id && (
-                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <h4 className="font-medium text-blue-900 mb-1 flex items-center gap-2">
-                            <Flag className="h-4 w-4" />
-                            Denúncia Relacionada
-                          </h4>
-                          <p className="text-blue-800 text-sm">
-                            <strong>Tipo:</strong> {ban.report_type} | 
-                            <strong> Descrição:</strong> {ban.report_description?.substring(0, 100)}...
-                          </p>
-                        </div>
-                      )}
                     </div>
+                    <div className="flex flex-col gap-1">
+                      <Badge className={`text-xs ${getStatusColor(ban.ban_status)}`}>
+                        {ban.ban_status}
+                      </Badge>
+                      <Badge className={`text-xs ${getTypeColor(ban.ban_type)}`}>
+                        {ban.ban_type === 'pending' ? 'Pendente' : 
+                         ban.ban_type === 'permanent' ? 'Permanente' : 'Temporário'}
+                      </Badge>
+                    </div>
+                  </div>
 
-                    <div className="flex gap-2">
-                      {ban.ban_type === 'pending' ? (
-                        <>
-                          <Button
-                            onClick={() => {
-                              setSelectedBan(ban)
-                              setShowReviewModal(true)
-                            }}
-                            variant="outline"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            Revisar
-                          </Button>
-                        </>
-                      ) : (
+                  {/* Informações Básicas */}
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 mb-1">
+                      <strong>Motivo:</strong> {ban.reason.length > 50 ? ban.reason.substring(0, 50) + '...' : ban.reason}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      <strong>Data:</strong> {new Date(ban.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+
+                  {/* Denúncia Relacionada - Compacta e Clicável */}
+                  {ban.related_report_id && (
+                    <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded cursor-pointer hover:bg-blue-100 transition-colors"
+                         onClick={() => {
+                           setSelectedBan(ban)
+                           setShowReviewModal(true)
+                         }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Flag className="h-3 w-3 text-blue-600" />
+                        <span className="text-xs font-medium text-blue-800">Denúncia Relacionada</span>
+                      </div>
+                      <p className="text-xs text-blue-700">
+                        <strong>Tipo:</strong> {ban.report_type} | 
+                        <strong> ID:</strong> {ban.related_report_id.substring(0, 8)}...
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {ban.report_description ? 
+                          (ban.report_description.length > 60 ? ban.report_description.substring(0, 60) + '...' : ban.report_description) :
+                          'Descrição não disponível'
+                        }
+                      </p>
+                      <p className="text-xs text-blue-500 mt-1">Clique para ver detalhes e ações</p>
+                    </div>
+                  )}
+
+                  {/* Ações Rápidas */}
+                  <div className="flex gap-2">
+                    {ban.ban_type === 'pending' ? (
+                      <>
+                        <Button
+                          onClick={() => {
+                            setSelectedBan(ban)
+                            setShowReviewModal(true)
+                          }}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                          size="sm"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Revisar
+                        </Button>
                         <Button
                           onClick={() => {
                             setSelectedBan(ban)
@@ -577,13 +577,48 @@ export function BansManagement() {
                           }}
                           variant="outline"
                           size="sm"
-                          className="text-green-600 hover:text-green-700"
+                          className="text-xs"
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" />
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Cancelar
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={() => {
+                            setSelectedBan(ban)
+                            setShowUnbanModal(true)
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
+                          size="sm"
+                        >
+                          <CheckCircle className="h-3 w-3 mr-1" />
                           Desbanir
                         </Button>
-                      )}
-                    </div>
+                        <Button
+                          onClick={() => {
+                            setSelectedBan(ban)
+                            setShowReviewModal(true)
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Ver
+                        </Button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Status Info */}
+                  <div className="mt-2 text-xs text-gray-500">
+                    {ban.ban_type === 'pending' ? (
+                      <p>⏳ Aguarda sua decisão</p>
+                    ) : (
+                      <p>🔒 Usuário banido</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -784,7 +819,7 @@ export function BansManagement() {
 
       {/* Modal para Revisar Banimento Pendente */}
       <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-blue-500" />
@@ -793,18 +828,59 @@ export function BansManagement() {
           </DialogHeader>
 
           {selectedBan && (
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-2">Usuário: {selectedBan.banned_user_name}</h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  Motivo: {selectedBan.reason}
-                </p>
-                {selectedBan.report_description && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h5 className="font-medium text-gray-900 mb-1">Descrição da Denúncia:</h5>
-                    <p className="text-sm text-gray-700">{selectedBan.report_description}</p>
+            <div className="space-y-6">
+              {/* Informações do Usuário */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <User className="h-5 w-5 text-gray-600" />
+                  Usuário Denunciado
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p><strong className="text-gray-700">Nome:</strong> {selectedBan.banned_user_name}</p>
+                    <p><strong className="text-gray-700">Email:</strong> {selectedBan.banned_user_email}</p>
                   </div>
-                )}
+                  <div>
+                    <p><strong className="text-gray-700">Tipo:</strong> {selectedBan.banned_user_type}</p>
+                    <p><strong className="text-gray-700">ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedBan.user_id}</code></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informações da Denúncia */}
+              {selectedBan.related_report_id && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                    <Flag className="h-5 w-5 text-blue-600" />
+                    Denúncia Relacionada
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
+                    <div>
+                      <p><strong className="text-blue-800">ID da Denúncia:</strong> <code className="bg-blue-100 px-2 py-1 rounded text-xs">{selectedBan.related_report_id}</code></p>
+                      <p><strong className="text-blue-800">Tipo:</strong> <span className="capitalize">{selectedBan.report_type}</span></p>
+                    </div>
+                    <div>
+                      <p><strong className="text-blue-800">Status:</strong> <span className="text-blue-600">Em Revisão</span></p>
+                    </div>
+                  </div>
+                  <div>
+                    <p><strong className="text-blue-800">Descrição da Denúncia:</strong></p>
+                    <p className="text-blue-700 bg-white p-3 rounded border mt-1 text-sm">
+                      {selectedBan.report_description || 'Descrição não disponível'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Motivo do Banimento */}
+              <div className="bg-orange-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  Motivo do Banimento
+                </h4>
+                <p className="text-orange-700 bg-white p-3 rounded border text-sm">
+                  {selectedBan.reason}
+                </p>
               </div>
 
               <div>
