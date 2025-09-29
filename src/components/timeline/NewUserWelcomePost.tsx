@@ -111,15 +111,15 @@ export function NewUserWelcomePost({
 
   return (
     <>
-      <Card className="mb-4 bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          {/* Header - Estilo exato da imagem */}
-          <div className="flex items-start space-x-4 mb-4">
+      <Card className="mb-3 bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-3 md:p-4">
+          {/* Header - Responsivo */}
+          <div className="flex items-start space-x-3 mb-3">
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
-                <Avatar className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
+                <Avatar className="w-12 h-12 md:w-14 md:h-14 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
                   <AvatarImage src={userAvatar} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-lg">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm md:text-base">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -127,42 +127,39 @@ export function NewUserWelcomePost({
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
                   <Link href={`/perfil/${post.user_id || ''}`}>
                     {userName}
                   </Link>
                 </h3>
                 <Badge 
                   variant="secondary"
-                  className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 flex items-center gap-1"
+                  className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 flex items-center gap-1"
                 >
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  Disponível
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                  <span className="hidden sm:inline">Disponível</span>
+                  <span className="sm:hidden">Ativo</span>
                 </Badge>
               </div>
               
-              <div className="flex items-center text-sm text-gray-500 mb-2">
-                <MapPin className="h-4 w-4 mr-1" />
-                {userLocationCity}, {userLocationState}
+              <div className="flex items-center text-xs text-gray-500 mb-2">
+                <MapPin className="h-3 w-3 mr-1" />
+                <span className="truncate">{userLocationCity}, {userLocationState}</span>
               </div>
               
-              <div className="text-sm text-gray-600 mb-3">
-                {userBio}
-              </div>
-              
-              {/* Mensagem de boas-vindas personalizada */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4 mb-3">
+              {/* Mensagem de boas-vindas personalizada e responsiva */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3 mb-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-sm">🎉</span>
+                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 text-xs">🎉</span>
                   </div>
-                  <h4 className="font-semibold text-blue-900">Bem-vindo à comunidade ConfiLar!</h4>
+                  <h4 className="font-semibold text-blue-900 text-sm">Bem-vindo à ConfiLar!</h4>
                 </div>
-                <p className="text-blue-800 text-sm leading-relaxed">
+                <p className="text-blue-800 text-xs md:text-sm leading-relaxed">
                   {userType === 'professional' 
-                    ? `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para oferecer meus serviços profissionais e ajudar outros usuários com seus projetos. Fico feliz em fazer parte desta comunidade!`
-                    : `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para encontrar profissionais qualificados para meus projetos. Mal posso esperar para conhecer a comunidade!`
+                    ? `Olá! Sou ${userName} e acabei de me juntar à plataforma! 🎉 Estou aqui para oferecer meus serviços profissionais e prestar um excelente trabalho para clientes. Fico feliz em fazer parte desta comunidade!`
+                    : `Olá! Sou ${userName} e acabei de me juntar à plataforma! 🎉 Estou aqui para encontrar profissionais qualificados para meus projetos. Mal posso esperar para conhecer a comunidade!`
                   }
                 </p>
               </div>
@@ -179,9 +176,9 @@ export function NewUserWelcomePost({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                    className="h-7 w-7 p-0 hover:bg-gray-100"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -212,33 +209,35 @@ export function NewUserWelcomePost({
             </div>
           </div>
 
-          {/* Botões de ação - Estilo da imagem */}
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="flex items-center gap-4">
+          {/* Botões de ação - Responsivos */}
+          <div className="flex items-center justify-between pt-3 border-t">
+            <div className="flex items-center gap-3">
               <div className="flex items-center text-gray-500">
-                <Eye className="h-4 w-4 mr-1" />
-                <span className="text-sm">12</span>
+                <Eye className="h-3 w-3 mr-1" />
+                <span className="text-xs">12</span>
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-1 md:gap-2">
               <Button 
                 size="sm" 
                 variant="outline" 
                 asChild
-                className="text-xs"
+                className="text-xs px-2 py-1 h-7"
               >
                 <Link href={`/perfil/${post.user_id || ''}`}>
-                  Ver Perfil
+                  <span className="hidden sm:inline">Ver Perfil</span>
+                  <span className="sm:hidden">Perfil</span>
                 </Link>
               </Button>
               <Button 
                 size="sm"
                 onClick={() => openChat(post.user_id || '', userName)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 py-1 h-7"
               >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                Contatar
+                <MessageCircle className="h-3 w-3 mr-1" />
+                <span className="hidden sm:inline">Contatar</span>
+                <span className="sm:hidden">Chat</span>
               </Button>
             </div>
           </div>
