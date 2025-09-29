@@ -144,6 +144,22 @@ export function NewUserWelcomePost({
                 {userBio}
               </div>
               
+              {/* Mensagem de boas-vindas personalizada */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4 mb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 text-sm">🎉</span>
+                  </div>
+                  <h4 className="font-semibold text-blue-900">Bem-vindo à comunidade ConfiLar!</h4>
+                </div>
+                <p className="text-blue-800 text-sm leading-relaxed">
+                  {userType === 'professional' 
+                    ? `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para oferecer meus serviços profissionais e ajudar outros usuários com seus projetos. Fico feliz em fazer parte desta comunidade!`
+                    : `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para encontrar profissionais qualificados para meus projetos. Mal posso esperar para conhecer a comunidade!`
+                  }
+                </p>
+              </div>
+              
               <div className="text-xs text-gray-500">
                 {formatTimeAgo(post.created_at)}
               </div>
