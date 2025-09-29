@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 export interface LocationFilter {
-  type: 'local' | 'state' | 'country' | 'all'
+  type: 'local' | 'state' | 'country' | 'all' | 'custom'
   city?: string
   state?: string
   country?: string
@@ -57,6 +57,8 @@ export function useLocationFilters() {
         return filter.country || 'País'
       case 'all':
         return 'Todos os locais'
+      case 'custom':
+        return filter.city && filter.state ? `${filter.city}, ${filter.state}` : 'Escolher localização'
       default:
         return 'Filtro de localização'
     }
@@ -72,6 +74,8 @@ export function useLocationFilters() {
         return '🌎'
       case 'all':
         return '🌍'
+      case 'custom':
+        return '🎯'
       default:
         return '📍'
     }
@@ -87,6 +91,8 @@ export function useLocationFilters() {
         return `Posts e notificações do ${filter.country}`
       case 'all':
         return 'Posts e notificações de todas as localizações'
+      case 'custom':
+        return filter.city && filter.state ? `Posts e notificações de ${filter.city}, ${filter.state}` : 'Escolha um estado e cidade específicos'
       default:
         return 'Filtro de localização'
     }
@@ -121,6 +127,10 @@ export function useLocationFilters() {
       type: 'all'
     })
     
+    filters.push({
+      type: 'custom'
+    })
+    
     return filters
   }
 
@@ -139,6 +149,14 @@ export function useLocationFilters() {
         return {
           location_state: filter.country
         }
+      case 'custom':
+        if (filter.city && filter.state) {
+          return {
+            location_city: filter.city,
+            location_state: filter.state
+          }
+        }
+        return {}
       case 'all':
         return {}
       default:
@@ -164,6 +182,15 @@ export function useLocationFilters() {
           { location_state: filter.country },
           {}
         ]
+      case 'custom':
+        if (filter.city && filter.state) {
+          return [
+            { location_city: filter.city, location_state: filter.state },
+            { location_state: filter.state },
+            {}
+          ]
+        }
+        return [{}]
       case 'all':
         return [{}]
       default:
@@ -184,6 +211,7 @@ export function useLocationFilters() {
     isLocalFilter: currentFilter.type === 'local',
     isStateFilter: currentFilter.type === 'state',
     isCountryFilter: currentFilter.type === 'country',
-    isAllFilter: currentFilter.type === 'all'
+    isAllFilter: currentFilter.type === 'all',
+    isCustomFilter: currentFilter.type === 'custom'
   }
 }
