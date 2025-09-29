@@ -317,15 +317,15 @@ export function ModernHeader({
                       <div className="py-2 sm:py-3 border-b border-gray-200">
                         <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">Minha Reputação</h4>
                         <div className="flex justify-between gap-1">
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 rounded-md">
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-md">
                             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 mb-0.5" />
                             <div className="text-xs font-semibold text-gray-900">{reputationStats.totalViews}</div>
                           </div>
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 rounded-md">
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-md">
                             <ThumbsUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 mb-0.5" />
                             <div className="text-xs font-semibold text-gray-900">{reputationStats.totalRecommendations}</div>
                           </div>
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 rounded-md">
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 rounded-md">
                             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600 mb-0.5" />
                             <div className="text-xs font-semibold text-gray-900">{reputationStats.totalReviews}</div>
                           </div>
@@ -367,7 +367,7 @@ export function ModernHeader({
                       <div className="border-b border-gray-200">
                         <button
                           onClick={() => toggleSection('principal')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
@@ -403,7 +403,7 @@ export function ModernHeader({
                       <div className="border-b border-gray-200">
                         <button
                           onClick={() => toggleSection('descobrir')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-green-600 hover:bg-green-50 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Search className="h-3 w-3" />
@@ -457,7 +457,7 @@ export function ModernHeader({
                       <div className="border-b border-gray-200">
                         <button
                           onClick={() => toggleSection('gestao')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-orange-600 hover:bg-orange-50 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
@@ -484,7 +484,7 @@ export function ModernHeader({
                       <div className="border-b border-gray-200">
                         <button
                           onClick={() => toggleSection('comunicacao')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <MessageCircle className="h-3 w-3" />
@@ -520,7 +520,7 @@ export function ModernHeader({
                         <div className="border-b border-gray-200">
                           <button
                             onClick={() => toggleSection('profissional')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <Briefcase className="h-3 w-3" />
@@ -557,7 +557,7 @@ export function ModernHeader({
                       <div className="border-b border-gray-200">
                         <button
                           onClick={() => toggleSection('suporte')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
@@ -603,7 +603,7 @@ export function ModernHeader({
                         <div className="border-b border-gray-200">
                           <button
                             onClick={() => toggleSection('administracao')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-purple-600 hover:bg-purple-50 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <ShieldCheck className="h-3 w-3" />
@@ -617,7 +617,7 @@ export function ModernHeader({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleNavigation('/admin/dashboard')}
-                                className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 hover:bg-purple-100"
+                                className="flex items-center gap-1 text-xs py-1 h-7 bg-gray-100 hover:bg-gray-200"
                               >
                                 <ShieldCheck className="h-3 w-3" />
                                 <span className="truncate">Painel Admin</span>
