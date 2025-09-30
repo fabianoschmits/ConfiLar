@@ -42,8 +42,17 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {
+      console.log('🔍 Enviando comentário:', {
+        content: newComment,
+        replyTo: replyTo,
+        isReply: !!replyTo
+      })
       addComment(newComment, replyTo || undefined)
       setNewComment('')
+      // Limpar replyTo após enviar
+      if (replyTo) {
+        cancelReply()
+      }
     }
   }
 
@@ -204,7 +213,10 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                 
                 {!isReply && (
                   <button
-                    onClick={() => startReply(comment.id)}
+                    onClick={() => {
+                      console.log('🔍 Clicou em Responder:', comment.id)
+                      startReply(comment.id)
+                    }}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-500 transition-colors"
                   >
                     <Reply className="w-3 h-3" />
@@ -277,12 +289,15 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
           <div className="mb-2 p-2 bg-blue-50 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700">
-                Respondendo a um comentário...
+                Respondendo a um comentário... (ID: {replyTo})
               </span>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={cancelReply}
+                onClick={() => {
+                  console.log('🔍 Cancelando resposta')
+                  cancelReply()
+                }}
                 className="text-blue-600 hover:text-blue-700"
               >
                 Cancelar

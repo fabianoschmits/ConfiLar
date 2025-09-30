@@ -165,48 +165,88 @@ export function TimelinePost({
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="pb-2 p-3 md:p-6">
-        <div className="flex items-center space-x-2 md:space-x-3">
-          <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
-            <Avatar className="w-10 h-10 md:w-12 md:h-12 cursor-pointer">
-              <AvatarImage src={post.user_avatar || ''} />
-              <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                {post.user_name?.charAt(0).toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+      <CardHeader className="pb-0 p-3 -mb-2">
+        <div className="flex items-start space-x-3">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
+              <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
+                <AvatarImage src={post.user_avatar || ''} />
+                <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm">
+                  {post.user_name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </div>
+          
+          {/* Informações do Usuário */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-1 md:space-x-2 flex-wrap">
-              <Link 
-                href={`/perfil/${post.user_id}`}
-                className="font-semibold text-gray-900 text-sm md:text-base truncate hover:text-blue-600 transition-colors cursor-pointer"
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-sm font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
+                <Link href={`/perfil/${post.user_id}`}>
+                  {post.user_name}
+                </Link>
+              </h3>
+              
+              {/* Badge de Status (Disponível) */}
+              <Badge 
+                variant="secondary"
+                className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 flex items-center gap-1"
               >
-                {post.user_name}
-              </Link>
-              <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">•</span>
-              <span className="text-xs md:text-sm text-gray-500 hidden sm:inline">{post.user_type === 'professional' ? 'Profissional' : 'Cliente'}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                <span>Disponível</span>
+              </Badge>
+              
+              {/* Badge de Tipo (Cliente/Profissional) */}
+              <Badge 
+                variant="outline"
+                className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                  post.user_type === 'professional' 
+                    ? 'border-blue-200 text-blue-700 bg-blue-50' 
+                    : 'border-purple-200 text-purple-700 bg-purple-50'
+                }`}
+              >
+                <User className="h-3 w-3" />
+                <span>
+                  {post.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                </span>
+              </Badge>
+              
+              {/* Badge Local */}
+              <Badge 
+                variant="outline"
+                className="text-xs font-medium px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-1"
+              >
+                <MapPin className="h-3 w-3" />
+                <span>Local</span>
+              </Badge>
+              
               {getTrendingBadge()}
             </div>
-            <div className="flex items-center space-x-1 md:space-x-2 text-xs md:text-sm text-gray-500 flex-wrap">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
+            
+            {/* Localização */}
+            <div className="flex items-center text-xs text-gray-500">
+              <MapPin className="h-3 w-3 mr-1" />
               <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
-              <span className="hidden sm:inline">•</span>
-              <span className="hidden sm:inline">{formatTimeAgo(post.created_at)}</span>
             </div>
           </div>
-          <PostOptionsMenu
-            postId={post.id}
-            postUserId={post.user_id}
-            postTitle={post.title}
-            onEdit={onEdit || (() => {})}
-            onDelete={onDelete || (() => {})}
-            isDeleting={isDeleting}
-          />
+          
+          {/* Menu de Opções */}
+          <div className="flex-shrink-0">
+            <PostOptionsMenu
+              postId={post.id}
+              postUserId={post.user_id}
+              postTitle={post.title}
+              onEdit={onEdit || (() => {})}
+              onDelete={onDelete || (() => {})}
+              isDeleting={isDeleting}
+            />
+          </div>
         </div>
       </CardHeader>
 
-            <CardContent className="space-y-3 p-3 md:p-6 pt-2">
-              <div className="mt-1">
+            <CardContent className="space-y-3 px-3 md:px-6 -mt-2 pb-3 md:pb-6">
+              <div className="-mt-2">
                 <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
                   {post.title}
                 </h4>
