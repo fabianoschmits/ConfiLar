@@ -1,319 +1,348 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Bell, BellOff, Smartphone, Mail, Settings } from 'lucide-react';
-import { useNotifications } from './NotificationProviderSimple';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Bell, 
+  Smartphone, 
+  Settings, 
+  Shield, 
+  Trash2, 
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Info
+} from 'lucide-react'
+import { useAuth } from '@/hooks/useUnifiedAuth'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
-interface NotificationPreferences {
-  id?: string;
-  user_id?: string;
-  push: boolean;
-  email: boolean;
-  inApp: boolean;
-  messages: boolean;
-  reviews: boolean;
-  updates: boolean;
-  marketing: boolean;
-  created_at?: Date;
-  updated_at?: Date;
-}
+export function NotificationSettings() {
+  const { user } = useAuth()
+  const {
+    isSupported,
+    isSubscribed,
+    isGranted,
+    isDenied,
+    requestPermission,
+    subscribe,
+    unsubscribe
+  } = usePushNotifications()
 
-export const NotificationSettings: React.FC = () => {
-  const { hasPermission, requestPermission } = useNotifications();
-  const { user } = useAuthContext();
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    push: hasPermission,
-    email: true,
-    inApp: true,
-    messages: true,
-    reviews: true,
-    updates: true,
-    marketing: false,
-  });
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const [testNotification, setTestNotification] = useState('')
 
-  // Carregar preferências do banco de dados
-  const loadPreferences = async () => {
-    if (!user) return;
-
+  const handleRequestPermission = async () => {
+    setIsLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data && !error) {
-        setPreferences({
-          ...preferences,
-          ...data,
-          push: hasPermission
-        });
-      }
-    } catch (error) {
-      console.log('Usando preferências padrão');
-    }
-  };
-
-  // Salvar preferências no banco de dados
-  const savePreferences = async (newPreferences: NotificationPreferences) => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      
-      const { error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: user.id,
-          ...newPreferences,
-          updated_at: new Date()
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) {
-        console.error('Erro ao salvar preferências:', error);
-        toast.error('ERRO AO SALVAR PREFERÊNCIAS');
-        return;
-      }
-
-      toast.success('PREFERÊNCIAS SALVAS COM SUCESSO!');
-    } catch (error) {
-      console.error('Erro ao salvar preferências:', error);
-      toast.error('ERRO AO SALVAR PREFERÊNCIAS');
+      await requestPermission()
     } finally {
-      setLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  // Carregar preferências quando o componente montar
-  useEffect(() => {
-    loadPreferences();
-  }, [user]);
+  const handleSubscribe = async () => {
+    setIsLoading(true)
+    try {
+      await subscribe()
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  const handlePermissionRequest = async () => {
-    const granted = await requestPermission();
-    setPreferences(prev => ({ ...prev, push: granted }));
-  };
+  const handleUnsubscribe = async () => {
+    setIsLoading(true)
+    try {
+      await unsubscribe()
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  const handlePreferenceChange = async (key: keyof NotificationPreferences, value: boolean) => {
-    const newPreferences = { ...preferences, [key]: value };
-    setPreferences(newPreferences);
-    
-    // Salvar no banco de dados
-    await savePreferences(newPreferences);
-  };
+  const sendTestNotification = () => {
+    if (!testNotification.trim()) return
 
-  const handleSaveAll = async () => {
-    await savePreferences(preferences);
-  };
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Teste - ConfiLar', {
+        body: testNotification,
+        icon: '/icon-192x192.png',
+        badge: '/icon-96x96.png'
+      })
+    }
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Settings className="h-5 w-5" />
-        <h2 className="text-xl font-semibold">Configurações de Notificação</h2>
-      </div>
-
-      {/* Permissões */}
+      {/* Status do navegador */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Permissões
+            <Smartphone className="w-5 h-5" />
+            Status do Navegador
           </CardTitle>
           <CardDescription>
-            Configure como você deseja receber notificações
+            Informações sobre o suporte a notificações no seu navegador
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="push-notifications">Notificações Push</Label>
-              <p className="text-sm text-gray-500">
-                Receber notificações mesmo quando o site não está aberto
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {hasPermission ? (
-                <div className="flex items-center gap-2 text-green-600">
-                  <Bell className="h-4 w-4" />
-                  <span className="text-sm">Ativado</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Shield className="w-4 h-4 text-gray-500" />
+                <div>
+                  <Label>Suporte a Notificações</Label>
+                  <p className="text-sm text-gray-500">Navegador suporta notificações</p>
                 </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePermissionRequest}
-                >
-                  Ativar
-                </Button>
+              </div>
+              <Badge variant={isSupported ? 'default' : 'destructive'}>
+                {isSupported ? (
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                ) : (
+                  <XCircle className="w-3 h-3 mr-1" />
+                )}
+                {isSupported ? 'Suportado' : 'Não suportado'}
+              </Badge>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell className="w-4 h-4 text-gray-500" />
+                <div>
+                  <Label>Permissão</Label>
+                  <p className="text-sm text-gray-500">Status da permissão</p>
+                </div>
+              </div>
+              <Badge 
+                variant={
+                  isGranted ? 'default' : 
+                  isDenied ? 'destructive' : 
+                  'secondary'
+                }
+              >
+                {isGranted ? (
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                ) : isDenied ? (
+                  <XCircle className="w-3 h-3 mr-1" />
+                ) : (
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                )}
+                {isGranted ? 'Concedida' : isDenied ? 'Negada' : 'Não solicitada'}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Configurações de notificação */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Configurações de Notificação
+          </CardTitle>
+          <CardDescription>
+            Gerencie suas notificações push
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!isSupported ? (
+            <div className="text-center py-8 text-gray-500">
+              <XCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <p>Seu navegador não suporta notificações push</p>
+              <p className="text-sm">Use Chrome, Firefox ou Edge para ativar notificações</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {!isGranted && (
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Bell className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-blue-900">Ativar Notificações</p>
+                      <p className="text-sm text-blue-700">Solicite permissão para receber notificações</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleRequestPermission}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isLoading ? 'Solicitando...' : 'Solicitar Permissão'}
+                  </Button>
+                </div>
+              )}
+
+              {isGranted && !isSubscribed && (
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div>
+                      <p className="font-medium text-green-900">Inscrever em Notificações</p>
+                      <p className="text-sm text-green-700">Configure para receber notificações push</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleSubscribe}
+                    disabled={isLoading}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isLoading ? 'Configurando...' : 'Inscrever'}
+                  </Button>
+                </div>
+              )}
+
+              {isGranted && isSubscribed && (
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-gray-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Notificações Ativas</p>
+                      <p className="text-sm text-gray-700">Você está recebendo notificações push</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleUnsubscribe}
+                    disabled={isLoading}
+                    variant="outline"
+                  >
+                    {isLoading ? 'Desinscrevendo...' : 'Desativar'}
+                  </Button>
+                </div>
+              )}
+
+              {isDenied && (
+                <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <XCircle className="w-5 h-5 text-red-600" />
+                    <div>
+                      <p className="font-medium text-red-900">Permissão Negada</p>
+                      <p className="text-sm text-red-700">As notificações foram negadas. Ative nas configurações do navegador</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => window.open('chrome://settings/content/notifications', '_blank')}
+                    variant="outline"
+                  >
+                    Abrir Configurações
+                  </Button>
+                </div>
               )}
             </div>
-          </div>
+          )}
+        </CardContent>
+      </Card>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="email-notifications">Notificações por Email</Label>
-              <p className="text-sm text-gray-500">
-                Receber notificações importantes por email
+      {/* Teste de notificação */}
+      {isGranted && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5" />
+              Teste de Notificação
+            </CardTitle>
+            <CardDescription>
+              Teste se as notificações estão funcionando
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Digite uma mensagem de teste..."
+                value={testNotification}
+                onChange={(e) => setTestNotification(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                onClick={sendTestNotification}
+                disabled={!testNotification.trim()}
+                variant="outline"
+              >
+                Enviar Teste
+              </Button>
+            </div>
+            <p className="text-sm text-gray-500">
+              Uma notificação será enviada com a mensagem digitada
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Informações técnicas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            Informações Técnicas
+          </CardTitle>
+          <CardDescription>
+            Detalhes sobre o sistema de notificações
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <Label className="font-medium">Navegador</Label>
+              <p className="text-gray-600">{navigator.userAgent.split(' ')[0]}</p>
+            </div>
+            <div>
+              <Label className="font-medium">Service Worker</Label>
+              <p className="text-gray-600">
+                {('serviceWorker' in navigator) ? 'Suportado' : 'Não suportado'}
               </p>
             </div>
-            <Switch
-              id="email-notifications"
-              checked={preferences.email}
-              onCheckedChange={(checked) => handlePreferenceChange('email', checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="in-app-notifications">Notificações no App</Label>
-              <p className="text-sm text-gray-500">
-                Mostrar notificações dentro do aplicativo
+            <div>
+              <Label className="font-medium">Push Manager</Label>
+              <p className="text-gray-600">
+                {('PushManager' in window) ? 'Suportado' : 'Não suportado'}
               </p>
             </div>
-            <Switch
-              id="in-app-notifications"
-              checked={preferences.inApp}
-              onCheckedChange={(checked) => handlePreferenceChange('inApp', checked)}
-            />
+            <div>
+              <Label className="font-medium">Usuário</Label>
+              <p className="text-gray-600">{user?.email || 'Não logado'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tipos de Notificação */}
+      {/* Ações de limpeza */}
       <Card>
         <CardHeader>
-          <CardTitle>Tipos de Notificação</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Trash2 className="w-5 h-5" />
+            Limpeza de Dados
+          </CardTitle>
           <CardDescription>
-            Escolha quais tipos de notificação você deseja receber
+            Gerencie os dados de notificação armazenados
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="messages"
-              checked={preferences.messages}
-              onCheckedChange={(checked) => handlePreferenceChange('messages', checked as boolean)}
-            />
-            <Label htmlFor="messages" className="flex-1">
-              <div className="font-medium">Mensagens</div>
-              <div className="text-sm text-gray-500">
-                Novas mensagens de clientes ou profissionais
-              </div>
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="reviews"
-              checked={preferences.reviews}
-              onCheckedChange={(checked) => handlePreferenceChange('reviews', checked as boolean)}
-            />
-            <Label htmlFor="reviews" className="flex-1">
-              <div className="font-medium">Avaliações</div>
-              <div className="text-sm text-gray-500">
-                Novas avaliações e comentários sobre seus serviços
-              </div>
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="updates"
-              checked={preferences.updates}
-              onCheckedChange={(checked) => handlePreferenceChange('updates', checked as boolean)}
-            />
-            <Label htmlFor="updates" className="flex-1">
-              <div className="font-medium">Atualizações</div>
-              <div className="text-sm text-gray-500">
-                Atualizações importantes sobre o sistema e funcionalidades
-              </div>
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="marketing"
-              checked={preferences.marketing}
-              onCheckedChange={(checked) => handlePreferenceChange('marketing', checked as boolean)}
-            />
-            <Label htmlFor="marketing" className="flex-1">
-              <div className="font-medium">Marketing</div>
-              <div className="text-sm text-gray-500">
-                Ofertas especiais e novidades (opcional)
-              </div>
-            </Label>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Horários */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Horários de Notificação</CardTitle>
-          <CardDescription>
-            Configure quando você deseja receber notificações
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Horário de Início</Label>
-              <input
-                type="time"
-                defaultValue="08:00"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Limpar Cache de Notificações</Label>
+              <p className="text-sm text-gray-500">Remove dados temporários de notificação</p>
             </div>
-            <div className="space-y-2">
-              <Label>Horário de Fim</Label>
-              <input
-                type="time"
-                defaultValue="22:00"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <Button variant="outline" size="sm">
+              Limpar Cache
+            </Button>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox id="quiet-hours" defaultChecked />
-            <Label htmlFor="quiet-hours">
-              Respeitar horário de silêncio (não receber notificações fora do horário)
-            </Label>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Resetar Configurações</Label>
+              <p className="text-sm text-gray-500">Volta às configurações padrão</p>
+            </div>
+            <Button variant="outline" size="sm">
+              Resetar
+            </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Botões de Ação */}
-      <div className="flex justify-end gap-4">
-        <Button variant="outline" onClick={() => window.history.back()}>
-          Cancelar
-        </Button>
-        <Button onClick={handleSaveAll}>
-          Salvar Todas as Configurações
-        </Button>
-      </div>
     </div>
-  );
-};
-
-
-
-
-
-
-
-
-
-
+  )
+}

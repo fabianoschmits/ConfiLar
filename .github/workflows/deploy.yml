@@ -32,11 +32,12 @@ jobs:
       - name: Deploy with Vercel CLI
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN || '' }}
+          vercel-org-id: ${{ secrets.ORG_ID || '' }}
           vercel-project-id: prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd
           working-directory: ./
           vercel-args: '--prod'
+
 
 
 
