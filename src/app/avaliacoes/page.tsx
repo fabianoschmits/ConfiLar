@@ -4,10 +4,15 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { 
   Star, 
   Search, 
@@ -18,65 +23,307 @@ import {
   Clock,
   User,
   MessageCircle,
-  Calendar
+  Calendar,
+  Award,
+  TrendingUp,
+  Eye,
+  Filter,
+  Edit,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  BarChart3,
+  Target,
+  Zap,
+  ThumbsUp
 } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { useEvaluationRequests, EvaluationRequest } from '@/hooks/useEvaluationRequests'
-import { useSupabaseReviews, ReviewWithProfiles } from '@/hooks/useSupabaseReviews'
-import { ReviewCard } from '@/components/reviews/ReviewCard'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { X } from 'lucide-react'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { supabase } from '@/lib/supabase'
+import { ClientOnly } from '@/components/ClientOnly'
+
+interface UserReview {
+  id: string
+  reviewer_id: string
+  reviewed_id: string
+  rating: number
+  rating_person?: number
+  comment?: string
+  review_type: 'client_to_professional' | 'professional_to_client'
+  created_at: string
+  reviewer: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
+  reviewed?: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
+}
+
+interface EvaluationRequest {
+  id: string
+  requester_id: string
+  target_id: string
+  status: 'pending' | 'accepted' | 'rejected' | 'completed'
+  created_at: string
+  requester_name?: string
+  target_name?: string
+  requester_avatar?: string
+  target_avatar?: string
+}
 
 export default function AvaliacoesPage() {
   const [mounted, setMounted] = useState(false)
   const { user, profile } = useAuthContext()
-  const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'completed'>('all')
+  const { openChat } = useFloatingChat()
+  
+  // Estados principais
+  const [reviews, setReviews] = useState<UserReview[]>([])
+  const [givenReviews, setGivenReviews] = useState<UserReview[]>([])
+  const [requests, setRequests] = useState<EvaluationRequest[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  // Estados da interface
+  const [activeTab, setActiveTab] = useState<'requests' | 'reviews'>('requests')
+  const [requestsSubTab, setRequestsSubTab] = useState<'received' | 'sent'>('received')
+  const [reviewsSubTab, setReviewsSubTab] = useState<'received' | 'given'>('received')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; avatar?: string; userType?: 'client' | 'professional' } | null>(null)
-  const [editingReview, setEditingReview] = useState<ReviewWithProfiles | null>(null)
-  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
-  const [evaluationData, setEvaluationData] = useState({
-    rating: 5,
-    title: '',
-    comment: '',
-    isRecommended: true
-  })
+  const [filterType, setFilterType] = useState<'all' | 'professional' | 'client'>('all')
+  const [showEditReviewDialog, setShowEditReviewDialog] = useState(false)
+  const [editingReview, setEditingReview] = useState<UserReview | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // Estados para formulários
+  const [editForm, setEditForm] = useState({
+    rating: 5,
+    comment: ''
+  })
 
-  const {
-    requests,
-    isLoading: requestsLoading,
-    createRequest,
-    acceptRequest,
-    rejectRequest,
-    completeRequest
-  } = useEvaluationRequests()
+  // Carregar dados das avaliações de forma otimizada
+  const loadUserEvaluations = useCallback(async () => {
+    if (!user?.id) return
 
-  const {
-    reviews,
-    loading: reviewsLoading,
-    fetchUserReviews,
-    deleteReview,
-    respondToReview
-  } = useSupabaseReviews()
+    try {
+      setLoading(true)
+
+      // Executar todas as consultas em paralelo para melhor performance
+      const [
+        { data: reviewsData, error: reviewsError },
+        { data: givenReviewsData, error: givenReviewsError },
+        { data: requestsData, error: requestsError }
+      ] = await Promise.all([
+        // Avaliações recebidas
+        supabase
+          .from('reviews')
+          .select(`
+            *,
+            reviewer:profiles!reviews_reviewer_id_fkey(
+              id, full_name, avatar_url, user_type
+            )
+          `)
+          .eq('reviewed_id', user.id)
+          .order('created_at', { ascending: false }),
+        
+        // Avaliações feitas
+        supabase
+          .from('reviews')
+          .select(`
+            *,
+            reviewed:profiles!reviews_reviewed_id_fkey(
+              id, full_name, avatar_url, user_type
+            )
+          `)
+          .eq('reviewer_id', user.id)
+          .order('created_at', { ascending: false }),
+        
+        // Solicitações de avaliação
+        supabase
+          .from('evaluation_requests')
+          .select(`
+            *,
+            requester:profiles!evaluation_requests_requester_id_fkey(
+              id, full_name, avatar_url, user_type
+            ),
+            target:profiles!evaluation_requests_target_id_fkey(
+              id, full_name, avatar_url, user_type
+            )
+          `)
+          .or(`requester_id.eq.${user.id},target_id.eq.${user.id}`)
+          .order('created_at', { ascending: false })
+      ])
+
+      // Verificar erros
+      if (reviewsError) {
+        console.error('Erro ao carregar avaliações recebidas:', reviewsError)
+      }
+      if (givenReviewsError) {
+        console.error('Erro ao carregar avaliações feitas:', givenReviewsError)
+      }
+      if (requestsError) {
+        console.error('Erro ao carregar solicitações:', requestsError)
+      }
+
+      // Mapear solicitações de forma mais eficiente
+      const mappedRequests = requestsData?.map(req => ({
+        id: req.id,
+        requester_id: req.requester_id,
+        target_id: req.target_id,
+        status: req.status,
+        created_at: req.created_at || new Date().toISOString(),
+        requester_name: req.requester?.full_name || '',
+        target_name: req.target?.full_name || '',
+        requester_avatar: req.requester?.avatar_url || '',
+        target_avatar: req.target?.avatar_url || ''
+      })) || []
+
+      // Atualizar estados de uma vez
+      setReviews(reviewsData || [])
+      setGivenReviews(givenReviewsData || [])
+      setRequests(mappedRequests)
+    } catch (error) {
+      console.error('Erro ao carregar avaliações:', error)
+      toast.error('Erro ao carregar dados das avaliações')
+    } finally {
+      setLoading(false)
+    }
+  }, [user?.id])
+
+  // Função para abrir modal de edição
+  const handleEditReview = (review: UserReview) => {
+    setEditingReview(review)
+    setEditForm({
+      rating: review.rating_person || review.rating || 5,
+      comment: review.comment || ''
+    })
+    setShowEditReviewDialog(true)
+  }
+
+  // Função para fechar modal de edição
+  const handleCloseEditDialog = () => {
+    setShowEditReviewDialog(false)
+    setEditingReview(null)
+    setEditForm({
+      rating: 5,
+      comment: ''
+    })
+  }
+
+  // Função para editar avaliação
+  const handleEditReviewSubmit = useCallback(async () => {
+    if (!editingReview || !user?.id) return
+
+    try {
+      setIsSubmitting(true)
+      
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          rating_person: editForm.rating,
+          comment: editForm.comment.trim() || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingReview.id)
+
+      if (error) throw error
+
+      toast.success('Avaliação atualizada com sucesso!')
+      
+      // Atualizar estado local
+      const updateReview = (prev: UserReview[]) => 
+        prev.map(review => 
+          review.id === editingReview.id 
+            ? { ...review, rating: editForm.rating, comment: editForm.comment.trim() || '' }
+            : review
+        )
+
+      setReviews(updateReview)
+      setGivenReviews(updateReview)
+      
+      handleCloseEditDialog()
+    } catch (error) {
+      console.error('Erro ao atualizar avaliação:', error)
+      toast.error('Erro ao atualizar avaliação. Tente novamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [editingReview, editForm, user?.id])
+
+  // Função para contatar usuário
+  const handleContactUser = (userId: string, userName: string) => {
+    if (userId === user?.id) {
+      toast.error('Você não pode contatar a si mesmo')
+      return
+    }
+    openChat(userId, userName)
+  }
+
+  // Função otimizada para manipular solicitações
+  const handleRequestAction = useCallback(async (
+    requestId: string, 
+    action: 'accept' | 'reject' | 'complete'
+  ) => {
+    const statusMap = {
+      accept: 'accepted',
+      reject: 'rejected', 
+      complete: 'completed'
+    }
+
+    const messages = {
+      accept: 'Solicitação aceita!',
+      reject: 'Solicitação rejeitada',
+      complete: 'Solicitação concluída!'
+    }
+
+    try {
+      const { error } = await supabase
+        .from('evaluation_requests')
+          .update({
+          status: statusMap[action],
+            updated_at: new Date().toISOString()
+          })
+        .eq('id', requestId)
+
+      if (error) throw error
+
+      toast.success(messages[action])
+      
+      // Atualizar estado local sem recarregar tudo
+      setRequests(prev => 
+        prev.map(req => 
+          req.id === requestId 
+            ? { ...req, status: statusMap[action] as any }
+            : req
+        )
+      )
+    } catch (error) {
+      console.error(`Erro ao ${action} solicitação:`, error)
+      toast.error(`Erro ao ${action} solicitação`)
+    }
+  }, [])
+
+  // Funções específicas para cada ação
+  const handleAcceptRequest = (requestId: string) => handleRequestAction(requestId, 'accept')
+  const handleRejectRequest = (requestId: string) => handleRequestAction(requestId, 'reject')
+  const handleCompleteRequest = (requestId: string) => handleRequestAction(requestId, 'complete')
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Carregar avaliações do usuário
   useEffect(() => {
-    if (user?.id) {
-      fetchUserReviews(user.id)
+    if (user?.id && mounted) {
+      loadUserEvaluations()
     }
-  }, [user?.id, fetchUserReviews])
+  }, [user?.id, mounted, loadUserEvaluations])
 
   if (!mounted) {
     return null
@@ -84,591 +331,617 @@ export default function AvaliacoesPage() {
 
   if (!user) {
     return (
-      <MainLayout requireAuth={false}>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6 text-center">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Acesso Restrito
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Você precisa estar logado para acessar as avaliações.
-              </p>
-              <Button asChild>
-                <a href="/auth">Fazer Login</a>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
+      <ClientOnly>
+        <MainLayout requireAuth={false}>
+          <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+              <Card className="max-w-2xl mx-auto">
+                <CardContent className="p-8 text-center">
+                  <Star className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Minhas Avaliações
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Faça login para gerenciar suas avaliações
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Button asChild>
+                      <a href="/auth">Entrar</a>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <a href="/auth?tab=register">Criar Conta</a>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </MainLayout>
+      </ClientOnly>
     )
   }
 
-  // Filtrar solicitações
-  const filteredRequests = requests.filter(request => {
-    const matchesFilter = filter === 'all' || request.status === filter
-    const matchesSearch = searchTerm === '' || 
-      request.requester_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.target_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    return matchesFilter && matchesSearch
-  })
-
-  // Solicitações pendentes (recebidas)
-  const pendingRequests = requests.filter(request => 
-    request.target_id === user.id && request.status === 'pending'
-  )
-
-  // Solicitações aceitas (que podem ser avaliadas)
-  const acceptedRequests = requests.filter(request => 
-    request.status === 'accepted' && 
-    (request.requester_id === user.id || request.target_id === user.id)
-  )
-
-  const handleAcceptRequest = async (requestId: string) => {
-    try {
-      await acceptRequest(requestId)
-      toast.success('Solicitação aceita! Agora vocês podem se avaliar mutuamente.')
-    } catch (error) {
-      toast.error('Erro ao aceitar solicitação')
-    }
+  // Calcular estatísticas
+  const stats = {
+    totalReviews: reviews.length,
+    givenReviews: givenReviews.length,
+    receivedRequests: requests.filter(req => req.target_id === user.id).length,
+    sentRequests: requests.filter(req => req.requester_id === user.id).length,
+    pendingRequests: requests.filter(req => req.status === 'pending').length,
+    acceptedRequests: requests.filter(req => req.status === 'accepted').length,
+    completedRequests: requests.filter(req => req.status === 'completed').length,
+    totalRequests: requests.length
   }
 
-  const handleRejectRequest = async (requestId: string) => {
-    try {
-      await rejectRequest(requestId)
-      toast.success('Solicitação rejeitada')
-    } catch (error) {
-      toast.error('Erro ao rejeitar solicitação')
-    }
-  }
-
-  const handleCompleteRequest = async (requestId: string) => {
-    try {
-      await completeRequest(requestId)
-      toast.success('Avaliações concluídas!')
-    } catch (error) {
-      toast.error('Erro ao marcar como concluída')
-    }
-  }
-
-  // Função para abrir modal de avaliação
-  const handleOpenEvaluationModal = (request: EvaluationRequest) => {
-    const otherUserId = request.requester_id === user.id ? request.target_id : request.requester_id
-    const otherUserName = request.requester_id === user.id ? request.target_name : request.requester_name
-    
-    setSelectedUser({
-      id: otherUserId,
-      name: otherUserName || 'Usuário',
-      avatar: request.requester_id === user.id ? request.target_avatar : request.requester_avatar
-    })
-    setShowEvaluationModal(true)
-  }
-
-  // Função para fechar modal
-  const handleCloseEvaluationModal = () => {
-    setShowEvaluationModal(false)
-    setSelectedUser(null)
-    setEvaluationData({
-      rating: 5,
-      title: '',
-      comment: '',
-      isRecommended: true
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
     })
   }
 
-  // Função para submeter avaliação
-  const handleSubmitEvaluation = async () => {
-    if (!selectedUser || !user?.id) return
-
-    try {
-      setIsSubmitting(true)
-      
-      // Criar a avaliação no sistema de reviews
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
-          reviewer_id: user.id,
-          reviewed_id: selectedUser.id,
-          rating_person: evaluationData.rating,
-          title: evaluationData.title || null,
-          comment: evaluationData.comment || null,
-          is_recommended: evaluationData.isRecommended,
-          review_type: 'professional',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) {
-        throw error
-      }
-
-      // Atualizar as estatísticas do usuário avaliado
-      await updateUserRating(selectedUser.id)
-      
-      toast.success(`Avaliação enviada para ${selectedUser.name}!`)
-      handleCloseEvaluationModal()
-      
-      // Recarregar dados
-      fetchUserReviews(user.id)
-      
-    } catch (error) {
-      console.error('Erro ao enviar avaliação:', error)
-      toast.error('Erro ao enviar avaliação')
-    } finally {
-      setIsSubmitting(false)
-    }
+  // Filtrar dados baseado na busca e filtro
+  const getFilteredReviews = () => {
+    const reviewsToFilter = reviewsSubTab === 'received' ? reviews : givenReviews
+    return reviewsToFilter.filter(review => {
+      const user = reviewsSubTab === 'received' ? review.reviewer : review.reviewed
+      const matchesSearch = user?.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesFilter = filterType === 'all' || user?.user_type === filterType
+      return matchesSearch && matchesFilter
+    })
   }
 
-  // Função para atualizar a avaliação do usuário
-  const updateUserRating = async (userId: string) => {
-    try {
-      // Buscar todas as avaliações do usuário
-      const { data: userReviews, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('rating_person')
-        .eq('reviewed_id', userId)
-
-      if (reviewsError) throw reviewsError
-
-      if (userReviews && userReviews.length > 0) {
-        // Calcular média das avaliações
-        const totalRating = userReviews.reduce((sum, review) => sum + review.rating_person, 0)
-        const averageRating = totalRating / userReviews.length
-
-        // Atualizar o perfil do usuário com a nova avaliação
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            rating: Math.round(averageRating * 10) / 10, // Arredondar para 1 casa decimal
-            total_reviews: userReviews.length,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', userId)
-
-        if (updateError) throw updateError
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar avaliação do usuário:', error)
-    }
+  const getFilteredRequests = () => {
+    const requestsToFilter = requestsSubTab === 'received' 
+      ? requests.filter(req => req.target_id === user.id)
+      : requests.filter(req => req.requester_id === user.id)
+    
+    const filtered = requestsToFilter.filter(req => {
+      const matchesSearch = searchTerm === '' || 
+        req.requester_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        req.target_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      return matchesSearch
+    })
+    
+    
+    return filtered
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Pendente</Badge>
-      case 'accepted':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Aceita</Badge>
-      case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-600">Rejeitada</Badge>
-      case 'completed':
-        return <Badge variant="outline" className="text-blue-600 border-blue-600">Concluída</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+  const filteredReviews = getFilteredReviews()
+  const filteredRequests = getFilteredRequests()
+
+  if (loading) {
+  return (
+      <ClientOnly>
+        <MainLayout requireAuth={true}>
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-center">
+              <div className="relative">
+                <Loader2 className="h-12 w-12 animate-spin text-gray-400 mx-auto mb-4" />
+                <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Carregando suas avaliações</h3>
+              <p className="text-gray-600">Aguarde um momento...</p>
+            </div>
+          </div>
+        </MainLayout>
+      </ClientOnly>
+    )
   }
 
   return (
-    <MainLayout>
+    <ClientOnly>
+      <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Avaliações</h1>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                    <Award className="h-8 w-8 mr-3 text-gray-700" />
+                    Minhas Avaliações
+                  </h1>
             <p className="text-gray-600">
-              Gerencie suas solicitações de avaliação e visualize suas avaliações recebidas.
+                    Gerencie suas avaliações e solicitações de avaliação
             </p>
+                </div>
+              </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-yellow-600">{pendingRequests.length}</div>
-                <div className="text-sm text-gray-600">Pendentes</div>
+            {/* Estatísticas Compactas */}
+            <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+              <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+                <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                  {/* Solicitações Recebidas */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Recebidas</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.receivedRequests}</p>
+                  </div>
+                  
+                  {/* Solicitações Enviadas */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Enviadas</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.sentRequests}</p>
+                  </div>
+                  
+                  {/* Avaliações Recebidas */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Avaliações</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalReviews}</p>
+                  </div>
+                  
+                  {/* Pendentes */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Pendentes</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.pendingRequests}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">{acceptedRequests.length}</div>
-                <div className="text-sm text-gray-600">Aceitas</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600">{reviews.length}</div>
-                <div className="text-sm text-gray-600">Avaliações Recebidas</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600">{filteredRequests.length}</div>
-                <div className="text-sm text-gray-600">Total de Solicitações</div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex gap-2">
-              <Button
-                variant={filter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('all')}
-              >
-                Todas
-              </Button>
-              <Button
-                variant={filter === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('pending')}
-              >
-                Pendentes
-              </Button>
-              <Button
-                variant={filter === 'accepted' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('accepted')}
-              >
-                Aceitas
-              </Button>
-              <Button
-                variant={filter === 'completed' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilter('completed')}
-              >
-                Concluídas
-              </Button>
-            </div>
-            
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar por nome..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+            {/* Tabs */}
+            <div className="mb-8">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('requests')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'requests'
+                        ? 'border-gray-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Solicitações
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('reviews')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'reviews'
+                        ? 'border-gray-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      Avaliações
+                    </div>
+                  </button>
+                </nav>
               </div>
             </div>
-          </div>
 
-          {/* Solicitações de Avaliação */}
-          <div className="space-y-4 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900">Solicitações de Avaliação</h2>
-            
-            {requestsLoading ? (
-              <div className="flex justify-center py-8">
-                <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : filteredRequests.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhuma solicitação encontrada
-                  </h3>
-                  <p className="text-gray-600">
-                    {filter === 'all' 
-                      ? 'Você ainda não tem solicitações de avaliação.'
-                      : `Nenhuma solicitação com status "${filter}" encontrada.`
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredRequests.map((request) => (
-                <Card key={request.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="flex -space-x-2">
-                          <Avatar className="w-10 h-10 border-2 border-white">
-                            <AvatarImage src={request.requester_avatar} />
-                            <AvatarFallback>
-                              {request.requester_name?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <Avatar className="w-10 h-10 border-2 border-white">
-                            <AvatarImage src={request.target_avatar} />
-                            <AvatarFallback>
-                              {request.target_name?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="font-medium text-gray-900">
-                              {request.requester_id === user.id ? 'Você' : request.requester_name} 
-                              {' '}↔️{' '}
-                              {request.target_id === user.id ? 'Você' : request.target_name}
-                            </h3>
-                            {getStatusBadge(request.status)}
+            {/* Conteúdo das Tabs */}
+            {activeTab === 'requests' && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center">
+                        <Clock className="h-5 w-5 mr-2" />
+                        Solicitações
+                      </CardTitle>
+                      <CardDescription>
+                        {requestsSubTab === 'received' 
+                          ? `Solicitações que você recebeu (${stats.receivedRequests})`
+                          : `Solicitações que você enviou (${stats.sentRequests})`
+                        }
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Abas de Solicitações */}
+                  <div className="mb-6">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8">
+                        <button
+                          onClick={() => setRequestsSubTab('received')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            requestsSubTab === 'received'
+                              ? 'border-gray-500 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Recebidas ({stats.receivedRequests})
                           </div>
-                          
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-1" />
-                              {formatDistanceToNow(new Date(request.created_at), { 
-                                addSuffix: true, 
-                                locale: ptBR 
-                              })}
+                        </button>
+                        <button
+                          onClick={() => setRequestsSubTab('sent')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            requestsSubTab === 'sent'
+                              ? 'border-gray-700 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Edit className="h-4 w-4" />
+                            Enviadas ({stats.sentRequests})
+                          </div>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+
+                  {/* Filtros */}
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Buscar por nome..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {filteredRequests.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredRequests.map((request) => (
+                        <div key={request.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-4">
+                            <div className="flex -space-x-2">
+                              <Avatar className="w-10 h-10 border-2 border-white">
+                                <AvatarImage src={request.requester_avatar} />
+                                <AvatarFallback>
+                                  {request.requester_name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <Avatar className="w-10 h-10 border-2 border-white">
+                                <AvatarImage src={request.target_avatar} />
+                                <AvatarFallback>
+                                  {request.target_name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900">
+                                    {request.requester_id === user.id ? 'Você' : request.requester_name} 
+                                    {' '}↔️{' '}
+                                    {request.target_id === user.id ? 'Você' : request.target_name}
+                                  </h4>
+                                  <div className="flex items-center space-x-2">
+                                    <Badge variant="outline" className={`text-xs ${
+                                      request.status === 'pending' ? 'text-yellow-600 border-yellow-600' :
+                                      request.status === 'accepted' ? 'text-green-600 border-green-600' :
+                                      request.status === 'rejected' ? 'text-red-600 border-red-600' :
+                                      'text-blue-600 border-blue-600'
+                                    }`}>
+                                      {request.status === 'pending' ? 'Pendente' :
+                                       request.status === 'accepted' ? 'Aceita' :
+                                       request.status === 'rejected' ? 'Rejeitada' :
+                                       'Concluída'}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(request.created_at)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  {request.status === 'pending' && request.target_id === user.id && (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleAcceptRequest(request.id)}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Aceitar
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleRejectRequest(request.id)}
+                                        className="text-red-600 border-red-600 hover:bg-red-50"
+                                      >
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Rejeitar
+                                      </Button>
+                                    </>
+                                  )}
+                                  
+                                  {request.status === 'accepted' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleCompleteRequest(request.id)}
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Concluir
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        {request.status === 'pending' && request.target_id === user.id && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleAcceptRequest(request.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Aceitar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleRejectRequest(request.id)}
-                              className="text-red-600 border-red-600 hover:bg-red-50"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Rejeitar
-                            </Button>
-                          </>
-                        )}
-                        
-                        {request.status === 'accepted' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleOpenEvaluationModal(request)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <Star className="h-4 w-4 mr-1" />
-                            Avaliar
-                          </Button>
-                        )}
-                        
-                        {request.status === 'accepted' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCompleteRequest(request.id)}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Concluir
-                          </Button>
-                        )}
-                      </div>
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-
-          {/* Avaliações Recebidas */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Avaliações Recebidas</h2>
-            
-            {reviewsLoading ? (
-              <div className="flex justify-center py-8">
-                <RefreshCw className="h-6 w-6 animate-spin text-gray-400" />
-              </div>
-            ) : reviews.length === 0 ? (
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhuma avaliação recebida
-                  </h3>
-                  <p className="text-gray-600">
-                    Você ainda não recebeu avaliações de outros usuários.
-                  </p>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Nenhuma solicitação encontrada
+                      </h3>
+                      <p className="text-gray-600">
+                        {requestsSubTab === 'received' 
+                          ? 'Você ainda não recebeu solicitações de avaliação'
+                          : 'Você ainda não enviou solicitações de avaliação'
+                        }
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <ReviewCard
-                    key={review.id}
-                    review={review}
-                    onEdit={() => setEditingReview(review)}
-                    onDelete={() => deleteReview(review.id)}
-                    onRespond={(response) => respondToReview(review.id, response)}
-                  />
-                ))}
-              </div>
             )}
+
+            {activeTab === 'reviews' && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center">
+                        <Star className="h-5 w-5 mr-2" />
+                        Avaliações
+                      </CardTitle>
+                      <CardDescription>
+                        {reviewsSubTab === 'received' 
+                          ? `Avaliações que você recebeu (${stats.totalReviews})`
+                          : `Avaliações que você fez (${stats.givenReviews})`
+                        }
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Abas de Avaliações */}
+                  <div className="mb-6">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8">
+                        <button
+                          onClick={() => setReviewsSubTab('received')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            reviewsSubTab === 'received'
+                              ? 'border-gray-500 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Star className="h-4 w-4" />
+                            Recebidas ({stats.totalReviews})
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setReviewsSubTab('given')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            reviewsSubTab === 'given'
+                              ? 'border-gray-700 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Edit className="h-4 w-4" />
+                            Feitas ({stats.givenReviews})
+                          </div>
+                        </button>
+                      </nav>
+                    </div>
+            </div>
+            
+                  {/* Filtros */}
+                  <div className="flex items-center space-x-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                />
+              </div>
+            </div>
+                    <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="professional">Profissionais</SelectItem>
+                        <SelectItem value="client">Clientes</SelectItem>
+                      </SelectContent>
+                    </Select>
+          </div>
+
+                  {filteredReviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredReviews.map((review) => (
+                        <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed?.avatar_url || ''} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || '').charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900">
+                                    {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || ''}
+                                  </h4>
+                                  <div className="flex items-center space-x-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed?.user_type || 'client') === 'professional' ? 'Profissional' : 'Cliente'}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(review.created_at)}
+                                    </span>
+              </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex items-center">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <Star
+                                        key={star}
+                                        className={`h-4 w-4 ${
+                                          star <= (review.rating_person || review.rating || 0)
+                                            ? 'text-yellow-400 fill-current'
+                                            : 'text-gray-300'
+                                        }`}
+                                      />
+                                    ))}
+                                    <span className="ml-1 text-sm text-gray-600">
+                                      {review.rating_person || review.rating || 0}/5
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleContactUser(
+                                        reviewsSubTab === 'received' ? review.reviewer.id : review.reviewed?.id || '',
+                                        reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || ''
+                                      )}
+                                    >
+                                      <MessageCircle className="h-4 w-4 mr-1" />
+                                      Contatar
+                                    </Button>
+                                    {reviewsSubTab === 'given' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEditReview(review)}
+                                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                      >
+                                        <Edit className="h-4 w-4 mr-1" />
+                                        Editar
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {review.comment && (
+                                <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md mt-2">
+                                  "{review.comment}"
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
+                  </h3>
+                  <p className="text-gray-600">
+                        {searchTerm || filterType !== 'all' 
+                          ? 'Tente ajustar os filtros de busca'
+                          : reviewsSubTab === 'received' 
+                            ? 'Você ainda não recebeu avaliações de outros usuários'
+                            : 'Você ainda não fez avaliações para outros usuários'
+                    }
+                  </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
           </div>
         </div>
-      </div>
 
-      {/* Modal de Avaliação Responsivo */}
-      {showEvaluationModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
-            {/* Header do Modal */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={selectedUser.avatar} />
-                    <AvatarFallback>
-                      {selectedUser.name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Avaliar {selectedUser.name}
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      Deixe sua avaliação sobre o serviço
-                    </p>
+        {/* Modal de Edição de Avaliação */}
+        {showEditReviewDialog && editingReview && (
+          <Dialog open={showEditReviewDialog} onOpenChange={setShowEditReviewDialog}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Editar Avaliação</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-rating">Avaliação (1-5 estrelas)</Label>
+                  <div className="flex items-center space-x-2 mt-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setEditForm(prev => ({ ...prev, rating: star }))}
+                        className={`p-1 rounded-full transition-colors ${
+                          star <= editForm.rating
+                            ? 'text-yellow-400 hover:text-yellow-500'
+                            : 'text-gray-300 hover:text-gray-400'
+                        }`}
+                      >
+                        <Star className="h-6 w-6 fill-current" />
+                      </button>
+                    ))}
+                    <span className="ml-2 text-sm text-gray-600">
+                      {editForm.rating} de 5 estrelas
+                    </span>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCloseEvaluationModal}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Conteúdo do Modal */}
-            <div className="p-6 space-y-6">
-              {/* Avaliação por Estrelas */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">
-                  Avaliação (1-5 estrelas)
-                </Label>
-                <div className="flex items-center space-x-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setEvaluationData(prev => ({ ...prev, rating: star }))}
-                      className={`p-1 rounded-full transition-colors ${
-                        star <= evaluationData.rating
-                          ? 'text-yellow-400 hover:text-yellow-500'
-                          : 'text-gray-300 hover:text-gray-400'
-                      }`}
-                    >
-                      <Star className="h-6 w-6 fill-current" />
-                    </button>
-                  ))}
-                  <span className="ml-2 text-sm text-gray-600">
-                    {evaluationData.rating} de 5 estrelas
-                  </span>
+                <div>
+                  <Label htmlFor="edit-comment">Comentário (opcional)</Label>
+                  <Textarea
+                    id="edit-comment"
+                    value={editForm.comment}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, comment: e.target.value }))}
+                    placeholder="Deixe um comentário sobre sua experiência (opcional)..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={handleCloseEditDialog}>
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleEditReviewSubmit} 
+                    disabled={isSubmitting}
+                    className="min-w-[120px]"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Salvar
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
-
-              {/* Título da Avaliação */}
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-                  Título da Avaliação (opcional)
-                </Label>
-                <Input
-                  id="title"
-                  value={evaluationData.title}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="Ex: Excelente serviço!"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Comentário */}
-              <div className="space-y-2">
-                <Label htmlFor="comment" className="text-sm font-medium text-gray-700">
-                  Comentário
-                </Label>
-                <Textarea
-                  id="comment"
-                  value={evaluationData.comment}
-                  onChange={(e) => setEvaluationData(prev => ({ ...prev, comment: e.target.value }))}
-                  placeholder="Conte mais sobre sua experiência..."
-                  rows={4}
-                  className="w-full resize-none"
-                />
-              </div>
-
-              {/* Recomendação */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">
-                  Você recomendaria este profissional?
-                </Label>
-                <div className="flex space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setEvaluationData(prev => ({ ...prev, isRecommended: true }))}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
-                      evaluationData.isRecommended
-                        ? 'border-green-500 bg-green-50 text-green-700'
-                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    <span>Sim, recomendo</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEvaluationData(prev => ({ ...prev, isRecommended: false }))}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
-                      !evaluationData.isRecommended
-                        ? 'border-red-500 bg-red-50 text-red-700'
-                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <XCircle className="h-4 w-4" />
-                    <span>Não recomendo</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer do Modal */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-4 rounded-b-2xl">
-              <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleCloseEvaluationModal}
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmitEvaluation}
-                  disabled={isSubmitting || evaluationData.rating === 0}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Star className="h-4 w-4 mr-2" />
-                      Enviar Avaliação
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </MainLayout>
+            </DialogContent>
+          </Dialog>
+        )}
+      </MainLayout>
+    </ClientOnly>
   )
 }

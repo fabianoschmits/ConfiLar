@@ -299,6 +299,20 @@ export function useSupabaseReviews() {
         .single()
 
       if (error) throw error
+      
+      // Atualizar o estado local
+      setReviews(prevReviews => 
+        prevReviews.map(review => 
+          review.id === reviewId 
+            ? { 
+                ...review, 
+                response_text: responseText,
+                response_date: new Date().toISOString()
+              }
+            : review
+        )
+      )
+      
       return { data, error: null }
     } catch (err) {
       console.error('Erro ao responder avaliação:', err)

@@ -161,44 +161,39 @@ export default function FavoritesPage() {
             </div>
 
             {/* Estatísticas Compactas */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <Heart className="h-5 w-5 text-red-600" />
+            <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+              <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+                <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                  {/* Total de Favoritos */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Total</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalFavorites}</p>
                   </div>
-                  <div className="text-2xl font-bold text-red-600">{stats.totalFavorites}</div>
-                  <div className="text-xs text-gray-600">Total</div>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <Briefcase className="h-5 w-5 text-blue-600" />
+                  
+                  {/* Profissionais */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Profissionais</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.professionalFavorites}</p>
                   </div>
-                  <div className="text-2xl font-bold text-blue-600">{stats.professionalFavorites}</div>
-                  <div className="text-xs text-gray-600">Profissionais</div>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <User className="h-5 w-5 text-green-600" />
+                  
+                  {/* Clientes */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Clientes</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.clientFavorites}</p>
                   </div>
-                  <div className="text-2xl font-bold text-green-600">{stats.clientFavorites}</div>
-                  <div className="text-xs text-gray-600">Clientes</div>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                <CardContent className="p-4 text-center">
-                  <div className="flex items-center justify-center mb-2">
-                    <CheckCircle className="h-5 w-5 text-purple-600" />
+                  
+                  {/* Ativos */}
+                  <div className="flex flex-col items-center min-w-0 flex-1">
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                    <p className="text-xs text-gray-500 text-center">Ativos</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalFavorites}</p>
                   </div>
-                  <div className="text-2xl font-bold text-purple-600">{stats.totalFavorites}</div>
-                  <div className="text-xs text-gray-600">Ativos</div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Estados de Loading e Erro */}
@@ -300,8 +295,8 @@ export default function FavoritesPage() {
                       key={favorite.id} 
                       className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
                         favorite.professional?.user_type === 'professional' 
-                          ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200' 
-                          : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                          ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' 
+                          : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
                       }`}
                     >
                       <CardContent className="p-3 sm:p-4">
@@ -311,8 +306,8 @@ export default function FavoritesPage() {
                             <AvatarImage src={favorite.professional?.avatar_url} />
                             <AvatarFallback className={`font-medium ${
                               favorite.professional?.user_type === 'professional' 
-                                ? 'bg-blue-100 text-blue-700' 
-                                : 'bg-green-100 text-green-700'
+                                ? 'bg-gray-200 text-gray-800' 
+                                : 'bg-gray-100 text-gray-600'
                             }`}>
                               {favorite.professional?.full_name?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
@@ -323,11 +318,11 @@ export default function FavoritesPage() {
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge 
-                                variant={favorite.professional?.user_type === 'professional' ? 'default' : 'secondary'}
+                                variant="outline"
                                 className={`text-xs ${
                                   favorite.professional?.user_type === 'professional' 
-                                    ? 'bg-blue-600 hover:bg-blue-700' 
-                                    : 'bg-green-600 hover:bg-green-700'
+                                    ? 'border-gray-400 text-gray-800 bg-gray-100' 
+                                    : 'border-gray-300 text-gray-600 bg-gray-50'
                                 }`}
                               >
                                 {favorite.professional?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
@@ -399,8 +394,8 @@ export default function FavoritesPage() {
                             onClick={() => handleStartChat(favorite.professional?.id || '', favorite.professional?.full_name || '')}
                             className={`${
                               favorite.professional?.user_type === 'professional' 
-                                ? 'bg-blue-600 hover:bg-blue-700' 
-                                : 'bg-green-600 hover:bg-green-700'
+                                ? 'bg-gray-700 hover:bg-gray-800' 
+                                : 'bg-gray-500 hover:bg-gray-600'
                             } text-white`}
                           >
                             <MessageCircle className="h-4 w-4" />

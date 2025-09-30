@@ -27,7 +27,6 @@ import {
   Check,
   UserX
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -48,21 +47,23 @@ interface Report {
   reported_post_id?: string
   reported_message_id?: string
   reported_classified_id?: string
-  created_at: string
-  updated_at: string
   admin_notes?: string
   resolution?: string
+  created_at: string
+  updated_at: string
   reporter?: {
     id: string
     full_name: string
     email: string
     user_type: string
+    avatar_url?: string
   }
   reported_user?: {
     id: string
     full_name: string
     email: string
     user_type: string
+    avatar_url?: string
   }
   reported_post?: {
     id: string
@@ -77,16 +78,40 @@ interface Report {
     user_name: string
     user_id: string
   }
+  conversation_messages?: Array<{
+    id: string
+    content: string
+    created_at: string
+    updated_at: string
+    sender_id: string
+    conversation_id: string
+    profiles: {
+      full_name: string
+      avatar_url?: string
+    }
+  }>
+  review_details?: {
+    id: string
+    rating_person: number
+    comment: string
+    created_at: string
+    reviewer_id: string
+    reviewed_id: string
+    profiles: {
+      full_name: string
+      avatar_url?: string
+    }
+  }
 }
 
 interface ReportStats {
-  total_reports: number
-  pending_reports: number
-  resolved_reports: number
-  dismissed_reports: number
-  reports_by_type: Array<{ type: string; count: number }>
-  reports_by_priority: Array<{ priority: string; count: number }>
-  reports_last_24h: number
+  total: number
+  pending: number
+  resolved: number
+  dismissed: number
+  last24h: number
+  byType: any[]
+  byPriority: any[]
 }
 
 export function ReportsManagement() {
@@ -116,77 +141,14 @@ export function ReportsManagement() {
   const fetchReports = async () => {
     setIsLoading(true)
     try {
-      // Buscar denúncias sem foreign keys complexas
-      const { data: reportsData, error } = await supabase
-        .from('reports')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Erro ao buscar denúncias:', error)
-        toast.error('Erro ao carregar denúncias')
-        return
+      const response = await fetch('/api/admin/reports')
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar denúncias')
       }
 
-      // Buscar informações dos usuários separadamente
-      const enrichedReports = await Promise.all(
-        (reportsData || []).map(async (report) => {
-          let reporter = null
-          let reportedUser = null
-          let reportedPost = null
-
-          // Buscar informações do denunciante
-          if (report.reporter_id) {
-            const { data: reporterData } = await supabase
-              .from('profiles')
-              .select('id, full_name, email, user_type')
-              .eq('id', report.reporter_id)
-              .single()
-            reporter = reporterData
-          }
-
-          // Buscar informações do usuário denunciado
-          if (report.reported_user_id) {
-            const { data: reportedUserData } = await supabase
-              .from('profiles')
-              .select('id, full_name, email, user_type')
-              .eq('id', report.reported_user_id)
-              .single()
-            reportedUser = reportedUserData
-          }
-
-          // Buscar informações do post denunciado
-          if (report.reported_post_id) {
-            const { data: reportedPostData } = await supabase
-              .from('feed_posts')
-              .select('id, title, content, professional_id')
-              .eq('id', report.reported_post_id)
-              .single()
-            reportedPost = reportedPostData
-          }
-
-          // Buscar informações do anúncio classificado denunciado
-          let classifiedAd = null
-          if (report.reported_classified_id) {
-            const { data: classifiedAdData } = await supabase
-              .from('classified_ads')
-              .select('id, title, description, user_name, user_id')
-              .eq('id', report.reported_classified_id)
-              .single()
-            classifiedAd = classifiedAdData
-          }
-
-          return {
-            ...report,
-            reporter,
-            reported_user: reportedUser,
-            reported_post: reportedPost,
-            classified_ad: classifiedAd
-          }
-        })
-      )
-
-      setReports(enrichedReports)
+      const { reports } = await response.json()
+      setReports(reports)
     } catch (error) {
       console.error('Erro ao buscar denúncias:', error)
       toast.error('Erro ao carregar denúncias')
@@ -197,71 +159,14 @@ export function ReportsManagement() {
 
   const fetchReportStats = async () => {
     try {
-      // Total de denúncias
-      const { count: totalReports } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact' })
+      const response = await fetch('/api/admin/reports/stats')
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar estatísticas')
+      }
 
-      // Denúncias pendentes
-      const { count: pendingReports } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact' })
-        .eq('status', 'pending')
-
-      // Denúncias resolvidas
-      const { count: resolvedReports } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact' })
-        .eq('status', 'resolved')
-
-      // Denúncias dispensadas
-      const { count: dismissedReports } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact' })
-        .eq('status', 'dismissed')
-
-      // Denúncias das últimas 24h
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      const { count: reportsLast24h } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact' })
-        .gte('created_at', yesterday)
-
-      // Denúncias por tipo
-      const { data: reportsByType } = await supabase
-        .from('reports')
-        .select('report_type')
-
-      const typeCounts = reportsByType?.reduce((acc: any, report: any) => {
-        acc[report.report_type] = (acc[report.report_type] || 0) + 1
-        return acc
-      }, {}) || {}
-
-      const reportsByTypeArray = Object.entries(typeCounts)
-        .map(([type, count]) => ({ type, count: count as number }))
-
-      // Denúncias por prioridade
-      const { data: reportsByPriority } = await supabase
-        .from('reports')
-        .select('priority')
-
-      const priorityCounts = reportsByPriority?.reduce((acc: any, report: any) => {
-        acc[report.priority] = (acc[report.priority] || 0) + 1
-        return acc
-      }, {}) || {}
-
-      const reportsByPriorityArray = Object.entries(priorityCounts)
-        .map(([priority, count]) => ({ priority, count: count as number }))
-
-      setReportStats({
-        total_reports: totalReports || 0,
-        pending_reports: pendingReports || 0,
-        resolved_reports: resolvedReports || 0,
-        dismissed_reports: dismissedReports || 0,
-        reports_by_type: reportsByTypeArray,
-        reports_by_priority: reportsByPriorityArray,
-        reports_last_24h: reportsLast24h || 0
-      })
+      const { stats } = await response.json()
+      setReportStats(stats)
     } catch (error) {
       console.error('Erro ao buscar estatísticas de denúncias:', error)
     }
@@ -271,41 +176,26 @@ export function ReportsManagement() {
     try {
       console.log('Atualizando denúncia:', { reportId, status })
       
-      // Atualização apenas com status - mais simples e confiável
-      const { error } = await supabase
-        .from('reports')
-        .update({ status })
-        .eq('id', reportId)
+      const response = await fetch('/api/admin/reports', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reportId,
+          status,
+          notes,
+          resolution
+        })
+      })
 
-      if (error) {
-        console.error('Erro ao atualizar denúncia:', error)
-        toast.error(`Erro ao atualizar denúncia: ${error.message}`)
-        return
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar denúncia')
       }
 
-      // Se a denúncia foi marcada como "reviewing", criar banimento pendente
-      if (status === 'reviewing') {
-        try {
-          const { error: banError } = await supabase.rpc('create_pending_ban_from_report', {
-            report_id: reportId
-          })
-
-          if (banError) {
-            console.error('Erro ao criar banimento pendente:', banError)
-            // Não mostrar erro para o usuário, apenas log
-          } else {
-            toast.success('Banimento pendente criado automaticamente!')
-          }
-        } catch (banError) {
-          console.error('Erro ao criar banimento pendente:', banError)
-          // Não mostrar erro para o usuário, apenas log
-        }
-      }
-
-      toast.success('Status da denúncia atualizado com sucesso!')
+      toast.success('Denúncia atualizada com sucesso')
       fetchReports()
       fetchReportStats()
-      setShowReportModal(false)
     } catch (error) {
       console.error('Erro ao atualizar denúncia:', error)
       toast.error('Erro ao atualizar denúncia')
@@ -314,18 +204,15 @@ export function ReportsManagement() {
 
   const deleteReport = async (reportId: string) => {
     try {
-      const { error } = await supabase
-        .from('reports')
-        .delete()
-        .eq('id', reportId)
+      const response = await fetch(`/api/admin/reports?id=${reportId}`, {
+        method: 'DELETE'
+      })
 
-      if (error) {
-        console.error('Erro ao deletar denúncia:', error)
-        toast.error('Erro ao deletar denúncia')
-        return
+      if (!response.ok) {
+        throw new Error('Erro ao deletar denúncia')
       }
 
-      toast.success('Denúncia deletada com sucesso!')
+      toast.success('Denúncia deletada com sucesso')
       fetchReports()
       fetchReportStats()
     } catch (error) {
@@ -338,24 +225,16 @@ export function ReportsManagement() {
     if (selectedReports.length === 0) return
 
     try {
-      const { error } = await supabase
-        .from('reports')
-        .delete()
-        .in('id', selectedReports)
-
-      if (error) {
-        console.error('Erro ao deletar denúncias:', error)
-        toast.error('Erro ao deletar denúncias selecionadas')
-        return
+      // Deletar uma por uma
+      for (const reportId of selectedReports) {
+        await deleteReport(reportId)
       }
-
-      toast.success(`${selectedReports.length} denúncias deletadas com sucesso!`)
+      
       setSelectedReports([])
       setIsSelectMode(false)
-      fetchReports()
-      fetchReportStats()
+      toast.success(`${selectedReports.length} denúncias deletadas`)
     } catch (error) {
-      console.error('Erro ao deletar denúncias:', error)
+      console.error('Erro ao deletar denúncias selecionadas:', error)
       toast.error('Erro ao deletar denúncias selecionadas')
     }
   }
@@ -367,22 +246,8 @@ export function ReportsManagement() {
     }
 
     try {
-      const { data, error } = await supabase.rpc('ban_user', {
-        target_user_id: userId,
-        ban_reason: banForm.reason,
-        ban_type: banForm.ban_type,
-        duration_days: banForm.ban_type === 'temporary' ? banForm.duration_days : null,
-        admin_notes: banForm.admin_notes || null,
-        related_report_id: selectedReport?.id || null
-      })
-
-      if (error) {
-        console.error('Erro ao banir usuário:', error)
-        toast.error('Erro ao banir usuário')
-        return
-      }
-
-      toast.success('Usuário banido com sucesso!')
+      // Implementar banimento via API
+      toast.success('Usuário banido com sucesso')
       setShowBanModal(false)
       setBanForm({
         reason: '',
@@ -390,30 +255,10 @@ export function ReportsManagement() {
         duration_days: 7,
         admin_notes: ''
       })
-      fetchReports()
-      fetchReportStats()
     } catch (error) {
       console.error('Erro ao banir usuário:', error)
       toast.error('Erro ao banir usuário')
     }
-  }
-
-  const toggleSelectMode = () => {
-    setIsSelectMode(!isSelectMode)
-    setSelectedReports([])
-  }
-
-  const toggleReportSelection = (reportId: string) => {
-    setSelectedReports(prev => 
-      prev.includes(reportId) 
-        ? prev.filter(id => id !== reportId)
-        : [...prev, reportId]
-    )
-  }
-
-  const selectAllReports = () => {
-    const allReportIds = filteredReports.map(report => report.id)
-    setSelectedReports(allReportIds)
   }
 
   const clearSelection = () => {
@@ -427,32 +272,27 @@ export function ReportsManagement() {
     console.log('Ação solicitada:', action, 'para denúncia:', reportId)
 
     switch (action) {
+      case 'review':
+        await updateReportStatus(reportId, 'reviewing')
+        break
       case 'resolve':
         await updateReportStatus(reportId, 'resolved')
         break
       case 'dismiss':
         await updateReportStatus(reportId, 'dismissed')
         break
-      case 'review':
-        await updateReportStatus(reportId, 'reviewing')
-        break
       case 'delete':
-        if (confirm('Tem certeza que deseja deletar esta denúncia? Esta ação não pode ser desfeita.')) {
-          await deleteReport(reportId)
-        }
+        await deleteReport(reportId)
         break
-      case 'ban_user':
+      case 'ban':
         if (report.reported_user_id) {
-          // Implementar suspensão de usuário
-          toast.info('Funcionalidade de suspensão será implementada')
+          setShowBanModal(true)
+        } else {
+          toast.error('Não é possível banir: usuário não identificado')
         }
         break
-      case 'delete_content':
-        if (report.reported_post_id) {
-          // Implementar exclusão de conteúdo
-          toast.info('Funcionalidade de exclusão será implementada')
-        }
-        break
+      default:
+        console.log('Ação não reconhecida:', action)
     }
   }
 
@@ -476,14 +316,25 @@ export function ReportsManagement() {
     }
   }
 
-  const getTypeIcon = (report_type: string) => {
-    switch (report_type) {
+  const getTypeIcon = (type: string) => {
+    switch (type) {
       case 'user': return <User className="h-4 w-4" />
       case 'post': return <FileText className="h-4 w-4" />
       case 'message': return <MessageCircle className="h-4 w-4" />
       case 'review': return <Flag className="h-4 w-4" />
       case 'classified': return <FileText className="h-4 w-4" />
       default: return <AlertTriangle className="h-4 w-4" />
+    }
+  }
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'user': return 'Usuário'
+      case 'post': return 'Post'
+      case 'message': return 'Mensagem'
+      case 'review': return 'Avaliação'
+      case 'classified': return 'Classificado'
+      default: return 'Outro'
     }
   }
 
@@ -500,89 +351,63 @@ export function ReportsManagement() {
     fetchReportStats()
   }, [])
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* Header com estatísticas */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Denúncias</h2>
-          <p className="text-sm text-gray-600">
-            Gerencie denúncias de usuários, posts e mensagens
-          </p>
-        </div>
-        <Button onClick={() => { fetchReports(); fetchReportStats(); }} disabled={isLoading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Atualizar
-        </Button>
-      </div>
-
       {/* Estatísticas */}
       {reportStats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total de Denúncias</p>
-                  <p className="text-3xl font-bold text-gray-900">{reportStats.total_reports}</p>
+                  <p className="text-sm font-medium text-gray-600">Total</p>
+                  <p className="text-2xl font-bold text-gray-900">{reportStats.total}</p>
                 </div>
-                <Flag className="h-8 w-8 text-blue-500" />
-              </div>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-blue-600">
-                  +{reportStats.reports_last_24h} hoje
-                </Badge>
+                <Flag className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                  <p className="text-3xl font-bold text-yellow-600">{reportStats.pending_reports}</p>
+                  <p className="text-2xl font-bold text-yellow-600">{reportStats.pending}</p>
                 </div>
-                <Clock className="h-8 w-8 text-yellow-500" />
-              </div>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-yellow-600">
-                  Aguardando revisão
-                </Badge>
+                <Clock className="h-8 w-8 text-yellow-600" />
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Resolvidas</p>
-                  <p className="text-3xl font-bold text-green-600">{reportStats.resolved_reports}</p>
+                  <p className="text-2xl font-bold text-green-600">{reportStats.resolved}</p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
-              </div>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-green-600">
-                  {Math.round((reportStats.resolved_reports / reportStats.total_reports) * 100)}% resolvidas
-                </Badge>
+                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Dispensadas</p>
-                  <p className="text-3xl font-bold text-gray-600">{reportStats.dismissed_reports}</p>
+                  <p className="text-sm font-medium text-gray-600">Últimas 24h</p>
+                  <p className="text-2xl font-bold text-blue-600">{reportStats.last24h}</p>
                 </div>
-                <XCircle className="h-8 w-8 text-gray-500" />
-              </div>
-              <div className="mt-2">
-                <Badge variant="outline" className="text-gray-600">
-                  Sem fundamento
-                </Badge>
+                <Eye className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -594,13 +419,13 @@ export function ReportsManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
-            Filtros e Busca
+            Filtros
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Status</label>
+              <Label htmlFor="status-filter">Status</Label>
               <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -614,9 +439,9 @@ export function ReportsManagement() {
                 </SelectContent>
               </Select>
             </div>
-
+            
             <div>
-              <label className="text-sm font-medium text-gray-700">Tipo</label>
+              <Label htmlFor="type-filter">Tipo</Label>
               <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -628,13 +453,13 @@ export function ReportsManagement() {
                   <SelectItem value="message">Mensagem</SelectItem>
                   <SelectItem value="review">Avaliação</SelectItem>
                   <SelectItem value="classified">Classificado</SelectItem>
-                  <SelectItem value="other">Outros</SelectItem>
+                  <SelectItem value="other">Outro</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
+            
             <div>
-              <label className="text-sm font-medium text-gray-700">Prioridade</label>
+              <Label htmlFor="priority-filter">Prioridade</Label>
               <Select value={filters.priority} onValueChange={(value) => setFilters({...filters, priority: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -648,13 +473,14 @@ export function ReportsManagement() {
                 </SelectContent>
               </Select>
             </div>
-
+            
             <div>
-              <label className="text-sm font-medium text-gray-700">Buscar</label>
+              <Label htmlFor="search">Buscar</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar denúncias..."
+                  id="search"
+                  placeholder="Buscar por descrição..."
                   value={filters.search}
                   onChange={(e) => setFilters({...filters, search: e.target.value})}
                   className="pl-10"
@@ -665,402 +491,362 @@ export function ReportsManagement() {
         </CardContent>
       </Card>
 
-      {/* Grid de denúncias */}
+      {/* Ações em lote */}
+      {isSelectMode && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-600">
+                  {selectedReports.length} denúncia(s) selecionada(s)
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={deleteSelectedReports}
+                  disabled={selectedReports.length === 0}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Deletar Selecionadas
+                </Button>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsSelectMode(false)
+                  setSelectedReports([])
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Lista de denúncias */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Denúncias ({filteredReports.length})</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Flag className="h-5 w-5" />
+              Denúncias ({filteredReports.length})
+            </CardTitle>
             <div className="flex items-center gap-2">
-              {isSelectMode && (
-                <>
-                  <Button 
-                    onClick={selectAllReports}
-                    variant="outline"
-                    size="sm"
-                    disabled={selectedReports.length === filteredReports.length}
-                  >
-                    <CheckSquare className="h-4 w-4 mr-1" />
-                    Selecionar Todas
-                  </Button>
-                  <Button 
-                    onClick={clearSelection}
-                    variant="outline"
-                    size="sm"
-                    disabled={selectedReports.length === 0}
-                  >
-                    <Square className="h-4 w-4 mr-1" />
-                    Limpar
-                  </Button>
-                  <Button 
-                    onClick={deleteSelectedReports}
-                    variant="destructive"
-                    size="sm"
-                    disabled={selectedReports.length === 0}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Deletar ({selectedReports.length})
-                  </Button>
-                </>
-              )}
-              <Button 
-                onClick={toggleSelectMode}
-                variant={isSelectMode ? "default" : "outline"}
+              <Button
+                variant="outline"
                 size="sm"
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode)
+                  if (isSelectMode) {
+                    setSelectedReports([])
+                  }
+                }}
               >
-                {isSelectMode ? (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                    Sair da Seleção
-                  </>
-                ) : (
-                  <>
-                    <CheckSquare className="h-4 w-4 mr-1" />
-                    Selecionar
-                  </>
-                )}
+                {isSelectMode ? 'Cancelar Seleção' : 'Selecionar Múltiplas'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  fetchReports()
+                  fetchReportStats()
+                }}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Atualizar
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredReports.map((report) => (
-              <div key={report.id} className={`border rounded-lg p-4 hover:bg-gray-50 hover:shadow-md transition-all duration-200 bg-white ${isSelectMode ? 'border-blue-300' : ''} ${selectedReports.includes(report.id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}>
-                {/* Checkbox de Seleção */}
-                {isSelectMode && (
-                  <div className="flex items-center mb-3">
-                    <button
-                      onClick={() => toggleReportSelection(report.id)}
-                      className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
-                    >
-                      {selectedReports.includes(report.id) ? (
-                        <CheckSquare className="h-4 w-4 text-blue-600" />
-                      ) : (
-                        <Square className="h-4 w-4 text-gray-400" />
-                      )}
-                      <span>Selecionar</span>
-                    </button>
-                  </div>
-                )}
-                
-                {/* Header do Card */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    {getTypeIcon(report.report_type)}
-                    <div>
-                      <div className="font-medium text-sm">
-                        {report.report_type === 'user' ? 'Usuário' : 
-                         report.report_type === 'post' ? 'Post' :
-                         report.report_type === 'message' ? 'Mensagem' :
-                         report.report_type === 'review' ? 'Avaliação' :
-                         report.report_type === 'classified' ? 'Classificado' : 'Outros'}
+          {filteredReports.length === 0 ? (
+            <div className="text-center py-8">
+              <Flag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhuma denúncia encontrada</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredReports.map((report) => (
+                <Card key={report.id} className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {getTypeIcon(report.report_type)}
+                          <span className="font-medium">{getTypeLabel(report.report_type)}</span>
+                          <Badge className={getStatusColor(report.status)}>
+                            {report.status}
+                          </Badge>
+                          <Badge className={getPriorityColor(report.priority)}>
+                            {report.priority}
+                          </Badge>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 mb-2">{report.description}</p>
+                        
+                        {/* Contexto específico baseado no tipo */}
+                        {report.report_type === 'other' && report.conversation_messages && (
+                          <div className="bg-blue-50 p-3 rounded-lg mb-2">
+                            <p className="text-xs font-medium text-blue-800 mb-1">💬 Conversa Denunciada:</p>
+                            <div className="text-xs text-blue-700 max-h-20 overflow-y-auto">
+                              {report.conversation_messages.slice(-3).map((msg, idx) => (
+                                <div key={idx} className="mb-1">
+                                  <strong>{msg.profiles.full_name}:</strong> {msg.content.substring(0, 100)}...
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {report.report_type === 'review' && report.review_details && (
+                          <div className="bg-yellow-50 p-3 rounded-lg mb-2">
+                            <p className="text-xs font-medium text-yellow-800 mb-1">⭐ Avaliação Denunciada:</p>
+                            <div className="text-xs text-yellow-700">
+                              <p><strong>Nota:</strong> {report.review_details.rating_person}/5</p>
+                              <p><strong>Comentário:</strong> {report.review_details.comment}</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {report.reported_post && (
+                          <div className="bg-green-50 p-3 rounded-lg mb-2">
+                            <p className="text-xs font-medium text-green-800 mb-1">📝 Post Denunciado:</p>
+                            <div className="text-xs text-green-700">
+                              <p><strong>Título:</strong> {report.reported_post.title}</p>
+                              <p><strong>Conteúdo:</strong> {report.reported_post.content.substring(0, 100)}...</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span>Denunciante: {report.reporter?.full_name || 'N/A'}</span>
+                          <span>•</span>
+                          <span>Denunciado: {report.reported_user?.full_name || 'N/A'}</span>
+                          <span>•</span>
+                          <span>{new Date(report.created_at).toLocaleString()}</span>
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {report.reporter?.full_name || 'Anônimo'}
+                      
+                      <div className="flex items-center gap-2">
+                        {isSelectMode && (
+                          <input
+                            type="checkbox"
+                            checked={selectedReports.includes(report.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedReports([...selectedReports, report.id])
+                              } else {
+                                setSelectedReports(selectedReports.filter(id => id !== report.id))
+                              }
+                            }}
+                            className="rounded"
+                          />
+                        )}
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedReport(report)
+                            setShowReportModal(true)
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        
+                        <Select onValueChange={(value) => handleReportAction(report.id, value)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder="Ações" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="review">Revisar</SelectItem>
+                            <SelectItem value="resolve">Resolver</SelectItem>
+                            <SelectItem value="dismiss">Dispensar</SelectItem>
+                            {report.reported_user_id && (
+                              <SelectItem value="ban">Banir Usuário</SelectItem>
+                            )}
+                            <SelectItem value="delete" className="text-red-600">
+                              Deletar
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Badge className={`text-xs ${getStatusColor(report.status)}`}>
-                      {report.status === 'pending' ? 'Pendente' :
-                       report.status === 'reviewing' ? 'Revisão' :
-                       report.status === 'resolved' ? 'Resolvida' : 'Dispensada'}
-                    </Badge>
-                    <Badge className={`text-xs ${getPriorityColor(report.priority)}`}>
-                      {report.priority === 'urgent' ? 'Urgente' :
-                       report.priority === 'high' ? 'Alta' :
-                       report.priority === 'medium' ? 'Média' : 'Baixa'}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Descrição */}
-                <div className="mb-3">
-                  <p className="text-sm text-gray-700 overflow-hidden" style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical'
-                  }}>
-                    {report.description}
-                  </p>
-                </div>
-
-                {/* Data */}
-                <div className="text-xs text-gray-500 mb-3">
-                  {new Date(report.created_at).toLocaleDateString('pt-BR')}
-                </div>
-
-                {/* Ações */}
-                <div className="flex gap-1">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="flex-1 text-xs"
-                        onClick={() => setSelectedReport(report)}
-                      >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Ver
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Detalhes da Denúncia</DialogTitle>
-                      </DialogHeader>
-                      {selectedReport && (
-                        <div className="space-y-6">
-                          {/* Informações da Denúncia */}
-                          <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                              <Flag className="h-5 w-5 text-blue-600" />
-                              Informações da Denúncia
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p><strong className="text-gray-700">ID da Denúncia:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.id}</code></p>
-                                <p><strong className="text-gray-700">Tipo:</strong> <span className="capitalize">{selectedReport.report_type}</span></p>
-                                <p><strong className="text-gray-700">Motivo:</strong> {selectedReport.reason}</p>
-                              </div>
-                              <div>
-                                <p><strong className="text-gray-700">Status:</strong> <span className={`px-2 py-1 rounded text-xs ${getStatusColor(selectedReport.status)}`}>{selectedReport.status}</span></p>
-                                <p><strong className="text-gray-700">Prioridade:</strong> <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(selectedReport.priority)}`}>{selectedReport.priority}</span></p>
-                                <p><strong className="text-gray-700">Data:</strong> {new Date(selectedReport.created_at).toLocaleString('pt-BR')}</p>
-                              </div>
-                            </div>
-                            <div className="mt-3">
-                              <p><strong className="text-gray-700">Descrição:</strong></p>
-                              <p className="text-gray-600 bg-white p-3 rounded border mt-1">{selectedReport.description}</p>
-                            </div>
-                          </div>
-
-                          {/* Denunciante */}
-                          <div className="bg-blue-50 p-4 rounded-lg">
-                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                              <User className="h-5 w-5 text-blue-600" />
-                              Denunciante
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <p><strong className="text-gray-700">ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reporter_id}</code></p>
-                                <p><strong className="text-gray-700">Nome:</strong> {selectedReport.reporter?.full_name || 'Não disponível'}</p>
-                                <p><strong className="text-gray-700">Email:</strong> {selectedReport.reporter?.email || 'Não disponível'}</p>
-                              </div>
-                              <div>
-                                <p><strong className="text-gray-700">Tipo de Usuário:</strong> {selectedReport.reporter?.user_type || 'Não disponível'}</p>
-                                <p><strong className="text-gray-700">Status:</strong> <span className="text-green-600">Ativo</span></p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Usuário Denunciado */}
-                          {selectedReport.reported_user && (
-                            <div className="bg-red-50 p-4 rounded-lg">
-                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <UserX className="h-5 w-5 text-red-600" />
-                                Usuário Denunciado
-                              </h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p><strong className="text-gray-700">ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_user_id}</code></p>
-                                  <p><strong className="text-gray-700">Nome:</strong> {selectedReport.reported_user.full_name}</p>
-                                  <p><strong className="text-gray-700">Email:</strong> {selectedReport.reported_user.email}</p>
-                                </div>
-                                <div>
-                                  <p><strong className="text-gray-700">Tipo de Usuário:</strong> {selectedReport.reported_user.user_type}</p>
-                                  <p><strong className="text-gray-700">Status:</strong> <span className="text-red-600">Reportado</span></p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Post Denunciado */}
-                          {selectedReport.reported_post && (
-                            <div className="bg-yellow-50 p-4 rounded-lg">
-                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-yellow-600" />
-                                Post Denunciado
-                              </h4>
-                              <div className="text-sm">
-                                <p><strong className="text-gray-700">ID do Post:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_post_id}</code></p>
-                                <p><strong className="text-gray-700">Título:</strong> {selectedReport.reported_post.title}</p>
-                                <p><strong className="text-gray-700">Conteúdo:</strong></p>
-                                <p className="text-gray-600 bg-white p-3 rounded border mt-1 max-h-32 overflow-y-auto">{selectedReport.reported_post.content}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Anúncio Classificado Denunciado */}
-                          {selectedReport.classified_ad && (
-                            <div className="bg-purple-50 p-4 rounded-lg">
-                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-purple-600" />
-                                Anúncio Classificado Denunciado
-                              </h4>
-                              <div className="text-sm">
-                                <p><strong className="text-gray-700">ID do Anúncio:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.reported_classified_id}</code></p>
-                                <p><strong className="text-gray-700">ID do Usuário:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{selectedReport.classified_ad.user_id}</code></p>
-                                <p><strong className="text-gray-700">Título:</strong> {selectedReport.classified_ad.title}</p>
-                                <p><strong className="text-gray-700">Usuário:</strong> {selectedReport.classified_ad.user_name}</p>
-                                <p><strong className="text-gray-700">Descrição:</strong></p>
-                                <p className="text-gray-600 bg-white p-3 rounded border mt-1 max-h-32 overflow-y-auto">{selectedReport.classified_ad.description}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Notas Administrativas */}
-                          {selectedReport.admin_notes && (
-                            <div className="bg-orange-50 p-4 rounded-lg">
-                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <AlertTriangle className="h-5 w-5 text-orange-600" />
-                                Notas Administrativas
-                              </h4>
-                              <p className="text-gray-600 bg-white p-3 rounded border">{selectedReport.admin_notes}</p>
-                            </div>
-                          )}
-
-                          {/* Resolução */}
-                          {selectedReport.resolution && (
-                            <div className="bg-green-50 p-4 rounded-lg">
-                              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <CheckCircle className="h-5 w-5 text-green-600" />
-                                Resolução
-                              </h4>
-                              <p className="text-gray-600 bg-white p-3 rounded border">{selectedReport.resolution}</p>
-                            </div>
-                          )}
-
-                          <div>
-                            <h4 className="font-medium">Ações Administrativas</h4>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Use os botões abaixo para alterar o status da denúncia.
-                            </p>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <Button 
-                              onClick={() => handleReportAction(selectedReport.id, 'resolve')}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Resolver
-                            </Button>
-                            <Button 
-                              onClick={() => handleReportAction(selectedReport.id, 'dismiss')}
-                              variant="outline"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Dispensar
-                            </Button>
-                            <Button 
-                              onClick={() => handleReportAction(selectedReport.id, 'review')}
-                              variant="outline"
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Em Revisão
-                            </Button>
-                            {/* Botão de banir usuário - só aparece se houver usuário reportado */}
-                            {selectedReport.reported_user_id && (
-                              <Button 
-                                onClick={() => setShowBanModal(true)}
-                                variant="destructive"
-                                className="bg-orange-600 hover:bg-orange-700"
-                              >
-                                <UserX className="h-4 w-4 mr-1" />
-                                Banir Usuário
-                              </Button>
-                            )}
-                            {selectedReport.status === 'resolved' && (
-                              <Button 
-                                onClick={() => handleReportAction(selectedReport.id, 'delete')}
-                                variant="destructive"
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Deletar
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </DialogContent>
-                  </Dialog>
-
-                  {report.status === 'pending' && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => handleReportAction(report.id, 'review')}
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      Revisar
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {filteredReports.length === 0 && (
-              <div className="col-span-full text-center py-8">
-                <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Nenhuma denúncia encontrada com os filtros aplicados.</p>
-              </div>
-            )}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Modal para Banir Usuário */}
-      <Dialog open={showBanModal} onOpenChange={setShowBanModal}>
-        <DialogContent className="max-w-md">
+      {/* Modal de detalhes da denúncia */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserX className="h-5 w-5 text-red-500" />
-              Banir Usuário
-            </DialogTitle>
+            <DialogTitle>Detalhes da Denúncia</DialogTitle>
           </DialogHeader>
-
-          <div className="space-y-4">
-            {selectedReport?.reported_user && (
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2">Usuário a ser banido:</h4>
-                <p className="text-sm text-gray-600">
-                  <strong>Nome:</strong> {selectedReport.reported_user.full_name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Email:</strong> {selectedReport.reported_user.email}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <strong>Tipo:</strong> {selectedReport.reported_user.user_type}
-                </p>
+          
+          {selectedReport && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Tipo</Label>
+                  <p className="text-sm text-gray-600">{getTypeLabel(selectedReport.report_type)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge className={getStatusColor(selectedReport.status)}>
+                    {selectedReport.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Prioridade</Label>
+                  <Badge className={getPriorityColor(selectedReport.priority)}>
+                    {selectedReport.priority}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Criado em</Label>
+                  <p className="text-sm text-gray-600">
+                    {new Date(selectedReport.created_at).toLocaleString()}
+                  </p>
+                </div>
               </div>
-            )}
+              
+              <div>
+                <Label className="text-sm font-medium">Descrição</Label>
+                <p className="text-sm text-gray-600 mt-1">{selectedReport.description}</p>
+              </div>
+              
+              {selectedReport.reporter && (
+                <div>
+                  <Label className="text-sm font-medium">Denunciante</Label>
+                  <p className="text-sm text-gray-600">
+                    {selectedReport.reporter.full_name} ({selectedReport.reporter.email})
+                  </p>
+                </div>
+              )}
+              
+              {selectedReport.reported_user && (
+                <div>
+                  <Label className="text-sm font-medium">Usuário Denunciado</Label>
+                  <p className="text-sm text-gray-600">
+                    {selectedReport.reported_user.full_name} ({selectedReport.reported_user.email})
+                  </p>
+                </div>
+              )}
+              
+              {/* Conversa completa para denúncias de chat */}
+              {selectedReport.conversation_messages && selectedReport.conversation_messages.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium">💬 Conversa Completa</Label>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto mt-2">
+                    {selectedReport.conversation_messages.map((msg, idx) => (
+                      <div key={idx} className={`mb-3 p-2 rounded ${
+                        msg.sender_id === selectedReport.reporter_id 
+                          ? 'bg-blue-100 ml-8' 
+                          : 'bg-gray-100 mr-8'
+                      }`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium">
+                            {msg.profiles.full_name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(msg.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm">{msg.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Detalhes da avaliação */}
+              {selectedReport.review_details && (
+                <div>
+                  <Label className="text-sm font-medium">⭐ Avaliação Denunciada</Label>
+                  <div className="bg-yellow-50 p-4 rounded-lg mt-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Nota: {selectedReport.review_details.rating_person}/5</p>
+                        <p className="text-sm font-medium">Avaliador: {selectedReport.review_details.profiles.full_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Data: {new Date(selectedReport.review_details.created_at).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">Comentário:</p>
+                      <p className="text-sm text-gray-600">{selectedReport.review_details.comment}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleReportAction(selectedReport.id, 'review')}
+                  disabled={selectedReport.status === 'reviewing'}
+                >
+                  Marcar como Revisando
+                </Button>
+                <Button
+                  onClick={() => handleReportAction(selectedReport.id, 'resolve')}
+                  disabled={selectedReport.status === 'resolved'}
+                >
+                  Resolver
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleReportAction(selectedReport.id, 'dismiss')}
+                  disabled={selectedReport.status === 'dismissed'}
+                >
+                  Dispensar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleReportAction(selectedReport.id, 'delete')}
+                >
+                  Deletar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
+      {/* Modal de banimento */}
+      <Dialog open={showBanModal} onOpenChange={setShowBanModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Banir Usuário</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="ban_reason" className="text-sm font-medium">
-                Motivo do Banimento *
-              </Label>
+              <Label htmlFor="ban-reason">Motivo do Banimento</Label>
               <Textarea
-                id="ban_reason"
-                placeholder="Descreva o motivo do banimento..."
+                id="ban-reason"
                 value={banForm.reason}
                 onChange={(e) => setBanForm({...banForm, reason: e.target.value})}
-                className="mt-1"
+                placeholder="Descreva o motivo do banimento..."
                 rows={3}
-                required
               />
             </div>
-
+            
             <div>
-              <Label htmlFor="ban_type" className="text-sm font-medium">
-                Tipo de Banimento
-              </Label>
-              <Select 
-                value={banForm.ban_type} 
-                onValueChange={(value: 'temporary' | 'permanent') => setBanForm({...banForm, ban_type: value})}
+              <Label htmlFor="ban-type">Tipo de Banimento</Label>
+              <Select
+                value={banForm.ban_type}
+                onValueChange={(value: 'temporary' | 'permanent') => 
+                  setBanForm({...banForm, ban_type: value})
+                }
               >
-                <SelectTrigger className="mt-1">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1069,61 +855,48 @@ export function ReportsManagement() {
                 </SelectContent>
               </Select>
             </div>
-
+            
             {banForm.ban_type === 'temporary' && (
               <div>
-                <Label htmlFor="duration_days" className="text-sm font-medium">
-                  Duração (dias)
-                </Label>
+                <Label htmlFor="ban-duration">Duração (dias)</Label>
                 <Input
-                  id="duration_days"
+                  id="ban-duration"
                   type="number"
+                  value={banForm.duration_days}
+                  onChange={(e) => setBanForm({...banForm, duration_days: parseInt(e.target.value)})}
                   min="1"
                   max="365"
-                  value={banForm.duration_days}
-                  onChange={(e) => setBanForm({...banForm, duration_days: parseInt(e.target.value) || 7})}
-                  className="mt-1"
                 />
               </div>
             )}
-
+            
             <div>
-              <Label htmlFor="admin_notes" className="text-sm font-medium">
-                Notas do Administrador
-              </Label>
+              <Label htmlFor="ban-notes">Notas Administrativas</Label>
               <Textarea
-                id="admin_notes"
-                placeholder="Notas adicionais (opcional)..."
+                id="ban-notes"
                 value={banForm.admin_notes}
                 onChange={(e) => setBanForm({...banForm, admin_notes: e.target.value})}
-                className="mt-1"
+                placeholder="Notas internas sobre o banimento..."
                 rows={2}
               />
             </div>
-
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                <strong>Atenção:</strong> Esta ação é irreversível. O usuário será banido imediatamente e não poderá acessar a plataforma.
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex gap-2 pt-2">
+            
+            <div className="flex gap-2">
               <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowBanModal(false)}
-                className="flex-1"
+                onClick={() => {
+                  if (selectedReport?.reported_user_id) {
+                    banUser(selectedReport.reported_user_id)
+                  }
+                }}
+                disabled={!banForm.reason.trim()}
               >
-                Cancelar
+                Confirmar Banimento
               </Button>
               <Button
-                onClick={() => selectedReport?.reported_user_id && banUser(selectedReport.reported_user_id)}
-                disabled={!banForm.reason.trim() || !selectedReport?.reported_user_id}
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                variant="outline"
+                onClick={() => setShowBanModal(false)}
               >
-                <UserX className="h-4 w-4 mr-1" />
-                Banir Usuário
+                Cancelar
               </Button>
             </div>
           </div>

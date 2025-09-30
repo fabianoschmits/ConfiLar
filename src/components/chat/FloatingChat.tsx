@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -493,7 +494,12 @@ export function FloatingChat() {
                   {/* Header da Conversa */}
                   <div className="bg-gray-50 border-b border-gray-200 p-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 flex-1">
+                      <Link 
+                        href={`/perfil/${user.id === selectedConversation.client_id 
+                          ? selectedConversation.professional.id
+                          : selectedConversation.client.id}`}
+                        className="flex items-center gap-3 flex-1"
+                      >
                         <UserAvatar
                           src={user.id === selectedConversation.client_id 
                             ? selectedConversation.professional.avatar_url
@@ -519,7 +525,7 @@ export function FloatingChat() {
                               : selectedConversation.client.user_type}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                       
                       {/* Botões de Ação - Canto Direito */}
                       <div className="flex items-center gap-0.5 ml-4">
@@ -540,6 +546,8 @@ export function FloatingChat() {
                             }
                           }}
                           disabled={sending}
+                          conversationData={selectedConversation}
+                          messages={messages}
                         />
                       </div>
                     </div>
@@ -624,11 +632,21 @@ export function FloatingChat() {
                                       })}
                                       {message.updated_at && 
                                        message.updated_at !== message.created_at &&
-                                       new Date(message.updated_at).getTime() - new Date(message.created_at).getTime() > 5000 && (
+                                       new Date(message.updated_at).getTime() - new Date(message.created_at).getTime() > 30000 && (
                                         <span className="ml-1 text-xs opacity-50">(editado)</span>
                                       )}
                                     </span>
                                   </div>
+                                  {!isOwn && (
+                                    <MessageMenu
+                                      messageId={message.id}
+                                      messageContent={message.content}
+                                      onDelete={deleteMessage}
+                                      onEdit={handleStartEdit}
+                                      disabled={sending}
+                                      isOwnMessage={false}
+                                    />
+                                  )}
                                   {isOwn && (
                                     <MessageMenu
                                       messageId={message.id}
@@ -636,6 +654,7 @@ export function FloatingChat() {
                                       onDelete={deleteMessage}
                                       onEdit={handleStartEdit}
                                       disabled={sending}
+                                      isOwnMessage={true}
                                     />
                                   )}
                                 </div>

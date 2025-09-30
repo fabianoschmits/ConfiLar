@@ -13,11 +13,19 @@ export function usePortfolio(professionalId?: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Buscar projetos do portfólio
-  const fetchProjects = async (userId?: string) => {
+  // Buscar projetos do portfólio do usuário logado
+  const fetchProjects = async () => {
     try {
       setLoading(true)
       setError(null)
+
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setProjects([])
+        setLoading(false)
+        return
+      }
 
       // Verificar se a tabela portfolio_projects existe primeiro
       const { data: testData, error: testError } = await supabase
@@ -32,16 +40,11 @@ export function usePortfolio(professionalId?: string) {
         return
       }
 
-      const query = supabase
+      const { data: projectsData, error: projectsError } = await supabase
         .from('portfolio_projects')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-
-      if (userId) {
-        query.eq('professional_id', userId)
-      }
-
-      const { data: projectsData, error: projectsError } = await query
 
       if (projectsError) {
         console.warn('⚠️ Erro ao buscar projetos do portfólio:', projectsError)
@@ -59,7 +62,7 @@ export function usePortfolio(professionalId?: string) {
   }
 
   // Adicionar novo projeto
-  const addProject = async (projectData: Omit<PortfolioProjectInsert, 'professional_id'>) => {
+  const addProject = async (projectData: any) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
@@ -67,9 +70,9 @@ export function usePortfolio(professionalId?: string) {
         throw new Error('Usuário não autenticado')
       }
 
-      const newProject: PortfolioProjectInsert = {
+      const newProject = {
         ...projectData,
-        professional_id: user.id,
+        user_id: user.id,
         views_count: 0,
         rating: 0,
         is_featured: false,
@@ -236,10 +239,8 @@ export function usePortfolio(professionalId?: string) {
   }
 
   useEffect(() => {
-    if (professionalId) {
-      fetchProjects(professionalId)
-    }
-  }, [professionalId])
+    fetchProjects()
+  }, [])
 
   return {
     projects,

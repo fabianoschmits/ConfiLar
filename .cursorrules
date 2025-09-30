@@ -1,0 +1,60 @@
+# Configuração MCP para Supabase
+# Este arquivo configura o acesso direto ao banco de dados Supabase
+
+# =============================================
+# REGRAS OBRIGATÓRIAS PARA OPERAÇÕES NO BANCO
+# =============================================
+
+# REGRA 1: SEMPRE VERIFICAR TABELAS ANTES DE CRIAR/EDITAR
+# - Antes de criar qualquer tabela nova, SEMPRE use mcp_supabase_list_tables
+# - Verifique se a tabela já existe com nome similar
+# - Evite duplicação de tabelas com nomes diferentes
+# - Consulte a estrutura existente antes de criar
+
+# REGRA 2: SEMPRE CONSULTAR ANTES DE DELETAR
+# - ANTES de deletar qualquer tabela, SEMPRE pergunte ao usuário
+# - Mostre o que será deletado e o impacto
+# - Aguarde confirmação explícita do usuário
+# - NUNCA delete sem permissão explícita
+
+# REGRA 3: SEMPRE INFORMAR ANTES DE CRIAR
+# - ANTES de criar qualquer tabela, SEMPRE informe ao usuário
+# - Explique o que será criado e por quê
+# - Mostre a estrutura da tabela que será criada
+# - Aguarde confirmação do usuário
+
+# REGRA 4: VERIFICAÇÃO OBRIGATÓRIA
+# - SEMPRE use mcp_supabase_list_tables antes de qualquer operação
+# - SEMPRE use mcp_supabase_get_table_info para verificar estrutura
+# - SEMPRE consulte o usuário antes de operações destrutivas
+# - SEMPRE documente o que será feito
+
+# MCP Servers Configuration
+mcp:
+  servers:
+    supabase:
+      command: node
+      args: ["scripts/mcp-supabase-server.js"]
+      env:
+        SUPABASE_URL: https://oolqodaehouaidxuowtw.supabase.co
+        SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbHFvZGFlaG91YWlkeHVvd3R3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5ODg1NCwiZXhwIjoyMDcxMjc0ODU0fQ.1FLdgPEei6Xbe1Bbp-M-3kMul4gGrI0baNFJDnIvr34
+        SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbHFvZGFlaG91YWlkeHVvd3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2OTg4NTQsImV4cCI6MjA3MTI3NDg1NH0.h1OxM9qHsUFdtsTBA_halxFXZzLkS5viSfjugPYe9UY
+      cwd: .
+      timeout: 30000
+
+# Configurações adicionais
+database:
+  auto_connect: true
+  show_schemas: true
+  show_tables: true
+  show_columns: true
+  show_indexes: true
+  show_constraints: true
+
+# Permissões MCP
+permissions:
+  - mcp_supabase_list_tables
+  - mcp_supabase_execute_sql
+  - mcp_supabase_get_table_info
+  - mcp_supabase_get_table_data
+  - mcp_supabase_search_tables

@@ -20,6 +20,7 @@ interface ReportButtonProps {
   className?: string
   variant?: 'default' | 'outline' | 'ghost'
   size?: 'sm' | 'default' | 'lg'
+  asDropdownItem?: boolean
 }
 
 const REPORT_REASONS = {
@@ -70,7 +71,8 @@ export function ReportButton({
   targetName, 
   className, 
   variant = 'ghost',
-  size = 'sm'
+  size = 'sm',
+  asDropdownItem = false
 }: ReportButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -105,7 +107,7 @@ export function ReportButton({
         ...(type === 'user' && { reported_user_id: targetId }),
         ...(type === 'post' && { reported_post_id: targetId }),
         ...(type === 'message' && { reported_message_id: targetId }),
-        ...(type === 'review' && { reported_review_id: targetId }),
+        ...(type === 'review' && { reported_user_id: targetId }), // Para reviews, usar reported_user_id
         ...(type === 'classified' && { reported_classified_id: targetId })
       }
 
@@ -154,6 +156,23 @@ export function ReportButton({
     }
   }
 
+  const handleButtonClick = () => {
+    setIsOpen(true)
+  }
+
+  // Se for usado como item de dropdown, renderizar apenas o botão sem Dialog
+  if (asDropdownItem) {
+    return (
+      <button
+        onClick={handleButtonClick}
+        className={`flex items-center gap-1 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-1.5 ${className}`}
+      >
+        <Flag className="h-3 w-3" />
+        <span>Denunciar</span>
+      </button>
+    )
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -161,6 +180,7 @@ export function ReportButton({
           variant={variant} 
           size={size}
           className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
+          onClick={handleButtonClick}
         >
           <Flag className="h-3 w-3" />
           <span className="text-xs">Denunciar</span>
