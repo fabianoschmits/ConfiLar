@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useUnifiedAuth';
 
 export interface Notification {
   id: string;
@@ -47,6 +48,7 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProviderSimple: React.FC<NotificationProviderProps> = ({ children }) => {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -54,13 +56,12 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   // Carregar notificações do banco de dados
   const loadNotifications = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
+      if (!user) return;
 
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 

@@ -41,17 +41,15 @@ export function usePWA() {
       setDeferredPrompt(null)
     }
 
-    // Service Worker temporariamente desabilitado
+    // Service Worker funcional
     const registerSW = async () => {
-      console.log('🚫 Service Worker desabilitado temporariamente no usePWA')
-      /*
       if ('serviceWorker' in navigator) {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/'
           })
 
-          console.log('Service Worker registrado com sucesso:', registration)
+          console.log('🚀 ConfiLar PWA: Service Worker registrado com sucesso:', registration)
 
           // Verificar atualizações
           registration.addEventListener('updatefound', () => {
@@ -59,6 +57,7 @@ export function usePWA() {
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('🔄 ConfiLar PWA: Nova versão disponível!')
                   setUpdateAvailable(true)
                 }
               })
@@ -68,13 +67,17 @@ export function usePWA() {
           // Verificar atualizações periodicamente
           setInterval(() => {
             registration.update()
-          }, 60000) // Verifica a cada 1 minuto
+          }, 300000) // Verifica a cada 5 minutos
+
+          // Verificar se há atualizações pendentes
+          if (registration.waiting) {
+            setUpdateAvailable(true)
+          }
 
         } catch (error) {
-          console.error('Erro ao registrar Service Worker:', error)
+          console.error('❌ Erro ao registrar Service Worker:', error)
         }
       }
-      */
     }
 
     // Inicializar

@@ -6,15 +6,19 @@ import {
   Download, 
   RotateCcw, 
   WifiOff,
-  Smartphone
+  Smartphone,
+  Bell,
+  BellOff
 } from 'lucide-react'
 import { usePWA } from '@/hooks/usePWA'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 export function PWAStatus() {
   const { isInstallable, isInstalled, updateAvailable, isOnline, installApp, updateApp } = usePWA()
+  const { isSupported, isSubscribed, isGranted, requestPermission, subscribe, unsubscribe } = usePushNotifications()
 
   // Se não há ações disponíveis, não mostrar nada
-  if (!isInstallable && !updateAvailable && isOnline) {
+  if (!isInstallable && !updateAvailable && isOnline && isGranted) {
     return null
   }
 
@@ -61,6 +65,45 @@ export function PWAStatus() {
           <span className="hidden md:inline">App Instalado</span>
           <span className="md:hidden">App</span>
         </Badge>
+      )}
+
+      {/* Notificações push */}
+      {isSupported && (
+        <>
+          {!isGranted && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={requestPermission}
+              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+            >
+              <Bell className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Ativar Notificações</span>
+              <Bell className="h-3 w-3 md:hidden" />
+            </Button>
+          )}
+
+          {isGranted && !isSubscribed && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={subscribe}
+              className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+            >
+              <Bell className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Inscrever</span>
+              <Bell className="h-3 w-3 md:hidden" />
+            </Button>
+          )}
+
+          {isGranted && isSubscribed && (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <Bell className="h-3 w-3 mr-1" />
+              <span className="hidden md:inline">Notificações Ativas</span>
+              <Bell className="h-3 w-3 md:hidden" />
+            </Badge>
+          )}
+        </>
       )}
     </div>
   )
