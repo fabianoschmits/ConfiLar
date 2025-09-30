@@ -58,10 +58,25 @@ export function useComments(filters: CommentFilters) {
 
       if (error) throw error
 
+      // Verificar likes do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      let userLikes: string[] = []
+      
+      if (user && data && data.length > 0) {
+        const commentIds = data.map(comment => comment.id)
+        const { data: likesData } = await supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('user_id', user.id)
+          .in('comment_id', commentIds)
+        
+        userLikes = likesData?.map(like => like.comment_id) || []
+      }
+
       // Organizar comentários em threads
       const commentsWithLikes = (data || []).map(comment => ({
         ...comment,
-        is_liked: false, // Implementar verificação de like do usuário
+        is_liked: userLikes.includes(comment.id),
         user: comment.user as any // Cast para resolver tipo
       }))
       const organizedComments = organizeComments(commentsWithLikes as any)
@@ -74,6 +89,7 @@ export function useComments(filters: CommentFilters) {
 
   const addCommentMutation = useMutation({
     mutationFn: async (commentData: CommentFormData) => {
+      console.log('🔍 addCommentMutation - Dados recebidos:', commentData)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Usuário não autenticado')
 
@@ -81,20 +97,29 @@ export function useComments(filters: CommentFilters) {
       const mentions = extractMentions(commentData.content)
       const hashtags = extractHashtags(commentData.content)
 
+      const insertData = {
+        post_id: filters.post_id,
+        user_id: user.id,
+        parent_id: commentData.parent_id,
+        content: commentData.content,
+        mentions,
+        hashtags
+      }
+
+      console.log('🔍 addCommentMutation - Dados para inserir:', insertData)
+
       const { data, error } = await supabase
         .from('post_comments')
-        .insert({
-          post_id: filters.post_id,
-          user_id: user.id,
-          parent_id: commentData.parent_id,
-          content: commentData.content,
-          mentions,
-          hashtags
-        })
+        .insert(insertData)
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Erro ao inserir comentário:', error)
+        throw error
+      }
+      
+      console.log('✅ Comentário inserido com sucesso:', data)
       return data
     },
     onSuccess: () => {
@@ -151,6 +176,11 @@ export function useComments(filters: CommentFilters) {
       // Invalidar cache de comentários
       queryClient.invalidateQueries({
         queryKey: ['comments', filters]
+      })
+      
+      // Invalidar cache da timeline
+      queryClient.invalidateQueries({
+        queryKey: ['unified-timeline']
       })
     }
   })
@@ -221,6 +251,11 @@ export function useComments(filters: CommentFilters) {
   })
 
   const addComment = useCallback((content: string, parentId?: string) => {
+    console.log('🔍 useComments - addComment chamado:', {
+      content,
+      parentId,
+      isReply: !!parentId
+    })
     addCommentMutation.mutate({
       content,
       parent_id: parentId
@@ -232,7 +267,9 @@ export function useComments(filters: CommentFilters) {
   }, [likeCommentMutation])
 
   const startReply = useCallback((commentId: string) => {
+    console.log('🔍 startReply chamado com ID:', commentId)
     setReplyTo(commentId)
+    console.log('🔍 replyTo definido como:', commentId)
   }, [])
 
   const cancelReply = useCallback(() => {
