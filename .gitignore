@@ -1,120 +1,217 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# =====================================================
+# CONFILAR - GITIGNORE OTIMIZADO
+# Apenas arquivos importantes serão enviados para o Git
+# =====================================================
 
-# dependencies
-/node_modules
-/.pnp
+# =====================================================
+# DEPENDÊNCIAS E PACOTES
+# =====================================================
+node_modules/
+.pnp
 .pnp.js
 .yarn/install-state.gz
+jspm_packages/
+.npm
+.yarn-integrity
 
-# testing
-/coverage
+# =====================================================
+# BUILD E PRODUÇÃO
+# =====================================================
+.next/
+out/
+build/
+dist/
+.vercel/
+.serverless/
 
-# next.js
-/.next/
-/out/
+# =====================================================
+# TESTES E COVERAGE
+# =====================================================
+coverage/
+.nyc_output
+test-results/
+playwright-report/
+test-results.xml
 
-# production
-/build
-/dist
+# =====================================================
+# AMBIENTE E CONFIGURAÇÕES
+# =====================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.staging
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# =====================================================
+# LOGS E DEBUG
+# =====================================================
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-# local env files
-.env*.local
-.env.production
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-Thumbs.db
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+# =====================================================
+# CACHE E TEMPORÁRIOS
+# =====================================================
+.cache/
+.parcel-cache/
 .eslintcache
-
-# Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
+.fusebox/
+.turbo/
 
-# Optional REPL history
-.node_repl_history
+# =====================================================
+# IDE E EDITORES
+# =====================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.vscode-test/
 
-# Output of 'npm pack'
+# =====================================================
+# SISTEMA OPERACIONAL
+# =====================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =====================================================
+# TYPESCRIPT
+# =====================================================
+*.tsbuildinfo
+next-env.d.ts
+
+# =====================================================
+# RUNTIME E PROCESSOS
+# =====================================================
+pids/
+*.pid
+*.seed
+*.pid.lock
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
+# =====================================================
+# TEMPORÁRIOS E BACKUPS
+# =====================================================
 tmp/
 temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# =====================================================
+# ARQUIVOS ESPECÍFICOS DO PROJETO
+# =====================================================
+# Relatórios de análise (gerados automaticamente)
+scripts/table-analysis-report.json
+scripts/database-dependencies-analysis.json
+scripts/cleanup-report.json
+
+# Arquivos de configuração local
+port.config.js
+mcp-config.json
+.cursorrules
+
+# Arquivos de backup do projeto
+backup-projeto-completo/
+backup-*/
+
+# Arquivos de teste temporários
+test-*.js
+debug-*.js
+check-*.js
+verify-*.js
+
+# =====================================================
+# DOCUMENTAÇÃO TEMPORÁRIA
+# =====================================================
+# Relatórios de limpeza (manter apenas os finais)
+docs/ANALISE_*.md
+docs/RELATORIO_*.md
+docs/DATABASE_*.md
+docs/MCP_*.md
+docs/SUPABASE_*.md
+docs/SISTEMA_*.md
+
+# =====================================================
+# SCRIPTS DE DESENVOLVIMENTO
+# =====================================================
+# Scripts de teste e debug
+scripts/test-*.js
+scripts/debug-*.js
+scripts/check-*.js
+scripts/verify-*.js
+scripts/analyze-*.js
+scripts/cleanup-*.js
+scripts/execute-*.js
+scripts/setup-*.js
+
+# Scripts SQL temporários
+scripts/*-temp.sql
+scripts/*-backup.sql
+scripts/*-old.sql
+
+# =====================================================
+# ARQUIVOS DE CONFIGURAÇÃO DESNECESSÁRIOS
+# =====================================================
+# Templates de ambiente
+env.template
+.env.example
+.env.template
+
+# Arquivos de deploy temporários
+deploy-*.sh
+deploy-*.ps1
+deploy-*.js
+
+# =====================================================
+# ARQUIVOS DE DOCUMENTAÇÃO TEMPORÁRIA
+# =====================================================
+# Documentação de deploy
+DEPLOY_*.md
+FUNCIONALIDADES_*.md
+OTIMIZACOES_*.md
+TIMELINE_*.md
+
+# =====================================================
+# ARQUIVOS DE EXEMPLO E TESTE
+# =====================================================
+src/examples/
+src/lib/backup.ts
+src/lib/supabase-mcp-simulator.ts
+src/lib/supabase-validator.ts
+src/types/database.ts.backup
+src/types/database-clean.ts
+
+# =====================================================
+# ARQUIVOS DE WORKFLOW TEMPORÁRIOS
+# =====================================================
+.github/workflows/temp-*.yml
+.github/workflows/debug-*.yml
+
+# =====================================================
+# REGRAS ESPECÍFICAS DO CONFILAR
+# =====================================================
+# Manter apenas arquivos essenciais
+# Ignorar tudo que não seja código fonte ou configuração necessária
+# Focar apenas no que é importante para o funcionamento
