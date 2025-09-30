@@ -48,7 +48,9 @@ import {
   Trash2,
   MoreVertical,
   Edit,
-  Flag
+  Flag,
+  HandHeart,
+  ShoppingCart
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
 import { ReportButton } from '@/components/ReportButton'
@@ -68,6 +70,7 @@ export default function ClassificadosPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(9)
+  const [activeTab, setActiveTab] = useState<'all' | 'offers' | 'requests'>('all')
   
   // Estados para filtros
   const [filters, setFilters] = useState({
@@ -127,8 +130,12 @@ export default function ClassificadosPage() {
 
   // Aplicar filtros quando mudarem
   useEffect(() => {
-    executeSearch(filters)
-  }, [filters, executeSearch])
+    const updatedFilters = {
+      ...filters,
+      adType: activeTab
+    }
+    executeSearch(updatedFilters)
+  }, [filters, activeTab, executeSearch])
 
   // useEffect para mounted
   useEffect(() => {
@@ -439,7 +446,7 @@ export default function ClassificadosPage() {
                   state: searchFilters.state,
                   city: searchFilters.city,
                   category: searchFilters.service,
-                  adType: 'all' as AdType
+                  adType: activeTab as AdType
                 }
                 setFilters(newFilters)
                 executeSearch(newFilters)
@@ -450,7 +457,7 @@ export default function ClassificadosPage() {
                   state: searchFilters.state,
                   city: searchFilters.city,
                   category: searchFilters.service,
-                  adType: 'all' as AdType
+                  adType: activeTab as AdType
                 }
                 setFilters(newFilters)
                 executeSearch(newFilters)
@@ -467,6 +474,53 @@ export default function ClassificadosPage() {
               placeholder="Buscar anúncios, serviços, categorias..."
               className="w-full"
             />
+          </div>
+
+          {/* Sistema de Abas */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    activeTab === 'all'
+                      ? 'border-gray-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Grid3X3 className="h-4 w-4" />
+                    Todos ({stats.total})
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('offers')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    activeTab === 'offers'
+                      ? 'border-gray-700 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Ofertas ({stats.offers})
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('requests')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    activeTab === 'requests'
+                      ? 'border-gray-500 text-gray-700'
+                      : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <HandHeart className="h-4 w-4" />
+                    Solicitações ({stats.requests})
+                  </div>
+                </button>
+              </nav>
+            </div>
           </div>
 
           {/* Controles de Visualização */}
@@ -552,13 +606,13 @@ export default function ClassificadosPage() {
                           <SelectContent>
                             <SelectItem value="offer">
                               <div className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
+                                <ShoppingCart className="h-4 w-4 text-gray-700" />
                                 <span>Oferta - Estou oferecendo um serviço</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="request">
                               <div className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-orange-600" />
+                                <HandHeart className="h-4 w-4 text-gray-500" />
                                 <span>Solicitação - Preciso de um serviço</span>
                               </div>
                             </SelectItem>
@@ -655,13 +709,13 @@ export default function ClassificadosPage() {
                         <SelectContent>
                           <SelectItem value="offer">
                             <div className="flex items-center gap-2">
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <ShoppingCart className="h-4 w-4 text-gray-700" />
                               <span>Oferta - Estou oferecendo um serviço</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="request">
                             <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-orange-600" />
+                              <HandHeart className="h-4 w-4 text-gray-500" />
                               <span>Solicitação - Preciso de um serviço</span>
                             </div>
                           </SelectItem>
@@ -733,9 +787,9 @@ export default function ClassificadosPage() {
                         <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md self-center sm:self-start">
                           <AvatarImage src={selectedAd.user_avatar_url} />
                           <AvatarFallback className={`font-medium text-sm sm:text-lg ${
-                            selectedAd.user_type === 'professional' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-orange-100 text-orange-700'
+                            selectedAd.ad_type === 'oferecer' 
+                              ? 'bg-gray-200 text-gray-800' 
+                              : 'bg-gray-100 text-gray-600'
                           }`}>
                             {selectedAd.user_name.charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -746,21 +800,21 @@ export default function ClassificadosPage() {
                           </h3>
                           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                             <Badge 
-                              variant={selectedAd.user_type === 'professional' ? 'default' : 'secondary'}
+                              variant="outline"
                               className={`text-xs ${
-                                selectedAd.user_type === 'professional' 
-                                  ? 'bg-green-600 hover:bg-green-700' 
-                                  : 'bg-orange-600 hover:bg-orange-700'
+                                selectedAd.ad_type === 'oferecer' 
+                                  ? 'border-gray-400 text-gray-800 bg-gray-100' 
+                                  : 'border-gray-300 text-gray-600 bg-gray-50'
                               }`}
                             >
-                              {selectedAd.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                              {selectedAd.ad_type === 'oferecer' ? 'Oferta' : 'Solicitação'}
                             </Badge>
                             <Badge 
                               variant="outline" 
                               className={`text-xs ${
-                                selectedAd.user_type === 'professional' 
-                                  ? 'border-green-300 text-green-700 bg-green-50' 
-                                  : 'border-orange-300 text-orange-700 bg-orange-50'
+                                selectedAd.ad_type === 'oferecer' 
+                                  ? 'border-gray-400 text-gray-800 bg-gray-100' 
+                                  : 'border-gray-300 text-gray-600 bg-gray-50'
                               }`}
                             >
                               {getCategoryIcon(selectedAd.category)} {selectedAd.category}
@@ -810,9 +864,9 @@ export default function ClassificadosPage() {
                             handleContactUser(selectedAd.user_id, selectedAd.user_name)
                           }}
                           className={`w-full sm:w-auto order-1 sm:order-2 ${
-                            selectedAd.user_type === 'professional' 
-                              ? 'bg-green-600 hover:bg-green-700' 
-                              : 'bg-orange-600 hover:bg-orange-700'
+                            selectedAd.ad_type === 'oferecer' 
+                              ? 'bg-gray-700 hover:bg-gray-800' 
+                              : 'bg-gray-500 hover:bg-gray-600'
                           } text-white`}
                         >
                           <MessageCircle className="h-4 w-4 mr-2" />
@@ -949,9 +1003,9 @@ export default function ClassificadosPage() {
                 <Card 
                   key={ad.id} 
                   className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
-                    ad.user_type === 'professional' 
-                      ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-200' 
-                      : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200'
+                    ad.ad_type === 'oferecer' 
+                      ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' 
+                      : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
                   }`}
                 >
                   <CardContent className="p-4 sm:p-6">
@@ -960,9 +1014,9 @@ export default function ClassificadosPage() {
                       <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
                         <AvatarImage src={ad.user_avatar_url} />
                         <AvatarFallback className={`font-medium ${
-                          ad.user_type === 'professional' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-orange-100 text-orange-700'
+                          ad.ad_type === 'oferecer' 
+                            ? 'bg-gray-200 text-gray-800' 
+                            : 'bg-gray-100 text-gray-600'
                         }`}>
                           {ad.user_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -973,14 +1027,14 @@ export default function ClassificadosPage() {
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge 
-                            variant={ad.user_type === 'professional' ? 'default' : 'secondary'}
+                            variant="outline"
                             className={`text-xs ${
-                              ad.user_type === 'professional' 
-                                ? 'bg-green-600 hover:bg-green-700' 
-                                : 'bg-orange-600 hover:bg-orange-700'
+                              ad.ad_type === 'oferecer' 
+                                ? 'border-gray-400 text-gray-800 bg-gray-100' 
+                                : 'border-gray-300 text-gray-600 bg-gray-50'
                             }`}
                           >
-                            {ad.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                            {ad.ad_type === 'oferecer' ? 'Oferta' : 'Solicitação'}
                           </Badge>
                           <div className="flex items-center text-xs text-gray-500">
                             <MapPin className="h-3 w-3 mr-1" />
@@ -1023,8 +1077,7 @@ export default function ClassificadosPage() {
                                 type="classified" 
                                 targetId={ad.id}
                                 targetName={ad.title}
-                                variant="ghost"
-                                size="sm"
+                                asDropdownItem={true}
                                 className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
                               />
                             </DropdownMenuItem>
@@ -1051,9 +1104,9 @@ export default function ClassificadosPage() {
                       <Badge 
                         variant="outline" 
                         className={`text-xs ${
-                          ad.user_type === 'professional' 
-                            ? 'border-green-300 text-green-700 bg-green-50' 
-                            : 'border-orange-300 text-orange-700 bg-orange-50'
+                          ad.ad_type === 'oferecer' 
+                            ? 'border-gray-400 text-gray-800 bg-gray-100' 
+                            : 'border-gray-300 text-gray-600 bg-gray-50'
                         }`}
                       >
                         {getCategoryIcon(ad.category)} {ad.category}
@@ -1074,9 +1127,9 @@ export default function ClassificadosPage() {
                           size="sm"
                           onClick={() => handleContactUser(ad.user_id, ad.user_name)}
                           className={`${
-                            ad.user_type === 'professional' 
-                              ? 'bg-green-600 hover:bg-green-700' 
-                              : 'bg-orange-600 hover:bg-orange-700'
+                            ad.ad_type === 'oferecer' 
+                              ? 'bg-gray-700 hover:bg-gray-800' 
+                              : 'bg-gray-500 hover:bg-gray-600'
                           } text-white shadow-md hover:shadow-lg transition-all duration-200`}
                         >
                           <MessageCircle className="h-4 w-4 mr-1" />

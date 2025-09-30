@@ -1,20 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Star, Loader2 } from 'lucide-react'
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { Star, Loader2, CheckCircle, Clock } from 'lucide-react'
 import { useEvaluationRequests } from '@/hooks/useEvaluationRequests'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { EvaluationModal } from './EvaluationModal'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 
 interface RequestEvaluationButtonProps {
   targetUserId: string
@@ -27,9 +20,18 @@ export function RequestEvaluationButton({
   targetUserName, 
   className 
 }: RequestEvaluationButtonProps) {
+  const { user } = useAuthContext()
   const [isLoading, setIsLoading] = useState(false)
   const [showDialog, setShowDialog] = useState(false)
-  const { createRequest } = useEvaluationRequests()
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
+  const [currentRequest, setCurrentRequest] = useState<any>(null)
+  const { createRequest, requests, acceptRequest, loadRequests } = useEvaluationRequests()
+
+  // Verificar se existe uma solicitação entre os usuários
+  const existingRequest = requests.find(req => 
+    (req.requester_id === user?.id && req.target_id === targetUserId) ||
+    (req.requester_id === targetUserId && req.target_id === user?.id)
+  )
 
   const handleRequestEvaluation = async () => {
     try {
@@ -45,48 +47,156 @@ export function RequestEvaluationButton({
     }
   }
 
+  const handleAcceptRequest = async () => {
+    if (!existingRequest) return
+    
+    try {
+      setIsLoading(true)
+      await acceptRequest(existingRequest.id)
+      toast.success(`Solicitação aceita! Agora você pode avaliar ${targetUserName}`)
+      setCurrentRequest(existingRequest)
+      setShowEvaluationModal(true)
+    } catch (error) {
+      console.error('Erro ao aceitar solicitação:', error)
+      toast.error(error instanceof Error ? error.message : 'Erro ao aceitar solicitação')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleEvaluationComplete = () => {
+    loadRequests() // Recarregar solicitações
+    setCurrentRequest(null)
+  }
+
+  // Determinar o estado do botão
+  const getButtonState = () => {
+    if (!existingRequest) {
+      return {
+        text: 'Avaliar',
+        icon: <Star className="h-3 w-3" />,
+        onClick: () => setShowDialog(true),
+        variant: 'ghost' as const,
+        disabled: isLoading
+      }
+    }
+
+    if (existingRequest.status === 'pending') {
+      if (existingRequest.target_id === user?.id) {
+        // Usuário recebeu uma solicitação pendente
+        return {
+          text: 'Aceitar',
+          icon: <CheckCircle className="h-3 w-3" />,
+          onClick: handleAcceptRequest,
+          variant: 'default' as const,
+          disabled: isLoading
+        }
+      } else {
+        // Usuário enviou uma solicitação pendente
+        return {
+          text: 'Pendente',
+          icon: <Clock className="h-3 w-3" />,
+          onClick: () => {},
+          variant: 'ghost' as const,
+          disabled: true
+        }
+      }
+    }
+
+    if (existingRequest.status === 'accepted') {
+      // Ambos os usuários podem avaliar quando aceito
+      return {
+        text: 'Avaliar',
+        icon: <Star className="h-3 w-3" />,
+        onClick: () => {
+          setCurrentRequest(existingRequest)
+          setShowEvaluationModal(true)
+        },
+        variant: 'default' as const,
+        disabled: isLoading
+      }
+    }
+
+    if (existingRequest.status === 'completed') {
+      return {
+        text: 'Concluída',
+        icon: <CheckCircle className="h-3 w-3" />,
+        onClick: () => {},
+        variant: 'ghost' as const,
+        disabled: true
+      }
+    }
+
+    return {
+      text: 'Avaliar',
+      icon: <Star className="h-3 w-3" />,
+      onClick: () => setShowDialog(true),
+      variant: 'ghost' as const,
+      disabled: isLoading
+    }
+  }
+
+  const buttonState = getButtonState()
+
   return (
     <>
       <Button
-        variant="ghost"
+        variant={buttonState.variant}
         size="sm"
-        onClick={() => setShowDialog(true)}
-        className={`flex items-center gap-1 px-1 py-0.5 h-5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 opacity-70 hover:opacity-100 transition-opacity ${className}`}
-        disabled={isLoading}
+        onClick={buttonState.onClick}
+        className={`flex items-center gap-1 px-1 py-0.5 h-5 text-xs transition-opacity ${className} ${
+          buttonState.variant === 'ghost' 
+            ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 opacity-70 hover:opacity-100' 
+            : 'text-white'
+        }`}
+        disabled={buttonState.disabled}
       >
-        <Star className="h-3 w-3" />
-        <span className="text-xs">Avaliar</span>
+        {buttonState.icon}
+        <span className="text-xs">{buttonState.text}</span>
       </Button>
 
+      {/* Dialog para solicitar avaliação */}
       <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">Solicitar Avaliação</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Solicitar avaliação mútua com <strong>{targetUserName}</strong>?
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-yellow-500" />
+              Solicitar Avaliação
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Você deseja solicitar uma avaliação de {targetUserName}?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex gap-2">
-            <AlertDialogCancel disabled={isLoading} className="text-xs px-3 py-1 h-8">
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>
               Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRequestEvaluation}
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1 h-8"
-            >
+            </Button>
+            <Button onClick={handleRequestEvaluation} disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Enviando...
                 </>
               ) : (
-                'Enviar'
+                'Solicitar'
               )}
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de avaliação */}
+      {showEvaluationModal && currentRequest && (
+        <EvaluationModal
+          isOpen={showEvaluationModal}
+          onClose={() => setShowEvaluationModal(false)}
+          targetUserId={targetUserId}
+          targetUserName={targetUserName}
+          requestId={currentRequest.id}
+          onEvaluationComplete={handleEvaluationComplete}
+          isMutual={currentRequest.status === 'accepted'}
+        />
+      )}
     </>
   )
 }

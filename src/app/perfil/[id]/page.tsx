@@ -13,6 +13,12 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { 
@@ -88,8 +94,63 @@ export default function PublicProfilePage() {
 
     // Hooks customizados - sempre chamados com valores consistentes
     const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
-    const { reviews, loading: reviewsLoading, fetchUserReviews, fetchUserReviewStats } = useSupabaseReviews()
+    const { reviews, loading: reviewsLoading, fetchUserReviews, fetchUserReviewStats, respondToReview } = useSupabaseReviews()
     const { getViewStats, useAutoRecordView } = useProfileViews()
+
+    // Função para deletar avaliação
+    const handleDeleteReview = async (reviewId: string) => {
+        try {
+            // Primeiro, obter informações da avaliação para resetar a solicitação
+            const { data: reviewData, error: reviewError } = await supabase
+                .from('reviews')
+                .select('reviewer_id, reviewed_id')
+                .eq('id', reviewId)
+                .single()
+
+            if (reviewError) {
+                console.error('Erro ao obter dados da avaliação:', reviewError)
+                toast.error('Erro ao obter dados da avaliação')
+                return
+            }
+
+            // Deletar a avaliação
+            const { error: deleteError } = await supabase
+                .from('reviews')
+                .delete()
+                .eq('id', reviewId)
+
+            if (deleteError) {
+                console.error('Erro ao deletar avaliação:', deleteError)
+                toast.error('Erro ao deletar avaliação')
+                return
+            }
+
+            // Resetar status da solicitação de avaliação para 'accepted' 
+            // para permitir nova avaliação
+            const { error: requestError } = await supabase
+                .from('evaluation_requests')
+                .update({ 
+                    status: 'accepted',
+                    updated_at: new Date().toISOString()
+                })
+                .or(`and(requester_id.eq.${reviewData.reviewer_id},target_id.eq.${reviewData.reviewed_id}),and(requester_id.eq.${reviewData.reviewed_id},target_id.eq.${reviewData.reviewer_id})`)
+
+            if (requestError) {
+                console.error('Erro ao resetar solicitação:', requestError)
+                // Não falhar se apenas a atualização do status falhar
+            }
+
+            toast.success('Avaliação removida com sucesso! Agora vocês podem se avaliar novamente.')
+            
+            // Recarregar avaliações
+            if (userId) {
+                await fetchUserReviews(userId)
+            }
+        } catch (error) {
+            console.error('Erro ao deletar avaliação:', error)
+            toast.error('Erro ao deletar avaliação')
+        }
+    }
 
     // Todos os useEffect no topo, antes de qualquer retorno condicional
     useEffect(() => {
@@ -295,6 +356,30 @@ export default function PublicProfilePage() {
                     {/* Header do Perfil */}
                     <Card className="mb-8">
                         <CardContent className="p-4 sm:p-6 lg:p-8">
+                            {/* Header com 3 pontinhos */}
+                            <div className="flex justify-end mb-4">
+                                {!isOwnProfile && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem asChild>
+                                                <ReportButton 
+                                                    type="user" 
+                                                    targetId={profile.id}
+                                                    targetName={profile.full_name}
+                                                    asDropdownItem={true}
+                                                    className="w-full justify-start p-0 h-auto font-normal"
+                                                />
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
+                            </div>
+                            
                             <div className="flex flex-col items-center text-center space-y-6">
                                 {/* Avatar Centralizado */}
                                 <UserAvatar
@@ -302,7 +387,7 @@ export default function PublicProfilePage() {
                                     alt={profile.full_name}
                                     fallback={profile.full_name.charAt(0)}
                                     size="lg"
-                                    className="w-24 h-24"
+                                    className="w-32 h-32"
                                 />
                                 
                                 {/* Nome e Badges Centralizados */}
@@ -377,27 +462,40 @@ export default function PublicProfilePage() {
                                         <Share2 className="w-4 h-4 mr-2" />
                                         Compartilhar
                                     </Button>
-                                    {!isOwnProfile && (
-                                        <ReportButton 
-                                            type="user" 
-                                            targetId={profile.id}
-                                            targetName={profile.full_name}
-                                            variant="outline"
-                                            size="sm"
-                                        />
-                                    )}
+                                </div>
+
+                                {/* Estatísticas */}
+                                <div className="w-full max-w-2xl mx-auto mt-6 pt-6 border-t border-gray-200">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <div className="text-center">
+                                            <div className="text-xl sm:text-2xl font-bold text-blue-600">{profile.rating.toFixed(1)}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Avaliação</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-xl sm:text-2xl font-bold text-green-600">{profile.total_reviews}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Avaliações</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-xl sm:text-2xl font-bold text-purple-600">{viewStats?.total_views || 0}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Visualizações</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-xl sm:text-2xl font-bold text-orange-600">{viewStats?.views_today || 0}</div>
+                                            <div className="text-xs sm:text-sm text-gray-600">Hoje</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Conteúdo Principal */}
-                    <Tabs defaultValue="about" className="space-y-6">
+                    <Tabs defaultValue="services" className="space-y-6">
                         <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="about">Sobre</TabsTrigger>
                             <TabsTrigger value="services">Serviços</TabsTrigger>
-                            <TabsTrigger value="portfolio">Portfólio</TabsTrigger>
                             <TabsTrigger value="reviews">Avaliações</TabsTrigger>
+                            <TabsTrigger value="portfolio">Portfólio</TabsTrigger>
+                            <TabsTrigger value="about">Sobre</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="about" className="space-y-6">
@@ -431,36 +529,6 @@ export default function PublicProfilePage() {
                                                     {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
                                                 </p>
                                             </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Estatísticas */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center space-x-2">
-                                        <Target className="w-5 h-5" />
-                                        <span>Estatísticas</span>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                        <div className="text-center">
-                                            <div className="text-xl sm:text-2xl font-bold text-blue-600">{profile.rating.toFixed(1)}</div>
-                                            <div className="text-xs sm:text-sm text-gray-600">Avaliação</div>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="text-xl sm:text-2xl font-bold text-green-600">{profile.total_reviews}</div>
-                                            <div className="text-xs sm:text-sm text-gray-600">Avaliações</div>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="text-xl sm:text-2xl font-bold text-purple-600">{viewStats?.total_views || 0}</div>
-                                            <div className="text-xs sm:text-sm text-gray-600">Visualizações</div>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="text-xl sm:text-2xl font-bold text-orange-600">{viewStats?.views_today || 0}</div>
-                                            <div className="text-xs sm:text-sm text-gray-600">Hoje</div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -563,7 +631,14 @@ export default function PublicProfilePage() {
                                     ) : reviews && reviews.length > 0 ? (
                                         <div className="space-y-4">
                                             {reviews.map((review) => (
-                                                <ReviewCard key={review.id} review={review} />
+                                                <ReviewCard 
+                                                    key={review.id} 
+                                                    review={review} 
+                                                    currentUserId={user?.id}
+                                                    profileOwnerId={userId}
+                                                    onDelete={handleDeleteReview}
+                                                    onRespond={respondToReview}
+                                                />
                                             ))}
                                         </div>
                                     ) : (

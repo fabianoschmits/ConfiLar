@@ -4,10 +4,11 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { 
   MoreHorizontal, 
-  Trash2, 
-  Edit,
   Copy,
-  AlertTriangle
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Flag
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -26,7 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { ReportButton } from '@/components/ReportButton'
 
 interface MessageMenuProps {
   messageId: string
@@ -34,6 +34,7 @@ interface MessageMenuProps {
   onDelete: (messageId: string) => void
   onEdit?: (messageId: string, newContent: string) => void
   disabled?: boolean
+  isOwnMessage: boolean
 }
 
 export function MessageMenu({ 
@@ -41,10 +42,12 @@ export function MessageMenu({
   messageContent,
   onDelete, 
   onEdit,
-  disabled = false 
+  disabled = false,
+  isOwnMessage
 }: MessageMenuProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
 
   const handleDelete = async () => {
     try {
@@ -89,7 +92,8 @@ export function MessageMenu({
             Copiar
           </DropdownMenuItem>
           
-          {onEdit && (
+          {/* Opções para mensagens próprias - Editar */}
+          {isOwnMessage && onEdit && (
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
@@ -104,27 +108,20 @@ export function MessageMenu({
           
           <DropdownMenuSeparator className="bg-gray-200 my-1" />
           
-          <DropdownMenuItem className="p-0">
-            <ReportButton 
-              type="message" 
-              targetId={messageId}
-              targetName="Mensagem"
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
-            />
-          </DropdownMenuItem>
           
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowDeleteDialog(true)
-            }}
-            className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 text-sm rounded-md px-2 py-1.5"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Deletar
-          </DropdownMenuItem>
+          {/* Opção de deletar para mensagens próprias */}
+          {isOwnMessage && (
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowDeleteDialog(true)
+              }}
+              className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-red-600 text-sm rounded-md px-2 py-1.5"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Deletar
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

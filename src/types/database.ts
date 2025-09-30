@@ -15,6 +15,10 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export interface Database {
   public: {
     Tables: {
+      // =====================================================
+      // TABELAS PRINCIPAIS (Sempre Usadas)
+      // =====================================================
+      
       profiles: {
         Row: {
           id: string
@@ -104,849 +108,11 @@ export interface Database {
           professional_portfolio_url?: string | null
         }
       }
-      service_categories: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          icon: string | null
-          parent_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          icon?: string | null
-          parent_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          icon?: string | null
-          parent_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      professional_services: {
-        Row: {
-          id: string
-          professional_id: string
-          category_id: string
-          title: string
-          description: string | null
-          price_min: number | null
-          price_max: number | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          availability_schedule?: AvailabilitySchedule | null
-          service_area?: string[] | null
-          experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-          certifications?: string[] | null
-          insurance_coverage?: boolean
-          emergency_service?: boolean
-        }
-        Insert: {
-          id?: string
-          professional_id: string
-          category_id: string
-          title: string
-          description?: string | null
-          price_min?: number | null
-          price_max?: number | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          availability_schedule?: AvailabilitySchedule | null
-          service_area?: string[] | null
-          experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-          certifications?: string[] | null
-          insurance_coverage?: boolean
-          emergency_service?: boolean
-        }
-        Update: {
-          id?: string
-          professional_id?: string
-          category_id?: string
-          title?: string
-          description?: string | null
-          price_min?: number | null
-          price_max?: number | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          availability_schedule?: AvailabilitySchedule | null
-          service_area?: string[] | null
-          experience_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert'
-          certifications?: string[] | null
-          insurance_coverage?: boolean
-          emergency_service?: boolean
-        }
-      }
-      service_listings: {
-        Row: {
-          id: string
-          professional_id: string
-          service_category_id: string
-          title: string
-          description: string
-          service_type: 'hourly' | 'fixed' | 'negotiable'
-          price_range: string | null
-          location_state: string
-          location_city: string
-          neighborhood: string | null
-          service_areas: string[] | null
-          availability_schedule: AvailabilitySchedule | null
-          experience_years: number | null
-          certifications: string[] | null
-          portfolio_images: string[] | null
-          is_featured: boolean
-          is_active: boolean
-          views_count: number
-          contact_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          professional_id: string
-          service_category_id: string
-          title: string
-          description: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          price_range?: string | null
-          location_state: string
-          location_city: string
-          neighborhood?: string | null
-          service_areas?: string[] | null
-          availability_schedule?: AvailabilitySchedule | null
-          experience_years?: number | null
-          certifications?: string[] | null
-          portfolio_images?: string[] | null
-          is_featured?: boolean
-          is_active?: boolean
-          views_count?: number
-          contact_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          professional_id?: string
-          service_category_id?: string
-          title?: string
-          description?: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          price_range?: string | null
-          location_state?: string
-          location_city?: string
-          neighborhood?: string | null
-          service_areas?: string[] | null
-          availability_schedule?: AvailabilitySchedule | null
-          experience_years?: number | null
-          certifications?: string[] | null
-          portfolio_images?: string[] | null
-          is_featured?: boolean
-          is_active?: boolean
-          views_count?: number
-          contact_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      service_requests: {
-        Row: {
-          id: string
-          client_id: string
-          service_category_id: string
-          title: string
-          description: string
-          service_type: 'hourly' | 'fixed' | 'negotiable'
-          budget_range: string | null
-          urgency: 'low' | 'normal' | 'high' | 'urgent'
-          location_state: string
-          location_city: string
-          neighborhood: string | null
-          preferred_date: string | null
-          preferred_time: string | null
-          contact_preference: 'chat' | 'phone' | 'email'
-          is_active: boolean
-          responses_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          service_category_id: string
-          title: string
-          description: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          budget_range?: string | null
-          urgency?: 'low' | 'normal' | 'high' | 'urgent'
-          location_state: string
-          location_city: string
-          neighborhood?: string | null
-          preferred_date?: string | null
-          preferred_time?: string | null
-          contact_preference?: 'chat' | 'phone' | 'email'
-          is_active?: boolean
-          responses_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          service_category_id?: string
-          title?: string
-          description?: string
-          service_type?: 'hourly' | 'fixed' | 'negotiable'
-          budget_range?: string | null
-          urgency?: 'low' | 'normal' | 'high' | 'urgent'
-          location_state?: string
-          location_city?: string
-          neighborhood?: string | null
-          preferred_date?: string | null
-          preferred_time?: string | null
-          contact_preference?: 'chat' | 'phone' | 'email'
-          is_active?: boolean
-          responses_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      service_proposals: {
-        Row: {
-          id: string
-          request_id: string
-          professional_id: string
-          proposal_text: string
-          proposed_price: string | null
-          estimated_duration: string | null
-          availability: string | null
-          is_accepted: boolean
-          is_rejected: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          request_id: string
-          professional_id: string
-          proposal_text: string
-          proposed_price?: string | null
-          estimated_duration?: string | null
-          availability?: string | null
-          is_accepted?: boolean
-          is_rejected?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          request_id?: string
-          professional_id?: string
-          proposal_text?: string
-          proposed_price?: string | null
-          estimated_duration?: string | null
-          availability?: string | null
-          is_accepted?: boolean
-          is_rejected?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      service_reviews: {
-        Row: {
-          id: string
-          client_id: string
-          professional_id: string
-          service_listing_id: string | null
-          rating_overall: number
-          rating_quality: number | null
-          rating_punctuality: number | null
-          rating_communication: number | null
-          rating_value: number | null
-          review_text: string | null
-          is_verified: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          professional_id: string
-          service_listing_id?: string | null
-          rating_overall: number
-          rating_quality?: number | null
-          rating_punctuality?: number | null
-          rating_communication?: number | null
-          rating_value?: number | null
-          review_text?: string | null
-          is_verified?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          professional_id?: string
-          service_listing_id?: string | null
-          rating_overall?: number
-          rating_quality?: number | null
-          rating_punctuality?: number | null
-          rating_communication?: number | null
-          rating_value?: number | null
-          review_text?: string | null
-          is_verified?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      service_favorites: {
-        Row: {
-          id: string
-          user_id: string
-          service_listing_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          service_listing_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          service_listing_id?: string
-          created_at?: string
-        }
-      }
-      service_history: {
-        Row: {
-          id: string
-          client_id: string
-          professional_id: string
-          service_listing_id: string | null
-          service_request_id: string | null
-          service_date: string
-          service_duration: string | null
-          service_description: string | null
-          final_price: string | null
-          status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
-          notes: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          professional_id: string
-          service_listing_id?: string | null
-          service_request_id?: string | null
-          service_date: string
-          service_duration?: string | null
-          service_description?: string | null
-          final_price?: string | null
-          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          professional_id?: string
-          service_listing_id?: string | null
-          service_request_id?: string | null
-          service_date?: string
-          service_duration?: string | null
-          service_description?: string | null
-          final_price?: string | null
-          status?: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      service_notifications: {
-        Row: {
-          id: string
-          user_id: string
-          notification_type: string
-          title: string
-          message: string
-          related_id: string | null
-          is_read: boolean
-          action_url: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          notification_type: string
-          title: string
-          message: string
-          related_id?: string | null
-          is_read?: boolean
-          action_url?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          notification_type?: string
-          title?: string
-          message?: string
-          related_id?: string | null
-          is_read?: boolean
-          action_url?: string | null
-          created_at?: string
-        }
-      }
-      appointments: {
-        Row: {
-          id: string
-          client_id: string
-          professional_id: string
-          service_id: string | null
-          title: string
-          description: string | null
-          appointment_date: string
-          appointment_time: string
-          duration_minutes: number
-          status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show'
-          address: string | null
-          price: number | null
-          notes: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          client_id: string
-          professional_id: string
-          service_id?: string | null
-          title: string
-          description?: string | null
-          appointment_date: string
-          appointment_time: string
-          duration_minutes?: number
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show'
-          address?: string | null
-          price?: number | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          client_id?: string
-          professional_id?: string
-          service_id?: string | null
-          title?: string
-          description?: string | null
-          appointment_date?: string
-          appointment_time?: string
-          duration_minutes?: number
-          status?: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show'
-          address?: string | null
-          price?: number | null
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      favorites: {
-        Row: {
-          id: string
-          user_id: string
-          professional_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          professional_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          professional_id?: string
-          created_at?: string
-        }
-      }
-      portfolio_projects: {
-        Row: {
-          id: string
-          professional_id: string
-          title: string
-          description: string | null
-          category: string | null
-          location: string | null
-          budget_range: string | null
-          images: string[] | null
-          is_featured: boolean
-          rating: number
-          views_count: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          professional_id: string
-          title: string
-          description?: string | null
-          category?: string | null
-          location?: string | null
-          budget_range?: string | null
-          images?: string[] | null
-          is_featured?: boolean
-          rating?: number
-          views_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          professional_id?: string
-          title?: string
-          description?: string | null
-          category?: string | null
-          location?: string | null
-          budget_range?: string | null
-          images?: string[] | null
-          is_featured?: boolean
-          rating?: number
-          views_count?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      user_files: {
-        Row: {
-          id: string
-          user_id: string
-          file_name: string
-          file_url: string
-          file_type: string
-          file_size: number | null
-          category: string
-          is_public: boolean
-          metadata: Json | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          file_name: string
-          file_url: string
-          file_type: string
-          file_size?: number | null
-          category: string
-          is_public?: boolean
-          metadata?: Json | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          file_name?: string
-          file_url?: string
-          file_type?: string
-          file_size?: number | null
-          category?: string
-          is_public?: boolean
-          metadata?: Json | null
-          created_at?: string
-        }
-      }
-      user_activity_log: {
-        Row: {
-          id: string
-          user_id: string
-          activity_type: string
-          description: string | null
-          metadata: Json | null
-          ip_address: string | null
-          user_agent: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          activity_type: string
-          description?: string | null
-          metadata?: Json | null
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          activity_type?: string
-          description?: string | null
-          metadata?: Json | null
-          ip_address?: string | null
-          user_agent?: string | null
-          created_at?: string
-        }
-      }
-      user_settings: {
-        Row: {
-          user_id: string
-          email_notifications: boolean
-          push_notifications: boolean
-          sms_notifications: boolean
-          privacy_level: 'public' | 'standard' | 'private'
-          language: string
-          timezone: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          email_notifications?: boolean
-          push_notifications?: boolean
-          sms_notifications?: boolean
-          privacy_level?: 'public' | 'standard' | 'private'
-          language?: string
-          timezone?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          email_notifications?: boolean
-          push_notifications?: boolean
-          sms_notifications?: boolean
-          privacy_level?: 'public' | 'standard' | 'private'
-          language?: string
-          timezone?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      user_statistics: {
-        Row: {
-          user_id: string
-          total_appointments: number
-          completed_appointments: number
-          cancelled_appointments: number
-          total_earnings: number
-          total_spent: number
-          average_rating: number
-          last_activity: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          user_id: string
-          total_appointments?: number
-          completed_appointments?: number
-          cancelled_appointments?: number
-          total_earnings?: number
-          total_spent?: number
-          average_rating?: number
-          last_activity?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          user_id?: string
-          total_appointments?: number
-          completed_appointments?: number
-          cancelled_appointments?: number
-          total_earnings?: number
-          total_spent?: number
-          average_rating?: number
-          last_activity?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      support_tickets: {
-        Row: {
-          id: string
-          user_id: string
-          subject: string
-          description: string
-          category: string
-          priority: 'low' | 'normal' | 'high' | 'urgent'
-          status: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed'
-          assigned_to: string | null
-          resolution: string | null
-          created_at: string
-          updated_at: string
-          resolved_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          subject: string
-          description: string
-          category: string
-          priority?: 'low' | 'normal' | 'high' | 'urgent'
-          status?: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed'
-          assigned_to?: string | null
-          resolution?: string | null
-          created_at?: string
-          updated_at?: string
-          resolved_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          subject?: string
-          description?: string
-          category?: string
-          priority?: 'low' | 'normal' | 'high' | 'urgent'
-          status?: 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed'
-          assigned_to?: string | null
-          resolution?: string | null
-          created_at?: string
-          updated_at?: string
-          resolved_at?: string | null
-        }
-      }
-      support_messages: {
-        Row: {
-          id: string
-          ticket_id: string
-          sender_id: string
-          message: string
-          is_internal: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          ticket_id: string
-          sender_id: string
-          message: string
-          is_internal?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          ticket_id?: string
-          sender_id?: string
-          message?: string
-          is_internal?: boolean
-          created_at?: string
-        }
-      }
-      feed_posts: {
-        Row: {
-          id: string
-          professional_id: string
-          title: string
-          description: string | null
-          images: string[] | null
-          service_category_id: string | null
-          location_state: string | null
-          location_city: string | null
-          likes_count: number
-          comments_count: number
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          professional_id: string
-          title: string
-          description?: string | null
-          images?: string[] | null
-          service_category_id?: string | null
-          location_state?: string | null
-          location_city?: string | null
-          likes_count?: number
-          comments_count?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          professional_id?: string
-          title?: string
-          description?: string | null
-          images?: string[] | null
-          service_category_id?: string | null
-          location_state?: string | null
-          location_city?: string | null
-          likes_count?: number
-          comments_count?: number
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      post_likes: {
-        Row: {
-          id: string
-          post_id: string
-          user_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          post_id: string
-          user_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          post_id?: string
-          user_id?: string
-          created_at?: string
-        }
-      }
-      post_comments: {
-        Row: {
-          id: string
-          post_id: string
-          user_id: string
-          content: string
-          parent_comment_id: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          post_id: string
-          user_id: string
-          content: string
-          parent_comment_id?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          post_id?: string
-          user_id?: string
-          content?: string
-          parent_comment_id?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
+
+      // =====================================================
+      // SISTEMA DE CHAT
+      // =====================================================
+      
       conversations: {
         Row: {
           id: string
@@ -970,6 +136,7 @@ export interface Database {
           created_at?: string
         }
       }
+
       messages: {
         Row: {
           id: string
@@ -996,6 +163,11 @@ export interface Database {
           created_at?: string
         }
       }
+
+      // =====================================================
+      // SISTEMA DE AVALIAÇÕES
+      // =====================================================
+      
       reviews: {
         Row: {
           id: string
@@ -1070,40 +242,166 @@ export interface Database {
           negative_points?: string[] | null
         }
       }
-      verification_documents: {
+
+      // =====================================================
+      // SISTEMA DE ANÚNCIOS CLASSIFICADOS
+      // =====================================================
+      
+      classified_ads: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          category: string
+          location_state: string
+          location_city: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          views_count: number
+          likes_count: number
+          contact_agreements_count: number
+          user_name: string
+          user_type: string
+          views: number
+          ad_type: string
+          has_scheduled_service: boolean
+          scheduled_date: string | null
+          scheduled_time: string | null
+          service_duration_minutes: number | null
+          service_price: number | null
+          available_dates: string[] | null
+          available_times: string[] | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description: string
+          category: string
+          location_state: string
+          location_city: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          views_count?: number
+          likes_count?: number
+          contact_agreements_count?: number
+          user_name: string
+          user_type: string
+          views?: number
+          ad_type: string
+          has_scheduled_service?: boolean
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          service_duration_minutes?: number | null
+          service_price?: number | null
+          available_dates?: string[] | null
+          available_times?: string[] | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          category?: string
+          location_state?: string
+          location_city?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          views_count?: number
+          likes_count?: number
+          contact_agreements_count?: number
+          user_name?: string
+          user_type?: string
+          views?: number
+          ad_type?: string
+          has_scheduled_service?: boolean
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          service_duration_minutes?: number | null
+          service_price?: number | null
+          available_dates?: string[] | null
+          available_times?: string[] | null
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE FEED SOCIAL
+      // =====================================================
+      
+      feed_posts: {
         Row: {
           id: string
           professional_id: string
-          document_type: string
-          document_url: string
-          status: 'pending' | 'approved' | 'rejected'
-          admin_notes: string | null
-          submitted_at: string
-          reviewed_at: string | null
-          reviewed_by: string | null
+          title: string
+          description: string | null
+          images: string[] | null
+          service_category_id: string | null
+          location_state: string | null
+          location_city: string | null
+          likes_count: number
+          comments_count: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          user_id: string
+          content: string
+          is_public: boolean
+          is_featured: boolean
+          tags: string[] | null
+          metadata: Json | null
         }
         Insert: {
           id?: string
           professional_id: string
-          document_type: string
-          document_url: string
-          status?: 'pending' | 'approved' | 'rejected'
-          admin_notes?: string | null
-          submitted_at?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          title: string
+          description?: string | null
+          images?: string[] | null
+          service_category_id?: string | null
+          location_state?: string | null
+          location_city?: string | null
+          likes_count?: number
+          comments_count?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          user_id: string
+          content: string
+          is_public?: boolean
+          is_featured?: boolean
+          tags?: string[] | null
+          metadata?: Json | null
         }
         Update: {
           id?: string
           professional_id?: string
-          document_type?: string
-          document_url?: string
-          status?: 'pending' | 'approved' | 'rejected'
-          admin_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          title?: string
+          description?: string | null
+          images?: string[] | null
+          service_category_id?: string | null
+          location_state?: string | null
+          location_city?: string | null
+          likes_count?: number
+          comments_count?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+          content?: string
+          is_public?: boolean
+          is_featured?: boolean
+          tags?: string[] | null
+          metadata?: Json | null
         }
       }
+
+      // =====================================================
+      // SISTEMA DE NOTIFICAÇÕES
+      // =====================================================
+      
       notifications: {
         Row: {
           id: string
@@ -1139,35 +437,283 @@ export interface Database {
           priority?: 'low' | 'normal' | 'high' | 'urgent'
         }
       }
-      search_history: {
+
+      // =====================================================
+      // SISTEMA DE FAVORITOS
+      // =====================================================
+      
+      favorites: {
         Row: {
           id: string
           user_id: string
-          search_query: string
-          location_state: string | null
-          location_city: string | null
-          category_id: string | null
-          filters: Json | null
+          professional_id: string
           created_at: string
         }
         Insert: {
           id?: string
           user_id: string
-          search_query: string
-          location_state?: string | null
-          location_city?: string | null
-          category_id?: string | null
-          filters?: Json | null
+          professional_id: string
           created_at?: string
         }
         Update: {
           id?: string
           user_id?: string
-          search_query?: string
-          location_state?: string | null
-          location_city?: string | null
-          category_id?: string | null
-          filters?: Json | null
+          professional_id?: string
+          created_at?: string
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE SOLICITAÇÕES DE AVALIAÇÃO
+      // =====================================================
+      
+      evaluation_requests: {
+        Row: {
+          id: string
+          requester_id: string
+          target_id: string
+          status: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          requester_id: string
+          target_id: string
+          status?: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          requester_id?: string
+          target_id?: string
+          status?: 'pending' | 'accepted' | 'rejected' | 'completed'
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE PORTFÓLIO
+      // =====================================================
+      
+      portfolio_projects: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          category: string | null
+          location: string | null
+          budget_range: string | null
+          images: string[] | null
+          is_featured: boolean
+          rating: number
+          views_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          category?: string | null
+          location?: string | null
+          budget_range?: string | null
+          images?: string[] | null
+          is_featured?: boolean
+          rating?: number
+          views_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          category?: string | null
+          location?: string | null
+          budget_range?: string | null
+          images?: string[] | null
+          is_featured?: boolean
+          rating?: number
+          views_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE VISUALIZAÇÕES DE PERFIL
+      // =====================================================
+      
+      profile_views: {
+        Row: {
+          id: string
+          viewer_id: string | null
+          viewed_profile_id: string
+          viewed_at: string
+          ip_address: string | null
+          user_agent: string | null
+          referrer: string | null
+        }
+        Insert: {
+          id?: string
+          viewer_id?: string | null
+          viewed_profile_id: string
+          viewed_at?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          referrer?: string | null
+        }
+        Update: {
+          id?: string
+          viewer_id?: string | null
+          viewed_profile_id?: string
+          viewed_at?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          referrer?: string | null
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE BANIMENTOS
+      // =====================================================
+      
+      user_bans: {
+        Row: {
+          id: string
+          user_id: string
+          banned_by: string
+          reason: string
+          ban_type: 'temporary' | 'permanent'
+          duration_days: number | null
+          expires_at: string | null
+          is_active: boolean
+          admin_notes: string | null
+          related_report_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          banned_by: string
+          reason: string
+          ban_type: 'temporary' | 'permanent'
+          duration_days?: number | null
+          expires_at?: string | null
+          is_active?: boolean
+          admin_notes?: string | null
+          related_report_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          banned_by?: string
+          reason?: string
+          ban_type?: 'temporary' | 'permanent'
+          duration_days?: number | null
+          expires_at?: string | null
+          is_active?: boolean
+          admin_notes?: string | null
+          related_report_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE DENÚNCIAS
+      // =====================================================
+      
+      reports: {
+        Row: {
+          id: string
+          report_type: string
+          reason: string
+          description: string
+          status: string
+          priority: string
+          reporter_id: string
+          reported_user_id: string | null
+          reported_post_id: string | null
+          reported_message_id: string | null
+          reported_classified_id: string | null
+          admin_notes: string | null
+          resolution: string | null
+          created_at: string
+          updated_at: string
+          type: string
+        }
+        Insert: {
+          id?: string
+          report_type: string
+          reason: string
+          description: string
+          status?: string
+          priority?: string
+          reporter_id: string
+          reported_user_id?: string | null
+          reported_post_id?: string | null
+          reported_message_id?: string | null
+          reported_classified_id?: string | null
+          admin_notes?: string | null
+          resolution?: string | null
+          created_at?: string
+          updated_at?: string
+          type?: string
+        }
+        Update: {
+          id?: string
+          report_type?: string
+          reason?: string
+          description?: string
+          status?: string
+          priority?: string
+          reporter_id?: string
+          reported_user_id?: string | null
+          reported_post_id?: string | null
+          reported_message_id?: string | null
+          reported_classified_id?: string | null
+          admin_notes?: string | null
+          resolution?: string | null
+          created_at?: string
+          updated_at?: string
+          type?: string
+        }
+      }
+
+      // =====================================================
+      // SISTEMA DE ADMINISTRADORES
+      // =====================================================
+      
+      admins: {
+        Row: {
+          id: string
+          user_id: string
+          role: string
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          role?: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          role?: string
+          is_active?: boolean
           created_at?: string
         }
       }
@@ -1223,13 +769,18 @@ export interface Profile {
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
 export type ProfileUpdate = Database['public']['Tables']['profiles']['Update']
 
-export type ServiceCategory = Database['public']['Tables']['service_categories']['Row']
-export type ProfessionalService = Database['public']['Tables']['professional_services']['Row']
 export type FeedPost = Database['public']['Tables']['feed_posts']['Row']
-export type SearchHistory = Database['public']['Tables']['search_history']['Row']
 export type Conversation = Database['public']['Tables']['conversations']['Row']
 export type Message = Database['public']['Tables']['messages']['Row']
 export type Review = Database['public']['Tables']['reviews']['Row']
+export type ClassifiedAd = Database['public']['Tables']['classified_ads']['Row']
+export type Favorite = Database['public']['Tables']['favorites']['Row']
+export type EvaluationRequest = Database['public']['Tables']['evaluation_requests']['Row']
+export type PortfolioProject = Database['public']['Tables']['portfolio_projects']['Row']
+export type ProfileView = Database['public']['Tables']['profile_views']['Row']
+export type UserBan = Database['public']['Tables']['user_bans']['Row']
+export type Report = Database['public']['Tables']['reports']['Row']
+export type Admin = Database['public']['Tables']['admins']['Row']
 
 export type UserType = Database['public']['Enums']['user_type']
 export type BadgeType = Database['public']['Enums']['badge_type']

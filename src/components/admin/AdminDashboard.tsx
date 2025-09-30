@@ -27,7 +27,7 @@ import {
   Zap
 } from 'lucide-react'
 import { ReportsManagement } from './ReportsManagement'
-import { BansManagement } from './BansManagement'
+import { BansManagementEnhanced as BansManagement } from './BansManagementEnhanced'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 

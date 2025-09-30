@@ -7,7 +7,8 @@ import {
   Trash2, 
   Archive, 
   Pin,
-  AlertTriangle
+  AlertTriangle,
+  Flag
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -26,6 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { ReportButton } from '@/components/ReportButton'
+import { ConversationReportModal } from './ConversationReportModal'
 
 interface ConversationMenuProps {
   conversationId: string
@@ -33,6 +36,8 @@ interface ConversationMenuProps {
   onArchive?: (conversationId: string) => void
   onPin?: (conversationId: string) => void
   disabled?: boolean
+  conversationData?: any
+  messages?: any[]
 }
 
 export function ConversationMenu({ 
@@ -40,7 +45,9 @@ export function ConversationMenu({
   onDelete, 
   onArchive, 
   onPin,
-  disabled = false 
+  disabled = false,
+  conversationData,
+  messages
 }: ConversationMenuProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -100,6 +107,23 @@ export function ConversationMenu({
           
           {(onPin || onArchive) && (
             <DropdownMenuSeparator className="bg-gray-200 my-1" />
+          )}
+          
+          {/* Botão de Denunciar Conversa */}
+          {conversationData && messages && (
+            <DropdownMenuItem asChild>
+              <ConversationReportModal
+                conversationId={conversationId}
+                clientId={conversationData.client_id}
+                clientName={conversationData.client?.full_name || 'Usuário'}
+                professionalId={conversationData.professional_id}
+                professionalName={conversationData.professional?.full_name || 'Usuário'}
+                messages={messages}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+              />
+            </DropdownMenuItem>
           )}
           
           <DropdownMenuItem

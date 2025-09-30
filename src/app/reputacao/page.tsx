@@ -5,16 +5,39 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { StarRating } from '@/components/ui/StarRating'
 import { 
   Star, 
   ThumbsUp, 
   Users, 
   CheckCircle,
-  Award
+  Award,
+  TrendingUp,
+  Eye,
+  MessageCircle,
+  Calendar,
+  Filter,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Loader2,
+  AlertCircle,
+  BarChart3,
+  Target,
+  Zap
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
+import { ClientOnly } from '@/components/ClientOnly'
 
 interface UserReview {
   id: string
@@ -25,6 +48,12 @@ interface UserReview {
   review_type: 'client_to_professional' | 'professional_to_client'
   created_at: string
   reviewer: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
+  reviewed?: {
     id: string
     full_name: string
     avatar_url?: string
@@ -44,6 +73,12 @@ interface UserRecommendation {
     avatar_url?: string
     user_type: 'client' | 'professional'
   }
+  recommended?: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+  }
 }
 
 
@@ -51,10 +86,34 @@ export default function ReputacaoPage() {
   const [mounted, setMounted] = useState(false)
   const [reviews, setReviews] = useState<UserReview[]>([])
   const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
+  const [givenReviews, setGivenReviews] = useState<UserReview[]>([])
+  const [givenRecommendations, setGivenRecommendations] = useState<UserRecommendation[]>([])
   const [viewStats, setViewStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'recommendations' | 'analytics'>('overview')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterType, setFilterType] = useState<'all' | 'professional' | 'client'>('all')
+  const [showAddReviewDialog, setShowAddReviewDialog] = useState(false)
+  const [showAddRecommendationDialog, setShowAddRecommendationDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [reviewsSubTab, setReviewsSubTab] = useState<'received' | 'given'>('received')
+  const [recommendationsSubTab, setRecommendationsSubTab] = useState<'received' | 'given'>('received')
   
-  const { profile: currentUser } = useAuthContext()
+  // Estados para formulários
+  const [reviewForm, setReviewForm] = useState({
+    reviewed_id: '',
+    rating: 5,
+    comment: '',
+    review_type: 'client_to_professional' as 'client_to_professional' | 'professional_to_client'
+  })
+  
+  const [recommendationForm, setRecommendationForm] = useState({
+    recommended_id: '',
+    recommendation_type: 'client_to_professional' as 'client_to_professional' | 'professional_to_client'
+  })
+  
+  const { user, profile: currentUser } = useAuthContext()
+  const { openChat } = useFloatingChat()
 
   const loadUserReputation = useCallback(async () => {
     if (!currentUser?.id) return
@@ -75,11 +134,7 @@ export default function ReputacaoPage() {
 
       if (reviewsError) throw reviewsError
 
-      console.log('📊 Avaliações carregadas:', reviewsData?.length || 0)
-      console.log('📊 Dados das avaliações:', reviewsData)
-      
-
-      // Carregar recomendações da tabela user_recommendations (igual à página de busca)
+      // Carregar recomendações
       const { data: recommendationsData, error: recommendationsError } = await supabase
         .from('user_recommendations')
         .select(`
@@ -92,13 +147,10 @@ export default function ReputacaoPage() {
         .order('created_at', { ascending: false })
 
       if (recommendationsError) {
-        console.error('📊 Erro ao carregar recomendações:', recommendationsError)
+        console.error('Erro ao carregar recomendações:', recommendationsError)
       }
 
-      console.log('📊 Recomendações carregadas da tabela user_recommendations:', recommendationsData?.length || 0)
-      console.log('📊 Dados das recomendações:', recommendationsData)
-      
-      // Mapear recomendações para o formato esperado
+      // Mapear recomendações
       const mappedRecommendations = recommendationsData?.map(rec => ({
         id: rec.id,
         recommender_id: rec.recommender_id,
@@ -106,10 +158,10 @@ export default function ReputacaoPage() {
         recommendation_type: rec.recommendation_type as 'client_to_professional' | 'professional_to_client',
         created_at: rec.created_at || new Date().toISOString(),
         recommender: {
-          id: rec.recommender.id,
-          full_name: rec.recommender.full_name,
-          avatar_url: rec.recommender.avatar_url,
-          user_type: rec.recommender.user_type
+          id: rec.recommender?.id || '',
+          full_name: rec.recommender?.full_name || '',
+          avatar_url: rec.recommender?.avatar_url || '',
+          user_type: rec.recommender?.user_type || 'client'
         }
       })) || []
 
@@ -123,8 +175,63 @@ export default function ReputacaoPage() {
         console.error('Erro ao carregar visualizações:', viewStatsError)
       }
 
+      // Carregar avaliações que o usuário fez
+      const { data: givenReviewsData, error: givenReviewsError } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id, full_name, avatar_url, user_type
+          )
+        `)
+        .eq('reviewer_id', currentUser.id)
+        .order('created_at', { ascending: false })
+
+      if (givenReviewsError) {
+        console.error('Erro ao carregar avaliações feitas:', givenReviewsError)
+      }
+
+      // Carregar recomendações que o usuário fez
+      const { data: givenRecommendationsData, error: givenRecommendationsError } = await supabase
+        .from('user_recommendations')
+        .select(`
+          *,
+          recommended:profiles!user_recommendations_recommended_id_fkey(
+            id, full_name, avatar_url, user_type
+          )
+        `)
+        .eq('recommender_id', currentUser.id)
+        .order('created_at', { ascending: false })
+
+      if (givenRecommendationsError) {
+        console.error('Erro ao carregar recomendações feitas:', givenRecommendationsError)
+      }
+
+      // Mapear recomendações feitas
+      const mappedGivenRecommendations = givenRecommendationsData?.map(rec => ({
+        id: rec.id,
+        recommender_id: rec.recommender_id,
+        recommended_id: rec.recommended_id,
+        recommendation_type: rec.recommendation_type as 'client_to_professional' | 'professional_to_client',
+        created_at: rec.created_at || new Date().toISOString(),
+        recommender: {
+          id: rec.recommender?.id || '',
+          full_name: rec.recommender?.full_name || '',
+          avatar_url: rec.recommender?.avatar_url || '',
+          user_type: rec.recommender?.user_type || 'client'
+        },
+        recommended: {
+          id: rec.recommended?.id || '',
+          full_name: rec.recommended?.full_name || '',
+          avatar_url: rec.recommended?.avatar_url || '',
+          user_type: rec.recommended?.user_type || 'client'
+        }
+      })) || []
+
       setReviews(reviewsData || [])
       setRecommendations(mappedRecommendations)
+      setGivenReviews(givenReviewsData || [])
+      setGivenRecommendations(mappedGivenRecommendations)
       setViewStats({ total_views: viewStatsData?.length || 0 })
     } catch (error) {
       console.error('Erro ao carregar reputação:', error)
@@ -132,6 +239,124 @@ export default function ReputacaoPage() {
       setLoading(false)
     }
   }, [currentUser?.id])
+
+  // Adicionar avaliação
+  const handleAddReview = async () => {
+    if (!user || !reviewForm.reviewed_id) {
+      toast.error('Selecione um usuário para avaliar')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const { error } = await supabase
+        .from('reviews')
+        .insert([{
+          reviewer_id: user.id,
+          reviewed_id: reviewForm.reviewed_id,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment || null,
+          review_type: reviewForm.review_type
+        }])
+
+      if (error) throw error
+
+      toast.success('Avaliação adicionada com sucesso!')
+      setShowAddReviewDialog(false)
+      setReviewForm({
+        reviewed_id: '',
+        rating: 5,
+        comment: '',
+        review_type: 'client_to_professional'
+      })
+      loadUserReputation()
+    } catch (error) {
+      console.error('Erro ao adicionar avaliação:', error)
+      toast.error('Erro ao adicionar avaliação')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Adicionar recomendação
+  const handleAddRecommendation = async () => {
+    if (!user || !recommendationForm.recommended_id) {
+      toast.error('Selecione um usuário para recomendar')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const { error } = await supabase
+        .from('user_recommendations')
+        .insert([{
+          recommender_id: user.id,
+          recommended_id: recommendationForm.recommended_id,
+          recommendation_type: recommendationForm.recommendation_type
+        }])
+
+      if (error) throw error
+
+      toast.success('Recomendação adicionada com sucesso!')
+      setShowAddRecommendationDialog(false)
+      setRecommendationForm({
+        recommended_id: '',
+        recommendation_type: 'client_to_professional'
+      })
+      loadUserReputation()
+    } catch (error) {
+      console.error('Erro ao adicionar recomendação:', error)
+      toast.error('Erro ao adicionar recomendação')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Buscar usuários para avaliar/recomendar
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    setIsSearching(true)
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, user_type')
+        .ilike('full_name', `%${query}%`)
+        .neq('id', user?.id) // Excluir o próprio usuário
+        .limit(10)
+
+      if (error) throw error
+      setSearchResults(data || [])
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error)
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  // Abrir chat com usuário
+  const handleContactUser = (userId: string, userName?: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para entrar em contato')
+      return
+    }
+    
+    if (userId === user.id) {
+      toast.error('Você não pode entrar em contato consigo mesmo')
+      return
+    }
+    
+    openChat(userId, userName || 'Usuário')
+    toast.success('Iniciando conversa...')
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -144,7 +369,6 @@ export default function ReputacaoPage() {
     }
   }, [currentUser, mounted, loadUserReputation])
 
-  // Conditional return moved here, after all hooks
   if (!mounted) {
     return null
   }
@@ -156,10 +380,10 @@ export default function ReputacaoPage() {
       : 0,
     totalReviews: reviews.length,
     totalRecommendations: recommendations.length,
-    totalViews: viewStats?.total_views || 0
+    totalViews: viewStats?.total_views || 0,
+    givenReviews: givenReviews.length,
+    givenRecommendations: givenRecommendations.length
   }
-  
-  console.log('📊 Estatísticas calculadas:', stats)
 
   const isProfessional = currentUser?.user_type === 'professional'
 
@@ -171,253 +395,761 @@ export default function ReputacaoPage() {
     })
   }
 
+  // Filtrar dados baseado na busca e filtro
+  const getFilteredReviews = () => {
+    const reviewsToFilter = reviewsSubTab === 'received' ? reviews : givenReviews
+    return reviewsToFilter.filter(review => {
+      const user = reviewsSubTab === 'received' ? review.reviewer : review.reviewed
+      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesFilter = filterType === 'all' || user.user_type === filterType
+      return matchesSearch && matchesFilter
+    })
+  }
+
+  const getFilteredRecommendations = () => {
+    const recommendationsToFilter = recommendationsSubTab === 'received' ? recommendations : givenRecommendations
+    return recommendationsToFilter.filter(rec => {
+      const user = recommendationsSubTab === 'received' ? rec.recommender : rec.recommended
+      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesFilter = filterType === 'all' || user.user_type === filterType
+      return matchesSearch && matchesFilter
+    })
+  }
+
+  const filteredReviews = getFilteredReviews()
+  const filteredRecommendations = getFilteredRecommendations()
+
   if (!mounted || loading) {
     return (
-      <MainLayout requireAuth={true}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Carregando sua reputação...
-            </h1>
+      <ClientOnly>
+        <MainLayout requireAuth={true}>
+          <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="text-center">
+                <Loader2 className="h-8 w-8 mx-auto animate-spin text-gray-600 mb-4" />
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Carregando sua reputação...
+                </h1>
+              </div>
+            </div>
           </div>
-        </div>
-      </MainLayout>
+        </MainLayout>
+      </ClientOnly>
     )
   }
 
   return (
-    <MainLayout requireAuth={true}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-blue-100 rounded-full">
-              <Award className="h-12 w-12 text-blue-600" />
-            </div>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Minha Reputação
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Acompanhe sua reputação na plataforma. Sistema transparente onde você vê exatamente quem te avaliou.
-          </p>
-        </div>
-
-        {/* Cards de Estatísticas - Igual ao Perfil */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          <Card>
-            <CardContent className="p-2 text-center">
-              <Users className="h-4 w-4 text-blue-600 mx-auto mb-1" />
-              <p className="text-lg font-bold text-gray-900">{stats.totalViews}</p>
-              <p className="text-xs text-gray-600">Visualizações</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-2 text-center">
-              <ThumbsUp className="h-4 w-4 text-green-600 mx-auto mb-1" />
-              <p className="text-lg font-bold text-gray-900">{stats.totalRecommendations}</p>
-              <p className="text-xs text-gray-600">Recomendações</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-2 text-center">
-              <Star className="h-4 w-4 text-orange-600 mx-auto mb-1" />
-              <p className="text-lg font-bold text-gray-900">{stats.totalReviews}</p>
-              <p className="text-xs text-gray-600">Avaliações</p>
-            </CardContent>
-          </Card>
-
-          {isProfessional && stats.averageRating > 0 && (
-            <Card>
-              <CardContent className="p-2 text-center">
-                <div className="flex justify-center mb-1">
-                  <StarRating 
-                    rating={stats.averageRating} 
-                    size="sm" 
-                    variant="compact"
-                    showValue={false}
-                  />
+    <ClientOnly>
+      <MainLayout requireAuth={true}>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <div className="p-4 bg-blue-100 rounded-full">
+                  <Award className="h-12 w-12 text-blue-600" />
                 </div>
-                <p className="text-lg font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
-                <p className="text-xs text-gray-600">Nota Média</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Como Funciona */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Como Funciona Nosso Sistema de Reputação</CardTitle>
-            <CardDescription>
-              Sistema simples e transparente de reputação
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                  Transparência Total
-                </h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>• Nome completo de quem te avaliou</li>
-                  <li>• Foto do perfil visível</li>
-                  <li>• Data da avaliação clara</li>
-                  <li>• Histórico completo acessível</li>
-                </ul>
               </div>
-              <div>
-                <h4 className="font-semibold mb-3 flex items-center">
-                  <Star className="h-5 w-5 text-yellow-600 mr-2" />
-                  Sistema Simples
-                </h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>• Avaliação 1-5 estrelas</li>
-                  <li>• Comentário opcional</li>
-                  <li>• Sistema de recomendações</li>
-                  <li>• Sem complexidades desnecessárias</li>
-                </ul>
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Minha Reputação
+              </h1>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Gerencie sua reputação na plataforma. Sistema transparente onde você vê exatamente quem te avaliou.
+              </p>
+            </div>
+
+            {/* Sistema de Abas */}
+            <div className="mb-8">
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'overview'
+                        ? 'border-gray-500 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Visão Geral
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('reviews')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'reviews'
+                        ? 'border-gray-700 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      Avaliações ({stats.totalReviews})
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('recommendations')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'recommendations'
+                        ? 'border-gray-500 text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <ThumbsUp className="h-4 w-4" />
+                      Recomendações ({stats.totalRecommendations})
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('analytics')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'analytics'
+                        ? 'border-gray-500 text-gray-700'
+                        : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Análises
+                    </div>
+                  </button>
+                </nav>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Avaliações Recebidas */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Star className="h-5 w-5 mr-2" />
-              Avaliações que Você Recebeu ({stats.totalReviews})
-            </CardTitle>
-            <CardDescription>
-              Veja exatamente quem te avaliou e quando
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-start space-x-4">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={review.reviewer.avatar_url || ''} />
-                        <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {review.reviewer.full_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
+            {/* Conteúdo das Abas */}
+            {activeTab === 'overview' && (
+              <>
+                {/* Estatísticas Compactas */}
+                <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
+                  <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+                    <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                      {/* Visualizações */}
+                      <div className="flex flex-col items-center min-w-0 flex-1">
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                        <p className="text-xs text-gray-500 text-center">Visualizações</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalViews}</p>
+                      </div>
                       
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
+                      {/* Recomendações */}
+                      <div className="flex flex-col items-center min-w-0 flex-1">
+                        <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                        <p className="text-xs text-gray-500 text-center">Recomendações</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalRecommendations}</p>
+                      </div>
+                      
+                      {/* Avaliações */}
+                      <div className="flex flex-col items-center min-w-0 flex-1">
+                        <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                        <p className="text-xs text-gray-500 text-center">Avaliações</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalReviews}</p>
+                      </div>
+                      
+                      {/* Nota Média */}
+                      {isProfessional && stats.averageRating > 0 && (
+                        <div className="flex flex-col items-center min-w-0 flex-1">
+                          <Target className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                          <p className="text-xs text-gray-500 text-center">Nota Média</p>
+                          <p className="text-sm sm:text-base font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Como Funciona */}
+                <Card className="mb-8">
+                  <CardHeader>
+                    <CardTitle>Como Funciona Nosso Sistema de Reputação</CardTitle>
+                    <CardDescription>
+                      Sistema simples e transparente de reputação
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center">
+                          <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                          Transparência Total
+                        </h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          <li>• Nome completo de quem te avaliou</li>
+                          <li>• Foto do perfil visível</li>
+                          <li>• Data da avaliação clara</li>
+                          <li>• Histórico completo acessível</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-3 flex items-center">
+                          <Star className="h-5 w-5 text-yellow-600 mr-2" />
+                          Sistema Simples
+                        </h4>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          <li>• Avaliação 1-5 estrelas</li>
+                          <li>• Comentário opcional</li>
+                          <li>• Sistema de recomendações</li>
+                          <li>• Sem complexidades desnecessárias</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {activeTab === 'reviews' && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center">
+                        <Star className="h-5 w-5 mr-2" />
+                        Avaliações
+                      </CardTitle>
+                      <CardDescription>
+                        {reviewsSubTab === 'received' 
+                          ? `Avaliações que você recebeu (${stats.totalReviews})`
+                          : `Avaliações que você fez (${stats.givenReviews})`
+                        }
+                      </CardDescription>
+                    </div>
+                    <Dialog open={showAddReviewDialog} onOpenChange={setShowAddReviewDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-gray-600 hover:bg-gray-700">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Avaliar Alguém
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Avaliar Usuário</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
                           <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {review.reviewer.full_name}
-                            </h4>
+                            <Label htmlFor="user-search">Buscar Usuário</Label>
+                            <div className="relative">
+                              <Input
+                                id="user-search"
+                                placeholder="Digite o nome do usuário..."
+                                onChange={(e) => searchUsers(e.target.value)}
+                              />
+                              <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                            </div>
+                            {searchResults.length > 0 && (
+                              <div className="mt-2 max-h-40 overflow-y-auto border rounded-md">
+                                {searchResults.map((user) => (
+                                  <div
+                                    key={user.id}
+                                    className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer"
+                                    onClick={() => {
+                                      setReviewForm(prev => ({ ...prev, reviewed_id: user.id }))
+                                      setSearchResults([])
+                                    }}
+                                  >
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarImage src={user.avatar_url} />
+                                      <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium">{user.full_name}</p>
+                                      <p className="text-sm text-gray-500">
+                                        {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <Label htmlFor="review-type">Tipo de Avaliação</Label>
+                            <Select 
+                              value={reviewForm.review_type} 
+                              onValueChange={(value: 'client_to_professional' | 'professional_to_client') => 
+                                setReviewForm(prev => ({ ...prev, review_type: value }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="client_to_professional">
+                                  Cliente avaliando Profissional
+                                </SelectItem>
+                                <SelectItem value="professional_to_client">
+                                  Profissional avaliando Cliente
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label htmlFor="rating">Avaliação (1-5 estrelas)</Label>
                             <div className="flex items-center space-x-2">
-                              <Badge variant="outline" className="text-xs">
-                                {review.reviewer.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                              </Badge>
-                              <span className="text-xs text-gray-500">
-                                {formatDate(review.created_at)}
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                                  className={`text-2xl ${
+                                    star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'
+                                  }`}
+                                >
+                                  ★
+                                </button>
+                              ))}
+                              <span className="ml-2 text-sm text-gray-600">
+                                {reviewForm.rating} estrela{reviewForm.rating !== 1 ? 's' : ''}
                               </span>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <StarRating
-                              rating={review.rating || 0}        
-                              size="sm"
-                              variant="compact"
-                              showValue={true}
+
+                          <div>
+                            <Label htmlFor="comment">Comentário (opcional)</Label>
+                            <Textarea
+                              id="comment"
+                              value={reviewForm.comment}
+                              onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                              placeholder="Deixe um comentário sobre sua experiência..."
+                              rows={3}
                             />
                           </div>
-                        </div>
-                        
-                        {review.comment && (
-                          <p className="text-gray-700 mt-2 bg-gray-50 p-3 rounded-md">
-                            "{review.comment}"
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Nenhuma avaliação ainda
-                </h3>
-                <p className="text-gray-600">
-                  Você ainda não recebeu avaliações. Continue usando a plataforma!
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Recomendações Recebidas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ThumbsUp className="h-5 w-5 mr-2" />
-              Recomendações que Você Recebeu ({stats.totalRecommendations})
-            </CardTitle>
-            <CardDescription>
-              Pessoas que te recomendaram
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recommendations.length > 0 ? (
-              <div className="space-y-4">
-                {recommendations.map((rec) => (
-                  <div key={rec.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={rec.recommender.avatar_url || ''} />
-                        <AvatarFallback className="bg-green-100 text-green-600">
-                          {rec.recommender.full_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">
-                          {rec.recommender.full_name}
-                        </h4>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="text-xs">
-                            {rec.recommender.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                          </Badge>
-                          <span className="text-xs text-gray-500">
-                            {formatDate(rec.created_at)}
-                          </span>
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={() => setShowAddReviewDialog(false)}>
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleAddReview} disabled={isSubmitting}>
+                              {isSubmitting ? 'Avaliando...' : 'Avaliar'}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <ThumbsUp className="h-5 w-5 text-green-600" />
-                        <span className="text-sm text-green-600 font-medium">Recomendou</span>
-                      </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Abas de Avaliações */}
+                  <div className="mb-6">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8">
+                        <button
+                          onClick={() => setReviewsSubTab('received')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            reviewsSubTab === 'received'
+                              ? 'border-gray-500 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Star className="h-4 w-4" />
+                            Recebidas ({stats.totalReviews})
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setReviewsSubTab('given')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            reviewsSubTab === 'given'
+                              ? 'border-gray-700 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Edit className="h-4 w-4" />
+                            Feitas ({stats.givenReviews})
+                          </div>
+                        </button>
+                      </nav>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Nenhuma recomendação ainda
-                </h3>
-                <p className="text-gray-600">
-                  Continue se destacando para receber recomendações!
-                </p>
+
+                  {/* Filtros */}
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Buscar por nome..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="professional">Profissionais</SelectItem>
+                        <SelectItem value="client">Clientes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {filteredReviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredReviews.map((review) => (
+                        <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed.avatar_url || ''} />
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name).charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900">
+                                    {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}
+                                  </h4>
+                                  <div className="flex items-center space-x-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(review.created_at)}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <StarRating
+                                    rating={review.rating || 0}        
+                                    size="sm"
+                                    variant="compact"
+                                    showValue={true}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleContactUser(reviewsSubTab === 'received' ? review.reviewer.id : review.reviewed.id, reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name)}
+                                  >
+                                    <MessageCircle className="h-4 w-4 mr-1" />
+                                    Contatar
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {review.comment && (
+                                <p className="text-gray-700 mt-2 bg-gray-50 p-3 rounded-md">
+                                  "{review.comment}"
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
+                      </h3>
+                      <p className="text-gray-600">
+                        {searchTerm || filterType !== 'all' 
+                          ? 'Tente ajustar os filtros de busca.'
+                          : 'Você ainda não recebeu avaliações. Continue usando a plataforma!'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'recommendations' && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center">
+                        <ThumbsUp className="h-5 w-5 mr-2" />
+                        Recomendações
+                      </CardTitle>
+                      <CardDescription>
+                        {recommendationsSubTab === 'received' 
+                          ? `Recomendações que você recebeu (${stats.totalRecommendations})`
+                          : `Recomendações que você fez (${stats.givenRecommendations})`
+                        }
+                      </CardDescription>
+                    </div>
+                    <Dialog open={showAddRecommendationDialog} onOpenChange={setShowAddRecommendationDialog}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-gray-600 hover:bg-gray-700">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Recomendar Alguém
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Recomendar Usuário</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="user-search-rec">Buscar Usuário</Label>
+                            <div className="relative">
+                              <Input
+                                id="user-search-rec"
+                                placeholder="Digite o nome do usuário..."
+                                onChange={(e) => searchUsers(e.target.value)}
+                              />
+                              <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                            </div>
+                            {searchResults.length > 0 && (
+                              <div className="mt-2 max-h-40 overflow-y-auto border rounded-md">
+                                {searchResults.map((user) => (
+                                  <div
+                                    key={user.id}
+                                    className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer"
+                                    onClick={() => {
+                                      setRecommendationForm(prev => ({ ...prev, recommended_id: user.id }))
+                                      setSearchResults([])
+                                    }}
+                                  >
+                                    <Avatar className="w-8 h-8">
+                                      <AvatarImage src={user.avatar_url} />
+                                      <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="font-medium">{user.full_name}</p>
+                                      <p className="text-sm text-gray-500">
+                                        {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <Label htmlFor="recommendation-type">Tipo de Recomendação</Label>
+                            <Select 
+                              value={recommendationForm.recommendation_type} 
+                              onValueChange={(value: 'client_to_professional' | 'professional_to_client') => 
+                                setRecommendationForm(prev => ({ ...prev, recommendation_type: value }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="client_to_professional">
+                                  Cliente recomendando Profissional
+                                </SelectItem>
+                                <SelectItem value="professional_to_client">
+                                  Profissional recomendando Cliente
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="flex justify-end space-x-2">
+                            <Button variant="outline" onClick={() => setShowAddRecommendationDialog(false)}>
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleAddRecommendation} disabled={isSubmitting}>
+                              {isSubmitting ? 'Recomendando...' : 'Recomendar'}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {/* Abas de Recomendações */}
+                  <div className="mb-6">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8">
+                        <button
+                          onClick={() => setRecommendationsSubTab('received')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            recommendationsSubTab === 'received'
+                              ? 'border-gray-500 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <ThumbsUp className="h-4 w-4" />
+                            Recebidas ({stats.totalRecommendations})
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setRecommendationsSubTab('given')}
+                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                            recommendationsSubTab === 'given'
+                              ? 'border-gray-700 text-gray-900'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Edit className="h-4 w-4" />
+                            Feitas ({stats.givenRecommendations})
+                          </div>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+
+                  {/* Filtros */}
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Buscar por nome..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="professional">Profissionais</SelectItem>
+                        <SelectItem value="client">Clientes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {filteredRecommendations.length > 0 ? (
+                    <div className="space-y-4">
+                      {filteredRecommendations.map((rec) => (
+                        <div key={rec.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center space-x-4">
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={recommendationsSubTab === 'received' ? rec.recommender.avatar_url || '' : rec.recommended.avatar_url || ''} />
+                              <AvatarFallback className="bg-green-100 text-green-600">
+                                {(recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name).charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900">
+                                {recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}
+                              </h4>
+                              <div className="flex items-center space-x-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {(recommendationsSubTab === 'received' ? rec.recommender.user_type : rec.recommended.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {formatDate(rec.created_at)}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <ThumbsUp className="h-5 w-5 text-green-600" />
+                              <span className="text-sm text-green-600 font-medium">
+                                {recommendationsSubTab === 'received' ? 'Recomendou' : 'Recomendado'}
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleContactUser(recommendationsSubTab === 'received' ? rec.recommender.id : rec.recommended.id, recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name)}
+                              >
+                                <MessageCircle className="h-4 w-4 mr-1" />
+                                Contatar
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {searchTerm || filterType !== 'all' ? 'Nenhuma recomendação encontrada' : 'Nenhuma recomendação ainda'}
+                      </h3>
+                      <p className="text-gray-600">
+                        {searchTerm || filterType !== 'all' 
+                          ? 'Tente ajustar os filtros de busca.'
+                          : 'Continue se destacando para receber recomendações!'
+                        }
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'analytics' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <TrendingUp className="h-5 w-5 mr-2" />
+                      Crescimento da Reputação
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Avaliações este mês</span>
+                        <span className="font-semibold">{stats.totalReviews}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Recomendações este mês</span>
+                        <span className="font-semibold">{stats.totalRecommendations}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Visualizações este mês</span>
+                        <span className="font-semibold">{stats.totalViews}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Zap className="h-5 w-5 mr-2" />
+                      Dicas para Melhorar
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Seja ativo na plataforma</p>
+                          <p className="text-xs text-gray-600">Interaja com outros usuários</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Complete seu perfil</p>
+                          <p className="text-xs text-gray-600">Adicione informações detalhadas</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Seja responsivo</p>
+                          <p className="text-xs text-gray-600">Responda mensagens rapidamente</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </MainLayout>
+          </div>
+        </div>
+      </MainLayout>
+    </ClientOnly>
   )
 }

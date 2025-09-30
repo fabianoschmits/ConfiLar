@@ -1,0 +1,42 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Deploy to Vercel
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd/ZkM7PCKa6k"
+      
+      - name: Deploy with Vercel CLI
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd
+          working-directory: ./
+          vercel-args: '--prod'
+
+
+

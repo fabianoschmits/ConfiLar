@@ -93,8 +93,7 @@ export function PostOptionsMenu({
                 type="post" 
                 targetId={postId}
                 targetName={postTitle || 'Post'}
-                variant="ghost"
-                size="sm"
+                asDropdownItem={true}
                 className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
               />
             </DropdownMenuItem>

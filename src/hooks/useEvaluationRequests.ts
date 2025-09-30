@@ -93,7 +93,7 @@ export function useEvaluationRequests() {
     }
 
     try {
-      // Verificar se já existe uma solicitação pendente
+      // Verificar se já existe uma solicitação pendente ou aceita
       const { data: existingRequests, error: checkError } = await supabase
         .from('evaluation_requests')
         .select('id, status')
@@ -107,7 +107,7 @@ export function useEvaluationRequests() {
       }
 
       if (existingRequests && existingRequests.length > 0) {
-        throw new Error('Já existe uma solicitação de avaliação pendente para este usuário')
+        throw new Error('Já existe uma solicitação de avaliação pendente ou aceita para este usuário')
       }
 
       const { data, error } = await supabase
@@ -207,6 +207,33 @@ export function useEvaluationRequests() {
     }
   }, [loadRequests])
 
+  // Resetar solicitação para permitir nova avaliação
+  const resetRequest = useCallback(async (requesterId: string, targetId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('evaluation_requests')
+        .update({ 
+          status: 'accepted',
+          updated_at: new Date().toISOString()
+        })
+        .or(`and(requester_id.eq.${requesterId},target_id.eq.${targetId}),and(requester_id.eq.${targetId},target_id.eq.${requesterId})`)
+        .select()
+
+      if (error) {
+        console.error('❌ Erro ao resetar solicitação:', error)
+        throw error
+      }
+
+      // Recarregar solicitações
+      await loadRequests()
+
+      return { success: true, data }
+    } catch (err) {
+      console.error('❌ Erro ao resetar solicitação:', err)
+      throw err
+    }
+  }, [loadRequests])
+
   // Carregar solicitações quando o componente monta
   useEffect(() => {
     loadRequests()
@@ -220,6 +247,7 @@ export function useEvaluationRequests() {
     acceptRequest,
     rejectRequest,
     completeRequest,
+    resetRequest,
     loadRequests
   }
 }

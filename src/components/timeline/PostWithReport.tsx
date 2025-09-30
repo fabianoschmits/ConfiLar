@@ -52,22 +52,20 @@ export function PostWithReport({ post }: PostWithReportProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <ReportButton 
                 type="post" 
                 targetId={post.id}
                 targetName={post.title}
-                variant="ghost"
-                size="sm"
+                asDropdownItem={true}
               />
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem asChild>
               <ReportButton 
                 type="user" 
                 targetId={post.professional_id}
                 targetName={post.professional.full_name}
-                variant="ghost"
-                size="sm"
+                asDropdownItem={true}
               />
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -13,7 +13,8 @@ import {
   Reply,
   Edit,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  Flag
 } from 'lucide-react'
 import { 
   DropdownMenu,
@@ -36,6 +37,7 @@ interface ReviewCardProps {
   onRespond?: (reviewId: string, response: string) => void
   onMarkHelpful?: (reviewId: string) => void
   showActions?: boolean
+  profileOwnerId?: string // ID do dono do perfil (quem foi avaliado)
 }
 
 export function ReviewCard({
@@ -45,14 +47,17 @@ export function ReviewCard({
   onDelete,
   onRespond,
   onMarkHelpful,
-  showActions = true
+  showActions = true,
+  profileOwnerId
 }: ReviewCardProps) {
   const [showResponseForm, setShowResponseForm] = useState(false)
   const [responseText, setResponseText] = useState('')
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false)
+  const [isEditingResponse, setIsEditingResponse] = useState(false)
 
   const isOwner = currentUserId === review.reviewer.id
   const isReviewed = currentUserId === review.reviewed.id
+  const isProfileOwner = currentUserId === profileOwnerId
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -98,12 +103,19 @@ export function ReviewCard({
       await onRespond?.(review.id, responseText.trim())
       setResponseText('')
       setShowResponseForm(false)
-      toast.success('Resposta enviada com sucesso!')
+      setIsEditingResponse(false)
+      toast.success(isEditingResponse ? 'Resposta editada com sucesso!' : 'Resposta enviada com sucesso!')
     } catch (error) {
       toast.error('Erro ao enviar resposta')
     } finally {
       setIsSubmittingResponse(false)
     }
+  }
+
+  const handleEditResponse = () => {
+    setResponseText(review.response_text || '')
+    setIsEditingResponse(true)
+    setShowResponseForm(true)
   }
 
   const handleMarkHelpful = async () => {
@@ -173,7 +185,7 @@ export function ReviewCard({
               </div>
             </div>
             
-            {showActions && (isOwner || isReviewed) && (
+            {showActions && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -196,6 +208,35 @@ export function ReviewCard({
                       Excluir
                     </DropdownMenuItem>
                   )}
+                  {isProfileOwner && review.response_text && (
+                    <DropdownMenuItem 
+                      onClick={handleEditResponse}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Editar Resposta
+                    </DropdownMenuItem>
+                  )}
+                  {isProfileOwner && onDelete && (
+                    <DropdownMenuItem 
+                      onClick={() => onDelete(review.id)}
+                      className="text-red-600 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Remover Avaliação
+                    </DropdownMenuItem>
+                  )}
+                  {!isOwner && !isProfileOwner && (
+                    <DropdownMenuItem asChild>
+                      <ReportButton 
+                        type="review" 
+                        targetId={review.id}
+                        targetName="Avaliação"
+                        asDropdownItem={true}
+                        className="w-full justify-start p-0 h-auto font-normal"
+                      />
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
@@ -215,6 +256,29 @@ export function ReviewCard({
             <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
               <p className="modern-body text-gray-700 whitespace-pre-wrap leading-relaxed">
                 {review.comment}
+              </p>
+            </div>
+          )}
+
+          {/* Resposta do Avaliado */}
+          {review.response_text && (
+            <div className="bg-blue-50 rounded-lg p-4 mb-4 border border-blue-200 ml-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Reply className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-900">
+                  Resposta de {review.reviewed.full_name}
+                </span>
+                {review.response_date && (
+                  <span className="text-xs text-blue-600">
+                    {formatDistanceToNow(new Date(review.response_date), { 
+                      addSuffix: true, 
+                      locale: ptBR 
+                    })}
+                  </span>
+                )}
+              </div>
+              <p className="text-blue-800 whitespace-pre-wrap leading-relaxed">
+                {review.response_text}
               </p>
             </div>
           )}
@@ -274,7 +338,9 @@ export function ReviewCard({
           {/* Formulário de Resposta */}
           {showResponseForm && (
             <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 mb-4">
-              <h5 className="font-medium text-blue-900 mb-3">Responder avaliação</h5>
+              <h5 className="font-medium text-blue-900 mb-3">
+                {isEditingResponse ? 'Editar resposta' : 'Responder avaliação'}
+              </h5>
               <Textarea
                 placeholder="Digite sua resposta..."
                 value={responseText}
@@ -287,6 +353,7 @@ export function ReviewCard({
                   onClick={() => {
                     setShowResponseForm(false)
                     setResponseText('')
+                    setIsEditingResponse(false)
                   }}
                   className="modern-button-secondary px-4 py-2"
                 >
@@ -297,7 +364,7 @@ export function ReviewCard({
                   disabled={isSubmittingResponse || !responseText.trim()}
                   className="modern-button-primary px-4 py-2 disabled:opacity-50"
                 >
-                  {isSubmittingResponse ? 'Enviando...' : 'Responder'}
+                  {isSubmittingResponse ? 'Enviando...' : (isEditingResponse ? 'Salvar' : 'Responder')}
                 </button>
               </div>
             </div>
@@ -306,7 +373,7 @@ export function ReviewCard({
           {/* Ações */}
           {showActions && (
             <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-              {isReviewed && !showResponseForm && (
+              {isReviewed && !showResponseForm && !review.response_text && (
                 <button
                   onClick={() => setShowResponseForm(true)}
                   className="modern-button-outline px-4 py-2 flex items-center gap-2"
@@ -325,14 +392,6 @@ export function ReviewCard({
                   Útil
                 </button>
               )}
-              
-              <ReportButton 
-                type="review" 
-                targetId={review.id}
-                targetName="Avaliação"
-                variant="outline"
-                size="sm"
-              />
             </div>
           )}
         </div>
