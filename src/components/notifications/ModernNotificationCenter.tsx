@@ -45,6 +45,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { NotificationSettingsModal } from './NotificationSettingsModal'
 
 interface ModernNotificationCenterProps {
   isOpen: boolean
@@ -102,6 +103,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
   const [selectedType, setSelectedType] = useState<string>('all')
   const [showFilters, setShowFilters] = useState(false)
   const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set())
+  const [showSettings, setShowSettings] = useState(false)
 
   // Filtrar notificações
   const filteredNotifications = notifications.filter(notification => {
@@ -161,14 +163,25 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                 {filteredNotifications.length} de {notifications.length} notificações
               </SheetDescription>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="h-8 w-8 p-0"
+                title="Configurações de notificações"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </SheetHeader>
 
@@ -434,6 +447,12 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
           )}
         </div>
       </SheetContent>
+      
+      {/* Modal de Configurações */}
+      <NotificationSettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </Sheet>
   )
 }

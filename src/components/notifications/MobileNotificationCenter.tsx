@@ -31,6 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { NotificationSettingsModal } from './NotificationSettingsModal'
 
 interface MobileNotificationCenterProps {
   isOpen: boolean
@@ -63,6 +64,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
 
   const [searchTerm, setSearchTerm] = useState('')
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   // Filtrar notificações
   const filteredNotifications = notifications.filter(notification => {
@@ -94,14 +96,25 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 rounded-full"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(true)}
+                className="h-8 w-8 p-0 rounded-full"
+                title="Configurações"
+              >
+                <Settings className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0 rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </SheetHeader>
 
@@ -310,6 +323,12 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
           )}
         </div>
       </SheetContent>
+      
+      {/* Modal de Configurações */}
+      <NotificationSettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+      />
     </Sheet>
   )
 }
