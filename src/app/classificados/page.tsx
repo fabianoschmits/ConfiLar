@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
+import { UserStatusDot } from '@/components/ui/UserStatusDot'
 import { 
   Search, 
   MapPin, 
@@ -784,16 +785,23 @@ export default function ClassificadosPage() {
                     <div className="space-y-4 sm:space-y-6">
                       {/* Header com Avatar e Info do Usuário */}
                       <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                        <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md self-center sm:self-start">
-                          <AvatarImage src={selectedAd.user_avatar_url} />
-                          <AvatarFallback className={`font-medium text-sm sm:text-lg ${
-                            selectedAd.ad_type === 'oferecer' 
-                              ? 'bg-gray-200 text-gray-800' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {selectedAd.user_name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative self-center sm:self-start">
+                          <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md">
+                            <AvatarImage src={selectedAd.user_avatar_url} />
+                            <AvatarFallback className={`font-medium text-sm sm:text-lg ${
+                              selectedAd.ad_type === 'oferecer' 
+                                ? 'bg-gray-200 text-gray-800' 
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {selectedAd.user_name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <UserStatusDot 
+                            userId={selectedAd.user_id} 
+                            size="sm"
+                            className="border-2 border-white"
+                          />
+                        </div>
                         <div className="flex-1 w-full text-center sm:text-left">
                           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                             {selectedAd.user_name}
@@ -1011,16 +1019,23 @@ export default function ClassificadosPage() {
                   <CardContent className="p-4 sm:p-6">
                     {/* Header do Card com Avatar e Info do Usuário */}
                     <div className="flex items-start space-x-3 mb-4">
-                      <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
-                        <AvatarImage src={ad.user_avatar_url} />
-                        <AvatarFallback className={`font-medium ${
-                          ad.ad_type === 'oferecer' 
-                            ? 'bg-gray-200 text-gray-800' 
-                            : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {ad.user_name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
+                          <AvatarImage src={ad.user_avatar_url} />
+                          <AvatarFallback className={`font-medium ${
+                            ad.ad_type === 'oferecer' 
+                              ? 'bg-gray-200 text-gray-800' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {ad.user_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <UserStatusDot 
+                          userId={ad.user_id} 
+                          size="sm"
+                          className="border-2 border-white"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 truncate">
                           {ad.user_name}

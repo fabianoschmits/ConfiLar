@@ -43,6 +43,7 @@ import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
+import { UserStatusDot } from '@/components/ui/UserStatusDot'
 
 export default function BuscarPage() {
   const router = useRouter()
@@ -517,7 +518,7 @@ export default function BuscarPage() {
                       <div className="flex items-start space-x-3 mb-4">
                         <div 
                           onClick={() => handleProfileClick(profile.id)}
-                          className="flex-shrink-0 cursor-pointer"
+                          className="flex-shrink-0 cursor-pointer relative"
                         >
                           <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
                             <AvatarImage src={profile.avatar_url || ''} />
@@ -525,6 +526,11 @@ export default function BuscarPage() {
                               {profile.full_name?.charAt(0).toUpperCase() || 'P'}
                             </AvatarFallback>
                           </Avatar>
+                          <UserStatusDot 
+                            userId={profile.id} 
+                            size="sm"
+                            className="border-2 border-white"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div 
