@@ -690,6 +690,9 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                       <Bell className="w-5 h-5 text-green-600" />
                       Push Notifications
                     </CardTitle>
+                    <CardDescription>
+                      Configure as notificações push do navegador
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {!isGranted && (
@@ -734,13 +737,151 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                   </CardContent>
                 </Card>
 
-                {/* Configurações de Preferências */}
+                {/* Configurações por Tipo de Notificação */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-blue-600" />
-                      Preferências
+                      <Filter className="w-5 h-5 text-purple-600" />
+                      Tipos de Notificação
                     </CardTitle>
+                    <CardDescription>
+                      Configure quais tipos de notificação você deseja receber
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {NOTIFICATION_TYPES.map((type) => {
+                      const IconComponent = type.icon
+                      return (
+                        <div key={type.value} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-full ${type.color} text-white`}>
+                              <IconComponent className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <Label htmlFor={`type-${type.value}`} className="font-medium">
+                                {type.label}
+                              </Label>
+                              <p className="text-sm text-gray-500">
+                                Receber notificações de {type.label.toLowerCase()}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch 
+                            id={`type-${type.value}`} 
+                            defaultChecked={['message', 'review', 'system'].includes(type.value)}
+                          />
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Frequência */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-orange-600" />
+                      Frequência e Horários
+                    </CardTitle>
+                    <CardDescription>
+                      Configure quando e com que frequência receber notificações
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="frequency">Frequência de notificações</Label>
+                        <Select defaultValue="immediate">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a frequência" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="immediate">Imediata</SelectItem>
+                            <SelectItem value="hourly">A cada hora</SelectItem>
+                            <SelectItem value="daily">Diária</SelectItem>
+                            <SelectItem value="weekly">Semanal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="start-time">Horário inicial</Label>
+                          <Input 
+                            id="start-time" 
+                            type="time" 
+                            defaultValue="08:00"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="end-time">Horário final</Label>
+                          <Input 
+                            id="end-time" 
+                            type="time" 
+                            defaultValue="22:00"
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="quiet-hours">Horário silencioso</Label>
+                          <p className="text-sm text-gray-500">Não receber notificações durante a noite</p>
+                        </div>
+                        <Switch id="quiet-hours" defaultChecked />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Prioridade */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                      Prioridades
+                    </CardTitle>
+                    <CardDescription>
+                      Configure quais prioridades de notificação receber
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {PRIORITY_LEVELS.map((priority) => (
+                      <div key={priority.value} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Badge className={`${priority.color} text-xs`}>
+                            {priority.label}
+                          </Badge>
+                          <div>
+                            <Label htmlFor={`priority-${priority.value}`} className="font-medium">
+                              Notificações {priority.label}
+                            </Label>
+                            <p className="text-sm text-gray-500">
+                              Receber notificações de prioridade {priority.label.toLowerCase()}
+                            </p>
+                          </div>
+                        </div>
+                        <Switch 
+                          id={`priority-${priority.value}`} 
+                          defaultChecked={['normal', 'high', 'urgent'].includes(priority.value)}
+                        />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Som e Vibração */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-yellow-600" />
+                      Som e Vibração
+                    </CardTitle>
+                    <CardDescription>
+                      Configure como as notificações são apresentadas
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -765,6 +906,236 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                         <p className="text-sm text-gray-500">Mostrar notificações na área de trabalho</p>
                       </div>
                       <Switch id="desktop" defaultChecked />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="sound-type">Tipo de som</Label>
+                      <Select defaultValue="default">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o som" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="default">Padrão</SelectItem>
+                          <SelectItem value="gentle">Suave</SelectItem>
+                          <SelectItem value="loud">Alto</SelectItem>
+                          <SelectItem value="custom">Personalizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Email */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-blue-600" />
+                      Notificações por Email
+                    </CardTitle>
+                    <CardDescription>
+                      Configure notificações por email
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="email-notifications">Notificações por email</Label>
+                        <p className="text-sm text-gray-500">Receber notificações por email</p>
+                      </div>
+                      <Switch id="email-notifications" defaultChecked />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="email-digest">Resumo diário</Label>
+                        <p className="text-sm text-gray-500">Receber um resumo diário por email</p>
+                      </div>
+                      <Switch id="email-digest" defaultChecked />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="email-frequency">Frequência do email</Label>
+                      <Select defaultValue="daily">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a frequência" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="immediate">Imediato</SelectItem>
+                          <SelectItem value="hourly">A cada hora</SelectItem>
+                          <SelectItem value="daily">Diário</SelectItem>
+                          <SelectItem value="weekly">Semanal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de SMS */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Phone className="w-5 h-5 text-green-600" />
+                      Notificações por SMS
+                    </CardTitle>
+                    <CardDescription>
+                      Configure notificações por SMS (apenas para notificações urgentes)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="sms-notifications">SMS para urgências</Label>
+                        <p className="text-sm text-gray-500">Receber SMS apenas para notificações urgentes</p>
+                      </div>
+                      <Switch id="sms-notifications" />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="phone-number">Número de telefone</Label>
+                      <Input 
+                        id="phone-number" 
+                        type="tel" 
+                        placeholder="(11) 99999-9999"
+                        className="mt-1"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Localização */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-red-600" />
+                      Notificações por Localização
+                    </CardTitle>
+                    <CardDescription>
+                      Configure notificações baseadas na sua localização
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="location-notifications">Notificações por localização</Label>
+                        <p className="text-sm text-gray-500">Receber notificações baseadas na localização</p>
+                      </div>
+                      <Switch id="location-notifications" />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="location-radius">Raio de notificação (km)</Label>
+                      <Select defaultValue="10">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o raio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 km</SelectItem>
+                          <SelectItem value="5">5 km</SelectItem>
+                          <SelectItem value="10">10 km</SelectItem>
+                          <SelectItem value="25">25 km</SelectItem>
+                          <SelectItem value="50">50 km</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações de Privacidade */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-indigo-600" />
+                      Privacidade
+                    </CardTitle>
+                    <CardDescription>
+                      Configure as configurações de privacidade das notificações
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show-content">Mostrar conteúdo</Label>
+                        <p className="text-sm text-gray-500">Mostrar conteúdo das notificações na tela de bloqueio</p>
+                      </div>
+                      <Switch id="show-content" defaultChecked />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="show-sender">Mostrar remetente</Label>
+                        <p className="text-sm text-gray-500">Mostrar nome do remetente nas notificações</p>
+                      </div>
+                      <Switch id="show-sender" defaultChecked />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="group-notifications">Agrupar notificações</Label>
+                        <p className="text-sm text-gray-500">Agrupar notificações do mesmo tipo</p>
+                      </div>
+                      <Switch id="group-notifications" defaultChecked />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Configurações Avançadas */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-gray-600" />
+                      Configurações Avançadas
+                    </CardTitle>
+                    <CardDescription>
+                      Configurações avançadas do sistema de notificações
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="max-notifications">Máximo de notificações</Label>
+                      <Select defaultValue="50">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o máximo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10 notificações</SelectItem>
+                          <SelectItem value="25">25 notificações</SelectItem>
+                          <SelectItem value="50">50 notificações</SelectItem>
+                          <SelectItem value="100">100 notificações</SelectItem>
+                          <SelectItem value="unlimited">Ilimitado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="auto-delete">Auto-exclusão</Label>
+                      <Select defaultValue="7">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 dia</SelectItem>
+                          <SelectItem value="3">3 dias</SelectItem>
+                          <SelectItem value="7">7 dias</SelectItem>
+                          <SelectItem value="30">30 dias</SelectItem>
+                          <SelectItem value="never">Nunca</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="mark-read-auto">Marcar como lida automaticamente</Label>
+                        <p className="text-sm text-gray-500">Marcar notificações como lidas após visualizar</p>
+                      </div>
+                      <Switch id="mark-read-auto" defaultChecked />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="sync-devices">Sincronizar entre dispositivos</Label>
+                        <p className="text-sm text-gray-500">Sincronizar notificações entre todos os dispositivos</p>
+                      </div>
+                      <Switch id="sync-devices" defaultChecked />
                     </div>
                   </CardContent>
                 </Card>
