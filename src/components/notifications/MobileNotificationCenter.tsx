@@ -31,7 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { NotificationSettingsModal } from './NotificationSettingsModal'
+import { NotificationSettingsOnlyModal } from './NotificationSettingsOnlyModal'
 
 interface MobileNotificationCenterProps {
   isOpen: boolean
@@ -325,7 +325,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
       </SheetContent>
       
       {/* Modal de Configurações */}
-      <NotificationSettingsModal 
+      <NotificationSettingsOnlyModal 
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
       />
