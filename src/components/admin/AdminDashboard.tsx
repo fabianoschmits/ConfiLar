@@ -511,34 +511,60 @@ export function AdminDashboard() {
         </Button>
       </div>
 
-      {/* Tabs principais */}
+      {/* Tabs principais - Responsivo com scroll horizontal */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-8">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="activity">Atividade</TabsTrigger>
-          <TabsTrigger value="reports">Denúncias</TabsTrigger>
-          <TabsTrigger value="bans">Banimentos</TabsTrigger>
-          <TabsTrigger value="system">Sistema</TabsTrigger>
-          <TabsTrigger value="monitoring">Monitoramento</TabsTrigger>
-          <TabsTrigger value="tools">Ferramentas</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-8 gap-1 p-1">
+            <TabsTrigger value="overview" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Visão Geral</span>
+              <span className="sm:hidden">Geral</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Usuários</span>
+              <span className="sm:hidden">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Atividade</span>
+              <span className="sm:hidden">Ativ</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Denúncias</span>
+              <span className="sm:hidden">Denún</span>
+            </TabsTrigger>
+            <TabsTrigger value="bans" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Banimentos</span>
+              <span className="sm:hidden">Bans</span>
+            </TabsTrigger>
+            <TabsTrigger value="system" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Sistema</span>
+              <span className="sm:hidden">Sist</span>
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Monitoramento</span>
+              <span className="sm:hidden">Monitor</span>
+            </TabsTrigger>
+            <TabsTrigger value="tools" className="whitespace-nowrap text-xs sm:text-sm">
+              <span className="hidden sm:inline">Ferramentas</span>
+              <span className="sm:hidden">Tools</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Tab: Visão Geral */}
         <TabsContent value="overview" className="space-y-6">
-          {/* Métricas principais */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Métricas principais - Mobile-first */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total de Usuários</p>
-                    <p className="text-3xl font-bold text-gray-900">{userStats?.total_users || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Usuários</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{userStats?.total_users || 0}</p>
                   </div>
-                  <Users className="h-8 w-8 text-blue-500" />
+                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-green-600">
+                  <Badge variant="outline" className="text-green-600 text-xs">
                     +{userStats?.new_users_today || 0} hoje
                   </Badge>
                 </div>
@@ -546,16 +572,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Usuários Ativos (24h)</p>
-                    <p className="text-3xl font-bold text-gray-900">{userStats?.active_users_24h || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Usuários Ativos (24h)</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{userStats?.active_users_24h || 0}</p>
                   </div>
-                  <Activity className="h-8 w-8 text-green-500" />
+                  <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-blue-600">
+                  <Badge variant="outline" className="text-blue-600 text-xs">
                     {Math.round(((userStats?.active_users_24h || 0) / (userStats?.total_users || 1)) * 100)}% ativos
                   </Badge>
                 </div>
@@ -563,16 +589,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Posts (24h)</p>
-                    <p className="text-3xl font-bold text-gray-900">{systemStats?.posts_last_24h || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Posts (24h)</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{systemStats?.posts_last_24h || 0}</p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-purple-500" />
+                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-purple-600">
+                  <Badge variant="outline" className="text-purple-600 text-xs">
                     {systemStats?.total_posts || 0} total
                   </Badge>
                 </div>
@@ -580,16 +606,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Mensagens (24h)</p>
-                    <p className="text-3xl font-bold text-gray-900">{systemStats?.messages_last_24h || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Mensagens (24h)</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{systemStats?.messages_last_24h || 0}</p>
                   </div>
-                  <MessageCircle className="h-8 w-8 text-orange-500" />
+                  <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-orange-600">
+                  <Badge variant="outline" className="text-orange-600 text-xs">
                     {systemStats?.total_messages || 0} total
                   </Badge>
                 </div>
@@ -597,17 +623,17 @@ export function AdminDashboard() {
             </Card>
           </div>
 
-          {/* Saúde do sistema */}
+          {/* Saúde do sistema - Mobile-first */}
           {systemHealth && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
                   Saúde do Sistema
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-900">
                       {getHealthIcon(systemHealth.database_status)}
@@ -646,25 +672,25 @@ export function AdminDashboard() {
 
         {/* Tab: Usuários */}
         <TabsContent value="users" className="space-y-6">
-          {/* Estatísticas de usuários */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Estatísticas de usuários - Mobile-first */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Distribuição por Tipo</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-lg">Distribuição por Tipo</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="pt-0">
+                <div className="space-y-2 sm:space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Profissionais</span>
-                    <Badge variant="outline">{userStats?.professional_users || 0}</Badge>
+                    <span className="text-xs sm:text-sm">Profissionais</span>
+                    <Badge variant="outline" className="text-xs">{userStats?.professional_users || 0}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Clientes</span>
-                    <Badge variant="outline">{userStats?.client_users || 0}</Badge>
+                    <span className="text-xs sm:text-sm">Clientes</span>
+                    <Badge variant="outline" className="text-xs">{userStats?.client_users || 0}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Verificados</span>
-                    <Badge variant="outline" className="text-green-600">
+                    <span className="text-xs sm:text-sm">Verificados</span>
+                    <Badge variant="outline" className="text-xs text-green-600">
                       {userStats?.verified_users || 0}
                     </Badge>
                   </div>
@@ -673,15 +699,15 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Usuários por Estado</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-lg">Usuários por Estado</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+              <CardContent className="pt-0">
+                <div className="space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
                   {userStats?.users_by_state.slice(0, 10).map((state, index) => (
                     <div key={state.state} className="flex justify-between items-center">
-                      <span className="text-sm">{state.state}</span>
-                      <Badge variant="outline">{state.count}</Badge>
+                      <span className="text-xs sm:text-sm truncate">{state.state}</span>
+                      <Badge variant="outline" className="text-xs">{state.count}</Badge>
                     </div>
                   ))}
                 </div>
@@ -689,15 +715,15 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Crescimento Mensal</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-lg">Crescimento Mensal</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+              <CardContent className="pt-0">
+                <div className="space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
                   {userStats?.users_by_month.slice(-6).map((month, index) => (
                     <div key={month.month} className="flex justify-between items-center">
-                      <span className="text-sm">{month.month}</span>
-                      <Badge variant="outline">{month.count}</Badge>
+                      <span className="text-xs sm:text-sm truncate">{month.month}</span>
+                      <Badge variant="outline" className="text-xs">{month.count}</Badge>
                     </div>
                   ))}
                 </div>
@@ -705,31 +731,31 @@ export function AdminDashboard() {
             </Card>
           </div>
 
-          {/* Usuários mais ativos */}
+          {/* Usuários mais ativos - Mobile-first */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
                 Usuários Mais Ativos
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pt-0">
+              <div className="space-y-2 sm:space-y-3">
                 {topUsers.slice(0, 10).map((user, index) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">#{index + 1}</Badge>
-                      <div>
-                        <div className="font-medium">{user.full_name}</div>
-                        <div className="text-sm text-gray-600">
+                  <div key={user.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm sm:text-base truncate">{user.full_name}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 truncate">
                           {user.user_type === 'professional' ? 'Profissional' : 'Cliente'} • {user.state}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{user.posts_count} posts</Badge>
-                      <Badge variant="outline">{user.messages_count} msgs</Badge>
-                      {user.is_verified && <Badge className="bg-green-100 text-green-700">✓</Badge>}
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">{user.posts_count} posts</Badge>
+                      <Badge variant="outline" className="text-xs">{user.messages_count} msgs</Badge>
+                      {user.is_verified && <Badge className="bg-green-100 text-green-700 text-xs">✓</Badge>}
                     </div>
                   </div>
                 ))}
@@ -738,36 +764,36 @@ export function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Tab: Atividade */}
-        <TabsContent value="activity" className="space-y-6">
+        {/* Tab: Atividade - Mobile-first */}
+        <TabsContent value="activity" className="space-y-4 sm:space-y-6">
           {/* Usuários ativos nas últimas 24h */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
                 Usuários Ativos (Últimas 24h)
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+            <CardContent className="pt-0">
+              <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
                 {activeUsers.slice(0, 20).map((user, index) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">#{index + 1}</Badge>
-                      <div>
-                        <div className="font-medium">{user.full_name}</div>
-                        <div className="text-sm text-gray-600">
+                  <div key={user.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                      <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm sm:text-base truncate">{user.full_name}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 truncate">
                           {user.user_type === 'professional' ? 'Profissional' : 'Cliente'} • {user.city}, {user.state}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 truncate">
                           Última atividade: {new Date(user.last_activity).toLocaleString()}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{user.posts_count} posts</Badge>
-                      <Badge variant="outline">{user.messages_count} msgs</Badge>
-                      {user.is_verified && <Badge className="bg-green-100 text-green-700">✓</Badge>}
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">{user.posts_count} posts</Badge>
+                      <Badge variant="outline" className="text-xs">{user.messages_count} msgs</Badge>
+                      {user.is_verified && <Badge className="bg-green-100 text-green-700 text-xs">✓</Badge>}
                     </div>
                   </div>
                 ))}
@@ -775,30 +801,30 @@ export function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Atividade recente */}
+          {/* Atividade recente - Mobile-first */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                 Atividade Recente
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+            <CardContent className="pt-0">
+              <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
                 {recentActivity.map((activity, index) => (
-                  <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
                     <div className="flex-shrink-0">
-                      {activity.type === 'post' && <TrendingUp className="h-4 w-4 text-blue-500" />}
-                      {activity.type === 'message' && <MessageCircle className="h-4 w-4 text-green-500" />}
-                      {activity.type === 'notification' && <AlertTriangle className="h-4 w-4 text-orange-500" />}
+                      {activity.type === 'post' && <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />}
+                      {activity.type === 'message' && <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />}
+                      {activity.type === 'notification' && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm">{activity.title}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-medium text-xs sm:text-sm truncate">{activity.title}</div>
+                      <div className="text-xs text-gray-500 truncate">
                         {activity.user?.full_name} • {new Date(activity.created_at).toLocaleString()}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs flex-shrink-0">
                       {activity.type}
                     </Badge>
                   </div>
@@ -818,21 +844,21 @@ export function AdminDashboard() {
           <BansManagement />
         </TabsContent>
 
-        {/* Tab: Sistema */}
-        <TabsContent value="system" className="space-y-6">
+        {/* Tab: Sistema - Mobile-first */}
+        <TabsContent value="system" className="space-y-4 sm:space-y-6">
           {/* Estatísticas do sistema */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total de Posts</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemStats?.total_posts || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Posts</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_posts || 0}</p>
                   </div>
-                  <TrendingUp className="h-6 w-6 text-blue-500" />
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-blue-600">
+                  <Badge variant="outline" className="text-blue-600 text-xs">
                     +{systemStats?.posts_last_24h || 0} hoje
                   </Badge>
                 </div>
@@ -840,16 +866,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total de Mensagens</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemStats?.total_messages || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Mensagens</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_messages || 0}</p>
                   </div>
-                  <MessageCircle className="h-6 w-6 text-green-500" />
+                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-green-600">
+                  <Badge variant="outline" className="text-green-600 text-xs">
                     +{systemStats?.messages_last_24h || 0} hoje
                   </Badge>
                 </div>
@@ -857,16 +883,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Notificações</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemStats?.total_notifications || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Notificações</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_notifications || 0}</p>
                   </div>
-                  <AlertTriangle className="h-6 w-6 text-orange-500" />
+                  <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-orange-600">
+                  <Badge variant="outline" className="text-orange-600 text-xs">
                     +{systemStats?.notifications_last_24h || 0} hoje
                   </Badge>
                 </div>
@@ -874,16 +900,16 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Avaliações</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemStats?.total_reviews || 0}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Avaliações</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_reviews || 0}</p>
                   </div>
-                  <Star className="h-6 w-6 text-yellow-500" />
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 flex-shrink-0" />
                 </div>
                 <div className="mt-2">
-                  <Badge variant="outline" className="text-yellow-600">
+                  <Badge variant="outline" className="text-yellow-600 text-xs">
                     +{systemStats?.reviews_last_24h || 0} hoje
                   </Badge>
                 </div>
@@ -892,36 +918,36 @@ export function AdminDashboard() {
           </div>
         </TabsContent>
 
-        {/* Tab: Monitoramento */}
-        <TabsContent value="monitoring" className="space-y-6">
+        {/* Tab: Monitoramento - Mobile-first */}
+        <TabsContent value="monitoring" className="space-y-4 sm:space-y-6">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               <strong>Monitoramento Avançado:</strong> Esta seção mostra métricas detalhadas de performance e saúde do sistema.
             </AlertDescription>
           </Alert>
 
           {/* Métricas de performance */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Performance do Sistema</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base">Performance do Sistema</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-0">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Tempo de Resposta da API</span>
-                    <Badge variant="outline">{systemHealth?.api_response_time || 0}ms</Badge>
+                    <span className="text-xs sm:text-sm">Tempo de Resposta da API</span>
+                    <Badge variant="outline" className="text-xs">{systemHealth?.api_response_time || 0}ms</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Taxa de Erro</span>
-                    <Badge variant="outline" className={systemHealth?.error_rate === 0 ? 'text-green-600' : 'text-red-600'}>
+                    <span className="text-xs sm:text-sm">Taxa de Erro</span>
+                    <Badge variant="outline" className={`text-xs ${systemHealth?.error_rate === 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {systemHealth?.error_rate || 0}%
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Uptime</span>
-                    <Badge variant="outline" className="text-green-600">
+                    <span className="text-xs sm:text-sm">Uptime</span>
+                    <Badge variant="outline" className="text-xs text-green-600">
                       {systemHealth?.uptime || 0}%
                     </Badge>
                   </div>
@@ -930,20 +956,20 @@ export function AdminDashboard() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>Uso de Recursos</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm sm:text-base">Uso de Recursos</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="pt-0">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Uso de Memória</span>
-                    <Badge variant="outline" className={systemHealth?.memory_usage && systemHealth.memory_usage > 80 ? 'text-red-600' : 'text-green-600'}>
+                    <span className="text-xs sm:text-sm">Uso de Memória</span>
+                    <Badge variant="outline" className={`text-xs ${systemHealth?.memory_usage && systemHealth.memory_usage > 80 ? 'text-red-600' : 'text-green-600'}`}>
                       {systemHealth?.memory_usage || 0}%
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm">Uso de CPU</span>
-                    <Badge variant="outline" className={systemHealth?.cpu_usage && systemHealth.cpu_usage > 80 ? 'text-red-600' : 'text-green-600'}>
+                    <span className="text-xs sm:text-sm">Uso de CPU</span>
+                    <Badge variant="outline" className={`text-xs ${systemHealth?.cpu_usage && systemHealth.cpu_usage > 80 ? 'text-red-600' : 'text-green-600'}`}>
                       {systemHealth?.cpu_usage || 0}%
                     </Badge>
                   </div>
@@ -953,57 +979,57 @@ export function AdminDashboard() {
           </div>
         </TabsContent>
 
-        {/* Tab: Ferramentas */}
-        <TabsContent value="tools" className="space-y-6">
+        {/* Tab: Ferramentas - Mobile-first */}
+        <TabsContent value="tools" className="space-y-4 sm:space-y-6">
           <Alert>
             <Settings className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="text-sm">
               <strong>Ferramentas Administrativas:</strong> Use estas ferramentas para gerenciar o sistema e resolver problemas.
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trash2 className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   Limpeza de Dados
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full">
-                  <Trash2 className="h-4 w-4 mr-2" />
+              <CardContent className="pt-0 space-y-2 sm:space-y-3">
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Limpar Notificações Antigas
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Database className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <Database className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Limpar Dados de Teste
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Otimizar Banco de Dados
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5" />
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
                   Gerenciamento de Usuários
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full">
-                  <UserCheck className="h-4 w-4 mr-2" />
+              <CardContent className="pt-0 space-y-2 sm:space-y-3">
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Verificar Usuários
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <UserX className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <UserX className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Suspender Usuários
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Shield className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="w-full text-xs sm:text-sm">
+                  <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Verificar Permissões
                 </Button>
               </CardContent>
