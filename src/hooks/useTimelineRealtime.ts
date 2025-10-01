@@ -48,32 +48,13 @@ export function useTimelineRealtime() {
       )
       .subscribe()
 
-    // Configurar Realtime para notifications
-    const notificationsChannel = supabase
-      .channel('timeline-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications'
-        },
-        (payload) => {
-          console.log('🔄 Notificação atualizada:', payload)
-          
-          // Invalidar cache da timeline
-          queryClient.invalidateQueries({
-            queryKey: ['unified-timeline']
-          })
-        }
-      )
-      .subscribe()
+    // Realtime para notificações removido - notificações não aparecem mais no feed
 
     // Cleanup
     return () => {
       feedPostsChannel.unsubscribe()
       activityChannel.unsubscribe()
-      notificationsChannel.unsubscribe()
+      // notificationsChannel removido
     }
   }, [queryClient])
 }

@@ -10,7 +10,7 @@ import { StarRating } from '@/components/ui/StarRating'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { NotificationDropdown } from '@/components/notifications/NotificationDropdown'
+import { SimpleHeaderBell } from '@/components/notifications/SimpleHeaderBell'
 import { UserReportsModal } from '@/components/UserReportsModal'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
@@ -264,7 +264,7 @@ export function ModernHeader({
               
               {/* Notificações */}
               <div className="relative">
-                <NotificationDropdown />
+                <SimpleHeaderBell />
               </div>
               
               {/* Avatar e Menu do Usuário */}

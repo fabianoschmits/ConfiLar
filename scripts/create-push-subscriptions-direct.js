@@ -110,3 +110,4 @@ async function createPushSubscriptionsTable() {
 
 createPushSubscriptionsTable();
 
+

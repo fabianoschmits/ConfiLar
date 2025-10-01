@@ -21,6 +21,9 @@ import { Suspense } from "react"
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
 import { BanNotification } from "@/components/BanNotification"
+import { DevTestButton } from "@/components/dev/DevTestButton"
+import { useCompleteNotifications } from "@/hooks/useCompleteNotifications"
+import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -82,6 +85,8 @@ export default async function RootLayout({
                         </Suspense>
                         <FloatingChatWrapper />
                         <LoadingOverlayProvider />
+                        <NewNotificationSystem />
+                        {/* <DevTestButton /> */}
                         <Toaster position="top-right" richColors />
                         {/* <AuthContextDebug /> */}
                       </FloatingChatProviderSimple>

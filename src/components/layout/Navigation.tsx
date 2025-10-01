@@ -5,6 +5,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useOpenMessages } from '@/hooks/useOpenMessages'
+import { NewNotificationBell } from '@/components/notifications/NewNotificationBell'
 import { 
   Home, 
   Search, 
@@ -14,7 +15,8 @@ import {
   Plus,
   Briefcase,
   Calendar,
-  HelpCircle
+  HelpCircle,
+  TestTube
 } from 'lucide-react'
 
 export function Navigation() {
@@ -117,10 +119,26 @@ export function Navigation() {
                 </Button>
               </>
             )}
+
+            {/* Link para página de teste (apenas em desenvolvimento) */}
+            {process.env.NODE_ENV === 'development' && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => handleNavigation('/teste-notificacoes')}
+                className="text-orange-600 hover:text-orange-800"
+              >
+                <TestTube className="h-4 w-4 mr-2" />
+                Teste Notificações
+              </Button>
+            )}
           </div>
 
           {/* Perfil e Ações */}
           <div className="flex items-center space-x-4">
+            {/* Sino de Notificações */}
+                <NewNotificationBell />
+
             <Button 
               variant="ghost" 
               size="sm"

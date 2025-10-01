@@ -172,59 +172,10 @@ export function useAutoNotifications() {
     }
   }, [])
 
-  // Post de avaliação entre usuários (UMA VEZ POR AÇÃO)
+  // Post de avaliação entre usuários (DESABILITADO - removido por solicitação)
   const createReviewPost = useCallback(async (reviewerId: string, reviewerName: string, reviewedId: string, reviewedName: string, rating: number, comment?: string) => {
-    try {
-      console.log('⭐ Verificando se já existe post de avaliação:', reviewerName, '→', reviewedName)
-      
-      // Verificar se já existe um post de avaliação para esta combinação (incluindo deletados)
-      const { data: existingPost, error: checkError } = await supabase
-        .from('feed_posts')
-        .select('id, created_at')
-        .eq('user_id', reviewerId)
-        .eq('professional_id', reviewedId)
-        .eq('metadata->>type', 'review')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (existingPost) {
-        console.log('⚠️ Post de avaliação já existe para esta combinação, pulando...')
-        return { success: true, data: existingPost, skipped: true }
-      }
-      
-      console.log('⭐ Criando post de avaliação:', reviewerName, '→', reviewedName, rating, 'estrelas')
-      const stars = '⭐'.repeat(Math.min(rating, 5))
-      const message = `⭐ ${reviewerName} avaliou ${reviewedName} com ${stars} (${rating}/5)`
-      
-      const { data, error } = await supabase
-        .from('feed_posts')
-        .insert({
-          professional_id: reviewedId,
-          user_id: reviewerId,
-          title: `⭐ ${reviewerName} avaliou ${reviewedName}`,
-          description: message,
-          images: [],
-          location_state: 'SP',
-          location_city: 'São Paulo',
-          likes_count: 0,
-          comments_count: 0,
-          is_active: true,
-          is_public: true,
-          is_featured: false,
-          tags: ['sistema', 'avaliacao'],
-          metadata: { type: 'review', reviewer: reviewerName, reviewed: reviewedName, rating: rating }
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      console.log('✅ Post de avaliação criado:', data.id)
-      return { success: true, data }
-    } catch (error) {
-      console.error('❌ Erro ao criar post de avaliação:', error)
-      return { success: false, error }
-    }
+    console.log('⚠️ Post de avaliação DESABILITADO por solicitação')
+    return { success: true, skipped: true, disabled: true }
   }, [])
 
   // Post de favoritos (UMA VEZ POR AÇÃO)
@@ -310,59 +261,10 @@ export function useAutoNotifications() {
   }, [])
 
   // Post de estatísticas da plataforma (UMA VEZ POR DIA)
+  // Post de estatísticas gerais (DESABILITADO - removido por solicitação)
   const createStatsPost = useCallback(async (stats: { totalUsers: number, totalProjects: number, totalReviews: number }) => {
-    try {
-      console.log('📊 Verificando se já existe post de estatísticas hoje')
-      
-      // Verificar se já existe um post de estatísticas hoje
-      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-      const { data: existingPost, error: checkError } = await supabase
-        .from('feed_posts')
-        .select('id, created_at')
-        .eq('user_id', 'system')
-        .eq('metadata->>type', 'platform_stats')
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .lte('created_at', `${today}T23:59:59.999Z`)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (existingPost) {
-        console.log('⚠️ Post de estatísticas já existe para hoje, pulando...')
-        return { success: true, data: existingPost, skipped: true }
-      }
-      
-      console.log('📊 Criando post de estatísticas:', stats)
-      const message = `📊 **Estatísticas da Plataforma**\n\n👥 **${stats.totalUsers}** usuários cadastrados\n💼 **${stats.totalProjects}** projetos realizados\n⭐ **${stats.totalReviews}** avaliações\n\nNossa comunidade está crescendo! 🚀`
-      
-      const { data, error } = await supabase
-        .from('feed_posts')
-        .insert({
-          professional_id: 'system', // ID do sistema
-          user_id: 'system',
-          title: `📊 Estatísticas da Plataforma`,
-          description: message,
-          images: [],
-          location_state: 'SP',
-          location_city: 'São Paulo',
-          likes_count: 0,
-          comments_count: 0,
-          is_active: true,
-          is_public: true,
-          is_featured: false,
-          tags: ['sistema', 'estatisticas'],
-          metadata: { type: 'platform_stats', stats: stats }
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      console.log('✅ Post de estatísticas criado:', data.id)
-      return { success: true, data }
-    } catch (error) {
-      console.error('❌ Erro ao criar post de estatísticas:', error)
-      return { success: false, error }
-    }
+    console.log('⚠️ Post de estatísticas DESABILITADO por solicitação')
+    return { success: true, skipped: true, disabled: true }
   }, [])
 
   return {

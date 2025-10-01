@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/hooks/useUnifiedAuth';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export interface Notification {
   id: string;
@@ -48,15 +48,22 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProviderSimple: React.FC<NotificationProviderProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
+  console.log('🔔 NotificationProviderSimple: Renderizando com user:', user?.id || 'null');
+
   // Carregar notificações do banco de dados
   const loadNotifications = async () => {
     try {
-      if (!user) return;
+      if (!user) {
+        console.log('🔔 NotificationProviderSimple: Usuário não autenticado, pulando carregamento')
+        return;
+      }
+
+      console.log('🔔 NotificationProviderSimple: Carregando notificações para usuário:', user.id)
 
       const { data, error } = await supabase
         .from('notifications')
@@ -66,9 +73,11 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
         .limit(50);
 
       if (error) {
-        console.error('Erro ao carregar notificações:', error);
+        console.error('❌ Erro ao carregar notificações:', error);
         return;
       }
+
+      console.log(`🔔 NotificationProviderSimple: ${data?.length || 0} notificações carregadas`)
 
       const formattedNotifications = data?.map(notification => ({
         ...notification,
@@ -77,8 +86,11 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
       })) || [];
 
       setNotifications(formattedNotifications);
+      
+      const unreadCount = formattedNotifications.filter(n => !n.is_read).length
+      console.log(`🔔 NotificationProviderSimple: ${unreadCount} notificações não lidas`)
     } catch (error) {
-      console.error('Erro ao carregar notificações:', error);
+      console.error('❌ Erro ao carregar notificações:', error);
     }
   };
 
@@ -231,10 +243,100 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
   // Calcular contagem de não lidas
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  // Carregar notificações na inicialização
+  // Carregar notificações na inicialização e quando o usuário estiver disponível
   useEffect(() => {
-    loadNotifications();
-  }, []);
+    if (user) {
+      console.log('🔔 NotificationProviderSimple: Usuário disponível, carregando notificações')
+      loadNotifications();
+    }
+  }, [user]);
+
+  // Configurar realtime para notificações
+  useEffect(() => {
+    if (!user) return
+
+    console.log('🔔 Configurando realtime para notificações do usuário:', user.id)
+
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔔 Nova notificação recebida via realtime:', payload.new)
+          const newNotification = payload.new as Notification
+          
+          // Adicionar nova notificação ao estado
+          setNotifications(prev => [newNotification, ...prev])
+          
+          // Mostrar toast para nova notificação
+          toast(newNotification.title, {
+            description: newNotification.message,
+            action: newNotification.action_url ? {
+              label: 'Ver',
+              onClick: () => {
+                if (newNotification.action_url?.startsWith('#')) {
+                  // Se for um fragmento (como #chat), não abrir em nova aba
+                  window.location.hash = newNotification.action_url
+                } else {
+                  window.open(newNotification.action_url, '_blank')
+                }
+              }
+            } : undefined
+          })
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔔 Notificação atualizada via realtime:', payload.new)
+          const updatedNotification = payload.new as Notification
+          
+          // Atualizar notificação no estado
+          setNotifications(prev => 
+            prev.map(notification => 
+              notification.id === updatedNotification.id ? updatedNotification : notification
+            )
+          )
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('🔔 Notificação deletada via realtime:', payload.old)
+          const deletedNotification = payload.old as Notification
+          
+          // Remover notificação do estado
+          setNotifications(prev => 
+            prev.filter(notification => notification.id !== deletedNotification.id)
+          )
+        }
+      )
+      .subscribe()
+
+    // Cleanup
+    return () => {
+      console.log('🔔 Desconectando realtime de notificações')
+      channel.unsubscribe()
+    }
+  }, [user])
 
   // Verificar permissão na inicialização
   useEffect(() => {

@@ -22,6 +22,7 @@ import {
   Info
 } from 'lucide-react'
 import { useNotifications } from './NotificationSystem'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -40,6 +41,8 @@ export function SimpleNotificationCenter({ isOpen, onClose }: SimpleNotification
     clearAll,
     isLoading
   } = useNotifications()
+  
+  const { openChat } = useFloatingChat()
 
   // Obter ícone por tipo
   const getIconByType = (type: string) => {
@@ -239,16 +242,27 @@ export function SimpleNotificationCenter({ isOpen, onClose }: SimpleNotification
                                 </Badge>
                               </div>
                               
-                              {notification.action_url && (
+                              {(notification.action_url || notification.type === 'message') && (
                                 <Button 
                                   size="sm" 
                                   variant="outline"
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    window.open(notification.action_url, '_blank')
+                                    // Se for notificação de mensagem, abrir chat
+                                    if (notification.type === 'message' && notification.metadata?.conversation_id) {
+                                      // Para conversation_id, não passar userName para que seja tratado como conversationId
+                                      openChat(notification.metadata.conversation_id)
+                                    } else if (notification.type === 'message' && notification.metadata?.sender_id) {
+                                      const senderId = notification.metadata.sender_id as string
+                                      const senderName = (notification.metadata.sender_name as string) || 'Usuário'
+                                      openChat(senderId, senderName)
+                                    } else {
+                                      // Para outros tipos de notificação, usar action_url
+                                      window.open(notification.action_url, '_blank')
+                                    }
                                   }}
                                 >
-                                  Ver detalhes
+                                  {notification.type === 'message' ? 'Abrir conversa' : 'Ver detalhes'}
                                 </Button>
                               )}
                             </div>

@@ -7,11 +7,11 @@ const nextConfig = {
   env: {
     PORT: '3000',
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000', 'localhost:3001', 'vercel.app'],
-    },
-  },
+  // experimental: {
+  //   serverActions: {
+  //     allowedOrigins: ['localhost:3000', 'localhost:3001', 'vercel.app'],
+  //   },
+  // },
   images: {
     remotePatterns: [
       {
