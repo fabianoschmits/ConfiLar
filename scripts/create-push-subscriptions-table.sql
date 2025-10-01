@@ -58,3 +58,4 @@ COMMENT ON COLUMN push_subscriptions.endpoint IS 'Endpoint do service worker par
 COMMENT ON COLUMN push_subscriptions.p256dh IS 'Chave pública P256DH para criptografia';
 COMMENT ON COLUMN push_subscriptions.auth IS 'Chave de autenticação para push notifications';
 
+

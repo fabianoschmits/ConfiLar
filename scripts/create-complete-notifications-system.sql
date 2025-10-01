@@ -278,3 +278,4 @@ COMMENT ON COLUMN notification_queue.status IS 'Status: pending, sent, failed, c
 COMMENT ON COLUMN notification_queue.retry_count IS 'Número de tentativas de reenvio';
 COMMENT ON COLUMN notification_queue.max_retries IS 'Número máximo de tentativas';
 
+

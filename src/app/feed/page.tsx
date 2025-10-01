@@ -13,9 +13,9 @@ import { useUnifiedTimelineMock } from '@/hooks/useUnifiedTimelineMock'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
 import { usePostRankingMock } from '@/hooks/usePostRankingMock'
-import { useSmartNotifications } from '@/hooks/useSmartNotifications'
-import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock'
-import { useNotificationTriggers } from '@/hooks/useNotificationTriggers'
+// import { useSmartNotifications } from '@/hooks/useSmartNotifications' // DESABILITADO - causava loop
+// import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock' // DESABILITADO - causava loop
+// import { useNotificationTriggers } from '@/hooks/useNotificationTriggers' // DESABILITADO - causava loop
 import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
@@ -87,8 +87,8 @@ export default function FeedPage() {
     limit: 5
   })
 
-  // Notificações inteligentes
-  const { notifications, unreadCount } = useSmartNotifications()
+  // Notificações inteligentes (DESABILITADO - causava loop)
+  // const { notifications, unreadCount } = useSmartNotifications()
   
   // Sistema de notificações automáticas (DESABILITADO - agora usa criação direta)
   // useNotificationTriggers()
@@ -195,10 +195,7 @@ export default function FeedPage() {
     }
   }
 
-  const handleNotificationAction = (url: string) => {
-    // Implementar ação da notificação
-    console.log('Ação da notificação:', url)
-  }
+  // handleNotificationAction removido - notificações não aparecem mais no feed
 
   // Verificar se um post está em alta
   const isPostTrending = (postId: string) => {
@@ -234,14 +231,7 @@ export default function FeedPage() {
             activity={item}
           />
         )
-      case 'notification':
-        return (
-          <TimelineNotification
-            key={item.id}
-            notification={item}
-            onAction={handleNotificationAction}
-          />
-        )
+      // case 'notification' removido - notificações não aparecem mais no feed
       default:
         return null
     }
@@ -522,21 +512,10 @@ export default function FeedPage() {
                     </svg>
                   </div>
                   <h3 className="font-semibold text-blue-900">
-                    Notificações {unreadCount > 0 && `(${unreadCount})`}
+                    Notificações (Sistema Desabilitado)
                   </h3>
                 </div>
-                {notifications.length > 0 ? (
-                  <div className="space-y-3">
-                    {notifications.slice(0, 3).map(notification => (
-                      <div key={notification.id} className="text-sm text-gray-600 p-2 bg-gray-50 rounded-lg">
-                        <p className="font-medium">{notification.title}</p>
-                        <p className="text-xs text-gray-500">{notification.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-600 text-sm">Nenhuma notificação no momento</p>
-                )}
+                <p className="text-sm text-gray-500">Sistema de notificações temporariamente desabilitado</p>
               </div>
             </div>
           </div>

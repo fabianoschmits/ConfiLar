@@ -276,7 +276,8 @@ export const NotificationDropdown: React.FC = () => {
       
       // Se tiver conversation_id, usar ele para abrir a conversa específica
       if (notification.metadata.conversation_id) {
-        openChat(notification.metadata.conversation_id, senderId);
+        // Para conversation_id, não passar userName para que seja tratado como conversationId
+        openChat(notification.metadata.conversation_id);
       } else {
         openChat(senderId, senderName);
       }

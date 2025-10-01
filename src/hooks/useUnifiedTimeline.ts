@@ -139,35 +139,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Continuar sem atividades se houver erro
       }
 
-      // Buscar notificações públicas relevantes
-      const { data: notifications, error: notificationsError } = await supabase
-        .from('notifications')
-        .select(`
-          id,
-          user_id,
-          title,
-          message,
-          type,
-          category,
-          is_read,
-          action_url,
-          action_label,
-          created_at,
-          user:profiles!notifications_user_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type
-          )
-        `)
-        .in('category', ['system', 'community', 'achievement'])
-        .order('created_at', { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
-
-      if (notificationsError) {
-        console.warn('Erro ao buscar notificações:', notificationsError)
-        // Continuar sem notificações se houver erro
-      }
+      // Notificações removidas do feed por solicitação
+      // As notificações devem aparecer apenas no sino de notificações, não no feed
+      const notifications: any[] = []
 
       // Transformar posts em TimelinePost
       const timelinePosts = (posts || []).map(post => {
@@ -225,23 +199,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }
       })
 
-      // Transformar notificações em TimelineNotification
-      const timelineNotifications = (notifications || []).map(notification => ({
-        id: notification.id,
-        type: 'notification' as const,
-        created_at: notification.created_at,
-        user_id: notification.user_id,
-        user_name: (notification.user as any)?.full_name || 'Sistema',
-        user_avatar: (notification.user as any)?.avatar_url,
-        user_type: (notification.user as any)?.user_type,
-        title: notification.title,
-        message: notification.message,
-        notification_type: notification.type,
-        category: notification.category,
-        is_read: notification.is_read,
-        action_url: notification.action_url,
-        action_label: notification.action_label
-      }))
+      // Notificações removidas do feed por solicitação
+      const timelineNotifications: any[] = []
 
       // Combinar e ordenar todos os itens
       const allItems = [...timelinePosts, ...timelineActivities, ...timelineNotifications]

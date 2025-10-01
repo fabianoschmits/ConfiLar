@@ -650,6 +650,64 @@ export function useMessages() {
       }
     }
 
+    // Configurar realtime para mensagens
+    const setupRealtime = () => {
+      if (!user?.id) return
+
+      console.log('💬 Configurando realtime para mensagens do usuário:', user.id)
+
+      const channel = supabase
+        .channel('messages-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('💬 Nova mensagem recebida via realtime:', payload.new)
+            // Recarregar conversas para atualizar contadores
+            loadConversations()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `receiver_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('💬 Mensagem atualizada via realtime:', payload.new)
+            // Recarregar conversas para atualizar contadores
+            loadConversations()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'conversations',
+            filter: `client_id=eq.${user.id},professional_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('💬 Nova conversa criada via realtime:', payload.new)
+            // Recarregar conversas para mostrar nova conversa
+            loadConversations()
+          }
+        )
+        .subscribe()
+
+      setRealtimeChannel(channel)
+    }
+
+    // Configurar realtime
+    setupRealtime()
+
     // Verificar imediatamente
     checkUnreadMessages()
 
