@@ -504,13 +504,13 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                       size="sm"
                                       onClick={() => {
                                         // Se for notificação de mensagem, abrir chat
-                                        if (notification.type === 'message' && notification.metadata?.conversation_id) {
+                                        if (notification.type === 'message' && (notification as any).metadata?.conversation_id) {
                                           // Para conversation_id, não passar userName para que seja tratado como conversationId
-                                          openChat(notification.metadata.conversation_id)
+                                          openChat((notification as any).metadata.conversation_id)
                                           markAsRead(notification.id)
-                                        } else if (notification.type === 'message' && notification.metadata?.sender_id) {
-                                          const senderId = notification.metadata.sender_id as string
-                                          const senderName = (notification.metadata.sender_name as string) || 'Usuário'
+                                        } else if (notification.type === 'message' && (notification as any).metadata?.sender_id) {
+                                          const senderId = (notification as any).metadata.sender_id as string
+                                          const senderName = ((notification as any).metadata.sender_name as string) || 'Usuário'
                                           openChat(senderId, senderName)
                                           markAsRead(notification.id)
                                         } else {
