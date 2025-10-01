@@ -45,7 +45,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { NotificationSettingsModal } from './NotificationSettingsModal'
+import { NotificationSettingsOnlyModal } from './NotificationSettingsOnlyModal'
 
 interface ModernNotificationCenterProps {
   isOpen: boolean
@@ -449,7 +449,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
       </SheetContent>
       
       {/* Modal de Configurações */}
-      <NotificationSettingsModal 
+      <NotificationSettingsOnlyModal 
         isOpen={showSettings} 
         onClose={() => setShowSettings(false)} 
       />
