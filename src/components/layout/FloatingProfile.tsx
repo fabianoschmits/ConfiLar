@@ -57,10 +57,13 @@ export const FloatingProfile: React.FC = () => {
       // Fechar o menu expandido
       setIsExpanded(false)
       
-      // Redirecionar para a página de logout
-      window.location.href = '/logout'
+      // Fazer logout e redirecionar diretamente para login
+      await signOut()
+      window.location.href = '/auth'
     } catch (error) {
       console.error('Erro ao sair:', error)
+      // Mesmo com erro, redirecionar para login
+      window.location.href = '/auth'
     }
   };
 

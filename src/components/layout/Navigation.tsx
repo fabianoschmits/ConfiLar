@@ -37,10 +37,12 @@ export function Navigation() {
   const handleLogout = async () => {
     try {
       await signOut()
-      window.location.href = '/logout'
+      // Redirecionar diretamente para a página de login
+      window.location.href = '/auth'
     } catch (error) {
       console.error('Erro ao sair:', error)
-      window.location.href = '/logout'
+      // Mesmo com erro, redirecionar para login
+      window.location.href = '/auth'
     }
   }
 

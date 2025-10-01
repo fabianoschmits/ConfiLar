@@ -185,7 +185,8 @@ export function ModernHeader({
     console.log('Executando logout...')
     setIsMenuExpanded(false)
     await signOut()
-    window.location.href = '/logout'
+    // Redirecionar diretamente para a página de login
+    window.location.href = '/auth'
   }
 
   // Dados do usuário

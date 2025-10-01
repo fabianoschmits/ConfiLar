@@ -254,7 +254,7 @@ export function Sidebar() {
         {
           id: 'logout',
           title: 'SAIR',
-          href: '/logout',
+          href: '/auth',
           icon: <LogOut size={16} strokeWidth={2} />,
           description: 'Desconectar'
         }
