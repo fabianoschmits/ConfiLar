@@ -35,7 +35,29 @@ export function useUserActivity() {
     try {
       const now = new Date().toISOString()
       
-      // Simular dados de atividade por enquanto
+      // Tentar salvar no banco primeiro
+      try {
+        const { data, error } = await supabase
+          .from('user_activity')
+          .upsert({
+            user_id: user.id,
+            last_seen: now,
+            is_online: true,
+            status: 'online',
+            last_activity: now
+          })
+          .select()
+          .single()
+
+        if (!error && data) {
+          setActivity(data)
+          return
+        }
+      } catch (dbError) {
+        console.log('Tabela user_activity não existe, usando dados simulados')
+      }
+
+      // Fallback: dados simulados
       const mockActivity = {
         id: `activity_${user.id}`,
         user_id: user.id,
@@ -48,27 +70,6 @@ export function useUserActivity() {
       }
 
       setActivity(mockActivity)
-      
-      // Tentar salvar no banco (opcional)
-      try {
-        const { data, error } = await supabase
-          .from('user_activity')
-          .upsert({
-            user_id: user.id,
-            last_seen: now,
-            is_online: true,
-            last_activity: now
-          })
-          .select()
-          .single()
-
-        if (!error && data) {
-          setActivity(data)
-        }
-      } catch (dbError) {
-        // Ignorar erro do banco por enquanto
-        console.log('Banco de dados não disponível, usando dados simulados')
-      }
     } catch (err) {
       console.error('Erro ao atualizar atividade:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
@@ -80,27 +81,29 @@ export function useUserActivity() {
     if (!user?.id) return
 
     try {
+      const now = new Date().toISOString()
+      
       // Atualizar estado local
       setActivity(prev => prev ? {
         ...prev,
         is_online: false,
-        last_activity: new Date().toISOString()
+        last_activity: now
       } : null)
 
-      // Tentar salvar no banco (opcional)
+      // Tentar salvar no banco
       try {
         const { error } = await supabase
           .from('user_activity')
           .update({
             is_online: false,
-            last_activity: new Date().toISOString()
+            status: 'offline',
+            last_activity: now
           })
           .eq('user_id', user.id)
 
         if (error) throw error
       } catch (dbError) {
-        // Ignorar erro do banco por enquanto
-        console.log('Banco de dados não disponível para setOffline')
+        console.log('Tabela user_activity não disponível para setOffline')
       }
     } catch (err) {
       console.error('Erro ao marcar como offline:', err)
@@ -115,7 +118,23 @@ export function useUserActivity() {
       setIsLoading(true)
       setError(null)
 
-      // Simular dados de atividade por enquanto
+      // Tentar carregar do banco primeiro
+      try {
+        const { data, error } = await supabase
+          .from('user_activity')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!error && data) {
+          setActivity(data)
+          return
+        }
+      } catch (dbError) {
+        console.log('Tabela user_activity não existe, usando dados simulados')
+      }
+
+      // Fallback: dados simulados
       const now = new Date().toISOString()
       const mockActivity = {
         id: `activity_${user.id}`,
@@ -129,22 +148,6 @@ export function useUserActivity() {
       }
 
       setActivity(mockActivity)
-
-      // Tentar carregar do banco (opcional)
-      try {
-        const { data, error } = await supabase
-          .from('user_activity')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-
-        if (!error && data) {
-          setActivity(data)
-        }
-      } catch (dbError) {
-        // Ignorar erro do banco por enquanto
-        console.log('Banco de dados não disponível, usando dados simulados')
-      }
     } catch (err) {
       console.error('Erro ao carregar atividade:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')

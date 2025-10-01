@@ -5,6 +5,7 @@ import { ActivityStatus } from '@/hooks/useUserActivity'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { supabase } from '@/lib/supabase'
 
 interface UserStatusDotProps {
   userId: string
@@ -20,7 +21,7 @@ export function UserStatusDot({
   const [status, setStatus] = useState<ActivityStatus | null>(null)
   const [lastActivity, setLastActivity] = useState<string>('')
 
-  // Simular status baseado no tempo
+  // Carregar status real do usuário
   useEffect(() => {
     const getStatus = (lastActivity: string): ActivityStatus => {
       const now = new Date()
@@ -86,13 +87,34 @@ export function UserStatusDot({
       }
     }
 
-    // Simular atividade baseada no ID do usuário
-    const now = new Date()
-    const randomMinutes = Math.floor(Math.random() * 1440) // 0-24 horas
-    const activityTime = new Date(now.getTime() - (randomMinutes * 60 * 1000))
-    
-    setLastActivity(activityTime.toISOString())
-    setStatus(getStatus(activityTime.toISOString()))
+    // Tentar carregar dados reais do banco
+    const loadRealActivity = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_activity')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+
+        if (!error && data) {
+          setLastActivity(data.last_activity)
+          setStatus(getStatus(data.last_activity))
+          return
+        }
+      } catch (dbError) {
+        console.log('Tabela user_activity não disponível para UserStatusDot')
+      }
+
+      // Fallback: simular atividade baseada no ID do usuário
+      const now = new Date()
+      const randomMinutes = Math.floor(Math.random() * 1440) // 0-24 horas
+      const activityTime = new Date(now.getTime() - (randomMinutes * 60 * 1000))
+      
+      setLastActivity(activityTime.toISOString())
+      setStatus(getStatus(activityTime.toISOString()))
+    }
+
+    loadRealActivity()
   }, [userId])
 
   if (!status) return null
