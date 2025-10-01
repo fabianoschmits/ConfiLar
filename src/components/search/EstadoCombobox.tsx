@@ -28,6 +28,13 @@ export function EstadoCombobox({
   
   const { estados, loading } = useIBGE()
 
+  // Sincronizar searchTerm com value quando value mudar externamente
+  useEffect(() => {
+    if (value && value !== searchTerm) {
+      setSearchTerm(value)
+    }
+  }, [value])
+
   // Filtrar estados baseado na busca
   useEffect(() => {
     if (!searchTerm.trim()) {
@@ -72,7 +79,10 @@ export function EstadoCombobox({
 
   const handleInputFocus = () => {
     setIsOpen(true)
-    setSearchTerm(value)
+    // Só definir o searchTerm se o value não estiver vazio
+    if (value) {
+      setSearchTerm(value)
+    }
   }
 
   const handleInputBlur = () => {
@@ -80,7 +90,10 @@ export function EstadoCombobox({
     setTimeout(() => {
       if (!dropdownRef.current?.contains(document.activeElement)) {
         setIsOpen(false)
-        setSearchTerm(value)
+        // Só definir o searchTerm se o value não estiver vazio
+        if (value) {
+          setSearchTerm(value)
+        }
       }
     }, 150)
   }
