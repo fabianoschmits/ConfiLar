@@ -22,6 +22,7 @@ import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useMessages } from '@/hooks/useMessages'
 import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
+import { UserStatusDot } from '@/components/ui/UserStatusDot'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
 import { RateLimitStatus } from '@/components/security/RateLimitStatus'
@@ -343,12 +344,19 @@ export function FloatingChat() {
                               className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                             >
                               <div className="flex items-center gap-3">
-                                <UserAvatar
-                                  src={favorite.professional?.avatar_url}
-                                  alt={favorite.professional?.full_name || 'Usuário'}
-                                  fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
-                                  size="sm"
-                                />
+                                <div className="relative">
+                                  <UserAvatar
+                                    src={favorite.professional?.avatar_url}
+                                    alt={favorite.professional?.full_name || 'Usuário'}
+                                    fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
+                                    size="sm"
+                                  />
+                                  <UserStatusDot 
+                                    userId={favorite.professional?.id} 
+                                    size="sm"
+                                    className="border-2 border-white"
+                                  />
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-gray-900 text-sm truncate">
                                     {favorite.professional?.full_name || 'Usuário'}
@@ -402,13 +410,20 @@ export function FloatingChat() {
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              <UserAvatar
-                                src={otherUser.avatar_url}
-                                alt={otherUser.full_name}
-                                fallback={otherUser.full_name.charAt(0).toUpperCase()}
-                                size="md"
-                                className="w-12 h-12"
-                              />
+                              <div className="relative">
+                                <UserAvatar
+                                  src={otherUser.avatar_url}
+                                  alt={otherUser.full_name}
+                                  fallback={otherUser.full_name.charAt(0).toUpperCase()}
+                                  size="md"
+                                  className="w-12 h-12"
+                                />
+                                <UserStatusDot 
+                                  userId={otherUser.id} 
+                                  size="sm"
+                                  className="border-2 border-white"
+                                />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-1">
                                   <h5 className="font-semibold text-gray-900 text-sm truncate">
@@ -500,19 +515,28 @@ export function FloatingChat() {
                           : selectedConversation.client.id}`}
                         className="flex items-center gap-3 flex-1"
                       >
-                        <UserAvatar
-                          src={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.avatar_url
-                            : selectedConversation.client.avatar_url}
-                          alt={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.full_name
-                            : selectedConversation.client.full_name}
-                          fallback={user.id === selectedConversation.client_id 
-                            ? selectedConversation.professional.full_name.charAt(0).toUpperCase()
-                            : selectedConversation.client.full_name.charAt(0).toUpperCase()}
-                          size="md"
-                          className="w-10 h-10"
-                        />
+                        <div className="relative">
+                          <UserAvatar
+                            src={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.avatar_url
+                              : selectedConversation.client.avatar_url}
+                            alt={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.full_name
+                              : selectedConversation.client.full_name}
+                            fallback={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.full_name.charAt(0).toUpperCase()
+                              : selectedConversation.client.full_name.charAt(0).toUpperCase()}
+                            size="md"
+                            className="w-10 h-10"
+                          />
+                          <UserStatusDot 
+                            userId={user.id === selectedConversation.client_id 
+                              ? selectedConversation.professional.id
+                              : selectedConversation.client.id} 
+                            size="sm"
+                            className="border-2 border-white"
+                          />
+                        </div>
                         <div className="flex-1">
                           <h4 className="font-medium text-gray-900 text-sm">
                             {user.id === selectedConversation.client_id 
