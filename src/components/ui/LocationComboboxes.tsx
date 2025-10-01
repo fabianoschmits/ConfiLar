@@ -47,6 +47,15 @@ export function EstadoCombobox({
       )
     : estados
 
+  // Sincronizar searchTerm com value quando value mudar externamente
+  useEffect(() => {
+    if (value && selectedEstado) {
+      setSearchTerm(selectedEstado.nome)
+    } else if (!value) {
+      setSearchTerm('')
+    }
+  }, [value, selectedEstado])
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -149,6 +158,15 @@ export function CidadeCombobox({
     : cidades
 
   const selectedCidade = cidades.find(cidade => cidade.nome === value)
+
+  // Sincronizar searchTerm com value quando value mudar externamente
+  useEffect(() => {
+    if (value && selectedCidade) {
+      setSearchTerm(selectedCidade.nome)
+    } else if (!value) {
+      setSearchTerm('')
+    }
+  }, [value, selectedCidade])
 
   // Reset cidade quando estado muda
   useEffect(() => {
