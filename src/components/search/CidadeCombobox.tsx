@@ -30,6 +30,13 @@ export function CidadeCombobox({
   
   const { cidades, loading, loadCidades, estados } = useIBGE()
 
+  // Sincronizar searchTerm com value quando value mudar externamente
+  useEffect(() => {
+    if (value && value !== searchTerm) {
+      setSearchTerm(value)
+    }
+  }, [value])
+
   // Carregar cidades quando o estado mudar
   useEffect(() => {
     if (estadoSelecionado) {
@@ -87,7 +94,10 @@ export function CidadeCombobox({
   const handleInputFocus = () => {
     if (estadoSelecionado) {
       setIsOpen(true)
-      setSearchTerm(value)
+      // Só definir o searchTerm se o value não estiver vazio
+      if (value) {
+        setSearchTerm(value)
+      }
     }
   }
 
@@ -96,7 +106,10 @@ export function CidadeCombobox({
     setTimeout(() => {
       if (!dropdownRef.current?.contains(document.activeElement)) {
         setIsOpen(false)
-        setSearchTerm(value)
+        // Só definir o searchTerm se o value não estiver vazio
+        if (value) {
+          setSearchTerm(value)
+        }
       }
     }, 150)
   }
