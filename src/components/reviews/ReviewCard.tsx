@@ -139,32 +139,52 @@ export function ReviewCard({
   }
 
   return (
-    <div className="modern-card p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-start space-x-4">
-        {/* Avatar */}
-        <div className="flex-shrink-0">
-          <UserAvatar
-            src={review.reviewer.avatar_url}
-            alt={review.reviewer.full_name}
-            fallback={review.reviewer.full_name.charAt(0)}
-            size="lg"
-          />
+    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 hover:shadow-lg transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+        {/* Avatar - Mobile: topo, Desktop: lado */}
+        <div className="flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2">
+          <div className="flex-shrink-0">
+            <UserAvatar
+              src={review.reviewer.avatar_url}
+              alt={review.reviewer.full_name}
+              fallback={review.reviewer.full_name.charAt(0)}
+              size="lg"
+            />
+          </div>
+          
+          {/* Info do usuário - Mobile: ao lado do avatar */}
+          <div className="flex-1 sm:hidden">
+            <h3 className="font-semibold text-gray-900 text-sm truncate">
+              {review.reviewer.full_name}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                {review.reviewer.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+              </span>
+              {(review as any).is_recommended && (
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Recomendado
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Conteúdo */}
         <div className="flex-1 min-w-0">
-          {/* Cabeçalho */}
-          <div className="flex items-start justify-between mb-4">
+          {/* Cabeçalho - Desktop */}
+          <div className="hidden sm:flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="modern-heading-3 text-gray-900 truncate">
+                <h3 className="font-semibold text-gray-900 truncate">
                   {review.reviewer.full_name}
                 </h3>
-                <span className="modern-badge-primary">
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                   {review.reviewer.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                 </span>
                 {(review as any).is_recommended && (
-                  <span className="modern-badge-success flex items-center gap-1">
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />
                     Recomendado
                   </span>
@@ -179,7 +199,7 @@ export function ReviewCard({
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(review.rating_person)}`}>
                   {getRatingText(review.rating_person)}
                 </span>
-                <span className="modern-caption">
+                <span className="text-xs text-gray-500">
                   {formatDate(review.created_at)}
                 </span>
               </div>
@@ -192,7 +212,7 @@ export function ReviewCard({
                     <MoreVertical className="h-4 w-4 text-gray-500" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="modern-card">
+                <DropdownMenuContent align="end" className="bg-white border border-gray-200 rounded-lg shadow-lg">
                   {isOwner && onEdit && (
                     <DropdownMenuItem onClick={() => onEdit(review)} className="flex items-center gap-2">
                       <Edit className="h-4 w-4" />
@@ -242,6 +262,21 @@ export function ReviewCard({
             )}
           </div>
 
+          {/* Mobile: Rating e Data */}
+          <div className="sm:hidden mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center">
+                {renderStars(review.rating_person)}
+              </div>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRatingColor(review.rating_person)}`}>
+                {getRatingText(review.rating_person)}
+              </span>
+            </div>
+            <span className="text-xs text-gray-500">
+              {formatDate(review.created_at)}
+            </span>
+          </div>
+
           {/* Título da Avaliação */}
           {(review as any).title && (
             <div className="mb-3">
@@ -286,19 +321,19 @@ export function ReviewCard({
           {/* Pontos Positivos e Negativos */}
           {((review as any).pros?.length > 0 || (review as any).positive_points?.length > 0 || 
             (review as any).cons?.length > 0 || (review as any).negative_points?.length > 0) && (
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
               {/* Pontos Positivos */}
               {((review as any).pros?.length > 0 || (review as any).positive_points?.length > 0) && (
-                <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ThumbsUp className="h-4 w-4 text-green-600" />
-                    <span className="font-medium text-green-800">Pontos Positivos</span>
+                <div className="bg-green-50 rounded-lg p-3 sm:p-4 border border-green-100">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <ThumbsUp className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <span className="font-medium text-green-800 text-sm sm:text-base">Pontos Positivos</span>
                   </div>
                   <ul className="space-y-1">
                     {((review as any).pros || (review as any).positive_points || []).map((point: string, index: number) => (
-                      <li key={index} className="text-sm text-green-700 flex items-start gap-2">
-                        <span className="text-green-500 font-bold">•</span>
-                        {point}
+                      <li key={index} className="text-xs sm:text-sm text-green-700 flex items-start gap-2">
+                        <span className="text-green-500 font-bold flex-shrink-0">•</span>
+                        <span className="break-words">{point}</span>
                       </li>
                     ))}
                   </ul>
@@ -307,16 +342,16 @@ export function ReviewCard({
 
               {/* Pontos Negativos */}
               {((review as any).cons?.length > 0 || (review as any).negative_points?.length > 0) && (
-                <div className="bg-red-50 rounded-lg p-4 border border-red-100">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ThumbsDown className="h-4 w-4 text-red-600" />
-                    <span className="font-medium text-red-800">Pontos a Melhorar</span>
+                <div className="bg-red-50 rounded-lg p-3 sm:p-4 border border-red-100">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <ThumbsDown className="h-4 w-4 text-red-600 flex-shrink-0" />
+                    <span className="font-medium text-red-800 text-sm sm:text-base">Pontos a Melhorar</span>
                   </div>
                   <ul className="space-y-1">
                     {((review as any).cons || (review as any).negative_points || []).map((point: string, index: number) => (
-                      <li key={index} className="text-sm text-red-700 flex items-start gap-2">
-                        <span className="text-red-500 font-bold">•</span>
-                        {point}
+                      <li key={index} className="text-xs sm:text-sm text-red-700 flex items-start gap-2">
+                        <span className="text-red-500 font-bold flex-shrink-0">•</span>
+                        <span className="break-words">{point}</span>
                       </li>
                     ))}
                   </ul>
@@ -337,8 +372,8 @@ export function ReviewCard({
 
           {/* Formulário de Resposta */}
           {showResponseForm && (
-            <div className="bg-blue-50 rounded-lg border border-blue-200 p-4 mb-4">
-              <h5 className="font-medium text-blue-900 mb-3">
+            <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 sm:p-4 mb-4">
+              <h5 className="font-medium text-blue-900 mb-3 text-sm sm:text-base">
                 {isEditingResponse ? 'Editar resposta' : 'Responder avaliação'}
               </h5>
               <Textarea
@@ -346,23 +381,23 @@ export function ReviewCard({
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
                 rows={3}
-                className="modern-input mb-3"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-3"
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
                 <button
                   onClick={() => {
                     setShowResponseForm(false)
                     setResponseText('')
                     setIsEditingResponse(false)
                   }}
-                  className="modern-button-secondary px-4 py-2"
+                  className="w-full sm:w-auto bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSubmitResponse}
                   disabled={isSubmittingResponse || !responseText.trim()}
-                  className="modern-button-primary px-4 py-2 disabled:opacity-50"
+                  className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
                   {isSubmittingResponse ? 'Enviando...' : (isEditingResponse ? 'Salvar' : 'Responder')}
                 </button>
@@ -372,11 +407,11 @@ export function ReviewCard({
 
           {/* Ações */}
           {showActions && (
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-3 border-t border-gray-100">
               {isReviewed && !showResponseForm && !review.response_text && (
                 <button
                   onClick={() => setShowResponseForm(true)}
-                  className="modern-button-outline px-4 py-2 flex items-center gap-2"
+                  className="w-full sm:w-auto bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors"
                 >
                   <Reply className="h-4 w-4" />
                   Responder
@@ -386,7 +421,7 @@ export function ReviewCard({
               {!isOwner && onMarkHelpful && (
                 <button
                   onClick={handleMarkHelpful}
-                  className="modern-button-outline px-4 py-2 flex items-center gap-2 text-green-600 border-green-200 hover:bg-green-50"
+                  className="w-full sm:w-auto bg-white border border-green-200 text-green-600 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm hover:bg-green-50 transition-colors"
                 >
                   <ThumbsUp className="h-4 w-4" />
                   Útil
