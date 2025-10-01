@@ -255,7 +255,7 @@ export function ModernSidebar() {
         {
           id: 'logout',
           title: 'Sair',
-          href: '/logout',
+          href: '/auth',
           icon: <LogOut className="h-4 w-4" />,
           description: 'Desconectar'
         }

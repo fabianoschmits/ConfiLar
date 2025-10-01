@@ -10,6 +10,7 @@ import { LogOut } from 'lucide-react'
 
 export default function LogoutPage() {
   const [mounted, setMounted] = useState(false)
+  const { signOut } = useAuthContext()
 
   useEffect(() => {
     setMounted(true)
@@ -19,33 +20,27 @@ export default function LogoutPage() {
     return null
   }
 
-  // const { signOut } = useAuthContext()
-  const signOut = async () => {
-    // Implementação temporária
-    console.log('Signing out...')
-    window.location.replace('/')
-  }
-
   useEffect(() => {
     const performSignOut = async () => {
       try {
-        console.log('🚪 Executando signOut...')
+        console.log('🚪 Executando logout manual...')
         
         // Executar signOut e aguardar conclusão
         await signOut()
         
-        console.log('✅ SignOut concluído, redirecionando...')
+        console.log('✅ Logout concluído, redirecionando para login...')
         
-        // Redirecionar imediatamente para página inicial
-        window.location.replace('/')
+        // Redirecionar imediatamente para página de login
+        window.location.replace('/auth')
         
       } catch (error) {
-        console.error('Erro ao fazer signOut:', error)
-        // Mesmo com erro, redirecionar
-        window.location.replace('/')
+        console.error('Erro ao fazer logout:', error)
+        // Mesmo com erro, redirecionar para login
+        window.location.replace('/auth')
       }
     }
 
+    // Executar logout imediatamente quando a página carregar
     performSignOut()
   }, [signOut])
 
@@ -58,17 +53,17 @@ export default function LogoutPage() {
             <LogOut className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-            Fazendo logout...
+            Logout em andamento...
           </h1>
           <p className="text-gray-600 mb-8">
-            Aguarde enquanto encerramos sua sessão.
+            Encerrando sua sessão e redirecionando para o login.
           </p>
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent mr-3"></div>
               <p className="text-blue-700 font-medium text-sm">
-                Redirecionando para a página inicial...
+                Redirecionando para o login...
               </p>
             </div>
           </div>
