@@ -22,9 +22,7 @@ import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
 import { BanNotification } from "@/components/BanNotification"
 import { DevTestButton } from "@/components/dev/DevTestButton"
-import { useCompleteNotifications } from "@/hooks/useCompleteNotifications"
 import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
-import { UserActivityInitializer } from "@/components/activity/UserActivityInitializer"
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -87,7 +85,6 @@ export default async function RootLayout({
                         <FloatingChatWrapper />
                         <LoadingOverlayProvider />
                         <NewNotificationSystem />
-                        <UserActivityInitializer />
                         {/* <DevTestButton /> */}
                         <Toaster position="top-right" richColors />
                         {/* <AuthContextDebug /> */}

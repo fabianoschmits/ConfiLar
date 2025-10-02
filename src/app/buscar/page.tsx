@@ -43,7 +43,6 @@ import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
-import { UserStatusDot } from '@/components/ui/UserStatusDot'
 
 export default function BuscarPage() {
   const router = useRouter()
@@ -517,11 +516,6 @@ export default function BuscarPage() {
                               {profile.full_name?.charAt(0).toUpperCase() || 'P'}
                             </AvatarFallback>
                           </Avatar>
-                          <UserStatusDot 
-                            userId={profile.id} 
-                            size="sm"
-                            className="border-2 border-white"
-                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div 

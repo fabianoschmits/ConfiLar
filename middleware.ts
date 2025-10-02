@@ -72,25 +72,7 @@ export async function middleware(request: NextRequest) {
     '/configuracoes'
   ]
 
-  // Rotas de teste que não requerem autenticação
-  const testRoutes = [
-    '/classificados-novo',
-    '/classificados-v1',
-    '/classificados-v2',
-    '/classificados-v3',
-    '/classificados-v4',
-    '/classificados-v5',
-    '/classificados-v6',
-    '/classificados-v7',
-    '/classificados-v8',
-    '/classificados-v9',
-    '/classificados-v10',
-    '/classificados-v11',
-    '/classificados-v12',
-    '/classificados-v13',
-    '/classificados-v14',
-    '/classificados-v15'
-  ]
+  // Removido: Rotas de teste não são mais necessárias
 
   // Rotas de autenticação (redirecionar se já logado)
   const authRoutes = ['/auth', '/login', '/register', '/recuperar-senha', '/nova-senha']
@@ -100,18 +82,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Verificar se é uma rota de teste (não requer autenticação)
-  const isTestRoute = testRoutes.some(route => 
-    pathname.startsWith(route)
-  )
-
   // Permitir acesso à rota de logout sem interferência
   if (pathname === '/logout') {
-    return response
-  }
-
-  // Permitir acesso às rotas de teste sem verificação de autenticação
-  if (isTestRoute) {
     return response
   }
 
