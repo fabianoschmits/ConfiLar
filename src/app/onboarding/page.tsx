@@ -13,12 +13,12 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { 
   Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
-  Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff
+  Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff, Home
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -564,182 +564,172 @@ export default function OnboardingPage() {
   const isStepValid = validateCurrentStep()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 overflow-hidden">
-      {/* Modal/Janela Container */}
-      <div className="w-full max-w-md bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl border border-gray-200/50 overflow-hidden max-h-[90vh] flex flex-col">
-        
-        {/* Header da Janela */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                <Shield className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <span className="text-white font-semibold">ConfiLar</span>
-                <span className="ml-2 px-2 py-0.5 text-xs bg-white/20 text-white rounded-full font-medium">
-                  ONBOARDING
-                </span>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header Moderno */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Shield className="text-white h-6 w-6" />
             </div>
+            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
           </div>
           
-          {/* Barra de Progresso Pequena */}
-          <div className="mt-3">
-            <Progress 
-              value={progressPercentage} 
-              className="h-1 bg-white/20"
-            />
-          </div>
-        </div>
-
-        {/* Info da Etapa */}
-        <div className="bg-gray-50/80 border-b border-gray-100 px-6 py-3">
-          <div className="text-center">
-            <h2 className="text-base font-semibold text-gray-900">
-              {currentStepData.title}
-            </h2>
-            <p className="text-xs text-gray-600 mt-1">
-              {currentStepData.description}
-            </p>
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <span className="text-xs text-gray-500">
-                Etapa {currentStep} de {totalSteps}
-              </span>
-              {!isStepValid && currentStep > 1 && currentStep < totalSteps && (
-                <span className="text-xs text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                  Campos obrigatórios
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Conteúdo da Janela */}
-        <div className="relative overflow-hidden bg-white flex-1 min-h-0">
-          {/* Container de Transição */}
-          <div 
-            className={cn(
-              "transition-all duration-300 ease-in-out h-full",
-              isTransitioning && slideDirection === 'right' && "transform translate-x-full opacity-0",
-              isTransitioning && slideDirection === 'left' && "transform -translate-x-full opacity-0",
-              !isTransitioning && "transform translate-x-0 opacity-100"
-            )}
+          <Button 
+            onClick={() => router.push('/dashboard')}
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
           >
-            {/* Conteúdo da Etapa Atual */}
-            <div className="p-5 h-full overflow-y-auto">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <Home size={16} />
+            <span>Dashboard</span>
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="container py-4 md:py-8">
+        <div className="mx-auto max-w-2xl">
+          {/* Header Card */}
+          <Card className="mb-6 bg-white/50 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center p-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <currentStepData.icon className="h-8 w-8 text-white" />
+              </div>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                {currentStepData.title}
+              </h1>
+              <p className="text-gray-600">
+                {currentStepData.description}
+              </p>
+              
+              {/* Progress Bar */}
+              <div className="mt-4">
+                <div className="flex justify-between text-xs text-gray-500 mb-2">
+                  <span>Etapa {currentStep} de {totalSteps}</span>
+                  <span>{Math.round(progressPercentage)}%</span>
+                </div>
+                <Progress value={progressPercentage} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Form Card */}
+          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 
-                {/* Etapa 1: Boas-vindas */}
-                {currentStep === 1 && (
-                  <div className="text-center space-y-3 py-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Bem-vindo ao ConfiLar!
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        Seja bem-vindo! 🎉
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        Vamos completar seu perfil em algumas etapas simples. 
-                        Isso nos ajudará a conectar você com as pessoas certas!
-                      </p>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                        <div className="flex items-center gap-2 text-blue-800">
-                          <Shield className="w-4 h-4" />
-                          <span className="font-semibold text-sm">Seus dados estão seguros</span>
-                        </div>
-                        <p className="text-blue-700 text-xs mt-1">
-                          Todas as informações são protegidas e usadas apenas para melhorar sua experiência.
+                {/* Container de Transição */}
+                <div 
+                  className={cn(
+                    "transition-all duration-300 ease-in-out",
+                    isTransitioning && slideDirection === 'right' && "transform translate-x-full opacity-0",
+                    isTransitioning && slideDirection === 'left' && "transform -translate-x-full opacity-0",
+                    !isTransitioning && "transform translate-x-0 opacity-100"
+                  )}
+                >
+                  
+                  {/* Etapa 1: Boas-vindas */}
+                  {currentStep === 1 && (
+                    <div className="text-center space-y-4 py-8">
+                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
+                        <Sparkles className="w-10 h-10 text-white" />
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-2xl font-bold text-gray-900">
+                          Bem-vindo ao ConfiLar!
+                        </h3>
+                        <p className="text-gray-600 text-lg">
+                          Seja bem-vindo! 🎉
                         </p>
+                        <p className="text-gray-600">
+                          Vamos completar seu perfil em algumas etapas simples. 
+                          Isso nos ajudará a conectar você com as pessoas certas!
+                        </p>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                          <div className="flex items-center gap-3 text-blue-800">
+                            <Shield className="w-5 h-5" />
+                            <span className="font-semibold">Seus dados estão seguros</span>
+                          </div>
+                          <p className="text-blue-700 text-sm mt-2">
+                            Todas as informações são protegidas e usadas apenas para melhorar sua experiência.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 2: Dados Pessoais */}
-                {currentStep === 2 && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">Seus Dados Pessoais</h3>
-                      <p className="text-gray-600 text-xs">Precisamos conhecer você melhor</p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <Label htmlFor="full_name" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          Nome completo <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="full_name"
-                          placeholder="Digite seu nome completo"
-                          {...register('full_name')}
-                          className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.full_name ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-blue-500'
+                  {/* Etapa 2: Dados Pessoais */}
+                  {currentStep === 2 && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Nome completo <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="full_name"
+                            placeholder="Digite seu nome completo"
+                            {...register('full_name')}
+                            className={cn(
+                              "h-10",
+                              errors.full_name ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.full_name && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.full_name.message}
+                            </p>
                           )}
-                        />
-                        {errors.full_name && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.full_name.message}
-                          </p>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="space-y-1">
-                        <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          Telefone <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="phone"
-                          placeholder="(11) 99999-9999"
-                          {...register('phone')}
-                          onChange={handlePhoneChange}
-                          className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.phone ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-blue-500'
+                        <div className="space-y-2">
+                          <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Telefone <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="phone"
+                            placeholder="(11) 99999-9999"
+                            {...register('phone')}
+                            onChange={handlePhoneChange}
+                            className={cn(
+                              "h-10",
+                              errors.phone ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.phone && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.phone.message}
+                            </p>
                           )}
-                        />
-                        {errors.phone && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.phone.message}
-                          </p>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="space-y-1">
-                        <Label htmlFor="cpf_cnpj" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          CPF <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="cpf_cnpj"
-                          placeholder="000.000.000-00"
-                          {...register('cpf_cnpj')}
-                          onChange={handleCPFChange}
-                          className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.cpf_cnpj ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-blue-500'
+                        <div className="space-y-2">
+                          <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            CPF <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="cpf_cnpj"
+                            placeholder="000.000.000-00"
+                            {...register('cpf_cnpj')}
+                            onChange={handleCPFChange}
+                            className={cn(
+                              "h-10",
+                              errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.cpf_cnpj && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.cpf_cnpj.message}
+                            </p>
                           )}
-                        />
-                        {errors.cpf_cnpj && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.cpf_cnpj.message}
-                          </p>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label htmlFor="birth_date" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                        <div className="space-y-2">
+                          <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Nascimento <span className="text-red-500">*</span>
                           </Label>
                           <Input
@@ -747,8 +737,8 @@ export default function OnboardingPage() {
                             type="date"
                             {...register('birth_date')}
                             className={cn(
-                              "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                              errors.birth_date ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-blue-500'
+                              "h-10",
+                              errors.birth_date ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
                             )}
                           />
                           {errors.birth_date && (
@@ -759,16 +749,16 @@ export default function OnboardingPage() {
                           )}
                         </div>
 
-                        <div className="space-y-1">
-                          <Label htmlFor="gender" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="gender" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Sexo <span className="text-red-500">*</span>
                           </Label>
                           <Select value={watchedValues.gender || ''} onValueChange={(value) => setValue('gender', value as 'male' | 'female')}>
                             <SelectTrigger className={cn(
-                              "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                              errors.gender ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-blue-500'
+                              "h-10",
+                              errors.gender ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
                             )}>
-                              <SelectValue placeholder="Escolha" />
+                              <SelectValue placeholder="Escolha seu sexo" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="male">👨 Masculino</SelectItem>
@@ -784,50 +774,31 @@ export default function OnboardingPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 3: Avatar/Foto */}
-                {currentStep === 3 && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <Camera className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">Sua Foto de Perfil</h3>
-                      <p className="text-gray-600 text-xs">Escolha uma foto ou gere um avatar automático</p>
-                    </div>
-
-                    <div className="space-y-3">
+                  {/* Etapa 3: Avatar/Foto */}
+                  {currentStep === 3 && (
+                    <div className="space-y-6">
                       {/* Preview do Avatar Selecionado */}
                       {selectedAvatar && (
-                        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
-                          <div className="w-12 h-12 border-2 border-blue-300 rounded-lg overflow-hidden shadow-md">
+                        <div className="flex items-center justify-center">
+                          <div className="w-24 h-24 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
                             <img
                               src={selectedAvatar.preview}
                               alt="Avatar selecionado"
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">
-                              {selectedAvatar.type === 'upload' ? '📸 Foto Personalizada' : '🎨 Avatar Gerado'}
-                            </p>
-                            <p className="text-xs text-gray-600">
-                              {selectedAvatar.type === 'upload' && (selectedAvatar.value as File).name}
-                              {selectedAvatar.type === 'dicebear' && 'Criado automaticamente'}
-                            </p>
-                          </div>
                         </div>
                       )}
 
                       {/* Opções de Avatar */}
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Upload de Foto */}
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <div className="flex items-center gap-2">
-                            <Upload size={14} className="text-blue-600" />
-                            <span className="text-sm font-semibold text-gray-700">Upload de Foto</span>
+                            <Upload size={16} className="text-blue-600" />
+                            <span className="font-medium text-gray-700">Upload de Foto</span>
                           </div>
                           <input
                             type="file"
@@ -839,45 +810,45 @@ export default function OnboardingPage() {
                           <label
                             htmlFor="avatar-upload"
                             className={cn(
-                              "block w-full p-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center bg-white/50",
+                              "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
                               selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50"
                             )}
                           >
-                            <div className="text-sm text-gray-700 font-medium">
+                            <div className="font-medium text-gray-700">
                               {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-sm text-gray-500 mt-1">
                               JPG, PNG ou GIF
                             </div>
                           </label>
                         </div>
 
                         {/* Avatar Pixel-Art */}
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <div className="flex items-center gap-2">
-                            <RefreshCw size={14} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
-                            <span className="text-sm font-semibold text-gray-700">Avatar Automático</span>
+                            <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
+                            <span className="font-medium text-gray-700">Avatar Automático</span>
                           </div>
                           {fullName && fullName.length >= 2 ? (
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               <button
                                 type="button"
                                 onClick={handleDicebearSelect}
                                 disabled={isGeneratingAvatar || !dicebearAvatar}
                                 className={cn(
-                                  "w-full p-3 border-2 border-dashed rounded-lg transition-all text-center bg-white/50 hover:border-purple-500 hover:bg-purple-50/50",
+                                  "w-full p-4 border-2 border-dashed rounded-lg transition-all text-center hover:border-purple-500 hover:bg-purple-50/50",
                                   selectedAvatar?.type === 'dicebear' && "border-purple-500 bg-purple-50/50",
                                   (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
                                 )}
                               >
                                 {isGeneratingAvatar ? (
-                                  <div className="text-sm text-gray-700 font-medium">🎨 Criando...</div>
+                                  <div className="font-medium text-gray-700">🎨 Criando...</div>
                                 ) : dicebearAvatar ? (
-                                  <div className="text-sm text-gray-700 font-medium">✅ Avatar Criado</div>
+                                  <div className="font-medium text-gray-700">✅ Avatar Criado</div>
                                 ) : (
-                                  <div className="text-sm text-gray-700 font-medium">🎨 Criando...</div>
+                                  <div className="font-medium text-gray-700">🎨 Criando...</div>
                                 )}
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-sm text-gray-500 mt-1">
                                   Baseado no seu nome
                                 </div>
                               </button>
@@ -888,39 +859,29 @@ export default function OnboardingPage() {
                                   type="button"
                                   onClick={generateRandomAvatar}
                                   disabled={isGeneratingAvatar}
-                                  className="w-full px-3 py-2 text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                                  className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                  <RefreshCw size={12} className={cn(isGeneratingAvatar && "animate-spin")} />
+                                  <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
                                   {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}
                                 </button>
                               )}
                             </div>
                           ) : (
-                            <div className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50/50">
-                              <div className="text-sm text-gray-500 font-medium">Digite seu nome primeiro</div>
+                            <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                              <div className="font-medium text-gray-500">Digite seu nome primeiro</div>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 4: Localização */}
-                {currentStep === 4 && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <MapPin className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">Onde Você Mora</h3>
-                      <p className="text-gray-600 text-xs">Para conectar você com pessoas próximas</p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label htmlFor="location_state" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  {/* Etapa 4: Localização */}
+                  {currentStep === 4 && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="location_state" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Estado <span className="text-red-500">*</span>
                           </Label>
                           <Popover open={stateOpen} onOpenChange={setStateOpen}>
@@ -928,21 +889,21 @@ export default function OnboardingPage() {
                               <button
                                 type="button"
                                 className={cn(
-                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-9 text-sm",
+                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
                                   errors.location_state ? 'border-red-400' : 'border-gray-300'
                                 )}
                               >
                                 <span className="text-gray-900">
                                   {watchedValues.location_state
                                     ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                                    : "Estado"}
+                                    : "Selecione o estado"}
                                 </span>
-                                <ChevronDown size={14} className="ml-2 shrink-0 text-gray-400" />
+                                <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                               </button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-lg shadow-lg" align="start">
+                            <PopoverContent className="w-full p-0" align="start">
                               <Command>
-                                <CommandInput placeholder="Buscar estado..." className="border-b border-gray-200" />
+                                <CommandInput placeholder="Buscar estado..." />
                                 <CommandList>
                                   <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
                                   <CommandGroup>
@@ -955,10 +916,9 @@ export default function OnboardingPage() {
                                           setValue('location_city', '')
                                           setStateOpen(false)
                                         }}
-                                        className="px-4 py-2 hover:bg-orange-50 cursor-pointer"
                                       >
                                         <Check
-                                          size={14} className={cn(
+                                          size={16} className={cn(
                                             "mr-2",
                                             watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
                                           )}
@@ -979,8 +939,8 @@ export default function OnboardingPage() {
                           )}
                         </div>
 
-                        <div className="space-y-1">
-                          <Label htmlFor="location_city" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                        <div className="space-y-2">
+                          <Label htmlFor="location_city" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Cidade <span className="text-red-500">*</span>
                           </Label>
                           <Popover open={cityOpen} onOpenChange={setCityOpen}>
@@ -989,7 +949,7 @@ export default function OnboardingPage() {
                                 type="button"
                                 disabled={!watchedValues.location_state}
                                 className={cn(
-                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-9 text-sm",
+                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
                                   errors.location_city ? 'border-red-400' : 'border-gray-300',
                                   !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
                                 )}
@@ -998,15 +958,15 @@ export default function OnboardingPage() {
                                   {watchedValues.location_city
                                     ? watchedValues.location_city
                                     : watchedValues.location_state
-                                    ? "Cidade"
-                                    : "Estado primeiro"}
+                                    ? "Selecione a cidade"
+                                    : "Selecione o estado primeiro"}
                                 </span>
-                                <ChevronDown size={14} className="ml-2 shrink-0 text-gray-400" />
+                                <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                               </button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-lg shadow-lg" align="start">
+                            <PopoverContent className="w-full p-0" align="start">
                               <Command>
-                                <CommandInput placeholder="Buscar cidade..." className="border-b border-gray-200" />
+                                <CommandInput placeholder="Buscar cidade..." />
                                 <CommandList>
                                   <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
                                   <CommandGroup>
@@ -1018,10 +978,9 @@ export default function OnboardingPage() {
                                           setValue('location_city', cidade)
                                           setCityOpen(false)
                                         }}
-                                        className="px-4 py-2 hover:bg-orange-50 cursor-pointer"
                                       >
                                         <Check
-                                          size={14} className={cn(
+                                          size={16} className={cn(
                                             "mr-2",
                                             watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
                                           )}
@@ -1041,75 +1000,65 @@ export default function OnboardingPage() {
                             </p>
                           )}
                         </div>
-                      </div>
 
-                      <div className="space-y-1">
-                        <Label htmlFor="neighborhood" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          Bairro <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="neighborhood"
-                          placeholder="Digite o bairro"
-                          {...register('neighborhood')}
-                          className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.neighborhood ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-orange-500'
+                        <div className="space-y-2">
+                          <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Bairro <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="neighborhood"
+                            placeholder="Digite o bairro"
+                            {...register('neighborhood')}
+                            className={cn(
+                              "h-10",
+                              errors.neighborhood ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.neighborhood && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.neighborhood.message}
+                            </p>
                           )}
-                        />
-                        {errors.neighborhood && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.neighborhood.message}
-                          </p>
-                        )}
-                      </div>
+                        </div>
 
-                      <div className="space-y-1">
-                        <Label htmlFor="address" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          Endereço <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="address"
-                          placeholder="Ex: Rua das Flores, 123"
-                          {...register('address')}
-                          className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.address ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-orange-500'
+                        <div className="space-y-2">
+                          <Label htmlFor="address" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Endereço <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="address"
+                            placeholder="Ex: Rua das Flores, 123"
+                            {...register('address')}
+                            className={cn(
+                              "h-10",
+                              errors.address ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.address && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.address.message}
+                            </p>
                           )}
-                        />
-                        {errors.address && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.address.message}
-                          </p>
-                        )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 5: Tipo de Usuário */}
-                {currentStep === 5 && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">Tipo de Usuário</h3>
-                      <p className="text-gray-600 text-xs">Como você pretende usar o ConfiLar?</p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <Label htmlFor="user_type" className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                          Escolha uma opção <span className="text-red-500">*</span>
+                  {/* Etapa 5: Tipo de Usuário */}
+                  {currentStep === 5 && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <Label htmlFor="user_type" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                          Como você pretende usar o ConfiLar? <span className="text-red-500">*</span>
                         </Label>
                         <Select value={watchedValues.user_type} onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}>
                           <SelectTrigger className={cn(
-                            "transition-all duration-200 bg-white border rounded-lg h-9 text-sm",
-                            errors.user_type ? 'border-red-400 focus:border-red-500 bg-red-50/50' : 'border-gray-300 focus:border-indigo-500'
+                            "h-12",
+                            errors.user_type ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
                           )}>
-                            <SelectValue placeholder="Selecione seu tipo" />
+                            <SelectValue placeholder="Selecione uma opção" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="client">🙋‍♂️ Cliente - Procuro profissionais</SelectItem>
@@ -1125,124 +1074,117 @@ export default function OnboardingPage() {
                       </div>
 
                       {/* Explicação dos tipos */}
-                      <div className="grid grid-cols-1 gap-3 mt-4">
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg">🙋‍♂️</span>
-                            <span className="font-semibold text-blue-900 text-sm">Cliente</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-2xl">🙋‍♂️</span>
+                            <span className="font-semibold text-blue-900">Cliente</span>
                           </div>
-                          <p className="text-xs text-blue-700">
+                          <p className="text-sm text-blue-700">
                             Você busca profissionais para resolver suas necessidades.
                           </p>
                         </div>
 
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-lg">👨‍💼</span>
-                            <span className="font-semibold text-green-900 text-sm">Profissional</span>
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-2xl">👨‍💼</span>
+                            <span className="font-semibold text-green-900">Profissional</span>
                           </div>
-                          <p className="text-xs text-green-700">
+                          <p className="text-sm text-green-700">
                             Você oferece serviços e quer ser encontrado por clientes.
                           </p>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 6: Dados Profissionais */}
-                {currentStep === 6 && isProfessional && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <Briefcase className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-900">Dados Profissionais</h3>
-                      <p className="text-gray-600 text-xs">Conte-nos sobre sua experiência</p>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <Label htmlFor="bio" className="text-sm font-semibold text-gray-700">
-                          Biografia (Opcional)
-                        </Label>
-                        <Textarea
-                          {...register('bio')}
-                          placeholder="Conte um pouco sobre você..."
-                          rows={2}
-                          className="resize-none bg-white border rounded-lg text-sm"
-                        />
-                      </div>
+                  {/* Etapa 6: Dados Profissionais */}
+                  {currentStep === 6 && isProfessional && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
+                            Biografia (Opcional)
+                          </Label>
+                          <Textarea
+                            {...register('bio')}
+                            placeholder="Conte um pouco sobre você..."
+                            rows={3}
+                            className="resize-none"
+                          />
+                        </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-sm font-semibold text-gray-700">
-                          Anos de experiência
-                        </Label>
-                        <Select value={watchedValues.experience_years || ''} onValueChange={(value) => setValue('experience_years', value)}>
-                          <SelectTrigger className="bg-white border rounded-lg h-9 text-sm">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="0-1">🌱 0-1 ano</SelectItem>
-                            <SelectItem value="1-3">📈 1-3 anos</SelectItem>
-                            <SelectItem value="3-5">🎯 3-5 anos</SelectItem>
-                            <SelectItem value="5-10">🏆 5-10 anos</SelectItem>
-                            <SelectItem value="10+">👑 Mais de 10 anos</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Anos de experiência
+                            </Label>
+                            <Select value={watchedValues.experience_years || ''} onValueChange={(value) => setValue('experience_years', value)}>
+                              <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Selecione" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0-1">🌱 0-1 ano</SelectItem>
+                                <SelectItem value="1-3">📈 1-3 anos</SelectItem>
+                                <SelectItem value="3-5">🎯 3-5 anos</SelectItem>
+                                <SelectItem value="5-10">🏆 5-10 anos</SelectItem>
+                                <SelectItem value="10+">👑 Mais de 10 anos</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-sm font-semibold text-gray-700">
-                          Serviços oferecidos (Opcional)
-                        </Label>
-                        <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
-                          <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-9 text-sm"
-                            >
-                              <span className="text-gray-900">
-                                {selectedServices.length === 0
-                                  ? "Selecione os serviços..."
-                                  : `${selectedServices.length} serviço(s)`}
-                              </span>
-                              <ChevronDown size={14} className="ml-2 shrink-0 text-gray-400" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-lg shadow-lg">
-                            <Command>
-                              <CommandInput placeholder="Buscar serviços..." className="border-b border-gray-200" />
-                              <CommandList>
-                                <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
-                                <CommandGroup>
-                                  {serviceCategoryNames.map((service) => (
-                                    <CommandItem
-                                      key={service}
-                                      value={service}
-                                      onSelect={() => handleServiceToggle(service)}
-                                      className="px-4 py-2 hover:bg-amber-50 cursor-pointer"
-                                    >
-                                      <Check
-                                        size={14} className={cn(
-                                          "mr-2",
-                                          selectedServices.includes(service) ? "opacity-100" : "opacity-0"
-                                        )}
-                                      />
-                                      {service}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-gray-700">
+                              Serviços oferecidos (Opcional)
+                            </Label>
+                            <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
+                                >
+                                  <span className="text-gray-900">
+                                    {selectedServices.length === 0
+                                      ? "Selecione os serviços..."
+                                      : `${selectedServices.length} serviço(s)`}
+                                  </span>
+                                  <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0">
+                                <Command>
+                                  <CommandInput placeholder="Buscar serviços..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                                    <CommandGroup>
+                                      {serviceCategoryNames.map((service) => (
+                                        <CommandItem
+                                          key={service}
+                                          value={service}
+                                          onSelect={() => handleServiceToggle(service)}
+                                        >
+                                          <Check
+                                            size={16} className={cn(
+                                              "mr-2",
+                                              selectedServices.includes(service) ? "opacity-100" : "opacity-0"
+                                            )}
+                                          />
+                                          {service}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
                         
                         {/* Serviços selecionados */}
                         {selectedServices.length > 0 && (
-                          <div className="mt-2">
-                            <p className="text-xs text-gray-700 font-medium mb-1">Selecionados:</p>
-                            <div className="text-xs text-gray-600 leading-tight">
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700">Serviços selecionados:</p>
+                            <div className="text-sm text-gray-600 leading-tight">
                               {selectedServices.map((service, index) => (
                                 <span key={service} className="inline">
                                   {service}
@@ -1260,129 +1202,118 @@ export default function OnboardingPage() {
                             </div>
                           </div>
                         )}
-                      </div>
 
-                      <div className="space-y-2 pt-2 border-t border-gray-200">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            {...register('emergency_service')}
-                            id="emergency_service"
-                          />
-                          <Label htmlFor="emergency_service" className="text-xs text-gray-700 cursor-pointer">
-                            🚨 Ofereço serviço de emergência 24h
-                          </Label>
+                        <div className="pt-4 border-t border-gray-200">
+                          <div className="flex items-center space-x-3">
+                            <Checkbox
+                              {...register('emergency_service')}
+                              id="emergency_service"
+                            />
+                            <Label htmlFor="emergency_service" className="text-sm text-gray-700 cursor-pointer">
+                              🚨 Ofereço serviço de emergência 24h
+                            </Label>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Etapa 6: Pular se for cliente */}
-                {currentStep === 6 && !isProfessional && (
-                  <div className="text-center space-y-3 py-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
-                      <Check className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        Quase lá!
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        Como você é um Cliente, não precisamos de dados profissionais.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Etapa 7: Resumo Final */}
-                {currentStep === 7 && (
-                  <div className="space-y-3">
-                    <div className="text-center mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg mb-2">
-                        <Eye className="w-5 h-5 text-white" />
+                  {/* Etapa 6: Pular se for cliente */}
+                  {currentStep === 6 && !isProfessional && (
+                    <div className="text-center space-y-4 py-8">
+                      <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
+                        <Check className="w-10 h-10 text-white" />
                       </div>
-                      <h3 className="text-base font-semibold text-gray-900">Resumo dos Seus Dados</h3>
-                      <p className="text-gray-600 text-xs">Confira as informações antes de finalizar</p>
+                      <div className="space-y-3">
+                        <h3 className="text-2xl font-bold text-gray-900">
+                          Quase lá!
+                        </h3>
+                        <p className="text-gray-600 text-lg">
+                          Como você é um Cliente, não precisamos de dados profissionais.
+                        </p>
+                      </div>
                     </div>
+                  )}
 
-                    <div className="space-y-3">
+                  {/* Etapa 7: Resumo Final */}
+                  {currentStep === 7 && (
+                    <div className="space-y-6">
                       {/* Toggle para mostrar/ocultar dados sensíveis */}
-                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                        <span className="text-xs text-gray-600">Mostrar dados sensíveis</span>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-600">Mostrar dados sensíveis</span>
                         <button
                           type="button"
                           onClick={() => setShowDataSummary(!showDataSummary)}
-                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
                         >
-                          {showDataSummary ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          {showDataSummary ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           {showDataSummary ? 'Ocultar' : 'Mostrar'}
                         </button>
                       </div>
 
                       {/* Resumo dos dados */}
-                      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-900 mb-3 text-sm">📋 Resumo do seu perfil:</h4>
-                        <div className="space-y-2 text-xs text-gray-700">
-                          <div className="grid grid-cols-2 gap-2">
-                            <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
-                            <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '***-****'}</p>
+                      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
+                        <h4 className="font-semibold text-gray-900 mb-4 text-lg">📋 Resumo do seu perfil:</h4>
+                        <div className="space-y-3 text-sm text-gray-700">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
+                              <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '***-****'}</p>
+                              <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
+                            </div>
+                            <div>
+                              <p><strong>Sexo:</strong> {watchedValues.gender === 'male' ? 'Masculino' : watchedValues.gender === 'female' ? 'Feminino' : 'Não informado'}</p>
+                              <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
+                              <p><strong>Tipo:</strong> {watchedValues.user_type === 'professional' ? '👨‍💼 Profissional' : watchedValues.user_type === 'client' ? '🙋‍♂️ Cliente' : 'Não informado'}</p>
+                            </div>
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-2">
-                            <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
-                            <p><strong>Sexo:</strong> {watchedValues.gender === 'male' ? 'Masculino' : watchedValues.gender === 'female' ? 'Feminino' : 'Não informado'}</p>
-                          </div>
-                          
-                          <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
-                          
-                          <div className="border-t border-gray-300 pt-2 mt-2">
+                          <div className="border-t border-gray-300 pt-3 mt-3">
                             <p><strong>Estado:</strong> {watchedValues.location_state ? estadosBrasil.find(e => e.sigla === watchedValues.location_state)?.nome : 'Não informado'}</p>
                             <p><strong>Cidade:</strong> {watchedValues.location_city || 'Não informado'}</p>
                             <p><strong>Bairro:</strong> {watchedValues.neighborhood || 'Não informado'}</p>
                             <p><strong>Endereço:</strong> {showDataSummary ? (watchedValues.address || 'Não informado') : 'Oculto'}</p>
                           </div>
                           
-                          <div className="border-t border-gray-300 pt-2 mt-2">
-                            <p><strong>Tipo:</strong> {watchedValues.user_type === 'professional' ? '👨‍💼 Profissional' : watchedValues.user_type === 'client' ? '🙋‍♂️ Cliente' : 'Não informado'}</p>
-                            
-                            {selectedAvatar && (
+                          {selectedAvatar && (
+                            <div className="border-t border-gray-300 pt-3 mt-3">
                               <p><strong>Avatar:</strong> {selectedAvatar.type === 'upload' ? '📸 Foto personalizada' : '🎨 Avatar gerado'}</p>
-                            )}
-                            
-                            {isProfessional && (
-                              <>
-                                {watchedValues.experience_years && (
-                                  <p><strong>Experiência:</strong> {watchedValues.experience_years}</p>
-                                )}
-                                {selectedServices.length > 0 && (
-                                  <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
-                                )}
-                                {watchedValues.emergency_service && (
-                                  <p><strong>Emergência:</strong> ✅ Serviço 24h</p>
-                                )}
-                              </>
-                            )}
-                          </div>
+                            </div>
+                          )}
+                          
+                          {isProfessional && (
+                            <div className="border-t border-gray-300 pt-3 mt-3">
+                              {watchedValues.experience_years && (
+                                <p><strong>Experiência:</strong> {watchedValues.experience_years}</p>
+                              )}
+                              {selectedServices.length > 0 && (
+                                <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
+                              )}
+                              {watchedValues.emergency_service && (
+                                <p><strong>Emergência:</strong> ✅ Serviço 24h</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       {/* Aviso final */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-green-800 mb-1">
-                          <Shield className="w-4 h-4" />
-                          <span className="font-semibold text-sm">Tudo pronto!</span>
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3 text-green-800 mb-2">
+                          <Shield className="w-5 h-5" />
+                          <span className="font-semibold">Tudo pronto!</span>
                         </div>
-                        <p className="text-green-700 text-xs">
+                        <p className="text-green-700 text-sm">
                           Seus dados estão corretos? Clique em "Finalizar" para completar seu cadastro.
                         </p>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Navigation Buttons */}
                 <div className={cn(
-                  "flex pt-3 border-t border-gray-100",
+                  "flex pt-6 border-t border-gray-200",
                   currentStep === 1 ? "justify-end" : "justify-between items-center"
                 )}>
                   {currentStep > 1 && (
@@ -1391,43 +1322,43 @@ export default function OnboardingPage() {
                       variant="outline"
                       onClick={prevStep}
                       disabled={isTransitioning}
-                      className="flex items-center gap-2 rounded-lg h-8 px-3 text-sm"
+                      className="flex items-center gap-2"
                     >
-                      <ArrowLeft className="w-3 h-3" />
+                      <ArrowLeft className="w-4 h-4" />
                       Anterior
                     </Button>
                   )}
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {currentStep < totalSteps ? (
                       <Button
                         type="button"
                         onClick={nextStep}
                         disabled={isTransitioning}
                         className={cn(
-                          "flex items-center gap-2 rounded-lg text-white h-8 px-4 text-sm",
+                          "flex items-center gap-2",
                           !isStepValid && currentStep > 1 && currentStep < totalSteps 
-                            ? "bg-gray-400 cursor-not-allowed" 
+                            ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400" 
                             : "bg-blue-600 hover:bg-blue-700"
                         )}
                       >
                         Próximo
-                        <ArrowRight className="w-3 h-3" />
+                        <ArrowRight className="w-4 h-4" />
                       </Button>
                     ) : (
                       <Button
                         type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white h-8 px-4 flex items-center gap-2 rounded-lg text-sm"
+                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
                         disabled={isLoading || !isValid}
                       >
                         {isLoading ? (
                           <>
-                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            <RefreshCw className="w-4 h-4 animate-spin" />
                             Finalizando...
                           </>
                         ) : (
                           <>
-                            <Check className="w-3 h-3" />
+                            <Check className="w-4 h-4" />
                             Finalizar Cadastro
                           </>
                         )}
@@ -1436,8 +1367,8 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               </form>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
