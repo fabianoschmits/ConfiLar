@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface UserStatusDotProps {
   userId: string
@@ -20,6 +21,34 @@ export function UserStatusDot({
 }: UserStatusDotProps) {
   const [status, setStatus] = useState<ActivityStatus | null>(null)
   const [lastActivity, setLastActivity] = useState<string>('')
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detectar se é mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Função para mostrar status no mobile
+  const handleMobileClick = () => {
+    if (!isMobile || !status) return
+    
+    const statusMessage = `${status.label} - ${status.description}`
+    const activityMessage = lastActivity 
+      ? `Última atividade: ${formatDistanceToNow(new Date(lastActivity), { addSuffix: true, locale: ptBR })}`
+      : ''
+    
+    toast.info(statusMessage, {
+      description: activityMessage,
+      duration: 3000,
+    })
+  }
 
   // Carregar status real do usuário
   useEffect(() => {
@@ -158,6 +187,18 @@ export function UserStatusDot({
     }
   }
 
+  if (isMobile) {
+    // Versão mobile: clicável com toast
+    return (
+      <button
+        onClick={handleMobileClick}
+        className={`absolute -top-1 -right-1 z-10 ${getSizeClass()} ${getDotColor()} rounded-full ${getPulseClass()} ${className} cursor-pointer touch-manipulation`}
+        aria-label={`Status do usuário: ${status?.label || 'Carregando...'}`}
+      />
+    )
+  }
+
+  // Versão desktop: tooltip no hover
   return (
     <TooltipProvider>
       <Tooltip>
