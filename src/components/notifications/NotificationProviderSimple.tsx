@@ -271,8 +271,17 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
           console.log('🔔 Nova notificação recebida via realtime:', payload.new)
           const newNotification = payload.new as Notification
           
-          // Adicionar nova notificação ao estado
-          setNotifications(prev => [newNotification, ...prev])
+          // Adicionar nova notificação ao estado (com prevenção de duplicação)
+          setNotifications(prev => {
+            // Verificar se já existe
+            const exists = prev.some(n => n.id === newNotification.id)
+            if (exists) {
+              console.log('⏭️ Notificação já existe no estado, ignorando:', newNotification.id)
+              return prev
+            }
+            console.log('✅ Adicionando nova notificação ao estado:', newNotification.id)
+            return [newNotification, ...prev]
+          })
           
           // Mostrar toast para nova notificação
           toast(newNotification.title, {
@@ -329,11 +338,32 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
           )
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('📡 Status da conexão realtime de notificações:', status)
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Realtime de notificações CONECTADO com sucesso!')
+          console.log('⚡ Sistema pronto para receber notificações instantâneas')
+        } else if (status === 'CLOSED') {
+          console.log('🔴 Conexão realtime FECHADA')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ ERRO no canal realtime de notificações')
+          console.log('🔄 Tentando reconectar em 5 segundos...')
+          // Tentar reconectar após 5 segundos
+          setTimeout(() => {
+            console.log('🔄 Recarregando notificações (fallback)...')
+            loadNotifications()
+          }, 5000)
+        } else if (status === 'TIMED_OUT') {
+          console.error('⏱️ TIMEOUT na conexão realtime')
+          console.log('🔄 Recarregando notificações...')
+          loadNotifications()
+        }
+      })
 
     // Cleanup
     return () => {
-      console.log('🔔 Desconectando realtime de notificações')
+      console.log('🛑 Desconectando realtime de notificações')
       channel.unsubscribe()
     }
   }, [user])
