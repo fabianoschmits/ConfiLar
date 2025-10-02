@@ -5,6 +5,7 @@ import { useUserActivity } from '@/hooks/useUserActivity'
 import { ActivityStatus } from '@/hooks/useUserActivity'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { toast } from 'sonner'
 import { 
   Wifi, 
   WifiOff, 
@@ -121,11 +122,34 @@ export function ActivityDot({
 }) {
   const { getActivityStatus } = useUserActivity()
   const [status, setStatus] = useState<ActivityStatus | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const now = new Date().toISOString()
     setStatus(getActivityStatus(now))
   }, [userId, getActivityStatus])
+
+  // Detectar se é mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Função para mostrar status no mobile
+  const handleMobileClick = () => {
+    if (!isMobile || !status) return
+    
+    toast.info(`${status.label}`, {
+      description: status.description,
+      duration: 2500,
+    })
+  }
 
   if (!status) return null
 
@@ -148,6 +172,18 @@ export function ActivityDot({
     return status.status === 'online' ? 'animate-pulse' : ''
   }
 
+  if (isMobile) {
+    // Versão mobile: clicável com toast
+    return (
+      <button
+        onClick={handleMobileClick}
+        className={`w-2 h-2 ${getDotColor()} rounded-full ${getPulseClass()} ${className} cursor-pointer touch-manipulation`}
+        aria-label={`Status do usuário: ${status.label}`}
+      />
+    )
+  }
+
+  // Versão desktop: tooltip no hover
   return (
     <TooltipProvider>
       <Tooltip>
