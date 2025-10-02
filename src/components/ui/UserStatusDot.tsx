@@ -92,7 +92,7 @@ export function UserStatusDot({
       try {
         const { data, error } = await supabase
           .from('user_activity')
-          .select('*')
+          .select('last_activity, status, is_online')
           .eq('user_id', userId)
           .single()
 
@@ -100,14 +100,21 @@ export function UserStatusDot({
           setLastActivity(data.last_activity)
           setStatus(getStatus(data.last_activity))
           return
+        } else if (error) {
+          console.log('Erro ao carregar atividade do usuário:', error.message)
         }
       } catch (dbError) {
-        console.log('Tabela user_activity não disponível para UserStatusDot')
+        console.log('Erro na consulta user_activity:', dbError)
       }
 
-      // Fallback: simular atividade baseada no ID do usuário
+      // Fallback: simular atividade baseada no ID do usuário (determinística)
       const now = new Date()
-      const randomMinutes = Math.floor(Math.random() * 1440) // 0-24 horas
+      // Usar hash do userId para gerar um tempo consistente
+      const userHash = userId.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0)
+        return a & a
+      }, 0)
+      const randomMinutes = Math.abs(userHash) % 1440 // 0-24 horas
       const activityTime = new Date(now.getTime() - (randomMinutes * 60 * 1000))
       
       setLastActivity(activityTime.toISOString())
