@@ -169,3 +169,4 @@ O ConfiLar agora possui:
 **🚀 PRONTO PARA IMPLEMENTAÇÃO PWA COMPLETA!**
 
 
+

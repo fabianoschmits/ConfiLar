@@ -62,7 +62,17 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
-        postsQuery = postsQuery.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,professional.full_name.ilike.%${filters.search}%`)
+        const searchTerm = filters.search.trim()
+        // Buscar em título, descrição, nome do profissional, nome do usuário, e metadados
+        postsQuery = postsQuery.or(`
+          title.ilike.%${searchTerm}%,
+          description.ilike.%${searchTerm}%,
+          professional.full_name.ilike.%${searchTerm}%,
+          user.full_name.ilike.%${searchTerm}%,
+          metadata->>category.ilike.%${searchTerm}%,
+          metadata->>service_type.ilike.%${searchTerm}%,
+          metadata->>tags.ilike.%${searchTerm}%
+        `.replace(/\s+/g, ''))
       }
 
       // Aplicar filtros de localização
@@ -114,7 +124,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       if (postsError) throw postsError
 
       // Buscar atividades do sistema
-      const { data: activities, error: activitiesError } = await supabase
+      let activitiesQuery = supabase
         .from('user_activity_log')
         .select(`
           id,
@@ -133,6 +143,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .in('activity_type', ['user_joined', 'recommendation', 'review', 'agreement', 'classified_posted'])
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
+
+      // Aplicar filtro de busca nas atividades também
+      if (filters.search && filters.search.trim()) {
+        const searchTerm = filters.search.trim()
+        activitiesQuery = activitiesQuery.or(`
+          description.ilike.%${searchTerm}%,
+          user.full_name.ilike.%${searchTerm}%,
+          metadata->>category.ilike.%${searchTerm}%,
+          metadata->>service_description.ilike.%${searchTerm}%,
+          metadata->>target_user_name.ilike.%${searchTerm}%
+        `.replace(/\s+/g, ''))
+      }
+
+      const { data: activities, error: activitiesError } = await activitiesQuery
 
       if (activitiesError) {
         console.warn('Erro ao buscar atividades:', activitiesError)

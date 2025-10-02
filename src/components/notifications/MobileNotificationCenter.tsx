@@ -79,20 +79,25 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full p-0 sm:max-w-sm">
+      <SheetContent side="right" className="w-full p-0 sm:max-w-sm bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-l-2xl">
         {/* Header Mobile */}
-        <SheetHeader className="p-4 pb-3 border-b bg-white sticky top-0 z-10">
+        <SheetHeader className="p-4 pb-3 border-b border-gray-100 bg-white/90 backdrop-blur-sm sticky top-0 z-10 rounded-tl-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-full">
-                <Bell className="w-5 h-5 text-blue-600" />
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <Bell className="w-4 h-4 text-white" />
               </div>
               <div>
                 <SheetTitle className="text-lg font-semibold">
                   Notificações
+                  {unreadCount > 0 && (
+                    <Badge className="bg-red-500 text-white font-medium px-2 py-1 rounded-full ml-2 text-xs">
+                      {unreadCount}
+                    </Badge>
+                  )}
                 </SheetTitle>
-                <p className="text-sm text-gray-500">
-                  {unreadCount} não lidas
+                <p className="text-sm text-gray-600">
+                  Gerencie suas notificações
                 </p>
               </div>
             </div>

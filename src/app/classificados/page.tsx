@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,8 +34,7 @@ import {
   MessageCircle, 
   Plus, 
   Filter, 
-  Star, 
-  Eye,
+  Star,
   Briefcase,
   ChevronDown,
   ChevronUp,
@@ -206,8 +206,7 @@ export default function ClassificadosPage() {
         location_state: formData.location_state,
         location_city: formData.location_city,
         ad_type: formData.ad_type === 'offer' ? 'oferecer' : 'procurar',
-        is_active: true,
-        views: 0
+        is_active: true
       }
 
       const { error } = await supabase
@@ -389,18 +388,7 @@ export default function ClassificadosPage() {
     <ClientOnly>
       <MainLayout requireAuth={false}>
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header da Página */}
-          <div className="mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Classificados
-              </h1>
-              <p className="text-gray-600">
-                Encontre serviços ou ofereça seus serviços profissionais
-              </p>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
               
           {/* Estatísticas Compactas */}
           {/* Estatísticas - Card Compacto */}
@@ -472,7 +460,7 @@ export default function ClassificadosPage() {
                 rating: 'all',
                 availability: 'all'
               }}
-              placeholder="Buscar anúncios, serviços, categorias..."
+              placeholder="Buscar anúncios..."
               className="w-full"
             />
           </div>
@@ -524,49 +512,40 @@ export default function ClassificadosPage() {
             </div>
           </div>
 
-          {/* Controles de Visualização */}
+          {/* Controles de Visualização e Botão Novo Anúncio */}
           <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
                 {filteredAds.length} resultado{filteredAds.length !== 1 ? 's' : ''}
               </span>
-            </div>
-            
-            <div className="flex border border-gray-200 rounded-lg">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-r-none"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-l-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-
-          {/* Resultados e Paginação */}
-          <div className="mb-6 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              Mostrando {startIndex + 1}-{Math.min(endIndex, filteredAds.length)} de {filteredAds.length} anúncios
+              <div className="flex border border-gray-200 rounded-lg">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-r-none"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
             <div className="flex items-center gap-4">
-              {/* Botão Novo Anúncio */}
               {user && (
                 <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                   <DialogTrigger asChild>
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Novo Anúncio
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-2">
+                      <Plus className="h-3 w-3 mr-1" />
+                      <span className="hidden sm:inline">Novo Anúncio</span>
+                      <span className="sm:hidden">Novo</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
@@ -786,16 +765,18 @@ export default function ClassificadosPage() {
                       {/* Header com Avatar e Info do Usuário */}
                       <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
                         <div className="relative self-center sm:self-start">
-                          <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md">
-                            <AvatarImage src={selectedAd.user_avatar_url} />
-                            <AvatarFallback className={`font-medium text-sm sm:text-lg ${
-                              selectedAd.ad_type === 'oferecer' 
-                                ? 'bg-gray-200 text-gray-800' 
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {selectedAd.user_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                          <Link href={`/perfil/${selectedAd.user_id}`} className="block">
+                            <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
+                              <AvatarImage src={selectedAd.user_avatar_url} />
+                              <AvatarFallback className={`font-medium text-sm sm:text-lg ${
+                                selectedAd.ad_type === 'oferecer' 
+                                  ? 'bg-gray-200 text-gray-800' 
+                                  : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                {selectedAd.user_name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </Link>
                           <UserStatusDot 
                             userId={selectedAd.user_id} 
                             size="sm"
@@ -803,9 +784,11 @@ export default function ClassificadosPage() {
                           />
                         </div>
                         <div className="flex-1 w-full text-center sm:text-left">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-                            {selectedAd.user_name}
-                          </h3>
+                          <Link href={`/perfil/${selectedAd.user_id}`} className="block">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                              {selectedAd.user_name}
+                            </h3>
+                          </Link>
                           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
                             <Badge 
                               variant="outline"
@@ -846,14 +829,10 @@ export default function ClassificadosPage() {
                       </div>
 
                       {/* Informações Adicionais */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center text-xs sm:text-sm text-gray-600">
                           <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           <span>Publicado em {formatDate(selectedAd.created_at)}</span>
-                        </div>
-                        <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          <span>{selectedAd.views} visualizações</span>
                         </div>
                       </div>
 
@@ -886,69 +865,6 @@ export default function ClassificadosPage() {
                 </DialogContent>
               </Dialog>
 
-              {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="flex items-center gap-2">
-                  {/* Botão Anterior */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-3"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-
-                  {/* Números das páginas */}
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
-                    // Mostrar no máximo 7 números: atual, 2 antes, 2 depois, primeira e última
-                    const shouldShow = 
-                      pageNumber === 1 || 
-                      pageNumber === totalPages || 
-                      (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
-
-                    if (!shouldShow) {
-                      // Mostrar reticências apenas entre intervalos
-                      if (pageNumber === currentPage - 3 || pageNumber === currentPage + 3) {
-                        return (
-                          <span key={pageNumber} className="px-2 text-gray-500">
-                            ...
-                          </span>
-                        )
-                      }
-                      return null
-                    }
-
-                    return (
-                      <Button
-                        key={pageNumber}
-                        variant={currentPage === pageNumber ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => goToPage(pageNumber)}
-                        className={`px-3 ${
-                          currentPage === pageNumber 
-                            ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                            : ''
-                        }`}
-                      >
-                        {pageNumber}
-                      </Button>
-                    )
-                  })}
-
-                  {/* Botão Próximo */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-3"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -1020,16 +936,18 @@ export default function ClassificadosPage() {
                     {/* Header do Card com Avatar e Info do Usuário */}
                     <div className="flex items-start space-x-3 mb-4">
                       <div className="relative">
-                        <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
-                          <AvatarImage src={ad.user_avatar_url} />
-                          <AvatarFallback className={`font-medium ${
-                            ad.ad_type === 'oferecer' 
-                              ? 'bg-gray-200 text-gray-800' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {ad.user_name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <Link href={`/perfil/${ad.user_id}`} className="block">
+                          <Avatar className="w-12 h-12 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
+                            <AvatarImage src={ad.user_avatar_url} />
+                            <AvatarFallback className={`font-medium ${
+                              ad.ad_type === 'oferecer' 
+                                ? 'bg-gray-200 text-gray-800' 
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {ad.user_name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Link>
                         <UserStatusDot 
                           userId={ad.user_id} 
                           size="sm"
@@ -1037,9 +955,11 @@ export default function ClassificadosPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          {ad.user_name}
-                        </h3>
+                        <Link href={`/perfil/${ad.user_id}`} className="block">
+                          <h3 className="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                            {ad.user_name}
+                          </h3>
+                        </Link>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge 
                             variant="outline"
@@ -1133,9 +1053,6 @@ export default function ClassificadosPage() {
                       <div className="flex items-center text-xs text-gray-500">
                         <Calendar className="h-3 w-3 mr-1" />
                         {formatDate(ad.created_at)}
-                        <span className="mx-2">•</span>
-                        <Eye className="h-3 w-3 mr-1" />
-                        {ad.views} visualizações
                       </div>
 
                         <Button
@@ -1154,6 +1071,77 @@ export default function ClassificadosPage() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+
+          {/* Paginação */}
+          {!loading && totalPages > 1 && (
+            <div className="flex items-center justify-center mt-8 space-x-1">
+              {/* Botão Anterior */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {/* Números das páginas */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => {
+                // Mostrar no máximo 7 números: atual, 2 antes, 2 depois, primeira e última
+                const shouldShow = 
+                  pageNumber === 1 || 
+                  pageNumber === totalPages || 
+                  (pageNumber >= currentPage - 2 && pageNumber <= currentPage + 2)
+
+                if (!shouldShow) {
+                  // Mostrar reticências apenas entre intervalos
+                  if (pageNumber === currentPage - 3 || pageNumber === currentPage + 3) {
+                    return (
+                      <span key={pageNumber} className="px-2 text-gray-500">
+                        ...
+                      </span>
+                    )
+                  }
+                  return null
+                }
+
+                return (
+                  <Button
+                    key={pageNumber}
+                    variant={currentPage === pageNumber ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => goToPage(pageNumber)}
+                    className={`px-3 ${
+                      currentPage === pageNumber 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : ''
+                    }`}
+                  >
+                    {pageNumber}
+                  </Button>
+                )
+              })}
+
+              {/* Botão Próximo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
+          {/* Info da paginação */}
+          {!loading && filteredAds.length > 0 && (
+            <div className="text-center mt-4 text-sm text-gray-600">
+              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredAds.length)} de {filteredAds.length} resultados
             </div>
           )}
         </div>

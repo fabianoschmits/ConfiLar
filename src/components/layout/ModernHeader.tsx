@@ -253,23 +253,23 @@ export function ModernHeader({
 
             {/* Center - Title */}
             <div className="flex-1 text-center">
-              <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">
+              <h1 className="text-sm font-semibold text-gray-900 sm:text-base">
                 {getPageTitle()}
               </h1>
             </div>
 
             {/* Right side - Actions */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center">
               {/* Toggle de Disponibilidade */}
               <AvailabilityToggleCompact />
               
               {/* Notificações */}
-              <div className="relative">
+              <div className="relative -ml-1">
                 <SimpleHeaderBell />
               </div>
               
               {/* Avatar e Menu do Usuário */}
-              <div className="relative">
+              <div className="relative -ml-1">
                 <Button
                   variant="ghost"
                   onClick={() => setIsMenuExpanded(!isMenuExpanded)}

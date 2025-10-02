@@ -550,211 +550,194 @@ export function AdminDashboard() {
           </TabsList>
         </div>
 
-        {/* Tab: Visão Geral */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Métricas principais - Mobile-first */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Usuários</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{userStats?.total_users || 0}</p>
-                  </div>
-                  <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 flex-shrink-0" />
+        {/* Tab: Visão Geral - Layout Compacto */}
+        <TabsContent value="overview" className="space-y-4">
+          {/* Métricas principais - Cards compactos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            {/* Card compacto - Total Usuários */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Usuários</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.total_users || 0}</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-green-600 text-xs">
-                    +{userStats?.new_users_today || 0} hoje
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Usuários Ativos (24h)</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{userStats?.active_users_24h || 0}</p>
-                  </div>
-                  <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 flex-shrink-0" />
+            {/* Card compacto - Ativos 24h */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-green-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Ativos</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.active_users_24h || 0}</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-blue-600 text-xs">
-                    {Math.round(((userStats?.active_users_24h || 0) / (userStats?.total_users || 1)) * 100)}% ativos
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Posts (24h)</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{systemStats?.posts_last_24h || 0}</p>
-                  </div>
-                  <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500 flex-shrink-0" />
+            {/* Card compacto - Novos hoje */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-purple-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Novos</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.new_users_today || 0}</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-purple-600 text-xs">
-                    {systemStats?.total_posts || 0} total
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Mensagens (24h)</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{systemStats?.messages_last_24h || 0}</p>
-                  </div>
-                  <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500 flex-shrink-0" />
+            {/* Card compacto - Posts 24h */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Posts</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.posts_last_24h || 0}</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-orange-600 text-xs">
-                    {systemStats?.total_messages || 0} total
-                  </Badge>
+              </div>
+            </Card>
+
+            {/* Card compacto - Mensagens 24h */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-orange-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Msgs</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.messages_last_24h || 0}</p>
                 </div>
-              </CardContent>
+              </div>
+            </Card>
+
+            {/* Card compacto - Notificações 24h */}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600 truncate">Notif</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.notifications_last_24h || 0}</p>
+                </div>
+              </div>
             </Card>
           </div>
 
-          {/* Saúde do sistema - Mobile-first */}
+          {/* Saúde do sistema - Cards compactos */}
           {systemHealth && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Saúde do Sistema
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {getHealthIcon(systemHealth.database_status)}
-                    </div>
-                    <div className="text-sm text-gray-600">Banco de Dados</div>
-                    <div className={`text-xs ${getHealthColor(systemHealth.database_status)}`}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card className="p-3">
+                <div className="flex items-center gap-2">
+                  <div className="text-lg">{getHealthIcon(systemHealth.database_status)}</div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-600">DB Status</p>
+                    <p className={`text-sm font-bold ${getHealthColor(systemHealth.database_status)}`}>
                       {systemHealth.database_status.toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {systemHealth.api_response_time}ms
-                    </div>
-                    <div className="text-sm text-gray-600">Tempo de Resposta</div>
-                    <div className="text-xs text-gray-500">API</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {systemHealth.uptime}%
-                    </div>
-                    <div className="text-sm text-gray-600">Uptime</div>
-                    <div className="text-xs text-gray-500">Disponibilidade</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {systemHealth.memory_usage}%
-                    </div>
-                    <div className="text-sm text-gray-600">Memória</div>
-                    <div className="text-xs text-gray-500">Uso</div>
+                    </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+
+              <Card className="p-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-500" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-600">Response</p>
+                    <p className="text-sm font-bold text-gray-900">{systemHealth.api_response_time}ms</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-green-500" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-600">Uptime</p>
+                    <p className="text-sm font-bold text-gray-900">{systemHealth.uptime}%</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-3">
+                <div className="flex items-center gap-2">
+                  <Database className="h-4 w-4 text-orange-500" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-600">Memory</p>
+                    <p className="text-sm font-bold text-gray-900">{systemHealth.memory_usage}%</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
           )}
         </TabsContent>
 
-        {/* Tab: Usuários */}
-        <TabsContent value="users" className="space-y-6">
-          {/* Estatísticas de usuários - Mobile-first */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-lg">Distribuição por Tipo</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 sm:space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Profissionais</span>
-                    <Badge variant="outline" className="text-xs">{userStats?.professional_users || 0}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Clientes</span>
-                    <Badge variant="outline" className="text-xs">{userStats?.client_users || 0}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Verificados</span>
-                    <Badge variant="outline" className="text-xs text-green-600">
-                      {userStats?.verified_users || 0}
-                    </Badge>
-                  </div>
+        {/* Tab: Usuários - Layout Compacto */}
+        <TabsContent value="users" className="space-y-4">
+          {/* Métricas de usuários - Cards compactos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <UserCheck className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Profissionais</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.professional_users || 0}</p>
                 </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-lg">Usuários por Estado</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
-                  {userStats?.users_by_state.slice(0, 10).map((state, index) => (
-                    <div key={state.state} className="flex justify-between items-center">
-                      <span className="text-xs sm:text-sm truncate">{state.state}</span>
-                      <Badge variant="outline" className="text-xs">{state.count}</Badge>
-                    </div>
-                  ))}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-green-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Clientes</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.client_users || 0}</p>
                 </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-lg">Crescimento Mensal</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
-                  {userStats?.users_by_month.slice(-6).map((month, index) => (
-                    <div key={month.month} className="flex justify-between items-center">
-                      <span className="text-xs sm:text-sm truncate">{month.month}</span>
-                      <Badge variant="outline" className="text-xs">{month.count}</Badge>
-                    </div>
-                  ))}
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-purple-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Verificados</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.verified_users || 0}</p>
                 </div>
-              </CardContent>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-orange-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Ativos 24h</p>
+                  <p className="text-lg font-bold text-gray-900">{userStats?.active_users_24h || 0}</p>
+                </div>
+              </div>
             </Card>
           </div>
 
-          {/* Usuários mais ativos - Mobile-first */}
+          {/* Top 5 usuários mais ativos - Card compacto */}
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5" />
-                Usuários Mais Ativos
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Zap className="h-4 w-4" />
+                Top 5 Usuários Ativos
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2 sm:space-y-3">
-                {topUsers.slice(0, 10).map((user, index) => (
-                  <div key={user.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="space-y-2">
+                {topUsers.slice(0, 5).map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm sm:text-base truncate">{user.full_name}</div>
-                        <div className="text-xs sm:text-sm text-gray-600 truncate">
-                          {user.user_type === 'professional' ? 'Profissional' : 'Cliente'} • {user.state}
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm truncate">{user.full_name}</div>
+                        <div className="text-xs text-gray-600 truncate">
+                          {user.user_type === 'professional' ? 'Prof' : 'Cliente'} • {user.state}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                      <Badge variant="outline" className="text-xs">{user.posts_count} posts</Badge>
-                      <Badge variant="outline" className="text-xs">{user.messages_count} msgs</Badge>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">{user.posts_count}</Badge>
+                      <Badge variant="outline" className="text-xs">{user.messages_count}</Badge>
                       {user.is_verified && <Badge className="bg-green-100 text-green-700 text-xs">✓</Badge>}
                     </div>
                   </div>
@@ -764,35 +747,75 @@ export function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        {/* Tab: Atividade - Mobile-first */}
-        <TabsContent value="activity" className="space-y-4 sm:space-y-6">
-          {/* Usuários ativos nas últimas 24h */}
+        {/* Tab: Atividade - Layout Compacto */}
+        <TabsContent value="activity" className="space-y-4">
+          {/* Métricas de atividade - Cards compactos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-green-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Usuários Ativos</p>
+                  <p className="text-lg font-bold text-gray-900">{activeUsers.length}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Posts Hoje</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.posts_last_24h || 0}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-orange-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Mensagens</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.messages_last_24h || 0}</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Notificações</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.notifications_last_24h || 0}</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Top 5 usuários ativos - Card compacto */}
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
-                Usuários Ativos (Últimas 24h)
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Activity className="h-4 w-4" />
+                Top 5 Usuários Ativos (24h)
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-                {activeUsers.slice(0, 20).map((user, index) => (
-                  <div key={user.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="space-y-2">
+                {activeUsers.slice(0, 5).map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Badge variant="outline" className="text-xs">#{index + 1}</Badge>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm sm:text-base truncate">{user.full_name}</div>
-                        <div className="text-xs sm:text-sm text-gray-600 truncate">
-                          {user.user_type === 'professional' ? 'Profissional' : 'Cliente'} • {user.city}, {user.state}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          Última atividade: {new Date(user.last_activity).toLocaleString()}
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm truncate">{user.full_name}</div>
+                        <div className="text-xs text-gray-600 truncate">
+                          {user.user_type === 'professional' ? 'Prof' : 'Cliente'} • {user.city}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                      <Badge variant="outline" className="text-xs">{user.posts_count} posts</Badge>
-                      <Badge variant="outline" className="text-xs">{user.messages_count} msgs</Badge>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">{user.posts_count}</Badge>
+                      <Badge variant="outline" className="text-xs">{user.messages_count}</Badge>
                       {user.is_verified && <Badge className="bg-green-100 text-green-700 text-xs">✓</Badge>}
                     </div>
                   </div>
@@ -801,27 +824,27 @@ export function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Atividade recente - Mobile-first */}
+          {/* Atividade recente - Card compacto */}
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4" />
                 Atividade Recente
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
-                {recentActivity.map((activity, index) => (
-                  <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-50 rounded-lg">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {recentActivity.slice(0, 10).map((activity, index) => (
+                  <div key={`${activity.type}-${activity.id}`} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
                     <div className="flex-shrink-0">
-                      {activity.type === 'post' && <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />}
-                      {activity.type === 'message' && <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />}
-                      {activity.type === 'notification' && <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
+                      {activity.type === 'post' && <TrendingUp className="h-3 w-3 text-blue-500" />}
+                      {activity.type === 'message' && <MessageCircle className="h-3 w-3 text-green-500" />}
+                      {activity.type === 'notification' && <AlertTriangle className="h-3 w-3 text-orange-500" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-xs sm:text-sm truncate">{activity.title}</div>
+                      <div className="font-medium text-xs truncate">{activity.title}</div>
                       <div className="text-xs text-gray-500 truncate">
-                        {activity.user?.full_name} • {new Date(activity.created_at).toLocaleString()}
+                        {activity.user?.full_name} • {new Date(activity.created_at).toLocaleDateString()}
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs flex-shrink-0">
@@ -844,195 +867,156 @@ export function AdminDashboard() {
           <BansManagement />
         </TabsContent>
 
-        {/* Tab: Sistema - Mobile-first */}
-        <TabsContent value="system" className="space-y-4 sm:space-y-6">
-          {/* Estatísticas do sistema */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Posts</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_posts || 0}</p>
-                  </div>
-                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 flex-shrink-0" />
+        {/* Tab: Sistema - Layout Compacto */}
+        <TabsContent value="system" className="space-y-4">
+          {/* Métricas do sistema - Cards compactos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Posts Total</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.total_posts || 0}</p>
+                  <p className="text-xs text-green-600">+{systemStats?.posts_last_24h || 0} hoje</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-blue-600 text-xs">
-                    +{systemStats?.posts_last_24h || 0} hoje
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total de Mensagens</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_messages || 0}</p>
-                  </div>
-                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0" />
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-green-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Mensagens</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.total_messages || 0}</p>
+                  <p className="text-xs text-green-600">+{systemStats?.messages_last_24h || 0} hoje</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-green-600 text-xs">
-                    +{systemStats?.messages_last_24h || 0} hoje
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Notificações</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_notifications || 0}</p>
-                  </div>
-                  <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500 flex-shrink-0" />
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Notificações</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.total_notifications || 0}</p>
+                  <p className="text-xs text-green-600">+{systemStats?.notifications_last_24h || 0} hoje</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-orange-600 text-xs">
-                    +{systemStats?.notifications_last_24h || 0} hoje
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Avaliações</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{systemStats?.total_reviews || 0}</p>
-                  </div>
-                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 flex-shrink-0" />
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Avaliações</p>
+                  <p className="text-lg font-bold text-gray-900">{systemStats?.total_reviews || 0}</p>
+                  <p className="text-xs text-green-600">+{systemStats?.reviews_last_24h || 0} hoje</p>
                 </div>
-                <div className="mt-2">
-                  <Badge variant="outline" className="text-yellow-600 text-xs">
-                    +{systemStats?.reviews_last_24h || 0} hoje
-                  </Badge>
-                </div>
-              </CardContent>
+              </div>
             </Card>
           </div>
         </TabsContent>
 
-        {/* Tab: Monitoramento - Mobile-first */}
-        <TabsContent value="monitoring" className="space-y-4 sm:space-y-6">
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Monitoramento Avançado:</strong> Esta seção mostra métricas detalhadas de performance e saúde do sistema.
-            </AlertDescription>
-          </Alert>
-
-          {/* Métricas de performance */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base">Performance do Sistema</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Tempo de Resposta da API</span>
-                    <Badge variant="outline" className="text-xs">{systemHealth?.api_response_time || 0}ms</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Taxa de Erro</span>
-                    <Badge variant="outline" className={`text-xs ${systemHealth?.error_rate === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {systemHealth?.error_rate || 0}%
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Uptime</span>
-                    <Badge variant="outline" className="text-xs text-green-600">
-                      {systemHealth?.uptime || 0}%
-                    </Badge>
-                  </div>
+        {/* Tab: Monitoramento - Layout Compacto */}
+        <TabsContent value="monitoring" className="space-y-4">
+          {/* Métricas de performance - Cards compactos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-blue-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Response Time</p>
+                  <p className="text-lg font-bold text-gray-900">{systemHealth?.api_response_time || 0}ms</p>
                 </div>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm sm:text-base">Uso de Recursos</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Uso de Memória</span>
-                    <Badge variant="outline" className={`text-xs ${systemHealth?.memory_usage && systemHealth.memory_usage > 80 ? 'text-red-600' : 'text-green-600'}`}>
-                      {systemHealth?.memory_usage || 0}%
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm">Uso de CPU</span>
-                    <Badge variant="outline" className={`text-xs ${systemHealth?.cpu_usage && systemHealth.cpu_usage > 80 ? 'text-red-600' : 'text-green-600'}`}>
-                      {systemHealth?.cpu_usage || 0}%
-                    </Badge>
-                  </div>
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Error Rate</p>
+                  <p className={`text-lg font-bold ${systemHealth?.error_rate === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {systemHealth?.error_rate || 0}%
+                  </p>
                 </div>
-              </CardContent>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-green-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Uptime</p>
+                  <p className="text-lg font-bold text-gray-900">{systemHealth?.uptime || 0}%</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-orange-500" />
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-600">Memory</p>
+                  <p className={`text-lg font-bold ${systemHealth?.memory_usage && systemHealth.memory_usage > 80 ? 'text-red-600' : 'text-green-600'}`}>
+                    {systemHealth?.memory_usage || 0}%
+                  </p>
+                </div>
+              </div>
             </Card>
           </div>
         </TabsContent>
 
-        {/* Tab: Ferramentas - Mobile-first */}
-        <TabsContent value="tools" className="space-y-4 sm:space-y-6">
-          <Alert>
-            <Settings className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Ferramentas Administrativas:</strong> Use estas ferramentas para gerenciar o sistema e resolver problemas.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Limpeza de Dados
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-2 sm:space-y-3">
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                  Limpar Notificações Antigas
+        {/* Tab: Ferramentas - Layout Compacto */}
+        <TabsContent value="tools" className="space-y-4">
+          {/* Ferramentas de limpeza - Cards compactos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Card className="p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Trash2 className="h-4 w-4 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium">Limpeza de Dados</p>
+                  <p className="text-xs text-gray-600">Manutenção do sistema</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <Trash2 className="h-3 w-3 mr-2" />
+                  Limpar Notificações
                 </Button>
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <Database className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <Database className="h-3 w-3 mr-2" />
                   Limpar Dados de Teste
                 </Button>
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                  Otimizar Banco de Dados
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                  Otimizar DB
                 </Button>
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <UserCheck className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Gerenciamento de Usuários
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-2 sm:space-y-3">
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+            <Card className="p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <UserCheck className="h-4 w-4 text-blue-500" />
+                <div>
+                  <p className="text-sm font-medium">Gerenciamento</p>
+                  <p className="text-xs text-gray-600">Controle de usuários</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <UserCheck className="h-3 w-3 mr-2" />
                   Verificar Usuários
                 </Button>
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <UserX className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <UserX className="h-3 w-3 mr-2" />
                   Suspender Usuários
                 </Button>
-                <Button variant="outline" className="w-full text-xs sm:text-sm">
-                  <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <Button variant="outline" size="sm" className="w-full text-xs">
+                  <Shield className="h-3 w-3 mr-2" />
                   Verificar Permissões
                 </Button>
-              </CardContent>
+              </div>
             </Card>
           </div>
         </TabsContent>
