@@ -26,7 +26,6 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
-import { UserStatusDot } from '@/components/ui/UserStatusDot'
 import { 
   Search, 
   MapPin, 
@@ -777,11 +776,6 @@ export default function ClassificadosPage() {
                               </AvatarFallback>
                             </Avatar>
                           </Link>
-                          <UserStatusDot 
-                            userId={selectedAd.user_id} 
-                            size="sm"
-                            className="border-2 border-white"
-                          />
                         </div>
                         <div className="flex-1 w-full text-center sm:text-left">
                           <Link href={`/perfil/${selectedAd.user_id}`} className="block">
@@ -948,11 +942,6 @@ export default function ClassificadosPage() {
                             </AvatarFallback>
                           </Avatar>
                         </Link>
-                        <UserStatusDot 
-                          userId={ad.user_id} 
-                          size="sm"
-                          className="border-2 border-white"
-                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <Link href={`/perfil/${ad.user_id}`} className="block">

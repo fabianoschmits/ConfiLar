@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Bell, X, Check, Trash2 } from 'lucide-react'
-import { useNewNotifications } from '@/hooks/useNewNotifications'
+import { useNotifications } from './NotificationProviderSimple'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 
 export function NewNotificationBell() {
-  const { notifications, unreadCount, markAsRead, deleteNotification, clearAll } = useNewNotifications()
+  const { notifications, unreadCount, markAsRead, removeNotification, clearAll } = useNotifications()
   const { openChat } = useFloatingChat()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -153,7 +153,7 @@ export function NewNotificationBell() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
-                          deleteNotification(notification.id)
+                          removeNotification(notification.id)
                         }}
                         className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                       >

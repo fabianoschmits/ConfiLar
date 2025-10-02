@@ -22,7 +22,6 @@ import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useMessages } from '@/hooks/useMessages'
 import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { UserStatusDot } from '@/components/ui/UserStatusDot'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
 import { RateLimitStatus } from '@/components/security/RateLimitStatus'
@@ -351,11 +350,6 @@ export function FloatingChat() {
                                     fallback={favorite.professional?.full_name?.charAt(0) || 'U'}
                                     size="sm"
                                   />
-                                  <UserStatusDot 
-                                    userId={favorite.professional?.id} 
-                                    size="sm"
-                                    className="border-2 border-white"
-                                  />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-gray-900 text-sm truncate">
@@ -417,11 +411,6 @@ export function FloatingChat() {
                                   fallback={otherUser.full_name.charAt(0).toUpperCase()}
                                   size="md"
                                   className="w-12 h-12"
-                                />
-                                <UserStatusDot 
-                                  userId={otherUser.id} 
-                                  size="sm"
-                                  className="border-2 border-white"
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -528,13 +517,6 @@ export function FloatingChat() {
                               : selectedConversation.client.full_name.charAt(0).toUpperCase()}
                             size="md"
                             className="w-10 h-10"
-                          />
-                          <UserStatusDot 
-                            userId={user.id === selectedConversation.client_id 
-                              ? selectedConversation.professional.id
-                              : selectedConversation.client.id} 
-                            size="sm"
-                            className="border-2 border-white"
                           />
                         </div>
                         <div className="flex-1">

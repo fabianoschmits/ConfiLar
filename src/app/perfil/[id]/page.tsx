@@ -8,7 +8,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { UserStatusDot } from '@/components/ui/UserStatusDot'
 import { StarRating } from '@/components/ui/StarRating'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -390,11 +389,6 @@ export default function PublicProfilePage() {
                                         fallback={profile.full_name.charAt(0)}
                                         size="lg"
                                         className="w-32 h-32"
-                                    />
-                                    <UserStatusDot 
-                                        userId={profile.id} 
-                                        size="md"
-                                        className="border-2 border-white"
                                     />
                                 </div>
                                 

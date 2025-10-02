@@ -12,7 +12,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { AdaptiveNotificationCenter } from './AdaptiveNotificationCenter'
-import { ActivityDot } from './ActivityStatusIndicator'
 
 interface SimpleHeaderBellProps {
   className?: string
@@ -41,12 +40,6 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
           >
             {/* Sino sempre visível */}
             <Bell className="w-5 h-5 text-gray-600" />
-            
-            {/* Indicador de status de atividade */}
-            <ActivityDot 
-              userId={user.id} 
-              className="absolute top-0 right-0 z-20" 
-            />
             
             {/* Badge de contador - sempre sobreposto */}
             {unreadCount > 0 && (
