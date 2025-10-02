@@ -51,7 +51,7 @@ export function Navigation() {
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20 sm:h-20 md:h-16 py-2 sm:py-0">
           {/* Logo */}
           <div className="flex items-center">
             <button 
@@ -137,7 +137,7 @@ export function Navigation() {
           </div>
 
           {/* Perfil e Ações */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Sino de Notificações */}
                 <NewNotificationBell />
 
@@ -145,6 +145,7 @@ export function Navigation() {
               variant="ghost" 
               size="sm"
               onClick={() => handleNavigation('/editarperfil')}
+              className="hidden sm:flex"
             >
               <User className="h-4 w-4 mr-2" />
               Perfil
@@ -154,6 +155,7 @@ export function Navigation() {
               variant="outline" 
               size="sm" 
               onClick={handleLogout}
+              className="hidden sm:flex"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sair

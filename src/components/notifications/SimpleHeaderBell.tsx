@@ -7,13 +7,10 @@ import { Bell } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useNotifications } from './NotificationProviderSimple'
 import { 
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { AdaptiveNotificationCenter } from './AdaptiveNotificationCenter'
 import { ActivityDot } from './ActivityStatusIndicator'
 
@@ -35,8 +32,8 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
 
   return (
     <div className={`relative ${className}`}>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
@@ -48,44 +45,56 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
             {/* Indicador de status de atividade */}
             <ActivityDot 
               userId={user.id} 
-              className="absolute -top-1 -right-1 z-20" 
+              className="absolute top-0 right-0 z-20" 
             />
             
             {/* Badge de contador - sempre sobreposto */}
             {unreadCount > 0 && (
               <Badge 
-                className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center px-1 z-10"
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center px-1 z-10"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </Badge>
             )}
           </Button>
-        </SheetTrigger>
+        </PopoverTrigger>
 
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              Notificações
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {unreadCount}
-                </Badge>
-              )}
-            </SheetTitle>
-            <SheetDescription>
-              Gerencie suas notificações
-            </SheetDescription>
-          </SheetHeader>
+        <PopoverContent 
+          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl"
+          align="end"
+          sideOffset={8}
+        >
+          {/* Header */}
+          <div className="p-4 pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <Bell className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Notificações
+                  {unreadCount > 0 && (
+                    <Badge className="bg-red-500 text-white font-medium px-2 py-1 rounded-full ml-2 text-xs">
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Gerencie suas notificações e alertos
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="mt-6">
+          {/* Conteúdo */}
+          <div className="max-h-[300px] md:max-h-[400px] overflow-hidden">
             <AdaptiveNotificationCenter 
               isOpen={isOpen} 
               onClose={() => setIsOpen(false)} 
             />
           </div>
-        </SheetContent>
-      </Sheet>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

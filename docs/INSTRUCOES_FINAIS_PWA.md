@@ -235,3 +235,4 @@ O ConfiLar agora possui:
 **📋 PRÓXIMO PASSO:** Execute o SQL no Supabase para criar a tabela `push_subscriptions` e configure as VAPID keys para ativar as notificações push!
 
 
+

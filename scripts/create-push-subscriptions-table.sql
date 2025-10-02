@@ -59,3 +59,4 @@ COMMENT ON COLUMN push_subscriptions.p256dh IS 'Chave pública P256DH para cript
 COMMENT ON COLUMN push_subscriptions.auth IS 'Chave de autenticação para push notifications';
 
 
+

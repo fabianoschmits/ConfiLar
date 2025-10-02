@@ -279,3 +279,4 @@ COMMENT ON COLUMN notification_queue.retry_count IS 'Número de tentativas de re
 COMMENT ON COLUMN notification_queue.max_retries IS 'Número máximo de tentativas';
 
 
+

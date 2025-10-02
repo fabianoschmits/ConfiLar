@@ -240,40 +240,13 @@ export default function FeedPage() {
   return (
     <MainLayout requireAuth={true}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        {/* Header Moderno - Responsivo */}
-        <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 md:space-x-4">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm md:text-lg">C</span>
-                </div>
-                <div>
-                  <h1 className="text-lg md:text-2xl font-bold text-gray-900">Timeline ConfiLar</h1>
-                  <p className="text-xs md:text-sm text-gray-600 hidden sm:block">Comunidade em movimento</p>
-                </div>
-              </div>
-              <Button 
-                onClick={() => setShowNewPostForm(!showNewPostForm)}
-                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-3 py-2 md:px-4 md:py-2 text-sm md:text-base"
-              >
-                <Plus className="h-4 w-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">
-                  {profile?.user_type === 'professional' ? 'Novo Post' : 'Compartilhar'}
-                </span>
-                <span className="sm:hidden">Post</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6">
-        {/* Botão de Filtros - Responsivo */}
-        <div className="mb-4 md:mb-6">
-              <Button
+        <div className="max-w-7xl mx-auto px-3 md:px-4 py-1 md:py-2">
+        {/* Botão de Filtros e Novo Post - Responsivo */}
+        <div className="mb-2 md:mb-3 flex items-center justify-between gap-3">
+          <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outline"
-            className="bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto"
+            className="bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <Filter className="h-4 w-4 mr-2" />
             Filtros
@@ -282,11 +255,22 @@ export default function FeedPage() {
             ) : (
               <ChevronDown className="h-4 w-4 ml-2" />
             )}
-              </Button>
+          </Button>
+          
+          <Button 
+            onClick={() => setShowNewPostForm(!showNewPostForm)}
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-3 py-2 md:px-4 md:py-2 text-sm md:text-base"
+          >
+            <Plus className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">
+              {profile?.user_type === 'professional' ? 'Novo Post' : 'Compartilhar'}
+            </span>
+            <span className="sm:hidden">Post</span>
+          </Button>
         </div>
 
         {/* Filtros de Localização e Busca - Responsivo */}
-        <div className="mb-4 md:mb-6 space-y-3">
+        <div className="mb-2 md:mb-3 space-y-2">
           {/* Filtro de Localização */}
           <LocationFilterSelector
             onFilterChange={(filter) => {
@@ -301,7 +285,7 @@ export default function FeedPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Buscar posts, usuários..."
+              placeholder="Buscar por nome, serviço, categoria..."
               value={filters.search || ''}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               className="w-full pl-10 pr-4 py-2 md:py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base"

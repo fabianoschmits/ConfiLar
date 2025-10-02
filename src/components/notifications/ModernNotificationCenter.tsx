@@ -146,20 +146,22 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0">
-        <SheetHeader className="p-6 pb-4 border-b">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-l-2xl">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <SheetTitle className="flex items-center gap-2 text-lg">
-                <Bell className="w-5 h-5" />
+              <SheetTitle className="flex items-center gap-2 text-lg font-semibold">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-white" />
+                </div>
                 Notificações
                 {unreadCount > 0 && (
-                  <Badge variant="destructive" className="ml-2">
+                  <Badge className="bg-red-500 text-white font-medium px-2 py-1 rounded-full ml-2">
                     {unreadCount}
                   </Badge>
                 )}
               </SheetTitle>
-              <SheetDescription className="mt-1">
+              <SheetDescription className="mt-1 text-gray-600">
                 {filteredNotifications.length} de {notifications.length} notificações
               </SheetDescription>
             </div>

@@ -9,7 +9,9 @@ import {
   Loader2,
   Check,
   X,
-  Power
+  Power,
+  Zap,
+  ZapOff
 } from 'lucide-react'
 
 interface AvailabilityToggleProps {
@@ -106,7 +108,7 @@ export function AvailabilityToggle({
   )
 }
 
-// Componente compacto para header - Tema Moderno
+// Componente compacto para header - Similar ao sino de notificações
 export function AvailabilityToggleCompact({ className = '' }: { className?: string }) {
   const { isAvailable, loading, toggleAvailability } = useAvailability()
 
@@ -119,31 +121,26 @@ export function AvailabilityToggleCompact({ className = '' }: { className?: stri
       onClick={handleToggle}
       disabled={loading}
       className={`
-        relative p-2 h-10 w-10 rounded-lg border border-gray-200 
-        shadow-sm hover:shadow-md transition-all duration-200
-        ${isAvailable 
-          ? 'bg-gradient-to-br from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700' 
-          : 'bg-gradient-to-br from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700'
-        }
+        relative p-2 rounded-md hover:bg-gray-100 transition-colors duration-200
         disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
       title={isAvailable 
-        ? 'Clique para ficar indisponível - Você não receberá mais orçamentos e ofertas' 
-        : 'Clique para ficar disponível - Você receberá orçamentos e ofertas de clientes'
+        ? 'Disponível - Clique para ficar indisponível' 
+        : 'Indisponível - Clique para ficar disponível'
       }
     >
       {loading ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
+        <Loader2 className="h-5 w-5 text-gray-600 animate-spin" />
       ) : isAvailable ? (
-        <Check className="h-5 w-5" />
+        <Zap className="h-5 w-5 text-green-600" />
       ) : (
-        <X className="h-5 w-5" />
+        <ZapOff className="h-5 w-5 text-red-600" />
       )}
       
-      {/* Indicador de status pulsante */}
-      <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-        isAvailable ? 'bg-green-400 animate-pulse' : 'bg-red-400 animate-pulse'
+      {/* Badge de status - similar ao badge do sino */}
+      <div className={`absolute top-0 right-0 w-3 h-3 rounded-full border border-white ${
+        isAvailable ? 'bg-green-500' : 'bg-red-500'
       }`} />
     </button>
   )
