@@ -78,7 +78,7 @@ export async function middleware(request: NextRequest) {
   const authRoutes = ['/auth', '/login', '/register', '/recuperar-senha', '/nova-senha']
   
   // Rotas que não devem ser redirecionadas automaticamente
-  const specialRoutes = ['/onboarding', '/verificacao', '/reautenticacao']
+  const specialRoutes = ['/onboarding', '/teste-onboarding-modal', '/verificacao', '/reautenticacao']
 
   const { pathname } = request.nextUrl
 
