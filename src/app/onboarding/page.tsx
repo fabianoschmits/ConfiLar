@@ -97,7 +97,7 @@ type AvatarSelection = {
 }
 
 export default function OnboardingPage() {
-  const { user } = useAuthContext()
+  const { user, refreshAuth } = useAuthContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
@@ -540,6 +540,9 @@ export default function OnboardingPage() {
 
       console.log('✅ Perfil salvo com sucesso!')
       toast.success('🎉 Perfil completado com sucesso!')
+      
+      // Recarregar o contexto de autenticação para atualizar o perfil
+      await refreshAuth()
       
       // Redirecionar para feed social
       router.push('/feed')
