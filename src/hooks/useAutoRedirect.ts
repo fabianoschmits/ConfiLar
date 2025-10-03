@@ -13,8 +13,15 @@ export function useAutoRedirect() {
     if (loading) return
 
     // Se não há usuário logado, redirecionar para página principal
+    // Mas apenas se não estivermos em uma página que requer autenticação
     if (!user) {
-      router.push('/')
+      const currentPath = window.location.pathname
+      const authRequiredPaths = ['/editarperfil', '/editar-perfil', '/dashboard', '/feed', '/perfil', '/favoritos', '/avaliacoes', '/reputacao', '/portfolio', '/minhas-denuncias', '/admin']
+      
+      // Se não estamos em uma página que requer autenticação, redirecionar
+      if (!authRequiredPaths.some(path => currentPath.startsWith(path))) {
+        router.push('/')
+      }
     }
   }, [user, loading, router])
 

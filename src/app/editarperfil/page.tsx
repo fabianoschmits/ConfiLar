@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -15,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { 
   Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
-  Camera, Save, Shield, Home, Edit3, Phone, Calendar, FileText
+  Camera, Save, Edit3, Phone, Calendar, FileText
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -23,7 +24,6 @@ import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -176,6 +176,11 @@ export default function EditarPerfilPage() {
             console.log('✅ Avatar carregado e definido')
           } else {
             console.log('⚠️ Nenhum avatar encontrado no perfil')
+            // Se não há avatar, gerar um baseado no nome
+            if (profile.full_name && profile.full_name.length >= 2) {
+              console.log('🚀 Gerando avatar para nome existente:', profile.full_name)
+              generateDicebearAvatar(profile.full_name)
+            }
           }
         }
       } catch (error) {
@@ -348,14 +353,24 @@ export default function EditarPerfilPage() {
     }
   }, [dicebearAvatar, selectedAvatar])
 
-  // Gerar avatar automaticamente quando o perfil é carregado
+  // Gerar avatar automaticamente quando o nome muda (igual ao onboarding)
   useEffect(() => {
-    console.log('🔍 useEffect avatar - fullName:', fullName, 'dicebearAvatar:', dicebearAvatar)
-    if (fullName && fullName.length >= 2 && !dicebearAvatar) {
-      console.log('🚀 Gerando avatar automático para:', fullName)
-      generateDicebearAvatar(fullName)
+    let timeoutId: NodeJS.Timeout
+    
+    const subscription = watch((value, { name }) => {
+      if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+        generateDicebearAvatar(value.full_name)
+        }, 500)
+      }
+    })
+    
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeoutId)
     }
-  }, [fullName, dicebearAvatar])
+  }, [watch])
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) {
@@ -452,44 +467,23 @@ export default function EditarPerfilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Shield className="text-white h-6 w-6" />
-            </div>
-            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
-          </div>
-          
-          <Button 
-            onClick={() => router.push('/dashboard')}
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
-          >
-            <Home size={16} />
-            <span>Dashboard</span>
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container py-8">
-        <div className="mx-auto max-w-4xl">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Edit3 className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Editar Perfil</h1>
-                <p className="text-gray-600">Atualize suas informações pessoais</p>
+    <MainLayout requireAuth={true}>
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <div className="container py-8">
+          <div className="mx-auto max-w-4xl">
+            {/* Page Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Edit3 className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">Editar Perfil</h1>
+                  <p className="text-gray-600">Atualize suas informações pessoais</p>
+                </div>
               </div>
             </div>
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -507,11 +501,9 @@ export default function EditarPerfilPage() {
                 {selectedAvatar && (
                   <div className="flex items-center justify-center">
                     <div className="w-20 h-20 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
-                      <Image
+                      <img
                         src={selectedAvatar.preview}
                         alt="Avatar selecionado"
-                        width={80}
-                        height={80}
                         className="w-full h-full object-cover"
                         onLoad={() => console.log('✅ Avatar carregado na tela')}
                         onError={() => console.log('❌ Erro ao carregar avatar na tela')}
@@ -1088,8 +1080,9 @@ export default function EditarPerfilPage() {
               </Button>
             </div>
           </form>
+          </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   )
 }
