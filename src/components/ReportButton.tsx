@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Flag, AlertTriangle, User, FileText, MessageCircle, Star } from 'lucide-react'
+import { Flag, AlertTriangle, User, FileText, MessageCircle, Star, MoreVertical } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -167,7 +167,7 @@ export function ReportButton({
         onClick={handleButtonClick}
         className={`flex items-center gap-1 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-1.5 ${className}`}
       >
-        <Flag className="h-3 w-3" />
+        <MoreVertical className="h-3 w-3" />
         <span>Denunciar</span>
       </button>
     )

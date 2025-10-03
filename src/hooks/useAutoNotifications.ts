@@ -59,6 +59,7 @@ export function useAutoNotifications() {
           user_id: userId,
           title: `🎉 ${userName} se juntou à comunidade`,
           description: message,
+          content: message,
           images: [],
           location_state: userData?.location_state || 'SP',
           location_city: userData?.location_city || 'São Paulo',

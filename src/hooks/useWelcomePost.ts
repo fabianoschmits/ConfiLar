@@ -19,14 +19,24 @@ export function useWelcomePost() {
         .from('feed_posts')
         .insert({
           professional_id: userId,
+          user_id: userId,
           title: `🎉 ${userName} se juntou à comunidade!`,
           description: message,
+          content: message,
           images: [],
           location_state: 'SP', // Default
           location_city: 'São Paulo', // Default
           likes_count: 0,
           comments_count: 0,
-          is_welcome_post: true // Marcar como post de boas-vindas
+          is_active: true,
+          is_public: true,
+          is_featured: false,
+          tags: ['sistema', 'boas-vindas'],
+          metadata: { 
+            type: 'welcome', 
+            user: userName,
+            user_type: userType
+          }
         })
         .select()
         .single()
