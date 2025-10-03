@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
 import { 
   Search,
   Users,
@@ -38,9 +39,17 @@ export default function HomePage() {
   const router = useRouter()
   const { user, profile } = useAuthContext()
 
+  // Hook para busca avançada para obter estatísticas reais
+  const {
+    stats,
+    executeSearch
+  } = useAdvancedSearch()
+
   useEffect(() => {
     setMounted(true)
-  }, [])
+    // Executar busca para carregar estatísticas
+    executeSearch()
+  }, [executeSearch])
 
   if (!mounted) {
     return null
@@ -49,14 +58,6 @@ export default function HomePage() {
   const handleNavigateTo = (path: string) => {
     console.log('🔄 Navegando para:', path)
     router.push(path)
-  }
-
-  // Estatísticas mockadas
-  const stats = {
-    totalUsers: 1250,
-    totalServices: 340,
-    completedJobs: 890,
-    averageRating: 4.8
   }
 
   // Cards de ação rápida
@@ -96,30 +97,30 @@ export default function HomePage() {
     {
       step: 1,
       title: 'Complete seu perfil',
-      description: 'Mantenha seus dados atualizados para melhor experiência',
+      description: 'Crie um perfil completo para ser encontrado facilmente',
       icon: UserCheck,
-      details: ['Informações pessoais', 'Foto profissional', 'Localização', 'Preferências']
+      details: ['Dados pessoais', 'Foto de perfil', 'Localização', 'Preferências de serviço']
     },
     {
       step: 2,
       title: 'Busque profissionais',
-      description: 'Use filtros para encontrar o profissional ideal',
+      description: 'Encontre profissionais qualificados na sua região',
       icon: Search,
-      details: ['Filtre por localização', 'Escolha a categoria', 'Veja avaliações', 'Compare perfis']
+      details: ['Filtre por localização', 'Escolha categoria de serviço', 'Veja avaliações reais', 'Compare perfis']
     },
     {
       step: 3,
       title: 'Entre em contato',
-      description: 'Converse diretamente com o profissional',
+      description: 'Converse diretamente com o profissional escolhido',
       icon: MessageCircle,
-      details: ['Chat integrado', 'Troca de informações', 'Negocie valores', 'Agende serviços']
+      details: ['Chat seguro', 'Troca de informações', 'Negocie valores', 'Agende o serviço']
     },
     {
       step: 4,
       title: 'Avalie o serviço',
-      description: 'Deixe sua avaliação após o serviço',
+      description: 'Deixe sua avaliação honesta após o serviço',
       icon: Star,
-      details: ['Avalie qualidade', 'Compartilhe experiência', 'Ajude outros usuários', 'Construa reputação']
+      details: ['Avalie qualidade', 'Compartilhe experiência', 'Ajude outros clientes', 'Construa confiança']
     }
   ]
 
@@ -128,30 +129,30 @@ export default function HomePage() {
     {
       step: 1,
       title: 'Crie seu portfólio',
-      description: 'Mostre seu trabalho e experiência',
+      description: 'Mostre seu trabalho e experiência profissional',
       icon: FileText,
-      details: ['Adicione fotos', 'Descreva serviços', 'Defina preços', 'Mostre especialidades']
+      details: ['Adicione fotos do trabalho', 'Descreva seus serviços', 'Defina preços justos', 'Mostre especialidades']
     },
     {
       step: 2,
       title: 'Seja encontrado',
-      description: 'Apareça nas buscas dos clientes',
+      description: 'Apareça nas buscas dos clientes interessados',
       icon: Eye,
-      details: ['Otimize seu perfil', 'Use palavras-chave', 'Mantenha disponibilidade', 'Responda rapidamente']
+      details: ['Otimize seu perfil', 'Use palavras-chave relevantes', 'Mantenha disponibilidade', 'Responda rapidamente']
     },
     {
       step: 3,
       title: 'Receba propostas',
       description: 'Clientes entrarão em contato com você',
       icon: MessageCircle,
-      details: ['Responda mensagens', 'Negocie valores', 'Agende serviços', 'Mantenha comunicação']
+      details: ['Responda mensagens', 'Negocie valores', 'Agende serviços', 'Mantenha comunicação clara']
     },
     {
       step: 4,
       title: 'Construa reputação',
       description: 'Receba avaliações e cresça na plataforma',
       icon: Award,
-      details: ['Entregue qualidade', 'Seja pontual', 'Comunique-se bem', 'Peça avaliações']
+      details: ['Entregue qualidade', 'Seja pontual', 'Comunique-se bem', 'Peça avaliações honestas']
     }
   ]
 
@@ -166,88 +167,68 @@ export default function HomePage() {
               Plataforma ConfiLar
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Como Funciona o ConfiLar
+              Bem-vindo ao ConfiLar
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Conectamos clientes e profissionais de forma segura e confiável. 
-              Aprenda como usar nossa plataforma para encontrar os melhores profissionais ou oferecer seus serviços.
+              A plataforma que conecta clientes e profissionais de forma segura e confiável. 
+              Encontre os melhores profissionais ou ofereça seus serviços com total transparência e segurança.
             </p>
           </div>
 
-          {/* Estatísticas */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <Users className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Usuários</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
-                  </div>
+          {/* Estatísticas - Card Compacto */}
+          <Card className="mb-8 hover:shadow-xl transition-all duration-300">
+            <CardContent className="py-2 px-3 sm:py-3 sm:px-4">
+              <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
+                {/* Total de Usuários */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 0}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-green-100 rounded-lg">
-                    <Briefcase className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Serviços</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalServices}</p>
-                  </div>
+                
+                {/* Profissionais */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 0}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <CheckCircle className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Serviços Concluídos</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.completedJobs.toLocaleString()}</p>
-                  </div>
+                
+                {/* Clientes */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Clientes</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.clientsCount || 0}</p>
                 </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-yellow-100 rounded-lg">
-                    <Star className="h-6 w-6 text-yellow-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Avaliação Média</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.averageRating}</p>
-                  </div>
+                
+                {/* Verificados */}
+                <div className="flex flex-col items-center min-w-0 flex-1">
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <p className="text-xs text-gray-500 text-center">Verificados</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.verifiedCount || 0}</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Ações Rápidas */}
+          {/* Ações Rápidas - Coluna Única */}
           <div className="mb-16">
             <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Ações Rápidas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="max-w-md mx-auto space-y-3">
               {quickActions.map((action, index) => (
                 <Card key={index} className="hover:shadow-md transition-shadow duration-200 cursor-pointer" onClick={() => handleNavigateTo(action.href)}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-lg bg-${action.color}-100`}>
-                        <action.icon className={`h-6 w-6 text-${action.color}-600`} />
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg bg-${action.color}-100`}>
+                          <action.icon className={`h-4 w-4 text-${action.color}-600`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm">{action.title}</h3>
+                          <p className="text-xs text-gray-600">{action.description}</p>
+                        </div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{action.title}</h3>
-                    <p className="text-sm text-gray-600">{action.description}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -332,37 +313,6 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Call to Action */}
-          <section className="text-center">
-            <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-              <CardContent className="p-12">
-                <h2 className="text-3xl font-bold mb-4">Pronto para Começar?</h2>
-                <p className="text-xl mb-8 opacity-90">
-                  Junte-se a milhares de usuários que já encontraram seus profissionais ideais
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button 
-                    size="lg" 
-                    variant="secondary"
-                    onClick={() => handleNavigateTo('/buscar')}
-                    className="bg-white text-blue-600 hover:bg-gray-100"
-                  >
-                    <Search className="h-5 w-5 mr-2" />
-                    Buscar Profissionais
-                  </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    onClick={() => handleNavigateTo('/auth')}
-                    className="border-white text-white hover:bg-white hover:text-blue-600"
-                  >
-                    <UserCheck className="h-5 w-5 mr-2" />
-                    Criar Conta
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
         </div>
       </div>
     </MainLayout>
