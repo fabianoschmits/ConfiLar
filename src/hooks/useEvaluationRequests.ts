@@ -135,6 +135,16 @@ export function useEvaluationRequests() {
   // Aceitar solicitação de avaliação
   const acceptRequest = useCallback(async (requestId: string) => {
     try {
+      // Primeiro, buscar a solicitação original para obter os IDs
+      const { data: originalRequest, error: fetchError } = await supabase
+        .from('evaluation_requests')
+        .select('requester_id, target_id')
+        .eq('id', requestId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      // Atualizar a solicitação original para 'accepted'
       const { data, error } = await supabase
         .from('evaluation_requests')
         .update({ 
@@ -146,6 +156,22 @@ export function useEvaluationRequests() {
         .single()
 
       if (error) throw error
+
+      // Criar solicitação bidirecional para permitir que ambos avaliem
+      const { error: bidirectionalError } = await supabase
+        .from('evaluation_requests')
+        .insert({
+          requester_id: originalRequest.target_id, // Quem aceitou agora pode solicitar
+          target_id: originalRequest.requester_id, // Para quem aceitou
+          status: 'accepted', // Já aceita automaticamente
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (bidirectionalError) {
+        console.error('Erro ao criar solicitação bidirecional:', bidirectionalError)
+        // Não falhar se a bidirecional falhar, pois a original já foi aceita
+      }
 
       // Recarregar solicitações
       await loadRequests()
