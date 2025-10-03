@@ -489,31 +489,33 @@ export default function AvaliacoesPage() {
             {/* Tabs */}
             <div className="mb-8">
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
+                <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                   <button
                     onClick={() => setActiveTab('requests')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'requests'
                         ? 'border-gray-500 text-gray-900'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Solicitações
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Solicitações</span>
+                      <span className="sm:hidden">Solic.</span>
                     </div>
                   </button>
                   <button
                     onClick={() => setActiveTab('reviews')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'reviews'
                         ? 'border-gray-500 text-gray-900'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      Avaliações
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Avaliações</span>
+                      <span className="sm:hidden">Aval.</span>
                     </div>
                   </button>
                 </nav>
@@ -543,31 +545,33 @@ export default function AvaliacoesPage() {
                   {/* Abas de Solicitações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex space-x-8">
+                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
                           onClick={() => setRequestsSubTab('received')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === 'received'
                               ? 'border-gray-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            Recebidas ({stats.receivedRequests})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Recebidas ({stats.receivedRequests})</span>
+                            <span className="sm:hidden">Rec. ({stats.receivedRequests})</span>
                           </div>
                         </button>
                         <button
                           onClick={() => setRequestsSubTab('sent')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === 'sent'
                               ? 'border-gray-700 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Edit className="h-4 w-4" />
-                            Enviadas ({stats.sentRequests})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Enviadas ({stats.sentRequests})</span>
+                            <span className="sm:hidden">Env. ({stats.sentRequests})</span>
                           </div>
                         </button>
                       </nav>
@@ -575,7 +579,7 @@ export default function AvaliacoesPage() {
                   </div>
 
                   {/* Filtros */}
-                  <div className="flex items-center space-x-4 mb-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
                     <div className="flex-1">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -592,16 +596,16 @@ export default function AvaliacoesPage() {
                   {filteredRequests.length > 0 ? (
                     <div className="space-y-4">
                       {filteredRequests.map((request) => (
-                        <div key={request.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start space-x-4">
-                            <div className="flex -space-x-2">
-                              <Avatar className="w-10 h-10 border-2 border-white">
+                        <div key={request.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <div className="flex -space-x-1 sm:-space-x-2 flex-shrink-0">
+                              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-white">
                                 <AvatarImage src={request.requester_avatar} />
                                 <AvatarFallback>
                                   {request.requester_name?.charAt(0)}
                                 </AvatarFallback>
                               </Avatar>
-                              <Avatar className="w-10 h-10 border-2 border-white">
+                              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-white">
                                 <AvatarImage src={request.target_avatar} />
                                 <AvatarFallback>
                                   {request.target_name?.charAt(0)}
@@ -609,15 +613,15 @@ export default function AvaliacoesPage() {
                               </Avatar>
                             </div>
                             
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                                     {request.requester_id === user.id ? 'Você' : request.requester_name} 
                                     {' '}↔️{' '}
                                     {request.target_id === user.id ? 'Você' : request.target_name}
                                   </h4>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 flex-wrap">
                                     <Badge variant="outline" className={`text-xs ${
                                       request.status === 'pending' ? 'text-yellow-600 border-yellow-600' :
                                       request.status === 'accepted' ? 'text-green-600 border-green-600' :
@@ -634,25 +638,27 @@ export default function AvaliacoesPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 flex-wrap">
                                   {request.status === 'pending' && request.target_id === user.id && (
                                     <>
                                       <Button
                                         size="sm"
                                         onClick={() => handleAcceptRequest(request.id)}
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
                                       >
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        Aceitar
+                                        <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                        <span className="hidden sm:inline">Aceitar</span>
+                                        <span className="sm:hidden">✓</span>
                                       </Button>
                                       <Button
                                         size="sm"
                                         variant="outline"
                                         onClick={() => handleRejectRequest(request.id)}
-                                        className="text-red-600 border-red-600 hover:bg-red-50"
+                                        className="text-red-600 border-red-600 hover:bg-red-50 text-xs sm:text-sm"
                                       >
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        Rejeitar
+                                        <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                        <span className="hidden sm:inline">Rejeitar</span>
+                                        <span className="sm:hidden">✗</span>
                                       </Button>
                                     </>
                                   )}
@@ -662,9 +668,11 @@ export default function AvaliacoesPage() {
                                       size="sm"
                                       variant="outline"
                                       onClick={() => handleCompleteRequest(request.id)}
+                                      className="text-xs sm:text-sm"
                                     >
-                                      <CheckCircle className="h-4 w-4 mr-1" />
-                                      Concluir
+                                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                      <span className="hidden sm:inline">Concluir</span>
+                                      <span className="sm:hidden">✓</span>
                                     </Button>
                                   )}
                                 </div>
@@ -714,52 +722,54 @@ export default function AvaliacoesPage() {
                   {/* Abas de Avaliações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex space-x-8">
+                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
                           onClick={() => setReviewsSubTab('received')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'received'
                               ? 'border-gray-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Star className="h-4 w-4" />
-                            Recebidas ({stats.totalReviews})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Recebidas ({stats.totalReviews})</span>
+                            <span className="sm:hidden">Rec. ({stats.totalReviews})</span>
                           </div>
                         </button>
                         <button
                           onClick={() => setReviewsSubTab('given')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'given'
                               ? 'border-gray-700 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Edit className="h-4 w-4" />
-                            Feitas ({stats.givenReviews})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Feitas ({stats.givenReviews})</span>
+                            <span className="sm:hidden">Feitas ({stats.givenReviews})</span>
                           </div>
                         </button>
                       </nav>
                     </div>
-            </div>
+                  </div>
             
                   {/* Filtros */}
-                  <div className="flex items-center space-x-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
+                    <div className="flex-1">
+                      <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
-                  placeholder="Buscar por nome..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Buscar por nome..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-10"
-                />
-              </div>
-            </div>
+                        />
+                      </div>
+                    </div>
                     <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-full sm:w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -768,52 +778,52 @@ export default function AvaliacoesPage() {
                         <SelectItem value="client">Clientes</SelectItem>
                       </SelectContent>
                     </Select>
-          </div>
+                  </div>
 
                   {filteredReviews.length > 0 ? (
                     <div className="space-y-4">
                       {filteredReviews.map((review) => (
-                        <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start space-x-4">
-                            <Avatar className="w-12 h-12">
+                        <div key={review.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                               <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed?.avatar_url || ''} />
                               <AvatarFallback className="bg-blue-100 text-blue-600">
                                 {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || '').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
                                     {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || ''}
                                   </h4>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 flex-wrap">
                                     <Badge variant="outline" className="text-xs">
                                       {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed?.user_type || 'client') === 'professional' ? 'Profissional' : 'Cliente'}
                                     </Badge>
                                     <span className="text-xs text-gray-500">
                                       {formatDate(review.created_at)}
                                     </span>
-              </div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 flex-wrap">
                                   <div className="flex items-center">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                       <Star
                                         key={star}
-                                        className={`h-4 w-4 ${
+                                        className={`h-3 w-3 sm:h-4 sm:w-4 ${
                                           star <= (review.rating_person || review.rating || 0)
                                             ? 'text-yellow-400 fill-current'
                                             : 'text-gray-300'
                                         }`}
                                       />
                                     ))}
-                                    <span className="ml-1 text-sm text-gray-600">
+                                    <span className="ml-1 text-xs sm:text-sm text-gray-600">
                                       {review.rating_person || review.rating || 0}/5
                                     </span>
                                   </div>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 flex-wrap">
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -821,19 +831,22 @@ export default function AvaliacoesPage() {
                                         reviewsSubTab === 'received' ? review.reviewer.id : review.reviewed?.id || '',
                                         reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || ''
                                       )}
+                                      className="text-xs sm:text-sm"
                                     >
-                                      <MessageCircle className="h-4 w-4 mr-1" />
-                                      Contatar
+                                      <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                      <span className="hidden sm:inline">Contatar</span>
+                                      <span className="sm:hidden">Chat</span>
                                     </Button>
                                     {reviewsSubTab === 'given' && (
                                       <Button
                                         size="sm"
                                         variant="outline"
                                         onClick={() => handleEditReview(review)}
-                                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                        className="text-blue-600 border-blue-600 hover:bg-blue-50 text-xs sm:text-sm"
                                       >
-                                        <Edit className="h-4 w-4 mr-1" />
-                                        Editar
+                                        <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                        <span className="hidden sm:inline">Editar</span>
+                                        <span className="sm:hidden">Ed.</span>
                                       </Button>
                                     )}
                                   </div>
@@ -841,7 +854,7 @@ export default function AvaliacoesPage() {
                               </div>
                               
                               {review.comment && (
-                                <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-md mt-2">
+                                <p className="text-xs sm:text-sm text-gray-700 bg-gray-50 p-3 rounded-md mt-2 break-words">
                                   "{review.comment}"
                                 </p>
                               )}

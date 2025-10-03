@@ -461,57 +461,61 @@ export default function ReputacaoPage() {
             {/* Sistema de Abas */}
             <div className="mb-8">
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8">
+                <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                   <button
                     onClick={() => setActiveTab('overview')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'overview'
                         ? 'border-gray-500 text-gray-900'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Visão Geral
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Visão Geral</span>
+                      <span className="sm:hidden">Geral</span>
                     </div>
                   </button>
                   <button
                     onClick={() => setActiveTab('reviews')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'reviews'
                         ? 'border-gray-700 text-gray-900'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4" />
-                      Avaliações ({stats.totalReviews})
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Avaliações ({stats.totalReviews})</span>
+                      <span className="sm:hidden">Aval. ({stats.totalReviews})</span>
                     </div>
                   </button>
                   <button
                     onClick={() => setActiveTab('recommendations')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'recommendations'
                         ? 'border-gray-500 text-gray-700'
                         : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <ThumbsUp className="h-4 w-4" />
-                      Recomendações ({stats.totalRecommendations})
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Recomendações ({stats.totalRecommendations})</span>
+                      <span className="sm:hidden">Rec. ({stats.totalRecommendations})</span>
                     </div>
                   </button>
                   <button
                     onClick={() => setActiveTab('analytics')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                    className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'analytics'
                         ? 'border-gray-500 text-gray-700'
                         : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Análises
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Análises</span>
+                      <span className="sm:hidden">Análise</span>
                     </div>
                   </button>
                 </nav>
@@ -734,31 +738,33 @@ export default function ReputacaoPage() {
                   {/* Abas de Avaliações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex space-x-8">
+                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
                           onClick={() => setReviewsSubTab('received')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'received'
                               ? 'border-gray-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Star className="h-4 w-4" />
-                            Recebidas ({stats.totalReviews})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Star className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Recebidas ({stats.totalReviews})</span>
+                            <span className="sm:hidden">Rec. ({stats.totalReviews})</span>
                           </div>
                         </button>
                         <button
                           onClick={() => setReviewsSubTab('given')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'given'
                               ? 'border-gray-700 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Edit className="h-4 w-4" />
-                            Feitas ({stats.givenReviews})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Feitas ({stats.givenReviews})</span>
+                            <span className="sm:hidden">Feitas ({stats.givenReviews})</span>
                           </div>
                         </button>
                       </nav>
@@ -766,7 +772,7 @@ export default function ReputacaoPage() {
                   </div>
 
                   {/* Filtros */}
-                  <div className="flex items-center space-x-4 mb-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
                     <div className="flex-1">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -779,7 +785,7 @@ export default function ReputacaoPage() {
                       </div>
                     </div>
                     <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-full sm:w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -793,22 +799,22 @@ export default function ReputacaoPage() {
                   {filteredReviews.length > 0 ? (
                     <div className="space-y-4">
                       {filteredReviews.map((review) => (
-                        <div key={review.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-start space-x-4">
-                            <Avatar className="w-12 h-12">
+                        <div key={review.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                               <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed.avatar_url || ''} />
                               <AvatarFallback className="bg-blue-100 text-blue-600">
                                 {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name).charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-gray-900 truncate">
                                     {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}
                                   </h4>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 flex-wrap">
                                     <Badge variant="outline" className="text-xs">
                                       {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
                                     </Badge>
@@ -817,7 +823,7 @@ export default function ReputacaoPage() {
                                     </span>
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-2 flex-wrap">
                                   <StarRating
                                     rating={review.rating || 0}        
                                     size="sm"
@@ -828,15 +834,17 @@ export default function ReputacaoPage() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleContactUser(reviewsSubTab === 'received' ? review.reviewer.id : review.reviewed.id, reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name)}
+                                    className="text-xs sm:text-sm"
                                   >
-                                    <MessageCircle className="h-4 w-4 mr-1" />
-                                    Contatar
+                                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                    <span className="hidden sm:inline">Contatar</span>
+                                    <span className="sm:hidden">Chat</span>
                                   </Button>
                                 </div>
                               </div>
                               
                               {review.comment && (
-                                <p className="text-gray-700 mt-2 bg-gray-50 p-3 rounded-md">
+                                <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md break-words">
                                   "{review.comment}"
                                 </p>
                               )}
@@ -967,31 +975,33 @@ export default function ReputacaoPage() {
                   {/* Abas de Recomendações */}
                   <div className="mb-6">
                     <div className="border-b border-gray-200">
-                      <nav className="-mb-px flex space-x-8">
+                      <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
                           onClick={() => setRecommendationsSubTab('received')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === 'received'
                               ? 'border-gray-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <ThumbsUp className="h-4 w-4" />
-                            Recebidas ({stats.totalRecommendations})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Recebidas ({stats.totalRecommendations})</span>
+                            <span className="sm:hidden">Rec. ({stats.totalRecommendations})</span>
                           </div>
                         </button>
                         <button
                           onClick={() => setRecommendationsSubTab('given')}
-                          className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                          className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === 'given'
                               ? 'border-gray-700 text-gray-900'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <Edit className="h-4 w-4" />
-                            Feitas ({stats.givenRecommendations})
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Feitas ({stats.givenRecommendations})</span>
+                            <span className="sm:hidden">Feitas ({stats.givenRecommendations})</span>
                           </div>
                         </button>
                       </nav>
@@ -999,7 +1009,7 @@ export default function ReputacaoPage() {
                   </div>
 
                   {/* Filtros */}
-                  <div className="flex items-center space-x-4 mb-6">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-6">
                     <div className="flex-1">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -1012,7 +1022,7 @@ export default function ReputacaoPage() {
                       </div>
                     </div>
                     <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-full sm:w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1026,42 +1036,48 @@ export default function ReputacaoPage() {
                   {filteredRecommendations.length > 0 ? (
                     <div className="space-y-4">
                       {filteredRecommendations.map((rec) => (
-                        <div key={rec.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                          <div className="flex items-center space-x-4">
-                            <Avatar className="w-12 h-12">
+                        <div key={rec.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start space-x-3 sm:space-x-4">
+                            <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                               <AvatarImage src={recommendationsSubTab === 'received' ? rec.recommender.avatar_url || '' : rec.recommended.avatar_url || ''} />
                               <AvatarFallback className="bg-green-100 text-green-600">
                                 {(recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name).charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900">
-                                {recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}
-                              </h4>
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {(recommendationsSubTab === 'received' ? rec.recommender.user_type : rec.recommended.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
-                                </Badge>
-                                <span className="text-xs text-gray-500">
-                                  {formatDate(rec.created_at)}
-                                </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-semibold text-gray-900 truncate">
+                                    {recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}
+                                  </h4>
+                                  <div className="flex items-center space-x-2 flex-wrap">
+                                    <Badge variant="outline" className="text-xs">
+                                      {(recommendationsSubTab === 'received' ? rec.recommender.user_type : rec.recommended.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(rec.created_at)}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2 flex-wrap">
+                                  <ThumbsUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                                  <span className="text-xs sm:text-sm text-green-600 font-medium">
+                                    {recommendationsSubTab === 'received' ? 'Recomendou' : 'Recomendado'}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleContactUser(recommendationsSubTab === 'received' ? rec.recommender.id : rec.recommended.id, recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name)}
+                                    className="text-xs sm:text-sm"
+                                  >
+                                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                    <span className="hidden sm:inline">Contatar</span>
+                                    <span className="sm:hidden">Chat</span>
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                              <ThumbsUp className="h-5 w-5 text-green-600" />
-                              <span className="text-sm text-green-600 font-medium">
-                                {recommendationsSubTab === 'received' ? 'Recomendou' : 'Recomendado'}
-                              </span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleContactUser(recommendationsSubTab === 'received' ? rec.recommender.id : rec.recommended.id, recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name)}
-                              >
-                                <MessageCircle className="h-4 w-4 mr-1" />
-                                Contatar
-                              </Button>
                             </div>
                           </div>
                         </div>
