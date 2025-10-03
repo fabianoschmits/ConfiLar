@@ -21,6 +21,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
   const { user, profile, loading, isReady, error } = useAuthContext();
   const pathname = usePathname();
   const isLoggedIn = user && profile;
+  const isProfileLoading = user && !profile && !loading;
   const [mounted, setMounted] = useState(false);
   
   // Hook para redirecionamento automático
@@ -54,8 +55,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       <ModernHeader />
       
       <main className={`min-h-screen bg-gray-50 transition-colors duration-200 lg:ml-64 pb-20 lg:pb-0 pt-12 sm:pt-16`}>
-        {loading || !isReady || isCheckingProfile ? (
-          <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : isCheckingProfile ? 'Verificando perfil...' : 'Preparando interface...'} />
+        {loading || !isReady || isCheckingProfile || isProfileLoading ? (
+          <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : isCheckingProfile ? 'Verificando perfil...' : isProfileLoading ? 'Carregando perfil...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">

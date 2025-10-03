@@ -24,8 +24,9 @@ export function useProfileCheck() {
 
         // Se o perfil não foi completado, redirecionar para onboarding
         if (!isProfileCompleted) {
-          // Verificar se já está na página de onboarding para evitar loop
-          if (window.location.pathname !== '/onboarding') {
+          // Verificar se já está na página de onboarding ou editar perfil para evitar loop
+          const currentPath = window.location.pathname
+          if (currentPath !== '/onboarding' && currentPath !== '/editarperfil' && currentPath !== '/editar-perfil') {
             console.log('🔍 Perfil não completado, redirecionando para onboarding')
             router.push('/onboarding')
           }
@@ -65,7 +66,8 @@ export function useProfileCheck() {
 
         // Se o perfil não foi completado, redirecionar para onboarding
         if (!isProfileCompleted) {
-          if (window.location.pathname !== '/onboarding') {
+          const currentPath = window.location.pathname
+          if (currentPath !== '/onboarding' && currentPath !== '/editarperfil' && currentPath !== '/editar-perfil') {
             console.log('🔍 Perfil não completado, redirecionando para onboarding')
             router.push('/onboarding')
           }
