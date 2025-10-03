@@ -379,6 +379,17 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
          const deletePost = useCallback(async (postId: string) => {
            try {
+             // Primeiro, buscar informações do post para identificar notificações relacionadas
+             const { data: postData, error: fetchError } = await supabase
+               .from('feed_posts')
+               .select('metadata, user_id, professional_id')
+               .eq('id', postId)
+               .single()
+
+             if (fetchError) {
+               console.warn('⚠️ Erro ao buscar dados do post para deleção:', fetchError.message)
+             }
+
              // Deletar do banco de dados
              const { error } = await supabase
                .from('feed_posts')
@@ -386,6 +397,50 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                .eq('id', postId)
 
              if (error) throw error
+
+             // Se o post tem metadata indicando que é um post automático, deletar notificações relacionadas
+             if (postData?.metadata?.type) {
+               const postType = postData.metadata.type
+               const userId = postData.user_id
+               const professionalId = postData.professional_id
+
+               console.log('🔍 Post automático deletado, verificando notificações relacionadas:', {
+                 postType,
+                 userId,
+                 professionalId
+               })
+
+               // Deletar notificações relacionadas baseadas no tipo de post
+               if (postType === 'favorite' && professionalId) {
+                 // Deletar notificação de favorito para o usuário que foi favoritado
+                 const { error: notificationError } = await supabase
+                   .from('notifications')
+                   .delete()
+                   .eq('user_id', professionalId)
+                   .eq('type', 'favorite')
+                   .eq('metadata->>favoriter_id', userId)
+
+                 if (notificationError) {
+                   console.warn('⚠️ Erro ao deletar notificação de favorito:', notificationError.message)
+                 } else {
+                   console.log('✅ Notificação de favorito deletada')
+                 }
+               } else if (postType === 'recommendation' && professionalId) {
+                 // Deletar notificação de recomendação para o usuário que foi recomendado
+                 const { error: notificationError } = await supabase
+                   .from('notifications')
+                   .delete()
+                   .eq('user_id', professionalId)
+                   .eq('type', 'recommendation')
+                   .eq('metadata->>recommender_id', userId)
+
+                 if (notificationError) {
+                   console.warn('⚠️ Erro ao deletar notificação de recomendação:', notificationError.message)
+                 } else {
+                   console.log('✅ Notificação de recomendação deletada')
+                 }
+               }
+             }
 
              // Atualizar cache local - remover o post
              queryClient.setQueryData(queryKey, (oldData: any) => {
