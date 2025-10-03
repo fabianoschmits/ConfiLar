@@ -29,6 +29,7 @@ import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 import { services, getCategories } from '@/data/services'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
+import { FeedTypeFilter, FeedType } from '@/components/feed/FeedTypeFilter'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -40,6 +41,9 @@ export default function FeedPage() {
     category: 'all',
     search: ''
   })
+  
+  // Estado para filtro de tipo de feed
+  const [feedTypeFilter, setFeedTypeFilter] = useState<FeedType>('all')
   
   // Hook para filtros de localização
   const { currentFilter, setFilter } = useLocationFilters()
@@ -207,6 +211,20 @@ export default function FeedPage() {
     return trending?.trending_reason
   }
 
+  // Filtrar itens baseado no tipo de feed selecionado
+  const getFilteredItems = () => {
+    if (feedTypeFilter === 'all') {
+      return items
+    } else if (feedTypeFilter === 'posts') {
+      return items.filter(item => item.type === 'post')
+    } else if (feedTypeFilter === 'notifications') {
+      return items.filter(item => item.type === 'notification')
+    }
+    return items
+  }
+
+  const filteredItems = getFilteredItems()
+
   // Renderizar item da timeline baseado no tipo
   const renderTimelineItem = (item: UnifiedTimelineItem) => {
     switch (item.type) {
@@ -231,7 +249,13 @@ export default function FeedPage() {
             activity={item}
           />
         )
-      // case 'notification' removido - notificações não aparecem mais no feed
+      case 'notification':
+        return (
+          <TimelineNotification
+            key={item.id}
+            notification={item}
+          />
+        )
       default:
         return null
     }
@@ -239,6 +263,12 @@ export default function FeedPage() {
 
   return (
     <MainLayout requireAuth={true}>
+      {/* Filtro de tipo de feed */}
+      <FeedTypeFilter 
+        currentFilter={feedTypeFilter}
+        onFilterChange={setFeedTypeFilter}
+      />
+      
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-3 md:px-4 py-1 md:py-2">
         {/* Botão de Filtros e Novo Post - Responsivo */}
@@ -453,7 +483,7 @@ export default function FeedPage() {
               </div>
             ) : (
               <>
-                {items.map(renderTimelineItem)}
+                {filteredItems.map(renderTimelineItem)}
                 
                 {/* Botão Carregar Mais */}
                 {hasNextPage && (
