@@ -24,6 +24,7 @@ import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { getBioOrDefault } from '@/utils/autoBioGenerator'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -407,6 +408,17 @@ export default function EditarPerfilPage() {
         avatarUrl = selectedAvatar.value as string
       }
 
+      // Gerar biografia automática se não fornecida
+      const autoBio = getBioOrDefault(
+        data.bio,
+        data.user_type,
+        {
+          location_state: data.location_state,
+          professional_services: selectedServices,
+          full_name: data.full_name
+        }
+      )
+
       const profileData = {
         id: user.id,
         email: user.email,
@@ -419,7 +431,7 @@ export default function EditarPerfilPage() {
         location_city: data.location_city,
         neighborhood: data.neighborhood,
         address: data.address,
-        bio: data.bio || null,
+        bio: autoBio,
         professional_services: selectedServices.length > 0 ? selectedServices : [],
         professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
         avatar_url: avatarUrl,

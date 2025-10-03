@@ -8,6 +8,7 @@ import { Logger } from '@/lib/logger'
 import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
 import { ProfileSchema, LoginSchema, SignUpSchema } from '@/lib/validation'
 import { useAutoNotifications } from './useAutoNotifications'
+import { getBioOrDefault } from '@/utils/autoBioGenerator'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -478,6 +479,17 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         }
       }
 
+      // Gerar biografia automática se não fornecida
+      const autoBio = getBioOrDefault(
+        profileData.bio,
+        profileData.user_type,
+        {
+          location_state: profileData.location_state,
+          professional_services: profileData.services_offered,
+          full_name: profileData.full_name
+        }
+      )
+
       // Preparar dados do perfil
       const profileInsertData = {
         id: state.user.id,
@@ -491,7 +503,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         location_city: profileData.location_city,
         neighborhood: profileData.neighborhood,
         address: profileData.address || '',
-        bio: profileData.bio || '',
+        bio: autoBio,
         professional_services: profileData.services_offered || [],
         professional_experience_years: profileData.experience_years ? 
           (isNaN(parseInt(profileData.experience_years)) ? 0 : parseInt(profileData.experience_years)) : 0,
