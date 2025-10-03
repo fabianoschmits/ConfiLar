@@ -91,6 +91,7 @@ export default function PublicProfilePage() {
     const [error, setError] = useState<string | null>(null)
     const [showContactInfo, setShowContactInfo] = useState(false)
     const [viewStats, setViewStats] = useState<{ total_views: number; views_today: number } | null>(null)
+    const [mutualEvaluation, setMutualEvaluation] = useState(false)
 
     // Hooks customizados - sempre chamados com valores consistentes
     const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
@@ -190,6 +191,7 @@ export default function PublicProfilePage() {
             fetchUserReviews(userId)
             fetchUserReviewStats(userId)
             updateProfileStats(userId)
+            checkMutualEvaluation()
         }
     }, [userId, fetchUserReviews, fetchUserReviewStats])
 
@@ -218,7 +220,9 @@ export default function PublicProfilePage() {
                     total_reviews,
                     is_verified,
                     is_available,
-                    created_at
+                    created_at,
+                    phone,
+                    email
                 `)
                 .eq('id', userId)
                 .single()
@@ -274,6 +278,36 @@ export default function PublicProfilePage() {
             }
         } catch (error) {
             console.error('Erro ao atualizar estatísticas do perfil:', error)
+        }
+    }
+
+    // Verificar se há avaliação mútua entre os usuários
+    const checkMutualEvaluation = async () => {
+        if (!user || !userId) return
+
+        try {
+            // Verificar se o usuário atual avaliou o perfil visitado
+            const { data: userToProfile, error: error1 } = await supabase
+                .from('reviews')
+                .select('id')
+                .eq('reviewer_id', user.id)
+                .eq('reviewed_id', userId)
+                .single()
+
+            // Verificar se o perfil visitado avaliou o usuário atual
+            const { data: profileToUser, error: error2 } = await supabase
+                .from('reviews')
+                .select('id')
+                .eq('reviewer_id', userId)
+                .eq('reviewed_id', user.id)
+                .single()
+
+            // Se ambos se avaliaram, liberar informações de contato
+            const hasMutualEvaluation = !error1 && !error2 && !!userToProfile && !!profileToUser
+            setMutualEvaluation(hasMutualEvaluation)
+        } catch (error) {
+            console.error('Erro ao verificar avaliação mútua:', error)
+            setMutualEvaluation(false)
         }
     }
 
@@ -533,6 +567,78 @@ export default function PublicProfilePage() {
                                             </div>
                                         </div>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Informações de Contato - Sistema de Privacidade */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center space-x-2">
+                                        <MessageCircle className="w-5 h-5" />
+                                        <span>Informações de Contato</span>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {!mutualEvaluation ? (
+                                        // Mensagem de privacidade quando não há avaliação mútua
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                            <div className="flex items-start space-x-3">
+                                                <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                                                <div>
+                                                    <h4 className="text-sm font-medium text-blue-900 mb-1">
+                                                        Informações Protegidas
+                                                    </h4>
+                                                    <p className="text-sm text-blue-700 mb-2">
+                                                        Para proteger a privacidade dos usuários, as informações de contato (telefone e email) 
+                                                        só são liberadas após uma avaliação mútua entre os usuários.
+                                                    </p>
+                                                    <p className="text-xs text-blue-600">
+                                                        💡 <strong>Dica:</strong> Avalie este usuário e peça para que ele também te avalie. 
+                                                        Após a avaliação mútua, as informações de contato serão liberadas automaticamente.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Informações de contato liberadas
+                                        <div className="space-y-4">
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                                    <span className="text-sm font-medium text-green-800">
+                                                        Informações de contato liberadas após avaliação mútua
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {profile.phone && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Phone className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                            <p className="text-sm text-gray-600">{profile.phone}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {profile.email && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Mail className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                                            <p className="text-sm text-gray-600">{profile.email}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            {(!profile.phone && !profile.email) && (
+                                                <p className="text-sm text-gray-500 text-center py-4">
+                                                    Este usuário não disponibilizou informações de contato.
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </TabsContent>
