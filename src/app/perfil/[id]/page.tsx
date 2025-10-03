@@ -546,7 +546,90 @@ export default function PublicProfilePage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    {!mutualEvaluation ? (
+                                    {user?.id === userId ? (
+                                        // Próprio usuário - todos os dados visíveis
+                                        <div className="space-y-4">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                                <div className="flex items-center space-x-2">
+                                                    <User className="w-4 h-4 text-blue-600" />
+                                                    <span className="text-sm font-medium text-blue-800">
+                                                        Seu perfil - todas as informações visíveis
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                {/* Localização */}
+                                                <div className="flex items-center space-x-3">
+                                                    <MapPin className="w-5 h-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">Localização</p>
+                                                        <p className="text-sm text-gray-600">
+                                                            {profile.location_city && profile.location_state
+                                                                ? `${profile.location_city}, ${profile.location_state}`
+                                                                : 'Não informado'
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Bairro */}
+                                                {profile.neighborhood && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Building2 className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm text-gray-600">{profile.neighborhood}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Endereço */}
+                                                {profile.address && (
+                                                    <div className="flex items-center space-x-3 sm:col-span-2">
+                                                        <Globe className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm text-gray-600">{profile.address}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Telefone */}
+                                                {profile.phone && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Phone className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                            <p className="text-sm text-gray-600">{profile.phone}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Email */}
+                                                {profile.email && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Mail className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                                            <p className="text-sm text-gray-600">{profile.email}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Membro desde */}
+                                                <div className="flex items-center space-x-3">
+                                                    <Calendar className="w-5 h-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">Membro desde</p>
+                                                        <p className="text-sm text-gray-600">
+                                                            {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : !mutualEvaluation ? (
                                         // Dados borrados quando não há avaliação mútua
                                         <div className="space-y-4">
                                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
