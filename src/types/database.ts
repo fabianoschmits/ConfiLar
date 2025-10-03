@@ -40,6 +40,7 @@ export interface Database {
           total_reviews: number
           is_available: boolean
           birth_date?: string | null
+          gender?: 'male' | 'female' | 'other' | null
           neighborhood?: string | null
           profile_completed?: boolean
           profile_completion_score?: number | null
@@ -69,6 +70,7 @@ export interface Database {
           total_reviews?: number
           is_available?: boolean
           birth_date?: string | null
+          gender?: 'male' | 'female' | 'other' | null
           neighborhood?: string | null
           profile_completed?: boolean
           profile_completion_score?: number | null
@@ -98,6 +100,7 @@ export interface Database {
           total_reviews?: number
           is_available?: boolean
           birth_date?: string | null
+          gender?: 'male' | 'female' | 'other' | null
           neighborhood?: string | null
           profile_completed?: boolean
           profile_completion_score?: number | null

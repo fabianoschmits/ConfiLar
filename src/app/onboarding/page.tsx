@@ -78,6 +78,7 @@ const onboardingSchema = z.object({
       return false
     }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
+  gender: z.enum(['male', 'female', 'other']),
   user_type: z.enum(['client', 'professional']),
   location_state: z.string().min(1, 'Estado é obrigatório'),
   location_city: z.string().min(1, 'Cidade é obrigatória'),
@@ -154,7 +155,7 @@ export default function OnboardingPage() {
       shortTitle: 'Dados',
       icon: User, 
       description: 'Informações pessoais básicas',
-      fields: ['full_name', 'phone', 'cpf_cnpj', 'birth_date']
+      fields: ['full_name', 'phone', 'cpf_cnpj', 'birth_date', 'gender']
     },
     { 
       id: 3, 
@@ -215,14 +216,14 @@ export default function OnboardingPage() {
       
       case 2: // Dados pessoais
         return !!(
-          values.full_name && 
+          values.full_name &&
           values.full_name.length >= 2 &&
           values.phone && 
           values.phone.length >= 10 &&
           values.cpf_cnpj && 
           values.cpf_cnpj.length >= 11 &&
           values.birth_date &&
-          true // Sem validação de gender
+          values.gender
         )
       
       case 3: // Avatar - sempre válido (opcional)
@@ -507,6 +508,7 @@ export default function OnboardingPage() {
         phone: data.phone,
         cpf_cnpj: data.cpf_cnpj,
         birth_date: data.birth_date,
+        gender: data.gender,
         user_type: data.user_type,
         location_state: data.location_state,
         location_city: data.location_city,
@@ -548,6 +550,7 @@ export default function OnboardingPage() {
           bio: autoBio,
           cpf_cnpj: data.cpf_cnpj,
           birth_date: data.birth_date,
+          gender: data.gender,
           
           // Dados de localização
           location_state: data.location_state,
@@ -764,6 +767,37 @@ export default function OnboardingPage() {
                             <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                               <X className="w-3 h-3" />
                               Obrigatório
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="gender" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Sexo <span className="text-red-500">*</span>
+                          </Label>
+                          <Select value={watchedValues.gender || ''} onValueChange={(value) => setValue('gender', value as 'male' | 'female' | 'other')}>
+                            <SelectTrigger className={cn(
+                              "h-10",
+                              errors.gender ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}>
+                              <SelectValue placeholder="Selecione seu sexo" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">Masculino</SelectItem>
+                              <SelectItem value="female">Feminino</SelectItem>
+                              <SelectItem value="other">Outros</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.gender && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.gender.message}
+                            </p>
+                          )}
+                          {watchedValues.gender && !errors.gender && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              Sexo selecionado
                             </p>
                           )}
                         </div>
@@ -1248,6 +1282,7 @@ export default function OnboardingPage() {
                             </div>
                             <div>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
+                              <p><strong>Sexo:</strong> {watchedValues.gender === 'male' ? '👨 Masculino' : watchedValues.gender === 'female' ? '👩 Feminino' : watchedValues.gender === 'other' ? '🏳️‍⚧️ Outros' : 'Não informado'}</p>
                               <p><strong>Tipo:</strong> {watchedValues.user_type === 'professional' ? '👨‍💼 Profissional' : watchedValues.user_type === 'client' ? '🙋‍♂️ Cliente' : 'Não informado'}</p>
                             </div>
                           </div>
