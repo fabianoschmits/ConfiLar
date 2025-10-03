@@ -492,11 +492,11 @@ export default function PublicProfilePage() {
                     </Card>
 
                     {/* Conteúdo Principal */}
-                    <Tabs defaultValue="services" className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="services">Serviços</TabsTrigger>
+                    <Tabs defaultValue={isProfessional ? "services" : "about"} className="space-y-6">
+                        <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                            {isProfessional && <TabsTrigger value="services">Serviços</TabsTrigger>}
                             <TabsTrigger value="reviews">Avaliações</TabsTrigger>
-                            <TabsTrigger value="portfolio">Portfólio</TabsTrigger>
+                            {isProfessional && <TabsTrigger value="portfolio">Portfólio</TabsTrigger>}
                             <TabsTrigger value="about">Sobre</TabsTrigger>
                         </TabsList>
 
