@@ -65,6 +65,7 @@ interface PublicProfile {
     location_state: string | null
     location_city: string | null
     neighborhood: string | null
+    address: string | null
     professional_services: string[] | null
     professional_experience_years: number | null
     professional_certifications: string[] | null
@@ -212,6 +213,7 @@ export default function PublicProfilePage() {
                     location_state,
                     location_city,
                     neighborhood,
+                    address,
                     professional_services,
                     professional_experience_years,
                     professional_certifications,
@@ -535,16 +537,117 @@ export default function PublicProfilePage() {
                         </TabsList>
 
                         <TabsContent value="about" className="space-y-6">
-                            {/* Informações Básicas */}
+                            {/* Informações do Usuário - Sistema de Privacidade */}
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center space-x-2">
                                         <User className="w-5 h-5" />
-                                        <span>Informações Básicas</span>
+                                        <span>Informações do Usuário</span>
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {!mutualEvaluation ? (
+                                        // Dados borrados quando não há avaliação mútua
+                                        <div className="space-y-4">
+                                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                                <div className="flex items-start space-x-3">
+                                                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                                                    <div>
+                                                        <h4 className="text-sm font-medium text-blue-900 mb-1">
+                                                            Informações Protegidas
+                                                        </h4>
+                                                        <p className="text-sm text-blue-700 mb-2">
+                                                            Para proteger a privacidade dos usuários, as informações pessoais 
+                                                            só são liberadas após uma avaliação mútua entre os usuários.
+                                                        </p>
+                                                        <p className="text-xs text-blue-600">
+                                                            💡 <strong>Dica:</strong> Avalie este usuário e peça para que ele também te avalie. 
+                                                            Após a avaliação mútua, as informações serão liberadas automaticamente.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Dados sempre visíveis */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                                {/* Localização sempre visível */}
+                                                <div className="flex items-center space-x-3">
+                                                    <MapPin className="w-5 h-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">Localização</p>
+                                                        <p className="text-sm text-gray-600">
+                                                            {profile.location_city && profile.location_state
+                                                                ? `${profile.location_city}, ${profile.location_state}`
+                                                                : 'Não informado'
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Bairro sempre visível */}
+                                                {profile.neighborhood && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Building2 className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm text-gray-600">{profile.neighborhood}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Endereço sempre visível */}
+                                                {profile.address && (
+                                                    <div className="flex items-center space-x-3 sm:col-span-2">
+                                                        <Globe className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm text-gray-600">{profile.address}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Membro desde sempre visível */}
+                                                <div className="flex items-center space-x-3">
+                                                    <Calendar className="w-5 h-5 text-gray-400" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">Membro desde</p>
+                                                        <p className="text-sm text-gray-600">
+                                                            {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Dados borrados (telefone e email) */}
+                                            <div className="border-t border-gray-200 pt-4">
+                                                <h4 className="text-sm font-medium text-gray-900 mb-3">Informações de Contato (Protegidas)</h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    {/* Telefone borrado */}
+                                                    <div className="flex items-center space-x-3">
+                                                        <Phone className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                            <p className="text-sm text-gray-400 select-none">•••••••••••</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Email borrado */}
+                                                    <div className="flex items-center space-x-3">
+                                                        <Mail className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                                            <p className="text-sm text-gray-400 select-none">••••••••••••••••</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Dados liberados após avaliação mútua
+                                        <div className="space-y-4">
+                                            {/* Dados sempre visíveis */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                                {/* Localização sempre visível */}
                                         <div className="flex items-center space-x-3">
                                             <MapPin className="w-5 h-5 text-gray-400" />
                                             <div>
@@ -557,6 +660,30 @@ export default function PublicProfilePage() {
                                                 </p>
                                             </div>
                                         </div>
+                                                
+                                                {/* Bairro sempre visível */}
+                                                {profile.neighborhood && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <Building2 className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm text-gray-600">{profile.neighborhood}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Endereço sempre visível */}
+                                                {profile.address && (
+                                                    <div className="flex items-center space-x-3 sm:col-span-2">
+                                                        <Globe className="w-5 h-5 text-gray-400" />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm text-gray-600">{profile.address}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {/* Membro desde sempre visível */}
                                         <div className="flex items-center space-x-3">
                                             <Calendar className="w-5 h-5 text-gray-400" />
                                             <div>
@@ -567,76 +694,48 @@ export default function PublicProfilePage() {
                                             </div>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Informações de Contato - Sistema de Privacidade */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center space-x-2">
-                                        <MessageCircle className="w-5 h-5" />
-                                        <span>Informações de Contato</span>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {!mutualEvaluation ? (
-                                        // Mensagem de privacidade quando não há avaliação mútua
-                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                            <div className="flex items-start space-x-3">
-                                                <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-blue-900 mb-1">
-                                                        Informações Protegidas
-                                                    </h4>
-                                                    <p className="text-sm text-blue-700 mb-2">
-                                                        Para proteger a privacidade dos usuários, as informações de contato (telefone e email) 
-                                                        só são liberadas após uma avaliação mútua entre os usuários.
-                                                    </p>
-                                                    <p className="text-xs text-blue-600">
-                                                        💡 <strong>Dica:</strong> Avalie este usuário e peça para que ele também te avalie. 
-                                                        Após a avaliação mútua, as informações de contato serão liberadas automaticamente.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        // Informações de contato liberadas
-                                        <div className="space-y-4">
-                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                                    <span className="text-sm font-medium text-green-800">
-                                                        Informações de contato liberadas após avaliação mútua
-                                                    </span>
-                                                </div>
-                                            </div>
                                             
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {profile.phone && (
-                                                    <div className="flex items-center space-x-3">
-                                                        <Phone className="w-5 h-5 text-gray-400" />
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
-                                                            <p className="text-sm text-gray-600">{profile.phone}</p>
-                                                        </div>
+                                            {/* Informações de contato liberadas */}
+                                            <div className="border-t border-gray-200 pt-4">
+                                                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                                        <span className="text-sm font-medium text-green-800">
+                                                            Informações de contato liberadas após avaliação mútua
+                                                        </span>
                                                     </div>
-                                                )}
-                                                {profile.email && (
-                                                    <div className="flex items-center space-x-3">
-                                                        <Mail className="w-5 h-5 text-gray-400" />
-                                                        <div>
-                                                            <p className="text-sm font-medium text-gray-900">Email</p>
-                                                            <p className="text-sm text-gray-600">{profile.email}</p>
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    {/* Telefone liberado */}
+                                                    {profile.phone && (
+                                                        <div className="flex items-center space-x-3">
+                                                            <Phone className="w-5 h-5 text-gray-400" />
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                                <p className="text-sm text-gray-600">{profile.phone}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    )}
+                                                    
+                                                    {/* Email liberado */}
+                                                    {profile.email && (
+                                                        <div className="flex items-center space-x-3">
+                                                            <Mail className="w-5 h-5 text-gray-400" />
+                                                            <div>
+                                                                <p className="text-sm font-medium text-gray-900">Email</p>
+                                                                <p className="text-sm text-gray-600">{profile.email}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                {(!profile.phone && !profile.email) && (
+                                                    <p className="text-sm text-gray-500 text-center py-4">
+                                                        Este usuário não disponibilizou informações de contato.
+                                                    </p>
                                                 )}
                                             </div>
-                                            
-                                            {(!profile.phone && !profile.email) && (
-                                                <p className="text-sm text-gray-500 text-center py-4">
-                                                    Este usuário não disponibilizou informações de contato.
-                                                </p>
-                                            )}
                                         </div>
                                     )}
                                 </CardContent>
