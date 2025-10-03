@@ -19,21 +19,18 @@ export function useProfileCheck() {
 
       // Se já temos o perfil no contexto, verificar se está completo
       if (profile) {
-        // Verificar se o perfil tem dados essenciais
-        const hasEssentialData = profile.full_name && 
-                                profile.phone && 
-                                profile.location_state && 
-                                profile.location_city
+        // Verificar se o perfil foi completado usando o campo profile_completed
+        const isProfileCompleted = profile.profile_completed === true
 
-        // Se não tem dados essenciais, redirecionar para onboarding
-        if (!hasEssentialData) {
+        // Se o perfil não foi completado, redirecionar para onboarding
+        if (!isProfileCompleted) {
           // Verificar se já está na página de onboarding para evitar loop
           if (window.location.pathname !== '/onboarding') {
-            console.log('🔍 Perfil incompleto, redirecionando para onboarding')
+            console.log('🔍 Perfil não completado, redirecionando para onboarding')
             router.push('/onboarding')
           }
         } else {
-          console.log('✅ Perfil completo, permitindo acesso')
+          console.log('✅ Perfil completado, permitindo acesso')
         }
         setIsChecking(false)
         return
@@ -63,20 +60,17 @@ export function useProfileCheck() {
           return
         }
 
-        // Verificar se tem dados essenciais
-        const hasEssentialData = profileData.full_name && 
-                                profileData.phone && 
-                                profileData.location_state && 
-                                profileData.location_city
+        // Verificar se o perfil foi completado usando o campo profile_completed
+        const isProfileCompleted = profileData.profile_completed === true
 
-        // Se não tem dados essenciais, redirecionar para onboarding
-        if (!hasEssentialData) {
+        // Se o perfil não foi completado, redirecionar para onboarding
+        if (!isProfileCompleted) {
           if (window.location.pathname !== '/onboarding') {
-            console.log('🔍 Perfil incompleto (dados essenciais faltando), redirecionando para onboarding')
+            console.log('🔍 Perfil não completado, redirecionando para onboarding')
             router.push('/onboarding')
           }
         } else {
-          console.log('✅ Perfil completo, permitindo acesso')
+          console.log('✅ Perfil completado, permitindo acesso')
         }
       } catch (error) {
         console.error('Erro ao verificar perfil:', error)
