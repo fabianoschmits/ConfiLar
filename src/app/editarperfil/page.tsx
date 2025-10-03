@@ -165,11 +165,17 @@ export default function EditarPerfilPage() {
           }
 
           if (profile.avatar_url) {
+            console.log('🔍 Carregando avatar existente:', profile.avatar_url)
             setSelectedAvatar({
               type: 'dicebear',
               value: profile.avatar_url,
               preview: profile.avatar_url
             })
+            // Também definir o dicebearAvatar para que o botão funcione
+            setDicebearAvatar(profile.avatar_url)
+            console.log('✅ Avatar carregado e definido')
+          } else {
+            console.log('⚠️ Nenhum avatar encontrado no perfil')
           }
         }
       } catch (error) {
@@ -236,6 +242,7 @@ export default function EditarPerfilPage() {
   const generateDicebearAvatar = async (name: string, forceRandom = false) => {
     if (!name || name.length < 2) return
     
+    console.log('🎨 Gerando avatar para:', name, 'forceRandom:', forceRandom)
     setIsGeneratingAvatar(true)
     try {
       let seed = name.trim()
@@ -247,6 +254,8 @@ export default function EditarPerfilPage() {
       const encodedSeed = encodeURIComponent(seed)
       const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedSeed}&backgroundColor=transparent`
       
+      console.log('🔗 URL do avatar:', avatarUrl)
+      
       const response = await fetch(avatarUrl)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -257,9 +266,11 @@ export default function EditarPerfilPage() {
         throw new Error('Conteúdo SVG inválido retornado')
       }
       
+      console.log('✅ Avatar gerado com sucesso')
       setDicebearAvatar(avatarUrl)
       
       if (forceRandom) {
+        console.log('🔄 Selecionando novo avatar')
         setSelectedAvatar({
           type: 'dicebear',
           value: avatarUrl,
@@ -336,6 +347,15 @@ export default function EditarPerfilPage() {
       })
     }
   }, [dicebearAvatar, selectedAvatar])
+
+  // Gerar avatar automaticamente quando o perfil é carregado
+  useEffect(() => {
+    console.log('🔍 useEffect avatar - fullName:', fullName, 'dicebearAvatar:', dicebearAvatar)
+    if (fullName && fullName.length >= 2 && !dicebearAvatar) {
+      console.log('🚀 Gerando avatar automático para:', fullName)
+      generateDicebearAvatar(fullName)
+    }
+  }, [fullName, dicebearAvatar])
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) {
@@ -493,7 +513,16 @@ export default function EditarPerfilPage() {
                         width={80}
                         height={80}
                         className="w-full h-full object-cover"
+                        onLoad={() => console.log('✅ Avatar carregado na tela')}
+                        onError={() => console.log('❌ Erro ao carregar avatar na tela')}
                       />
+                    </div>
+                  </div>
+                )}
+                {!selectedAvatar && (
+                  <div className="flex items-center justify-center">
+                    <div className="w-20 h-20 border-4 border-gray-300 rounded-full overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
+                      <span className="text-gray-500 text-sm">Sem avatar</span>
                     </div>
                   </div>
                 )}
@@ -560,7 +589,7 @@ export default function EditarPerfilPage() {
                         </button>
                         
                         {/* Botão para gerar novo avatar aleatório */}
-                        {dicebearAvatar && (
+                        {fullName && fullName.length >= 2 && (
                           <button
                             type="button"
                             onClick={generateRandomAvatar}
