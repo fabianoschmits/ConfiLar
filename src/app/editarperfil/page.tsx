@@ -1,487 +1,287 @@
 'use client'
 
-// Desabilitar SSG para esta página
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect } from 'react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { ProfilePageLayout, ProfileSection, ProfileInfo, ProfileStats } from '@/components/layout/ProfilePageLayout'
-import { Profile } from '@/types/database'
-import { Card, CardContent } from '@/components/ui/card'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { AvatarUpload } from '@/components/ui/AvatarUpload'
-import { Upload, RefreshCw } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Edit, 
-  Save, 
-  X, 
-  Copy,
-  Share2,
-  Building2,
-  Clock,
-  BarChart3,
-  CheckCircle,
-  Calendar,
-  Award,
-  Check,
-  ChevronDown
+  Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
+  Camera, Save, Shield, Home, Edit3, Phone, Calendar, FileText
 } from 'lucide-react'
-import { useAutoReauthentication } from '@/components/auth/AutoReauthentication'
-import { toast } from 'sonner'
-import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+
+// Função para validar CPF
+const validateCPF = (cpf: string): boolean => {
+  cpf = cpf.replace(/[^\d]+/g, '');
+  if (cpf.length !== 11) return false;
+
+  const invalidCPFs = [
+    '00000000000', '11111111111', '22222222222', '33333333333', '44444444444',
+    '55555555555', '66666666666', '77777777777', '88888888888', '99999999999',
+    '12345678901', '12345678909'
+  ];
+
+  if (invalidCPFs.includes(cpf)) return false;
+  if (/^(\d)\1+$/.test(cpf)) return false;
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) {
+    soma += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let resto = soma % 11;
+  const primeiroDigito = resto < 2 ? 0 : 11 - resto;
+  
+  if (parseInt(cpf.charAt(9)) !== primeiroDigito) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) {
+    soma += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  resto = soma % 11;
+  const segundoDigito = resto < 2 ? 0 : 11 - resto;
+  
+  if (parseInt(cpf.charAt(10)) !== segundoDigito) return false;
+
+  return true;
+}
+
+const profileSchema = z.object({
+  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  phone: z.string().min(10, 'Telefone inválido'),
+  cpf_cnpj: z.string()
+    .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
+    .refine((value) => {
+      const cleanValue = value.replace(/\D/g, '')
+      if (cleanValue.length === 11) {
+        return validateCPF(value)
+      }
+      if (cleanValue.length === 14) {
+        return true
+      }
+      return false
+    }, 'CPF/CNPJ inválido ou bloqueado'),
+  birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
+  user_type: z.enum(['client', 'professional']),
+  location_state: z.string().min(1, 'Estado é obrigatório'),
+  location_city: z.string().min(1, 'Cidade é obrigatória'),
+  neighborhood: z.string().min(1, 'Bairro é obrigatório'),
+  address: z.string().min(1, 'Endereço é obrigatório'),
+  bio: z.string().optional(),
+  services_offered: z.array(z.string()).optional(),
+  experience_years: z.string().optional(),
+})
+
+type ProfileFormData = z.infer<typeof profileSchema>
+
+type AvatarType = 'upload' | 'dicebear'
+type AvatarSelection = {
+  type: AvatarType
+  value: string | File
+  preview?: string
+}
 
 export default function EditarPerfilPage() {
-  const [mounted, setMounted] = useState(false)
-  const { profile, updateProfile, uploadAvatar } = useAuthContext()
-  const { checkAndRedirect } = useAutoReauthentication()
-  const [isEditing, setIsEditing] = useState(false)
-  const [isEditingLocation, setIsEditingLocation] = useState(false)
-  const [isEditingProfessional, setIsEditingProfessional] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isSavingLocation, setIsSavingLocation] = useState(false)
-  const [_selectedState, setSelectedState] = useState(profile?.location_state || '')
+  const { user } = useAuthContext()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedServices, setSelectedServices] = useState<string[]>([])
+  const [stateOpen, setStateOpen] = useState(false)
+  const [cityOpen, setCityOpen] = useState(false)
   const [servicesOpen, setServicesOpen] = useState(false)
-  
-  // Converter categorias para formato de string simples
-  const serviceCategoryNames = services.map(cat => cat.name)
-  
-  // Funções para manipular serviços
-  const handleServiceToggle = (service: string) => {
-    const currentServices = formData.professional_services || []
-    const newSelectedServices = currentServices.includes(service) 
-      ? currentServices.filter(s => s !== service)
-      : [...currentServices, service]
-    
-    setFormData({
-      ...formData,
-      professional_services: newSelectedServices
-    })
-  }
-
-  const removeService = (serviceToRemove: string) => {
-    const currentServices = formData.professional_services || []
-    const newSelectedServices = currentServices.filter(s => s !== serviceToRemove)
-    setFormData({
-      ...formData,
-      professional_services: newSelectedServices
-    })
-  }
-  
-  // Estados para sistema de upload avançado
-  const [selectedAvatar, setSelectedAvatar] = useState<{
-    type: 'upload' | 'dicebear'
-    value: string | File
-    preview?: string
-  } | null>(null)
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
 
-  const [formData, setFormData] = useState({
-    email: profile?.email || '',
-    full_name: profile?.full_name || '',
-    phone: profile?.phone || '',
-    bio: profile?.bio || '',
-    location_state: profile?.location_state || '',
-    location_city: profile?.location_city || '',
-    neighborhood: profile?.neighborhood || '',
-    address: profile?.address || '',
-    avatar_url: profile?.avatar_url || '',
-    professional_experience_years: profile?.professional_experience_years || 0,
-    professional_services: profile?.professional_services || []
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      user_type: 'client' as const,
+    },
   })
 
+  const watchedValues = watch()
+  const isProfessional = watchedValues.user_type === 'professional'
+  const fullName = watchedValues.full_name || (user as { user_metadata?: { full_name?: string } })?.user_metadata?.full_name || 'Usuário'
+
+  // Carregar dados do perfil existente
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Sincronizar dados quando o perfil mudar
-  useEffect(() => {
-    if (profile && !isEditing && !isEditingLocation) {
-      setFormData({
-        email: profile.email || '',
-        full_name: profile.full_name || '',
-        phone: profile.phone || '',
-        bio: profile.bio || '',
-        location_state: profile.location_state || '',
-        location_city: profile.location_city || '',
-        neighborhood: profile.neighborhood || '',
-        address: profile.address || '',
-        avatar_url: profile.avatar_url || '',
-        professional_experience_years: profile.professional_experience_years || 0,
-        professional_services: profile.professional_services || []
-      })
-      setSelectedState(profile.location_state || '')
-    }
-  }, [profile, isEditing, isEditingLocation])
-
-  // Gerar avatar automaticamente quando o nome mudar
-  useEffect(() => {
-    if (profile?.full_name && profile.full_name.length >= 2) {
-      generateDicebearAvatar(profile.full_name, 'male')
-    }
-  }, [profile?.full_name])
-
-  // Selecionar avatar Dicebear automaticamente quando gerado
-  useEffect(() => {
-    if (dicebearAvatar && !selectedAvatar) {
-      setSelectedAvatar({
-        type: 'dicebear',
-        value: dicebearAvatar,
-        preview: dicebearAvatar
-      })
-    }
-  }, [dicebearAvatar])
-
-  // Gerar avatar em tempo real baseado no nome digitado (com debounce)
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    
-    const handleNameChange = () => {
-      if (formData.full_name && formData.full_name.length >= 2) {
-        // Debounce de 500ms para evitar muitas chamadas
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => {
-          // Usar gênero padrão 'male' (não temos campo gender no Profile)
-          const gender = 'male'
-          generateDicebearAvatar(formData.full_name, gender)
-        }, 500)
-      }
-    }
-    
-    handleNameChange()
-    
-    return () => {
-      clearTimeout(timeoutId)
-    }
-  }, [formData.full_name])
-
-  if (!mounted) {
-    return null
-  }
-
-  const handleEditClick = () => {
-    setFormData({
-      email: profile?.email || '',
-      full_name: profile?.full_name || '',
-      phone: profile?.phone || '',
-      bio: profile?.bio || '',
-      location_state: profile?.location_state || '',
-      location_city: profile?.location_city || '',
-      neighborhood: profile?.neighborhood || '',
-      address: profile?.address || '',
-      avatar_url: profile?.avatar_url || '',
-      professional_experience_years: profile?.professional_experience_years || 0,
-      professional_services: profile?.professional_services || []
-    })
-    setSelectedState(profile?.location_state || '')
-    setIsEditing(true)
-  }
-
-  if (!profile) {
-    return (
-      <ProfilePageLayout title="Carregando..." showBackButton={false}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto"></div>
-            <p className="mt-3 text-gray-600">Carregando perfil...</p>
-          </div>
-        </div>
-      </ProfilePageLayout>
-    )
-  }
-
-  const handleSave = async () => {
-    if (!updateProfile) {
-      toast.error('Erro: função de atualização não disponível')
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      let avatarUrl = formData.avatar_url
-
-      // Processar avatar se selecionado
-      if (selectedAvatar) {
-        if (selectedAvatar.type === 'upload') {
-          // Upload de arquivo
-          const result = await uploadAvatar(selectedAvatar.value as File)
-          if (result.error) {
-            toast.error(result.error.message)
-            setIsSaving(false)
-            return
-          }
-          avatarUrl = result.data || ''
-        } else if (selectedAvatar.type === 'dicebear') {
-          // Avatar Dicebear - usar diretamente a URL
-          avatarUrl = selectedAvatar.value as string
-        }
-      }
-
-      // Atualizar perfil com nova URL do avatar
-      const profileData = {
-        ...formData,
-        avatar_url: avatarUrl
-      }
-
-      const result = await updateProfile(profileData)
-      if (result?.error) {
-        toast.error('Erro ao atualizar perfil: ' + result.error.message)
-      } else {
-        toast.success('Perfil atualizado com sucesso!')
-        setIsEditing(false)
-        // Limpar avatar selecionado após salvar
-        setSelectedAvatar(null)
-      }
-    } catch (_error) {
-      toast.error('Erro inesperado ao atualizar perfil')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleCancel = () => {
-    setFormData({
-      email: profile?.email || '',
-      full_name: profile?.full_name || '',
-      phone: profile?.phone || '',
-      bio: profile?.bio || '',
-      location_state: profile?.location_state || '',
-      location_city: profile?.location_city || '',
-      neighborhood: profile?.neighborhood || '',
-      address: profile?.address || '',
-      avatar_url: profile?.avatar_url || '',
-      professional_experience_years: profile?.professional_experience_years || 0,
-      professional_services: profile?.professional_services || []
-    })
-    setSelectedState(profile?.location_state || '')
-    setIsEditing(false)
-  }
-
-  const handleEditLocationClick = () => {
-    setFormData({
-      ...formData,
-      location_state: profile?.location_state || '',
-      location_city: profile?.location_city || '',
-      neighborhood: profile?.neighborhood || '',
-      address: profile?.address || ''
-    })
-    setSelectedState(profile?.location_state || '')
-    setIsEditingLocation(true)
-  }
-
-  const handleCancelLocation = () => {
-    setFormData({
-      ...formData,
-      location_state: profile?.location_state || '',
-      location_city: profile?.location_city || '',
-      neighborhood: profile?.neighborhood || '',
-      address: profile?.address || ''
-    })
-    setSelectedState(profile?.location_state || '')
-    setIsEditingLocation(false)
-  }
-
-  const handleSaveLocation = async () => {
-    if (!updateProfile) {
-      toast.error('Erro: função de atualização não disponível')
-      return
-    }
-
-    setIsSavingLocation(true)
-    try {
-      const locationData = {
-        location_state: formData.location_state,
-        location_city: formData.location_city,
-        neighborhood: formData.neighborhood,
-        address: formData.address
-      }
-      const result = await updateProfile(locationData)
-      if (result?.error) {
-        toast.error('Erro ao atualizar localização: ' + result.error.message)
-      } else {
-        toast.success('Localização atualizada com sucesso!')
-        setIsEditingLocation(false)
-      }
-    } catch (_error) {
-      toast.error('Erro inesperado ao atualizar localização')
-    } finally {
-      setIsSavingLocation(false)
-    }
-  }
-
-  const handleEditProfessional = () => {
-    setIsEditingProfessional(true)
-  }
-
-  const handleCancelProfessional = () => {
-    setFormData({
-      ...formData,
-      professional_experience_years: profile?.professional_experience_years || 0,
-      professional_services: profile?.professional_services || []
-    })
-    setIsEditingProfessional(false)
-  }
-
-  const handleSaveProfessional = async () => {
-    try {
-      const wasClient = profile?.user_type === 'client'
-      const hasServices = formData.professional_services && formData.professional_services.length > 0
-      
-      // Validação: se está tentando se tornar profissional, deve ter pelo menos um serviço
-      if (wasClient && hasServices && formData.professional_services.length === 0) {
-        toast.error('Para se tornar um profissional, você deve selecionar pelo menos um serviço.')
+    const loadProfileData = async () => {
+      if (!user) {
+        router.push('/auth')
         return
       }
-      
-      // Preparar dados profissionais
-      const professionalData: Partial<Profile> = {
-        professional_experience_years: formData.professional_experience_years,
-        professional_services: formData.professional_services
-      }
-      
-      // Se era cliente e agora tem serviços, mudar para profissional
-      if (wasClient && hasServices) {
-        professionalData.user_type = 'professional'
-      }
-      
-      const result = await updateProfile(professionalData)
-      if (result.error) {
-        toast.error('Erro ao atualizar dados profissionais: ' + result.error.message)
-      } else {
-        if (wasClient && hasServices) {
-          toast.success('🎉 Parabéns! Você agora é um profissional! Seu perfil foi atualizado automaticamente.')
-          // Recarregar a página para atualizar o contexto e mostrar as mudanças
-          setTimeout(() => {
-            window.location.reload()
-          }, 2000)
-        } else if (wasClient && !hasServices) {
-          toast.success('Dados profissionais atualizados! Adicione serviços para se tornar um profissional.')
-        } else {
-          toast.success('Dados profissionais atualizados com sucesso!')
+
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+
+        if (error) {
+          console.error('Erro ao carregar perfil:', error)
+          toast.error('Erro ao carregar dados do perfil')
+          return
         }
-        setIsEditingProfessional(false)
+
+        if (profile) {
+          // Preencher formulário com dados existentes
+          setValue('full_name', profile.full_name || '')
+          setValue('phone', profile.phone || '')
+          setValue('cpf_cnpj', profile.cpf_cnpj || '')
+          setValue('birth_date', profile.birth_date || '')
+          setValue('user_type', profile.user_type || 'client')
+          setValue('location_state', profile.location_state || '')
+          setValue('location_city', profile.location_city || '')
+          setValue('neighborhood', profile.neighborhood || '')
+          setValue('address', profile.address || '')
+          setValue('bio', profile.bio || '')
+          setValue('experience_years', profile.professional_experience_years ? `${profile.professional_experience_years}-${profile.professional_experience_years + 2}` : '')
+          
+          if (profile.professional_services) {
+            setSelectedServices(profile.professional_services)
+            setValue('services_offered', profile.professional_services)
+          }
+
+          if (profile.avatar_url) {
+            setSelectedAvatar({
+              type: 'dicebear',
+              value: profile.avatar_url,
+              preview: profile.avatar_url
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error)
+        toast.error('Erro ao carregar dados do perfil')
       }
-    } catch (_error) {
-      toast.error('Erro inesperado ao atualizar dados profissionais')
+    }
+
+    loadProfileData()
+  }, [user, router, setValue])
+
+  // Formatação automática para telefone
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 2) return numbers
+    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`
+    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
+  }
+
+  // Formatação automática para CPF
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 3) return numbers
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhone(e.target.value)
+    setValue('phone', formatted)
+  }
+
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCPF(e.target.value)
+    setValue('cpf_cnpj', formatted)
+    
+    const cleanValue = formatted.replace(/\D/g, '')
+    if (cleanValue.length === 11) {
+      const isValid = validateCPF(formatted)
+      setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
     }
   }
 
-  const copyProfileLink = () => {
-    const profileUrl = `${window.location.origin}/perfil/${profile.id}`
-    navigator.clipboard.writeText(profileUrl)
-    toast.success('Link do perfil copiado para a área de transferência!')
+  // Converter categorias para formato de string simples
+  const serviceCategoryNames = services.map(cat => cat.name)
+
+  const handleServiceToggle = (service: string) => {
+    const newSelectedServices = selectedServices.includes(service) 
+      ? selectedServices.filter(s => s !== service)
+      : [...selectedServices, service]
+    
+    setSelectedServices(newSelectedServices)
+    setValue('services_offered', newSelectedServices)
   }
 
-  const shareProfile = () => {
-    const profileUrl = `${window.location.origin}/perfil/${profile.id}`
-    if (navigator.share) {
-      navigator.share({
-        title: `Perfil de ${profile.full_name}`,
-        text: `Confira o perfil de ${profile.full_name} no ConfiLar`,
-        url: profileUrl
-      })
-    } else {
-      copyProfileLink()
-    }
+  const removeService = (serviceToRemove: string) => {
+    const newSelectedServices = selectedServices.filter(s => s !== serviceToRemove)
+    setSelectedServices(newSelectedServices)
+    setValue('services_offered', newSelectedServices)
   }
 
-  const getMemberSince = () => {
-    if (profile.created_at) {
-      const date = new Date(profile.created_at)
-      return date.toLocaleDateString('pt-BR', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })
-    }
-    return '2024'
-  }
-
-  // Função para gerar avatar Dicebear
-  const generateDicebearAvatar = async (name: string, gender: string = 'male') => {
+  const generateDicebearAvatar = async (name: string, forceRandom = false) => {
     if (!name || name.length < 2) return
     
     setIsGeneratingAvatar(true)
     try {
-      const encodedName = encodeURIComponent(name.trim())
+      let seed = name.trim()
       
-      // URL com parâmetros básicos para pixel art
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedName}&backgroundColor=transparent`
+      if (forceRandom) {
+        seed = `${name.trim()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      }
       
-      console.log('🎨 Gerando avatar para:', name)
-      console.log('🔗 URL do avatar:', avatarUrl)
+      const encodedSeed = encodeURIComponent(seed)
+      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedSeed}&backgroundColor=transparent`
       
-      // Testar se a URL é válida
       const response = await fetch(avatarUrl)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       
-      // Verificar se o conteúdo é válido (SVG)
       const content = await response.text()
       if (!content || content.includes('error') || !content.includes('<svg')) {
         throw new Error('Conteúdo SVG inválido retornado')
       }
       
       setDicebearAvatar(avatarUrl)
-      console.log('✅ Avatar gerado com sucesso!')
       
-      // Auto-selecionar o avatar gerado
-      setSelectedAvatar({
-        type: 'dicebear',
-        value: avatarUrl,
-        preview: avatarUrl
-      })
+      if (forceRandom) {
+        setSelectedAvatar({
+          type: 'dicebear',
+          value: avatarUrl,
+          preview: avatarUrl
+        })
+      }
       
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      
-      // Fallback: usar avatar básico
-      try {
-        const fallbackUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(name.trim())}`
-        console.log('🔄 Usando fallback:', fallbackUrl)
-        
-        const fallbackResponse = await fetch(fallbackUrl)
-        if (fallbackResponse.ok) {
-          const fallbackContent = await fallbackResponse.text()
-          if (fallbackContent && fallbackContent.includes('<svg')) {
-            setDicebearAvatar(fallbackUrl)
-            setSelectedAvatar({
-              type: 'dicebear',
-              value: fallbackUrl,
-              preview: fallbackUrl
-            })
-            console.log('✅ Fallback funcionou!')
-          } else {
-            throw new Error('Fallback também retornou conteúdo inválido')
-          }
-        } else {
-          throw new Error('Fallback falhou')
-        }
-      } catch (fallbackError) {
-        console.error('❌ Erro no fallback:', fallbackError)
-        // Se tudo falhar, não definir avatar
-      }
+      toast.error('Erro ao gerar avatar automático')
     } finally {
       setIsGeneratingAvatar(false)
     }
   }
 
-  // Função para upload de arquivo
+  const generateRandomAvatar = () => {
+    const name = watchedValues.full_name
+    if (name && name.length >= 2) {
+      generateDicebearAvatar(name, true)
+    }
+  }
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -497,7 +297,6 @@ export default function EditarPerfilPage() {
     }
   }
 
-  // Função para selecionar avatar Dicebear
   const handleDicebearSelect = () => {
     if (dicebearAvatar) {
       setSelectedAvatar({
@@ -508,470 +307,440 @@ export default function EditarPerfilPage() {
     }
   }
 
-  if (!mounted) {
-    return (
-      <ProfilePageLayout title="Carregando..." showBackButton={false}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-              Carregando...
-            </h1>
-          </div>
-        </div>
-      </ProfilePageLayout>
-    )
+  // Gerar avatar automaticamente quando o nome muda
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    
+    const subscription = watch((value, { name }) => {
+      if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+        generateDicebearAvatar(value.full_name)
+        }, 500)
+      }
+    })
+    
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeoutId)
+    }
+  }, [watch])
+
+  // Auto-selecionar avatar quando gerado
+  useEffect(() => {
+    if (dicebearAvatar && !selectedAvatar) {
+      setSelectedAvatar({
+        type: 'dicebear',
+        value: dicebearAvatar,
+        preview: dicebearAvatar
+      })
+    }
+  }, [dicebearAvatar, selectedAvatar])
+
+  const onSubmit = async (data: ProfileFormData) => {
+    if (!user) {
+      toast.error('Usuário não autenticado')
+      return
+    }
+
+    setIsLoading(true)
+    
+    try {
+      let avatarUrl = null
+
+      if (selectedAvatar?.type === 'upload' && selectedAvatar.value instanceof File) {
+        const file = selectedAvatar.value
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file)
+
+        if (uploadError) {
+          console.error('Erro no upload:', uploadError)
+          toast.error('Erro ao fazer upload da imagem')
+          return
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName)
+        
+        avatarUrl = publicUrl
+      } else if (selectedAvatar?.type === 'dicebear') {
+        avatarUrl = selectedAvatar.value as string
+      }
+
+      const profileData = {
+        id: user.id,
+        email: user.email,
+        full_name: data.full_name,
+        phone: data.phone,
+        cpf_cnpj: data.cpf_cnpj,
+        birth_date: data.birth_date,
+        user_type: data.user_type,
+        location_state: data.location_state,
+        location_city: data.location_city,
+        neighborhood: data.neighborhood,
+        address: data.address,
+        bio: data.bio || null,
+        professional_services: selectedServices.length > 0 ? selectedServices : [],
+        professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
+        avatar_url: avatarUrl,
+        profile_completed: true
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(profileData, {
+          onConflict: 'id'
+        })
+
+      if (profileError) {
+        console.error('❌ Erro ao salvar perfil:', profileError)
+        toast.error('Erro ao salvar perfil: ' + profileError.message)
+        return
+      }
+
+      const { error: userUpdateError } = await supabase.auth.updateUser({
+        data: {
+          full_name: data.full_name,
+          phone: data.phone,
+          user_type: data.user_type,
+          avatar_url: avatarUrl,
+          profile_completed: true
+        }
+      })
+
+      if (userUpdateError) {
+        console.warn('⚠️ Erro ao atualizar metadados do usuário:', userUpdateError)
+      }
+
+      console.log('✅ Perfil salvo com sucesso!')
+      toast.success('🎉 Perfil atualizado com sucesso!')
+      
+      // Voltar para a página anterior
+      router.back()
+      
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error)
+      toast.error('Erro inesperado ao atualizar perfil')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <ProfilePageLayout
-      title="Editar Perfil"
-      description="Gerencie suas informações pessoais e profissionais"
-      showSaveButton={isEditing || isEditingLocation || isEditingProfessional}
-      onSave={isEditing ? handleSave : isEditingLocation ? handleSaveLocation : handleSaveProfessional}
-      onCancel={isEditing ? handleCancel : isEditingLocation ? handleCancelLocation : handleCancelProfessional}
-      isSaving={isSaving || isSavingLocation}
-      isEditing={isEditing || isEditingLocation || isEditingProfessional}
-    >
-      {/* Avatar Section - Integrado com Informações Básicas */}
-      <Card className="mb-4">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600" />
-              </div>
-              <h3 className="font-semibold text-gray-900">Informações Básicas</h3>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Shield className="text-white h-6 w-6" />
             </div>
-            {!isEditing && (
-              <Button
-                onClick={handleEditClick}
-                size="sm"
-                variant="outline"
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                Editar
-              </Button>
-            )}
+            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
           </div>
-
-          {/* Avatar e Upload Integrados */}
-          <div className="flex items-start gap-4 mb-4">
-            {/* Avatar Atual */}
-            <div className="relative">
-              <Avatar className="w-16 h-16">
-                <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                  {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              {selectedAvatar && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-              )}
-            </div>
-
-            {/* Controles de Avatar */}
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900 mb-2">Foto do Perfil</h4>
-              <p className="text-sm text-gray-600 mb-3">
-                {selectedAvatar ? 'Nova foto selecionada' : 'Escolha uma foto ou use o pixel art gerado automaticamente'}
-              </p>
-              
-              {/* Botões de Ação */}
-              <div className="flex gap-2 flex-wrap">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="avatar-upload"
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 cursor-pointer transition-colors"
-                >
-                  <Upload className="w-3 h-3 mr-1" />
-                  Upload Foto
-                </label>
-                
-                {formData.full_name && formData.full_name.length >= 2 && (
-                  <button
-                    type="button"
-                    onClick={handleDicebearSelect}
-                    disabled={isGeneratingAvatar || !dicebearAvatar}
-                    className={cn(
-                      "inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-                      selectedAvatar?.type === 'dicebear' 
-                        ? "text-green-600 bg-green-50 border border-green-200" 
-                        : "text-gray-600 bg-gray-50 border border-gray-200 hover:bg-gray-100",
-                      (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
-                    )}
-                  >
-                    <RefreshCw className={cn("w-3 h-3 mr-1", isGeneratingAvatar && "animate-spin")} />
-                    {isGeneratingAvatar ? 'Gerando...' : 'Pixel Art'}
-                  </button>
-                )}
-              </div>
-
-              {/* Preview do Avatar Selecionado */}
-              {selectedAvatar && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={selectedAvatar.preview || ''}
-                      alt="Preview"
-                      className="w-12 h-12 rounded-full object-cover border-2 border-gray-300"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedAvatar.type === 'upload' ? 'Foto selecionada' : 'Pixel Art gerado'}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        Será salva automaticamente ao salvar o perfil
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Grid de Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Coluna Esquerda */}
-            <div className="space-y-4">
-          {/* Informações Básicas - Compacto */}
-          <Card>
-            <CardContent className="p-3">
-
-              <div className="space-y-2">
-                {/* Email */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-4 h-4 text-gray-500" />
-              <div>
-                      <p className="text-sm font-medium text-gray-900">Email</p>
-                      <p className="text-sm text-gray-600">{profile.email || 'Não informado'}</p>
-                    </div>
-                  </div>
-                  <Button
-                      onClick={async () => {
-                        const needsReauth = await checkAndRedirect('email')
-                        if (!needsReauth) {
-                          window.location.href = '/alterar-email'
-                        }
-                      }}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                  >
-                    Alterar
-                  </Button>
-              </div>
-
-                {/* Nome */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <User className="w-4 h-4 text-gray-500" />
-              <div>
-                      <p className="text-sm font-medium text-gray-900">Nome</p>
-                {isEditing ? (
-                  <Input
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                          className="mt-1 h-8 text-sm"
-                          placeholder="Digite seu nome completo"
-                  />
-                ) : (
-                        <p className="text-sm text-gray-600">{profile.full_name || 'Não informado'}</p>
-                      )}
-                    </div>
-                  </div>
-              </div>
-
-                {/* Telefone */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-4 h-4 text-gray-500" />
-              <div>
-                      <p className="text-sm font-medium text-gray-900">Telefone</p>
-                {isEditing ? (
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          className="mt-1 h-8 text-sm"
-                    placeholder="(11) 99999-9999"
-                  />
-                ) : (
-                        <p className="text-sm text-gray-600">{profile.phone || 'Não informado'}</p>
-                      )}
-                    </div>
-                  </div>
-              </div>
-
-                {/* Biografia */}
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <User className="w-4 h-4 text-gray-500" />
-                    <p className="text-sm font-medium text-gray-900">Biografia</p>
-                  </div>
-                {isEditing ? (
-                  <Textarea
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                      className="text-sm"
-                      placeholder="Conte um pouco sobre você..."
-                      rows={2}
-                  />
-                ) : (
-                    <p className="text-sm text-gray-600">{profile.bio || 'Não informado'}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Botões de ação */}
-              {isEditing && (
-                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
-                  <Button
-                    onClick={handleCancel}
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    {isSaving ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-1" />
-                    )}
-                    Salvar
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Localização - Compacto */}
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-green-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Localização</h3>
-                </div>
-                {!isEditingLocation && (
-                  <Button
-                    onClick={handleEditLocationClick}
-                    size="sm"
-                    variant="outline"
-                    className="text-green-600 border-green-200 hover:bg-green-50"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar
-                  </Button>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {/* Estado e Cidade */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Estado</p>
-                  {isEditingLocation ? (
-                    <EstadoCombobox
-                      value={formData.location_state}
-                      onValueChange={(value) => {
-                        setSelectedState(value)
-                        setFormData({ ...formData, location_state: value, location_city: '' })
-                      }}
-                        placeholder="Selecione"
-                        className="h-8 text-sm"
-                    />
-                  ) : (
-                      <p className="text-sm text-gray-900">{profile.location_state || 'Não informado'}</p>
-                  )}
-                </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Cidade</p>
-                  {isEditingLocation ? (
-                    <CidadeCombobox
-                      value={formData.location_city}
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, location_city: value })
-                      }}
-                      estadoSigla={formData.location_state}
-                        placeholder="Selecione"
-                      disabled={!formData.location_state}
-                        className="h-8 text-sm"
-                    />
-                  ) : (
-                      <p className="text-sm text-gray-900">{profile.location_city || 'Não informado'}</p>
-                  )}
-                </div>
-              </div>
-
-                {/* Bairro e Endereço */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Bairro</p>
-                  {isEditingLocation ? (
-                    <Input
-                      value={formData.neighborhood}
-                      onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                        className="h-8 text-sm"
-                        placeholder="Digite o bairro"
-                    />
-                  ) : (
-                      <p className="text-sm text-gray-900">{profile.neighborhood || 'Não informado'}</p>
-                  )}
-                </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Endereço</p>
-                  {isEditingLocation ? (
-                    <Input
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        className="h-8 text-sm"
-                        placeholder="Digite o endereço"
-                    />
-                  ) : (
-                      <p className="text-sm text-gray-900">{profile.address || 'Não informado'}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Botões de ação */}
-              {isEditingLocation && (
-                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
-                  <Button
-                    onClick={handleCancelLocation}
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSaveLocation}
-                    disabled={isSavingLocation}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {isSavingLocation ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-1" />
-                    )}
-                    Salvar
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          
+          <Button 
+            onClick={() => router.push('/dashboard')}
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+          >
+            <Home size={16} />
+            <span>Dashboard</span>
+          </Button>
         </div>
+      </header>
 
-        {/* Coluna Direita */}
-            <div className="space-y-4">
-          {/* Dados Profissionais - Compacto */}
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900">Dados Profissionais</h3>
-                </div>
-                {!isEditingProfessional && (
-                  <Button
-                    onClick={handleEditProfessional}
-                    size="sm"
-                    variant="outline"
-                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Editar
-                  </Button>
-                )}
+      {/* Main Content */}
+      <div className="container py-8">
+        <div className="mx-auto max-w-4xl">
+          {/* Page Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Edit3 className="h-6 w-6 text-blue-600" />
               </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Editar Perfil</h1>
+                <p className="text-gray-600">Atualize suas informações pessoais</p>
+              </div>
+            </div>
+          </div>
 
-              {isEditingProfessional ? (
-                <div className="space-y-3">
-                  {/* Experiência */}
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-2">Anos de experiência</p>
-                    <Select
-                      value={formData.professional_experience_years.toString()}
-                      onValueChange={(value) => setFormData({ ...formData, professional_experience_years: parseInt(value, 10) })}
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            
+            {/* Avatar/Foto */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-purple-600" />
+                  Foto de Perfil
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Preview do Avatar Selecionado */}
+                {selectedAvatar && (
+                  <div className="flex items-center justify-center">
+                    <div className="w-20 h-20 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
+                      <Image
+                        src={selectedAvatar.preview}
+                        alt="Avatar selecionado"
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Opções de Avatar */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Upload de Foto */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Upload size={16} className="text-blue-600" />
+                      <span className="font-medium text-gray-700">Upload de Foto</span>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="avatar-upload"
+                    />
+                    <label
+                      htmlFor="avatar-upload"
+                      className={cn(
+                        "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
+                        selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50"
+                      )}
                     >
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 51 }, (_, i) => (
-                          <SelectItem key={i} value={i.toString()}>
-                            {i} {i === 1 ? 'ano' : 'anos'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <div className="font-medium text-gray-700">
+                        {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        JPG, PNG ou GIF
+                      </div>
+                    </label>
                   </div>
 
-                  {/* Serviços */}
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-medium text-gray-500 mb-2">Serviços oferecidos</p>
-                    <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+                  {/* Avatar Pixel-Art */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
+                      <span className="font-medium text-gray-700">Avatar Automático</span>
+                    </div>
+                    {fullName && fullName.length >= 2 ? (
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={handleDicebearSelect}
+                          disabled={isGeneratingAvatar || !dicebearAvatar}
+                          className={cn(
+                            "w-full p-4 border-2 border-dashed rounded-lg transition-all text-center hover:border-purple-500 hover:bg-purple-50/50",
+                            selectedAvatar?.type === 'dicebear' && "border-purple-500 bg-purple-50/50",
+                            (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {isGeneratingAvatar ? (
+                            <div className="font-medium text-gray-700">🎨 Criando...</div>
+                          ) : dicebearAvatar ? (
+                            <div className="font-medium text-gray-700">✅ Avatar Criado</div>
+                          ) : (
+                            <div className="font-medium text-gray-700">🎨 Criando...</div>
+                          )}
+                          <div className="text-sm text-gray-500 mt-1">
+                            Baseado no seu nome
+                          </div>
+                        </button>
+                        
+                        {/* Botão para gerar novo avatar aleatório */}
+                        {dicebearAvatar && (
+                          <button
+                            type="button"
+                            onClick={generateRandomAvatar}
+                            disabled={isGeneratingAvatar}
+                            className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
+                            {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                        <div className="font-medium text-gray-500">Digite seu nome primeiro</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Dados Pessoais */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Dados Pessoais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
+                      Nome completo <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="full_name"
+                      placeholder="Digite seu nome completo"
+                      {...register('full_name')}
+                      className={cn(
+                        "h-10",
+                        errors.full_name ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                      )}
+                    />
+                    {errors.full_name && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        {errors.full_name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                      Telefone <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        id="phone"
+                        placeholder="(11) 99999-9999"
+                        {...register('phone')}
+                        onChange={handlePhoneChange}
+                        className={cn(
+                          "h-10 pl-10",
+                          errors.phone ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                        )}
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        {errors.phone.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
+                      CPF <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="cpf_cnpj"
+                      placeholder="000.000.000-00"
+                      {...register('cpf_cnpj')}
+                      onChange={handleCPFChange}
+                      className={cn(
+                        "h-10",
+                        errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                      )}
+                    />
+                    {errors.cpf_cnpj && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        {errors.cpf_cnpj.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
+                      Nascimento <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        id="birth_date"
+                        type="date"
+                        {...register('birth_date')}
+                        className={cn(
+                          "h-10 pl-10",
+                          errors.birth_date ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                        )}
+                      />
+                    </div>
+                    {errors.birth_date && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        Obrigatório
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Localização */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                  Localização
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
+                      Estado <span className="text-red-500">*</span>
+                    </Label>
+                    <Popover open={stateOpen} onOpenChange={setStateOpen}>
                       <PopoverTrigger asChild>
                         <button
                           type="button"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between"
+                          className={cn(
+                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
+                            errors.location_state ? 'border-red-400' : 'border-gray-300'
+                          )}
                         >
                           <span className="text-gray-900">
-                            {formData.professional_services?.length === 0
-                              ? "Selecione os serviços..."
-                              : `${formData.professional_services?.length || 0} serviço(s) selecionado(s)`}
+                            {watchedValues.location_state
+                              ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
+                              : "Selecione o estado"}
                           </span>
                           <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0 bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Buscar serviços..." className="border-b border-gray-200" />
+                          <CommandInput placeholder="Buscar estado..." />
                           <CommandList>
-                            <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                            <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
                             <CommandGroup>
-                              {serviceCategoryNames.map((service) => (
+                              {estadosBrasil.map((estado) => (
                                 <CommandItem
-                                  key={service}
-                                  value={service}
+                                  key={estado.sigla}
+                                  value={estado.nome}
                                   onSelect={() => {
-                                    handleServiceToggle(service)
+                                    setValue('location_state', estado.sigla)
+                                    setValue('location_city', '')
+                                    setStateOpen(false)
                                   }}
-                                  className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
                                 >
                                   <Check
                                     size={16} className={cn(
                                       "mr-2",
-                                      formData.professional_services?.includes(service) ? "opacity-100" : "opacity-0"
+                                      watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
                                     )}
                                   />
-                                  {service}
+                                  {estado.nome} ({estado.sigla})
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -979,189 +748,319 @@ export default function EditarPerfilPage() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    
-                    {/* Serviços selecionados */}
-                    {formData.professional_services && formData.professional_services.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        <p className="text-xs text-gray-700 font-medium">Serviços selecionados:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {formData.professional_services.map((service) => (
-                            <Badge
-                              key={service}
-                              variant="secondary"
-                              className="px-2 py-1 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 flex items-center gap-1 text-xs"
-                            >
-                              <span className="text-xs">{service}</span>
-                              <button
-                                type="button"
-                                onClick={() => removeService(service)}
-                                className="text-blue-700 hover:text-red-600 ml-1"
-                              >
-                                <X size={10} />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                    {errors.location_state && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        Obrigatório
+                      </p>
                     )}
                   </div>
 
-                  {/* Aviso sobre conversão para profissional */}
-                  {profile?.user_type === 'client' && formData.professional_services && formData.professional_services.length > 0 && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-blue-600" />
-                        <p className="text-sm text-blue-800 font-medium">
-                          🎉 Você se tornará um profissional ao salvar!
-                        </p>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-1">
-                        Ao salvar com serviços selecionados, seu perfil será automaticamente convertido para profissional.
+                  <div className="space-y-2">
+                    <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
+                      Cidade <span className="text-red-500">*</span>
+                    </Label>
+                    <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={!watchedValues.location_state}
+                          className={cn(
+                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
+                            errors.location_city ? 'border-red-400' : 'border-gray-300',
+                            !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
+                          )}
+                        >
+                          <span className="text-gray-900">
+                            {watchedValues.location_city
+                              ? watchedValues.location_city
+                              : watchedValues.location_state
+                              ? "Selecione a cidade"
+                              : "Selecione o estado primeiro"}
+                          </span>
+                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Buscar cidade..." />
+                          <CommandList>
+                            <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                            <CommandGroup>
+                              {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
+                                <CommandItem
+                                  key={cidade}
+                                  value={cidade}
+                                  onSelect={() => {
+                                    setValue('location_city', cidade)
+                                    setCityOpen(false)
+                                  }}
+                                >
+                                  <Check
+                                    size={16} className={cn(
+                                      "mr-2",
+                                      watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {cidade}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {errors.location_city && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        Obrigatório
                       </p>
-                    </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
+                      Bairro <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="neighborhood"
+                      placeholder="Digite o bairro"
+                      {...register('neighborhood')}
+                      className={cn(
+                        "h-10",
+                        errors.neighborhood ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                      )}
+                    />
+                    {errors.neighborhood && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        {errors.neighborhood.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                      Endereço <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="address"
+                      placeholder="Ex: Rua das Flores, 123"
+                      {...register('address')}
+                      className={cn(
+                        "h-10",
+                        errors.address ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                      )}
+                    />
+                    {errors.address && (
+                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                        <X className="w-3 h-3" />
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tipo de Usuário */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-orange-600" />
+                  Tipo de Usuário
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
+                    Como você pretende usar o ConfiLar? <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={watchedValues.user_type} onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}>
+                    <SelectTrigger className={cn(
+                      "h-12",
+                      errors.user_type ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                    )}>
+                      <SelectValue placeholder="Selecione uma opção" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="client">🙋‍♂️ Cliente - Procuro profissionais</SelectItem>
+                      <SelectItem value="professional">👨‍💼 Profissional - Ofereço serviços</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.user_type && (
+                    <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                      <X className="w-3 h-3" />
+                      {errors.user_type.message}
+                    </p>
                   )}
 
-                  {/* Botões de ação */}
-                  <div className="flex justify-end gap-2 pt-4 border-t">
-                    <Button
-                      onClick={handleCancelProfessional}
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Cancelar
-                    </Button>
-                    <Button
-                      onClick={handleSaveProfessional}
-                      size="sm"
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      <Save className="w-4 h-4 mr-1" />
-                      {profile?.user_type === 'client' && formData.professional_services && formData.professional_services.length > 0 
-                        ? 'Tornar-se Profissional' 
-                        : 'Salvar'}
-                    </Button>
+                  {/* Explicação dos tipos */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-2xl">🙋‍♂️</span>
+                        <span className="font-semibold text-blue-900">Cliente</span>
+                      </div>
+                      <p className="text-sm text-blue-700">
+                        Você busca profissionais para resolver suas necessidades.
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-2xl">👨‍💼</span>
+                        <span className="font-semibold text-green-900">Profissional</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Você oferece serviços e quer ser encontrado por clientes.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {/* Experiência */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-4 h-4 text-gray-500" />
-                  <div>
-                        <p className="text-sm font-medium text-gray-900">Experiência</p>
-                        <p className="text-sm text-gray-600">{profile.professional_experience_years || 0} anos</p>
+              </CardContent>
+            </Card>
+
+            {/* Dados Profissionais */}
+            {isProfessional && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-indigo-600" />
+                    Dados Profissionais
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
+                      Biografia (Opcional)
+                    </Label>
+                    <div className="relative">
+                      <FileText className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
+                      <Textarea
+                        {...register('bio')}
+                        placeholder="Conte um pouco sobre você..."
+                        rows={3}
+                        className="resize-none pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Anos de experiência
+                      </Label>
+                      <Select value={watchedValues.experience_years || ''} onValueChange={(value) => setValue('experience_years', value)}>
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0-1">🌱 0-1 ano</SelectItem>
+                          <SelectItem value="1-3">📈 1-3 anos</SelectItem>
+                          <SelectItem value="3-5">🎯 3-5 anos</SelectItem>
+                          <SelectItem value="5-10">🏆 5-10 anos</SelectItem>
+                          <SelectItem value="10+">👑 Mais de 10 anos</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Serviços oferecidos (Opcional)
+                      </Label>
+                      <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
+                          >
+                            <span className="text-gray-900">
+                              {selectedServices.length === 0
+                                ? "Selecione os serviços..."
+                                : `${selectedServices.length} serviço(s)`}
+                            </span>
+                            <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Buscar serviços..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                              <CommandGroup>
+                                {serviceCategoryNames.map((service) => (
+                                  <CommandItem
+                                    key={service}
+                                    value={service}
+                                    onSelect={() => handleServiceToggle(service)}
+                                  >
+                                    <Check
+                                      size={16} className={cn(
+                                        "mr-2",
+                                        selectedServices.includes(service) ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {service}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  
+                  {/* Serviços selecionados */}
+                  {selectedServices.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-700">Serviços selecionados:</p>
+                      <div className="text-sm text-gray-600 leading-tight">
+                        {selectedServices.map((service, index) => (
+                          <span key={service} className="inline">
+                            {service}
+                            <button
+                              type="button"
+                              onClick={() => removeService(service)}
+                              className="ml-1 text-red-500 hover:text-red-700 font-bold"
+                              title="Remover serviço"
+                            >
+                              ×
+                            </button>
+                            {index < selectedServices.length - 1 && <span className="text-gray-400 mx-1">•</span>}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-                  {/* Serviços */}
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-900 mb-2">Serviços oferecidos</p>
-                      {profile.professional_services && profile.professional_services.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {profile.professional_services.map((service, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                              {service}
-                          </Badge>
-                          ))}
-                        </div>
-                      ) : (
-                      <p className="text-sm text-gray-500">Nenhum serviço cadastrado</p>
-                      )}
-                    </div>
-                  </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Perfil Público - Compacto */}
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Share2 className="w-4 h-4 text-orange-600" />
+            {/* Botão de Salvar */}
+            <div className="flex justify-center pt-6">
+              <Button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 text-base font-medium"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Salvar Alterações
+                  </>
+                )}
+              </Button>
             </div>
-                <h3 className="font-semibold text-gray-900">Perfil Público</h3>
-              </div>
-
-              <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
-                      {profile?.full_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                <div>
-                  <p className="font-semibold text-gray-900">{profile?.full_name}</p>
-                  <Badge variant="secondary" className="text-xs">
-                    {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                  </Badge>
-                  </div>
-                </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={copyProfileLink}
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <Copy className="w-4 h-4 mr-1" />
-                  Copiar link
-                </Button>
-                <Button
-                  onClick={shareProfile}
-                  size="sm"
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
-                  <Share2 className="w-4 h-4 mr-1" />
-                  Compartilhar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Estatísticas - Compacto */}
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-indigo-600" />
-            </div>
-                <h3 className="font-semibold text-gray-900">Estatísticas</h3>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 bg-gray-50 rounded-lg text-center">
-                  <Award className="w-5 h-5 text-yellow-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Badge</p>
-                  <p className="text-sm font-semibold text-gray-900">{profile?.badge || 'Bronze'}</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg text-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Perfil</p>
-                  <p className="text-sm font-semibold text-gray-900">{profile?.profile_completion_score || '25%'}</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg text-center">
-                  <Calendar className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Membro desde</p>
-                  <p className="text-sm font-semibold text-gray-900">{getMemberSince().split(' ')[2]}</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-lg text-center">
-                  <Clock className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Atualizado</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : 'Nunca'}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          </form>
         </div>
       </div>
-    </ProfilePageLayout>
+    </div>
   )
 }
