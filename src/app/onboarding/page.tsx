@@ -14,11 +14,10 @@ import { Label } from '@/components/ui/label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import { 
   Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
-  Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff, Home
+  Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff, Home, Save
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -78,7 +77,6 @@ const onboardingSchema = z.object({
       return false
     }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
-  gender: z.enum(['male', 'female']),
   user_type: z.enum(['client', 'professional']),
   location_state: z.string().min(1, 'Estado é obrigatório'),
   location_city: z.string().min(1, 'Cidade é obrigatória'),
@@ -87,7 +85,6 @@ const onboardingSchema = z.object({
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
-  emergency_service: z.boolean().optional(),
 })
 
 type OnboardingFormData = z.infer<typeof onboardingSchema>
@@ -125,8 +122,6 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       user_type: 'client' as const,
-      gender: 'male' as const,
-      emergency_service: false,
     },
   })
 
@@ -158,7 +153,7 @@ export default function OnboardingPage() {
       shortTitle: 'Dados',
       icon: User, 
       description: 'Informações pessoais básicas',
-      fields: ['full_name', 'phone', 'cpf_cnpj', 'birth_date', 'gender']
+      fields: ['full_name', 'phone', 'cpf_cnpj', 'birth_date']
     },
     { 
       id: 3, 
@@ -190,7 +185,7 @@ export default function OnboardingPage() {
       shortTitle: 'Trabalho',
       icon: Briefcase, 
       description: 'Seus serviços e experiência',
-      fields: ['bio', 'services_offered', 'experience_years', 'emergency_service']
+      fields: ['bio', 'services_offered', 'experience_years']
     },
     { 
       id: 7, 
@@ -226,7 +221,7 @@ export default function OnboardingPage() {
           values.cpf_cnpj && 
           values.cpf_cnpj.length >= 11 &&
           values.birth_date &&
-          values.gender
+          true // Sem validação de gender
         )
       
       case 3: // Avatar - sempre válido (opcional)
@@ -350,7 +345,7 @@ export default function OnboardingPage() {
     setValue('services_offered', newSelectedServices)
   }
 
-  const generateDicebearAvatar = async (name: string, gender: string, forceRandom = false) => {
+  const generateDicebearAvatar = async (name: string, forceRandom = false) => {
     if (!name || name.length < 2) return
     
     setIsGeneratingAvatar(true)
@@ -396,9 +391,8 @@ export default function OnboardingPage() {
 
   const generateRandomAvatar = () => {
     const name = watchedValues.full_name
-    const gender = watchedValues.gender || 'male'
     if (name && name.length >= 2) {
-      generateDicebearAvatar(name, gender, true)
+      generateDicebearAvatar(name, true)
     }
   }
 
@@ -435,8 +429,7 @@ export default function OnboardingPage() {
       if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
         clearTimeout(timeoutId)
         timeoutId = setTimeout(() => {
-          const gender = value.gender || 'male'
-          generateDicebearAvatar(value.full_name, gender)
+        generateDicebearAvatar(value.full_name)
         }, 500)
       }
     })
@@ -494,25 +487,24 @@ export default function OnboardingPage() {
         avatarUrl = selectedAvatar.value as string
       }
 
-      // Preparar dados do perfil
+      // Preparar dados do perfil (apenas campos que existem na tabela)
       const profileData = {
-        user_id: user.id,
+        id: user.id, // A tabela profiles usa 'id' como chave primária
+        email: user.email, // Campo obrigatório na tabela
         full_name: data.full_name,
         phone: data.phone,
         cpf_cnpj: data.cpf_cnpj,
         birth_date: data.birth_date,
-        gender: data.gender,
         user_type: data.user_type,
         location_state: data.location_state,
         location_city: data.location_city,
         neighborhood: data.neighborhood,
         address: data.address,
         bio: data.bio || null,
-        services_offered: selectedServices.length > 0 ? selectedServices : null,
-        experience_years: data.experience_years || null,
-        emergency_service: data.emergency_service || false,
+        professional_services: selectedServices.length > 0 ? selectedServices : [],
+        professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
         avatar_url: avatarUrl,
-        onboarding_completed: true
+        profile_completed: true
       }
 
       console.log('📝 Dados do perfil que serão enviados:', profileData)
@@ -521,7 +513,7 @@ export default function OnboardingPage() {
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert(profileData, {
-          onConflict: 'user_id'
+          onConflict: 'id'
         })
 
       if (profileError) {
@@ -549,8 +541,8 @@ export default function OnboardingPage() {
       console.log('✅ Perfil salvo com sucesso!')
       toast.success('🎉 Perfil completado com sucesso!')
       
-      // Redirecionar para dashboard
-      router.push('/dashboard')
+      // Redirecionar para feed social
+      router.push('/feed')
       
     } catch (error) {
       console.error('Erro no onboarding:', error)
@@ -565,7 +557,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header Moderno */}
+      {/* Header Glassmorphism */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
@@ -587,34 +579,25 @@ export default function OnboardingPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container py-4 md:py-8">
-        <div className="mx-auto max-w-2xl">
-          {/* Header Card */}
-          <Card className="mb-6 bg-white/50 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="text-center p-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+      {/* Main Content Glassmorphism */}
+      <div className="container py-12 md:py-24">
+        <div className="mx-auto max-w-md">
+          {/* Header Card Glassmorphism */}
+          <Card className="mb-8 bg-white/50 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center p-8">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <currentStepData.icon className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h1 className="text-3xl font-semibold text-gray-900 mb-4">
                 {currentStepData.title}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-lg">
                 {currentStepData.description}
               </p>
-              
-              {/* Progress Bar */}
-              <div className="mt-4">
-                <div className="flex justify-between text-xs text-gray-500 mb-2">
-                  <span>Etapa {currentStep} de {totalSteps}</span>
-                  <span>{Math.round(progressPercentage)}%</span>
-                </div>
-                <Progress value={progressPercentage} className="h-2" />
-              </div>
             </CardContent>
           </Card>
 
-          {/* Form Card */}
+          {/* Form Card Glassmorphism */}
           <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
             <CardContent className="p-6">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -749,29 +732,6 @@ export default function OnboardingPage() {
                           )}
                         </div>
 
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="gender" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Sexo <span className="text-red-500">*</span>
-                          </Label>
-                          <Select value={watchedValues.gender || ''} onValueChange={(value) => setValue('gender', value as 'male' | 'female')}>
-                            <SelectTrigger className={cn(
-                              "h-10",
-                              errors.gender ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}>
-                              <SelectValue placeholder="Escolha seu sexo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="male">👨 Masculino</SelectItem>
-                              <SelectItem value="female">👩 Feminino</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.gender && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              Obrigatório
-                            </p>
-                          )}
-                        </div>
                       </div>
                     </div>
                   )}
@@ -1203,17 +1163,6 @@ export default function OnboardingPage() {
                           </div>
                         )}
 
-                        <div className="pt-4 border-t border-gray-200">
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              {...register('emergency_service')}
-                              id="emergency_service"
-                            />
-                            <Label htmlFor="emergency_service" className="text-sm text-gray-700 cursor-pointer">
-                              🚨 Ofereço serviço de emergência 24h
-                            </Label>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -1262,7 +1211,6 @@ export default function OnboardingPage() {
                               <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
                             </div>
                             <div>
-                              <p><strong>Sexo:</strong> {watchedValues.gender === 'male' ? 'Masculino' : watchedValues.gender === 'female' ? 'Feminino' : 'Não informado'}</p>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
                               <p><strong>Tipo:</strong> {watchedValues.user_type === 'professional' ? '👨‍💼 Profissional' : watchedValues.user_type === 'client' ? '🙋‍♂️ Cliente' : 'Não informado'}</p>
                             </div>
@@ -1286,12 +1234,9 @@ export default function OnboardingPage() {
                               {watchedValues.experience_years && (
                                 <p><strong>Experiência:</strong> {watchedValues.experience_years}</p>
                               )}
-                              {selectedServices.length > 0 && (
-                                <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
-                              )}
-                              {watchedValues.emergency_service && (
-                                <p><strong>Emergência:</strong> ✅ Serviço 24h</p>
-                              )}
+                               {selectedServices.length > 0 && (
+                                 <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
+                               )}
                             </div>
                           )}
                         </div>
@@ -1367,6 +1312,20 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               </form>
+
+              <div className="mt-6">
+                <div className="h-px bg-gray-200 my-4"></div>
+                <div className="text-center text-sm text-gray-600">
+                  Ao continuar, você concorda com nossos{' '}
+                  <a href="/termos" className="text-blue-600 underline hover:text-blue-700 font-medium">
+                    Termos de Uso
+                  </a>{' '}
+                  e{' '}
+                  <a href="/privacidade" className="text-blue-600 underline hover:text-blue-700 font-medium">
+                    Política de Privacidade
+                  </a>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
