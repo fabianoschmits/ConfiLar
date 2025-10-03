@@ -417,11 +417,32 @@ export default function EditarPerfilPage() {
 
       const { error: userUpdateError } = await supabase.auth.updateUser({
         data: {
+          // Dados básicos
           full_name: data.full_name,
           phone: data.phone,
           user_type: data.user_type,
           avatar_url: avatarUrl,
-          profile_completed: true
+          profile_completed: true,
+          
+          // Dados pessoais completos
+          bio: autoBio,
+          cpf_cnpj: data.cpf_cnpj,
+          birth_date: data.birth_date,
+          
+          // Dados de localização
+          location_state: data.location_state,
+          location_city: data.location_city,
+          neighborhood: data.neighborhood,
+          address: data.address,
+          
+          // Dados profissionais
+          services_offered: selectedServices,
+          experience_years: data.experience_years,
+          professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
+          
+          // Dados de verificação
+          email_verified: true,
+          phone_verified: false
         }
       })
 
