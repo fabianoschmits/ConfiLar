@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { MobileNotificationItem } from './MobileNotificationItem'
 
 export function NewNotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
@@ -54,27 +55,6 @@ export function NewNotificationBell() {
     }
   }
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'message': return '💬'
-      case 'favorite': return '❤️'
-      case 'recommendation': return '⭐'
-      case 'review': return '⭐'
-      case 'system': return '🔔'
-      default: return '📢'
-    }
-  }
-
-  const getNotificationColor = (type: string) => {
-    switch (type) {
-      case 'message': return 'text-blue-600'
-      case 'favorite': return 'text-red-600'
-      case 'recommendation': return 'text-yellow-600'
-      case 'review': return 'text-yellow-600'
-      case 'system': return 'text-gray-600'
-      default: return 'text-gray-600'
-    }
-  }
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => {
@@ -126,67 +106,13 @@ export function NewNotificationBell() {
           ) : (
             <div className="space-y-2">
               {notifications.map((notification) => (
-                <div
+                <MobileNotificationItem
                   key={notification.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 relative group ${
-                    !notification.is_read ? 'bg-blue-50 border-blue-200' : 'bg-white'
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="text-lg">
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h4 className={`font-medium text-sm ${getNotificationColor(notification.type)}`}>
-                          {notification.title}
-                        </h4>
-                        {!notification.is_read && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(notification.created_at).toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                    
-                    <div className="flex flex-col gap-1">
-                      {!notification.is_read && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            markAsRead(notification.id)
-                          }}
-                          className="h-6 w-6 p-0"
-                        >
-                          <Check className="h-3 w-3" />
-                        </Button>
-                      )}
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteNotification(notification.id, notification.title)
-                        }}
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                        title="Deletar notificação"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                  notification={notification}
+                  onDelete={handleDeleteNotification}
+                  onMarkAsRead={markAsRead}
+                  onClick={handleNotificationClick}
+                />
               ))}
             </div>
           )}
