@@ -105,15 +105,20 @@ export function NewNotificationBell() {
             </div>
           ) : (
             <div className="space-y-2">
-              {notifications.map((notification) => (
-                <MobileNotificationItem
-                  key={notification.id}
-                  notification={notification}
-                  onDelete={handleDeleteNotification}
-                  onMarkAsRead={markAsRead}
-                  onClick={handleNotificationClick}
-                />
-              ))}
+                     {notifications.map((notification) => (
+                       <MobileNotificationItem
+                         key={notification.id}
+                         notification={{
+                           ...notification,
+                           created_at: notification.created_at instanceof Date 
+                             ? notification.created_at.toISOString() 
+                             : notification.created_at
+                         }}
+                         onDelete={handleDeleteNotification}
+                         onMarkAsRead={markAsRead}
+                         onClick={handleNotificationClick}
+                       />
+                     ))}
             </div>
           )}
         </ScrollArea>
