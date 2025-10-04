@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bell, Settings, Trash2 } from 'lucide-react'
+import { Bell, Settings, Trash2, X } from 'lucide-react'
 import { useNotifications } from './NotificationProviderSimple'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -24,6 +24,26 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [showSettings, setShowSettings] = useState(false)
+
+  // Marcar todas como lidas ao fechar o menu
+  useEffect(() => {
+    if (!isOpen && unreadCount > 0) {
+      markAllAsRead()
+    }
+  }, [isOpen, unreadCount, markAllAsRead])
+
+  // Função para deletar notificação individual
+  const handleDeleteNotification = async (notificationId: string, notificationTitle: string) => {
+    try {
+      await removeNotification(notificationId)
+      toast.success('Notificação removida', {
+        description: `"${notificationTitle}" foi removida`
+      })
+    } catch (error) {
+      console.error('Erro ao remover notificação:', error)
+      toast.error('Erro ao remover notificação')
+    }
+  }
 
   const handleDeleteAll = async () => {
     if (notifications.length === 0) return
@@ -374,7 +394,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
         {filteredNotifications.map((notification) => (
           <div 
             key={notification.id}
-            className={`p-3 hover:bg-gray-50 transition-colors ${
+            className={`p-3 hover:bg-gray-50 transition-colors relative group ${
               !notification.is_read ? 'bg-blue-50/30' : ''
             }`}
           >
@@ -410,6 +430,15 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
                   </div>
                 </div>
               </div>
+              
+              {/* Botão de deletar - pequena lixeira no canto superior direito */}
+              <button
+                onClick={() => handleDeleteNotification(notification.id, notification.title)}
+                className="absolute top-2 right-2 w-5 h-5 bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                title="Deletar notificação"
+              >
+                <X className="w-3 h-3" />
+              </button>
             </div>
           </div>
         ))}
