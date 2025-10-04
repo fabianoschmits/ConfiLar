@@ -477,6 +477,16 @@ button, a, input, select, textarea {
   height: 100dvh;
 }
 
+/* Animação para barra de progresso do toast */
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%; /* Branco */

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -31,7 +31,13 @@ type BasicSignupFormData = z.infer<typeof basicSignupSchema>
 
 export function BasicSignupForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const { signUpBasic } = useAuthContext()
+
+  // Evitar problemas de hidratação
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const {
     register,
@@ -207,9 +213,9 @@ export function BasicSignupForm() {
         <Button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-          disabled={isLoading || !isValid || watchedValues.password !== watchedValues.confirmPassword}
+          disabled={!isMounted || isLoading || !isValid || watchedValues.password !== watchedValues.confirmPassword}
         >
-          {isLoading ? 'Criando conta...' : 'Criar conta'}
+          {!isMounted ? 'Criar conta' : (isLoading ? 'Criando conta...' : 'Criar conta')}
         </Button>
       </div>
 

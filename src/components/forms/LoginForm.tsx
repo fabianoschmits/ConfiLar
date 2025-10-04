@@ -22,9 +22,15 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const { signIn, loading: authLoading } = useAuthContext()
   const router = useRouter()
   const searchParams = useSearchParams()
+  
+  // Evitar problemas de hidratação
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
   
   console.log('LoginForm renderizado, signIn:', typeof signIn, 'authLoading:', authLoading)
   
@@ -145,9 +151,9 @@ export function LoginForm() {
           <Button
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-            disabled={isLoading || authLoading}
+            disabled={!isMounted || isLoading || authLoading}
           >
-            {isLoading || authLoading ? 'Entrando...' : 'Entrar'}
+            {!isMounted ? 'Entrar' : (isLoading || authLoading ? 'Entrando...' : 'Entrar')}
           </Button>
 
           <div className="text-center">
