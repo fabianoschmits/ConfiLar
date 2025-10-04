@@ -11,9 +11,27 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 
 export function NewNotificationBell() {
-  const { notifications, unreadCount, markAsRead, removeNotification, clearAll } = useNotifications()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
   const { openChat } = useFloatingChat()
   const [isOpen, setIsOpen] = useState(false)
+
+  // Marcar todas como lidas ao fechar o menu
+  const handleClose = () => {
+    if (unreadCount > 0) {
+      markAllAsRead()
+    }
+    setIsOpen(false)
+  }
+
+  // Função para deletar notificação individual
+  const handleDeleteNotification = async (notificationId: string, notificationTitle: string) => {
+    try {
+      await removeNotification(notificationId)
+      // Toast será mostrado pelo provider
+    } catch (error) {
+      console.error('Erro ao remover notificação:', error)
+    }
+  }
 
   const handleNotificationClick = async (notification: any) => {
     // Marcar como lida
@@ -59,7 +77,13 @@ export function NewNotificationBell() {
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        handleClose()
+      } else {
+        setIsOpen(true)
+      }
+    }}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="sm" className="relative p-3 sm:p-2">
           <Bell className="h-6 w-6 sm:h-5 sm:w-5" />
@@ -104,7 +128,7 @@ export function NewNotificationBell() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 ${
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 relative group ${
                     !notification.is_read ? 'bg-blue-50 border-blue-200' : 'bg-white'
                   }`}
                   onClick={() => handleNotificationClick(notification)}
@@ -153,9 +177,10 @@ export function NewNotificationBell() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
-                          removeNotification(notification.id)
+                          handleDeleteNotification(notification.id, notification.title)
                         }}
                         className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                        title="Deletar notificação"
                       >
                         <X className="h-3 w-3" />
                       </Button>
