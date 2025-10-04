@@ -445,6 +445,33 @@ button, a, input, select, textarea {
   margin-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
+/* Bottom Navigation Fix */
+.bottom-nav-fixed {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 100 !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+}
+
+/* Floating Chat Fix */
+.floating-chat-fixed {
+  position: fixed !important;
+  bottom: 6rem !important;
+  right: 1.5rem !important;
+  z-index: 50 !important;
+  transform: translateZ(0) !important;
+  will-change: transform !important;
+}
+
+@media (min-width: 769px) {
+  .floating-chat-fixed {
+    bottom: 1.25rem !important;
+  }
+}
+
 .h-screen-mobile {
   height: 100vh;
   height: 100dvh;
