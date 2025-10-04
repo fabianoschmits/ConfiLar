@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getRandomWelcomeMessage } from '@/data/welcomeMessages'
 
 export function useAutoNotifications() {
   
@@ -46,7 +47,9 @@ export function useAutoNotifications() {
         })
       }
 
-      const message = `🎉 ${userName} se juntou à comunidade`
+      // Gerar mensagem personalizada baseada no tipo de usuário
+      const personalizedMessage = getRandomWelcomeMessage(userType as 'professional' | 'client', userName)
+      const message = personalizedMessage
       
       // Garantir que temos um nome válido para o metadata
       const finalUserName = userData?.full_name || userName
@@ -58,8 +61,8 @@ export function useAutoNotifications() {
           professional_id: userId,
           user_id: userId,
           title: `🎉 ${userName} se juntou à comunidade`,
-          description: message,
-          content: message,
+          description: personalizedMessage,
+          content: personalizedMessage,
           images: [],
           location_state: userData?.location_state || 'SP',
           location_city: userData?.location_city || 'São Paulo',

@@ -1,18 +1,14 @@
 import { useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getRandomWelcomeMessage } from '@/data/welcomeMessages'
 
 export function useWelcomePost() {
   const createWelcomePost = useCallback(async (userId: string, userName: string, userType: string) => {
     try {
       console.log('🎉 Criando post de boas-vindas para:', userName)
       
-      // Determinar mensagem baseada no tipo de usuário
-      const welcomeMessages = {
-        professional: `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para oferecer meus serviços profissionais e ajudar outros usuários com seus projetos. Fico feliz em fazer parte desta comunidade!`,
-        client: `Olá! Sou ${userName} e acabei de me juntar à plataforma ConfiLar! 🎉 Estou aqui para encontrar profissionais qualificados para meus projetos. Mal posso esperar para conhecer a comunidade!`
-      }
-      
-      const message = welcomeMessages[userType as keyof typeof welcomeMessages] || welcomeMessages.client
+      // Gerar mensagem personalizada baseada no tipo de usuário
+      const personalizedMessage = getRandomWelcomeMessage(userType as 'professional' | 'client', userName)
       
       // Criar post de boas-vindas
       const { data, error } = await supabase
@@ -21,8 +17,8 @@ export function useWelcomePost() {
           professional_id: userId,
           user_id: userId,
           title: `🎉 ${userName} se juntou à comunidade!`,
-          description: message,
-          content: message,
+          description: personalizedMessage,
+          content: personalizedMessage,
           images: [],
           location_state: 'SP', // Default
           location_city: 'São Paulo', // Default
