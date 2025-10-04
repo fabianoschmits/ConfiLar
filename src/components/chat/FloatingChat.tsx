@@ -337,7 +337,7 @@ export function FloatingChat() {
       )}
 
       {/* Chat Flutuante */}
-      <div className="fixed bottom-20 right-6 z-50 md:bottom-20">
+      <div className="floating-chat-fixed">
         {isExpanded ? (
           <div className="w-80 max-w-[calc(100vw-2rem)]">
           <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl">
