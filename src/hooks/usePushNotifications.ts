@@ -65,12 +65,15 @@ export function usePushNotifications() {
 
     if (Notification.permission === 'granted') {
       setIsGranted(true)
+      setIsDenied(false)
+      setError(null)
       return true
     }
 
     if (Notification.permission === 'denied') {
       setIsDenied(true)
-      setError('Permissão para notificações foi negada')
+      setIsGranted(false)
+      setError('Permissão para notificações foi negada. Para ativar, acesse as configurações do navegador.')
       return false
     }
 
@@ -78,6 +81,13 @@ export function usePushNotifications() {
       setIsLoading(true)
       setError(null)
       
+      // Verificar se estamos em um contexto seguro (HTTPS ou localhost)
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        setError('Notificações push requerem HTTPS ou localhost')
+        return false
+      }
+      
+      // Solicitar permissão com contexto adicional
       const permission = await Notification.requestPermission()
       const granted = permission === 'granted'
       
@@ -85,13 +95,34 @@ export function usePushNotifications() {
       setIsDenied(!granted)
       
       if (!granted) {
-        setError('Permissão para notificações foi negada')
+        if (permission === 'denied') {
+          setError('Permissão negada. Para ativar notificações: 1) Clique no ícone de notificações na barra de endereços 2) Selecione "Permitir" 3) Recarregue a página')
+        } else {
+          setError('Permissão não concedida. Tente novamente.')
+        }
+      } else {
+        // Testar notificação imediatamente após permissão
+        try {
+          const testNotification = new Notification('ConfiLar - Notificações Ativadas!', {
+            body: 'Agora você receberá notificações do ConfiLar',
+            icon: '/icon-192x192.png',
+            badge: '/icon-96x96.png',
+            tag: 'permission-granted'
+          })
+          
+          // Fechar notificação de teste após 3 segundos
+          setTimeout(() => {
+            testNotification.close()
+          }, 3000)
+        } catch (testError) {
+          console.log('Notificação de teste não pôde ser exibida:', testError)
+        }
       }
       
       return granted
     } catch (error) {
       console.error('Erro ao solicitar permissão:', error)
-      setError('Erro ao solicitar permissão para notificações')
+      setError('Erro ao solicitar permissão para notificações. Verifique se o navegador suporta notificações.')
       return false
     } finally {
       setIsLoading(false)
@@ -109,15 +140,42 @@ export function usePushNotifications() {
       setIsLoading(true)
       setError(null)
 
+      // Verificar se já existe uma subscription
+      const existingRegistration = await navigator.serviceWorker.getRegistration()
+      if (existingRegistration) {
+        const existingSubscription = await existingRegistration.pushManager.getSubscription()
+        if (existingSubscription) {
+          console.log('Subscription já existe, verificando no servidor...')
+          setIsSubscribed(true)
+          return true
+        }
+      }
+
       // Registrar service worker se necessário
-      const registration = await navigator.serviceWorker.register('/sw.js')
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/'
+      })
+      
+      // Aguardar o service worker estar pronto
       await navigator.serviceWorker.ready
+
+      // Verificar se VAPID key está configurada
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!vapidPublicKey) {
+        setError('Chave VAPID não configurada. Contate o administrador.')
+        return false
+      }
+
+      // Converter VAPID key para Uint8Array
+      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey)
 
       // Obter subscription do push manager
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        applicationServerKey: applicationServerKey as BufferSource
       })
+
+      console.log('Subscription criada:', subscription.endpoint)
 
       // Converter subscription para formato que podemos enviar
       const subscriptionData: PushSubscriptionData = {
@@ -143,15 +201,60 @@ export function usePushNotifications() {
       }
 
       setIsSubscribed(true)
+      
+      // Enviar notificação de confirmação
+      try {
+        const confirmationNotification = new Notification('ConfiLar - Push Ativado!', {
+          body: 'Notificações push foram ativadas com sucesso',
+          icon: '/icon-192x192.png',
+          badge: '/icon-96x96.png',
+          tag: 'push-enabled'
+        })
+        
+        setTimeout(() => {
+          confirmationNotification.close()
+        }, 3000)
+      } catch (notifError) {
+        console.log('Notificação de confirmação não pôde ser exibida:', notifError)
+      }
+      
       return true
     } catch (error) {
       console.error('Erro ao inscrever em notificações:', error)
-      setError('Erro ao configurar notificações push')
+      
+      if (error instanceof Error) {
+        if (error.message.includes('VAPID')) {
+          setError('Erro de configuração VAPID. Contate o administrador.')
+        } else if (error.message.includes('permission')) {
+          setError('Permissão negada. Verifique as configurações do navegador.')
+        } else {
+          setError(`Erro ao configurar notificações: ${error.message}`)
+        }
+      } else {
+        setError('Erro ao configurar notificações push')
+      }
+      
       return false
     } finally {
       setIsLoading(false)
     }
   }, [isSupported, isGranted, user])
+
+  // Função auxiliar para converter VAPID key
+  const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4)
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+    
+    const rawData = window.atob(base64)
+    const outputArray = new Uint8Array(rawData.length)
+    
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i)
+    }
+    return outputArray
+  }
 
   // Desinscrever de notificações push
   const unsubscribe = useCallback(async (): Promise<boolean> => {

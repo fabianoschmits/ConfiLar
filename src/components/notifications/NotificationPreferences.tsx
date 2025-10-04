@@ -38,11 +38,7 @@ interface NotificationPreferences {
   timezone: string
 }
 
-interface NotificationPreferencesProps {
-  onBack?: () => void
-}
-
-export function NotificationPreferences({ onBack }: NotificationPreferencesProps) {
+export function NotificationPreferences() {
   const { user } = useAuth()
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     email_notifications: true,
@@ -130,28 +126,11 @@ export function NotificationPreferences({ onBack }: NotificationPreferencesProps
     }
   }
 
-  const updatePreference = async (key: keyof NotificationPreferences, value: any) => {
-    const newPreferences = {
-      ...preferences,
+  const updatePreference = (key: keyof NotificationPreferences, value: any) => {
+    setPreferences(prev => ({
+      ...prev,
       [key]: value
-    }
-    
-    setPreferences(newPreferences)
-    
-    // Salvar automaticamente
-    if (user) {
-      try {
-        await supabase
-          .from('notification_preferences')
-          .upsert({
-            user_id: user.id,
-            ...newPreferences,
-            updated_at: new Date().toISOString()
-          })
-      } catch (error) {
-        console.error('Erro ao salvar preferência automaticamente:', error)
-      }
-    }
+    }))
   }
 
   if (isLoading) {
@@ -379,19 +358,16 @@ export function NotificationPreferences({ onBack }: NotificationPreferencesProps
         </CardContent>
       </Card>
 
-      {/* Botão voltar */}
-      {onBack && (
-        <div className="flex justify-start">
-          <Button 
-            onClick={onBack}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar para Notificações
-          </Button>
-        </div>
-      )}
+      {/* Botão salvar */}
+      <div className="flex justify-end">
+        <Button 
+          onClick={savePreferences} 
+          disabled={isSaving}
+          className="min-w-[120px]"
+        >
+          {isSaving ? 'Salvando...' : 'Salvar Preferências'}
+        </Button>
+      </div>
     </div>
   )
 }
