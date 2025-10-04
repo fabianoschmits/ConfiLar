@@ -4,6 +4,7 @@ import { Trash2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { NotificationIcon } from './NotificationIcon'
 
 interface MobileNotificationItemProps {
   notification: {
@@ -26,16 +27,6 @@ export function MobileNotificationItem({
   onClick 
 }: MobileNotificationItemProps) {
   
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'message': return '💬'
-      case 'favorite': return '❤️'
-      case 'recommendation': return '⭐'
-      case 'review': return '⭐'
-      case 'system': return '🔔'
-      default: return '📢'
-    }
-  }
 
   const getNotificationColor = (type: string) => {
     switch (type) {
@@ -56,9 +47,7 @@ export function MobileNotificationItem({
       onClick={() => onClick(notification)}
     >
       <div className="flex items-start gap-3">
-        <div className="text-lg flex-shrink-0">
-          {getNotificationIcon(notification.type)}
-        </div>
+        <NotificationIcon type={notification.type} />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -106,7 +95,7 @@ export function MobileNotificationItem({
               e.stopPropagation()
               onDelete(notification.id, notification.title)
             }}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100"
             title="Deletar notificação"
           >
             <Trash2 className="h-3.5 w-3.5" />

@@ -4,6 +4,7 @@ import { Trash2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { NotificationIcon } from './NotificationIcon'
 
 interface DesktopNotificationItemProps {
   notification: {
@@ -26,16 +27,6 @@ export function DesktopNotificationItem({
   onClick 
 }: DesktopNotificationItemProps) {
   
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'message': return '💬'
-      case 'favorite': return '❤️'
-      case 'recommendation': return '⭐'
-      case 'review': return '⭐'
-      case 'system': return '🔔'
-      default: return '📢'
-    }
-  }
 
   const getNotificationColor = (type: string) => {
     switch (type) {
@@ -56,9 +47,7 @@ export function DesktopNotificationItem({
       onClick={() => onClick(notification)}
     >
       <div className="flex items-start gap-3">
-        <div className="text-lg flex-shrink-0">
-          {getNotificationIcon(notification.type)}
-        </div>
+        <NotificationIcon type={notification.type} />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -82,8 +71,8 @@ export function DesktopNotificationItem({
           </p>
         </div>
         
-        {/* Botões de ação - aparecem no hover no desktop */}
-        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Botões de ação - sempre visíveis */}
+        <div className="flex flex-col gap-1">
           {!notification.is_read && (
             <Button
               variant="ghost"
@@ -92,7 +81,7 @@ export function DesktopNotificationItem({
                 e.stopPropagation()
                 onMarkAsRead(notification.id)
               }}
-              className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+              className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 opacity-0 group-hover:opacity-100 transition-opacity"
               title="Marcar como lida"
             >
               <Check className="h-3 w-3" />
@@ -106,7 +95,7 @@ export function DesktopNotificationItem({
               e.stopPropagation()
               onDelete(notification.id, notification.title)
             }}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100"
             title="Deletar notificação"
           >
             <Trash2 className="h-3.5 w-3.5" />
