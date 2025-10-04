@@ -6,6 +6,13 @@ export interface TimelineItem {
   user_name?: string
   user_avatar?: string
   user_type?: 'client' | 'professional'
+  user?: {
+    id: string
+    full_name: string
+    avatar_url?: string
+    user_type: 'client' | 'professional'
+    is_available?: boolean
+  }
 }
 
 export interface TimelinePost extends TimelineItem {
