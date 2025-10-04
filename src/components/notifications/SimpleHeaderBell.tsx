@@ -80,7 +80,7 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
           </div>
 
           {/* Conteúdo */}
-          <div className="max-h-[300px] md:max-h-[400px] overflow-hidden">
+          <div className="max-h-[500px] md:max-h-[600px] overflow-hidden">
             <AdaptiveNotificationCenter 
               isOpen={isOpen} 
               onClose={() => setIsOpen(false)} 

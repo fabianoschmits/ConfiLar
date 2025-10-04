@@ -145,7 +145,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
         </div>
 
         {/* Conteúdo de Configurações */}
-        <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
+        <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto">
           {/* Notificações Push */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notificações Push</h4>
@@ -357,15 +357,19 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
                     )}
                     
                     {isSupported && !isGranted && (
-                      <div className="text-xs text-amber-600 mt-2 p-2 bg-amber-50 border border-amber-200 rounded">
-                        <div className="font-medium mb-1">🔔 Permissão Necessária</div>
+                      <div className="text-xs text-amber-600 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="font-medium mb-2 flex items-center gap-1">
+                          <Bell className="w-3 h-3" />
+                          Permissão Necessária
+                        </div>
                         <div className="text-gray-700">
-                          <p className="mb-2">Para ativar notificações no Windows:</p>
-                          <ol className="list-decimal list-inside space-y-1 text-gray-600">
+                          <p className="mb-2 font-medium">Para ativar notificações no Windows:</p>
+                          <ol className="list-decimal list-inside space-y-1 text-gray-600 ml-2">
                             <li>Clique no botão "Ativar Notificações Push"</li>
                             <li>Quando aparecer o popup, clique em "Permitir"</li>
                             <li>Se não aparecer popup, clique no ícone 🔔 na barra de endereços</li>
                             <li>Selecione "Permitir" nas configurações do site</li>
+                            <li>Recarregue a página (F5) e tente novamente</li>
                           </ol>
                         </div>
                       </div>
