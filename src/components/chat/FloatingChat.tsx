@@ -55,6 +55,7 @@ export function FloatingChat() {
   const [showFavoritesSearch, setShowFavoritesSearch] = useState(false)
   const [lastConversationId, setLastConversationId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messageInputRef = useRef<HTMLInputElement>(null)
   
   // Função para fazer scroll automático para o final
   const scrollToBottom = () => {
@@ -200,6 +201,16 @@ export function FloatingChat() {
     }
   }, [messages.length, selectedConversation, user?.id])
 
+  // Focar no campo de input quando o chat for aberto
+  useEffect(() => {
+    if (isExpanded && selectedConversation && messageInputRef.current) {
+      // Pequeno delay para garantir que o campo esteja renderizado
+      setTimeout(() => {
+        messageInputRef.current?.focus()
+      }, 100)
+    }
+  }, [isExpanded, selectedConversation])
+
 
   // Auto-scroll quando uma NOVA conversa for selecionada
   useEffect(() => {
@@ -230,18 +241,42 @@ export function FloatingChat() {
       // Verificar se é a primeira mensagem da conversa
       const isFirstMessage = messages.length === 0
       
-      await sendMessage(selectedConversation.id, newMessage.trim())
+      const messageContent = newMessage.trim()
       
-      // Se for a primeira mensagem, enviar notificação automática
-      if (isFirstMessage) {
-        await sendNewConversationNotification(selectedConversation)
-      }
-      
+      // Limpar o campo de mensagem imediatamente para melhor UX
       setNewMessage('')
-      // Fazer scroll automático para a nova mensagem
-      setTimeout(() => scrollToBottom(), 100)
+      
+      // Enviar mensagem
+      const success = await sendMessage(selectedConversation.id, messageContent)
+      
+      if (success) {
+        // Se for a primeira mensagem, enviar notificação automática
+        if (isFirstMessage) {
+          await sendNewConversationNotification(selectedConversation)
+        }
+        
+        // Fazer scroll automático para a nova mensagem
+        setTimeout(() => scrollToBottom(), 100)
+        
+        // Garantir que o chat permaneça aberto
+        if (!isExpanded) {
+          setIsExpanded(true)
+        }
+        
+        // Manter o foco no campo de input após enviar a mensagem
+        setTimeout(() => {
+          if (messageInputRef.current) {
+            messageInputRef.current.focus()
+          }
+        }, 50)
+      } else {
+        // Se falhou, restaurar a mensagem
+        setNewMessage(messageContent)
+      }
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error)
+      // Restaurar a mensagem em caso de erro
+      setNewMessage(newMessage.trim())
     } finally {
       setSending(false)
     }
@@ -686,6 +721,7 @@ export function FloatingChat() {
                   <div className="border-t border-gray-200 p-3">
                     <div className="flex gap-2">
                       <Input
+                        ref={messageInputRef}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Digite sua mensagem..."
