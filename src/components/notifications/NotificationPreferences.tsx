@@ -18,7 +18,8 @@ import {
   Shield, 
   Settings,
   Clock,
-  Globe
+  Globe,
+  ArrowLeft
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useUnifiedAuth'
 import { supabase } from '@/lib/supabase'
@@ -37,7 +38,11 @@ interface NotificationPreferences {
   timezone: string
 }
 
-export function NotificationPreferences() {
+interface NotificationPreferencesProps {
+  onBack?: () => void
+}
+
+export function NotificationPreferences({ onBack }: NotificationPreferencesProps) {
   const { user } = useAuth()
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     email_notifications: true,
@@ -125,11 +130,28 @@ export function NotificationPreferences() {
     }
   }
 
-  const updatePreference = (key: keyof NotificationPreferences, value: any) => {
-    setPreferences(prev => ({
-      ...prev,
+  const updatePreference = async (key: keyof NotificationPreferences, value: any) => {
+    const newPreferences = {
+      ...preferences,
       [key]: value
-    }))
+    }
+    
+    setPreferences(newPreferences)
+    
+    // Salvar automaticamente
+    if (user) {
+      try {
+        await supabase
+          .from('notification_preferences')
+          .upsert({
+            user_id: user.id,
+            ...newPreferences,
+            updated_at: new Date().toISOString()
+          })
+      } catch (error) {
+        console.error('Erro ao salvar preferência automaticamente:', error)
+      }
+    }
   }
 
   if (isLoading) {
@@ -357,16 +379,19 @@ export function NotificationPreferences() {
         </CardContent>
       </Card>
 
-      {/* Botão salvar */}
-      <div className="flex justify-end">
-        <Button 
-          onClick={savePreferences} 
-          disabled={isSaving}
-          className="min-w-[120px]"
-        >
-          {isSaving ? 'Salvando...' : 'Salvar Preferências'}
-        </Button>
-      </div>
+      {/* Botão voltar */}
+      {onBack && (
+        <div className="flex justify-start">
+          <Button 
+            onClick={onBack}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Notificações
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
