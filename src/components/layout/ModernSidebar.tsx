@@ -288,14 +288,14 @@ export function ModernSidebar() {
       {/* Overlay Mobile */}
       {isMobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Moderna */}
       <div className={`
-        fixed left-0 top-0 h-full bg-gray-50 border-r border-gray-200 shadow-sm z-50
+        fixed left-0 top-0 h-full bg-gray-50 border-r border-gray-200 shadow-sm z-[60]
         w-64 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>

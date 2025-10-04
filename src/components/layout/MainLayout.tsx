@@ -42,8 +42,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       loading, 
       isReady,
       error,
-      requireAuth 
+      requireAuth,
+      pathname,
+      isLoggedIn,
+      isProfileLoading,
+      isCheckingProfile
     });
+  }
+  
+  // Se ainda não montou, mostrar loading
+  if (!mounted) {
+    return <PageLoadingOverlay isLoading={true} message="Carregando..." />
   }
   
   return (
@@ -73,26 +82,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
                 </p>
               </div>
               <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    if (mounted) {
-                      window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`
-                    }
-                  }}
-                  className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Fazer Login
-                </button>
-                <button
-                  onClick={() => {
-                    if (mounted) {
-                      window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`
-                    }
-                  }}
-                  className="w-full bg-white text-gray-700 px-6 py-3 rounded-lg border border-gray-300 font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Criar Conta
-                </button>
+                <LoginPrompt />
               </div>
             </div>
           </div>
@@ -102,8 +92,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
           </PageTransition>
         )}
       </main>
+      
+      {/* Bottom Navigation para mobile */}
       <ModernBottomNavigation />
-      <LoginPrompt />
     </>
   );
 };

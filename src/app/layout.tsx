@@ -23,6 +23,7 @@ import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
 import { BanNotification } from "@/components/BanNotification"
 import { DevTestButton } from "@/components/dev/DevTestButton"
 import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
+import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
 const inter = Inter({ subsets: ["latin"] })
