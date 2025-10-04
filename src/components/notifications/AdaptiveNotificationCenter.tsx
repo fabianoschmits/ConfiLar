@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ModernNotificationCenter } from './ModernNotificationCenter'
 import { MobileNotificationCenter } from './MobileNotificationCenter'
+import { DesktopNotificationItem } from './DesktopNotificationItem'
 import { toast } from 'sonner'
 
 interface AdaptiveNotificationCenterProps {
@@ -392,55 +393,13 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
       {/* Lista de notificações com scroll */}
       <div className="divide-y divide-gray-100 overflow-y-auto max-h-[400px] md:max-h-[500px]">
         {filteredNotifications.map((notification) => (
-          <div 
+          <DesktopNotificationItem
             key={notification.id}
-            className={`p-3 hover:bg-gray-50 transition-colors relative group ${
-              !notification.is_read ? 'bg-blue-50/30' : ''
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Bell className="w-4 h-4 text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                  {notification.title}
-                </p>
-                {notification.message && (
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                    {notification.message}
-                  </p>
-                )}
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(notification.created_at), { 
-                      addSuffix: true, 
-                      locale: ptBR 
-                    })}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    {!notification.is_read && (
-                      <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="text-xs text-blue-600 hover:text-blue-700"
-                      >
-                        Marcar como lida
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Botão de deletar - pequena lixeira no canto superior direito */}
-              <button
-                onClick={() => handleDeleteNotification(notification.id, notification.title)}
-                className="absolute top-2 right-2 w-5 h-5 bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
-                title="Deletar notificação"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
+            notification={notification}
+            onDelete={handleDeleteNotification}
+            onMarkAsRead={markAsRead}
+            onClick={() => {}} // Não há ação de clique no popover
+          />
         ))}
       </div>
     </div>
