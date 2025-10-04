@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale'
 import { ModernNotificationCenter } from './ModernNotificationCenter'
 import { MobileNotificationCenter } from './MobileNotificationCenter'
 import { DesktopNotificationItem } from './DesktopNotificationItem'
+import { NotificationPreferences } from './NotificationPreferences'
 import { toast } from 'sonner'
 
 interface AdaptiveNotificationCenterProps {
@@ -16,7 +17,7 @@ interface AdaptiveNotificationCenterProps {
 }
 
 export function AdaptiveNotificationCenter({ isOpen, onClose }: AdaptiveNotificationCenterProps) {
-  // Para o popover flutuante, vamos usar uma versão simplificada
+  
   return <FloatingNotificationContent isOpen={isOpen} onClose={onClose} />
 }
 
@@ -83,252 +84,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
         </div>
 
         {/* Conteúdo de Configurações */}
-        <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
-          {/* Notificações Push */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notificações Push</h4>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Ativar notificações push</p>
-                <p className="text-xs text-gray-500">Receba notificações no navegador</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Som</p>
-                <p className="text-xs text-gray-500">Reproduzir som ao receber</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Vibração</p>
-                <p className="text-xs text-gray-500">Vibrar no celular</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 pt-4"></div>
-
-          {/* Tipos de Notificação */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipos de Notificação</h4>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Mensagens</p>
-                <p className="text-xs text-gray-500">Chat e mensagens diretas</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Avaliações</p>
-                <p className="text-xs text-gray-500">Novas avaliações recebidas</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Favoritos</p>
-                <p className="text-xs text-gray-500">Quando alguém favorita você</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Recomendações</p>
-                <p className="text-xs text-gray-500">Quando alguém recomenda você</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Agendamentos</p>
-                <p className="text-xs text-gray-500">Novos agendamentos</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Sistema</p>
-                <p className="text-xs text-gray-500">Atualizações e avisos</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Conquistas</p>
-                <p className="text-xs text-gray-500">Novas conquistas desbloqueadas</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Verificação</p>
-                <p className="text-xs text-gray-500">Status de verificação</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 pt-4"></div>
-
-          {/* E-mail */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">E-mail</h4>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Notificações por e-mail</p>
-                <p className="text-xs text-gray-500">Receber cópias por e-mail</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Resumo diário</p>
-                <p className="text-xs text-gray-500">Resumo das notificações do dia</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 pt-4"></div>
-
-          {/* Privacidade */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Privacidade</h4>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Mostrar conteúdo</p>
-                <p className="text-xs text-gray-500">Exibir prévia das mensagens</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Agrupar notificações</p>
-                <p className="text-xs text-gray-500">Agrupar notificações similares</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Marcar como lida automaticamente</p>
-                <p className="text-xs text-gray-500">Ao visualizar a notificação</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
-                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (filteredNotifications.length === 0) {
-    return (
-      <div className="flex flex-col">
-        {/* Header com botão de configurações */}
-        <div className="p-3 border-b border-gray-100 bg-gray-50/50">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                  filter === 'all' 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Todas (0)
-              </button>
-            </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-1.5 hover:bg-gray-200 rounded-md transition-colors"
-              title="Configurações"
-            >
-              <Settings className="w-4 h-4 text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* Conteúdo vazio */}
-        <div className="p-6 text-center">
-          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Bell className="w-6 h-6 text-gray-400" />
-          </div>
-          <h3 className="text-sm font-medium text-gray-900 mb-1">
-            Nenhuma notificação
-          </h3>
-          <p className="text-xs text-gray-500">
-            Você será notificado quando houver novidades
-          </p>
+        <div className="p-4 max-h-96 overflow-y-auto">
+          <NotificationPreferences onBack={() => setShowSettings(false)} />
         </div>
       </div>
     )
@@ -336,61 +93,63 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
   return (
     <div className="flex flex-col">
-      {/* Filtros rápidos e ações */}
+      {/* Header */}
       <div className="p-3 border-b border-gray-100 bg-gray-50/50">
         <div className="flex items-center justify-between">
-          <div className="flex gap-1">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                filter === 'all' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Todas ({notifications.length})
-            </button>
-            <button
-              onClick={() => setFilter('unread')}
-              className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                filter === 'unread' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Não lidas ({unreadCount})
-            </button>
+          <div className="flex items-center gap-2">
+            <Bell className="w-4 h-4 text-gray-600" />
+            <h3 className="text-sm font-semibold text-gray-900">Notificações</h3>
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {unreadCount}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1">
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium px-2 py-1"
-              >
-                Marcar todas
-              </button>
-            )}
-            {notifications.length > 0 && (
-              <button
-                onClick={handleDeleteAll}
-                className="p-1.5 hover:bg-red-100 rounded-md transition-colors"
-                title="Deletar todas as notificações"
-              >
-                <Trash2 className="w-4 h-4 text-red-600" />
-              </button>
-            )}
             <button
               onClick={() => setShowSettings(true)}
-              className="p-1.5 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-1 hover:bg-gray-200 rounded-md transition-colors"
               title="Configurações"
             >
               <Settings className="w-4 h-4 text-gray-600" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-600" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Lista de notificações com scroll */}
+      {/* Filtros */}
+      <div className="p-3 border-b border-gray-100">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              filter === 'all' 
+                ? 'bg-blue-100 text-blue-700' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Todas
+          </button>
+          <button
+            onClick={() => setFilter('unread')}
+            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+              filter === 'unread' 
+                ? 'bg-blue-100 text-blue-700' 
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            Não lidas
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de Notificações */}
       <div className="divide-y divide-gray-100 overflow-y-auto max-h-[400px] md:max-h-[500px]">
         {filteredNotifications.map((notification) => (
           <DesktopNotificationItem
@@ -398,10 +157,37 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
             notification={notification}
             onDelete={handleDeleteNotification}
             onMarkAsRead={markAsRead}
-            onClick={() => {}} // Não há ação de clique no popover
+            onClick={() => {}}
           />
         ))}
       </div>
+
+      {/* Footer com ações */}
+      {notifications.length > 0 && (
+        <div className="p-3 border-t border-gray-100 bg-gray-50/50">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleDeleteAll}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Limpar todas
+            </button>
+            <span className="text-xs text-gray-500">
+              {filteredNotifications.length} notificação{filteredNotifications.length !== 1 ? 'ões' : ''}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Estado vazio */}
+      {filteredNotifications.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <Bell className="h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-gray-500">Nenhuma notificação</p>
+          <p className="text-sm text-gray-400">Você receberá notificações aqui</p>
+        </div>
+      )}
     </div>
   )
 }
