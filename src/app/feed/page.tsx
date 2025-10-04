@@ -29,6 +29,7 @@ import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
 import { services, getCategories } from '@/data/services'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
+import { ErrorHandler } from '@/components/ErrorHandler'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -240,7 +241,8 @@ export default function FeedPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <ErrorHandler>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-3 md:px-4 py-1 md:py-2">
         {/* Botão de Filtros e Novo Post - Responsivo */}
         <div className="mb-2 md:mb-3 flex items-center justify-between gap-3">
@@ -506,8 +508,9 @@ export default function FeedPage() {
           </div>
         </div>
 
-      </div>
-    </div>
+        </div>
+        </div>
+      </ErrorHandler>
     </MainLayout>
   )
 }

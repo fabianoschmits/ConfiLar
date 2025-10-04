@@ -81,7 +81,12 @@ export function useProfileCheck() {
       }
     }
 
-    checkProfile()
+    // Adicionar um delay maior para evitar verificações muito rápidas
+    const timeoutId = setTimeout(() => {
+      checkProfile()
+    }, 500) // Aumentado para 500ms
+
+    return () => clearTimeout(timeoutId)
   }, [user, profile, router])
 
   return { isChecking }
