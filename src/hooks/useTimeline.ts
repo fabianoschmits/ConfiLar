@@ -61,7 +61,8 @@ export function useTimeline(filters: TimelineFilters = {}) {
             id,
             full_name,
             avatar_url,
-            user_type
+            user_type,
+            is_available
           )
         `)
         // .eq('is_active', true) // Coluna não existe

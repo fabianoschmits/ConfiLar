@@ -188,13 +188,19 @@ export function TimelinePost({
                 </Link>
               </h3>
               
-              {/* Badge de Status (Disponível) */}
+              {/* Badge de Status (Disponível/Indisponível) */}
               <Badge 
                 variant="secondary"
-                className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 flex items-center gap-1"
+                className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                  post.user?.is_available 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                }`}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                <span>Disponível</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  post.user?.is_available ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span>{post.user?.is_available ? 'Disponível' : 'Indisponível'}</span>
               </Badge>
               
               {/* Badge de Tipo (Cliente/Profissional) */}

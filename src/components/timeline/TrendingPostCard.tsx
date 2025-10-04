@@ -31,6 +31,7 @@ interface TrendingPost {
     full_name: string
     avatar_url?: string
     user_type: string
+    is_available?: boolean
   }
   engagement_score: number
   trending_reason: 'high_engagement' | 'local_trending' | 'new_post' | 'verified_professional'
@@ -72,7 +73,8 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
             id,
             full_name,
             avatar_url,
-            user_type
+            user_type,
+            is_available
           )
         `)
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
@@ -212,9 +214,25 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
               className="w-10 h-10"
             />
             <div className="flex-1">
-              <h4 className="font-semibold text-sm text-gray-900">
-                {trendingPost.user.full_name}
-              </h4>
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-semibold text-sm text-gray-900">
+                  {trendingPost.user.full_name}
+                </h4>
+                {/* Status de Disponibilidade */}
+                <Badge 
+                  variant="secondary"
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    trendingPost.user?.is_available 
+                      ? 'bg-green-100 text-green-800 border border-green-200' 
+                      : 'bg-red-100 text-red-800 border border-red-200'
+                  }`}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${
+                    trendingPost.user?.is_available ? 'bg-green-500' : 'bg-red-500'
+                  }`}></div>
+                  <span>{trendingPost.user?.is_available ? 'Disponível' : 'Indisponível'}</span>
+                </Badge>
+              </div>
               <p className="text-xs text-gray-500">
                 {trendingPost.location_city}, {trendingPost.location_state}
               </p>
