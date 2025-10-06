@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -24,6 +25,7 @@ export interface AvailabilityState {
 export const useAvailability = () => {
   const { user, profile } = useAuthContext()
   const availabilityContext = useAvailabilityContextOptional()
+  const queryClient = useQueryClient()
   const [state, setState] = useState<AvailabilityState>({
     isAvailable: false,
     loading: true,
@@ -74,6 +76,14 @@ export const useAvailability = () => {
       if (availabilityContext && user) {
         availabilityContext.updateUserAvailability(user.id, newAvailability)
       }
+
+      // Invalidar cache do timeline para atualizar posts existentes
+      queryClient.invalidateQueries({
+        queryKey: ['unified-timeline']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['timeline']
+      })
 
       // Mostrar mensagem de feedback com tema moderno
       if (newAvailability) {
@@ -165,6 +175,14 @@ export const useAvailability = () => {
       if (availabilityContext && user) {
         availabilityContext.updateUserAvailability(user.id, available)
       }
+
+      // Invalidar cache do timeline para atualizar posts existentes
+      queryClient.invalidateQueries({
+        queryKey: ['unified-timeline']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['timeline']
+      })
 
       // Mostrar mensagem de feedback com tema moderno
       if (available) {
