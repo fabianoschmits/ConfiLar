@@ -975,6 +975,35 @@ export default function EditarPerfilPage() {
               </CardContent>
             </Card>
 
+            {/* Biografia - Disponível para todos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  Biografia
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
+                    Conte um pouco sobre você (Opcional)
+                  </Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
+                    <Textarea
+                      {...register('bio')}
+                      placeholder="Conte um pouco sobre você, seus interesses, experiência ou o que você busca na plataforma..."
+                      rows={4}
+                      className="resize-none pl-10"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Esta biografia aparecerá no seu perfil e ajudará outros usuários a conhecer você melhor.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Dados Profissionais */}
             {isProfessional && (
               <Card>
@@ -985,20 +1014,6 @@ export default function EditarPerfilPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                      Biografia (Opcional)
-                    </Label>
-                    <div className="relative">
-                      <FileText className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
-                      <Textarea
-                        {...register('bio')}
-                        placeholder="Conte um pouco sobre você..."
-                        rows={3}
-                        className="resize-none pl-10"
-                      />
-                    </div>
-                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
