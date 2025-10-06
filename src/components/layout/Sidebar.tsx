@@ -221,6 +221,20 @@ export function Sidebar() {
           href: '/sobre',
           icon: <Building size={16} strokeWidth={2} />,
           description: 'Conheça a ConfiLar'
+        },
+        {
+          id: 'terms',
+          title: 'TERMOS DE USO',
+          href: '/termos',
+          icon: <FileText size={16} strokeWidth={2} />,
+          description: 'Termos e condições'
+        },
+        {
+          id: 'privacy',
+          title: 'POLÍTICA DE PRIVACIDADE',
+          href: '/privacidade',
+          icon: <Shield size={16} strokeWidth={2} />,
+          description: 'Proteção de dados LGPD'
         }
       ]
     },
@@ -243,6 +257,13 @@ export function Sidebar() {
           href: '/editarperfil',
           icon: <Edit size={16} strokeWidth={2} />,
           description: 'Atualizar informações'
+        },
+        {
+          id: 'privacy-settings',
+          title: 'PRIVACIDADE',
+          href: '/configuracoes-privacidade',
+          icon: <Shield size={16} strokeWidth={2} />,
+          description: 'Controle seus dados LGPD'
         },
         {
           id: 'verification',

@@ -39,7 +39,8 @@ import {
   ThumbsUp,
   BarChart3,
   ShieldCheck,
-  Flag
+  Flag,
+  FileText
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -143,9 +144,15 @@ export function ModernHeader({
 
   // Função de navegação simplificada
   const handleNavigation = (path: string) => {
-    console.log('Navegando para:', path)
-    setIsMenuExpanded(false)
-    window.location.href = path
+    try {
+      console.log('Navegando para:', path)
+      setIsMenuExpanded(false)
+      router.push(path)
+    } catch (error) {
+      console.error('Erro na navegação:', error)
+      // Fallback para window.location
+      window.location.href = path
+    }
   }
 
   // Função para alternar seções
@@ -596,6 +603,24 @@ export function ModernHeader({
                             >
                               <Users className="h-3 w-3" />
                               <span className="truncate">Sobre Nós</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/termos')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <FileText className="h-3 w-3" />
+                              <span className="truncate">Termos de Uso</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/privacidade')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <Shield className="h-3 w-3" />
+                              <span className="truncate">Política de Privacidade</span>
                             </Button>
                             <UserReportsModal>
                               <Button

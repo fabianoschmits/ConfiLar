@@ -53,13 +53,22 @@ export function useHomeStats(): HomeStats {
           citiesCount = uniqueCities.size || 45
         }
 
-        // Buscar contagem de serviços realizados (sem autenticação)
-        const { count: servicesCount, error: servicesError } = await supabase
-          .from('contact_agreements')
-          .select('id', { count: 'exact', head: true })
-          .in('status', ['accepted', 'completed'])
+        // Buscar contagem de serviços oferecidos pelos profissionais
+        // Contar profissionais que têm serviços cadastrados
+        const { data: professionalsWithServices, error: servicesError } = await supabase
+          .from('profiles')
+          .select('professional_services')
+          .eq('user_type', 'professional')
+          .not('professional_services', 'is', null)
 
-        const finalServicesCount = servicesError ? 89 : (servicesCount || 0)
+        let finalServicesCount = 89 // Fallback
+        if (!servicesError && professionalsWithServices) {
+          // Contar total de serviços únicos oferecidos
+          const allServices = professionalsWithServices
+            .flatMap(p => p.professional_services || [])
+            .filter(Boolean)
+          finalServicesCount = allServices.length || 89
+        }
 
         setStats({
           professionalsCount: finalProfessionalsCount,

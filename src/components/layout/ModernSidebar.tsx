@@ -222,6 +222,20 @@ export function ModernSidebar() {
           href: '/sobre',
           icon: <Building className="h-4 w-4" />,
           description: 'Conheça a ConfiLar'
+        },
+        {
+          id: 'terms',
+          title: 'Termos de Uso',
+          href: '/termos',
+          icon: <FileText className="h-4 w-4" />,
+          description: 'Termos e condições'
+        },
+        {
+          id: 'privacy',
+          title: 'Política de Privacidade',
+          href: '/privacidade',
+          icon: <Shield className="h-4 w-4" />,
+          description: 'Proteção de dados LGPD'
         }
       ]
     },
@@ -244,6 +258,13 @@ export function ModernSidebar() {
           href: '/editarperfil',
           icon: <Settings className="h-4 w-4" />,
           description: 'Atualizar informações'
+        },
+        {
+          id: 'privacy-settings',
+          title: 'Privacidade',
+          href: '/configuracoes-privacidade',
+          icon: <Shield className="h-4 w-4" />,
+          description: 'Controle seus dados LGPD'
         },
         {
           id: 'verification',

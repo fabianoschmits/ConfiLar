@@ -1,0 +1,232 @@
+#!/usr/bin/env node
+
+/**
+ * 🧹 DESREGISTRAR SERVICE WORKER
+ * 
+ * Este script cria um arquivo para desregistrar o Service Worker
+ * Use quando o SW estiver causando problemas durante desenvolvimento
+ */
+
+const fs = require('fs')
+const path = require('path')
+
+const unregisterScript = `
+// Script para desregistrar Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister().then(function(success) {
+        console.log('✅ Service Worker desregistrado com sucesso:', success)
+      }).catch(function(error) {
+        console.error('❌ Erro ao desregistrar Service Worker:', error)
+      })
+    }
+  })
+}
+
+// Limpar cache
+if ('caches' in window) {
+  caches.keys().then(function(names) {
+    for (let name of names) {
+      caches.delete(name).then(function(success) {
+        console.log('✅ Cache limpo:', name, success)
+      })
+    }
+  })
+}
+
+console.log('🧹 Service Worker e cache limpos!')
+console.log('🔄 Recarregue a página (Ctrl+Shift+R ou Cmd+Shift+R)')
+`
+
+// Criar arquivo no diretório public
+const publicPath = path.join(process.cwd(), 'public', 'unregister-sw.html')
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desregistrar Service Worker - ConfiLar</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 5px;
+      margin: 15px 0;
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+    }
+    .success {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    button {
+      background: #2196f3;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #1976d2;
+    }
+    .danger {
+      background: #f44336;
+    }
+    .danger:hover {
+      background: #d32f2f;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧹 Limpar Service Worker</h1>
+    <p>Use esta página para desregistrar o Service Worker e limpar o cache quando houver problemas.</p>
+    
+    <div id="status" class="status">
+      <strong>Status:</strong> Aguardando ação...
+    </div>
+    
+    <button onclick="unregisterServiceWorker()">
+      🧹 Desregistrar Service Worker
+    </button>
+    
+    <button onclick="clearCache()" class="danger">
+      🗑️ Limpar Todo Cache
+    </button>
+    
+    <button onclick="doAll()">
+      ✨ Fazer Tudo
+    </button>
+    
+    <hr style="margin: 30px 0;">
+    
+    <h2>📋 Passos Manuais (Alternativa)</h2>
+    <ol>
+      <li>Abra o <strong>DevTools</strong> (F12)</li>
+      <li>Vá em <strong>Application</strong> (ou Aplicativo)</li>
+      <li>No menu lateral, clique em <strong>Service Workers</strong></li>
+      <li>Clique em <strong>"Unregister"</strong></li>
+      <li>Depois vá em <strong>Storage</strong> (ou Armazenamento)</li>
+      <li>Clique em <strong>"Clear site data"</strong></li>
+      <li>Recarregue a página com <code>Ctrl+Shift+R</code></li>
+    </ol>
+  </div>
+
+  <script>
+    ${unregisterScript}
+    
+    function unregisterServiceWorker() {
+      const status = document.getElementById('status')
+      status.innerHTML = '<strong>Status:</strong> Desregistrando...'
+      
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          if (registrations.length === 0) {
+            status.innerHTML = '<strong>✅ Sucesso:</strong> Nenhum Service Worker registrado'
+            status.className = 'status success'
+            return
+          }
+          
+          let count = 0
+          for(let registration of registrations) {
+            registration.unregister().then(function(success) {
+              count++
+              if (count === registrations.length) {
+                status.innerHTML = '<strong>✅ Sucesso:</strong> ' + count + ' Service Worker(s) desregistrado(s)!'
+                status.className = 'status success'
+              }
+            })
+          }
+        })
+      } else {
+        status.innerHTML = '<strong>❌ Erro:</strong> Service Worker não suportado neste navegador'
+      }
+    }
+    
+    function clearCache() {
+      const status = document.getElementById('status')
+      status.innerHTML = '<strong>Status:</strong> Limpando cache...'
+      
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          if (names.length === 0) {
+            status.innerHTML = '<strong>✅ Sucesso:</strong> Nenhum cache encontrado'
+            status.className = 'status success'
+            return
+          }
+          
+          Promise.all(names.map(name => caches.delete(name))).then(() => {
+            status.innerHTML = '<strong>✅ Sucesso:</strong> ' + names.length + ' cache(s) limpo(s)!'
+            status.className = 'status success'
+          })
+        })
+      } else {
+        status.innerHTML = '<strong>❌ Erro:</strong> Cache API não suportada'
+      }
+    }
+    
+    function doAll() {
+      const status = document.getElementById('status')
+      status.innerHTML = '<strong>Status:</strong> Limpando tudo...'
+      
+      Promise.all([
+        navigator.serviceWorker.getRegistrations().then(regs => 
+          Promise.all(regs.map(reg => reg.unregister()))
+        ),
+        caches.keys().then(names => 
+          Promise.all(names.map(name => caches.delete(name)))
+        )
+      ]).then(() => {
+        status.innerHTML = '<strong>✅ Sucesso:</strong> Service Workers e cache limpos! <br>🔄 Recarregue a página com <code>Ctrl+Shift+R</code>'
+        status.className = 'status success'
+        
+        // Recarregar automaticamente após 2 segundos
+        setTimeout(() => {
+          window.location.reload(true)
+        }, 2000)
+      })
+    }
+  </script>
+</body>
+</html>
+`
+
+try {
+  fs.writeFileSync(publicPath, htmlContent)
+  console.log('✅ Arquivo criado com sucesso!')
+  console.log('\n📋 Para desregistrar o Service Worker:')
+  console.log('   1. Acesse: http://localhost:3000/unregister-sw.html')
+  console.log('   2. Clique em "Fazer Tudo"')
+  console.log('   3. Aguarde a página recarregar')
+  console.log('\n✨ Pronto!')
+} catch (error) {
+  console.error('❌ Erro ao criar arquivo:', error.message)
+}
+

@@ -212,8 +212,9 @@ export default function SobrePage() {
                   <>
                     <li><Link href="/ajuda" className="hover:text-white transition-colors">Central de ajuda</Link></li>
                     <li><Link href="/_public/contato" className="hover:text-white transition-colors">Contato</Link></li>
-                    <li><Link href="/ajuda" className="hover:text-white transition-colors">Termos de uso</Link></li>
-                    <li><Link href="/ajuda" className="hover:text-white transition-colors">Política de privacidade</Link></li>
+                    <li><Link href="/termos" className="hover:text-white transition-colors">Termos de uso</Link></li>
+                    <li><Link href="/privacidade" className="hover:text-white transition-colors">Política de privacidade</Link></li>
+                    <li><Link href="/configuracoes-privacidade" className="hover:text-white transition-colors">Configurações de privacidade</Link></li>
                   </>
                 )}
               </ul>
