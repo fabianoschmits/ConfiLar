@@ -20,6 +20,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
 import { toast } from 'sonner'
+import { checkDuplicates } from '@/lib/checkDuplicates'
 
 // Função para validar CPF com validação rigorosa
 const validateCPF = (cpf: string): boolean => {
@@ -303,6 +304,27 @@ export function SimpleRegistrationForm() {
   const onSubmit = async (data: RegistrationFormData) => {
     setIsLoading(true)
     try {
+      // ✅ VALIDAR DUPLICATAS ANTES DE CADASTRAR
+      console.log('🔍 Verificando duplicatas...')
+      const { emailExists, cpfExists } = await checkDuplicates(
+        data.email,
+        data.cpf_cnpj
+      )
+      
+      if (emailExists) {
+        toast.error('❌ Este email já está cadastrado na plataforma')
+        setIsLoading(false)
+        return
+      }
+      
+      if (cpfExists) {
+        toast.error('❌ Este CPF/CNPJ já está cadastrado na plataforma')
+        setIsLoading(false)
+        return
+      }
+      
+      console.log('✅ Email e CPF disponíveis')
+      
       // Preparar dados do avatar
       let avatarData = null
       if (selectedAvatar) {

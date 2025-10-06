@@ -23,6 +23,7 @@ import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
 import { BanNotification } from "@/components/BanNotification"
 import { DevTestButton } from "@/components/dev/DevTestButton"
 import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
+import { CookieConsentBanner } from "@/components/lgpd/CookieConsentBanner"
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -86,6 +87,7 @@ export default async function RootLayout({
                         <FloatingChatWrapper />
                         <LoadingOverlayProvider />
                         <NewNotificationSystem />
+                        <CookieConsentBanner />
                         {/* <DevTestButton /> */}
                         <Toaster position="top-right" richColors />
                         {/* <AuthContextDebug /> */}

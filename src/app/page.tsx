@@ -219,7 +219,7 @@ function HomeContent() {
                   <div className="text-2xl sm:text-3xl font-bold text-orange-600">
                     {statsLoading ? '...' : formatStatNumber(servicesCount)}
                   </div>
-                  <div className="text-sm text-gray-600">Serviços</div>
+                  <div className="text-sm text-gray-600">Serviços Oferecidos</div>
                 </div>
               </div>
             </div>
