@@ -89,6 +89,9 @@ const onboardingSchema = z.object({
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
+  accept_terms: z.boolean().refine((value) => value === true, {
+    message: 'Você deve aceitar os Termos de Uso para continuar'
+  }),
 })
 
 type OnboardingFormData = z.infer<typeof onboardingSchema>
@@ -229,6 +232,7 @@ export default function OnboardingPage() {
           values.cpf_cnpj.length >= 11 &&
           values.birth_date &&
           values.gender &&
+          values.accept_terms && // Aceite dos termos obrigatório
           !cpfExists // Não permitir avançar se CPF já existe
         )
       
@@ -923,6 +927,56 @@ export default function OnboardingPage() {
                         </div>
 
                       </div>
+
+                      {/* Aceite dos Termos de Uso */}
+                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            id="accept_terms"
+                            checked={watchedValues.accept_terms || false}
+                            onCheckedChange={(checked) => setValue('accept_terms', !!checked)}
+                            className="mt-1"
+                          />
+                          <div className="space-y-1">
+                            <Label 
+                              htmlFor="accept_terms" 
+                              className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-1"
+                            >
+                              Aceito os <span className="text-red-500">*</span>
+                            </Label>
+                            <p className="text-xs text-gray-600">
+                              Ao marcar esta opção, você concorda com nossos{' '}
+                              <a 
+                                href="/termos" 
+                                target="_blank"
+                                className="text-blue-600 underline hover:text-blue-700 font-medium"
+                              >
+                                Termos de Uso
+                              </a>{' '}
+                              e{' '}
+                              <a 
+                                href="/privacidade" 
+                                target="_blank"
+                                className="text-blue-600 underline hover:text-blue-700 font-medium"
+                              >
+                                Política de Privacidade
+                              </a>
+                            </p>
+                            {errors.accept_terms && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.accept_terms.message}
+                              </p>
+                            )}
+                            {watchedValues.accept_terms && !errors.accept_terms && (
+                              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                <Check className="w-3 h-3" />
+                                Termos aceitos
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -1478,7 +1532,7 @@ export default function OnboardingPage() {
                             : "bg-blue-600 hover:bg-blue-700"
                         )}
                       >
-                        {currentStep === 2 && cpfExists ? 'Resolva o problema acima' : 'Próximo'}
+                        {currentStep === 2 && (cpfExists || !watchedValues.accept_terms) ? 'Resolva os problemas acima' : 'Próximo'}
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     ) : (
@@ -1504,19 +1558,6 @@ export default function OnboardingPage() {
                 </div>
               </form>
 
-              <div className="mt-6">
-                <div className="h-px bg-gray-200 my-4"></div>
-                <div className="text-center text-sm text-gray-600">
-                  Ao continuar, você concorda com nossos{' '}
-                  <a href="/termos" className="text-blue-600 underline hover:text-blue-700 font-medium">
-                    Termos de Uso
-                  </a>{' '}
-                  e{' '}
-                  <a href="/privacidade" className="text-blue-600 underline hover:text-blue-700 font-medium">
-                    Política de Privacidade
-                  </a>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
