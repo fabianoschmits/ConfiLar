@@ -11,6 +11,8 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { checkEmailExists } from '@/lib/checkDuplicates'
+import { RefreshCw } from 'lucide-react'
 
 // Schema simplificado para cadastro básico - email, senha e confirmação
 const basicSignupSchema = z.object({
@@ -32,6 +34,8 @@ type BasicSignupFormData = z.infer<typeof basicSignupSchema>
 export function BasicSignupForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+  const [emailExists, setEmailExists] = useState(false)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
   const { signUpBasic } = useAuthContext()
 
   // Evitar problemas de hidratação
@@ -50,6 +54,40 @@ export function BasicSignupForm() {
 
   const watchedValues = watch()
 
+  // Função para verificar email em tempo real
+  const checkEmailInRealTime = async (email: string) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailExists(false)
+      return
+    }
+
+    setIsCheckingEmail(true)
+    try {
+      const exists = await checkEmailExists(email)
+      setEmailExists(exists)
+    } catch (error) {
+      console.error('Erro ao verificar email:', error)
+      setEmailExists(false)
+    } finally {
+      setIsCheckingEmail(false)
+    }
+  }
+
+  // Debounce para verificação de email
+  useEffect(() => {
+    const email = watchedValues.email
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailExists(false)
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkEmailInRealTime(email)
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [watchedValues.email])
+
   // Função para verificar a força da senha
   const checkPasswordStrength = (password: string) => {
     const checks = {
@@ -67,6 +105,26 @@ export function BasicSignupForm() {
   const onSubmit = async (data: BasicSignupFormData) => {
     setIsLoading(true)
     try {
+      // ✅ VALIDAR DUPLICATAS ANTES DE CADASTRAR
+      console.log('🔍 Verificando duplicatas...')
+      
+      // Verificar se já temos as informações de duplicatas em tempo real
+      if (emailExists) {
+        toast.error('❌ Este email já está cadastrado. Use o link de recuperação de conta.')
+        setIsLoading(false)
+        return
+      }
+      
+      // Verificação adicional para garantir
+      const emailCheck = await checkEmailExists(data.email)
+      if (emailCheck) {
+        toast.error('❌ Este email já está cadastrado na plataforma')
+        setIsLoading(false)
+        return
+      }
+      
+      console.log('✅ Email disponível')
+      
       const { error } = await signUpBasic({
         email: data.email,
         password: data.password,
@@ -111,19 +169,55 @@ export function BasicSignupForm() {
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email *
             </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              {...register('email')}
-              className={cn(
-                "transition-colors",
-                errors.email ? 'border-red-500 focus:border-red-500' : ''
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                {...register('email')}
+                className={cn(
+                  "transition-colors pr-10",
+                  errors.email ? 'border-red-500 focus:border-red-500' : '',
+                  emailExists ? 'border-orange-500 focus:border-orange-500' : ''
+                )}
+              />
+              {isCheckingEmail && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
               )}
-            />
+            </div>
+            
+            {/* Mensagens de validação */}
             {errors.email && <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>}
-            {watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
-              <p className="text-sm text-green-600 font-medium">✓ Email válido</p>
+            
+            {emailExists && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800 font-medium mb-2">
+                  ⚠️ Este email já está cadastrado na plataforma
+                </p>
+                <p className="text-xs text-orange-700 mb-3">
+                  Você já possui uma conta com este email. Escolha uma das opções abaixo:
+                </p>
+                <div className="space-y-2">
+                  <a 
+                    href="/recuperar-senha" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔑 Recuperar senha
+                  </a>
+                  <a 
+                    href="/auth" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔐 Fazer login
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {watchedValues.email && !errors.email && !emailExists && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
+              <p className="text-sm text-green-600 font-medium">✓ Email disponível</p>
             )}
           </div>
 
@@ -213,10 +307,41 @@ export function BasicSignupForm() {
         <Button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-          disabled={!isMounted || isLoading || !isValid || watchedValues.password !== watchedValues.confirmPassword}
+          disabled={!isMounted || isLoading || !isValid || watchedValues.password !== watchedValues.confirmPassword || emailExists}
         >
-          {!isMounted ? 'Criar conta' : (isLoading ? 'Criando conta...' : 'Criar conta')}
+          {!isMounted ? 'Criar conta' : 
+           isLoading ? 'Criando conta...' : 
+           emailExists ? 'Resolva o problema acima' :
+           'Criar conta'}
         </Button>
+        
+        {/* Mensagem explicativa quando há duplicatas */}
+        {emailExists && (
+          <div className="mt-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="text-center">
+              <p className="text-sm text-orange-800 font-medium mb-2">
+                ⚠️ Não é possível criar a conta com este email
+              </p>
+              <p className="text-xs text-orange-700 mb-3">
+                Você já possui uma conta na plataforma. Use as opções acima para:
+              </p>
+              <div className="flex justify-center gap-4 text-xs">
+                <a 
+                  href="/recuperar-senha" 
+                  className="text-orange-600 hover:text-orange-700 underline font-medium"
+                >
+                  🔑 Recuperar senha
+                </a>
+                <a 
+                  href="/auth" 
+                  className="text-orange-600 hover:text-orange-700 underline font-medium"
+                >
+                  🔐 Fazer login
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="text-center text-sm text-gray-600 pt-2">
