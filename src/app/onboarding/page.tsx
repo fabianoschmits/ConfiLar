@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import { checkCpfExists } from '@/lib/checkDuplicates'
+import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -116,6 +117,7 @@ export default function OnboardingPage() {
   const [showDataSummary, setShowDataSummary] = useState(false)
   const [cpfExists, setCpfExists] = useState(false)
   const [isCheckingCpf, setIsCheckingCpf] = useState(false)
+  const { createWelcomePost } = useAutoNotifications()
 
   const {
     register,
@@ -627,6 +629,26 @@ export default function OnboardingPage() {
       }
 
       console.log('✅ Perfil salvo com sucesso!')
+      
+      // Criar post de boas-vindas
+      try {
+        console.log('🎉 Criando post de boas-vindas...')
+        const welcomeResult = await createWelcomePost(
+          user.id,
+          data.full_name,
+          data.user_type
+        )
+        
+        if (welcomeResult.success) {
+          console.log('✅ Post de boas-vindas criado com sucesso!')
+        } else {
+          console.warn('⚠️ Erro ao criar post de boas-vindas:', welcomeResult.error)
+        }
+      } catch (welcomeError) {
+        console.warn('⚠️ Erro ao criar post de boas-vindas:', welcomeError)
+        // Não falhar o processo se o post de boas-vindas falhar
+      }
+      
       toast.success('🎉 Perfil completado com sucesso!')
       
       // Recarregar o contexto de autenticação para atualizar o perfil
