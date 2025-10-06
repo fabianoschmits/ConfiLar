@@ -23,7 +23,7 @@ export interface AvailabilityState {
 }
 
 export const useAvailability = () => {
-  const { user, profile } = useAuthContext()
+  const { user, profile, refreshAuth } = useAuthContext()
   const availabilityContext = useAvailabilityContextOptional()
   const queryClient = useQueryClient()
   const [state, setState] = useState<AvailabilityState>({
@@ -71,6 +71,9 @@ export const useAvailability = () => {
         isAvailable: newAvailability,
         loading: false
       }))
+
+      // Atualizar contexto de autenticação para refletir mudança no perfil
+      await refreshAuth()
 
       // Atualizar contexto global se disponível
       if (availabilityContext && user) {
@@ -170,6 +173,9 @@ export const useAvailability = () => {
         isAvailable: available,
         loading: false
       }))
+
+      // Atualizar contexto de autenticação para refletir mudança no perfil
+      await refreshAuth()
 
       // Atualizar contexto global se disponível
       if (availabilityContext && user) {
