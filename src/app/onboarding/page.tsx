@@ -26,6 +26,7 @@ import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
+import { checkCpfExists } from '@/lib/checkDuplicates'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -113,6 +114,8 @@ export default function OnboardingPage() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
   const [showDataSummary, setShowDataSummary] = useState(false)
+  const [cpfExists, setCpfExists] = useState(false)
+  const [isCheckingCpf, setIsCheckingCpf] = useState(false)
 
   const {
     register,
@@ -223,7 +226,8 @@ export default function OnboardingPage() {
           values.cpf_cnpj && 
           values.cpf_cnpj.length >= 11 &&
           values.birth_date &&
-          values.gender
+          values.gender &&
+          !cpfExists // Não permitir avançar se CPF já existe
         )
       
       case 3: // Avatar - sempre válido (opcional)
@@ -318,6 +322,26 @@ export default function OnboardingPage() {
     setValue('phone', formatted)
   }
 
+  // Função para verificar CPF em tempo real
+  const checkCpfInRealTime = async (cpf: string) => {
+    const cleanCpf = cpf.replace(/\D/g, '')
+    if (cleanCpf.length !== 11 || !validateCPF(cpf)) {
+      setCpfExists(false)
+      return
+    }
+
+    setIsCheckingCpf(true)
+    try {
+      const exists = await checkCpfExists(cpf)
+      setCpfExists(exists)
+    } catch (error) {
+      console.error('Erro ao verificar CPF:', error)
+      setCpfExists(false)
+    } finally {
+      setIsCheckingCpf(false)
+    }
+  }
+
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCPF(e.target.value)
     setValue('cpf_cnpj', formatted)
@@ -326,6 +350,15 @@ export default function OnboardingPage() {
     if (cleanValue.length === 11) {
       const isValid = validateCPF(formatted)
       setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
+      
+      if (isValid) {
+        // Verificar se CPF já existe
+        checkCpfInRealTime(formatted)
+      } else {
+        setCpfExists(false)
+      }
+    } else {
+      setCpfExists(false)
     }
   }
 
@@ -462,6 +495,25 @@ export default function OnboardingPage() {
     setIsLoading(true)
     
     try {
+      // ✅ VALIDAR DUPLICATAS ANTES DE SALVAR
+      console.log('🔍 Verificando duplicatas...')
+      
+      // Verificar se já temos as informações de duplicatas em tempo real
+      if (cpfExists) {
+        toast.error('❌ Este CPF/CNPJ já está cadastrado. Use o link de recuperação de conta.')
+        setIsLoading(false)
+        return
+      }
+      
+      // Verificação adicional para garantir
+      const cpfCheck = await checkCpfExists(data.cpf_cnpj)
+      if (cpfCheck) {
+        toast.error('❌ Este CPF/CNPJ já está cadastrado na plataforma')
+        setIsLoading(false)
+        return
+      }
+      
+      console.log('✅ CPF disponível')
       let avatarUrl = null
 
       // Upload da imagem se necessário
@@ -580,8 +632,11 @@ export default function OnboardingPage() {
       // Recarregar o contexto de autenticação para atualizar o perfil
       await refreshAuth()
       
-      // Redirecionar para feed social
-      router.push('/feed')
+      // Aguardar um pouco para garantir que o contexto foi atualizado
+      setTimeout(() => {
+        // Redirecionar para feed social
+        router.push('/feed')
+      }, 1000)
       
     } catch (error) {
       console.error('Erro no onboarding:', error)
@@ -732,20 +787,63 @@ export default function OnboardingPage() {
                           <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             CPF <span className="text-red-500">*</span>
                           </Label>
-                          <Input
-                            id="cpf_cnpj"
-                            placeholder="000.000.000-00"
-                            {...register('cpf_cnpj')}
-                            onChange={handleCPFChange}
-                            className={cn(
-                              "h-10",
-                              errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                          <div className="relative">
+                            <Input
+                              id="cpf_cnpj"
+                              placeholder="000.000.000-00"
+                              {...register('cpf_cnpj')}
+                              onChange={handleCPFChange}
+                              className={cn(
+                                "h-10 pr-10",
+                                errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 
+                                cpfExists ? 'border-orange-500 focus:border-orange-500' :
+                                'focus:border-blue-500'
+                              )}
+                            />
+                            {isCheckingCpf && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <RefreshCw size={16} className="animate-spin text-blue-500" />
+                              </div>
                             )}
-                          />
+                          </div>
+                          
+                          {/* Mensagens de validação */}
                           {errors.cpf_cnpj && (
                             <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                               <X className="w-3 h-3" />
                               {errors.cpf_cnpj.message}
+                            </p>
+                          )}
+                          
+                          {cpfExists && (
+                            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                              <p className="text-sm text-orange-800 font-medium mb-2">
+                                ⚠️ Este CPF/CNPJ já está cadastrado na plataforma
+                              </p>
+                              <p className="text-xs text-orange-700 mb-3">
+                                Você já possui uma conta com este CPF/CNPJ. Escolha uma das opções abaixo:
+                              </p>
+                              <div className="space-y-2">
+                                <a 
+                                  href="/recuperar-senha" 
+                                  className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                                >
+                                  🔑 Recuperar senha
+                                </a>
+                                <a 
+                                  href="/auth" 
+                                  className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                                >
+                                  🔐 Fazer login
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && !cpfExists && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              CPF válido e disponível
                             </p>
                           )}
                         </div>
@@ -1358,7 +1456,7 @@ export default function OnboardingPage() {
                             : "bg-blue-600 hover:bg-blue-700"
                         )}
                       >
-                        Próximo
+                        {currentStep === 2 && cpfExists ? 'Resolva o problema acima' : 'Próximo'}
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     ) : (
