@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 
@@ -15,6 +16,7 @@ const AvailabilityContext = createContext<AvailabilityContextType | undefined>(u
 export function AvailabilityProvider({ children }: { children: ReactNode }) {
   const [userAvailability, setUserAvailability] = useState<Record<string, boolean>>({})
   const { user } = useAuthContext()
+  const queryClient = useQueryClient()
 
   // Função para atualizar disponibilidade de um usuário
   const updateUserAvailability = (userId: string, isAvailable: boolean) => {
@@ -22,6 +24,14 @@ export function AvailabilityProvider({ children }: { children: ReactNode }) {
       ...prev,
       [userId]: isAvailable
     }))
+
+    // Invalidar cache do timeline para atualizar posts existentes
+    queryClient.invalidateQueries({
+      queryKey: ['unified-timeline']
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['timeline']
+    })
   }
 
   // Função para se inscrever em mudanças de disponibilidade

@@ -22,6 +22,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [editingComment, setEditingComment] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
+  const [replyingToUser, setReplyingToUser] = useState<string | null>(null)
   const observerRef = useRef<HTMLDivElement>(null)
   
   const {
@@ -52,6 +53,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       // Limpar replyTo após enviar
       if (replyTo) {
         cancelReply()
+        setReplyingToUser(null)
       }
     }
   }
@@ -214,8 +216,9 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                 {!isReply && (
                   <button
                     onClick={() => {
-                      console.log('🔍 Clicou em Responder:', comment.id)
+                      console.log('🔍 Clicou em Responder:', comment.id, 'Usuário:', comment.user.full_name)
                       startReply(comment.id)
+                      setReplyingToUser(comment.user.full_name)
                     }}
                     className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-500 transition-colors"
                   >
@@ -289,7 +292,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
           <div className="mb-2 p-2 bg-blue-50 rounded-lg">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700">
-                Respondendo a um comentário... (ID: {replyTo})
+                Respondendo a <span className="font-medium">{replyingToUser || 'usuário'}</span>
               </span>
               <Button
                 variant="ghost"
@@ -297,6 +300,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                 onClick={() => {
                   console.log('🔍 Cancelando resposta')
                   cancelReply()
+                  setReplyingToUser(null)
                 }}
                 className="text-blue-600 hover:text-blue-700"
               >

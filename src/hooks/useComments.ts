@@ -43,7 +43,8 @@ export function useComments(filters: CommentFilters) {
       if (filters.parent_id) {
         query = query.eq('parent_id', filters.parent_id)
       } else {
-        query = query.is('parent_id', null)
+        // Carregar TODOS os comentários (principais e respostas) para organizar em threads
+        // Não filtrar por parent_id aqui, vamos organizar depois
       }
 
       if (filters.limit) {
