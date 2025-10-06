@@ -20,7 +20,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'
 import { toast } from 'sonner'
-import { checkDuplicates } from '@/lib/checkDuplicates'
+import { checkDuplicates, checkEmailExists, checkCpfExists } from '@/lib/checkDuplicates'
 
 // Função para validar CPF com validação rigorosa
 const validateCPF = (cpf: string): boolean => {
@@ -132,6 +132,10 @@ export function SimpleRegistrationForm() {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
+  const [emailExists, setEmailExists] = useState(false)
+  const [cpfExists, setCpfExists] = useState(false)
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false)
+  const [isCheckingCpf, setIsCheckingCpf] = useState(false)
   const { signUp } = useAuthContext()
 
   const {
@@ -252,6 +256,45 @@ export function SimpleRegistrationForm() {
     setValue('phone', formatted)
   }
 
+  // Função para verificar email em tempo real
+  const checkEmailInRealTime = async (email: string) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailExists(false)
+      return
+    }
+
+    setIsCheckingEmail(true)
+    try {
+      const exists = await checkEmailExists(email)
+      setEmailExists(exists)
+    } catch (error) {
+      console.error('Erro ao verificar email:', error)
+      setEmailExists(false)
+    } finally {
+      setIsCheckingEmail(false)
+    }
+  }
+
+  // Função para verificar CPF em tempo real
+  const checkCpfInRealTime = async (cpf: string) => {
+    const cleanCpf = cpf.replace(/\D/g, '')
+    if (cleanCpf.length !== 11 || !validateCPF(cpf)) {
+      setCpfExists(false)
+      return
+    }
+
+    setIsCheckingCpf(true)
+    try {
+      const exists = await checkCpfExists(cpf)
+      setCpfExists(exists)
+    } catch (error) {
+      console.error('Erro ao verificar CPF:', error)
+      setCpfExists(false)
+    } finally {
+      setIsCheckingCpf(false)
+    }
+  }
+
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatCPF(e.target.value)
     setValue('cpf_cnpj', formatted)
@@ -266,7 +309,11 @@ export function SimpleRegistrationForm() {
       } else {
         // Limpa erros se CPF for válido
         setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
+        // Verificar se CPF já existe
+        checkCpfInRealTime(formatted)
       }
+    } else {
+      setCpfExists(false)
     }
   }
 
@@ -287,6 +334,26 @@ export function SimpleRegistrationForm() {
     setValue('name', formatted)
   }
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value
+    setValue('email', email)
+  }
+
+  // Debounce para verificação de email
+  useEffect(() => {
+    const email = watchedValues.email
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailExists(false)
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkEmailInRealTime(email)
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [watchedValues.email])
+
   // Função para verificar a força da senha
   const checkPasswordStrength = (password: string) => {
     const checks = {
@@ -306,18 +373,32 @@ export function SimpleRegistrationForm() {
     try {
       // ✅ VALIDAR DUPLICATAS ANTES DE CADASTRAR
       console.log('🔍 Verificando duplicatas...')
-      const { emailExists, cpfExists } = await checkDuplicates(
+      
+      // Verificar se já temos as informações de duplicatas em tempo real
+      if (emailExists || cpfExists) {
+        if (emailExists) {
+          toast.error('❌ Este email já está cadastrado. Use o link de recuperação de conta.')
+        }
+        if (cpfExists) {
+          toast.error('❌ Este CPF/CNPJ já está cadastrado. Use o link de recuperação de conta.')
+        }
+        setIsLoading(false)
+        return
+      }
+      
+      // Verificação adicional para garantir
+      const { emailExists: emailCheck, cpfExists: cpfCheck } = await checkDuplicates(
         data.email,
         data.cpf_cnpj
       )
       
-      if (emailExists) {
+      if (emailCheck) {
         toast.error('❌ Este email já está cadastrado na plataforma')
         setIsLoading(false)
         return
       }
       
-      if (cpfExists) {
+      if (cpfCheck) {
         toast.error('❌ Este CPF/CNPJ já está cadastrado na plataforma')
         setIsLoading(false)
         return
@@ -511,19 +592,56 @@ export function SimpleRegistrationForm() {
             <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email *
             </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="seu@email.com"
-              {...register('email')}
-              className={cn(
-                "transition-colors",
-                errors.email ? 'border-red-500 focus:border-red-500' : ''
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                {...register('email')}
+                onChange={handleEmailChange}
+                className={cn(
+                  "transition-colors pr-10",
+                  errors.email ? 'border-red-500 focus:border-red-500' : '',
+                  emailExists ? 'border-orange-500 focus:border-orange-500' : ''
+                )}
+              />
+              {isCheckingEmail && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
               )}
-            />
+            </div>
+            
+            {/* Mensagens de validação */}
             {errors.email && <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>}
-            {watchedValues.email && !errors.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
-              <p className="text-sm text-green-600 font-medium">✓ Email válido</p>
+            
+            {emailExists && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800 font-medium mb-2">
+                  ⚠️ Este email já está cadastrado na plataforma
+                </p>
+                <p className="text-xs text-orange-700 mb-3">
+                  Você já possui uma conta com este email. Escolha uma das opções abaixo:
+                </p>
+                <div className="space-y-2">
+                  <a 
+                    href="/recuperar-senha" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔑 Recuperar senha
+                  </a>
+                  <a 
+                    href="/auth" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔐 Fazer login
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {watchedValues.email && !errors.email && !emailExists && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
+              <p className="text-sm text-green-600 font-medium">✓ Email disponível</p>
             )}
           </div>
 
@@ -612,22 +730,58 @@ export function SimpleRegistrationForm() {
             <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
               CPF/CNPJ *
             </Label>
-            <Input
-              id="cpf_cnpj"
-              placeholder="000.000.000-00"
-              {...register('cpf_cnpj')}
-              onChange={handleCPFChange}
-              className={cn(
-                "transition-colors",
-                errors.cpf_cnpj ? 'border-red-500 focus:border-red-500' : ''
+            <div className="relative">
+              <Input
+                id="cpf_cnpj"
+                placeholder="000.000.000-00"
+                {...register('cpf_cnpj')}
+                onChange={handleCPFChange}
+                className={cn(
+                  "transition-colors pr-10",
+                  errors.cpf_cnpj ? 'border-red-500 focus:border-red-500' : '',
+                  cpfExists ? 'border-orange-500 focus:border-orange-500' : ''
+                )}
+              />
+              {isCheckingCpf && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
               )}
-            />
+            </div>
+            
+            {/* Mensagens de validação */}
             {errors.cpf_cnpj && <p className="text-sm text-red-500 font-medium">{errors.cpf_cnpj.message}</p>}
-            {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
+            
+            {cpfExists && (
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-800 font-medium mb-2">
+                  ⚠️ Este CPF/CNPJ já está cadastrado na plataforma
+                </p>
+                <p className="text-xs text-orange-700 mb-3">
+                  Você já possui uma conta com este CPF/CNPJ. Escolha uma das opções abaixo:
+                </p>
+                <div className="space-y-2">
+                  <a 
+                    href="/recuperar-senha" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔑 Recuperar senha
+                  </a>
+                  <a 
+                    href="/auth" 
+                    className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
+                  >
+                    🔐 Fazer login
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && !validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && !cpfExists && (
               <p className="text-sm text-red-500 font-medium">❌ CPF inválido. Este CPF não é válido ou está na lista de CPFs bloqueados.</p>
             )}
-            {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && (
-              <p className="text-sm text-green-600 font-medium">✅ CPF válido</p>
+            {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && !cpfExists && (
+              <p className="text-sm text-green-600 font-medium">✅ CPF válido e disponível</p>
             )}
           </div>
 
@@ -1006,10 +1160,40 @@ export function SimpleRegistrationForm() {
         <Button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-          disabled={isLoading || !isValid}
+          disabled={isLoading || !isValid || emailExists || cpfExists}
         >
-          {isLoading ? 'Criando conta...' : 'Criar conta'}
+          {isLoading ? 'Criando conta...' : 
+           emailExists || cpfExists ? 'Resolva os problemas acima' : 
+           'Criar conta'}
         </Button>
+        
+        {/* Mensagem explicativa quando há duplicatas */}
+        {(emailExists || cpfExists) && (
+          <div className="mt-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="text-center">
+              <p className="text-sm text-orange-800 font-medium mb-2">
+                ⚠️ Não é possível criar a conta com os dados informados
+              </p>
+              <p className="text-xs text-orange-700 mb-3">
+                Você já possui uma conta na plataforma. Use as opções acima para:
+              </p>
+              <div className="flex justify-center gap-4 text-xs">
+                <a 
+                  href="/recuperar-senha" 
+                  className="text-orange-600 hover:text-orange-700 underline font-medium"
+                >
+                  🔑 Recuperar senha
+                </a>
+                <a 
+                  href="/auth" 
+                  className="text-orange-600 hover:text-orange-700 underline font-medium"
+                >
+                  🔐 Fazer login
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="text-center text-sm text-gray-600 pt-2">
