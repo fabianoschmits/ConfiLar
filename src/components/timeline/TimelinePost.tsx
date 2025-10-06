@@ -18,6 +18,7 @@ import { NewUserWelcomePost } from './NewUserWelcomePost'
 import { ImageModal } from '@/components/ui/ImageModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
+import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -188,20 +189,8 @@ export function TimelinePost({
                 </Link>
               </h3>
               
-              {/* Badge de Status (Disponível/Indisponível) */}
-              <Badge 
-                variant="secondary"
-                className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                  post.user?.is_available 
-                    ? 'bg-green-100 text-green-800 border border-green-200' 
-                    : 'bg-red-100 text-red-800 border border-red-200'
-                }`}
-              >
-                <div className={`w-1.5 h-1.5 rounded-full ${
-                  post.user?.is_available ? 'bg-green-500' : 'bg-red-500'
-                }`}></div>
-                <span>{post.user?.is_available ? 'Disponível' : 'Indisponível'}</span>
-              </Badge>
+              {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
+              <DynamicAvailabilityBadge userId={post.user_id} />
               
               {/* Badge de Tipo (Cliente/Profissional) */}
               <Badge 

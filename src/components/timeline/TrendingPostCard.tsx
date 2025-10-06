@@ -9,6 +9,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar'
 import { TrendingPostModal } from './TrendingPostModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
+import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
 import { supabase } from '@/lib/supabase'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -218,20 +219,8 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
                 <h4 className="font-semibold text-sm text-gray-900">
                   {trendingPost.user.full_name}
                 </h4>
-                {/* Status de Disponibilidade */}
-                <Badge 
-                  variant="secondary"
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                    trendingPost.user?.is_available 
-                      ? 'bg-green-100 text-green-800 border border-green-200' 
-                      : 'bg-red-100 text-red-800 border border-red-200'
-                  }`}
-                >
-                  <div className={`w-1.5 h-1.5 rounded-full ${
-                    trendingPost.user?.is_available ? 'bg-green-500' : 'bg-red-500'
-                  }`}></div>
-                  <span>{trendingPost.user?.is_available ? 'Disponível' : 'Indisponível'}</span>
-                </Badge>
+                {/* Status de Disponibilidade - Dinâmico */}
+                <DynamicAvailabilityBadge userId={trendingPost.user.id} />
               </div>
               <p className="text-xs text-gray-500">
                 {trendingPost.location_city}, {trendingPost.location_state}
