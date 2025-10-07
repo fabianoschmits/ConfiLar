@@ -236,6 +236,12 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       return allItems
     },
     getNextPageParam: (lastPage, allPages) => {
+      console.log('📄 getNextPageParam:', {
+        lastPageLength: lastPage.length,
+        itemsPerPage: ITEMS_PER_PAGE,
+        allPagesLength: allPages.length,
+        hasNext: lastPage.length === ITEMS_PER_PAGE
+      })
       return lastPage.length === ITEMS_PER_PAGE ? allPages.length : undefined
     },
     staleTime: 1000 * 60 * 2, // Cache por 2 minutos
