@@ -272,11 +272,17 @@ export function useMessages() {
         ? conversation.professional_id 
         : conversation.client_id
 
+      // Verificar se o destinatário é válido e diferente do remetente
+      if (!recipientId || recipientId === user.id) {
+        console.log('⚠️ Não enviando notificação: destinatário inválido ou igual ao remetente')
+        return
+      }
+
       const recipientName = user.id === conversation.client_id 
         ? conversation.professional?.full_name || 'Profissional'
         : conversation.client?.full_name || 'Cliente'
 
-      const senderName = conversation.client_id === user.id 
+      const senderName = user.id === conversation.client_id 
         ? conversation.client?.full_name || 'Usuário'
         : conversation.professional?.full_name || 'Usuário'
 

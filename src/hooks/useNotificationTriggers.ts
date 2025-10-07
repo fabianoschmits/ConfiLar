@@ -56,6 +56,13 @@ export function useNotificationTriggers() {
         
         if (processedActions.current.has(actionId)) continue
 
+        // Não criar notificação se o usuário é o próprio remetente
+        if (message.sender_id === user.id) {
+          console.log('⏭️ Ignorando mensagem: usuário é o próprio remetente')
+          processedActions.current.add(actionId)
+          continue
+        }
+
         // Verificar duplicação no banco de dados
         const isDuplicate = await NotificationControlService.isNotificationProcessed(
           'message',

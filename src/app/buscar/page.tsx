@@ -527,6 +527,28 @@ export default function BuscarPage() {
                             </h3>
                           </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {/* Tag de Tipo de Usuário */}
+                            <Badge 
+                              variant={profile.user_type === 'professional' ? 'default' : 'secondary'}
+                              className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
+                                profile.user_type === 'professional'
+                                  ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
+                                  : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
+                              }`}
+                            >
+                              {profile.user_type === 'professional' ? (
+                                <>
+                                  <Briefcase className="h-3 w-3" />
+                                  Profissional
+                                </>
+                              ) : (
+                                <>
+                                  <User className="h-3 w-3" />
+                                  Cliente
+                                </>
+                              )}
+                            </Badge>
+                            
                             {(() => {
                               // Usar disponibilidade do contexto se disponível, senão usar do perfil
                               const isAvailable = userAvailability[profile.id] !== undefined 
