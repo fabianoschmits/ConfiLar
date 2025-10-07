@@ -381,24 +381,86 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
          const deletePost = useCallback(async (postId: string) => {
            try {
-             // Primeiro, buscar informações do post para identificar notificações relacionadas
+             console.log('🗑️ Iniciando exclusão do post:', postId)
+             
+             // Verificar usuário atual
+             const { data: { user }, error: userError } = await supabase.auth.getUser()
+             if (userError || !user) {
+               console.error('❌ Erro ao obter usuário atual:', userError)
+               throw new Error('Usuário não autenticado')
+             }
+             
+             console.log('👤 Usuário atual:', user.id)
+             
+             // Buscar informações do post
              const { data: postData, error: fetchError } = await supabase
                .from('feed_posts')
-               .select('metadata, user_id, professional_id')
+               .select('metadata, user_id, professional_id, title')
                .eq('id', postId)
                .single()
 
              if (fetchError) {
-               console.warn('⚠️ Erro ao buscar dados do post para deleção:', fetchError.message)
+               console.error('❌ Erro ao buscar dados do post:', fetchError)
+               throw new Error('Post não encontrado')
              }
 
+             console.log('📋 Dados do post encontrados:', {
+               id: postId,
+               title: postData?.title,
+               user_id: postData?.user_id,
+               metadata: postData?.metadata
+             })
+             
+             // Verificar se o usuário tem permissão para deletar este post
+             if (postData?.user_id !== user.id) {
+               console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
+               console.error('❌ Post user_id:', postData?.user_id, '| Usuário atual:', user.id)
+               throw new Error('Você não tem permissão para deletar este post')
+             }
+             
+             console.log('✅ Permissão confirmada: usuário pode deletar este post')
+
              // Deletar do banco de dados
-             const { error } = await supabase
+             console.log('🗄️ Executando DELETE no banco de dados...')
+             const { error, count } = await supabase
                .from('feed_posts')
                .delete()
                .eq('id', postId)
+               .eq('user_id', user.id) // Adicionar verificação adicional de segurança
 
-             if (error) throw error
+             if (error) {
+               console.error('❌ Erro ao deletar post do banco:', error)
+               console.error('❌ Detalhes do erro:', {
+                 message: error.message,
+                 details: error.details,
+                 hint: error.hint,
+                 code: error.code
+               })
+               throw error
+             }
+
+             console.log('✅ Post deletado do banco com sucesso. Linhas afetadas:', count)
+
+             // Verificar se o post foi realmente deletado
+             if (count === 0) {
+               console.error('❌ PROBLEMA: Nenhuma linha foi afetada na exclusão!')
+               console.error('❌ Isso indica que o post não foi deletado ou não existe')
+               throw new Error('Post não foi deletado - nenhuma linha afetada')
+             }
+
+             // Verificar se o post foi realmente deletado
+             const { data: verifyData, error: verifyError } = await supabase
+               .from('feed_posts')
+               .select('id, title, user_id')
+               .eq('id', postId)
+               .single()
+
+             if (verifyError && verifyError.code === 'PGRST116') {
+               console.log('✅ Confirmação: Post foi deletado (não encontrado na verificação)')
+             } else if (verifyData) {
+               console.error('❌ PROBLEMA CRÍTICO: Post ainda existe no banco após exclusão:', verifyData)
+               throw new Error('Post não foi deletado do banco de dados')
+             }
 
              // Se o post tem metadata indicando que é um post automático, deletar notificações relacionadas
              if (postData?.metadata?.type) {
@@ -445,16 +507,28 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
              }
 
              // Atualizar cache local - remover o post
+             console.log('🔄 Atualizando cache local para remover post:', postId)
              queryClient.setQueryData(queryKey, (oldData: any) => {
-               if (!oldData) return oldData
-               return {
-                 ...oldData,
-                 pages: oldData.pages.map((page: any[]) =>
-                   page.filter((item: any) => !(item.id === postId && item.type === 'post'))
-                 )
+               if (!oldData) {
+                 console.log('⚠️ Cache vazio, não há dados para atualizar')
+                 return oldData
                }
+               
+               const updatedData = {
+                 ...oldData,
+                 pages: oldData.pages.map((page: any[]) => {
+                   const originalLength = page.length
+                   const filteredPage = page.filter((item: any) => !(item.id === postId && item.type === 'post'))
+                   console.log(`📄 Página atualizada: ${originalLength} → ${filteredPage.length} itens`)
+                   return filteredPage
+                 })
+               }
+               
+               console.log('✅ Cache atualizado com sucesso')
+               return updatedData
              })
 
+             console.log('🎉 Exclusão do post concluída com sucesso:', postId)
              return true
            } catch (error) {
              console.error('Erro ao deletar post:', error)
