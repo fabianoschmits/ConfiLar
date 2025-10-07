@@ -19,7 +19,13 @@ export function useTimelineRealtime() {
         (payload) => {
           console.log('🔄 Feed post atualizado:', payload)
           
-          // Invalidar cache da timeline
+          // Não invalidar cache para exclusões - isso pode causar posts deletados a reaparecerem
+          if (payload.eventType === 'DELETE') {
+            console.log('📝 Post deletado detectado, não invalidando cache para evitar reaparecimento')
+            return
+          }
+          
+          // Invalidar cache apenas para INSERT e UPDATE
           queryClient.invalidateQueries({
             queryKey: ['unified-timeline']
           })

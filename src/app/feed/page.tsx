@@ -35,6 +35,9 @@ export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
   const { profile, isMockMode } = useAuthContext()
   
+  // Estado para abas do feed
+  const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('all')
+  
   // Estados para filtros
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<TimelineFilters>({
@@ -208,6 +211,45 @@ export default function FeedPage() {
     return trending?.trending_reason
   }
 
+  // Função para identificar se um post é automático
+  const isAutomaticPost = (item: UnifiedTimelineItem) => {
+    if (item.type !== 'post') return false
+    
+    const post = item as any
+    const postType = post.metadata?.type
+    const isSimpleAutomaticPost = postType && ['favorite', 'recommendation'].includes(postType)
+    const isWelcomeUserPost = postType === 'welcome'
+    const isOldAutomaticPost = postType && ['review'].includes(postType)
+    
+    // Verificação adicional: se o título contém emojis de sistema
+    const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
+    
+    return isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
+  }
+
+  // Função para identificar se um post é manual (criado pelo usuário)
+  const isManualPost = (item: UnifiedTimelineItem) => {
+    if (item.type !== 'post') return false
+    return !isAutomaticPost(item)
+  }
+
+  // Filtrar itens baseado na aba ativa
+  const getFilteredItems = () => {
+    switch (activeTab) {
+      case 'posts':
+        // Mostrar apenas posts manuais (criados pelos usuários)
+        return items.filter(item => isManualPost(item))
+      case 'notifications':
+        // Mostrar apenas posts automáticos e notificações
+        return items.filter(item => item.type === 'notification' || isAutomaticPost(item))
+      case 'all':
+      default:
+        return items
+    }
+  }
+
+  const filteredItems = getFilteredItems()
+
 
   // Renderizar item da timeline baseado no tipo
   const renderTimelineItem = (item: UnifiedTimelineItem) => {
@@ -244,6 +286,65 @@ export default function FeedPage() {
       <ErrorHandler>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-3 md:px-4 py-1 md:py-2">
+        
+        {/* Abas do Feed */}
+        <div className="mb-4 md:mb-6">
+          <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-1">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  activeTab === 'all'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span>Todos</span>
+                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
+                  {items.length}
+                </span>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('posts')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  activeTab === 'posts'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0H7m8 0v3" />
+                </svg>
+                <span>Posts</span>
+                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
+                  {items.filter(item => isManualPost(item)).length}
+                </span>
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('notifications')}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
+                  activeTab === 'notifications'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
+                </svg>
+                <span>Notificações</span>
+                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
+                  {items.filter(item => item.type === 'notification' || isAutomaticPost(item)).length}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Botão de Filtros e Novo Post - Responsivo */}
         <div className="mb-2 md:mb-3 flex items-center justify-between gap-3">
           <Button
@@ -356,7 +457,7 @@ export default function FeedPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Timeline Principal */}
           <div className="lg:col-span-3 space-y-4 md:space-y-6">
-            {isLoading && items.length === 0 ? (
+            {isLoading && filteredItems.length === 0 ? (
               <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12">
                 <div className="flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -379,50 +480,80 @@ export default function FeedPage() {
                   Recarregar
                 </Button>
               </div>
-            ) : items.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
               <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border border-blue-200 shadow-lg p-12 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Seja o primeiro a compartilhar!</h3>
-                <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                  A comunidade ConfiLar está esperando para ver seus trabalhos incríveis! 
-                  Compartilhe fotos dos serviços que você realizou ou que foram feitos para você.
-                </p>
+                {activeTab === 'all' ? (
+                  <>
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Seja o primeiro a compartilhar!</h3>
+                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
+                      A comunidade ConfiLar está esperando para ver seus trabalhos incríveis! 
+                      Compartilhe fotos dos serviços que você realizou ou que foram feitos para você.
+                    </p>
+                  </>
+                ) : activeTab === 'posts' ? (
+                  <>
+                    <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0H7m8 0v3" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhum post dos usuários</h3>
+                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
+                      Ainda não há posts criados pelos usuários. Seja o primeiro a compartilhar seus trabalhos e experiências!
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhuma notificação automática</h3>
+                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
+                      Não há posts automáticos ou notificações do sistema no momento. Continue interagindo para ver atualizações!
+                    </p>
+                  </>
+                )}
                 
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 mb-6 border border-blue-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">💡 O que você pode compartilhar:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                      <span>Reformas e construções</span>
-                    </div>
-                      <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span>Limpeza e organização</span>
+                {activeTab === 'all' && (
+                  <>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 mb-6 border border-blue-200">
+                      <h4 className="font-semibold text-gray-900 mb-3">💡 O que você pode compartilhar:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <span>Reformas e construções</span>
+                        </div>
+                          <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span>Limpeza e organização</span>
+                          </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                          <span>Jardinagem e paisagismo</span>
+                          </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                          <span>Serviços domésticos</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                          <span>Reparos e manutenção</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                          <span>E muito mais!</span>
+                        </div>
                       </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                      <span>Jardinagem e paisagismo</span>
-                      </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                      <span>Serviços domésticos</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                      <span>Reparos e manutenção</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                      <span>E muito mais!</span>
-                    </div>
-                  </div>
-                      </div>
 
-                {profile?.user_type === 'professional' ? (
+                    {profile?.user_type === 'professional' ? (
                   <Button 
                     onClick={() => setShowNewPostForm(true)}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
@@ -453,10 +584,36 @@ export default function FeedPage() {
                     </div>
                   </div>
                 )}
+                  </>
+                )}
+
+                {activeTab === 'posts' && (
+                  <Button 
+                    onClick={() => setShowNewPostForm(true)}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Criar Primeiro Post
+                  </Button>
+                )}
+
+                {activeTab === 'notifications' && (
+                  <div className="space-y-4">
+                    <p className="text-gray-600 text-sm">
+                      Posts automáticos incluem: boas-vindas de novos usuários, favoritos, recomendações e avaliações.
+                    </p>
+                    <Button 
+                      onClick={() => setActiveTab('all')}
+                      className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
+                    >
+                      Ver Timeline Completa
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <>
-                {items.map(renderTimelineItem)}
+                {filteredItems.map(renderTimelineItem)}
                 
                 {/* Botão Carregar Mais */}
                 {hasNextPage && (
