@@ -77,6 +77,27 @@ export default function FeedPage() {
     location_filter: currentFilter
   })
 
+  // Função para identificar se um post é automático
+  const isAutomaticPost = (item: UnifiedTimelineItem) => {
+    if (item.type !== 'post') return false
+    
+    const post = item as any
+    const postType = post.metadata?.type
+    const isSimpleAutomaticPost = postType && ['favorite', 'recommendation'].includes(postType)
+    const isWelcomeUserPost = postType === 'welcome'
+    const isOldAutomaticPost = postType && ['review'].includes(postType)
+    
+    // Verificação adicional: se o título contém emojis de sistema
+    const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
+    
+    return isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
+  }
+
+  // Função para identificar se um post é manual (criado pelo usuário)
+  const isManualPost = (item: UnifiedTimelineItem) => {
+    if (item.type !== 'post') return false
+    return !isAutomaticPost(item)
+  }
 
   // Filtrar itens baseado na aba ativa
   const getFilteredItems = () => {
@@ -256,27 +277,6 @@ export default function FeedPage() {
     return trending?.trending_reason
   }
 
-  // Função para identificar se um post é automático
-  const isAutomaticPost = (item: UnifiedTimelineItem) => {
-    if (item.type !== 'post') return false
-    
-    const post = item as any
-    const postType = post.metadata?.type
-    const isSimpleAutomaticPost = postType && ['favorite', 'recommendation'].includes(postType)
-    const isWelcomeUserPost = postType === 'welcome'
-    const isOldAutomaticPost = postType && ['review'].includes(postType)
-    
-    // Verificação adicional: se o título contém emojis de sistema
-    const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
-    
-    return isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
-  }
-
-  // Função para identificar se um post é manual (criado pelo usuário)
-  const isManualPost = (item: UnifiedTimelineItem) => {
-    if (item.type !== 'post') return false
-    return !isAutomaticPost(item)
-  }
 
 
 
