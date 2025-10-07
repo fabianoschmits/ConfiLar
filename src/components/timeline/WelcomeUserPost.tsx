@@ -92,7 +92,7 @@ export function WelcomeUserPost({
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
                 <Avatar className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                  <AvatarImage src={post.metadata?.avatar_url || ''} />
+                  <AvatarImage src={post.metadata?.avatar_url || ''} alt={`Avatar de ${post.metadata?.user || 'Usuário'}`} />
                   <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                     {post.metadata?.user?.charAt(0).toUpperCase() || 'N'}
                   </AvatarFallback>

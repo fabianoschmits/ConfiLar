@@ -130,7 +130,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       <Card className={`p-3 ${isReply ? 'border-l-2 border-blue-200 bg-blue-50/30' : ''}`}>
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
-            <AvatarImage src={comment.user.avatar_url} />
+            <AvatarImage src={comment.user.avatar_url} alt={`Avatar de ${comment.user.full_name}`} />
             <AvatarFallback>
               {comment.user.full_name.charAt(0).toUpperCase()}
             </AvatarFallback>

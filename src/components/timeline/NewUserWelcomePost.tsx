@@ -127,7 +127,7 @@ export function NewUserWelcomePost({
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
                 <Avatar className="w-12 h-12 md:w-14 md:h-14 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                  <AvatarImage src={userAvatar} />
+                  <AvatarImage src={userAvatar} alt={`Avatar de ${userName}`} />
                   <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm md:text-base">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>

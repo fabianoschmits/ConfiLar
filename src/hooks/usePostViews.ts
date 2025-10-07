@@ -49,12 +49,15 @@ export function usePostViews(postId: string) {
       if (!user?.id) throw new Error('Usuário não autenticado')
 
       try {
+        // Usar upsert para evitar conflitos de duplicata
         const { data, error } = await supabase
           .from('post_views')
-          .insert({
+          .upsert({
             post_id: postId,
             user_id: user.id,
             viewed_at: new Date().toISOString()
+          }, {
+            onConflict: 'post_id,user_id' // Especificar colunas de conflito
           })
           .select()
           .single()

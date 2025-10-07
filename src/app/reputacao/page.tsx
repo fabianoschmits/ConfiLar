@@ -652,7 +652,7 @@ export default function ReputacaoPage() {
                                     }}
                                   >
                                     <Avatar className="w-8 h-8">
-                                      <AvatarImage src={user.avatar_url} />
+                                      <AvatarImage src={user.avatar_url} alt={`Avatar de ${user.full_name}`} />
                                       <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div>
@@ -802,7 +802,7 @@ export default function ReputacaoPage() {
                         <div key={review.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed.avatar_url || ''} />
+                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed.avatar_url || ''} alt={`Avatar de ${reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}`} />
                               <AvatarFallback className="bg-blue-100 text-blue-600">
                                 {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name).charAt(0)}
                               </AvatarFallback>
@@ -921,7 +921,7 @@ export default function ReputacaoPage() {
                                     }}
                                   >
                                     <Avatar className="w-8 h-8">
-                                      <AvatarImage src={user.avatar_url} />
+                                      <AvatarImage src={user.avatar_url} alt={`Avatar de ${user.full_name}`} />
                                       <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div>
@@ -1039,7 +1039,7 @@ export default function ReputacaoPage() {
                         <div key={rec.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <AvatarImage src={recommendationsSubTab === 'received' ? rec.recommender.avatar_url || '' : rec.recommended.avatar_url || ''} />
+                              <AvatarImage src={recommendationsSubTab === 'received' ? rec.recommender.avatar_url || '' : rec.recommended.avatar_url || ''} alt={`Avatar de ${recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}`} />
                               <AvatarFallback className="bg-green-100 text-green-600">
                                 {(recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name).charAt(0)}
                               </AvatarFallback>

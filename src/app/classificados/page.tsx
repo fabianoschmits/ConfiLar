@@ -766,7 +766,7 @@ export default function ClassificadosPage() {
                         <div className="relative self-center sm:self-start">
                           <Link href={`/perfil/${selectedAd.user_id}`} className="block">
                             <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
-                              <AvatarImage src={selectedAd.user_avatar_url} />
+                              <AvatarImage src={selectedAd.user_avatar_url} alt={`Avatar de ${selectedAd.user_name}`} />
                               <AvatarFallback className={`font-medium text-sm sm:text-lg ${
                                 selectedAd.ad_type === 'oferecer' 
                                   ? 'bg-gray-200 text-gray-800' 
@@ -932,7 +932,7 @@ export default function ClassificadosPage() {
                       <div className="relative">
                         <Link href={`/perfil/${ad.user_id}`} className="block">
                           <Avatar className="w-12 h-12 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
-                            <AvatarImage src={ad.user_avatar_url} />
+                            <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
                             <AvatarFallback className={`font-medium ${
                               ad.ad_type === 'oferecer' 
                                 ? 'bg-gray-200 text-gray-800' 
