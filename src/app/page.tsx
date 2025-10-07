@@ -42,7 +42,7 @@ import {
   Laptop,
   Tablet
 } from 'lucide-react'
-import { services } from '@/data/services'
+import { services, getServicesGroupedByCategory } from '@/data/services'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 
 function HomeContent() {
@@ -51,6 +51,7 @@ function HomeContent() {
   const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showServicesModal, setShowServicesModal] = useState(false)
   const { professionalsCount, reviewsCount, citiesCount, servicesCount, loading: statsLoading } = useHomeStats()
 
   useEffect(() => {
@@ -97,28 +98,22 @@ function HomeContent() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            {/* Desktop Navigation - Simplificado */}
+            <nav className="hidden md:flex items-center space-x-6">
               <Link href="/sobre" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Sobre
               </Link>
               <Link href="/ajuda" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Ajuda
               </Link>
-              <Link href="/buscar" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Buscar
-              </Link>
-              <Link href="/classificados" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Classificados
-              </Link>
             </nav>
 
             {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" asChild>
+            <div className="hidden md:flex items-center space-x-3">
+              <Button variant="ghost" asChild className="text-gray-700 hover:text-gray-900">
                 <Link href="/auth">Entrar</Link>
               </Button>
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Link href="/auth">Criar Conta</Link>
               </Button>
             </div>
@@ -132,7 +127,7 @@ function HomeContent() {
             </button>
           </div>
 
-          {/* Mobile Menu */}
+          {/* Mobile Menu - Simplificado */}
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-4">
               <nav className="flex flex-col space-y-4">
@@ -142,17 +137,11 @@ function HomeContent() {
                 <Link href="/ajuda" className="text-gray-600 hover:text-gray-900 transition-colors">
                   Ajuda
                 </Link>
-                <Link href="/buscar" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Buscar
-                </Link>
-                <Link href="/classificados" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Classificados
-                </Link>
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
-                  <Button variant="ghost" asChild className="justify-start">
+                  <Button variant="ghost" asChild className="justify-start text-gray-700">
                     <Link href="/auth">Entrar</Link>
                   </Button>
-                  <Button asChild className="bg-blue-600 hover:bg-blue-700 justify-start">
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white justify-start">
                     <Link href="/auth">Criar Conta</Link>
                   </Button>
                 </div>
@@ -352,11 +341,12 @@ function HomeContent() {
           </div>
 
           <div className="text-center mt-8">
-            <Button variant="outline" asChild>
-              <Link href="/buscar">
-                Ver Todos os Serviços
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowServicesModal(true)}
+            >
+              Ver Todas as Categorias
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -414,29 +404,181 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-            Pronto para Começar?
-          </h2>
-          <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-            Junte-se a milhares de usuários que já confiam no ConfiLar 
-            para conectar-se com profissionais qualificados.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3">
-              <Link href="/auth">
-                Criar Conta Grátis
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-3">
-              <Link href="/buscar">
-                <Search className="mr-2 h-5 w-5" />
-                Explorar Profissionais
-              </Link>
-            </Button>
+      {/* Sistema de Recomendações e Favoritos */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+              Sistema de Confiança e Credibilidade
+            </h2>
+            <p className="text-gray-600 max-w-3xl mx-auto">
+              Nossa plataforma oferece ferramentas transparentes para você tomar decisões mais seguras 
+              e confiáveis ao escolher profissionais.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Sistema de Recomendações */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Sistema de Recomendações</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-green-600">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Recomendações Públicas</h4>
+                    <p className="text-sm text-gray-600">
+                      Usuários podem recomendar profissionais que já contrataram, 
+                      criando um histórico público de experiências positivas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-green-600">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Transparência Total</h4>
+                    <p className="text-sm text-gray-600">
+                      Você pode ver exatamente quem recomendou cada profissional, 
+                      incluindo nome, foto e data da recomendação.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-green-600">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Credibilidade Comprovada</h4>
+                    <p className="text-sm text-gray-600">
+                      Cada recomendação é uma prova real de qualidade, 
+                      ajudando você a escolher profissionais confiáveis.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sistema de Favoritos */}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Star className="h-6 w-6 text-yellow-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Sistema de Favoritos</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-yellow-600">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Lista Pessoal</h4>
+                    <p className="text-sm text-gray-600">
+                      Salve profissionais que chamaram sua atenção em sua lista de favoritos 
+                      para consultar facilmente depois.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-yellow-600">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Visibilidade Pública</h4>
+                    <p className="text-sm text-gray-600">
+                      Profissionais podem ver quantas pessoas os adicionaram aos favoritos, 
+                      aumentando sua credibilidade na plataforma.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-yellow-600">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Indicador de Popularidade</h4>
+                    <p className="text-sm text-gray-600">
+                      O número de favoritos serve como um indicador de qualidade e 
+                      popularidade entre os usuários da plataforma.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Benefícios do Sistema */}
+          <div className="mt-16 bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+            <h3 className="text-xl font-semibold text-gray-900 text-center mb-8">
+              Por que isso é importante para você?
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-blue-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Mais Segurança</h4>
+                <p className="text-sm text-gray-600">
+                  Veja quem já contratou e aprovou o profissional antes de tomar sua decisão.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 text-green-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Comunidade Ativa</h4>
+                <p className="text-sm text-gray-600">
+                  Participe de uma rede de usuários que compartilham experiências reais.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="h-8 w-8 text-purple-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Qualidade Garantida</h4>
+                <p className="text-sm text-gray-600">
+                  Profissionais com mais recomendações e favoritos são mais confiáveis.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          <div className="text-center mt-12">
+            <p className="text-gray-600 mb-6">
+              Quer começar a usar essas ferramentas para encontrar os melhores profissionais?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Link href="/auth">
+                  Criar Conta Grátis
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/buscar">
+                  <Search className="mr-2 h-4 w-4" />
+                  Explorar Profissionais
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -494,6 +636,86 @@ function HomeContent() {
         </div>
       </footer>
       </div>
+
+      {/* Modal de Todas as Categorias */}
+      {showServicesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header do Modal */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Todas as Categorias de Serviços</h2>
+                <p className="text-gray-600 mt-1">Explore todos os serviços disponíveis na plataforma</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowServicesModal(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Conteúdo do Modal */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="space-y-8">
+                {Object.entries(getServicesGroupedByCategory()).map(([category, categoryServices]) => (
+                  <div key={category}>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <span className="text-2xl mr-3">{categoryServices[0]?.icon}</span>
+                      {category}
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {categoryServices.map((service) => (
+                        <Card 
+                          key={service.id} 
+                          className="border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                          onClick={() => {
+                            setShowServicesModal(false)
+                            router.push(`/buscar?service=${service.id}`)
+                          }}
+                        >
+                          <CardContent className="p-3 text-center">
+                            <div className="text-xl mb-2">{service.icon}</div>
+                            <h4 className="text-xs font-medium text-gray-900 leading-tight">{service.name}</h4>
+                            {service.description && (
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{service.description}</p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer do Modal */}
+            <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+              <p className="text-sm text-gray-600">
+                Total de {services.length} serviços disponíveis
+              </p>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowServicesModal(false)}
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowServicesModal(false)
+                    router.push('/buscar')
+                  }}
+                >
+                  Buscar Profissionais
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PublicLayout>
   )
 }

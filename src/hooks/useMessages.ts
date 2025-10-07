@@ -262,8 +262,14 @@ export function useMessages() {
     }
   }, [user?.id, addNotification])
 
-  // Função para enviar notificação automática de nova conversa
+  // Função para enviar notificação automática de nova conversa - DESABILITADA
   const sendNewConversationNotification = useCallback(async (conversation: Conversation) => {
+    // NOTIFICAÇÃO DE CONVERSA INICIADA DESABILITADA
+    console.log('📨 Notificação de nova conversa desabilitada - não enviando notificação')
+    return
+    
+    // Código original comentado para referência:
+    /*
     if (!user?.id) return
 
     try {
@@ -299,6 +305,7 @@ export function useMessages() {
     } catch (error) {
       console.error('Erro ao enviar notificação de nova conversa:', error)
     }
+    */
   }, [user, addNotification])
 
   // Enviar mensagem
