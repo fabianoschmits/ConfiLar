@@ -411,14 +411,6 @@ export default function FeedPage() {
           )}
         </div>
 
-        {/* Aviso de Modo Mock */}
-        {isMockMode && (
-          <div className="mt-8 p-4 bg-yellow-100 border border-yellow-300 rounded-lg text-center">
-            <p className="text-yellow-800 text-sm">
-              ⚠️ Modo de desenvolvimento ativo - Dados simulados para demonstração
-            </p>
-          </div>
-        )}
       </div>
     </MainLayout>
   )
