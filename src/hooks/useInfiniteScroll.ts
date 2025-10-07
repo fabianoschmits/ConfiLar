@@ -20,6 +20,13 @@ export function useInfiniteScroll({
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries
       
+      console.log('🔍 Intersection Observer:', {
+        isIntersecting: target.isIntersecting,
+        hasNextPage,
+        isFetchingNextPage,
+        shouldLoad: target.isIntersecting && hasNextPage && !isFetchingNextPage
+      })
+      
       if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
         console.log('🔄 Carregando mais posts automaticamente...')
         fetchNextPage()

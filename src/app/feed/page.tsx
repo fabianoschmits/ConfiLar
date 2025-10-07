@@ -77,12 +77,50 @@ export default function FeedPage() {
     location_filter: currentFilter
   })
 
+
+  // Filtrar itens baseado na aba ativa
+  const getFilteredItems = () => {
+    switch (activeTab) {
+      case 'posts':
+        // Mostrar apenas posts manuais (criados pelos usuários)
+        return items.filter(item => isManualPost(item))
+      case 'notifications':
+        // Mostrar apenas posts automáticos e notificações
+        return items.filter(item => item.type === 'notification' || isAutomaticPost(item))
+      case 'all':
+      default:
+        return items
+    }
+  }
+
+  const filteredItems = getFilteredItems()
+
+  // Determinar se há próxima página baseado na aba ativa
+  const shouldShowLoadMore = () => {
+    // Se estamos na aba "all", usar a lógica original
+    if (activeTab === 'all') {
+      return hasNextPage
+    }
+    
+    // Para abas específicas, só mostrar se há mais dados originais E se os dados filtrados são poucos
+    return hasNextPage && filteredItems.length < 10
+  }
+
   // Hook para infinite scroll - carregamento automático ao fazer scroll
   const { loadingRef } = useInfiniteScroll({
-    hasNextPage: hasNextPage || false,
+    hasNextPage: shouldShowLoadMore(),
     isFetchingNextPage: isFetchingNextPage || false,
     fetchNextPage: loadMore,
     threshold: 300 // Carregar quando estiver a 300px do final
+  })
+
+  // Debug: log dos valores do infinite scroll
+  console.log('🔄 Feed Infinite Scroll Debug:', {
+    hasNextPage,
+    isFetchingNextPage,
+    itemsLength: items.length,
+    filteredItemsLength: filteredItems.length,
+    activeTab
   })
 
   // Debug: log do filtro atual
@@ -240,22 +278,6 @@ export default function FeedPage() {
     return !isAutomaticPost(item)
   }
 
-  // Filtrar itens baseado na aba ativa
-  const getFilteredItems = () => {
-    switch (activeTab) {
-      case 'posts':
-        // Mostrar apenas posts manuais (criados pelos usuários)
-        return items.filter(item => isManualPost(item))
-      case 'notifications':
-        // Mostrar apenas posts automáticos e notificações
-        return items.filter(item => item.type === 'notification' || isAutomaticPost(item))
-      case 'all':
-      default:
-        return items
-    }
-  }
-
-  const filteredItems = getFilteredItems()
 
 
   // Renderizar item da timeline baseado no tipo
@@ -623,7 +645,7 @@ export default function FeedPage() {
                 {filteredItems.map(renderTimelineItem)}
                 
                 {/* Loading automático para infinite scroll */}
-                {hasNextPage && (
+                {shouldShowLoadMore() && (
                   <div 
                     ref={loadingRef}
                     className="flex justify-center py-6"
