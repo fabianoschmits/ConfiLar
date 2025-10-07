@@ -600,13 +600,13 @@ export default function AvaliacoesPage() {
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <div className="flex -space-x-1 sm:-space-x-2 flex-shrink-0">
                               <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-white">
-                                <AvatarImage src={request.requester_avatar} />
+                                <AvatarImage src={request.requester_avatar} alt={`Avatar de ${request.requester_name}`} />
                                 <AvatarFallback>
                                   {request.requester_name?.charAt(0)}
                                 </AvatarFallback>
                               </Avatar>
                               <Avatar className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-white">
-                                <AvatarImage src={request.target_avatar} />
+                                <AvatarImage src={request.target_avatar} alt={`Avatar de ${request.target_name}`} />
                                 <AvatarFallback>
                                   {request.target_name?.charAt(0)}
                                 </AvatarFallback>
@@ -786,7 +786,7 @@ export default function AvaliacoesPage() {
                         <div key={review.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed?.avatar_url || ''} />
+                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed?.avatar_url || ''} alt={`Avatar de ${reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name}`} />
                               <AvatarFallback className="bg-blue-100 text-blue-600">
                                 {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || '').charAt(0)}
                               </AvatarFallback>

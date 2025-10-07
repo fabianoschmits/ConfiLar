@@ -290,7 +290,7 @@ export function RecommendationModal({
                   <div key={rec.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-12 w-12 border-2 border-gray-200">
-                        <AvatarImage src={rec.recommender.avatar_url || ''} />
+                        <AvatarImage src={rec.recommender.avatar_url || ''} alt={`Avatar de ${rec.recommender.full_name}`} />
                         <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                           {rec.recommender.full_name?.charAt(0) || <User className="h-5 w-5" />}
                         </AvatarFallback>

@@ -172,7 +172,7 @@ export function TimelinePost({
           <div className="flex-shrink-0">
             <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
               <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                <AvatarImage src={post.user_avatar || ''} />
+                <AvatarImage src={post.user_avatar || ''} alt={`Avatar de ${post.user_name}`} />
                 <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm">
                   {post.user_name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>

@@ -31,7 +31,7 @@ export function TimelineActivity({ activity }: TimelineActivityProps) {
         <div className="flex items-center space-x-3">
           <Link href={`/perfil/${activity.user_id}`} className="hover:opacity-80 transition-opacity">
             <Avatar className="w-12 h-12 cursor-pointer">
-              <AvatarImage src={activity.user_avatar || ''} />
+              <AvatarImage src={activity.user_avatar || ''} alt={`Avatar de ${activity.user_name}`} />
               <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                 {activity.user_name?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>

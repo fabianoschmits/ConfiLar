@@ -303,7 +303,7 @@ export default function FavoritesPage() {
                         {/* Header do Card com Avatar e Info do Usuário */}
                         <div className="flex items-start space-x-3 mb-3">
                           <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
-                            <AvatarImage src={favorite.professional?.avatar_url} />
+                            <AvatarImage src={favorite.professional?.avatar_url} alt={`Avatar de ${favorite.professional?.full_name}`} />
                             <AvatarFallback className={`font-medium ${
                               favorite.professional?.user_type === 'professional' 
                                 ? 'bg-gray-200 text-gray-800' 

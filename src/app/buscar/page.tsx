@@ -511,7 +511,7 @@ export default function BuscarPage() {
                           className="flex-shrink-0 cursor-pointer relative"
                         >
                           <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                            <AvatarImage src={profile.avatar_url || ''} />
+                            <AvatarImage src={profile.avatar_url || ''} alt={`Avatar de ${profile.full_name}`} />
                             <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                               {profile.full_name?.charAt(0).toUpperCase() || 'P'}
                             </AvatarFallback>
