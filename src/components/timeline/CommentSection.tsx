@@ -126,8 +126,8 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
   }
 
   const renderComment = (comment: CommentType, isReply = false) => (
-    <div key={comment.id} className={`${isReply ? 'ml-6 mt-2' : ''}`}>
-      <Card className="p-3">
+    <div key={comment.id} className={`${isReply ? 'relative' : ''}`}>
+      <Card className={`p-3 ${isReply ? 'border-l-2 border-blue-200 bg-blue-50/30' : ''}`}>
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src={comment.user.avatar_url} />
@@ -146,6 +146,17 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
               <span className="text-xs text-gray-400">
                 {formatTimeAgo(comment.created_at)}
               </span>
+              
+              {/* Indicador de resposta */}
+              {isReply && (
+                <>
+                  <span className="text-xs text-gray-400">•</span>
+                  <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                    <Reply className="w-3 h-3" />
+                    Resposta
+                  </span>
+                </>
+              )}
             </div>
             
             {/* Conteúdo do comentário - modo edição ou visualização */}
@@ -243,8 +254,20 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       
       {/* Renderizar respostas */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-2 space-y-2">
-          {comment.replies.map(reply => renderComment(reply, true))}
+        <div className="mt-3 ml-4 relative">
+          {/* Linha vertical principal para conectar todas as respostas */}
+          <div className="absolute -left-4 top-0 bottom-0 w-px bg-gray-200"></div>
+          
+          {/* Container das respostas */}
+          <div className="space-y-2">
+            {comment.replies.map((reply, index) => (
+              <div key={reply.id} className="relative">
+                {/* Linha horizontal para cada resposta */}
+                <div className="absolute -left-4 top-6 w-4 h-px bg-gray-200"></div>
+                {renderComment(reply, true)}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
