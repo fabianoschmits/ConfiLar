@@ -20,15 +20,9 @@ export interface DashboardMetrics {
   // Métricas específicas por tipo de usuário
   professionalMetrics?: {
     totalServices: number
-    activeAgreements: number
-    completedAgreements: number
-    totalAgreements: number
   }
   
   clientMetrics?: {
-    totalAgreements: number
-    activeAgreements: number
-    completedAgreements: number
     favoriteProfessionals: number
   }
   
@@ -57,6 +51,85 @@ export function useDashboardMetrics() {
   
   const { user, profile } = useAuthContext()
   const { getViewStats } = useProfileViews()
+
+  const calculateGrowth = async (userId: string, type: 'views' | 'contacts' | 'reviews') => {
+    try {
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      
+      let currentCount = 0
+      let previousCount = 0
+
+      if (type === 'views') {
+        // Buscar visualizações dos últimos 30 dias
+        const { data: recentViews } = await supabase
+          .from('profile_views')
+          .select('id')
+          .eq('viewed_id', userId)
+          .gte('created_at', thirtyDaysAgo.toISOString())
+
+        // Buscar visualizações dos 30 dias anteriores
+        const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+        const { data: previousViews } = await supabase
+          .from('profile_views')
+          .select('id')
+          .eq('viewed_id', userId)
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString())
+
+        currentCount = recentViews?.length || 0
+        previousCount = previousViews?.length || 0
+      } else if (type === 'contacts') {
+        // Buscar mensagens dos últimos 30 dias
+        const { data: recentMessages } = await supabase
+          .from('messages')
+          .select('id')
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+          .gte('created_at', thirtyDaysAgo.toISOString())
+
+        // Buscar mensagens dos 30 dias anteriores
+        const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+        const { data: previousMessages } = await supabase
+          .from('messages')
+          .select('id')
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString())
+
+        currentCount = recentMessages?.length || 0
+        previousCount = previousMessages?.length || 0
+      } else if (type === 'reviews') {
+        // Buscar avaliações dos últimos 30 dias
+        const { data: recentReviews } = await supabase
+          .from('reviews')
+          .select('id')
+          .eq('reviewed_id', userId)
+          .gte('created_at', thirtyDaysAgo.toISOString())
+
+        // Buscar avaliações dos 30 dias anteriores
+        const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+        const { data: previousReviews } = await supabase
+          .from('reviews')
+          .select('id')
+          .eq('reviewed_id', userId)
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString())
+
+        currentCount = recentReviews?.length || 0
+        previousCount = previousReviews?.length || 0
+      }
+
+      // Calcular porcentagem de crescimento
+      if (previousCount === 0) {
+        return currentCount > 0 ? 100 : 0
+      }
+      
+      return Math.round(((currentCount - previousCount) / previousCount) * 100)
+    } catch (error) {
+      console.error('Erro ao calcular crescimento:', error)
+      return 0
+    }
+  }
 
   const fetchMetrics = useCallback(async () => {
     if (!user?.id || !profile) {
@@ -102,10 +175,10 @@ export function useDashboardMetrics() {
         ? reviewsData.reduce((sum, review) => sum + review.rating_person, 0) / reviewsData.length 
         : 0
 
-      // Calcular crescimento (simulado)
-      const viewsGrowth = Math.floor(Math.random() * 50) - 10 // -10% a +40%
-      const contactsGrowth = Math.floor(Math.random() * 30) - 5 // -5% a +25%
-      const reviewsGrowth = Math.floor(Math.random() * 20) - 5 // -5% a +15%
+      // Calcular crescimento baseado em dados reais (últimos 30 dias)
+      const viewsGrowth = await calculateGrowth(user.id, 'views')
+      const contactsGrowth = await calculateGrowth(user.id, 'contacts')
+      const reviewsGrowth = await calculateGrowth(user.id, 'reviews')
 
       // Métricas específicas por tipo de usuário
       let professionalMetrics = undefined
@@ -115,43 +188,18 @@ export function useDashboardMetrics() {
         // Buscar serviços oferecidos
         const servicesCount = profile.professional_services?.length || 0
         
-        // Buscar acordos
-        const { data: agreementsData } = await supabase
-          .from('contact_agreements')
-          .select('id, status')
-          .eq('professional_id', user.id)
-
-        const totalAgreements = agreementsData?.length || 0
-        const activeAgreements = agreementsData?.filter(a => a.status === 'accepted').length || 0
-        const completedAgreements = agreementsData?.filter(a => a.status === 'completed').length || 0
-        
         professionalMetrics = {
-          totalServices: servicesCount,
-          totalAgreements,
-          activeAgreements,
-          completedAgreements
+          totalServices: servicesCount
         }
       } else {
-        // Métricas para clientes
-        const { data: agreementsData } = await supabase
-          .from('contact_agreements')
-          .select('id, status, professional_id')
-          .eq('client_id', user.id)
-
-        const totalAgreements = agreementsData?.length || 0
-        const activeAgreements = agreementsData?.filter(a => a.status === 'accepted').length || 0
-        const completedAgreements = agreementsData?.filter(a => a.status === 'completed').length || 0
-        
-        // Contar profissionais únicos
-        const uniqueProfessionals = new Set(
-          agreementsData?.map(agreement => agreement.professional_id) || []
-        ).size
+        // Métricas para clientes - buscar profissionais favoritos
+        const { data: favoritesData } = await supabase
+          .from('favorites')
+          .select('id')
+          .eq('user_id', user.id)
 
         clientMetrics = {
-          totalAgreements,
-          activeAgreements,
-          completedAgreements,
-          favoriteProfessionals: uniqueProfessionals
+          favoriteProfessionals: favoritesData?.length || 0
         }
       }
 
@@ -226,22 +274,22 @@ export function useDashboardMetrics() {
         })
       })
 
-      // Buscar acordos recentes (otimizado)
-      const { data: recentAgreements } = await supabase
-        .from('contact_agreements')
-        .select('id, status, service_description, created_at')
-        .or(`client_id.eq.${userId},professional_id.eq.${userId}`)
+      // Buscar visualizações recentes (otimizado)
+      const { data: recentViews } = await supabase
+        .from('profile_views')
+        .select('id, created_at')
+        .eq('viewed_id', userId)
         .order('created_at', { ascending: false })
-        .limit(2) // Reduzir para 2 acordos
+        .limit(2) // Reduzir para 2 visualizações
 
-      recentAgreements?.forEach(agreement => {
+      recentViews?.forEach(view => {
         activities.push({
-          id: `agreement-${agreement.id}`,
-          type: 'agreement' as const,
-          title: 'Novo acordo',
-          description: `Acordo ${agreement.status} - ${agreement.service_description?.substring(0, 30) || 'Serviço'}...`,
-          timestamp: agreement.created_at,
-          icon: '🤝'
+          id: `view-${view.id}`,
+          type: 'view' as const,
+          title: 'Nova visualização',
+          description: 'Seu perfil foi visualizado',
+          timestamp: view.created_at,
+          icon: '👁️'
         })
       })
 

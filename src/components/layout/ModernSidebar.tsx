@@ -85,39 +85,10 @@ export function ModernSidebar() {
       items: [
         {
           id: 'home',
-          title: 'Dashboard',
+          title: 'Home',
           href: '/home',
           icon: <Home className="h-4 w-4" />,
           description: 'Visão geral'
-        },
-        {
-          id: 'dashboard',
-          title: 'Métricas',
-          href: '/dashboard',
-          icon: <BarChart3 className="h-4 w-4" />,
-          description: 'Estatísticas'
-        },
-      ]
-    },
-    {
-      id: 'discovery',
-      title: 'Descobrir',
-      icon: <Search className="h-5 w-5" />,
-      color: 'green',
-      items: [
-        {
-          id: 'search',
-          title: 'Buscar Profissionais',
-          href: '/buscar',
-          icon: <Search className="h-4 w-4" />,
-          description: 'Encontre profissionais'
-        },
-        {
-          id: 'classificados',
-          title: 'Classificados',
-          href: '/classificados',
-          icon: <Briefcase className="h-4 w-4" />,
-          description: 'Anúncios e ofertas'
         },
         {
           id: 'feed',
@@ -127,36 +98,26 @@ export function ModernSidebar() {
           description: 'Atualizações'
         },
         {
-          id: 'reviews',
-          title: 'Avaliações',
-          href: '/avaliacoes',
-          icon: <Star className="h-4 w-4" />,
-          description: 'Avalie serviços'
-        }
-      ]
-    },
-    {
-      id: 'communication',
-      title: 'Comunicação',
-      icon: <MessageCircle className="h-5 w-5" />,
-      color: 'purple',
-      items: [
-        ...(isLoggedIn ? [{
-          id: 'messages',
-          title: 'Mensagens',
-          href: '#',
-          icon: <MessageCircle className="h-4 w-4" />,
-          badge: unreadCount > 0 ? unreadCount.toString() : undefined,
-          badgeColor: 'bg-red-500',
-          description: 'Chat com profissionais',
-          onClick: () => openChat()
-        }] : [{
-          id: 'login',
-          title: 'Fazer Login',
-          href: '/auth',
-          icon: <User className="h-4 w-4" />,
-          description: 'Acesse sua conta'
-        }])
+          id: 'search',
+          title: 'Buscar',
+          href: '/buscar',
+          icon: <Search className="h-4 w-4" />,
+          description: 'Profissionais/Clientes'
+        },
+        {
+          id: 'classificados',
+          title: 'Classificados',
+          href: '/classificados',
+          icon: <Briefcase className="h-4 w-4" />,
+          description: 'Anúncios e ofertas'
+        },
+        {
+          id: 'dashboard',
+          title: 'Métricas',
+          href: '/dashboard',
+          icon: <BarChart3 className="h-4 w-4" />,
+          description: 'Estatísticas'
+        },
       ]
     },
     ...(isLoggedIn ? [{
@@ -171,6 +132,23 @@ export function ModernSidebar() {
           href: '/favoritos',
           icon: <Heart className="h-4 w-4" />,
           description: 'Profissionais favoritos'
+        },
+        {
+          id: 'reviews',
+          title: 'Avaliações',
+          href: '/avaliacoes',
+          icon: <Star className="h-4 w-4" />,
+          description: 'Avalie serviços'
+        },
+        {
+          id: 'messages',
+          title: 'Mensagens',
+          href: '#',
+          icon: <MessageCircle className="h-4 w-4" />,
+          badge: unreadCount > 0 ? unreadCount.toString() : undefined,
+          badgeColor: 'bg-red-500',
+          description: 'Chat com profissionais',
+          onClick: () => openChat()
         },
       ]
     }] : []),
