@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TrendingPost } from '@/hooks/usePostRanking'
-import { usePostRanking } from '@/hooks/usePostRanking'
-import { usePostRankingMock } from '@/hooks/usePostRankingMock'
+import { TrendingPost, usePostRanking } from '@/hooks/usePostRanking'
 import { Flame, TrendingUp, Star, MapPin, Eye, Heart, MessageCircle } from 'lucide-react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
@@ -25,7 +23,7 @@ export function TrendingPosts({
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   
-  const { trendingPosts, isLoading, error } = usePostRankingMock({
+  const { trendingPosts, isLoading, error } = usePostRanking({
     location_city,
     location_state,
     limit
@@ -204,13 +202,15 @@ export function TrendingPosts({
                     <div className="flex items-center space-x-1">
                       <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-blue-600 text-xs font-bold">
-                          {post.professional_name.charAt(0).toUpperCase()}
+                          {(post.professional_name || (post as any).professional?.full_name || 'U').charAt(0).toUpperCase()}
                         </span>
                       </div>
-                      <span className="text-xs text-gray-600">{post.professional_name}</span>
+                      <span className="text-xs text-gray-600">
+                        {post.professional_name || (post as any).professional?.full_name || 'Usuário'}
+                      </span>
                     </div>
                     <Badge variant="outline" className="text-xs">
-                      Score: {Math.round(post.engagement_score)}
+                      Score: {Math.round(post.engagement_score || (post as any).trending_score || 0)}
                     </Badge>
                   </div>
                 </div>

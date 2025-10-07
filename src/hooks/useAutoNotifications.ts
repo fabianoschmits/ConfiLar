@@ -23,9 +23,16 @@ export function useAutoNotifications() {
         .eq('metadata->>type', 'welcome')
         .single()
 
-      if (existingPost) {
+      // Se encontrou um post existente, pular criação
+      if (existingPost && !checkError) {
         console.log('⚠️ Post de boas-vindas já existe para este usuário, pulando...')
         return { success: true, data: existingPost, skipped: true }
+      }
+
+      // Se houve erro na consulta (como 406), logar mas continuar
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.warn('⚠️ Erro ao verificar post existente:', checkError.message)
+        // Continuar com a criação mesmo com erro na verificação
       }
 
       // Buscar informações completas do usuário

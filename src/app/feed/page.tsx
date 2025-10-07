@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Plus, Filter, Loader2, ChevronDown, ChevronUp, Search } from 'lucide-react'
 import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
-import { useUnifiedTimelineMock } from '@/hooks/useUnifiedTimelineMock'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
-import { usePostRankingMock } from '@/hooks/usePostRankingMock'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 // import { useSmartNotifications } from '@/hooks/useSmartNotifications' // DESABILITADO - causava loop
 // import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock' // DESABILITADO - causava loop
 // import { useNotificationTriggers } from '@/hooks/useNotificationTriggers' // DESABILITADO - causava loop
@@ -33,7 +32,7 @@ import { ErrorHandler } from '@/components/ErrorHandler'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
-  const { profile, isMockMode } = useAuthContext()
+  const { profile } = useAuthContext()
   
   // Estado para abas do feed
   const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('all')
@@ -76,6 +75,14 @@ export default function FeedPage() {
   } = useUnifiedTimeline({
     ...filters,
     location_filter: currentFilter
+  })
+
+  // Hook para infinite scroll - carregamento automático ao fazer scroll
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage: hasNextPage || false,
+    isFetchingNextPage: isFetchingNextPage || false,
+    fetchNextPage: loadMore,
+    threshold: 300 // Carregar quando estiver a 300px do final
   })
 
   // Debug: log do filtro atual
@@ -615,24 +622,22 @@ export default function FeedPage() {
               <>
                 {filteredItems.map(renderTimelineItem)}
                 
-                {/* Botão Carregar Mais */}
+                {/* Loading automático para infinite scroll */}
                 {hasNextPage && (
-                  <div className="flex justify-center py-6">
-                    <Button 
-                      onClick={loadMore}
-                      disabled={isFetchingNextPage}
-                      variant="outline"
-                      className="min-w-[200px] bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      {isFetchingNextPage ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          Carregando...
-                        </>
-                      ) : (
-                        'Carregar mais'
-                      )}
-                    </Button>
+                  <div 
+                    ref={loadingRef}
+                    className="flex justify-center py-6"
+                  >
+                    {isFetchingNextPage ? (
+                      <div className="flex items-center space-x-2 text-gray-500">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm">Carregando mais posts...</span>
+                      </div>
+                    ) : (
+                      <div className="text-gray-400 text-sm">
+                        Role para baixo para carregar mais posts
+                      </div>
+                    )}
                   </div>
                 )}
               </>
