@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Modal } from '@/components/ui/modal'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
+import { MentionInput } from '@/components/ui/MentionInput'
 import { Edit, Loader2 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 
@@ -104,28 +105,31 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
-            <Input
+            <MentionInput
+              value={editedPost.title}
+              onChange={(value) => setEditedPost({ ...editedPost, title: value })}
               placeholder={profile?.user_type === 'professional' 
                 ? "Ex: Reforma de Cozinha Moderna - Antes e Depois"
                 : "Ex: Serviço de Limpeza Incrível!"
               }
-              value={editedPost.title}
-              onChange={(e) => setEditedPost({ ...editedPost, title: e.target.value })}
               disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              minHeight="40px"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
-            <Textarea
+            <MentionInput
+              value={editedPost.description}
+              onChange={(value) => setEditedPost({ ...editedPost, description: value })}
               placeholder={profile?.user_type === 'professional'
                 ? "Descreva o trabalho realizado, materiais usados, tempo de execução, desafios superados..."
                 : "Conte como foi a experiência, o que mais gostou, recomendações para outros clientes..."
               }
-              value={editedPost.description}
-              onChange={(e) => setEditedPost({ ...editedPost, description: e.target.value })}
-              className="min-h-[100px]"
               disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              minHeight="100px"
             />
           </div>
 

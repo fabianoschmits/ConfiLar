@@ -13,6 +13,7 @@ export function NotificationIcon({ type, className = '' }: NotificationIconProps
       case 'recommendation': return '⭐'
       case 'review': return '⭐'
       case 'system': return '🔔'
+      case 'info': return '📤'  // Ícone de compartilhamento
       default: return '📢'
     }
   }

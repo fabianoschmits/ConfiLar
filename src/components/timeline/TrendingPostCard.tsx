@@ -35,7 +35,7 @@ interface TrendingPost {
     is_available?: boolean
   }
   engagement_score: number
-  trending_reason: 'high_engagement' | 'local_trending' | 'new_post' | 'verified_professional'
+  trending_reason: 'high_engagement' | 'new_post' | 'verified_professional'
 }
 
 export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {

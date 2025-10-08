@@ -38,8 +38,6 @@ export function TrendingPosts({
     switch (reason) {
       case 'high_engagement':
         return <TrendingUp className="h-4 w-4 text-orange-500" />
-      case 'local_trending':
-        return <MapPin className="h-4 w-4 text-blue-500" />
       case 'new_post':
         return <Flame className="h-4 w-4 text-red-500" />
       case 'verified_professional':
@@ -53,8 +51,6 @@ export function TrendingPosts({
     switch (reason) {
       case 'high_engagement':
         return '🔥 Em alta'
-      case 'local_trending':
-        return '📍 Local'
       case 'new_post':
         return '✨ Novo'
       case 'verified_professional':
@@ -68,8 +64,6 @@ export function TrendingPosts({
     switch (reason) {
       case 'high_engagement':
         return 'bg-orange-100 text-orange-800'
-      case 'local_trending':
-        return 'bg-blue-100 text-blue-800'
       case 'new_post':
         return 'bg-red-100 text-red-800'
       case 'verified_professional':

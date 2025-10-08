@@ -13,6 +13,7 @@ export interface Notification {
   type: 'info' | 'success' | 'warning' | 'error' | 'message' | 'review' | 'booking' | 'verification' | 'achievement' | 'system';
   is_read: boolean;
   action_url?: string;
+  metadata?: any;
   priority: 'low' | 'normal' | 'high' | 'urgent';
   timestamp: Date;
   created_at: Date;

@@ -127,9 +127,9 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
 
   const renderComment = (comment: CommentType, isReply = false) => (
     <div key={comment.id} className={`${isReply ? 'relative' : ''}`}>
-      <Card className={`p-3 ${isReply ? 'border-l-2 border-blue-200 bg-blue-50/30' : ''}`}>
+      <Card className={`${isReply ? 'px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-blue-50/30' : 'px-3 pt-1 pb-0'}`}>
         <div className="flex items-start space-x-3">
-          <Avatar className="w-8 h-8">
+          <Avatar className="w-9 h-9">
             <AvatarImage src={comment.user.avatar_url} alt={`Avatar de ${comment.user.full_name}`} />
             <AvatarFallback>
               {comment.user.full_name.charAt(0).toUpperCase()}
@@ -138,7 +138,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="font-semibold text-sm">{comment.user.full_name}</span>
+              <span className="font-semibold text-base">{comment.user.full_name}</span>
               <span className="text-xs text-gray-500">
                 {comment.user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
               </span>
@@ -190,7 +190,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-gray-700 mb-2">
+              <div className="text-base text-gray-700 mb-2">
                 {comment.content.split(' ').map((word, index) => {
                   if (word.startsWith('@')) {
                     return (
@@ -216,11 +216,11 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                 <button
                   onClick={() => likeComment(comment.id)}
                   disabled={isLikingComment}
-                  className={`flex items-center space-x-1 text-xs hover:text-red-500 transition-colors ${
+                  className={`flex items-center space-x-1 text-sm hover:text-red-500 transition-colors ${
                     comment.is_liked ? 'text-red-500' : 'text-gray-500'
                   }`}
                 >
-                  <Heart className={`w-3 h-3 ${comment.is_liked ? 'fill-current' : ''}`} />
+                  <Heart className={`w-4 h-4 ${comment.is_liked ? 'fill-current' : ''}`} />
                   <span>{comment.likes_count}</span>
                 </button>
                 
@@ -231,9 +231,9 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
                       startReply(comment.id)
                       setReplyingToUser(comment.user.full_name)
                     }}
-                    className="flex items-center space-x-1 text-xs text-gray-500 hover:text-blue-500 transition-colors"
+                    className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-500 transition-colors"
                   >
-                    <Reply className="w-3 h-3" />
+                    <Reply className="w-4 h-4" />
                     <span>Responder</span>
                   </button>
                 )}
@@ -254,16 +254,16 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       
       {/* Renderizar respostas */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-3 ml-4 relative">
+        <div className="mt-2 ml-10 relative">
           {/* Linha vertical principal para conectar todas as respostas */}
-          <div className="absolute -left-4 top-0 bottom-0 w-px bg-gray-200"></div>
+          <div className="absolute -left-10 top-0 bottom-0 w-px bg-gray-200"></div>
           
           {/* Container das respostas */}
           <div className="space-y-2">
             {comment.replies.map((reply, index) => (
               <div key={reply.id} className="relative">
                 {/* Linha horizontal para cada resposta */}
-                <div className="absolute -left-4 top-6 w-4 h-px bg-gray-200"></div>
+                <div className="absolute -left-10 top-6 w-10 h-px bg-gray-200"></div>
                 {renderComment(reply, true)}
               </div>
             ))}

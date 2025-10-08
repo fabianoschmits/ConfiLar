@@ -35,7 +35,7 @@ const mockTrendingPosts = [
     comments_count: 8,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     trending_score: 72,
-    trending_reason: 'local_trending',
+    trending_reason: 'high_engagement',
     professional: {
       id: 'user2',
       full_name: 'João Santos',
