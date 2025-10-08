@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Para denúncias de conversa, buscar mensagens
-        if (report.report_type === 'other' && report.description.includes('conversa')) {
+        if (report.type === 'other' && report.description.includes('conversa')) {
           // Buscar conversa entre os usuários
           const { data: messagesData } = await adminSupabase
             .from('messages')
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Para denúncias de avaliação, buscar detalhes da avaliação
-        if (report.report_type === 'review') {
+        if (report.type === 'review') {
           const { data: reviewData } = await adminSupabase
             .from('reviews')
             .select(`

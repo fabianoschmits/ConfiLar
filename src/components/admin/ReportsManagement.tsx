@@ -37,7 +37,7 @@ import { Label } from '@/components/ui/label'
 // Interfaces para tipagem
 interface Report {
   id: string
-  report_type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
   reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -340,7 +340,7 @@ export function ReportsManagement() {
 
   const filteredReports = reports.filter(report => {
     if (filters.status !== 'all' && report.status !== filters.status) return false
-    if (filters.type !== 'all' && report.report_type !== filters.type) return false
+    if (filters.type !== 'all' && report.type !== filters.type) return false
     if (filters.priority !== 'all' && report.priority !== filters.priority) return false
     if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
@@ -574,8 +574,8 @@ export function ReportsManagement() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          {getTypeIcon(report.report_type)}
-                          <span className="font-medium">{getTypeLabel(report.report_type)}</span>
+                          {getTypeIcon(report.type)}
+                          <span className="font-medium">{getTypeLabel(report.type)}</span>
                           <Badge className={getStatusColor(report.status)}>
                             {report.status}
                           </Badge>
@@ -587,7 +587,7 @@ export function ReportsManagement() {
                         <p className="text-sm text-gray-600 mb-2">{report.description}</p>
                         
                         {/* Contexto específico baseado no tipo */}
-                        {report.report_type === 'other' && report.conversation_messages && (
+                        {report.type === 'other' && report.conversation_messages && (
                           <div className="bg-blue-50 p-3 rounded-lg mb-2">
                             <p className="text-xs font-medium text-blue-800 mb-1">💬 Conversa Denunciada:</p>
                             <div className="text-xs text-blue-700 max-h-20 overflow-y-auto">
@@ -600,7 +600,7 @@ export function ReportsManagement() {
                           </div>
                         )}
                         
-                        {report.report_type === 'review' && report.review_details && (
+                        {report.type === 'review' && report.review_details && (
                           <div className="bg-yellow-50 p-3 rounded-lg mb-2">
                             <p className="text-xs font-medium text-yellow-800 mb-1">⭐ Avaliação Denunciada:</p>
                             <div className="text-xs text-yellow-700">
@@ -694,7 +694,7 @@ export function ReportsManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">Tipo</Label>
-                  <p className="text-sm text-gray-600">{getTypeLabel(selectedReport.report_type)}</p>
+                  <p className="text-sm text-gray-600">{getTypeLabel(selectedReport.type)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Status</Label>

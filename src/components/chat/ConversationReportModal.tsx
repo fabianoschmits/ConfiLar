@@ -60,7 +60,7 @@ export function ConversationReportModal({
 
     try {
       const reportData = {
-        report_type: 'other', // Usando 'other' pois não há tipo 'conversation' na tabela
+        type: 'other', // Campo correto no banco de dados - Usando 'other' pois não há tipo 'conversation' na tabela
         reason: 'Denúncia de conversa completa',
         description: formData.description.trim(),
         priority: formData.priority,

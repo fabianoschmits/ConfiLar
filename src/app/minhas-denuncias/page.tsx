@@ -22,7 +22,7 @@ import { ClientOnly } from '@/components/ClientOnly'
 
 interface UserReport {
   id: string
-  report_type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
   reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -253,7 +253,7 @@ export default function MinhasDenunciasPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="font-semibold text-lg">
-                              Denúncia de {getTypeLabel(report.report_type)}
+                              Denúncia de {getTypeLabel(report.type)}
                             </h3>
                             <Badge className={`${getStatusColor(report.status)} flex items-center gap-1`}>
                               {getStatusIcon(report.status)}

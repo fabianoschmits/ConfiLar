@@ -38,7 +38,7 @@ export function DynamicAvailabilityBadge({ userId, className = '' }: DynamicAvai
   return (
     <Badge 
       variant="secondary"
-      className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
+      className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1 ${
         isAvailable 
           ? 'bg-green-100 text-green-800 border border-green-200' 
           : 'bg-red-100 text-red-800 border border-red-200'
@@ -47,7 +47,8 @@ export function DynamicAvailabilityBadge({ userId, className = '' }: DynamicAvai
       <div className={`w-1.5 h-1.5 rounded-full ${
         isAvailable ? 'bg-green-500' : 'bg-red-500'
       }`}></div>
-      <span>{isAvailable ? 'Disponível' : 'Indisponível'}</span>
+      <span className="hidden sm:inline">{isAvailable ? 'Ativo' : 'Inativo'}</span>
+      <span className="sm:hidden">{isAvailable ? 'Ativo' : 'Inativo'}</span>
     </Badge>
   )
 }

@@ -72,3 +72,4 @@ COMMENT ON COLUMN push_subscriptions.auth IS 'Chave de autenticação para push 
 
 
 
+

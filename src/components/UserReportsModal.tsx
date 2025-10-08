@@ -21,7 +21,7 @@ import { toast } from 'sonner'
 
 interface UserReport {
   id: string
-  report_type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
   reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -185,7 +185,7 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                         <h4 className="font-semibold text-base text-gray-900">
-                          Denúncia de {getTypeLabel(report.report_type)}
+                          Denúncia de {getTypeLabel(report.type)}
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           <Badge className={`${getStatusColor(report.status)} flex items-center gap-1 text-xs px-2 py-1`}>

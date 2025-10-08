@@ -99,7 +99,7 @@ export function ReportButton({
 
     try {
       const reportData = {
-        report_type: type,
+        type: type, // Campo correto no banco de dados
         reason: 'Denúncia de conteúdo',
         description: formData.description.trim(),
         priority: formData.priority,

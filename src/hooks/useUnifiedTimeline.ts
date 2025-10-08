@@ -84,9 +84,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       if (filters.location_filter) {
         const locationFilter = filters.location_filter
         
+        console.log('🔍 Aplicando filtro de localização:', JSON.stringify(locationFilter, null, 2))
+        
         switch (locationFilter.type) {
           case 'local':
             if (locationFilter.city && locationFilter.state) {
+              console.log('🏠 Filtro local:', {
+                city: locationFilter.city,
+                state: locationFilter.state
+              })
               postsQuery = postsQuery
                 .ilike('location_city', locationFilter.city)
                 .ilike('location_state', locationFilter.state)
@@ -94,12 +100,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             break
           case 'state':
             if (locationFilter.state) {
+              console.log('🏙️ Filtro estado:', locationFilter.state)
               postsQuery = postsQuery.ilike('location_state', locationFilter.state)
             }
             break
           case 'country':
             if (locationFilter.country) {
-              postsQuery = postsQuery.ilike('location_state', locationFilter.country)
+              console.log('🌎 Filtro país:', locationFilter.country)
+              // Para país (Brasil), não aplicar filtro pois todos são do Brasil
+              // Remover este filtro para mostrar todos os posts
             }
             break
           case 'custom':
@@ -111,14 +120,19 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               postsQuery = postsQuery
                 .ilike('location_city', locationFilter.city)
                 .ilike('location_state', locationFilter.state)
+            } else if (locationFilter.state && !locationFilter.city) {
+              // Se apenas estado foi selecionado (sem cidade)
+              console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state)
+              postsQuery = postsQuery.ilike('location_state', locationFilter.state)
             } else {
-              console.log('⚠️ Filtro custom sem dados:', {
+              console.log('⚠️ Filtro custom sem dados completos:', {
                 city: locationFilter.city,
                 state: locationFilter.state
               })
             }
             break
           case 'all':
+            console.log('🌍 Filtro: Todos os locais')
             // Não aplicar filtro de localização
             break
         }
@@ -126,7 +140,45 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       const { data: posts, error: postsError } = await postsQuery
 
-      if (postsError) throw postsError
+      if (postsError) {
+        console.error('❌ Erro ao buscar posts:', postsError)
+        throw postsError
+      }
+      
+      console.log('📊 Posts retornados:', {
+        total: posts?.length || 0,
+        filter: filters.location_filter?.type,
+        city: filters.location_filter?.city,
+        state: filters.location_filter?.state,
+        todosOsPosts: posts?.map(p => ({
+          id: p.id,
+          title: p.title?.substring(0, 30),
+          location_city: p.location_city,
+          location_state: p.location_state,
+          // Comparação direta
+          cityMatch: p.location_city === filters.location_filter?.city,
+          stateMatch: p.location_state === filters.location_filter?.state,
+          // Comparação lower case
+          cityMatchLower: p.location_city?.toLowerCase() === filters.location_filter?.city?.toLowerCase(),
+          stateMatchLower: p.location_state?.toLowerCase() === filters.location_filter?.state?.toLowerCase()
+        }))
+      })
+      
+      // Log detalhado para debug
+      if (posts && posts.length > 0) {
+        console.log('🔍 DEBUG DETALHADO - Primeiro post:', {
+          'Filtro city': `"${filters.location_filter?.city}"`,
+          'Filtro state': `"${filters.location_filter?.state}"`,
+          'Post city': `"${posts[0].location_city}"`,
+          'Post state': `"${posts[0].location_state}"`,
+          'City match exato': posts[0].location_city === filters.location_filter?.city,
+          'State match exato': posts[0].location_state === filters.location_filter?.state,
+          'City length filtro': filters.location_filter?.city?.length,
+          'State length filtro': filters.location_filter?.state?.length,
+          'City length post': posts[0].location_city?.length,
+          'State length post': posts[0].location_state?.length
+        })
+      }
 
       // Se há busca ativa, fazer uma busca adicional por nome de usuário nos posts
       let relatedPosts: any[] = []

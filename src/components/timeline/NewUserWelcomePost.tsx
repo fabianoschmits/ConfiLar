@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageCircle, Loader2, MoreHorizontal, User } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
@@ -142,19 +143,18 @@ export function NewUserWelcomePost({
                     {userName}
                   </Link>
                 </h3>
-                <Badge 
-                  variant="secondary"
-                  className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 flex items-center gap-1"
-                >
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                  <span className="hidden sm:inline">Disponível</span>
-                  <span className="sm:hidden">Ativo</span>
-                </Badge>
+                
+                {/* Badge Dinâmica de Status */}
+                <div className="flex-shrink-0">
+                  <DynamicAvailabilityBadge userId={post.user_id || ''} />
+                </div>
+                
+                {/* Badge de Tipo de Usuário */}
                 <Badge 
                   variant="outline"
-                  className="text-xs font-medium px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-1"
+                  className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-0.5 sm:gap-1"
                 >
-                  <User className="h-3 w-3" />
+                  <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   <span className="hidden sm:inline">
                     {userType === 'professional' ? 'Profissional' : 'Cliente'}
                   </span>

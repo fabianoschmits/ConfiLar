@@ -156,11 +156,11 @@ export function WelcomePost({
               </p>
             )}
 
-            {/* Tipo de usuário */}
+            {/* Tipo de usuário - Ambos em azul */}
             <div className="flex items-center gap-2 mb-4">
               <Badge 
                 variant="outline"
-                className="text-xs font-medium px-2 py-1 rounded-full"
+                className="text-xs font-medium px-2 py-1 rounded-full border-blue-200 text-blue-700 bg-blue-50"
               >
                 {post.metadata?.user_type === 'professional' ? (
                   <>

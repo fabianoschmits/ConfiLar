@@ -37,6 +37,8 @@ export function LocationFilterSelector({
   const availableFilters = getAvailableFilters()
 
   const handleFilterSelect = (filter: LocationFilter) => {
+    console.log('🎯 Filtro selecionado:', JSON.stringify(filter, null, 2))
+    
     if (filter.type === 'custom') {
       // Resetar estados quando abrir o seletor custom
       setCustomState('')
@@ -44,6 +46,7 @@ export function LocationFilterSelector({
       setShowCustomSelector(true)
       setIsOpen(false)
     } else {
+      console.log('📤 Aplicando filtro padrão:', filter)
       setFilter(filter)
       onFilterChange?.(filter)
       setIsOpen(false)
@@ -52,8 +55,12 @@ export function LocationFilterSelector({
 
   const handleCustomLocationSelect = () => {
     console.log('🎯 Selecionando localização custom:', {
-      customState,
-      customCity
+      customState: `"${customState}"`,
+      customCity: `"${customCity}"`,
+      'customState length': customState?.length,
+      'customCity length': customCity?.length,
+      'customState type': typeof customState,
+      'customCity type': typeof customCity
     })
     
     if (customState && customCity) {
@@ -63,14 +70,28 @@ export function LocationFilterSelector({
         city: customCity,
         country: 'Brasil'
       }
-      console.log('🎯 Filtro custom criado:', customFilter)
+      console.log('✅ Filtro custom criado:', JSON.stringify(customFilter, null, 2))
+      console.log('📤 Enviando filtro custom para hook')
+      setFilter(customFilter)
+      onFilterChange?.(customFilter)
+      setShowCustomSelector(false)
+    } else if (customState && !customCity) {
+      const customFilter: LocationFilter = {
+        type: 'custom',
+        state: customState,
+        country: 'Brasil'
+      }
+      console.log('✅ Filtro custom criado (apenas estado):', JSON.stringify(customFilter, null, 2))
+      console.log('📤 Enviando filtro custom para hook')
       setFilter(customFilter)
       onFilterChange?.(customFilter)
       setShowCustomSelector(false)
     } else {
       console.log('⚠️ Dados incompletos:', {
         customState,
-        customCity
+        customCity,
+        'tem estado': !!customState,
+        'tem cidade': !!customCity
       })
     }
   }

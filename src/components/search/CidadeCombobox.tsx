@@ -40,11 +40,8 @@ export function CidadeCombobox({
   // Carregar cidades quando o estado mudar
   useEffect(() => {
     if (estadoSelecionado) {
-      // Encontrar a sigla do estado
-      const estado = estados.find(e => e.nome === estadoSelecionado)
-      if (estado) {
-        loadCidades(estado.sigla)
-      }
+      // CORREÇÃO: estadoSelecionado agora é a SIGLA, não o nome
+      loadCidades(estadoSelecionado)
     } else {
       setFilteredCidades([])
     }

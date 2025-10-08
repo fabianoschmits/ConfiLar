@@ -31,9 +31,11 @@ export function EstadoCombobox({
   // Sincronizar searchTerm com value quando value mudar externamente
   useEffect(() => {
     if (value && value !== searchTerm) {
-      setSearchTerm(value)
+      // Se value é uma sigla, encontrar o nome completo para mostrar
+      const estado = estados.find(e => e.sigla === value)
+      setSearchTerm(estado ? estado.nome : value)
     }
-  }, [value])
+  }, [value, estados])
 
   // Filtrar estados baseado na busca
   useEffect(() => {
@@ -61,8 +63,9 @@ export function EstadoCombobox({
   }, [])
 
   const handleSelect = (estado: any) => {
-    onValueChange(estado.nome)
-    setSearchTerm(estado.nome)
+    // CORREÇÃO: Retornar a SIGLA em vez do nome completo
+    onValueChange(estado.sigla)
+    setSearchTerm(estado.nome) // Mostrar nome completo no input
     setIsOpen(false)
   }
 
@@ -81,7 +84,8 @@ export function EstadoCombobox({
     setIsOpen(true)
     // Só definir o searchTerm se o value não estiver vazio
     if (value) {
-      setSearchTerm(value)
+      const estado = estados.find(e => e.sigla === value)
+      setSearchTerm(estado ? estado.nome : value)
     }
   }
 
@@ -92,7 +96,8 @@ export function EstadoCombobox({
         setIsOpen(false)
         // Só definir o searchTerm se o value não estiver vazio
         if (value) {
-          setSearchTerm(value)
+          const estado = estados.find(e => e.sigla === value)
+          setSearchTerm(estado ? estado.nome : value)
         }
       }
     }, 150)

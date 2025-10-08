@@ -37,7 +37,7 @@ import { Label } from '@/components/ui/label'
 // Interfaces para tipagem
 interface Report {
   id: string
-  report_type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
+  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
   reason: string
   description: string
   status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
@@ -316,7 +316,7 @@ export function ReportsManagementFixed() {
 
   const filteredReports = reports.filter(report => {
     if (filters.status !== 'all' && report.status !== filters.status) return false
-    if (filters.type !== 'all' && report.report_type !== filters.type) return false
+    if (filters.type !== 'all' && report.type !== filters.type) return false
     if (filters.priority !== 'all' && report.priority !== filters.priority) return false
     if (filters.search && !report.description.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
@@ -550,8 +550,8 @@ export function ReportsManagementFixed() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          {getTypeIcon(report.report_type)}
-                          <span className="font-medium">{getTypeLabel(report.report_type)}</span>
+                          {getTypeIcon(report.type)}
+                          <span className="font-medium">{getTypeLabel(report.type)}</span>
                           <Badge className={getStatusColor(report.status)}>
                             {report.status}
                           </Badge>
@@ -634,7 +634,7 @@ export function ReportsManagementFixed() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">Tipo</Label>
-                  <p className="text-sm text-gray-600">{getTypeLabel(selectedReport.report_type)}</p>
+                  <p className="text-sm text-gray-600">{getTypeLabel(selectedReport.type)}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Status</Label>

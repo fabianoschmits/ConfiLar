@@ -47,7 +47,7 @@ interface BanInfo {
   banned_user_type: string
   banned_by_name: string
   banned_by_email: string
-  report_type?: string
+  type?: string
   report_description?: string
   ban_status: 'Permanente' | 'Ativo' | 'Expirado' | 'Pendente'
   days_remaining?: number
@@ -542,7 +542,7 @@ export function BansManagement() {
                         <span className="text-xs font-medium text-blue-800">Denúncia Relacionada</span>
                       </div>
                       <p className="text-xs text-blue-700">
-                        <strong>Tipo:</strong> {ban.report_type} | 
+                        <strong>Tipo:</strong> {ban.type} | 
                         <strong> ID:</strong> {ban.related_report_id.substring(0, 8)}...
                       </p>
                       <p className="text-xs text-blue-600 mt-1">
@@ -857,7 +857,7 @@ export function BansManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
                     <div>
                       <p><strong className="text-blue-800">ID da Denúncia:</strong> <code className="bg-blue-100 px-2 py-1 rounded text-xs">{selectedBan.related_report_id}</code></p>
-                      <p><strong className="text-blue-800">Tipo:</strong> <span className="capitalize">{selectedBan.report_type}</span></p>
+                      <p><strong className="text-blue-800">Tipo:</strong> <span className="capitalize">{selectedBan.type}</span></p>
                     </div>
                     <div>
                       <p><strong className="text-blue-800">Status:</strong> <span className="text-blue-600">Em Revisão</span></p>

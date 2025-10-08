@@ -59,7 +59,7 @@ interface Investigation {
   }
   reports: Array<{
     id: string
-    report_type: string
+    type: string
     reason: string
     description: string
     status: string
@@ -348,7 +348,7 @@ export function BansManagementEnhanced() {
                                   <div key={idx} className="bg-gray-50 p-2 rounded text-xs">
                                     <div className="flex items-center gap-2 mb-1">
                                       <Flag className="h-3 w-3" />
-                                      <span className="font-medium">{report.report_type}</span>
+                                      <span className="font-medium">{report.type}</span>
                                       <Badge className={report.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}>
                                         {report.status}
                                       </Badge>
