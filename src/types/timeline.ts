@@ -20,6 +20,7 @@ export interface TimelinePost extends TimelineItem {
   title: string
   description: string
   images: string[]
+  service_category_id?: string
   location_state?: string
   location_city?: string
   likes_count: number

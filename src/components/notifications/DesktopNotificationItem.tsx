@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2, Check } from 'lucide-react'
+import { Trash2, Check, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -14,6 +14,8 @@ interface DesktopNotificationItemProps {
     type: string
     is_read: boolean
     created_at: string
+    action_url?: string
+    metadata?: any
   }
   onDelete: (id: string, title: string) => void
   onMarkAsRead: (id: string) => void
@@ -35,6 +37,7 @@ export function DesktopNotificationItem({
       case 'recommendation': return 'text-yellow-600'
       case 'review': return 'text-yellow-600'
       case 'system': return 'text-gray-600'
+      case 'info': return 'text-green-600'  // Para posts compartilhados
       default: return 'text-gray-600'
     }
   }
@@ -62,6 +65,20 @@ export function DesktopNotificationItem({
           <p className="text-sm text-gray-600 mt-1 line-clamp-2">
             {notification.message}
           </p>
+          
+          {/* Informações extras para posts compartilhados */}
+          {notification.metadata?.type === 'shared_post' && notification.metadata?.post_title && (
+            <div className="mt-2 p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 hover:border-green-300 transition-colors">
+              <p className="text-xs text-gray-500 mb-1">📄 Post:</p>
+              <p className="text-sm font-medium text-gray-700 line-clamp-1 mb-1">
+                {notification.metadata.post_title}
+              </p>
+              <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                <ExternalLink className="h-3 w-3" />
+                <span>Clique para ver o post</span>
+              </div>
+            </div>
+          )}
           
           <p className="text-xs text-gray-400 mt-1">
             {formatDistanceToNow(new Date(notification.created_at), { 

@@ -237,7 +237,7 @@ export function TrendingPostModal({ isOpen, onClose, postId }: TrendingPostModal
                       <img
                         key={index}
                         src={image}
-                        alt={`Imagem ${index + 1}`}
+                        alt={`Imagem ${index + 1} do post de ${post.user.full_name}`}
                         className="w-full h-48 object-cover rounded-lg"
                       />
                     ))}

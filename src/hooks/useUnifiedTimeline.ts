@@ -36,6 +36,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           title,
           description,
           images,
+          service_category_id,
           location_state,
           location_city,
           likes_count,
@@ -64,16 +65,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.trim()
-        // Buscar em título, descrição, nome do profissional, nome do usuário, e metadados
+        const searchTerm = filters.search.trim().toLowerCase()
+        console.log('🔍 Aplicando filtro de busca:', searchTerm)
+        
+        // Buscar em campos básicos do post
         postsQuery = postsQuery.or(`
           title.ilike.%${searchTerm}%,
           description.ilike.%${searchTerm}%,
-          professional.full_name.ilike.%${searchTerm}%,
-          user.full_name.ilike.%${searchTerm}%,
           metadata->>category.ilike.%${searchTerm}%,
           metadata->>service_type.ilike.%${searchTerm}%,
-          metadata->>tags.ilike.%${searchTerm}%
+          metadata->>tags.ilike.%${searchTerm}%,
+          metadata->>service_description.ilike.%${searchTerm}%,
+          metadata->>user.ilike.%${searchTerm}%
         `.replace(/\s+/g, ''))
       }
 
@@ -125,6 +128,62 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       if (postsError) throw postsError
 
+      // Se há busca ativa, fazer uma busca adicional por nome de usuário nos posts
+      let relatedPosts: any[] = []
+      if (filters.search && filters.search.trim()) {
+        const searchTerm = filters.search.trim().toLowerCase()
+        console.log('🔍 Buscando posts relacionados por nome de usuário:', searchTerm)
+        
+        try {
+          // Buscar posts onde o nome do usuário aparece nos metadados ou dados relacionados
+          const { data: relatedData, error: relatedError } = await supabase
+            .from('feed_posts')
+            .select(`
+              id,
+              professional_id,
+              user_id,
+              title,
+              description,
+              images,
+              service_category_id,
+              location_state,
+              location_city,
+              likes_count,
+              comments_count,
+              created_at,
+              updated_at,
+              metadata,
+              professional:profiles!feed_posts_professional_id_fkey(
+                id,
+                full_name,
+                avatar_url,
+                user_type,
+                is_available
+              ),
+              user:profiles!feed_posts_user_id_fkey(
+                id,
+                full_name,
+                avatar_url,
+                user_type,
+                is_available
+              )
+            `)
+            .or(`
+              professional.full_name.ilike.%${searchTerm}%,
+              user.full_name.ilike.%${searchTerm}%
+            `.replace(/\s+/g, ''))
+            .order('created_at', { ascending: false })
+            .limit(10)
+
+          if (!relatedError && relatedData) {
+            relatedPosts = relatedData
+            console.log('✅ Posts relacionados encontrados:', relatedPosts.length)
+          }
+        } catch (error) {
+          console.warn('⚠️ Erro ao buscar posts relacionados:', error)
+        }
+      }
+
       // Buscar atividades do sistema
       let activitiesQuery = supabase
         .from('user_activity_log')
@@ -148,13 +207,16 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       // Aplicar filtro de busca nas atividades também
       if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.trim()
+        const searchTerm = filters.search.trim().toLowerCase()
+        console.log('🔍 Aplicando filtro de busca nas atividades:', searchTerm)
+        
         activitiesQuery = activitiesQuery.or(`
           description.ilike.%${searchTerm}%,
-          user.full_name.ilike.%${searchTerm}%,
           metadata->>category.ilike.%${searchTerm}%,
           metadata->>service_description.ilike.%${searchTerm}%,
-          metadata->>target_user_name.ilike.%${searchTerm}%
+          metadata->>target_user_name.ilike.%${searchTerm}%,
+          metadata->>user.ilike.%${searchTerm}%,
+          metadata->>service_type.ilike.%${searchTerm}%
         `.replace(/\s+/g, ''))
       }
 
@@ -169,8 +231,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // As notificações devem aparecer apenas no sino de notificações, não no feed
       const notifications: any[] = []
 
+      // Combinar posts principais com posts relacionados, removendo duplicatas
+      const allPosts = [...(posts || []), ...relatedPosts]
+      const uniquePosts = allPosts.filter((post, index, self) => 
+        index === self.findIndex(p => p.id === post.id)
+      )
+
+      console.log('📊 Estatísticas de busca:', {
+        postsPrincipais: posts?.length || 0,
+        postsRelacionados: relatedPosts.length,
+        totalUnicos: uniquePosts.length
+      })
+
       // Transformar posts em TimelinePost
-      const timelinePosts = (posts || []).map(post => {
+      const timelinePosts = uniquePosts.map(post => {
         // Para posts de boas-vindas, usar dados do metadata ou do user
         const isWelcomePost = post.metadata?.type === 'welcome'
         const userData = isWelcomePost ? 
@@ -195,6 +269,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           title: post.title,
           description: post.description || '',
           images: post.images || [],
+          service_category_id: post.service_category_id,
           location_state: post.location_state,
           location_city: post.location_city,
           likes_count: post.likes_count || 0,
@@ -297,6 +372,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                  title: newPost.title,
                  description: newPost.description,
                  images: newPost.images || [],
+                 service_category_id: newPost.service_category_id || null,
                  location_state: newPost.location_state,
                  location_city: newPost.location_city,
                  likes_count: 0,
@@ -319,6 +395,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                title: data.title,
                description: data.description || '',
                images: data.images || [],
+               service_category_id: data.service_category_id,
                location_state: data.location_state,
                location_city: data.location_city,
                likes_count: data.likes_count || 0,
@@ -410,29 +487,33 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                throw new Error('Post não encontrado')
              }
 
-             console.log('📋 Dados do post encontrados:', {
-               id: postId,
-               title: postData?.title,
-               user_id: postData?.user_id,
-               metadata: postData?.metadata
-             })
-             
-             // Verificar se o usuário tem permissão para deletar este post
-             if (postData?.user_id !== user.id) {
-               console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
-               console.error('❌ Post user_id:', postData?.user_id, '| Usuário atual:', user.id)
-               throw new Error('Você não tem permissão para deletar este post')
-             }
-             
-             console.log('✅ Permissão confirmada: usuário pode deletar este post')
+            console.log('📋 Dados do post encontrados:', {
+              id: postId,
+              title: postData?.title,
+              user_id: postData?.user_id,
+              professional_id: postData?.professional_id,
+              metadata: postData?.metadata
+            })
+            
+            // Verificar se o usuário tem permissão para deletar este post
+            // O post pode ter user_id OU professional_id
+            const isOwner = postData?.user_id === user.id || postData?.professional_id === user.id
+            
+            if (!isOwner) {
+              console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
+              console.error('❌ Post user_id:', postData?.user_id, '| professional_id:', postData?.professional_id, '| Usuário atual:', user.id)
+              throw new Error('Você não tem permissão para deletar este post')
+            }
+            
+            console.log('✅ Permissão confirmada: usuário pode deletar este post')
 
-             // Deletar do banco de dados
-             console.log('🗄️ Executando DELETE no banco de dados...')
-             const { error, count } = await supabase
-               .from('feed_posts')
-               .delete()
-               .eq('id', postId)
-               .eq('user_id', user.id) // Adicionar verificação adicional de segurança
+            // Deletar do banco de dados
+            console.log('🗄️ Executando DELETE no banco de dados...')
+            const { error, count } = await supabase
+              .from('feed_posts')
+              .delete()
+              .eq('id', postId)
+              .or(`user_id.eq.${user.id},professional_id.eq.${user.id}`) // Verificar ambos os campos
 
              if (error) {
                console.error('❌ Erro ao deletar post do banco:', error)

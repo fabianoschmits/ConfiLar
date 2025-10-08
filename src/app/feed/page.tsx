@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -33,6 +34,8 @@ import { ErrorHandler } from '@/components/ErrorHandler'
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
   const { profile } = useAuthContext()
+  const searchParams = useSearchParams()
+  const highlightPostId = searchParams.get('post')
   
   // Estado para abas do feed
   const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('all')
@@ -50,6 +53,7 @@ export default function FeedPage() {
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
+  const [postStatus, setPostStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   
   // Estados para edição de posts
   const [editingPost, setEditingPost] = useState<any>(null)
@@ -174,6 +178,24 @@ export default function FeedPage() {
     setMounted(true)
   }, [])
 
+  // Rolar para o post destacado (compartilhado)
+  useEffect(() => {
+    if (highlightPostId && mounted) {
+      const timer = setTimeout(() => {
+        const postElement = document.getElementById(`post-${highlightPostId}`)
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Adicionar destaque visual temporário
+          postElement.classList.add('ring-4', 'ring-blue-500', 'ring-opacity-50')
+          setTimeout(() => {
+            postElement.classList.remove('ring-4', 'ring-blue-500', 'ring-opacity-50')
+          }, 3000)
+        }
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [highlightPostId, mounted])
+
   if (!mounted) {
     return null
   }
@@ -211,6 +233,7 @@ export default function FeedPage() {
 
   const handleNewPost = async (postData: { title: string; description: string; images: string[]; service: string }) => {
     setIsPosting(true)
+    setPostStatus('sending')
     try {
       await addPost({
         type: 'post',
@@ -221,16 +244,23 @@ export default function FeedPage() {
         title: postData.title,
         description: postData.description,
         images: postData.images,
-        service_category: postData.service,
+        service_category_id: postData.service,
         location_state: profile?.location_state,
         location_city: profile?.location_city,
         likes_count: 0,
         comments_count: 0,
         is_liked: false
       })
-      setShowNewPostForm(false)
+      
+      // Mostrar "Enviado!" por 1 segundo antes de fechar
+      setPostStatus('sent')
+      setTimeout(() => {
+        setShowNewPostForm(false)
+        setPostStatus('idle')
+      }, 1000)
     } catch (error) {
       console.error('Erro ao criar post:', error)
+      setPostStatus('idle')
     } finally {
       setIsPosting(false)
     }
@@ -402,6 +432,7 @@ export default function FeedPage() {
           </Button>
         </div>
 
+
         {/* Filtros de Localização e Busca - Responsivo */}
         <div className="mb-2 md:mb-3 space-y-2">
           {/* Filtro de Localização */}
@@ -418,11 +449,22 @@ export default function FeedPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Buscar por nome, serviço, categoria..."
+              placeholder="Buscar por nome do usuário, serviço, categoria..."
               value={filters.search || ''}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
               className="w-full pl-10 pr-4 py-2 md:py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base"
             />
+            {filters.search && (
+              <button
+                onClick={() => setFilters({ ...filters, search: '' })}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Limpar busca"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -466,6 +508,7 @@ export default function FeedPage() {
             onSubmit={handleNewPost}
             onCancel={() => setShowNewPostForm(false)}
             isLoading={isPosting}
+            postStatus={postStatus}
           />
         </Modal>
 
@@ -480,6 +523,29 @@ export default function FeedPage() {
             post={editingPost}
             onSave={handleSaveEdit}
           />
+        )}
+
+        {/* Indicador de Busca Ativa */}
+        {filters.search && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Search className="h-4 w-4 text-blue-600" />
+                <span className="text-sm text-blue-800">
+                  Buscando por: <strong>"{filters.search}"</strong>
+                </span>
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                  {filteredItems.length} resultado{filteredItems.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <button
+                onClick={() => setFilters({ ...filters, search: '' })}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                Limpar busca
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Layout Principal - Responsivo */}
@@ -511,7 +577,49 @@ export default function FeedPage() {
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border border-blue-200 shadow-lg p-12 text-center">
-                {activeTab === 'all' ? (
+                {filters.search ? (
+                  <>
+                    <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Search className="w-10 h-10 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhum resultado encontrado</h3>
+                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
+                      Não encontramos posts relacionados a <strong>"{filters.search}"</strong>. 
+                      Tente buscar por outros termos ou verifique a ortografia.
+                    </p>
+                    <div className="space-y-4">
+                      <p className="text-gray-600 text-sm">
+                        💡 <strong>Dicas de busca:</strong>
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 max-w-2xl mx-auto">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <span>Nome do usuário</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span>Tipo de serviço</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                          <span>Categoria</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
+                          <span>Palavras-chave</span>
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => setFilters({ ...filters, search: '' })}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
+                      >
+                        Ver Todos os Posts
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {activeTab === 'all' ? (
                   <>
                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
                       <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -638,6 +746,8 @@ export default function FeedPage() {
                       Ver Timeline Completa
                     </Button>
                   </div>
+                )}
+                  </>
                 )}
               </div>
             ) : (

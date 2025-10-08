@@ -164,36 +164,24 @@ export function ImageUploadFeed({
   const canAddMore = currentImages.length < maxImages
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Preview das imagens atuais - Estilo Instagram */}
+    <div className={`space-y-3 ${className}`}>
+      {/* Preview das imagens atuais - Versão Compacta */}
       {currentImages.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">
-            Preview ({currentImages.length}/{maxImages} imagens)
-          </div>
-          <div className={`grid gap-1 ${
-            currentImages.length === 1 ? 'grid-cols-1' :
-            currentImages.length === 2 ? 'grid-cols-2' :
-            currentImages.length === 3 ? 'grid-cols-2' :
-            'grid-cols-2'
-          }`}>
+        <div className="flex justify-center">
+          <div className="inline-flex gap-2 flex-wrap justify-center max-w-md">
             {currentImages.map((imageUrl, index) => (
               <div key={index} className="relative group">
                 <img
                   src={imageUrl}
-                  alt={`Imagem ${index + 1} do trabalho`}
-                  className={`w-full object-cover rounded-lg border border-gray-200 ${
-                    currentImages.length === 1 ? 'h-48' :
-                    currentImages.length === 2 ? 'h-32' :
-                    currentImages.length === 3 && index === 0 ? 'h-48' : 'h-24'
-                  }`}
+                  alt={`Imagem ${index + 1}`}
+                  className="w-32 h-32 object-cover rounded border border-gray-300"
                 />
                 <button
                   onClick={() => handleRemoveImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Remover imagem"
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  title="Remover"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
@@ -201,23 +189,9 @@ export function ImageUploadFeed({
         </div>
       )}
 
-      {/* Área de upload */}
+      {/* Botão de upload compacto e centralizado */}
       {canAddMore && (
-        <div
-          className={`
-            relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer
-            ${dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
-            }
-            ${currentImages.length > 0 ? 'bg-gray-50' : 'bg-white'}
-          `}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={openFileDialog}
-        >
+        <div className="flex justify-center">
           <input
             ref={fileInputRef}
             type="file"
@@ -227,70 +201,40 @@ export function ImageUploadFeed({
             className="hidden"
           />
 
-          <div className="space-y-3">
-            {isUploading || isCompressing ? (
-              <div className="flex items-center justify-center space-x-2">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                <span className="text-blue-600">
-                  {isCompressing ? `Comprimindo... ${compressionProgress}%` : 'Fazendo upload...'}
-                </span>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-center">
-                  {currentImages.length > 0 ? (
-                    <ImageIcon className="w-12 h-12 text-gray-400" />
-                  ) : (
-                    <Camera className="w-12 h-12 text-gray-400" />
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {currentImages.length > 0
-                      ? 'Clique para adicionar mais fotos ou arraste novas imagens'
-                      : 'Clique para selecionar fotos ou arraste imagens'
-                    }
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    JPG, PNG ou WebP • Será comprimido para 1MB e 1080px • {currentImages.length}/{maxImages} imagens
-                  </p>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    console.log('Botão clicado - abrindo diálogo')
-                    openFileDialog()
-                  }}
-                  className="mt-2"
-                >
-                  {currentImages.length > 0 ? 'Adicionar Mais Fotos' : 'Selecionar Fotos'}
-                </Button>
-              </>
-            )}
-          </div>
+          {isUploading || isCompressing ? (
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>
+                {isCompressing ? `Comprimindo... ${compressionProgress}%` : 'Enviando...'}
+              </span>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                openFileDialog()
+              }}
+              className="text-xs"
+            >
+              <Camera className="w-3.5 h-3.5 mr-1.5" />
+              {currentImages.length > 0 ? `Adicionar Fotos (${currentImages.length}/${maxImages})` : 'Selecionar Fotos'}
+            </Button>
+          )}
         </div>
       )}
 
       {/* Mensagem quando limite atingido */}
       {!canAddMore && (
-        <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-yellow-800 text-sm">
-            Limite de {maxImages} imagens atingido. Remova algumas para adicionar novas.
+        <div className="text-center">
+          <p className="text-yellow-600 text-xs">
+            Máximo de {maxImages} imagens atingido
           </p>
         </div>
       )}
-
-      {/* Dicas */}
-      <div className="text-xs text-gray-500 space-y-1">
-        <p>• Use fotos de boa qualidade para mostrar seu trabalho</p>
-        <p>• Mostre antes e depois quando possível</p>
-        <p>• Inclua detalhes dos materiais e acabamentos</p>
-      </div>
     </div>
   )
 }

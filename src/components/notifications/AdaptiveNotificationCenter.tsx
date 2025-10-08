@@ -125,6 +125,24 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     return filter === 'all' || (filter === 'unread' && !notification.is_read)
   })
 
+  // Função para lidar com clique em notificação
+  const handleNotificationClick = async (notification: any) => {
+    // Marcar como lida
+    await markAsRead(notification.id)
+    
+    // Fechar o popover
+    onClose()
+    
+    // Redirecionar se houver action_url
+    if (notification.action_url) {
+      if (notification.action_url.startsWith('/')) {
+        window.location.href = notification.action_url
+      } else {
+        window.open(notification.action_url, '_blank')
+      }
+    }
+  }
+
   // Se está mostrando configurações, renderizar painel de configurações
   if (showSettings) {
     return (
@@ -455,7 +473,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
             }}
             onDelete={handleDeleteNotification}
             onMarkAsRead={markAsRead}
-            onClick={() => {}}
+            onClick={handleNotificationClick}
           />
         ))}
               </div>

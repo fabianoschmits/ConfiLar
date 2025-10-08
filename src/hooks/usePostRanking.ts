@@ -17,7 +17,7 @@ export interface TrendingPost {
   shares_count: number
   views_count: number
   created_at: string
-  trending_reason: 'high_engagement' | 'local_trending' | 'new_post' | 'verified_professional'
+  trending_reason: 'high_engagement' | 'new_post' | 'verified_professional'
 }
 
 export function usePostRanking(filters: {
@@ -133,18 +133,22 @@ function calculateEngagementScore(post: any): number {
 
 // Função para determinar motivo do trending
 function determineTrendingReason(post: any, score: number): TrendingPost['trending_reason'] {
-  if ((post.user as any)?.user_type === 'professional') {
-    return 'verified_professional'
+  // Priorizar high engagement
+  if (score > 50) {
+    return 'high_engagement'
   }
   
+  // Depois verificar se é post recente
   const isRecent = new Date().getTime() - new Date(post.created_at).getTime() < 24 * 60 * 60 * 1000
   if (isRecent) {
     return 'new_post'
   }
   
-  if (score > 50) {
-    return 'high_engagement'
+  // Se é profissional verificado mas não tem engajamento alto, mostrar como verificado
+  if ((post.user as any)?.user_type === 'professional') {
+    return 'verified_professional'
   }
   
-  return 'local_trending'
+  // Padrão: high engagement
+  return 'high_engagement'
 }

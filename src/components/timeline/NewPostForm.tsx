@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
+import { MentionInput } from '@/components/ui/MentionInput'
 import { useAuthContext } from '@/contexts/AuthContext'
 
 interface NewPostFormProps {
@@ -16,9 +17,10 @@ interface NewPostFormProps {
   }) => void
   onCancel: () => void
   isLoading?: boolean
+  postStatus?: 'idle' | 'sending' | 'sent'
 }
 
-export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFormProps) {
+export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus = 'idle' }: NewPostFormProps) {
   const { profile } = useAuthContext()
   const [post, setPost] = useState({
     title: '',
@@ -28,7 +30,7 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
   })
 
   const handleSubmit = () => {
-    if (post.title.trim() && post.description.trim() && post.service) {
+    if (post.title.trim() && post.description.trim()) {
       onSubmit(post)
       setPost({ title: '', description: '', images: [], service: '' })
     }
@@ -51,7 +53,45 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Serviço</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
+          <MentionInput
+            value={post.title}
+            onChange={(value) => setPost({ ...post, title: value })}
+            placeholder={profile?.user_type === 'professional' 
+              ? "Ex: Reforma de Cozinha Moderna - Antes e Depois"
+              : "Ex: Serviço de Limpeza Incrível!"
+            }
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            minHeight="40px"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Dica: Use um título que chame atenção e descreva o resultado • Digite @ para mencionar alguém
+          </p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
+          <MentionInput
+            value={post.description}
+            onChange={(value) => setPost({ ...post, description: value })}
+            placeholder={profile?.user_type === 'professional'
+              ? "Descreva o trabalho realizado, materiais usados, tempo de execução, desafios superados..."
+              : "Conte como foi a experiência, o que mais gostou, recomendações para outros clientes..."
+            }
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            minHeight="100px"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Dica: Seja específico! Detalhes ajudam outros a entenderem melhor o trabalho • Digite @ para mencionar alguém
+          </p>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            Serviço <span className="text-gray-500 font-normal">(opcional)</span>
+          </label>
           <ServiceAutocomplete
             value={post.service}
             onChange={(value) => setPost({ ...post, service: value })}
@@ -61,76 +101,70 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false }: NewPostFo
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
-          <Input
-            placeholder={profile?.user_type === 'professional' 
-              ? "Ex: Reforma de Cozinha Moderna - Antes e Depois"
-              : "Ex: Serviço de Limpeza Incrível!"
-            }
-            value={post.title}
-            onChange={(e) => setPost({ ...post, title: e.target.value })}
-            disabled={isLoading}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            💡 Dica: Use um título que chame atenção e descreva o resultado
-          </p>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
-          <Textarea
-            placeholder={profile?.user_type === 'professional'
-              ? "Descreva o trabalho realizado, materiais usados, tempo de execução, desafios superados..."
-              : "Conte como foi a experiência, o que mais gostou, recomendações para outros clientes..."
-            }
-            value={post.description}
-            onChange={(e) => setPost({ ...post, description: e.target.value })}
-            className="min-h-[100px]"
-            disabled={isLoading}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            💡 Dica: Seja específico! Detalhes ajudam outros a entenderem melhor o trabalho
-          </p>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Fotos do Trabalho</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">
+            Fotos do Trabalho <span className="text-gray-500 font-normal">(opcional)</span>
+          </label>
           <ImageUploadFeed
             currentImages={post.images}
             onImagesUpload={(images) => setPost({ ...post, images })}
             maxImages={5}
           />
           <p className="text-xs text-gray-500 mt-1">
-            📸 Dica: Fotos de antes e depois são muito valorizadas! Mostre o processo e o resultado final
+            📸 Fotos são opcionais, mas posts com imagens recebem mais atenção!
           </p>
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-        <Button 
-          variant="outline" 
-          onClick={onCancel}
-          disabled={isLoading}
-        >
-          Cancelar
-        </Button>
-        <Button 
-          onClick={handleSubmit} 
-          disabled={!post.title.trim() || !post.description.trim() || !post.service || isLoading}
-          className="min-w-[120px]"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Publicando...
-            </>
-          ) : (
-            <>
-              <Send className="h-4 w-4 mr-2" />
-              Publicar
-            </>
-          )}
-        </Button>
+      <div className="space-y-3">
+        {/* Mensagem de status */}
+        {postStatus !== 'idle' && (
+          <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg ${
+            postStatus === 'sending' 
+              ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+              : 'bg-green-50 text-green-700 border border-green-200'
+          }`}>
+            {postStatus === 'sending' ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm font-medium">Enviando post...</span>
+              </>
+            ) : (
+              <>
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm font-medium">Post enviado com sucesso!</span>
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isLoading}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={!post.title.trim() || !post.description.trim() || isLoading}
+            className="min-w-[120px]"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Publicando...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Publicar
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   )

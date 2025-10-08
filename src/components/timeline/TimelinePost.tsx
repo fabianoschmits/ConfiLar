@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star } from 'lucide-react'
+import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star, Share2, Briefcase } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
@@ -15,10 +15,12 @@ import { WelcomePost } from './WelcomePost'
 import { SimpleAutomaticPost } from './SimpleAutomaticPost'
 import { WelcomeUserPost } from './WelcomeUserPost'
 import { NewUserWelcomePost } from './NewUserWelcomePost'
-import { ImageModal } from '@/components/ui/ImageModal'
+import { MentionText } from '@/components/ui/MentionText'
+import { SharePostModal } from './SharePostModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
+import { services } from '@/data/services'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -43,9 +45,9 @@ export function TimelinePost({
   trendingReason,
   isDeleting = false
 }: TimelinePostProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [showCommentSection, setShowCommentSection] = useState(false)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
   
   // Hook para gerenciar visualizações
   const { viewsCount } = usePostViews(post.id)
@@ -63,18 +65,6 @@ export function TimelinePost({
   // Verificação adicional: se o título contém emojis de sistema, também considerar como post automático
   const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
   const isSystemPost = isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
-  
-  // Debug: Log para verificar o tipo de post
-  console.log('🔍 TimelinePost Debug:', {
-    postId: post.id,
-    title: post.title,
-    metadata: post.metadata,
-    type: postType,
-    isSimpleAutomaticPost,
-    isWelcomeUserPost,
-    isOldAutomaticPost,
-    shouldUseSimpleComponent: isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost
-  })
   
   // Se for um post de boas-vindas de novo usuário, renderizar o componente NewUserWelcomePost
   if (isWelcomeUserPost || (isSystemPostByTitle && post.title.includes('🎉'))) {
@@ -137,35 +127,48 @@ export function TimelinePost({
     if (!isTrending) return null
     
     const badges = {
-      'high_engagement': { icon: TrendingUp, text: '🔥 Em alta', color: 'bg-orange-100 text-orange-800' },
-      'local_trending': { icon: MapPin, text: '📍 Local', color: 'bg-blue-100 text-blue-800' },
-      'new_post': { icon: Star, text: '✨ Novo', color: 'bg-red-100 text-red-800' },
-      'verified_professional': { icon: Star, text: '⭐ Verificado', color: 'bg-yellow-100 text-yellow-800' }
+      'high_engagement': { 
+        icon: TrendingUp, 
+        text: '🔥 Em alta', 
+        shortText: '🔥',
+        color: 'bg-orange-100 text-orange-800' 
+      },
+      'new_post': { 
+        icon: Star, 
+        text: '✨ Novo', 
+        shortText: '✨',
+        color: 'bg-red-100 text-red-800' 
+      },
+      'verified_professional': { 
+        icon: Star, 
+        text: '⭐ Verificado', 
+        shortText: '⭐',
+        color: 'bg-yellow-100 text-yellow-800' 
+      }
     }
     
     const badge = badges[trendingReason as keyof typeof badges] || badges['high_engagement']
     const Icon = badge.icon
     
     return (
-      <Badge className={badge.color}>
-        <Icon className="h-3 w-3 mr-1" />
-        {badge.text}
+      <Badge className={`${badge.color} text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 whitespace-nowrap flex items-center gap-0.5 sm:gap-1`}>
+        <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3 hidden sm:inline" />
+        <span className="hidden sm:inline">{badge.text}</span>
+        <span className="sm:hidden">{badge.shortText}</span>
       </Badge>
     )
   }
 
   const handleImageClick = (imageUrl: string) => {
-    setSelectedImage(imageUrl)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedImage(null)
+    if (expandedImage === imageUrl) {
+      setExpandedImage(null)
+    } else {
+      setExpandedImage(imageUrl)
+    }
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card id={`post-${post.id}`} className="overflow-hidden transition-all duration-300">
       <CardHeader className="pb-0 p-3 -mb-2">
         <div className="flex items-start space-x-3">
           {/* Avatar */}
@@ -182,41 +185,54 @@ export function TimelinePost({
           
           {/* Informações do Usuário */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
+            <div className="flex items-center gap-1 sm:gap-2 mb-1 overflow-x-auto scrollbar-hide">
+              <h3 className="text-sm font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate flex-shrink-0">
                 <Link href={`/perfil/${post.user_id}`}>
                   {post.user_name}
                 </Link>
               </h3>
               
               {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
-              <DynamicAvailabilityBadge userId={post.user_id} />
+              <div className="flex-shrink-0">
+                <DynamicAvailabilityBadge userId={post.user_id} />
+              </div>
               
               {/* Badge de Tipo (Cliente/Profissional) */}
               <Badge 
                 variant="outline"
-                className={`text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 ${
                   post.user_type === 'professional' 
                     ? 'border-blue-200 text-blue-700 bg-blue-50' 
                     : 'border-purple-200 text-purple-700 bg-purple-50'
                 }`}
               >
-                <User className="h-3 w-3" />
-                <span>
+                <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">
                   {post.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                </span>
+                <span className="sm:hidden">
+                  {post.user_type === 'professional' ? 'Prof' : 'Cliente'}
                 </span>
               </Badge>
               
-              {/* Badge Local */}
-              <Badge 
-                variant="outline"
-                className="text-xs font-medium px-2 py-0.5 rounded-full border-blue-200 text-blue-700 bg-blue-50 flex items-center gap-1"
-              >
-                <MapPin className="h-3 w-3" />
-                <span>Local</span>
-              </Badge>
+              {/* Badge de Serviço */}
+              {post.service_category_id && (() => {
+                const service = services.find(s => s.id === post.service_category_id)
+                if (!service) return null
+                return (
+                  <Badge 
+                    variant="outline"
+                    className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full border-green-200 text-green-700 bg-green-50 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 max-w-[120px] sm:max-w-none"
+                  >
+                    <Briefcase className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                    <span className="truncate">{service.name}</span>
+                  </Badge>
+                )
+              })()}
               
-              {getTrendingBadge()}
+              <div className="flex-shrink-0">
+                {getTrendingBadge()}
+              </div>
             </div>
             
             {/* Localização */}
@@ -243,9 +259,11 @@ export function TimelinePost({
             <CardContent className="space-y-3 px-3 md:px-6 -mt-2 pb-3 md:pb-6">
               <div className="-mt-2">
                 <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
-                  {post.title}
+                  <MentionText text={post.title} />
                 </h4>
-                <p className="text-sm md:text-base text-gray-700">{post.description}</p>
+                <p className="text-sm md:text-base text-gray-700">
+                  <MentionText text={post.description} />
+                </p>
               </div>
 
         {/* Galeria de Imagens - Estilo Instagram */}
@@ -259,13 +277,15 @@ export function TimelinePost({
                   alt="Imagem do post"
                   width={500}
                   height={500}
-                  className="w-full h-[400px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                  className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                    expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[400px] object-cover'
+                  }`}
                   onClick={() => handleImageClick(post.images[0])}
                 />
               </div>
             ) : post.images.length === 2 ? (
               // Duas imagens - lado a lado
-              <div className="grid grid-cols-2 gap-1">
+              <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
                 {post.images.map((image, index) => (
                   <div key={index} className="relative">
                     <Image
@@ -273,7 +293,13 @@ export function TimelinePost({
                       alt={`Imagem ${index + 1}`}
                       width={250}
                       height={250}
-                      className="w-full h-[300px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                        expandedImage === image 
+                          ? 'object-contain max-h-screen' 
+                          : expandedImage 
+                            ? 'hidden' 
+                            : 'h-[300px] object-cover'
+                      }`}
                       onClick={() => handleImageClick(image)}
                     />
                   </div>
@@ -281,35 +307,29 @@ export function TimelinePost({
               </div>
             ) : post.images.length === 3 ? (
               // Três imagens - uma grande e duas pequenas
-              <div className="grid grid-cols-2 gap-1">
-                <div className="row-span-2">
-                  <Image
-                    src={post.images[0]}
-                    alt="Imagem principal"
-                    width={250}
-                    height={400}
-                    className="w-full h-[400px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => handleImageClick(post.images[0])}
-                  />
-                </div>
-                <div className="space-y-1">
-                  {post.images.slice(1, 3).map((image, index) => (
-                    <div key={index} className="relative">
-                      <Image
-                        src={image}
-                        alt={`Imagem ${index + 2}`}
-                        width={250}
-                        height={195}
-                        className="w-full h-[195px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => handleImageClick(image)}
-                      />
-                    </div>
-                  ))}
-                </div>
+              <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
+                {post.images.map((image, index) => (
+                  <div key={index} className={expandedImage && expandedImage !== image ? 'hidden' : index === 0 && !expandedImage ? 'row-span-2' : ''}>
+                    <Image
+                      src={image}
+                      alt={`Imagem ${index + 1}`}
+                      width={250}
+                      height={index === 0 ? 400 : 195}
+                      className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                        expandedImage === image 
+                          ? 'object-contain max-h-screen' 
+                          : index === 0 
+                            ? 'h-[400px] object-cover' 
+                            : 'h-[195px] object-cover'
+                      }`}
+                      onClick={() => handleImageClick(image)}
+                    />
+                  </div>
+                ))}
               </div>
             ) : (
               // Quatro ou mais imagens - grid 2x2
-              <div className="grid grid-cols-2 gap-1">
+              <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
                 {post.images.slice(0, 4).map((image, index) => (
                   <div key={index} className="relative">
                     <Image
@@ -317,11 +337,17 @@ export function TimelinePost({
                       alt={`Imagem ${index + 1}`}
                       width={250}
                       height={250}
-                      className="w-full h-[250px] object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                        expandedImage === image 
+                          ? 'object-contain max-h-screen' 
+                          : expandedImage 
+                            ? 'hidden' 
+                            : 'h-[250px] object-cover'
+                      }`}
                       onClick={() => handleImageClick(image)}
                     />
-                    {index === 3 && post.images.length > 4 && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                    {index === 3 && post.images.length > 4 && !expandedImage && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center pointer-events-none">
                         <span className="text-white text-2xl font-bold">
                           +{post.images.length - 4}
                         </span>
@@ -345,6 +371,14 @@ export function TimelinePost({
               <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base">{commentsCount}</span>
             </button>
+            <button 
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-green-500 transition-colors"
+              title="Compartilhar post"
+            >
+              <Share2 className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base hidden sm:inline">Compartilhar</span>
+            </button>
             <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
               <Eye className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base">{viewsCount}</span>
@@ -359,16 +393,13 @@ export function TimelinePost({
       )}
       </CardContent>
 
-      {/* Modal de visualização de imagem */}
-      {selectedImage && (
-        <ImageModal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          imageUrl={selectedImage}
-          alt="Imagem do post"
-          title={post.title}
-        />
-      )}
+      {/* Modal de compartilhamento */}
+      <SharePostModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        postId={post.id}
+        postTitle={post.title}
+      />
     </Card>
   )
 }
