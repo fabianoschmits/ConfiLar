@@ -22,7 +22,6 @@ import { TimelineNotification } from '@/components/timeline/TimelineNotification
 import { NewPostForm } from '@/components/timeline/NewPostForm'
 import { EditPostModal } from '@/components/timeline/EditPostModal'
 import { Modal } from '@/components/ui/modal'
-import { TrendingPosts } from '@/components/timeline/TrendingPosts'
 import { LocationFilterSelector } from '@/components/timeline/LocationFilterSelector'
 import { useLocationFilters } from '@/hooks/useLocationFilters'
 import { UnifiedTimelineItem, TimelineFilters } from '@/types/timeline'
@@ -38,7 +37,7 @@ export default function FeedPage() {
   const highlightPostId = searchParams.get('post')
   
   // Estado para abas do feed
-  const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('all')
+  const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('posts')
   
   // Estados para filtros
   const [showFilters, setShowFilters] = useState(false)
@@ -49,6 +48,19 @@ export default function FeedPage() {
   
   // Hook para filtros de localização
   const { currentFilter, setFilter } = useLocationFilters()
+  
+  // Debug: Log do perfil e filtro inicial
+  useEffect(() => {
+    console.log('👤 Perfil do usuário:', {
+      location_city: profile?.location_city,
+      location_state: profile?.location_state,
+      'city length': profile?.location_city?.length,
+      'state length': profile?.location_state?.length,
+      'city type': typeof profile?.location_city,
+      'state type': typeof profile?.location_state
+    })
+    console.log('📍 Filtro inicial:', JSON.stringify(currentFilter, null, 2))
+  }, [profile, currentFilter])
   
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
@@ -120,23 +132,13 @@ export default function FeedPage() {
 
   const filteredItems = getFilteredItems()
 
-  // Determinar se há próxima página baseado na aba ativa
-  const shouldShowLoadMore = () => {
-    // Se estamos na aba "all", usar a lógica original
-    if (activeTab === 'all') {
-      return hasNextPage
-    }
-    
-    // Para abas específicas, só mostrar se há mais dados originais E se os dados filtrados são poucos
-    return hasNextPage && filteredItems.length < 10
-  }
-
   // Hook para infinite scroll - carregamento automático ao fazer scroll
+  // CORRIGIDO: Sempre mostrar botão de carregar mais se houver próxima página
   const { loadingRef } = useInfiniteScroll({
-    hasNextPage: shouldShowLoadMore(),
+    hasNextPage: hasNextPage,
     isFetchingNextPage: isFetchingNextPage || false,
     fetchNextPage: loadMore,
-    threshold: 300 // Carregar quando estiver a 300px do final
+    threshold: 500 // Carregar quando estiver a 500px do final (aumentado)
   })
 
   // Debug: log dos valores do infinite scroll
@@ -362,9 +364,6 @@ export default function FeedPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 <span>Todos</span>
-                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
-                  {items.length}
-                </span>
               </button>
               
               <button
@@ -379,9 +378,6 @@ export default function FeedPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0H7m8 0v3" />
                 </svg>
                 <span>Posts</span>
-                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
-                  {items.filter(item => isManualPost(item)).length}
-                </span>
               </button>
               
               <button
@@ -396,9 +392,6 @@ export default function FeedPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
                 </svg>
                 <span>Notificações</span>
-                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full">
-                  {items.filter(item => item.type === 'notification' || isAutomaticPost(item)).length}
-                </span>
               </button>
             </div>
           </div>
@@ -438,8 +431,10 @@ export default function FeedPage() {
           {/* Filtro de Localização */}
           <LocationFilterSelector
             onFilterChange={(filter) => {
-              console.log('🔄 Feed recebeu filtro:', filter)
+              console.log('🔄 Feed recebeu filtro:', JSON.stringify(filter, null, 2))
+              console.log('📍 Filtro atual antes da mudança:', JSON.stringify(currentFilter, null, 2))
               setFilter(filter)
+              console.log('✅ setFilter foi chamado')
             }}
             className="w-full"
           />
@@ -532,7 +527,7 @@ export default function FeedPage() {
               <div className="flex items-center space-x-2">
                 <Search className="h-4 w-4 text-blue-600" />
                 <span className="text-sm text-blue-800">
-                  Buscando por: <strong>"{filters.search}"</strong>
+                  Buscando por: <strong>&ldquo;{filters.search}&rdquo;</strong>
                 </span>
                 <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
                   {filteredItems.length} resultado{filteredItems.length !== 1 ? 's' : ''}
@@ -549,9 +544,9 @@ export default function FeedPage() {
         )}
 
         {/* Layout Principal - Responsivo */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="max-w-4xl mx-auto">
           {/* Timeline Principal */}
-          <div className="lg:col-span-3 space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {isLoading && filteredItems.length === 0 ? (
               <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12">
                 <div className="flex items-center justify-center">
@@ -584,7 +579,7 @@ export default function FeedPage() {
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhum resultado encontrado</h3>
                     <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                      Não encontramos posts relacionados a <strong>"{filters.search}"</strong>. 
+                      Não encontramos posts relacionados a <strong>&ldquo;{filters.search}&rdquo;</strong>. 
                       Tente buscar por outros termos ou verifique a ortografia.
                     </p>
                     <div className="space-y-4">
@@ -755,50 +750,29 @@ export default function FeedPage() {
                 {filteredItems.map(renderTimelineItem)}
                 
                 {/* Loading automático para infinite scroll */}
-                {shouldShowLoadMore() && (
+                {hasNextPage && (
                   <div 
                     ref={loadingRef}
-                    className="flex justify-center py-6"
+                    className="flex justify-center py-8"
                   >
                     {isFetchingNextPage ? (
-                      <div className="flex items-center space-x-2 text-gray-500">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm">Carregando mais posts...</span>
+                      <div className="flex items-center space-x-2 text-blue-600">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span className="text-sm font-medium">Carregando mais posts...</span>
                       </div>
                     ) : (
-                      <div className="text-gray-400 text-sm">
-                        Role para baixo para carregar mais posts
-                      </div>
+                      <Button
+                        onClick={loadMore}
+                        variant="outline"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                      >
+                        Carregar mais posts
+                      </Button>
                     )}
                   </div>
                 )}
               </>
             )}
-          </div>
-
-          {/* Sidebar com Posts em Alta e Notificações - Responsiva */}
-          <div className="lg:col-span-1 space-y-4 md:space-y-6">
-            <div className="sticky top-20 space-y-6">
-              <TrendingPosts 
-                location_city={profile?.location_city}
-                location_state={profile?.location_state}
-                limit={5}
-              />
-              
-              <div className="bg-white/80 backdrop-blur-md rounded-xl border border-blue-200 shadow-sm p-4">
-                <div className="flex items-center space-x-2 mb-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold text-blue-900">
-                    Notificações (Sistema Desabilitado)
-                  </h3>
-                </div>
-                <p className="text-sm text-gray-500">Sistema de notificações temporariamente desabilitado</p>
-              </div>
-            </div>
           </div>
         </div>
 

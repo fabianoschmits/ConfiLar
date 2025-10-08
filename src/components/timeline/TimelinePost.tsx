@@ -197,14 +197,10 @@ export function TimelinePost({
                 <DynamicAvailabilityBadge userId={post.user_id} />
               </div>
               
-              {/* Badge de Tipo (Cliente/Profissional) */}
+              {/* Badge de Tipo (Cliente/Profissional) - Ambos em azul */}
               <Badge 
                 variant="outline"
-                className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 ${
-                  post.user_type === 'professional' 
-                    ? 'border-blue-200 text-blue-700 bg-blue-50' 
-                    : 'border-purple-200 text-purple-700 bg-purple-50'
-                }`}
+                className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 border-blue-200 text-blue-700 bg-blue-50"
               >
                 <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 <span className="hidden sm:inline">

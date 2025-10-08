@@ -10,6 +10,8 @@ import { Comment as CommentType } from '@/types/comments'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CommentOptionsMenu } from './CommentOptionsMenu'
+import { MentionInput } from '@/components/ui/MentionInput'
+import { MentionText } from '@/components/ui/MentionText'
 
 interface CommentSectionProps {
   postId: string
@@ -162,11 +164,12 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
             {/* Conteúdo do comentário - modo edição ou visualização */}
             {editingComment === comment.id ? (
               <div className="mb-2">
-                <Textarea
+                <MentionInput
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
-                  className="min-h-[60px] resize-none"
-                  placeholder="Editar comentário..."
+                  onChange={(value) => setEditContent(value)}
+                  placeholder="Editar comentário... Digite @ para mencionar"
+                  className="w-full"
+                  minHeight="60px"
                 />
                 <div className="flex items-center space-x-2 mt-2">
                   <Button
@@ -191,23 +194,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
               </div>
             ) : (
               <div className="text-base text-gray-700 mb-2">
-                {comment.content.split(' ').map((word, index) => {
-                  if (word.startsWith('@')) {
-                    return (
-                      <span key={index} className="text-blue-600 font-medium">
-                        {word}{' '}
-                      </span>
-                    )
-                  }
-                  if (word.startsWith('#')) {
-                    return (
-                      <span key={index} className="text-purple-600 font-medium">
-                        {word}{' '}
-                      </span>
-                    )
-                  }
-                  return <span key={index}>{word} </span>
-                })}
+                <MentionText text={comment.content} />
               </div>
             )}
             
@@ -334,13 +321,14 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
         )}
         
         <div className="flex space-x-2">
-          <Textarea
-            placeholder={replyTo ? "Responder ao comentário..." : "Adicione um comentário..."}
+          <MentionInput
+            placeholder={replyTo ? "Responder ao comentário... Digite @ para mencionar" : "Adicione um comentário... Digite @ para mencionar"}
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={(value) => setNewComment(value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 min-h-[80px] resize-none"
+            className="flex-1"
             disabled={isAddingComment}
+            minHeight="80px"
           />
           <Button
             onClick={handleSubmitComment}
@@ -352,7 +340,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
         </div>
         
         <div className="mt-2 text-xs text-gray-500">
-          Use @nome para mencionar alguém • Use #hashtag para categorizar
+          💡 Use @nome para mencionar alguém • Use #hashtag para categorizar
         </div>
       </div>
     </div>

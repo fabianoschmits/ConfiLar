@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
     // Denúncias por tipo
     const { data: reportsByType } = await adminSupabase
       .from('reports')
-      .select('report_type')
+      .select('type')
 
     const typeStats = reportsByType?.reduce((acc: any, report: any) => {
-      acc[report.report_type] = (acc[report.report_type] || 0) + 1
+      acc[report.type] = (acc[report.type] || 0) + 1
       return acc
     }, {}) || {}
 
