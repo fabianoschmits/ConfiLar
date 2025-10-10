@@ -261,9 +261,9 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
   )
 
   return (
-    <div className={className}>
+    <div className={`w-full ${className}`}>
       {/* Lista de comentários */}
-      <div className="space-y-3">
+      <div className="space-y-3 w-full">
         {isLoading ? (
           <div className="text-center py-4">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
@@ -297,7 +297,7 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
       </div>
 
       {/* Formulário de novo comentário */}
-      <div className="mt-4">
+      <div className="mt-4 w-full">
         {replyTo && (
           <div className="mb-2 p-2 bg-blue-50 rounded-lg">
             <div className="flex items-center justify-between">
@@ -320,23 +320,26 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
           </div>
         )}
         
-        <div className="flex space-x-2">
+        <div className="w-full">
           <MentionInput
             placeholder={replyTo ? "Responder ao comentário... Digite @ para mencionar" : "Adicione um comentário... Digite @ para mencionar"}
             value={newComment}
             onChange={(value) => setNewComment(value)}
             onKeyPress={handleKeyPress}
-            className="flex-1"
+            className="w-full"
             disabled={isAddingComment}
             minHeight="80px"
           />
-          <Button
-            onClick={handleSubmitComment}
-            disabled={!newComment.trim() || isAddingComment}
-            className="self-end"
-          >
-            <MessageCircle className="h-4 w-4" />
-          </Button>
+          <div className="flex justify-end mt-2">
+            <Button
+              onClick={handleSubmitComment}
+              disabled={!newComment.trim() || isAddingComment}
+              className="px-4"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Enviar
+            </Button>
+          </div>
         </div>
         
         <div className="mt-2 text-xs text-gray-500">

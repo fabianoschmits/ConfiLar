@@ -74,7 +74,6 @@ export function useClassifiedSearch() {
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(50)
 
       console.log('🔍 Resultado da query:', { data: data?.length || 0, error: error?.message || 'Nenhum erro' })
 
@@ -130,8 +129,8 @@ export function useClassifiedSearch() {
 
       // Calcular estatísticas
       const total = adsWithUserInfo.length
-      const offers = adsWithUserInfo.filter(ad => ad.user_type === 'professional').length
-      const requests = adsWithUserInfo.filter(ad => ad.user_type === 'client').length
+      const offers = adsWithUserInfo.filter(ad => ad.ad_type === 'oferecer').length
+      const requests = adsWithUserInfo.filter(ad => ad.ad_type === 'procurar').length
       const categories = Array.from(new Set(adsWithUserInfo.map(ad => ad.category))).length
 
       setStats({ total, offers, requests, categories })
@@ -146,29 +145,168 @@ export function useClassifiedSearch() {
 
   // Aplicar filtros
   const applyFilters = useCallback((filters: ClassifiedFilters) => {
+    console.log('🔍 applyFilters chamado com:', { filters, totalAds: classifiedAds.length })
+    
+    // Log das categorias disponíveis
+    const availableCategories = Array.from(new Set(classifiedAds.map(ad => ad.category)))
+    console.log('🔍 Categorias disponíveis nos anúncios:', availableCategories)
+    
     let filtered = [...classifiedAds]
 
     // Filtrar por tipo de anúncio
     if (filters.adType !== 'all') {
       filtered = filtered.filter(ad => {
         if (filters.adType === 'offers') {
-          return ad.user_type === 'professional' || ad.ad_type === 'oferecer'
+          return ad.ad_type === 'oferecer'
         } else if (filters.adType === 'requests') {
-          return ad.user_type === 'client' || ad.ad_type === 'procurar'
+          return ad.ad_type === 'procurar'
         }
         return true
       })
     }
 
-    // Filtrar por termo de busca
+    // Filtrar por termo de busca com variações e sinônimos
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase()
-      filtered = filtered.filter(ad => 
-        ad.title.toLowerCase().includes(searchLower) ||
-        ad.description.toLowerCase().includes(searchLower) ||
-        ad.category.toLowerCase().includes(searchLower) ||
-        ad.user_name.toLowerCase().includes(searchLower)
-      )
+      
+      // Mapeamento de sinônimos e variações para todos os serviços
+      const synonyms: { [key: string]: string[] } = {
+        // Construção e Reforma
+        'construção e reforma': ['construção', 'reforma', 'obra', 'construir', 'reformar', 'edificação'],
+        'pedreiro': ['construção', 'obra', 'alvenaria', 'tijolo', 'cimento', 'concreto', 'reforma', 'masonry', 'alvenaria'],
+        'elétrica': ['eletricista', 'elétrica', 'luz', 'energia', 'fiação', 'tomada', 'interruptor', 'disjuntor', 'elétrico'],
+        'encanamento': ['encanador', 'hidráulica', 'água', 'cano', 'vazamento', 'torneira', 'chuveiro', 'plumbing', 'hidráulico'],
+        'pintura': ['pintor', 'tinta', 'parede', 'cor', 'verniz', 'esmalte', 'acabamento', 'pintar'],
+        'marcenaria': ['marceneiro', 'madeira', 'móveis', 'carpintaria', 'serralheria', 'estrutura', 'carpintaria'],
+        'telhado': ['telhas', 'cobertura', 'telhamento', 'roofing', 'cobertura'],
+        'pisos': ['piso', 'chão', 'revestimento', 'flooring', 'pavimento'],
+        
+        // Limpeza e Higiene
+        'limpeza e higiene': ['limpeza', 'higiene', 'higienização', 'cleaning'],
+        'diarista': ['limpeza', 'faxina', 'doméstica', 'casa', 'limpar', 'faxineira', 'housekeeping', 'doméstica'],
+        'limpeza profunda': ['limpeza profunda', 'limpeza detalhada', 'deep cleaning', 'limpeza especializada'],
+        'limpeza de tapetes': ['tapetes', 'carpetes', 'carpet cleaning', 'higienização de tapetes'],
+        
+        // Jardinagem e Exteriores
+        'jardinagem': ['jardim', 'jardineiro', 'planta', 'plantas', 'gardening', 'jardim'],
+        'paisagismo': ['paisagista', 'jardim', 'planta', 'paisagismo', 'poda', 'verde', 'landscaping'],
+        'manutenção de piscina': ['piscina', 'piscinas', 'pool maintenance', 'tratamento de piscina'],
+        'poda de árvores': ['poda', 'árvores', 'tree care', 'arborização', 'poda arbórea'],
+        
+        // Beleza e Bem-estar
+        'beleza e bem-estar': ['beleza', 'bem-estar', 'estética', 'beauty'],
+        'cabeleireiro': ['cabelo', 'corte', 'penteado', 'salão', 'beleza', 'hairdressing', 'cabelereiro'],
+        'manicure': ['unhas', 'esmaltação', 'beleza', 'nail art', 'unha', 'manicure'],
+        'esteticista': ['estética', 'tratamentos', 'facial', 'corporal', 'esthetics'],
+        'personal trainer': ['academia', 'treino', 'fitness', 'musculação', 'exercício', 'personal', 'trainer'],
+        'massagem': ['massoterapia', 'terapia', 'relaxamento', 'massage', 'massagista'],
+        
+        // Tecnologia e Informática
+        'tecnologia': ['tecnologia', 'ti', 'informática', 'technology', 'tech'],
+        'manutenção de computadores': ['computador', 'pc', 'manutenção', 'reparo', 'computer repair', 'informática'],
+        'redes e internet': ['rede', 'internet', 'wi-fi', 'network', 'conexão'],
+        'desenvolvimento de software': ['software', 'programação', 'desenvolvimento', 'software development', 'programador'],
+        
+        // Transporte e Logística
+        'transporte': ['transporte', 'transport', 'locomoção'],
+        'mudanças': ['mudança', 'mudar', 'moving', 'transporte de móveis'],
+        'entregas': ['entrega', 'delivery', 'entregador'],
+        'transporte de passageiros': ['passageiros', 'carona', 'uber', 'taxi', 'passenger transport'],
+        
+        // Educação e Tutoria
+        'educação': ['educação', 'education', 'ensino', 'aprendizado'],
+        'aulas particulares': ['aula', 'particular', 'tutoria', 'tutoring', 'reforço escolar'],
+        'idiomas': ['idioma', 'language', 'língua', 'inglês', 'espanhol'],
+        'música': ['música', 'music', 'instrumento', 'aula de música'],
+        
+        // Cuidados e Assistência
+        'cuidados e assistência': ['cuidados', 'assistência', 'care', 'cuidar'],
+        'babá': ['babá', 'babysitter', 'criança', 'bebê', 'cuidador infantil', 'creche', 'babysitting'],
+        'cuidador de idosos': ['idosos', 'idoso', 'elderly care', 'cuidado de idosos', 'assistência idosos'],
+        'cuidados com animais': ['animais', 'pet care', 'cuidado de animais', 'veterinário'],
+        'passeador de cães': ['passeador', 'passeio', 'dog walking', 'passear cães'],
+        'tosador': ['tosa', 'tosador', 'pet grooming', 'tosa de animais'],
+        
+        // Lavanderia e Costura
+        'lavanderia': ['lavanderia', 'laundry', 'lavagem', 'passadoria'],
+        'costura': ['costura', 'sewing', 'conserto', 'confeção', 'alfaiate'],
+        
+        // Eventos e Celebrações
+        'eventos': ['evento', 'events', 'festa', 'celebração'],
+        'buffet': ['buffet', 'catering', 'alimentação', 'comida'],
+        'decoração': ['decoração', 'decoration', 'ornamentação', 'enfeites'],
+        
+        // Manutenção Geral
+        'manutenção geral': ['manutenção', 'maintenance', 'reparo', 'conserto'],
+        'reparo de eletrodomésticos': ['eletrodomésticos', 'appliance repair', 'conserto de aparelhos'],
+        'chaveiro': ['chaveiro', 'locksmith', 'chaves', 'fechaduras'],
+        'vidraçaria': ['vidro', 'vidraçaria', 'glass repair', 'vidros']
+      }
+      
+      // Função para verificar se o texto contém a palavra ou suas variações
+      const containsSearchTerm = (text: string): boolean => {
+        const textLower = text.toLowerCase()
+        
+        // Busca direta
+        if (textLower.includes(searchLower)) {
+          return true
+        }
+        
+        // Busca por sinônimos
+        for (const [mainTerm, variations] of Object.entries(synonyms)) {
+          // Se a busca é por uma palavra principal, busca suas variações
+          if (searchLower === mainTerm) {
+            for (const variation of variations) {
+              if (textLower.includes(variation)) {
+                return true
+              }
+            }
+          }
+          
+          // Se a busca é por uma variação, busca a palavra principal
+          if (variations.includes(searchLower)) {
+            if (textLower.includes(mainTerm)) {
+              return true
+            }
+          }
+        }
+        
+        // Busca por palavras parciais (ex: "encan" encontra "encanador" e "encanamento")
+        const searchWords = searchLower.split(' ').filter(word => word.length > 2)
+        for (const word of searchWords) {
+          if (textLower.includes(word)) {
+            return true
+          }
+        }
+        
+        return false
+      }
+      
+      console.log('🔍 Buscando por:', { searchTerm: filters.searchTerm, searchLower })
+      
+      filtered = filtered.filter(ad => {
+        const matches = 
+          containsSearchTerm(ad.title) ||
+          containsSearchTerm(ad.description) ||
+          containsSearchTerm(ad.category) ||
+          containsSearchTerm(ad.user_name)
+        
+        if (matches) {
+          console.log('✅ Anúncio encontrado:', { 
+            title: ad.title, 
+            category: ad.category,
+            searchTerm: filters.searchTerm 
+          })
+        }
+        
+        return matches
+      })
+      
+      console.log('🔍 Resultado da busca:', { 
+        searchTerm: filters.searchTerm,
+        totalAds: classifiedAds.length,
+        filteredAds: filtered.length 
+      })
     }
 
     // Filtrar por estado (aceita tanto sigla quanto nome completo)
@@ -227,14 +365,35 @@ export function useClassifiedSearch() {
 
     // Filtrar por categoria
     if (filters.category && filters.category !== 'all') {
-      filtered = filtered.filter(ad => ad.category === filters.category)
+      console.log('🔍 Filtrando por categoria:', { category: filters.category, adsBefore: filtered.length })
+      filtered = filtered.filter(ad => {
+        const matches = ad.category === filters.category
+        console.log('🔍 Verificando anúncio:', { 
+          adCategory: ad.category, 
+          filterCategory: filters.category, 
+          matches,
+          title: ad.title 
+        })
+        return matches
+      })
+      console.log('🔍 Após filtro de categoria:', { adsAfter: filtered.length })
     }
 
+    console.log('🔍 Filtros aplicados:', { 
+      original: classifiedAds.length, 
+      filtered: filtered.length,
+      searchTerm: filters.searchTerm,
+      state: filters.state,
+      city: filters.city,
+      category: filters.category,
+      adType: filters.adType
+    })
     setFilteredAds(filtered)
   }, [classifiedAds])
 
   // Executar busca com filtros
   const executeSearch = useCallback((filters: ClassifiedFilters) => {
+    console.log('🔍 executeSearch chamado com filtros:', filters)
     applyFilters(filters)
   }, [applyFilters])
 

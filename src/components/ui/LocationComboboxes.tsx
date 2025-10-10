@@ -151,6 +151,14 @@ export function CidadeCombobox({
   const [searchTerm, setSearchTerm] = useState('')
   const { cidades, loading: loadingCidades } = useCidades(estadoSigla || '')
 
+  // Debug logs
+  console.log('🏙️ CidadeCombobox renderizado:', {
+    estadoSigla,
+    value,
+    cidadesCount: cidades.length,
+    loading: loadingCidades
+  })
+
   const filteredCidades = searchTerm 
     ? cidades.filter(cidade =>
         cidade.nome.toLowerCase().includes(searchTerm.toLowerCase())
