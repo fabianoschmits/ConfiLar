@@ -182,7 +182,7 @@ export function ReportButton({
           className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
           onClick={handleButtonClick}
         >
-          <Flag className="h-3 w-3" />
+          <MoreVertical className="h-3 w-3" />
           <span className="text-xs">Denunciar</span>
         </Button>
       </DialogTrigger>

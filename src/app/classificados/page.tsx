@@ -25,7 +25,6 @@ import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
-import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 import { 
   Search, 
   MapPin, 
@@ -69,7 +68,7 @@ export default function ClassificadosPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(9)
+  const [itemsPerPage, setItemsPerPage] = useState(9)
   const [activeTab, setActiveTab] = useState<'all' | 'offers' | 'requests'>('all')
   
   // Estados para filtros
@@ -125,8 +124,9 @@ export default function ClassificadosPage() {
 
   // Executar busca inicial
   useEffect(() => {
+    console.log('🔍 Executando busca com filtros:', filters)
     executeSearch(filters)
-  }, [executeSearch])
+  }, [executeSearch, filters])
 
   // Aplicar filtros quando mudarem
   useEffect(() => {
@@ -134,15 +134,50 @@ export default function ClassificadosPage() {
       ...filters,
       adType: activeTab
     }
+    console.log('🔍 Aplicando filtros:', { activeTab, updatedFilters })
     executeSearch(updatedFilters)
   }, [filters, activeTab, executeSearch])
+
+  const { user, profile } = useAuthContext()
 
   // useEffect para mounted
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const { user, profile } = useAuthContext()
+  // Inicializar formulário com dados do usuário
+  useEffect(() => {
+    if (profile && profile.location_state && profile.location_city) {
+      console.log('🏠 Inicializando formulário com dados do usuário:', {
+        state: profile.location_state,
+        city: profile.location_city
+      })
+      
+      // Carregar cidades do estado do usuário primeiro
+      if (profile.location_state) {
+        console.log('🔄 Carregando cidades para o estado:', profile.location_state)
+        loadCidades(profile.location_state).then(() => {
+          // Após carregar as cidades, definir o formulário
+          setFormData(prev => ({
+            ...prev,
+            location_state: profile.location_state,
+            location_city: profile.location_city
+          }))
+        })
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          location_state: profile.location_state,
+          location_city: profile.location_city
+        }))
+      }
+    }
+  }, [profile, loadCidades])
+
+  // Resetar página quando itemsPerPage mudar
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [itemsPerPage])
 
   if (!mounted) {
     return null
@@ -158,36 +193,80 @@ export default function ClassificadosPage() {
 
   // Função para atualizar filtros
   const updateFilters = (newFilters: Partial<typeof filters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
+    const updatedFilters = { ...filters, ...newFilters }
+    console.log('🔄 Atualizando filtros:', { newFilters, updatedFilters })
+    setFilters(updatedFilters)
     setCurrentPage(1) // Reset para primeira página
+    executeSearch(updatedFilters)
   }
 
   // Limpar filtros
   const clearFilters = () => {
-    setFilters({
+    const clearedFilters = {
       searchTerm: '',
       state: '',
       city: '',
       category: 'all',
-      adType: 'all'
-    })
+      adType: 'all' as AdType
+    }
+    console.log('🧹 Limpando filtros:', clearedFilters)
+    setFilters(clearedFilters)
     setCurrentPage(1)
+    executeSearch(clearedFilters)
   }
 
   // Criar novo anúncio
+  // Função para abrir o diálogo de criação
+  const handleOpenCreateDialog = () => {
+    // Inicializar com dados do usuário se disponíveis
+    if (profile && profile.location_state && profile.location_city) {
+      console.log('🏠 Abrindo diálogo com dados do usuário:', {
+        state: profile.location_state,
+        city: profile.location_city
+      })
+      
+      // Carregar cidades do estado do usuário primeiro
+      if (profile.location_state) {
+        console.log('🔄 Carregando cidades para o estado:', profile.location_state)
+        loadCidades(profile.location_state).then(() => {
+          // Após carregar as cidades, definir o formulário
+          setFormData(prev => ({
+            ...prev,
+            location_state: profile.location_state,
+            location_city: profile.location_city
+          }))
+        })
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          location_state: profile.location_state,
+          location_city: profile.location_city
+        }))
+      }
+    }
+    setShowCreateDialog(true)
+  }
+
   const handleCreateAd = async () => {
+    console.log('🔍 Debug - Iniciando criação de anúncio')
+    console.log('👤 User:', user)
+    console.log('👤 Profile:', profile)
+    
     if (!user || !profile) {
+      console.log('❌ Usuário ou perfil não encontrado')
       toast.error('Você precisa estar logado para criar anúncios')
       return
     }
 
     if (!formData.title || !formData.description || !formData.category || !formData.ad_type) {
+      console.log('❌ Campos obrigatórios não preenchidos')
       toast.error('Preencha todos os campos obrigatórios')
       return
     }
 
     // Validar se a categoria escolhida é válida
     if (!isValidCategory(formData.category)) {
+      console.log('❌ Categoria inválida:', formData.category)
       toast.error('Categoria selecionada não é válida')
       return
     }
@@ -208,12 +287,20 @@ export default function ClassificadosPage() {
         is_active: true
       }
 
-      const { error } = await supabase
+      console.log('📝 Dados do anúncio:', adData)
+
+      const { data, error } = await supabase
         .from('classified_ads')
         .insert([adData])
 
-      if (error) throw error
+      console.log('📊 Resultado da inserção:', { data, error })
 
+      if (error) {
+        console.error('❌ Erro ao criar anúncio:', error)
+        throw error
+      }
+
+      console.log('✅ Anúncio criado com sucesso!')
       toast.success('Anúncio criado com sucesso!')
       setShowCreateDialog(false)
       setFormData({
@@ -230,8 +317,8 @@ export default function ClassificadosPage() {
       // Recarregar anúncios
       await loadClassifiedAds()
     } catch (error) {
-      console.error('Erro ao criar anúncio:', error)
-      toast.error('Erro ao criar anúncio')
+      console.error('❌ Erro ao criar anúncio:', error)
+      toast.error(`Erro ao criar anúncio: ${error.message || 'Erro desconhecido'}`)
     } finally {
       setIsCreatingAd(false)
     }
@@ -403,16 +490,16 @@ export default function ClassificadosPage() {
                 
                 {/* Ofertas */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <HandHeart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 mb-0.5" />
                   <p className="text-xs text-gray-500 text-center">Ofertas</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.offers}</p>
+                  <p className="text-sm sm:text-base font-bold text-blue-700">{stats.offers}</p>
                 </div>
                 
                 {/* Solicitações */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
+                  <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 mb-0.5" />
                   <p className="text-xs text-gray-500 text-center">Solicitações</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.requests}</p>
+                  <p className="text-sm sm:text-base font-bold text-green-700">{stats.requests}</p>
                 </div>
                 
                 {/* Categorias */}
@@ -425,47 +512,165 @@ export default function ClassificadosPage() {
             </CardContent>
           </Card>
 
-          {/* Barra de Busca Inteligente */}
+          {/* Barra de Busca com Filtros de Localização */}
           <div className="mb-6">
-            <SmartSearchBar
-              onSearch={(query, searchFilters) => {
-                const newFilters = {
-                  searchTerm: searchFilters.searchTerm,
-                  state: searchFilters.state,
-                  city: searchFilters.city,
-                  category: searchFilters.service,
-                  adType: activeTab as AdType
-                }
-                setFilters(newFilters)
-                executeSearch(newFilters)
-              }}
-              onFiltersChange={(searchFilters) => {
-                const newFilters = {
-                  searchTerm: searchFilters.searchTerm,
-                  state: searchFilters.state,
-                  city: searchFilters.city,
-                  category: searchFilters.service,
-                  adType: activeTab as AdType
-                }
-                setFilters(newFilters)
-                executeSearch(newFilters)
-              }}
-              initialFilters={{
-                searchTerm: filters.searchTerm,
-                state: filters.state,
-                city: filters.city,
-                service: filters.category,
-                userType: 'all',
-                rating: 'all',
-                availability: 'all'
-              }}
-              placeholder="Buscar anúncios..."
-              className="w-full"
-            />
+            <div className="flex gap-2">
+              {/* Campo de busca */}
+              <div className="relative flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    value={filters.searchTerm}
+                    onChange={(e) => {
+                      const newFilters = { ...filters, searchTerm: e.target.value }
+                      setFilters(newFilters)
+                      executeSearch(newFilters)
+                    }}
+                    placeholder="Buscar anúncios por palavra-chave (ex: pedreiro, eletricista, diarista...)"
+                    className="pl-8 pr-4 h-10 text-sm border border-gray-300 focus:border-blue-500 rounded-lg"
+                  />
+                </div>
+                
+                {/* Sugestões de serviços */}
+                {filters.searchTerm.length > 1 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {services
+                      .filter(service => 
+                        service.name.toLowerCase().includes(filters.searchTerm.toLowerCase())
+                      )
+                      .slice(0, 8)
+                      .map(service => (
+                        <button
+                          key={service.name}
+                          onClick={() => {
+                            const newFilters = { ...filters, searchTerm: service.name }
+                            setFilters(newFilters)
+                            executeSearch(newFilters)
+                          }}
+                          className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100 last:border-b-0 text-sm"
+                        >
+                          <span className="text-sm">{service.icon}</span>
+                          <div>
+                            <div className="font-medium text-gray-900">{service.name}</div>
+                            <div className="text-xs text-gray-500">{service.description}</div>
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Botão de filtro de localização */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`h-10 px-3 flex items-center gap-2 ${
+                    (filters.state || filters.city) 
+                      ? 'bg-blue-50 border-blue-300 text-blue-700' 
+                      : 'border-gray-300 text-gray-600'
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {filters.city ? filters.city : filters.state ? filters.state : 'Localização'}
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+
+                {/* Dropdown de filtros de localização */}
+                {showFilters && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-80 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Localização
+                      </h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowFilters(false)}
+                        className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {/* Estado */}
+                      <div>
+                        <label className="text-xs font-medium text-gray-700 mb-1 block">Estado</label>
+                        <EstadoCombobox
+                          value={filters.state}
+                          onValueChange={(newState) => {
+                            console.log('🏛️ Estado selecionado:', newState)
+                            const newFilters = { ...filters, state: newState, city: '' }
+                            setFilters(newFilters)
+                            executeSearch(newFilters)
+                            if (newState) {
+                              console.log('🔄 Carregando cidades para o estado:', newState)
+                              loadCidades(newState)
+                            }
+                          }}
+                          placeholder="Selecione o estado"
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Cidade */}
+                      <div>
+                        <label className="text-xs font-medium text-gray-700 mb-1 block">Cidade</label>
+                        <CidadeCombobox
+                          value={filters.city}
+                          onValueChange={(newCity) => {
+                            console.log('🏙️ Cidade selecionada:', newCity)
+                            const newFilters = { ...filters, city: newCity }
+                            setFilters(newFilters)
+                            executeSearch(newFilters)
+                          }}
+                          estadoSigla={filters.state}
+                          placeholder="Selecione a cidade"
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Botões de ação */}
+                    <div className="flex justify-between gap-2 mt-3 pt-2 border-t border-gray-200">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const newFilters = { ...filters, state: '', city: '' }
+                          setFilters(newFilters)
+                          executeSearch(newFilters)
+                        }}
+                        className="text-gray-600 text-xs h-6 px-2"
+                      >
+                        Limpar
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowFilters(false)}
+                        className="bg-blue-600 hover:bg-blue-700 text-xs h-6 px-3"
+                      >
+                        Aplicar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Sistema de Abas */}
           <div className="mb-6">
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Ofertas:</span> Profissionais oferecendo serviços • 
+                <span className="font-medium"> Solicitações:</span> Clientes procurando serviços
+              </p>
+            </div>
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
                 <button
@@ -481,32 +686,32 @@ export default function ClassificadosPage() {
                     Todos ({stats.total})
                   </div>
                 </button>
-                <button
-                  onClick={() => setActiveTab('offers')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                    activeTab === 'offers'
-                      ? 'border-gray-700 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Ofertas ({stats.offers})
-                  </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab('requests')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                    activeTab === 'requests'
-                      ? 'border-gray-500 text-gray-700'
-                      : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <HandHeart className="h-4 w-4" />
-                    Solicitações ({stats.requests})
-                  </div>
-                </button>
+                  <button
+                    onClick={() => setActiveTab('offers')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'offers'
+                        ? 'border-blue-500 text-blue-700'
+                        : 'border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <HandHeart className="h-4 w-4" />
+                      Ofertas ({stats.offers})
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('requests')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                      activeTab === 'requests'
+                        ? 'border-green-500 text-green-700'
+                        : 'border-transparent text-gray-500 hover:text-green-600 hover:border-green-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4" />
+                      Solicitações ({stats.requests})
+                    </div>
+                  </button>
               </nav>
             </div>
           </div>
@@ -517,6 +722,29 @@ export default function ClassificadosPage() {
               <span className="text-sm text-gray-600">
                 {filteredAds.length} resultado{filteredAds.length !== 1 ? 's' : ''}
               </span>
+              
+              {/* Seletor de itens por página */}
+              {!loading && filteredAds.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
+                    Por página:
+                  </label>
+                  <Select
+                    value={itemsPerPage.toString()}
+                    onValueChange={(value) => setItemsPerPage(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-20 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="9">9</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="flex border border-gray-200 rounded-lg">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -541,7 +769,11 @@ export default function ClassificadosPage() {
               {user && (
                 <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-2">
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-2"
+                      onClick={handleOpenCreateDialog}
+                    >
                       <Plus className="h-3 w-3 mr-1" />
                       <span className="hidden sm:inline">Novo Anúncio</span>
                       <span className="sm:hidden">Novo</span>
@@ -558,7 +790,11 @@ export default function ClassificadosPage() {
                           id="title"
                           value={formData.title}
                           onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                          placeholder="Ex: Preciso de um pedreiro"
+                          placeholder={
+                            formData.ad_type === 'offer' 
+                              ? "Ex: Ofereço serviços de pintura" 
+                              : "Ex: Preciso de um pedreiro"
+                          }
                         />
                       </div>
 
@@ -568,7 +804,11 @@ export default function ClassificadosPage() {
                           id="description"
                           value={formData.description}
                           onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                          placeholder="Descreva o que você precisa ou oferece..."
+                          placeholder={
+                            formData.ad_type === 'offer' 
+                              ? "Descreva os serviços que você oferece, sua experiência, disponibilidade, etc..." 
+                              : "Descreva o que você precisa, quando precisa, orçamento disponível, etc..."
+                          }
                           rows={4}
                         />
                       </div>
@@ -585,14 +825,20 @@ export default function ClassificadosPage() {
                           <SelectContent>
                             <SelectItem value="offer">
                               <div className="flex items-center gap-2">
-                                <ShoppingCart className="h-4 w-4 text-gray-700" />
-                                <span>Oferta - Estou oferecendo um serviço</span>
+                                <HandHeart className="h-4 w-4 text-emerald-600" />
+                                <div>
+                                  <div className="font-medium text-emerald-700">Oferta de Serviço</div>
+                                  <div className="text-xs text-gray-500">Estou oferecendo um serviço</div>
+                                </div>
                               </div>
                             </SelectItem>
                             <SelectItem value="request">
                               <div className="flex items-center gap-2">
-                                <HandHeart className="h-4 w-4 text-gray-500" />
-                                <span>Solicitação - Preciso de um serviço</span>
+                                <ShoppingCart className="h-4 w-4 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-blue-700">Solicitação de Serviço</div>
+                                  <div className="text-xs text-gray-500">Preciso de um serviço</div>
+                                </div>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -839,20 +1085,83 @@ export default function ClassificadosPage() {
                         >
                           Fechar
                         </Button>
-                        <Button
-                          onClick={() => {
-                            setShowAdModal(false)
-                            handleContactUser(selectedAd.user_id, selectedAd.user_name)
-                          }}
-                          className={`w-full sm:w-auto order-1 sm:order-2 ${
-                            selectedAd.ad_type === 'oferecer' 
-                              ? 'bg-gray-700 hover:bg-gray-800' 
-                              : 'bg-gray-500 hover:bg-gray-600'
-                          } text-white`}
-                        >
-                          <MessageCircle className="h-4 w-4 mr-2" />
-                          Entrar em Contato
-                        </Button>
+                        <div className="flex items-center gap-2 w-full sm:w-auto order-1 sm:order-2">
+                          {/* Menu de ações com 3 pontinhos */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {/* Ações do dono do anúncio */}
+                              {user && selectedAd.user_id === user.id && (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShowAdModal(false)
+                                      setEditingAdId(selectedAd.id)
+                                      setFormData({
+                                        title: selectedAd.title,
+                                        description: selectedAd.description,
+                                        category: selectedAd.category,
+                                        location_state: selectedAd.location_state,
+                                        location_city: selectedAd.location_city,
+                                        price_range: '',
+                                        urgency_level: 'normal',
+                                        ad_type: selectedAd.ad_type === 'oferecer' ? 'offer' : 'request'
+                                      })
+                                      setShowEditDialog(true)
+                                    }}
+                                    className="text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar anúncio
+                                  </DropdownMenuItem>
+                                  
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShowAdModal(false)
+                                      handleDeleteAd(selectedAd.id)
+                                    }}
+                                    className="text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Deletar anúncio
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                              
+                              {/* Botão de denunciar (para usuários que não são donos do anúncio) */}
+                              {user && selectedAd.user_id !== user.id && (
+                                <DropdownMenuItem asChild>
+                                  <ReportButton 
+                                    type="classified" 
+                                    targetId={selectedAd.id}
+                                    targetName={selectedAd.title}
+                                    asDropdownItem={true}
+                                    className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                  />
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          <Button
+                            onClick={() => {
+                              setShowAdModal(false)
+                              handleContactUser(selectedAd.user_id, selectedAd.user_name)
+                            }}
+                            className={`w-full sm:w-auto ${
+                              selectedAd.ad_type === 'oferecer' 
+                                ? 'bg-gray-700 hover:bg-gray-800' 
+                                : 'bg-gray-500 hover:bg-gray-600'
+                            } text-white`}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Entrar em Contato
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -916,149 +1225,177 @@ export default function ClassificadosPage() {
               </div>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            <div className={`grid gap-3 sm:gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => (
-                <Card 
+                <div 
                   key={ad.id} 
-                  className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+                  className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                     ad.ad_type === 'oferecer' 
-                      ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' 
-                      : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                      ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50 border-blue-200 hover:border-blue-300' 
+                      : 'bg-gradient-to-br from-green-50 via-white to-green-50 border-green-200 hover:border-green-300'
                   }`}
                 >
-                  <CardContent className="p-4 sm:p-6">
-                    {/* Header do Card com Avatar e Info do Usuário */}
-                    <div className="flex items-start space-x-3 mb-4">
-                      <div className="relative">
-                        <Link href={`/perfil/${ad.user_id}`} className="block">
-                          <Avatar className="w-12 h-12 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
-                            <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
-                            <AvatarFallback className={`font-medium ${
-                              ad.ad_type === 'oferecer' 
-                                ? 'bg-gray-200 text-gray-800' 
-                                : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {ad.user_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </Link>
+                  {/* Header com tipo de anúncio e menu */}
+                  <div className="flex items-center justify-between p-4 pb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
+                        ad.ad_type === 'oferecer' 
+                          ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                          : 'bg-green-100 text-green-700 border border-green-200'
+                      }`}>
+                        {ad.ad_type === 'oferecer' ? (
+                          <>
+                            <HandHeart className="h-3 w-3 text-blue-600" />
+                            OFERTA
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart className="h-3 w-3 text-green-600" />
+                            SOLICITAÇÃO
+                          </>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <Link href={`/perfil/${ad.user_id}`} className="block">
-                          <h3 className="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors duration-200 cursor-pointer">
-                            {ad.user_name}
-                          </h3>
-                        </Link>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge 
-                            variant="outline"
-                            className={`text-xs ${
-                              ad.ad_type === 'oferecer' 
-                                ? 'border-gray-400 text-gray-800 bg-gray-100' 
-                                : 'border-gray-300 text-gray-600 bg-gray-50'
-                            }`}
-                          >
-                            {ad.ad_type === 'oferecer' ? 'Oferta' : 'Solicitação'}
-                          </Badge>
-                          <div className="flex items-center text-xs text-gray-500">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {ad.location_city}, {ad.location_state}
-                          </div>
-                        </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {ad.location_city}
                       </div>
-                      
-                      {/* Menu de ações */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {/* Ações do dono do anúncio */}
-                          {user && ad.user_id === user.id && (
-                            <>
-                              <DropdownMenuItem 
-                                onClick={() => handleEditAd(ad)}
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar anúncio
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteAd(ad.id)}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Deletar anúncio
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                          
-                          {/* Botão de denunciar (para todos os usuários, exceto o dono) */}
-                          {user && ad.user_id !== user.id && (
-                            <DropdownMenuItem asChild>
-                              <ReportButton 
-                                type="classified" 
-                                targetId={ad.id}
-                                targetName={ad.title}
-                                asDropdownItem={true}
-                                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
-                              />
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
+                    
+                  </div>
 
 
-                    {/* Conteúdo do Anúncio */}
-                    <div className="mb-4">
-                      <h4 className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg">
-                        {ad.title}
-                      </h4>
-                      <p 
-                        className="text-gray-600 text-sm line-clamp-3 mb-3 cursor-pointer hover:text-gray-800 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenAdModal(ad)
-                        }}
-                      >
-                        {ad.description}
-                      </p>
+                  {/* Conteúdo principal */}
+                  <div className="px-4 pb-4">
+                    {/* Título do serviço */}
+                    <h3 
+                      className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenAdModal(ad)
+                      }}
+                    >
+                      {ad.title}
+                    </h3>
+
+                    {/* Descrição */}
+                    <p 
+                      className="text-gray-600 text-sm line-clamp-2 mb-3 cursor-pointer hover:text-gray-800 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenAdModal(ad)
+                      }}
+                    >
+                      {ad.description}
+                    </p>
+
+                    {/* Categoria */}
+                    <div className="flex items-center gap-2 mb-4">
                       <Badge 
                         variant="outline" 
-                        className={`text-xs ${
+                        className={`text-xs font-medium ${
                           ad.ad_type === 'oferecer' 
-                            ? 'border-gray-400 text-gray-800 bg-gray-100' 
-                            : 'border-gray-300 text-gray-600 bg-gray-50'
+                            ? 'border-slate-300 text-slate-700 bg-slate-50' 
+                            : 'border-gray-300 text-gray-700 bg-gray-50'
                         }`}
                       >
                         {getCategoryIcon(ad.category)} {ad.category}
                       </Badge>
                     </div>
 
-                    {/* Footer do Card */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {formatDate(ad.created_at)}
-                      </div>
+                    {/* Footer com usuário e ações */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      {/* Info do usuário */}
+                      <Link href={`/perfil/${ad.user_id}`} className="flex items-center gap-2 group/user">
+                        <Avatar className="w-8 h-8 ring-2 ring-white shadow-sm group-hover/user:ring-blue-300 transition-all duration-200">
+                          <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
+                          <AvatarFallback className={`text-xs font-medium ${
+                            ad.ad_type === 'oferecer' 
+                              ? 'bg-slate-100 text-slate-700' 
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {ad.user_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate group-hover/user:text-blue-600 transition-colors">
+                            {ad.user_name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(ad.created_at)}
+                          </p>
+                        </div>
+                      </Link>
 
+                      {/* Menu de ações e botão de contato */}
+                      <div className="flex items-center gap-2">
+                        {/* Menu de ações com 3 pontinhos */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-100">
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* Ações do dono do anúncio */}
+                            {user && ad.user_id === user.id && (
+                              <>
+                                <DropdownMenuItem 
+                                  onClick={() => handleEditAd(ad)}
+                                  className="text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Editar anúncio
+                                </DropdownMenuItem>
+                                
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteAd(ad.id)}
+                                  className="text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Deletar anúncio
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            
+                            {/* Botão de denunciar (para usuários que não são donos do anúncio) */}
+                            {user && ad.user_id !== user.id && (
+                              <DropdownMenuItem asChild>
+                                <ReportButton 
+                                  type="classified" 
+                                  targetId={ad.id}
+                                  targetName={ad.title}
+                                  asDropdownItem={true}
+                                  className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                />
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {/* Botão de contato */}
                         <Button
                           size="sm"
                           onClick={() => handleContactUser(ad.user_id, ad.user_name)}
                           className={`${
                             ad.ad_type === 'oferecer' 
-                              ? 'bg-gray-700 hover:bg-gray-800' 
-                              : 'bg-gray-500 hover:bg-gray-600'
-                          } text-white shadow-md hover:shadow-lg transition-all duration-200`}
+                              ? 'bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg' 
+                              : 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg'
+                          } transition-all duration-200 text-xs font-medium px-4 py-2`}
                         >
-                          <MessageCircle className="h-4 w-4 mr-1" />
+                          <MessageCircle className="h-3 w-3 mr-1.5" />
                           Contatar
                         </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {/* Indicador visual lateral */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                    ad.ad_type === 'oferecer' 
+                      ? 'bg-gradient-to-b from-slate-400 to-slate-600' 
+                      : 'bg-gradient-to-b from-gray-400 to-gray-600'
+                  }`} />
+                </div>
               ))}
             </div>
           )}

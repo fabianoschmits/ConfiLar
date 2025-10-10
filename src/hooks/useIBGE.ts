@@ -156,20 +156,26 @@ export function useCidades(siglaEstado: string) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  console.log('🏙️ useCidades chamado com estado:', siglaEstado)
+
   const loadCidades = useCallback(async () => {
+    console.log('🔄 loadCidades chamado para estado:', siglaEstado)
     if (!siglaEstado) {
+      console.log('❌ Nenhum estado fornecido, limpando cidades')
       setCidades([])
       return
     }
 
     try {
+      console.log('⏳ Carregando cidades para estado:', siglaEstado)
       setLoading(true)
       setError(null)
       const data = await ibgeService.getCidadesByEstado(siglaEstado)
+      console.log('✅ Cidades carregadas:', data.length, 'cidades')
       setCidades(data)
     } catch (err) {
+      console.error('❌ Erro ao carregar cidades:', err)
       setError('Erro ao carregar cidades')
-      console.error('Erro ao carregar cidades:', err)
     } finally {
       setLoading(false)
     }
