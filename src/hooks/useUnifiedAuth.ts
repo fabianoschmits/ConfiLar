@@ -837,11 +837,14 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         const userData = { id: data.session.user.id, email: data.session.user.email! }
         dispatch({ type: 'SET_USER', payload: userData })
         dispatch({ type: 'SET_SESSION', payload: { user: userData } })
+        
+        // Também recarregar o perfil do banco de dados
+        await fetchUserProfile(data.session.user.id, data.session.user.email!)
       }
     } catch (error) {
       Logger.error('auth', error as Error, { context: 'refreshAuth' })
     }
-  }, [])
+  }, [fetchUserProfile])
 
   const resetPassword = useCallback(async (email: string) => {
     try {

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+// Exportar config de runtime para garantir execução dinâmica
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Usar service role para operações administrativas
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

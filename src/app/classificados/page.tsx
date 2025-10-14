@@ -1000,17 +1000,17 @@ export default function ClassificadosPage() {
 
               {/* Modal de Visualização do Anúncio */}
               <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
-                <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-                  <DialogHeader className="pb-4">
-                    <DialogTitle className="text-lg sm:text-xl font-bold leading-tight">
+                <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+                  <DialogHeader className="pb-3 sm:pb-4">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl font-bold leading-tight">
                       {selectedAd?.title}
                     </DialogTitle>
                   </DialogHeader>
                   
                   {selectedAd && (
-                    <div className="space-y-4 sm:space-y-6">
+                    <div className="space-y-3 sm:space-y-6">
                       {/* Header com Avatar e Info do Usuário */}
-                      <div className="flex flex-col sm:flex-row items-start space-y-3 sm:space-y-0 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 rounded-lg">
                         <div className="relative self-center sm:self-start">
                           <Link href={`/perfil/${selectedAd.user_id}`} className="block">
                             <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
@@ -1061,38 +1061,38 @@ export default function ClassificadosPage() {
                       </div>
 
                       {/* Descrição Completa */}
-                      <div className="space-y-3 sm:space-y-4">
-                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">Descrição</h4>
+                      <div className="space-y-2 sm:space-y-3">
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-900">Descrição</h4>
                         <div className="prose max-w-none">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
                             {selectedAd.description}
                           </p>
                         </div>
                       </div>
 
                       {/* Informações Adicionais */}
-                      <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           <span>Publicado em {formatDate(selectedAd.created_at)}</span>
                         </div>
                       </div>
 
                       {/* Botões de Ação */}
-                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-4 border-t">
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
                         <Button
                           variant="outline"
                           onClick={() => setShowAdModal(false)}
-                          className="w-full sm:w-auto order-2 sm:order-1"
+                          className="w-full sm:w-auto order-2 sm:order-1 text-sm"
                         >
                           Fechar
                         </Button>
-                        <div className="flex items-center gap-2 w-full sm:w-auto order-1 sm:order-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto order-1 sm:order-2">
                           {/* Menu de ações com 3 pontinhos */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-9 sm:w-9 p-0 flex-shrink-0">
+                                <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -1154,14 +1154,15 @@ export default function ClassificadosPage() {
                               setShowAdModal(false)
                               handleContactUser(selectedAd.user_id, selectedAd.user_name)
                             }}
-                            className={`w-full sm:w-auto ${
+                            className={`flex-1 sm:flex-initial text-xs sm:text-sm px-3 py-2 sm:px-4 h-8 sm:h-9 ${
                               selectedAd.ad_type === 'oferecer' 
                                 ? 'bg-gray-700 hover:bg-gray-800' 
                                 : 'bg-gray-500 hover:bg-gray-600'
                             } text-white`}
                           >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Entrar em Contato
+                            <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                            <span className="hidden sm:inline">Entrar em Contato</span>
+                            <span className="sm:hidden">Contatar</span>
                           </Button>
                         </div>
                       </div>

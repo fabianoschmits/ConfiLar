@@ -29,10 +29,11 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ReportButton } from '@/components/ReportButton'
 import { ConversationReportModal } from './ConversationReportModal'
+import { toast } from 'sonner'
 
 interface ConversationMenuProps {
   conversationId: string
-  onDelete: (conversationId: string) => void
+  onDelete: (conversationId: string) => Promise<boolean>
   onArchive?: (conversationId: string) => void
   onPin?: (conversationId: string) => void
   disabled?: boolean
@@ -55,10 +56,27 @@ export function ConversationMenu({
   const handleDelete = async () => {
     try {
       setIsDeleting(true)
-      await onDelete(conversationId)
-      setShowDeleteDialog(false)
+      console.log('🗑️ ConversationMenu: Tentando deletar conversa:', conversationId)
+      
+      const success = await onDelete(conversationId)
+      
+      if (success) {
+        console.log('✅ ConversationMenu: Conversa deletada com sucesso')
+        toast.success('Conversa removida!', {
+          description: 'A conversa foi removida da sua lista. O outro usuário ainda pode acessá-la.'
+        })
+        setShowDeleteDialog(false)
+      } else {
+        console.error('❌ ConversationMenu: Falha ao deletar conversa')
+        toast.error('Erro ao deletar conversa', {
+          description: 'Não foi possível deletar a conversa. Verifique as permissões e tente novamente.'
+        })
+      }
     } catch (error) {
-      console.error('Erro ao deletar conversa:', error)
+      console.error('❌ ConversationMenu: Erro ao deletar conversa:', error)
+      toast.error('Erro ao deletar conversa', {
+        description: error instanceof Error ? error.message : 'Ocorreu um erro inesperado. Tente novamente.'
+      })
     } finally {
       setIsDeleting(false)
     }
@@ -149,15 +167,16 @@ export function ConversationMenu({
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="text-gray-600 space-y-3">
-                <p>Tem certeza que deseja deletar esta conversa?</p>
-                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800 mb-2">
-                    ⚠️ Importante:
+                <p>Tem certeza que deseja remover esta conversa?</p>
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">
+                    ℹ️ Informação:
                   </p>
-                  <ul className="text-sm text-amber-700 space-y-1">
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• A conversa será removida apenas da sua lista</li>
+                    <li>• O outro participante ainda terá acesso à conversa</li>
+                    <li>• Você não receberá mais mensagens desta conversa</li>
                     <li>• Esta ação não pode ser desfeita</li>
-                    <li>• Todas as mensagens serão perdidas permanentemente</li>
-                    <li>• A conversa será removida para todos os participantes</li>
                   </ul>
                 </div>
               </div>
