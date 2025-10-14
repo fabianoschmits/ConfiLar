@@ -655,14 +655,18 @@ export default function OnboardingPage() {
       
       toast.success('🎉 Perfil completado com sucesso!')
       
-      // Recarregar o contexto de autenticação para atualizar o perfil
+      console.log('✅ Perfil salvo com sucesso!')
+      
+      // Recarregar o contexto de autenticação (agora também busca o perfil atualizado do banco)
+      console.log('🔄 Atualizando contexto de autenticação...')
       await refreshAuth()
+      
+      console.log('✅ Contexto atualizado, redirecionando para feed...')
       
       // Aguardar um pouco para garantir que o contexto foi atualizado
       setTimeout(() => {
-        // Redirecionar para feed social
         router.push('/feed')
-      }, 1000)
+      }, 300)
       
     } catch (error) {
       console.error('Erro no onboarding:', error)

@@ -125,6 +125,7 @@ export function FloatingChat() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingContent, setEditingContent] = useState('')
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const editInputRef = useRef<HTMLInputElement>(null)
 
   // Sincronizar isOpen do contexto com isExpanded local
   useEffect(() => {
@@ -201,15 +202,24 @@ export function FloatingChat() {
     }
   }, [messages.length, selectedConversation, user?.id])
 
-  // Focar no campo de input quando o chat for aberto
+  // Focar no campo de input quando o chat for aberto (mas não se estiver editando)
   useEffect(() => {
-    if (isExpanded && selectedConversation && messageInputRef.current) {
+    if (isExpanded && selectedConversation && messageInputRef.current && !editingMessageId) {
       // Pequeno delay para garantir que o campo esteja renderizado
       setTimeout(() => {
         messageInputRef.current?.focus()
       }, 100)
     }
-  }, [isExpanded, selectedConversation])
+  }, [isExpanded, selectedConversation, editingMessageId])
+
+  // Focar no campo de edição quando iniciar edição
+  useEffect(() => {
+    if (editingMessageId && editInputRef.current) {
+      setTimeout(() => {
+        editInputRef.current?.focus()
+      }, 100)
+    }
+  }, [editingMessageId])
 
 
   // Auto-scroll quando uma NOVA conversa for selecionada
@@ -263,9 +273,9 @@ export function FloatingChat() {
           setIsExpanded(true)
         }
         
-        // Manter o foco no campo de input após enviar a mensagem
+        // Manter o foco no campo de input após enviar a mensagem (mas não se estiver editando)
         setTimeout(() => {
-          if (messageInputRef.current) {
+          if (messageInputRef.current && !editingMessageId) {
             messageInputRef.current.focus()
           }
         }, 50)
@@ -585,6 +595,7 @@ export function FloatingChat() {
                             if (success) {
                               goBackToConversations()
                             }
+                            return success
                           }}
                           disabled={sending}
                           conversationData={selectedConversation}
@@ -624,12 +635,18 @@ export function FloatingChat() {
                                   <span className="text-xs font-medium">Editando mensagem...</span>
                                 </div>
                                 <Input
+                                  ref={editInputRef}
                                   value={editingContent}
                                   onChange={(e) => setEditingContent(e.target.value)}
                                   className="bg-white text-gray-900 border border-gray-300 focus:border-blue-500 rounded-lg"
                                   placeholder="Digite sua mensagem..."
                                   maxLength={1000}
-                                  autoFocus
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                      e.preventDefault()
+                                      handleSaveEdit()
+                                    }
+                                  }}
                                 />
                                 <div className="flex items-center justify-between">
                                   <span className="text-xs text-gray-500">
@@ -672,8 +689,15 @@ export function FloatingChat() {
                                         minute: '2-digit'
                                       })}
                                       {message.updated_at && 
-                                       message.updated_at !== message.created_at &&
-                                       new Date(message.updated_at).getTime() - new Date(message.created_at).getTime() > 30000 && (
+                                       message.created_at &&
+                                       (() => {
+                                         const createdTime = new Date(message.created_at).getTime()
+                                         const updatedTime = new Date(message.updated_at).getTime()
+                                         const timeDiff = updatedTime - createdTime
+                                         // Mostrar "(editado)" apenas se a diferença for maior que 60 segundos (1 minuto)
+                                         // Isso evita falsos positivos de atualizações automáticas do banco
+                                         return timeDiff > 60000
+                                       })() && (
                                         <span className="ml-1 text-xs opacity-50">(editado)</span>
                                       )}
                                     </span>

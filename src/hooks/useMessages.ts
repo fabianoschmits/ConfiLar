@@ -104,6 +104,10 @@ export function useMessages() {
           last_message_at,
           created_at,
           updated_at,
+          deleted_by_client,
+          deleted_by_professional,
+          deleted_at_client,
+          deleted_at_professional,
           client:client_id(id, full_name, avatar_url, user_type),
           professional:professional_id(id, full_name, avatar_url, user_type)
         `)
@@ -113,25 +117,58 @@ export function useMessages() {
 
       if (error) throw error
 
+      // Filtrar conversas que NÃO foram deletadas pelo usuário atual
+      const activeConversations = (data || []).filter(conversation => {
+        const isClient = conversation.client_id === user.id
+        const isProfessional = conversation.professional_id === user.id
+        
+        // Se é cliente e deletou, não mostrar
+        if (isClient && conversation.deleted_by_client) return false
+        // Se é profissional e deletou, não mostrar
+        if (isProfessional && conversation.deleted_by_professional) return false
+        
+        return true
+      })
+
       // Buscar última mensagem e contador de não lidas para cada conversa
       const conversationsWithMessages = await Promise.all(
-        (data || []).map(async (conversation) => {
-          // Última mensagem
-          const { data: lastMessage } = await supabase
+        activeConversations.map(async (conversation) => {
+          // Determinar se deve filtrar mensagens antigas
+          const isClient = conversation.client_id === user.id
+          const isProfessional = conversation.professional_id === user.id
+          const deletedAt = isClient ? conversation.deleted_at_client : 
+                           isProfessional ? conversation.deleted_at_professional : null
+
+          // Última mensagem (respeitando soft delete)
+          let lastMessageQuery = supabase
             .from('messages')
             .select('content, created_at, sender_id')
             .eq('conversation_id', conversation.id)
+          
+          // Se foi deletada, buscar apenas mensagens depois da deleção
+          if (deletedAt) {
+            lastMessageQuery = lastMessageQuery.gt('created_at', deletedAt)
+          }
+
+          const { data: lastMessage } = await lastMessageQuery
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle()
 
-          // Contador de mensagens não lidas
-          const { count: unreadCount } = await supabase
+          // Contador de mensagens não lidas (respeitando soft delete)
+          let unreadQuery = supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
             .eq('conversation_id', conversation.id)
             .eq('receiver_id', user.id)
             .eq('is_read', false)
+
+          // Se foi deletada, contar apenas mensagens depois da deleção
+          if (deletedAt) {
+            unreadQuery = unreadQuery.gt('created_at', deletedAt)
+          }
+
+          const { count: unreadCount } = await unreadQuery
 
           return {
             ...conversation,
@@ -161,16 +198,43 @@ export function useMessages() {
       setLoading(true)
       setError(null)
 
-      const { data, error } = await supabase
+      // Buscar informações da conversa para verificar soft delete
+      const { data: conversation, error: convError } = await supabase
+        .from('conversations')
+        .select('client_id, professional_id, deleted_at_client, deleted_at_professional')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      if (convError) throw convError
+
+      // Preparar query de mensagens
+      let query = supabase
         .from('messages')
         .select('id, conversation_id, sender_id, receiver_id, content, created_at, is_read, updated_at')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true })
         .limit(50) // Limitar a 50 mensagens por vez
 
+      // Se o usuário deletou a conversa, mostrar apenas mensagens DEPOIS da deleção
+      if (conversation) {
+        const isClient = conversation.client_id === user.id
+        const isProfessional = conversation.professional_id === user.id
+
+        if (isClient && conversation.deleted_at_client) {
+          console.log('🔍 Filtrando mensagens antigas (deletadas pelo cliente):', conversation.deleted_at_client)
+          query = query.gt('created_at', conversation.deleted_at_client)
+        } else if (isProfessional && conversation.deleted_at_professional) {
+          console.log('🔍 Filtrando mensagens antigas (deletadas pelo profissional):', conversation.deleted_at_professional)
+          query = query.gt('created_at', conversation.deleted_at_professional)
+        }
+      }
+
+      const { data, error } = await query
+
       if (error) throw error
 
       setMessages(data || [])
+      console.log(`✅ ${data?.length || 0} mensagens carregadas`)
     } catch (err) {
       console.error('❌ Erro ao buscar mensagens:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
@@ -327,9 +391,48 @@ export function useMessages() {
       setSending(true)
       setError(null)
 
-      // Determinar receiver_id baseado na conversa
-      const conversation = conversations.find(c => c.id === conversationId)
-      if (!conversation) throw new Error('Conversa não encontrada')
+      // Buscar conversa do banco (pode não estar na lista se foi deletada)
+      const { data: conversationData, error: convError } = await supabase
+        .from('conversations')
+        .select('id, client_id, professional_id, deleted_by_client, deleted_by_professional')
+        .eq('id', conversationId)
+        .maybeSingle()
+
+      if (convError || !conversationData) {
+        throw new Error('Conversa não encontrada')
+      }
+
+      const conversation = conversationData
+      const isClient = conversation.client_id === user.id
+      const isProfessional = conversation.professional_id === user.id
+
+      // REATIVAR conversa se foi deletada pelo usuário atual
+      const wasDeleted = (isClient && conversation.deleted_by_client) || 
+                        (isProfessional && conversation.deleted_by_professional)
+
+      if (wasDeleted) {
+        console.log('🔄 Conversa foi deletada, reativando antes de enviar mensagem...')
+        
+        const reactivateData: any = {
+          last_message_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+
+        if (isClient) {
+          reactivateData.deleted_by_client = false
+          reactivateData.deleted_at_client = null
+        } else if (isProfessional) {
+          reactivateData.deleted_by_professional = false
+          reactivateData.deleted_at_professional = null
+        }
+
+        await supabase
+          .from('conversations')
+          .update(reactivateData)
+          .eq('id', conversationId)
+
+        console.log('✅ Conversa reativada!')
+      }
 
       const receiverId = conversation.client_id === user.id 
         ? conversation.professional_id 
@@ -349,14 +452,19 @@ export function useMessages() {
 
       if (error) throw error
 
-      // Atualizar last_message_at na conversa
-      await supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversationId)
+      // Atualizar last_message_at na conversa (se não foi atualizado ao reativar)
+      if (!wasDeleted) {
+        await supabase
+          .from('conversations')
+          .update({ last_message_at: new Date().toISOString() })
+          .eq('id', conversationId)
+      }
 
-      // Recarregar mensagens
-      await loadMessages(conversationId)
+      // Recarregar conversas E mensagens para atualizar a lista
+      await Promise.all([
+        loadConversations(),
+        loadMessages(conversationId)
+      ])
       
       return true
     } catch (err) {
@@ -414,16 +522,58 @@ export function useMessages() {
     if (!user?.id) return null
 
     try {
-      // Verificar se já existe conversa
+      console.log('🔍 Buscando ou criando conversa entre:', { clientId, professionalId })
+
+      // Verificar se já existe conversa (incluindo campos de soft delete)
       const { data: existingConversation } = await supabase
         .from('conversations')
-        .select('id')
+        .select('id, deleted_by_client, deleted_by_professional, client_id, professional_id, deleted_at_client, deleted_at_professional')
         .or(`and(client_id.eq.${clientId},professional_id.eq.${professionalId}),and(client_id.eq.${professionalId},professional_id.eq.${clientId})`)
         .maybeSingle()
 
       if (existingConversation) {
+        console.log('✅ Conversa existente encontrada:', existingConversation.id)
+        
+        const isClient = existingConversation.client_id === user.id
+        const isProfessional = existingConversation.professional_id === user.id
+        const wasDeleted = (isClient && existingConversation.deleted_by_client) || 
+                          (isProfessional && existingConversation.deleted_by_professional)
+
+        // Se foi deletada pelo usuário atual, REATIVAR para que apareça na lista
+        if (wasDeleted) {
+          console.log('🔄 Conversa foi deletada, reativando para aparecer na lista...')
+          
+          const reactivateData: any = {
+            updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString()
+          }
+
+          if (isClient) {
+            reactivateData.deleted_by_client = false
+            reactivateData.deleted_at_client = null
+          } else if (isProfessional) {
+            reactivateData.deleted_by_professional = false
+            reactivateData.deleted_at_professional = null
+          }
+
+          const { error: updateError } = await supabase
+            .from('conversations')
+            .update(reactivateData)
+            .eq('id', existingConversation.id)
+
+          if (updateError) {
+            console.error('❌ Erro ao reativar conversa:', updateError)
+          } else {
+            console.log('✅ Conversa reativada! Aparecerá na lista.')
+            // Recarregar conversas para atualizar a lista
+            await loadConversations()
+          }
+        }
+        
         return existingConversation.id
       }
+
+      console.log('➕ Nenhuma conversa encontrada, criando nova...')
 
       // Criar nova conversa
       const { data, error } = await supabase
@@ -431,67 +581,122 @@ export function useMessages() {
         .insert({
           client_id: clientId,
           professional_id: professionalId,
-          ad_id: adId
+          ad_id: adId,
+          deleted_by_client: false,
+          deleted_by_professional: false
         })
         .select()
         .single()
 
       if (error) throw error
 
+      console.log('✅ Nova conversa criada:', data.id)
+      
+      // Recarregar conversas para incluir a nova
+      await loadConversations()
+      
       return data.id
     } catch (err) {
       console.error('❌ Erro ao criar/encontrar conversa:', err)
       return null
     }
-  }, [user?.id])
+  }, [user?.id, loadConversations])
 
-  // Deletar conversa
+  // Deletar conversa (soft delete - remove apenas para o usuário atual)
   const deleteConversation = useCallback(async (conversationId: string) => {
-    if (!user?.id) return false
+    if (!user?.id) {
+      console.error('❌ Erro: Usuário não autenticado')
+      setError('Você precisa estar logado para deletar conversas')
+      return false
+    }
 
     try {
       setLoading(true)
       setError(null)
 
+      console.log('🗑️ Iniciando soft delete da conversa:', conversationId)
+
       // Verificar se o usuário tem permissão para deletar a conversa
-      const { data: conversation } = await supabase
+      const { data: conversation, error: fetchError } = await supabase
         .from('conversations')
-        .select('client_id, professional_id')
+        .select('client_id, professional_id, deleted_by_client, deleted_by_professional')
         .eq('id', conversationId)
         .maybeSingle()
 
+      if (fetchError) {
+        console.error('❌ Erro ao buscar conversa:', fetchError)
+        throw new Error(`Erro ao buscar conversa: ${fetchError.message}`)
+      }
+
       if (!conversation) {
+        console.error('❌ Conversa não encontrada:', conversationId)
         throw new Error('Conversa não encontrada')
       }
 
       // Verificar se o usuário é participante da conversa
-      if (conversation.client_id !== user.id && conversation.professional_id !== user.id) {
+      const isClient = conversation.client_id === user.id
+      const isProfessional = conversation.professional_id === user.id
+      
+      if (!isClient && !isProfessional) {
+        console.error('❌ Usuário não tem permissão:', { userId: user.id, conversation })
         throw new Error('Você não tem permissão para deletar esta conversa')
       }
 
-      // Deletar todas as mensagens da conversa primeiro
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationId)
+      console.log('✅ Permissão verificada, marcando conversa como deletada para o usuário...')
 
-      if (messagesError) throw messagesError
+      // Marcar como deletada apenas para o usuário atual (soft delete)
+      const deletedAt = new Date().toISOString()
+      const updateData: any = {
+        updated_at: deletedAt
+      }
 
-      // Deletar acordos de contato relacionados
-      const { error: agreementsError } = await supabase
-        .from('contact_agreements')
-        .delete()
-        .eq('conversation_id', conversationId)
+      if (isClient) {
+        updateData.deleted_by_client = true
+        updateData.deleted_at_client = deletedAt
+      } else if (isProfessional) {
+        updateData.deleted_by_professional = true
+        updateData.deleted_at_professional = deletedAt
+      }
 
-      if (agreementsError) throw agreementsError
-
-      // Deletar a conversa
-      const { error: conversationError } = await supabase
+      const { error: updateError } = await supabase
         .from('conversations')
-        .delete()
+        .update(updateData)
         .eq('id', conversationId)
 
-      if (conversationError) throw conversationError
+      if (updateError) {
+        console.error('❌ Erro ao atualizar conversa:', updateError)
+        throw new Error(`Erro ao remover conversa: ${updateError.message}`)
+      }
+
+      console.log('✅ Conversa marcada como deletada para o usuário!')
+
+      // Verificar se ambos os usuários deletaram - nesse caso, deletar completamente
+      const bothDeleted = (isClient && conversation.deleted_by_professional) || 
+                         (isProfessional && conversation.deleted_by_client)
+
+      if (bothDeleted) {
+        console.log('🗑️ Ambos os usuários deletaram, removendo conversa permanentemente...')
+        
+        // Deletar mensagens
+        await supabase
+          .from('messages')
+          .delete()
+          .eq('conversation_id', conversationId)
+
+        // Deletar acordos (se existirem)
+        await supabase
+          .from('contact_agreements')
+          .delete()
+          .eq('conversation_id', conversationId)
+
+        // Deletar conversa
+        await supabase
+          .from('conversations')
+          .delete()
+          .eq('id', conversationId)
+
+        console.log('✅ Conversa deletada permanentemente do banco de dados')
+      }
 
       // Recarregar lista de conversas
       await loadConversations()
@@ -499,7 +704,9 @@ export function useMessages() {
       return true
     } catch (err) {
       console.error('❌ Erro ao deletar conversa:', err)
-      setError(err instanceof Error ? err.message : 'Erro desconhecido')
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido ao deletar conversa'
+      setError(errorMessage)
+      
       return false
     } finally {
       setLoading(false)

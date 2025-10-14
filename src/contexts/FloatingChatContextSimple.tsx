@@ -34,10 +34,10 @@ export function FloatingChatProviderSimple({ children }: { children: React.React
       console.log('🔍 Verificando se já existe conversa entre:', clientId, 'e', professionalId)
       console.log('🔍 Usuário atual:', user.id)
       
-      // Verificar se já existe conversa
+      // Verificar se já existe conversa (incluindo campos de soft delete)
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
-        .select('id')
+        .select('id, deleted_by_client, deleted_by_professional, client_id, professional_id')
         .or(`and(client_id.eq.${clientId},professional_id.eq.${professionalId}),and(client_id.eq.${professionalId},professional_id.eq.${clientId})`)
         .maybeSingle()
 
@@ -54,6 +54,42 @@ export function FloatingChatProviderSimple({ children }: { children: React.React
 
       if (existingConversation) {
         console.log('✅ Conversa existente encontrada:', existingConversation.id)
+        
+        // Verificar se foi deletada pelo usuário atual
+        const isClient = existingConversation.client_id === user.id
+        const isProfessional = existingConversation.professional_id === user.id
+        const wasDeleted = (isClient && existingConversation.deleted_by_client) || 
+                          (isProfessional && existingConversation.deleted_by_professional)
+
+        // Se foi deletada, REATIVAR
+        if (wasDeleted) {
+          console.log('🔄 Conversa foi deletada, reativando...')
+          
+          const reactivateData: any = {
+            updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString()
+          }
+
+          if (isClient) {
+            reactivateData.deleted_by_client = false
+            reactivateData.deleted_at_client = null
+          } else if (isProfessional) {
+            reactivateData.deleted_by_professional = false
+            reactivateData.deleted_at_professional = null
+          }
+
+          const { error: updateError } = await supabase
+            .from('conversations')
+            .update(reactivateData)
+            .eq('id', existingConversation.id)
+
+          if (updateError) {
+            console.error('❌ Erro ao reativar conversa:', updateError)
+          } else {
+            console.log('✅ Conversa reativada com sucesso!')
+          }
+        }
+        
         return existingConversation.id
       }
 
@@ -68,7 +104,9 @@ export function FloatingChatProviderSimple({ children }: { children: React.React
         .from('conversations')
         .insert({
           client_id: clientId,
-          professional_id: professionalId
+          professional_id: professionalId,
+          deleted_by_client: false,
+          deleted_by_professional: false
         })
         .select()
         .single()
