@@ -5,11 +5,13 @@ import { useReactions, useReactionCounts, useReactionUsers } from '@/hooks/useRe
 
 interface ReactionButtonProps {
   postId: string
+  postOwnerId?: string
+  postOwnerName?: string
   className?: string
 }
 
-export function ReactionButton({ postId, className }: ReactionButtonProps) {
-  const { addReaction, userReaction, isLoading } = useReactions(postId)
+export function ReactionButton({ postId, postOwnerId, postOwnerName, className }: ReactionButtonProps) {
+  const { addReaction, userReaction, isLoading } = useReactions(postId, postOwnerId, postOwnerName)
   const { reactionCounts, isLoading: countsLoading } = useReactionCounts(postId)
   const { reactionUsers, isLoading: usersLoading } = useReactionUsers(postId)
 

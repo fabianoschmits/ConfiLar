@@ -359,7 +359,11 @@ export function TimelinePost({
         {/* Ações do Post - Responsivas */}
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="flex items-center space-x-3 md:space-x-6">
-            <ReactionButton postId={post.id} />
+            <ReactionButton 
+              postId={post.id}
+              postOwnerId={post.user_id}
+              postOwnerName={post.user_name || 'Usuário'}
+            />
             <button 
               onClick={() => setShowCommentSection(!showCommentSection)}
               className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
@@ -385,7 +389,11 @@ export function TimelinePost({
 
       {/* Comentários */}
       {showComments && showCommentSection && (
-        <CommentSection postId={post.id} />
+        <CommentSection 
+          postId={post.id}
+          postOwnerId={post.user_id}
+          postOwnerName={post.user_name || 'Usuário'}
+        />
       )}
       </CardContent>
 
