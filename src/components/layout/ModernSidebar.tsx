@@ -111,13 +111,6 @@ export function ModernSidebar() {
           icon: <Briefcase className="h-4 w-4" />,
           description: 'Anúncios e ofertas'
         },
-        {
-          id: 'dashboard',
-          title: 'Métricas',
-          href: '/dashboard',
-          icon: <BarChart3 className="h-4 w-4" />,
-          description: 'Estatísticas'
-        },
       ]
     },
     ...(isLoggedIn ? [{

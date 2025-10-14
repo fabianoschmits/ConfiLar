@@ -423,15 +423,6 @@ export function ModernHeader({
                               <Briefcase className="h-3 w-3" />
                               <span className="truncate">Classificados</span>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/dashboard')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <BarChart3 className="h-3 w-3" />
-                              <span className="truncate">Métricas</span>
-                            </Button>
                           </div>
                         )}
                       </div>

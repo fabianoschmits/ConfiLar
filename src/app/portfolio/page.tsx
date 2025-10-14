@@ -78,8 +78,8 @@ export default function PortfolioPage() {
 
                 <div className="mt-8">
                   <Button asChild className="bg-blue-600 hover:bg-blue-700">
-                    <Link href="/dashboard">
-                      Voltar ao Dashboard
+                    <Link href="/feed">
+                      Voltar ao Feed
                     </Link>
                   </Button>
                 </div>

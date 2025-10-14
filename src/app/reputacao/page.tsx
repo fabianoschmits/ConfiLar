@@ -43,8 +43,8 @@ interface UserReview {
   id: string
   reviewer_id: string
   reviewed_id: string
-  rating: number
-  comment?: string
+  rating_person: number
+  comment_person?: string
   review_type: 'client_to_professional' | 'professional_to_client'
   created_at: string
   reviewer: {
@@ -255,8 +255,8 @@ export default function ReputacaoPage() {
         .insert([{
           reviewer_id: user.id,
           reviewed_id: reviewForm.reviewed_id,
-          rating: reviewForm.rating,
-          comment: reviewForm.comment || null,
+          rating_person: reviewForm.rating,
+          comment_person: reviewForm.comment || null,
           review_type: reviewForm.review_type
         }])
 
@@ -376,7 +376,7 @@ export default function ReputacaoPage() {
   // Calcular estatísticas
   const stats = {
     averageRating: reviews.length > 0
-      ? parseFloat((reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1))
+      ? parseFloat((reviews.reduce((sum, r) => sum + (r.rating_person || 0), 0) / reviews.length).toFixed(1))
       : 0,
     totalReviews: reviews.length,
     totalRecommendations: recommendations.length,
@@ -605,133 +605,17 @@ export default function ReputacaoPage() {
             {activeTab === 'reviews' && (
               <Card className="mb-8">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center">
-                        <Star className="h-5 w-5 mr-2" />
-                        Avaliações
-                      </CardTitle>
-                      <CardDescription>
-                        {reviewsSubTab === 'received' 
-                          ? `Avaliações que você recebeu (${stats.totalReviews})`
-                          : `Avaliações que você fez (${stats.givenReviews})`
-                        }
-                      </CardDescription>
-                    </div>
-                    <Dialog open={showAddReviewDialog} onOpenChange={setShowAddReviewDialog}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-gray-600 hover:bg-gray-700">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Avaliar Alguém
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Avaliar Usuário</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="user-search">Buscar Usuário</Label>
-                            <div className="relative">
-                              <Input
-                                id="user-search"
-                                placeholder="Digite o nome do usuário..."
-                                onChange={(e) => searchUsers(e.target.value)}
-                              />
-                              <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-                            </div>
-                            {searchResults.length > 0 && (
-                              <div className="mt-2 max-h-40 overflow-y-auto border rounded-md">
-                                {searchResults.map((user) => (
-                                  <div
-                                    key={user.id}
-                                    className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => {
-                                      setReviewForm(prev => ({ ...prev, reviewed_id: user.id }))
-                                      setSearchResults([])
-                                    }}
-                                  >
-                                    <Avatar className="w-8 h-8">
-                                      <AvatarImage src={user.avatar_url} alt={`Avatar de ${user.full_name}`} />
-                                      <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">{user.full_name}</p>
-                                      <p className="text-sm text-gray-500">
-                                        {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div>
-                            <Label htmlFor="review-type">Tipo de Avaliação</Label>
-                            <Select 
-                              value={reviewForm.review_type} 
-                              onValueChange={(value: 'client_to_professional' | 'professional_to_client') => 
-                                setReviewForm(prev => ({ ...prev, review_type: value }))
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="client_to_professional">
-                                  Cliente avaliando Profissional
-                                </SelectItem>
-                                <SelectItem value="professional_to_client">
-                                  Profissional avaliando Cliente
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="rating">Avaliação (1-5 estrelas)</Label>
-                            <div className="flex items-center space-x-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                  key={star}
-                                  type="button"
-                                  onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
-                                  className={`text-2xl ${
-                                    star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'
-                                  }`}
-                                >
-                                  ★
-                                </button>
-                              ))}
-                              <span className="ml-2 text-sm text-gray-600">
-                                {reviewForm.rating} estrela{reviewForm.rating !== 1 ? 's' : ''}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="comment">Comentário (opcional)</Label>
-                            <Textarea
-                              id="comment"
-                              value={reviewForm.comment}
-                              onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
-                              placeholder="Deixe um comentário sobre sua experiência..."
-                              rows={3}
-                            />
-                          </div>
-
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={() => setShowAddReviewDialog(false)}>
-                              Cancelar
-                            </Button>
-                            <Button onClick={handleAddReview} disabled={isSubmitting}>
-                              {isSubmitting ? 'Avaliando...' : 'Avaliar'}
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <Star className="h-5 w-5 mr-2" />
+                      Avaliações
+                    </CardTitle>
+                    <CardDescription>
+                      {reviewsSubTab === 'received' 
+                        ? `Avaliações que você recebeu (${stats.totalReviews})`
+                        : `Avaliações que você fez (${stats.givenReviews})`
+                      }
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -825,7 +709,7 @@ export default function ReputacaoPage() {
                                 </div>
                                 <div className="flex items-center space-x-2 flex-wrap">
                                   <StarRating
-                                    rating={review.rating || 0}        
+                                    rating={review.rating_person || 0}        
                                     size="sm"
                                     variant="compact"
                                     showValue={true}
@@ -843,9 +727,9 @@ export default function ReputacaoPage() {
                                 </div>
                               </div>
                               
-                              {review.comment && (
+                              {review.comment_person && (
                                 <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md break-words">
-                                  "{review.comment}"
+                                  "{review.comment_person}"
                                 </p>
                               )}
                             </div>
@@ -874,101 +758,17 @@ export default function ReputacaoPage() {
             {activeTab === 'recommendations' && (
               <Card className="mb-8">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="flex items-center">
-                        <ThumbsUp className="h-5 w-5 mr-2" />
-                        Recomendações
-                      </CardTitle>
-                      <CardDescription>
-                        {recommendationsSubTab === 'received' 
-                          ? `Recomendações que você recebeu (${stats.totalRecommendations})`
-                          : `Recomendações que você fez (${stats.givenRecommendations})`
-                        }
-                      </CardDescription>
-                    </div>
-                    <Dialog open={showAddRecommendationDialog} onOpenChange={setShowAddRecommendationDialog}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-gray-600 hover:bg-gray-700">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Recomendar Alguém
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Recomendar Usuário</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="user-search-rec">Buscar Usuário</Label>
-                            <div className="relative">
-                              <Input
-                                id="user-search-rec"
-                                placeholder="Digite o nome do usuário..."
-                                onChange={(e) => searchUsers(e.target.value)}
-                              />
-                              <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
-                            </div>
-                            {searchResults.length > 0 && (
-                              <div className="mt-2 max-h-40 overflow-y-auto border rounded-md">
-                                {searchResults.map((user) => (
-                                  <div
-                                    key={user.id}
-                                    className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => {
-                                      setRecommendationForm(prev => ({ ...prev, recommended_id: user.id }))
-                                      setSearchResults([])
-                                    }}
-                                  >
-                                    <Avatar className="w-8 h-8">
-                                      <AvatarImage src={user.avatar_url} alt={`Avatar de ${user.full_name}`} />
-                                      <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">{user.full_name}</p>
-                                      <p className="text-sm text-gray-500">
-                                        {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          <div>
-                            <Label htmlFor="recommendation-type">Tipo de Recomendação</Label>
-                            <Select 
-                              value={recommendationForm.recommendation_type} 
-                              onValueChange={(value: 'client_to_professional' | 'professional_to_client') => 
-                                setRecommendationForm(prev => ({ ...prev, recommendation_type: value }))
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="client_to_professional">
-                                  Cliente recomendando Profissional
-                                </SelectItem>
-                                <SelectItem value="professional_to_client">
-                                  Profissional recomendando Cliente
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="flex justify-end space-x-2">
-                            <Button variant="outline" onClick={() => setShowAddRecommendationDialog(false)}>
-                              Cancelar
-                            </Button>
-                            <Button onClick={handleAddRecommendation} disabled={isSubmitting}>
-                              {isSubmitting ? 'Recomendando...' : 'Recomendar'}
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <ThumbsUp className="h-5 w-5 mr-2" />
+                      Recomendações
+                    </CardTitle>
+                    <CardDescription>
+                      {recommendationsSubTab === 'received' 
+                        ? `Recomendações que você recebeu (${stats.totalRecommendations})`
+                        : `Recomendações que você fez (${stats.givenRecommendations})`
+                      }
+                    </CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>

@@ -16,7 +16,7 @@ export function useAutoRedirect() {
     // Mas apenas se não estivermos em uma página que requer autenticação
     if (!user) {
       const currentPath = window.location.pathname
-      const authRequiredPaths = ['/editarperfil', '/editar-perfil', '/dashboard', '/feed', '/perfil', '/favoritos', '/avaliacoes', '/reputacao', '/portfolio', '/minhas-denuncias', '/admin']
+      const authRequiredPaths = ['/editarperfil', '/editar-perfil', '/feed', '/perfil', '/favoritos', '/avaliacoes', '/reputacao', '/portfolio', '/minhas-denuncias', '/admin']
       
       // Se não estamos em uma página que requer autenticação, redirecionar
       if (!authRequiredPaths.some(path => currentPath.startsWith(path))) {

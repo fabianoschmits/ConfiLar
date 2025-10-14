@@ -717,23 +717,23 @@ export default function ClassificadosPage() {
           </div>
 
           {/* Controles de Visualização e Botão Novo Anúncio */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {filteredAds.length} resultado{filteredAds.length !== 1 ? 's' : ''}
+          <div className="flex justify-between items-center mb-6 gap-1 sm:gap-4">
+            <div className="flex items-center gap-1 sm:gap-4">
+              <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                {filteredAds.length} {filteredAds.length !== 1 ? 'resultados' : 'resultado'}
               </span>
               
-              {/* Seletor de itens por página */}
+              {/* Seletor de itens por página - Mobile e Desktop */}
               {!loading && filteredAds.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <label htmlFor="itemsPerPage" className="text-sm text-gray-600">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <label htmlFor="itemsPerPage" className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
                     Por página:
                   </label>
                   <Select
                     value={itemsPerPage.toString()}
                     onValueChange={(value) => setItemsPerPage(parseInt(value))}
                   >
-                    <SelectTrigger className="w-20 h-8">
+                    <SelectTrigger className="w-14 sm:w-20 h-7 sm:h-8 text-xs sm:text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -745,12 +745,14 @@ export default function ClassificadosPage() {
                   </Select>
                 </div>
               )}
-              <div className="flex border border-gray-200 rounded-lg">
+              
+              {/* Botões Grid/List - Apenas Desktop */}
+              <div className="hidden sm:flex border border-gray-200 rounded-lg">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="rounded-r-none"
+                  className="rounded-r-none h-8 w-8 p-0"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
@@ -758,25 +760,25 @@ export default function ClassificadosPage() {
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="rounded-l-none"
+                  className="rounded-l-none h-8 w-8 p-0"
                 >
                   <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 sm:gap-4">
               {user && (
                 <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                   <DialogTrigger asChild>
                     <Button 
                       size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 text-xs px-3 py-2"
+                      className="bg-blue-600 hover:bg-blue-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
                       onClick={handleOpenCreateDialog}
                     >
-                      <Plus className="h-3 w-3 mr-1" />
+                      <Plus className="h-3 w-3 sm:mr-1" />
                       <span className="hidden sm:inline">Novo Anúncio</span>
-                      <span className="sm:hidden">Novo</span>
+                      <span className="sm:hidden ml-0.5">Novo</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
@@ -1225,14 +1227,14 @@ export default function ClassificadosPage() {
               </div>
             </div>
           ) : (
-            <div className={`grid gap-3 sm:gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+            <div className={`grid gap-5 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => (
                 <div 
                   key={ad.id} 
-                  className={`group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                  className={`group relative overflow-hidden rounded-2xl shadow-2xl transition-transform duration-300 hover:-translate-y-3 hover:scale-[1.02] ${
                     ad.ad_type === 'oferecer' 
-                      ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50 border-blue-200 hover:border-blue-300' 
-                      : 'bg-gradient-to-br from-green-50 via-white to-green-50 border-green-200 hover:border-green-300'
+                      ? 'bg-white hover:animate-glow-blue' 
+                      : 'bg-white hover:animate-glow-emerald'
                   }`}
                 >
                   {/* Header com tipo de anúncio e menu */}
@@ -1240,17 +1242,17 @@ export default function ClassificadosPage() {
                     <div className="flex items-center gap-2">
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
                         ad.ad_type === 'oferecer' 
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200' 
-                          : 'bg-green-100 text-green-700 border border-green-200'
+                          ? 'bg-blue-500 text-white shadow-md' 
+                          : 'bg-emerald-500 text-white shadow-md'
                       }`}>
                         {ad.ad_type === 'oferecer' ? (
                           <>
-                            <HandHeart className="h-3 w-3 text-blue-600" />
+                            <HandHeart className="h-3 w-3 text-white" />
                             OFERTA
                           </>
                         ) : (
                           <>
-                            <ShoppingCart className="h-3 w-3 text-green-600" />
+                            <ShoppingCart className="h-3 w-3 text-white" />
                             SOLICITAÇÃO
                           </>
                         )}
@@ -1294,8 +1296,8 @@ export default function ClassificadosPage() {
                         variant="outline" 
                         className={`text-xs font-medium ${
                           ad.ad_type === 'oferecer' 
-                            ? 'border-slate-300 text-slate-700 bg-slate-50' 
-                            : 'border-gray-300 text-gray-700 bg-gray-50'
+                            ? 'border-blue-400 text-blue-700 bg-blue-50' 
+                            : 'border-emerald-400 text-emerald-700 bg-emerald-50'
                         }`}
                       >
                         {getCategoryIcon(ad.category)} {ad.category}
@@ -1306,12 +1308,16 @@ export default function ClassificadosPage() {
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       {/* Info do usuário */}
                       <Link href={`/perfil/${ad.user_id}`} className="flex items-center gap-2 group/user">
-                        <Avatar className="w-8 h-8 ring-2 ring-white shadow-sm group-hover/user:ring-blue-300 transition-all duration-200">
+                        <Avatar className={`w-8 h-8 ring-2 shadow-sm transition-all duration-200 ${
+                          ad.ad_type === 'oferecer'
+                            ? 'ring-blue-200 group-hover/user:ring-blue-400'
+                            : 'ring-emerald-200 group-hover/user:ring-emerald-400'
+                        }`}>
                           <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
                           <AvatarFallback className={`text-xs font-medium ${
                             ad.ad_type === 'oferecer' 
-                              ? 'bg-slate-100 text-slate-700' 
-                              : 'bg-gray-100 text-gray-700'
+                              ? 'bg-blue-100 text-blue-700' 
+                              : 'bg-emerald-100 text-emerald-700'
                           }`}>
                             {ad.user_name.charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -1378,8 +1384,8 @@ export default function ClassificadosPage() {
                           onClick={() => handleContactUser(ad.user_id, ad.user_name)}
                           className={`${
                             ad.ad_type === 'oferecer' 
-                              ? 'bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg' 
-                              : 'bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg'
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' 
+                              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg'
                           } transition-all duration-200 text-xs font-medium px-4 py-2`}
                         >
                           <MessageCircle className="h-3 w-3 mr-1.5" />
@@ -1390,10 +1396,10 @@ export default function ClassificadosPage() {
                   </div>
 
                   {/* Indicador visual lateral */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                  <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
                     ad.ad_type === 'oferecer' 
-                      ? 'bg-gradient-to-b from-slate-400 to-slate-600' 
-                      : 'bg-gradient-to-b from-gray-400 to-gray-600'
+                      ? 'bg-blue-500' 
+                      : 'bg-emerald-500'
                   }`} />
                 </div>
               ))}

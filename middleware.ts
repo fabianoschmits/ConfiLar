@@ -60,7 +60,6 @@ export async function middleware(request: NextRequest) {
 
   // Rotas que requerem autenticação
   const protectedRoutes = [
-    '/dashboard',
     '/perfil',
     '/mensagens',
     '/feed',
