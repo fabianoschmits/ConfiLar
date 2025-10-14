@@ -4,6 +4,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animações customizadas para cards de classificados */
+@keyframes glow-blue {
+  0%, 100% {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 
+                0 15px 30px -10px rgba(0, 0, 0, 0.3),
+                0 0 25px rgba(59, 130, 246, 0.5), 
+                0 0 50px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45), 
+                0 20px 35px -10px rgba(0, 0, 0, 0.35),
+                0 0 40px rgba(59, 130, 246, 0.7), 
+                0 0 80px rgba(59, 130, 246, 0.4);
+  }
+}
+
+@keyframes glow-emerald {
+  0%, 100% {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 
+                0 15px 30px -10px rgba(0, 0, 0, 0.3),
+                0 0 25px rgba(16, 185, 129, 0.5), 
+                0 0 50px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45), 
+                0 20px 35px -10px rgba(0, 0, 0, 0.35),
+                0 0 40px rgba(16, 185, 129, 0.7), 
+                0 0 80px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.animate-glow-blue {
+  animation: glow-blue 2s ease-in-out infinite;
+}
+
+.animate-glow-emerald {
+  animation: glow-emerald 2s ease-in-out infinite;
+}
+
 /* Modern Design System Variables */
 :root {
   /* Colors */

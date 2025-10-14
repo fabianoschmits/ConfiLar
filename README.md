@@ -264,7 +264,6 @@ const generateDicebearAvatar = async (name: string, gender: string) => {
 - **`/avaliacoes`** - Sistema de avaliações e feedback
 
 ### ⚙️ Páginas Administrativas
-- **`/dashboard`** - Dashboard principal do usuário
 - **`/admin/monitor`** - Monitoramento do sistema
 - **`/admin/notificacoes`** - Gerenciar notificações
 

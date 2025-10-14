@@ -10,6 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { 
   Search,
   Filter,
@@ -28,7 +33,8 @@ import {
   User,
   UserCheck,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Wrench
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -385,48 +391,48 @@ export default function BuscarPage() {
 
           {/* Abas de Filtro por Tipo de Usuário */}
           <div className="mb-6">
-            <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 rounded-lg">
+            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'all'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <Users className="h-4 w-4" />
-                <span>Usuários</span>
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">Usuários</span>
+                <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {allFilteredProfiles.length}
                 </Badge>
               </button>
               
               <button
                 onClick={() => setActiveTab('clients')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'clients'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <User className="h-4 w-4" />
-                <span>Clientes</span>
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">Clientes</span>
+                <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {filteredUsers.filter(p => p.user_type === 'client').length}
                 </Badge>
               </button>
               
               <button
                 onClick={() => setActiveTab('professionals')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'professionals'
                     ? 'bg-white text-blue-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                <UserCheck className="h-4 w-4" />
-                <span>Profissionais</span>
-                <Badge variant="secondary" className="ml-1 text-xs">
+                <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">Profissionais</span>
+                <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {filteredUsers.filter(p => p.user_type === 'professional').length}
                 </Badge>
               </button>
@@ -502,8 +508,48 @@ export default function BuscarPage() {
                   : 'grid-cols-1'
               }`}>
                 {displayProfiles.map((profile) => (
-                  <Card key={profile.id} className="hover:shadow-md transition-shadow duration-200">
+                  <Card key={profile.id} className="hover:shadow-md transition-shadow duration-200 relative">
                     <CardContent className="p-6">
+                      {/* Badge de Serviços - Canto Superior Direito */}
+                      {profile.user_type === 'professional' && 
+                       profile.professional_services && 
+                       profile.professional_services.length > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                            >
+                              <Wrench className="h-3 w-3 mr-1" />
+                              Serviços
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-80" align="end">
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2 border-b pb-2">
+                                <Briefcase className="h-4 w-4 text-blue-600" />
+                                <h4 className="font-semibold text-gray-900">Serviços Oferecidos</h4>
+                              </div>
+                              <div className="max-h-64 overflow-y-auto space-y-2">
+                                {profile.professional_services.map((service, index) => (
+                                  <div 
+                                    key={index} 
+                                    className="flex items-start space-x-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                  >
+                                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-gray-900">{service}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="text-xs text-gray-500 text-center pt-2 border-t">
+                                {profile.professional_services.length} {profile.professional_services.length === 1 ? 'serviço' : 'serviços'}
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                      
                       {/* Header do Card */}
                       <div className="flex items-start space-x-3 mb-4">
                         <div 

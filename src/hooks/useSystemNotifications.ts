@@ -109,7 +109,7 @@ export function useSystemNotifications() {
         message: `${message} (Lembrete para ${reminderTime})`,
         type: 'like', // Usando 'like' como fallback
         priority: 'normal',
-        action_url: '/dashboard'
+        action_url: '/feed'
       })
     } catch (error) {
       console.error('Erro ao notificar lembrete:', error)

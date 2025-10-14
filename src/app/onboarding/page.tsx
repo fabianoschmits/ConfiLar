@@ -688,7 +688,7 @@ export default function OnboardingPage() {
           </div>
           
           <Button 
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/feed')}
             variant="ghost"
             size="sm"
             className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"

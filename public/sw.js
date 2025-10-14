@@ -3,10 +3,11 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.0.0'
-const STATIC_CACHE = 'confilar-static-v1.0.0'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.0.0'
-const API_CACHE = 'confilar-api-v1.0.0'
+const CACHE_NAME = 'confilar-pwa-v1.1.0'
+const STATIC_CACHE = 'confilar-static-v1.1.0'
+const DYNAMIC_CACHE = 'confilar-dynamic-v1.1.0'
+const API_CACHE = 'confilar-api-v1.1.0'
+const IMAGE_CACHE = 'confilar-images-v1.1.0'
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
@@ -109,7 +110,8 @@ self.addEventListener('activate', (event) => {
             if (cacheName !== CACHE_NAME && 
                 cacheName !== STATIC_CACHE && 
                 cacheName !== DYNAMIC_CACHE && 
-                cacheName !== API_CACHE) {
+                cacheName !== API_CACHE &&
+                cacheName !== IMAGE_CACHE) {
               console.log('🗑️ Removendo cache antigo:', cacheName)
               return caches.delete(cacheName)
             }
@@ -185,24 +187,92 @@ async function handleRequest(request) {
 
 // Cache-First: Para assets estáticos
 async function cacheFirst(request) {
-  const cache = await caches.open(STATIC_CACHE)
+  const url = new URL(request.url)
+  const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)
+  
+  // Cache de imagens separado
+  const cacheName = isImage ? IMAGE_CACHE : STATIC_CACHE
+  const cache = await caches.open(cacheName)
   const cached = await cache.match(request)
   
   if (cached) {
     console.log('📦 Cache hit (static):', request.url)
+    // Se for imagem, atualizar em background
+    if (isImage) {
+      fetchAndUpdateImage(request, cache)
+    }
     return cached
   }
   
   try {
     const response = await fetch(request)
     if (response.ok) {
-      cache.put(request, response.clone())
+      // Só cachear imagens < 5MB
+      if (isImage) {
+        const clonedResponse = response.clone()
+        const blob = await clonedResponse.blob()
+        
+        if (blob.size < 5 * 1024 * 1024) { // 5MB
+          cache.put(request, response.clone())
+          console.log('📸 Imagem cacheada:', url.pathname, `(${formatBytes(blob.size)})`)
+        } else {
+          console.log('⚠️ Imagem muito grande, não cacheada:', url.pathname)
+        }
+      } else {
+        cache.put(request, response.clone())
+      }
     }
     return response
   } catch (error) {
     console.log('❌ Erro ao buscar asset:', request.url)
+    
+    // Se for imagem, retornar placeholder
+    if (isImage) {
+      return getImagePlaceholder()
+    }
+    
     return new Response('Asset não disponível offline', { status: 503 })
   }
+}
+
+// Atualizar imagem em background
+async function fetchAndUpdateImage(request, cache) {
+  try {
+    const response = await fetch(request)
+    if (response.ok) {
+      cache.put(request, response.clone())
+    }
+  } catch (error) {
+    // Ignorar erros de atualização em background
+  }
+}
+
+// Placeholder de imagem para quando estiver offline
+function getImagePlaceholder() {
+  const svg = `
+    <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="300" fill="#f3f4f6"/>
+      <text x="50%" y="50%" font-family="Arial" font-size="16" fill="#9ca3af" text-anchor="middle" dy=".3em">
+        📷 Imagem indisponível offline
+      </text>
+    </svg>
+  `
+  
+  return new Response(svg, {
+    headers: {
+      'Content-Type': 'image/svg+xml',
+      'Cache-Control': 'no-cache'
+    }
+  })
+}
+
+// Formatar bytes
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 // Network-First: Para dados dinâmicos
@@ -430,18 +500,121 @@ self.addEventListener('sync', (event) => {
   if (event.tag === 'confilar-sync') {
     event.waitUntil(doBackgroundSync())
   }
+  
+  if (event.tag === 'sync-offline-queue') {
+    event.waitUntil(syncOfflineQueue())
+  }
 })
 
 async function doBackgroundSync() {
   try {
     console.log('🔄 Executando sincronização em background...')
     
-    // Aqui você pode implementar lógica de sincronização
-    // Por exemplo: sincronizar mensagens, favoritos, etc.
+    // Sincronizar queue de ações offline
+    await syncOfflineQueue()
+    
+    // Limpar caches antigos
+    await cleanOldCaches()
+    
+    // Pré-cachear páginas importantes
+    await precacheImportantPages()
     
     console.log('✅ Sincronização em background concluída')
   } catch (error) {
     console.error('❌ Erro na sincronização em background:', error)
+  }
+}
+
+// Sincronizar queue de ações offline
+async function syncOfflineQueue() {
+  try {
+    // Obter queue do IndexedDB ou localStorage
+    const queue = await getOfflineQueue()
+    
+    if (queue && queue.length > 0) {
+      console.log(`🔄 Sincronizando ${queue.length} ações offline...`)
+      
+      // Processar cada ação
+      for (const action of queue) {
+        try {
+          await processOfflineAction(action)
+          await removeFromQueue(action.id)
+          console.log('✅ Ação sincronizada:', action.type)
+        } catch (error) {
+          console.error('❌ Erro ao sincronizar ação:', error)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Erro ao sincronizar queue:', error)
+  }
+}
+
+// Obter queue do localStorage (pode ser melhorado com IndexedDB)
+async function getOfflineQueue() {
+  try {
+    // Tentar obter do IndexedDB primeiro, fallback para localStorage
+    const clients = await self.clients.matchAll()
+    if (clients.length > 0) {
+      // Enviar mensagem para cliente para obter queue
+      const client = clients[0]
+      return new Promise((resolve) => {
+        const channel = new MessageChannel()
+        channel.port1.onmessage = (event) => {
+          resolve(event.data.queue)
+        }
+        client.postMessage({ type: 'GET_QUEUE' }, [channel.port2])
+      })
+    }
+    return []
+  } catch (error) {
+    return []
+  }
+}
+
+// Processar ação offline
+async function processOfflineAction(action) {
+  // Implementação simplificada - pode ser expandida
+  console.log('Processando ação:', action)
+}
+
+// Remover ação da queue
+async function removeFromQueue(actionId) {
+  const clients = await self.clients.matchAll()
+  if (clients.length > 0) {
+    clients[0].postMessage({ type: 'REMOVE_FROM_QUEUE', actionId })
+  }
+}
+
+// Limpar caches antigos
+async function cleanOldCaches() {
+  const cacheNames = await caches.keys()
+  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE]
+  
+  for (const cacheName of cacheNames) {
+    if (!currentCaches.includes(cacheName)) {
+      console.log('🗑️ Limpando cache antigo:', cacheName)
+      await caches.delete(cacheName)
+    }
+  }
+}
+
+// Pré-cachear páginas importantes
+async function precacheImportantPages() {
+  const cache = await caches.open(DYNAMIC_CACHE)
+  const pagesToCache = [
+    '/',
+    '/feed',
+    '/chat',
+    '/perfil',
+    '/favoritos'
+  ]
+  
+  try {
+    await cache.addAll(pagesToCache)
+    console.log('📦 Páginas importantes pré-cacheadas')
+  } catch (error) {
+    console.log('⚠️ Algumas páginas não puderam ser pré-cacheadas')
   }
 }
 

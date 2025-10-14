@@ -89,13 +89,6 @@ export function Sidebar() {
           icon: <Home size={16} strokeWidth={2} />,
           description: 'Página inicial'
         },
-        {
-          id: 'dashboard',
-          title: 'DASHBOARD',
-          href: '/dashboard',
-          icon: <BarChart3 size={16} strokeWidth={2} />,
-          description: 'Visão geral e métricas'
-        },
       ]
     },
     {

@@ -453,7 +453,7 @@ export default function EditarPerfilPage() {
       console.log('✅ Perfil salvo com sucesso!')
       toast.success('🎉 Perfil atualizado com sucesso!')
       
-      router.push('/dashboard')
+      router.push('/feed')
       
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error)
@@ -476,7 +476,7 @@ export default function EditarPerfilPage() {
           </div>
           
           <Button 
-            onClick={() => router.push('/dashboard')}
+            onClick={() => router.push('/feed')}
             variant="ghost"
             size="sm"
             className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
