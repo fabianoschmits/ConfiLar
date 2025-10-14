@@ -15,10 +15,12 @@ import { MentionText } from '@/components/ui/MentionText'
 
 interface CommentSectionProps {
   postId: string
+  postOwnerId?: string
+  postOwnerName?: string
   className?: string
 }
 
-export function CommentSection({ postId, className }: CommentSectionProps) {
+export function CommentSection({ postId, postOwnerId, postOwnerName, className }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('')
   const [visibleComments, setVisibleComments] = useState(3)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -41,7 +43,12 @@ export function CommentSection({ postId, className }: CommentSectionProps) {
     isLikingComment,
     isEditingComment,
     isDeletingComment
-  } = useComments({ post_id: postId, limit: 50 }) // Carregar mais comentários
+  } = useComments({ 
+    post_id: postId, 
+    postOwnerId,
+    postOwnerName,
+    limit: 50 
+  }) // Carregar mais comentários
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {

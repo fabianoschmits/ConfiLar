@@ -160,16 +160,103 @@ export function ReportButton({
     setIsOpen(true)
   }
 
-  // Se for usado como item de dropdown, renderizar apenas o botão sem Dialog
+  // Se for usado como item de dropdown, renderizar botão + Dialog
   if (asDropdownItem) {
     return (
-      <button
-        onClick={handleButtonClick}
-        className={`flex items-center gap-1 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-1.5 ${className}`}
-      >
-        <MoreVertical className="h-3 w-3" />
-        <span>Denunciar</span>
-      </button>
+      <>
+        <button
+          onClick={handleButtonClick}
+          className={`flex items-center gap-1 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-1.5 ${className}`}
+        >
+          <Flag className="h-3 w-3" />
+          <span>Denunciar</span>
+        </button>
+        
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Flag className="h-5 w-5 text-red-500" />
+                Denunciar {getTypeLabel()}
+              </DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">
+                  Você está denunciando um {getTypeLabel().toLowerCase()}
+                </Label>
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600">
+                    <p><strong>ID:</strong> {targetId}</p>
+                    <p><strong>Nome:</strong> {targetName}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description" className="text-sm font-medium">
+                  Descrição detalhada do problema *
+                </Label>
+                <Textarea
+                  id="description"
+                  placeholder="Descreva o problema encontrado..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  className="mt-1"
+                  rows={4}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="priority" className="text-sm font-medium">
+                  Prioridade
+                </Label>
+                <Select 
+                  value={formData.priority} 
+                  onValueChange={(value) => setFormData({...formData, priority: value})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baixa</SelectItem>
+                    <SelectItem value="medium">Média</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                    <SelectItem value="urgent">Urgente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong>Importante:</strong> Denúncias falsas podem resultar em suspensão da sua conta.
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsOpen(false)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting || !formData.description.trim()}
+                  className="flex-1 bg-red-600 hover:bg-red-700"
+                >
+                  {isSubmitting ? 'Enviando...' : 'Enviar Denúncia'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </>
     )
   }
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { ReactionType, ReactionCounts, UserReaction } from '@/types/reactions'
+import { NotificationService } from '@/services/NotificationService'
 
 export interface ReactionUser {
   id: string
@@ -10,7 +11,7 @@ export interface ReactionUser {
   created_at: string
 }
 
-export function useReactions(postId: string) {
+export function useReactions(postId: string, postOwnerId?: string, postOwnerName?: string) {
   const queryClient = useQueryClient()
   const [userReactions, setUserReactions] = useState<Record<string, ReactionType | null>>({})
 
@@ -59,6 +60,31 @@ export function useReactions(postId: string) {
           })
         
         if (error) throw error
+        
+        // Criar notificação para o dono do post (se não for o próprio usuário e se tivermos as informações)
+        if (postOwnerId && postOwnerName && postOwnerId !== user.id && reactionType === 'like') {
+          try {
+            const userName = user.user_metadata?.full_name || 'Usuário'
+            
+            await NotificationService.createLikeNotification(
+              postId,
+              postOwnerId,
+              user.id,
+              userName
+            )
+
+            // Enviar push notification
+            await NotificationService.sendPushNotification(
+              postOwnerId,
+              'Nova curtida!',
+              `${userName} curtiu seu post`
+            )
+          } catch (notificationError) {
+            console.warn('Erro ao criar notificação de curtida:', notificationError)
+            // Não falhar a operação por causa da notificação
+          }
+        }
+        
         return { action: 'added', reactionType }
       }
     },

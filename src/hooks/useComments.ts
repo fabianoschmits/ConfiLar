@@ -2,8 +2,15 @@ import { useState, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { Comment, CommentFormData, CommentFilters } from '@/types/comments'
+import { NotificationService } from '@/services/NotificationService'
 
-export function useComments(filters: CommentFilters) {
+export interface UseCommentsOptions extends CommentFilters {
+  postOwnerId?: string
+  postOwnerName?: string
+}
+
+export function useComments(options: UseCommentsOptions) {
+  const { postOwnerId, postOwnerName, ...filters } = options
   const queryClient = useQueryClient()
   const [replyTo, setReplyTo] = useState<string | null>(null)
 
@@ -112,7 +119,10 @@ export function useComments(filters: CommentFilters) {
       const { data, error } = await supabase
         .from('post_comments')
         .insert(insertData)
-        .select()
+        .select(`
+          *,
+          user:profiles!post_comments_user_id_fkey(id, full_name)
+        `)
         .single()
 
       if (error) {
@@ -121,6 +131,86 @@ export function useComments(filters: CommentFilters) {
       }
       
       console.log('✅ Comentário inserido com sucesso:', data)
+      
+      // Criar notificações
+      try {
+        const userName = user.user_metadata?.full_name || 'Usuário'
+        
+        // Se for uma resposta a um comentário
+        if (commentData.parent_id) {
+          // Buscar o autor do comentário original
+          const { data: parentComment } = await supabase
+            .from('post_comments')
+            .select('user_id, user:profiles!post_comments_user_id_fkey(id, full_name)')
+            .eq('id', commentData.parent_id)
+            .single()
+          
+          if (parentComment && parentComment.user_id !== user.id) {
+            await NotificationService.createReplyNotification(
+              filters.post_id,
+              commentData.parent_id,
+              parentComment.user_id,
+              user.id,
+              userName,
+              commentData.content
+            )
+            
+            await NotificationService.sendPushNotification(
+              parentComment.user_id,
+              'Nova resposta!',
+              `${userName} respondeu seu comentário`
+            )
+          }
+        } 
+        // Se for um comentário normal no post
+        else if (postOwnerId && postOwnerName && postOwnerId !== user.id) {
+          await NotificationService.createCommentNotification(
+            filters.post_id,
+            postOwnerId,
+            user.id,
+            userName,
+            commentData.content
+          )
+          
+          await NotificationService.sendPushNotification(
+            postOwnerId,
+            'Novo comentário!',
+            `${userName} comentou em seu post`
+          )
+        }
+        
+        // Notificar usuários mencionados
+        if (mentions.length > 0) {
+          for (const mentionUsername of mentions) {
+            // Buscar usuário mencionado pelo username
+            const { data: mentionedUser } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('full_name', mentionUsername)
+              .single()
+            
+            if (mentionedUser && mentionedUser.id !== user.id) {
+              await NotificationService.createMentionNotification(
+                filters.post_id,
+                mentionedUser.id,
+                user.id,
+                userName,
+                commentData.content
+              )
+              
+              await NotificationService.sendPushNotification(
+                mentionedUser.id,
+                'Você foi mencionado!',
+                `${userName} te mencionou em um comentário`
+              )
+            }
+          }
+        }
+      } catch (notificationError) {
+        console.warn('Erro ao criar notificações:', notificationError)
+        // Não falhar a operação por causa das notificações
+      }
+      
       return data
     },
     onSuccess: () => {
