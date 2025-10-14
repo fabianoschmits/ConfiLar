@@ -97,7 +97,6 @@ export function useComments(options: UseCommentsOptions) {
 
   const addCommentMutation = useMutation({
     mutationFn: async (commentData: CommentFormData) => {
-      console.log('🔍 addCommentMutation - Dados recebidos:', commentData)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Usuário não autenticado')
 
@@ -114,8 +113,6 @@ export function useComments(options: UseCommentsOptions) {
         hashtags
       }
 
-      console.log('🔍 addCommentMutation - Dados para inserir:', insertData)
-
       const { data, error } = await supabase
         .from('post_comments')
         .insert(insertData)
@@ -129,8 +126,6 @@ export function useComments(options: UseCommentsOptions) {
         console.error('❌ Erro ao inserir comentário:', error)
         throw error
       }
-      
-      console.log('✅ Comentário inserido com sucesso:', data)
       
       // Criar notificações
       try {
@@ -342,11 +337,6 @@ export function useComments(options: UseCommentsOptions) {
   })
 
   const addComment = useCallback((content: string, parentId?: string) => {
-    console.log('🔍 useComments - addComment chamado:', {
-      content,
-      parentId,
-      isReply: !!parentId
-    })
     addCommentMutation.mutate({
       content,
       parent_id: parentId
@@ -358,9 +348,7 @@ export function useComments(options: UseCommentsOptions) {
   }, [likeCommentMutation])
 
   const startReply = useCallback((commentId: string) => {
-    console.log('🔍 startReply chamado com ID:', commentId)
     setReplyTo(commentId)
-    console.log('🔍 replyTo definido como:', commentId)
   }, [])
 
   const cancelReply = useCallback(() => {

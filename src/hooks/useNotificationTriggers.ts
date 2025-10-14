@@ -93,13 +93,13 @@ export function useNotificationTriggers() {
         })
         
         // Criar notificação de mensagem com metadata completo
-        const result = await NotificationService.create({
+        const result = await NotificationService.createNotification({
           user_id: user.id,
           title: `💬 Nova mensagem de ${senderName}`,
           message: message.content,
-          type: 'message',
+          type: 'like', // Usando 'like' como fallback
           priority: 'high',
-          action_url: null, // Não usar action_url para mensagens
+          action_url: `/chat/${message.conversation_id}`,
           metadata: { 
             sender_name: senderName,
             conversation_id: message.conversation_id,
@@ -205,8 +205,7 @@ export function useNotificationTriggers() {
         
         await NotificationService.notifyNewFavorite(
           user.id,
-          favoriterName,
-          favorite.id
+          favoriterName
         )
         
         console.log('✅ Notificação de favorito criada:', actionId)
@@ -253,9 +252,7 @@ export function useNotificationTriggers() {
         
         await NotificationService.notifyNewRecommendation(
           user.id,
-          fromUserName,
-          recommendation.recommendation_type || 'Recomendação profissional',
-          recommendation.id
+          fromUserName
         )
         
         console.log('✅ Notificação de recomendação criada:', actionId)
@@ -300,8 +297,7 @@ export function useNotificationTriggers() {
         
         await NotificationService.notifyProfileView(
           user.id,
-          viewerName,
-          view.id
+          viewerName
         )
         
         console.log('✅ Notificação de visualização criada:', actionId)

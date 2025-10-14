@@ -37,11 +37,11 @@ export function useReviewNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: 'Avaliação respondida',
         message: `Resposta: ${response}`,
-        type: 'review',
+        type: 'like', // Usando 'like' como fallback
         priority: 'normal',
         action_url: '/avaliacoes'
       })
@@ -59,11 +59,11 @@ export function useReviewNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: 'Avaliação atualizada',
         message: `Sua avaliação foi alterada de ${oldRating} para ${newRating} estrelas`,
-        type: 'review',
+        type: 'like', // Usando 'like' como fallback
         priority: 'normal',
         action_url: '/avaliacoes'
       })
@@ -80,11 +80,11 @@ export function useReviewNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: 'Avaliação removida',
         message: `${reviewerName} removeu sua avaliação`,
-        type: 'review',
+        type: 'like', // Usando 'like' como fallback
         priority: 'normal',
         action_url: '/avaliacoes'
       })

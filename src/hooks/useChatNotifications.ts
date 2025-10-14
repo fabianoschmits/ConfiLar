@@ -46,11 +46,11 @@ export function useChatNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: `${messageCount} mensagem${messageCount > 1 ? 'ns' : ''} não lida${messageCount > 1 ? 's' : ''}`,
         message: 'Você tem mensagens não lidas no chat',
-        type: 'message',
+        type: 'like', // Usando 'like' como fallback
         priority: 'high',
         action_url: '/chat'
       })
@@ -67,11 +67,11 @@ export function useChatNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: senderId,
         title: 'Mensagem lida',
         message: 'Sua mensagem foi lida',
-        type: 'message',
+        type: 'like', // Usando 'like' como fallback
         priority: 'low',
         action_url: '/chat'
       })
