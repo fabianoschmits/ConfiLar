@@ -19,8 +19,7 @@ export function useProfileNotifications() {
     try {
       await NotificationService.notifyProfileView(
         recipientId,
-        viewerName,
-        profileId
+        viewerName
       )
     } catch (error) {
       console.error('Erro ao notificar visualização de perfil:', error)
@@ -38,8 +37,7 @@ export function useProfileNotifications() {
     try {
       await NotificationService.notifyNewFavorite(
         recipientId,
-        favoriterName,
-        profileId
+        favoriterName
       )
     } catch (error) {
       console.error('Erro ao notificar novo favorito:', error)
@@ -54,11 +52,11 @@ export function useProfileNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: 'Removido dos favoritos',
         message: `${unfavoriterName} removeu você dos favoritos`,
-        type: 'favorite',
+        type: 'like', // Usando 'like' como fallback
         priority: 'low',
         action_url: '/perfil'
       })
@@ -75,11 +73,11 @@ export function useProfileNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.create({
+      await NotificationService.createNotification({
         user_id: recipientId,
         title: 'Perfil atualizado',
         message: `Seu perfil foi atualizado: ${updateType}`,
-        type: 'system',
+        type: 'like', // Usando 'like' como fallback
         priority: 'normal',
         action_url: '/perfil'
       })
@@ -96,11 +94,14 @@ export function useProfileNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyVerification(
-        recipientId,
-        'perfil',
-        status
-      )
+      await NotificationService.createNotification({
+        user_id: recipientId,
+        title: 'Verificação de perfil',
+        message: `Seu perfil foi ${status === 'approved' ? 'aprovado' : status === 'rejected' ? 'rejeitado' : 'está pendente'}`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'high',
+        action_url: '/perfil'
+      })
     } catch (error) {
       console.error('Erro ao notificar verificação de perfil:', error)
     }

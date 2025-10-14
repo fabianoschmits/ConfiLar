@@ -80,7 +80,6 @@ O sistema gera automaticamente posts baseados nas ações dos usuários:
 - Links diretos para os perfis
 - Sistema de confiança baseado em indicações
 
-<<<<<<< HEAD
 **⭐ Posts de Avaliações**
 - Gerados quando alguém avalia um profissional
 - Incluem a nota e comentário
@@ -92,17 +91,6 @@ O sistema gera automaticamente posts baseados nas ações dos usuários:
 - **`SimpleAutomaticPost`**: Posts automáticos compactos (favoritos/recomendações)
 - **`NewUserWelcomePost`**: Posts de boas-vindas com card completo
 - **`AutomaticPost`**: Posts de sistema (avaliações, conquistas)
-
-### 🎨 Sistema de Avatars Inteligentes
-
-#### ⚡ Geração em Tempo Real
-- **Atualização Automática**: Avatar muda conforme usuário digita o nome
-- **Debounce de 500ms**: Evita muitas chamadas à API
-- **Personalização por Gênero**: Cores de cabelo, pele e características
-- **Fallbacks Seguros**: Evita erros se dados não existirem
-
-#### 🎯 Características Técnicas
-=======
 
 ## 📱 Páginas Principais
 
@@ -125,8 +113,15 @@ O sistema gera automaticamente posts baseados nas ações dos usuários:
 
 ## 🔧 Funcionalidades Avançadas
 
-### 🎨 Sistema de Avatars
->>>>>>> 540f3aed76a3c8946c8eaf79adbfd2a36534e3d4
+### 🎨 Sistema de Avatars Inteligentes
+
+#### ⚡ Geração em Tempo Real
+- **Atualização Automática**: Avatar muda conforme usuário digita o nome
+- **Debounce de 500ms**: Evita muitas chamadas à API
+- **Personalização por Gênero**: Cores de cabelo, pele e características
+- **Fallbacks Seguros**: Evita erros se dados não existirem
+
+#### 🎯 Características Técnicas
 ```typescript
 // Geração baseada no nome e gênero
 const generateDicebearAvatar = async (name: string, gender: string) => {

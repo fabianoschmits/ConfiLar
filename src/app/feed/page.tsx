@@ -13,9 +13,6 @@ import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-// import { useSmartNotifications } from '@/hooks/useSmartNotifications' // DESABILITADO - causava loop
-// import { useSmartNotificationsMock } from '@/hooks/useSmartNotificationsMock' // DESABILITADO - causava loop
-// import { useNotificationTriggers } from '@/hooks/useNotificationTriggers' // DESABILITADO - causava loop
 import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
@@ -48,19 +45,6 @@ export default function FeedPage() {
   
   // Hook para filtros de localização
   const { currentFilter, setFilter } = useLocationFilters()
-  
-  // Debug: Log do perfil e filtro inicial
-  useEffect(() => {
-    console.log('👤 Perfil do usuário:', {
-      location_city: profile?.location_city,
-      location_state: profile?.location_state,
-      'city length': profile?.location_city?.length,
-      'state length': profile?.location_state?.length,
-      'city type': typeof profile?.location_city,
-      'state type': typeof profile?.location_state
-    })
-    console.log('📍 Filtro inicial:', JSON.stringify(currentFilter, null, 2))
-  }, [profile, currentFilter])
   
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
@@ -141,18 +125,6 @@ export default function FeedPage() {
     threshold: 500 // Carregar quando estiver a 500px do final (aumentado)
   })
 
-  // Debug: log dos valores do infinite scroll
-  console.log('🔄 Feed Infinite Scroll Debug:', {
-    hasNextPage,
-    isFetchingNextPage,
-    itemsLength: items.length,
-    filteredItemsLength: filteredItems.length,
-    activeTab
-  })
-
-  // Debug: log do filtro atual
-  console.log('🔍 Feed - currentFilter:', currentFilter)
-
   // Realtime para timeline
   useTimelineRealtime()
 
@@ -162,12 +134,6 @@ export default function FeedPage() {
     location_state: profile?.location_state,
     limit: 5
   })
-
-  // Notificações inteligentes (DESABILITADO - causava loop)
-  // const { notifications, unreadCount } = useSmartNotifications()
-  
-  // Sistema de notificações automáticas (DESABILITADO - agora usa criação direta)
-  // useNotificationTriggers()
 
   // Usar categorias reais dos serviços
   const categories = [
@@ -230,7 +196,6 @@ export default function FeedPage() {
 
   const handleShare = (postId: string) => {
     // Implementar compartilhamento
-    console.log('Compartilhar post:', postId)
   }
 
   const handleNewPost = async (postData: { title: string; description: string; images: string[]; service: string }) => {
@@ -297,8 +262,6 @@ export default function FeedPage() {
     }
   }
 
-  // handleNotificationAction removido - notificações não aparecem mais no feed
-
   // Verificar se um post está em alta
   const isPostTrending = (postId: string) => {
     return trendingPosts.some(trending => trending.id === postId)
@@ -336,7 +299,6 @@ export default function FeedPage() {
             activity={item}
           />
         )
-      // case 'notification' removido - notificações não aparecem mais no feed
       default:
         return null
     }
@@ -431,10 +393,7 @@ export default function FeedPage() {
           {/* Filtro de Localização */}
           <LocationFilterSelector
             onFilterChange={(filter) => {
-              console.log('🔄 Feed recebeu filtro:', JSON.stringify(filter, null, 2))
-              console.log('📍 Filtro atual antes da mudança:', JSON.stringify(currentFilter, null, 2))
               setFilter(filter)
-              console.log('✅ setFilter foi chamado')
             }}
             className="w-full"
           />

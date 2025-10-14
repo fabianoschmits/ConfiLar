@@ -170,6 +170,156 @@ export class NotificationService {
   }
 
   /**
+   * Notificar nova mensagem no chat
+   */
+  static async notifyNewMessage(
+    recipientId: string,
+    senderName: string,
+    messageContent: string,
+    chatId: string
+  ) {
+    try {
+      const notification: NotificationData = {
+        user_id: recipientId,
+        type: 'like', // Usando 'like' como fallback já que não temos 'message' definido
+        title: 'Nova mensagem',
+        message: `${senderName}: ${messageContent.substring(0, 50)}${messageContent.length > 50 ? '...' : ''}`,
+        action_url: `/chat/${chatId}`,
+        priority: 'high',
+        metadata: {
+          chat_id: chatId,
+          sender_name: senderName,
+          type: 'chat_message'
+        }
+      }
+
+      await this.createNotification(notification)
+      
+      await this.sendPushNotification(
+        recipientId,
+        'Nova mensagem',
+        `${senderName}: ${messageContent.substring(0, 50)}${messageContent.length > 50 ? '...' : ''}`
+      )
+    } catch (error) {
+      console.warn('Erro ao notificar nova mensagem:', error)
+    }
+  }
+
+  /**
+   * Notificar nova avaliação
+   */
+  static async notifyNewReview(
+    recipientId: string,
+    reviewerName: string,
+    rating: number,
+    comment: string
+  ) {
+    try {
+      const notification: NotificationData = {
+        user_id: recipientId,
+        type: 'like',
+        title: 'Nova avaliação!',
+        message: `${reviewerName} avaliou você com ${rating} estrelas`,
+        action_url: `/avaliacoes`,
+        priority: 'normal',
+        metadata: {
+          reviewer_name: reviewerName,
+          rating,
+          type: 'review'
+        }
+      }
+
+      await this.createNotification(notification)
+      await this.sendPushNotification(recipientId, 'Nova avaliação!', `${reviewerName} te avaliou`)
+    } catch (error) {
+      console.warn('Erro ao notificar nova avaliação:', error)
+    }
+  }
+
+  /**
+   * Notificar novo favorito
+   */
+  static async notifyNewFavorite(
+    recipientId: string,
+    userName: string
+  ) {
+    try {
+      const notification: NotificationData = {
+        user_id: recipientId,
+        type: 'like',
+        title: 'Novo favorito!',
+        message: `${userName} adicionou você aos favoritos`,
+        action_url: `/perfil/${recipientId}`,
+        priority: 'normal',
+        metadata: {
+          user_name: userName,
+          type: 'favorite'
+        }
+      }
+
+      await this.createNotification(notification)
+      await this.sendPushNotification(recipientId, 'Novo favorito!', `${userName} te favoritou`)
+    } catch (error) {
+      console.warn('Erro ao notificar novo favorito:', error)
+    }
+  }
+
+  /**
+   * Notificar nova recomendação
+   */
+  static async notifyNewRecommendation(
+    recipientId: string,
+    recommenderName: string
+  ) {
+    try {
+      const notification: NotificationData = {
+        user_id: recipientId,
+        type: 'like',
+        title: 'Nova recomendação!',
+        message: `${recommenderName} recomendou você`,
+        action_url: `/perfil/${recipientId}`,
+        priority: 'normal',
+        metadata: {
+          recommender_name: recommenderName,
+          type: 'recommendation'
+        }
+      }
+
+      await this.createNotification(notification)
+      await this.sendPushNotification(recipientId, 'Nova recomendação!', `${recommenderName} te recomendou`)
+    } catch (error) {
+      console.warn('Erro ao notificar nova recomendação:', error)
+    }
+  }
+
+  /**
+   * Notificar visualização de perfil
+   */
+  static async notifyProfileView(
+    recipientId: string,
+    visitorName: string
+  ) {
+    try {
+      const notification: NotificationData = {
+        user_id: recipientId,
+        type: 'like',
+        title: 'Perfil visualizado',
+        message: `${visitorName} visualizou seu perfil`,
+        action_url: `/perfil/${recipientId}`,
+        priority: 'low',
+        metadata: {
+          visitor_name: visitorName,
+          type: 'profile_view'
+        }
+      }
+
+      await this.createNotification(notification)
+    } catch (error) {
+      console.warn('Erro ao notificar visualização de perfil:', error)
+    }
+  }
+
+  /**
    * Enviar notificação push (se o usuário tiver subscription)
    */
   static async sendPushNotification(

@@ -52,11 +52,6 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {
-      console.log('🔍 Enviando comentário:', {
-        content: newComment,
-        replyTo: replyTo,
-        isReply: !!replyTo
-      })
       addComment(newComment, replyTo || undefined)
       setNewComment('')
       // Limpar replyTo após enviar
@@ -221,7 +216,6 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                 {!isReply && (
                   <button
                     onClick={() => {
-                      console.log('🔍 Clicou em Responder:', comment.id, 'Usuário:', comment.user.full_name)
                       startReply(comment.id)
                       setReplyingToUser(comment.user.full_name)
                     }}
@@ -315,7 +309,6 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  console.log('🔍 Cancelando resposta')
                   cancelReply()
                   setReplyingToUser(null)
                 }}

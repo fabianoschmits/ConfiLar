@@ -16,11 +16,14 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyMaintenance(
-        user.id,
-        startTime,
-        duration
-      )
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: 'Manutenção programada',
+        message: `Sistema entrará em manutenção às ${startTime} por ${duration}`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'high',
+        action_url: '/sobre'
+      })
     } catch (error) {
       console.error('Erro ao notificar manutenção:', error)
     }
@@ -34,11 +37,14 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyUpdate(
-        user.id,
-        version,
-        features
-      )
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: `Nova versão ${version} disponível!`,
+        message: `Novidades: ${features.join(', ')}`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'normal',
+        action_url: '/sobre'
+      })
     } catch (error) {
       console.error('Erro ao notificar atualização:', error)
     }
@@ -52,11 +58,14 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifySecurity(
-        user.id,
-        event,
-        action
-      )
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: `Alerta de segurança: ${event}`,
+        message: `Ação recomendada: ${action}`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'high',
+        action_url: '/configuracoes-privacidade'
+      })
     } catch (error) {
       console.error('Erro ao notificar segurança:', error)
     }
@@ -71,12 +80,15 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyAchievement(
-        user.id,
-        achievementName,
-        description,
-        badgeUrl
-      )
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: `🏆 Conquista desbloqueada: ${achievementName}`,
+        message: description,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'normal',
+        action_url: '/perfil',
+        metadata: badgeUrl ? { badge_url: badgeUrl } : undefined
+      })
     } catch (error) {
       console.error('Erro ao notificar conquista:', error)
     }
@@ -91,12 +103,14 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyReminder(
-        user.id,
+      await NotificationService.createNotification({
+        user_id: user.id,
         title,
-        message,
-        reminderTime
-      )
+        message: `${message} (Lembrete para ${reminderTime})`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'normal',
+        action_url: '/dashboard'
+      })
     } catch (error) {
       console.error('Erro ao notificar lembrete:', error)
     }
@@ -109,10 +123,14 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyAvailabilityChange(
-        user.id,
-        isAvailable
-      )
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: 'Disponibilidade alterada',
+        message: `Você está agora ${isAvailable ? 'disponível' : 'indisponível'}`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'low',
+        action_url: '/perfil'
+      })
     } catch (error) {
       console.error('Erro ao notificar mudança de disponibilidade:', error)
     }
@@ -126,11 +144,15 @@ export function useSystemNotifications() {
     if (!user) return
 
     try {
-      await NotificationService.notifyReputationChange(
-        user.id,
-        oldReputation,
-        newReputation
-      )
+      const change = newReputation - oldReputation
+      await NotificationService.createNotification({
+        user_id: user.id,
+        title: 'Mudança na reputação',
+        message: `Sua reputação ${change > 0 ? 'aumentou' : 'diminuiu'} ${Math.abs(change)} pontos (${oldReputation} → ${newReputation})`,
+        type: 'like', // Usando 'like' como fallback
+        priority: 'normal',
+        action_url: '/perfil'
+      })
     } catch (error) {
       console.error('Erro ao notificar mudança de reputação:', error)
     }

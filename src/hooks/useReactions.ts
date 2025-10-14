@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { ReactionType, ReactionCounts, UserReaction } from '@/types/reactions'
@@ -13,7 +13,31 @@ export interface ReactionUser {
 
 export function useReactions(postId: string, postOwnerId?: string, postOwnerName?: string) {
   const queryClient = useQueryClient()
-  const [userReactions, setUserReactions] = useState<Record<string, ReactionType | null>>({})
+
+  // Query para buscar a reação atual do usuário
+  const { data: userReaction } = useQuery({
+    queryKey: ['user-reaction', postId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return null
+
+      const { data, error } = await supabase
+        .from('post_reactions')
+        .select('reaction_type')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Erro ao buscar reação do usuário:', error)
+        return null
+      }
+
+      return data?.reaction_type as ReactionType || null
+    },
+    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
+    gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
+  })
 
   // Mutation para adicionar/remover reação
   const reactionMutation = useMutation({
@@ -89,11 +113,20 @@ export function useReactions(postId: string, postOwnerId?: string, postOwnerName
       }
     },
     onSuccess: (result, variables) => {
-      // Atualizar estado local
-      setUserReactions(prev => ({
-        ...prev,
-        [variables.postId]: result.reactionType
-      }))
+      // Invalidar cache da reação do usuário
+      queryClient.invalidateQueries({
+        queryKey: ['user-reaction', variables.postId]
+      })
+
+      // Invalidar cache das contagens de reações
+      queryClient.invalidateQueries({
+        queryKey: ['reaction-counts', variables.postId]
+      })
+
+      // Invalidar cache dos usuários que reagiram
+      queryClient.invalidateQueries({
+        queryKey: ['reaction-users', variables.postId]
+      })
 
       // Invalidar cache da timeline
       queryClient.invalidateQueries({
@@ -107,16 +140,15 @@ export function useReactions(postId: string, postOwnerId?: string, postOwnerName
   }, [reactionMutation, postId])
 
   const removeReaction = useCallback(() => {
-    const currentReaction = userReactions[postId]
-    if (currentReaction) {
-      reactionMutation.mutate({ reactionType: currentReaction, postId })
+    if (userReaction) {
+      reactionMutation.mutate({ reactionType: userReaction, postId })
     }
-  }, [reactionMutation, postId, userReactions, postId])
+  }, [reactionMutation, postId, userReaction])
 
   return {
     addReaction,
     removeReaction,
-    userReaction: userReactions[postId] || null,
+    userReaction: userReaction || null,
     isLoading: reactionMutation.isPending
   }
 }
