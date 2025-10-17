@@ -25,6 +25,7 @@ import { DevTestButton } from "@/components/dev/DevTestButton"
 import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
 import { CookieConsentBanner } from "@/components/lgpd/CookieConsentBanner"
 import { PWAManager } from "@/components/pwa/PWAManager"
+import { ThemeProvider } from "@/components/theme-provider"
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -61,7 +62,7 @@ export default async function RootLayout({
   const { data: { session } } = await supabase.auth.getSession()
 
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -70,37 +71,45 @@ export default async function RootLayout({
         <meta name="msapplication-TileImage" content="/icon-192x192.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
       </head>
-                  <body className={inter.className}>
-                    <ServiceWorkerCleaner />
-                    <ErrorBoundary>
-          <QueryProvider>
-            <LoadingProvider>
-              <AuthProvider initialSession={session}>
-                {/* <AutoReauthentication> */}
-                  <AvailabilityProvider>
-                    <NotificationProviderSimple>
-                      <FloatingChatProviderSimple>
-                        <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                          <BanNotification>
-                            {children}
-                          </BanNotification>
-                        </Suspense>
-                        <FloatingChatWrapper />
-                        <LoadingOverlayProvider />
-                        <NewNotificationSystem />
-                        <CookieConsentBanner />
-                        <PWAManager />
-                        {/* <DevTestButton /> */}
-                        <Toaster position="top-right" richColors />
-                        {/* <AuthContextDebug /> */}
-                      </FloatingChatProviderSimple>
-                    </NotificationProviderSimple>
-                  </AvailabilityProvider>
-                {/* </AutoReauthentication> */}
-              </AuthProvider>
-            </LoadingProvider>
-          </QueryProvider>
-        </ErrorBoundary>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+          storageKey="confilar-theme"
+        >
+          <ServiceWorkerCleaner />
+          <ErrorBoundary>
+            <QueryProvider>
+              <LoadingProvider>
+                <AuthProvider initialSession={session}>
+                  {/* <AutoReauthentication> */}
+                    <AvailabilityProvider>
+                      <NotificationProviderSimple>
+                        <FloatingChatProviderSimple>
+                          <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
+                            <BanNotification>
+                              {children}
+                            </BanNotification>
+                          </Suspense>
+                          <FloatingChatWrapper />
+                          <LoadingOverlayProvider />
+                          <NewNotificationSystem />
+                          <CookieConsentBanner />
+                          <PWAManager />
+                          {/* <DevTestButton /> */}
+                          <Toaster position="top-right" richColors />
+                          {/* <AuthContextDebug /> */}
+                        </FloatingChatProviderSimple>
+                      </NotificationProviderSimple>
+                    </AvailabilityProvider>
+                  {/* </AutoReauthentication> */}
+                </AuthProvider>
+              </LoadingProvider>
+            </QueryProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   )

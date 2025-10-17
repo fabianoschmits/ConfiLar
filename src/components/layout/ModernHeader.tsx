@@ -15,6 +15,7 @@ import { UserReportsModal } from '@/components/UserReportsModal'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 import { useAvailability } from '@/hooks/useAvailability'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { 
   Search,
   Bell,
@@ -220,7 +221,7 @@ export function ModernHeader({
   return (
     <>
       {/* Header Moderno */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12 sm:h-16">
             {/* Left side */}
@@ -251,16 +252,16 @@ export function ModernHeader({
               
               {/* Logo */}
               <Link href="/home" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">C</span>
                 </div>
-                <span className="font-semibold text-gray-900 hidden sm:block">ConfiLar</span>
+                <span className="font-semibold text-gray-900 dark:text-white hidden sm:block">ConfiLar</span>
               </Link>
             </div>
 
             {/* Center - Title */}
             <div className="flex-1 text-center">
-              <h1 className="text-sm font-semibold text-gray-900 sm:text-base">
+              <h1 className="text-sm font-semibold text-gray-900 dark:text-white sm:text-base">
                 {getPageTitle()}
               </h1>
             </div>
@@ -269,6 +270,11 @@ export function ModernHeader({
             <div className="flex items-center">
               {/* Toggle de Disponibilidade */}
               <AvailabilityToggleCompact />
+              
+              {/* Toggle de Tema */}
+              <div className="relative -ml-1">
+                <ThemeToggle />
+              </div>
               
               {/* Notificações */}
               <div className="relative -ml-1">
@@ -288,18 +294,18 @@ export function ModernHeader({
                     fallback={profile?.full_name?.charAt(0) || 'U'}
                     size="sm"
                   />
-                  <span className="hidden sm:block text-sm font-medium text-gray-700">
+                  <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {profile?.full_name || 'Usuário'}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                  <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </Button>
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-80 sm:w-80 w-72 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden">
+                  <div className="absolute top-full right-0 mt-2 w-80 sm:w-80 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
-                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200">
+                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
                         <UserAvatar 
                           src={profile?.avatar_url}
                           alt={profile?.full_name || 'Usuário'}
@@ -308,10 +314,10 @@ export function ModernHeader({
                           className="sm:w-10 sm:h-10"
                         />
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
                             {profile?.full_name || 'Usuário'}
                           </h3>
-                          <p className="text-xs sm:text-sm text-gray-500">
+                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                             {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                           </p>
                           <div className="flex gap-1 mt-1">
@@ -324,23 +330,23 @@ export function ModernHeader({
                       </div>
 
                       {/* Estatísticas de Reputação */}
-                      <div className="py-2 sm:py-3 border-b border-gray-200">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">Minha Reputação</h4>
+                      <div className="py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">Minha Reputação</h4>
                         <div className="flex justify-between gap-1">
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-md">
-                            <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900">{reputationStats.totalViews}</div>
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/30 rounded-md">
+                            <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 dark:text-blue-400 mb-0.5" />
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalViews}</div>
                           </div>
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-md">
-                            <ThumbsUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900">{reputationStats.totalRecommendations}</div>
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-50 dark:bg-green-900/30 rounded-md">
+                            <ThumbsUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 dark:text-green-400 mb-0.5" />
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalRecommendations}</div>
                           </div>
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 rounded-md">
-                            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900">{reputationStats.totalReviews}</div>
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 dark:bg-orange-900/30 rounded-md">
+                            <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600 dark:text-orange-400 mb-0.5" />
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalReviews}</div>
                           </div>
                           {profile?.user_type === 'professional' && reputationStats.averageRating > 0 && (
-                            <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 rounded-md">
+                            <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-700 rounded-md">
                               <div className="mb-0.5">
                                 <StarRating 
                                   rating={reputationStats.averageRating} 
@@ -350,34 +356,34 @@ export function ModernHeader({
                                   className="scale-75 sm:scale-75"
                                 />
                               </div>
-                              <div className="text-xs font-semibold text-gray-900">{reputationStats.averageRating.toFixed(1)}</div>
+                              <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.averageRating.toFixed(1)}</div>
                             </div>
                           )}
                         </div>
                         {/* Labels */}
                         <div className="flex justify-between gap-1 mt-1">
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 leading-tight">Views</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Views</div>
                           </div>
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 leading-tight">Recom.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Recom.</div>
                           </div>
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 leading-tight">Aval.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Aval.</div>
                           </div>
                           {profile?.user_type === 'professional' && reputationStats.averageRating > 0 && (
                             <div className="w-10 sm:w-12 text-center">
-                              <div className="text-xs text-gray-500 leading-tight">Nota</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Nota</div>
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* Principal */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('principal')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
@@ -429,10 +435,10 @@ export function ModernHeader({
 
 
                       {/* Gestão */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('gestao')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
@@ -479,10 +485,10 @@ export function ModernHeader({
 
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
-                        <div className="border-b border-gray-200">
+                        <div className="border-b border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => toggleSection('profissional')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <Briefcase className="h-3 w-3" />
@@ -516,10 +522,10 @@ export function ModernHeader({
                       )}
 
                       {/* Suporte */}
-                      <div className="border-b border-gray-200">
+                      <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('suporte')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
@@ -590,10 +596,10 @@ export function ModernHeader({
 
                       {/* Administração - Apenas para Admin */}
                       {isAdmin && (
-                        <div className="border-b border-gray-200">
+                        <div className="border-b border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => toggleSection('administracao')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md px-2"
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                           >
                             <div className="flex items-center gap-2">
                               <ShieldCheck className="h-3 w-3" />
@@ -619,7 +625,7 @@ export function ModernHeader({
 
                       {/* Conta */}
                       <div className="py-3 sm:py-4">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2 sm:mb-3 flex items-center gap-2">
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 flex items-center gap-2">
                           <User className="h-3 w-3 sm:h-4 sm:w-4" />
                           Conta
                         </h4>
@@ -646,7 +652,7 @@ export function ModernHeader({
                       </div>
 
                       {/* Botão de Sair */}
-                      <div className="pt-3 sm:pt-4 border-t border-gray-200">
+                      <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                         <Button
                           variant="destructive"
                           size="sm"
@@ -662,7 +668,7 @@ export function ModernHeader({
                       <div className="pt-2 sm:pt-3 text-center">
                         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
                           <div className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                          <span className="text-xs text-gray-600 font-medium leading-tight">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">
                             {profile?.user_type === 'professional' ? 'Profissional Ativo' : 'Cliente Ativo'}
                             {profile?.location_city && profile?.location_state && (
                               <> - {profile.location_city}, {profile.location_state}</>

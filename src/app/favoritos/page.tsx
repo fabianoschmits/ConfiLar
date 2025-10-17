@@ -128,7 +128,7 @@ export default function FavoritesPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Faça Login para Ver Seus Favoritos
               </h2>
               <p className="text-gray-600 mb-6">
@@ -146,18 +146,18 @@ export default function FavoritesPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header da Página */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Heart className="h-8 w-8 text-red-500" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Meus Favoritos</h1>
-                <p className="text-gray-600">
-                  Pessoas que você adicionou aos seus favoritos
-                </p>
+            <div className="text-center mb-4">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Heart className="h-8 w-8 text-red-500" />
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meus Favoritos</h1>
               </div>
+              <p className="text-gray-600 dark:text-gray-400">
+                Pessoas que você adicionou aos seus favoritos
+              </p>
             </div>
 
             {/* Estatísticas Compactas */}
@@ -166,30 +166,30 @@ export default function FavoritesPage() {
                 <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                   {/* Total de Favoritos */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                    <p className="text-xs text-gray-500 text-center">Total</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalFavorites}</p>
+                    <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalFavorites}</p>
                   </div>
                   
                   {/* Profissionais */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                    <p className="text-xs text-gray-500 text-center">Profissionais</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.professionalFavorites}</p>
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.professionalFavorites}</p>
                   </div>
                   
                   {/* Clientes */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                    <p className="text-xs text-gray-500 text-center">Clientes</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.clientFavorites}</p>
+                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.clientFavorites}</p>
                   </div>
                   
                   {/* Ativos */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
-                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                    <p className="text-xs text-gray-500 text-center">Ativos</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalFavorites}</p>
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Ativos</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalFavorites}</p>
                   </div>
                 </div>
               </CardContent>
@@ -221,13 +221,13 @@ export default function FavoritesPage() {
           {/* Abas de Filtro */}
           {!loading && !error && favorites.length > 0 && (
             <div className="mb-6">
-              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 rounded-lg">
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                 <button
                   onClick={() => setActiveTab('all')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === 'all'
-                      ? 'bg-white text-red-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Users className="h-4 w-4" />
@@ -241,8 +241,8 @@ export default function FavoritesPage() {
                   onClick={() => setActiveTab('professionals')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === 'professionals'
-                      ? 'bg-white text-red-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Briefcase className="h-4 w-4" />
@@ -256,8 +256,8 @@ export default function FavoritesPage() {
                   onClick={() => setActiveTab('clients')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                     activeTab === 'clients'
-                      ? 'bg-white text-red-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <User className="h-4 w-4" />
@@ -277,7 +277,7 @@ export default function FavoritesPage() {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       Nenhum favorito ainda
                     </h3>
                     <p className="text-gray-600 mb-6">
@@ -293,27 +293,27 @@ export default function FavoritesPage() {
                   {getFilteredFavorites().map((favorite) => (
                     <Card 
                       key={favorite.id} 
-                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 ${
                         favorite.professional?.user_type === 'professional' 
-                          ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' 
-                          : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                          ? 'hover:shadow-blue-100 dark:hover:shadow-blue-900/20' 
+                          : 'hover:shadow-gray-100 dark:hover:shadow-gray-900/20'
                       }`}
                     >
                       <CardContent className="p-3 sm:p-4">
                         {/* Header do Card com Avatar e Info do Usuário */}
                         <div className="flex items-start space-x-3 mb-3">
-                          <Avatar className="w-12 h-12 ring-2 ring-white shadow-md">
+                          <Avatar className="w-12 h-12 ring-2 ring-white dark:ring-gray-700 shadow-md">
                             <AvatarImage src={favorite.professional?.avatar_url} alt={`Avatar de ${favorite.professional?.full_name}`} />
                             <AvatarFallback className={`font-medium ${
                               favorite.professional?.user_type === 'professional' 
-                                ? 'bg-gray-200 text-gray-800' 
-                                : 'bg-gray-100 text-gray-600'
+                                ? 'bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200' 
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                             }`}>
                               {favorite.professional?.full_name?.charAt(0).toUpperCase() || 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">
+                            <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                               {favorite.professional?.full_name}
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
@@ -321,14 +321,14 @@ export default function FavoritesPage() {
                                 variant="outline"
                                 className={`text-xs ${
                                   favorite.professional?.user_type === 'professional' 
-                                    ? 'border-gray-400 text-gray-800 bg-gray-100' 
-                                    : 'border-gray-300 text-gray-600 bg-gray-50'
+                                    ? 'border-gray-400 dark:border-gray-600 text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700' 
+                                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700'
                                 }`}
                               >
                                 {favorite.professional?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                               </Badge>
                               {favorite.professional?.is_verified && (
-                                <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                <Badge className="bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 text-xs">
                                   Verificado
                                 </Badge>
                               )}
@@ -345,14 +345,14 @@ export default function FavoritesPage() {
                         {/* Conteúdo do Card */}
                         <div className="mb-3">
                           {favorite.professional?.bio && (
-                            <p className="text-gray-600 text-sm line-clamp-2 mb-2">
+                            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-2">
                               {favorite.professional.bio}
                             </p>
                           )}
                           
                           <div className="space-y-1">
                             {(favorite.professional?.location_city || favorite.professional?.location_state) && (
-                              <div className="flex items-center text-xs text-gray-500">
+                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <MapPin className="h-3 w-3 mr-1" />
                                 {favorite.professional?.location_city}
                                 {favorite.professional?.location_city && favorite.professional?.location_state && ', '}
@@ -366,7 +366,7 @@ export default function FavoritesPage() {
                             </div>
 
                             {favorite.professional?.user_type === 'professional' && (
-                              <div className="flex items-center text-xs text-gray-500">
+                              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                                 <Star className="h-3 w-3 mr-1" />
                                 <div className="flex items-center gap-1">
                                   <span>{(favorite.professional?.rating || 0).toFixed(1)}</span>

@@ -259,7 +259,7 @@ export function SmartSearchBar({
       {/* Barra de busca principal */}
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
           <Input
             ref={inputRef}
             value={query}
@@ -267,7 +267,7 @@ export function SmartSearchBar({
             onKeyDown={handleKeyPress}
             onFocus={() => setShowSuggestions(true)}
             placeholder={placeholder}
-            className="pl-8 pr-16 h-9 text-sm border border-gray-300 focus:border-blue-500 rounded-lg"
+            className="pl-8 pr-16 h-9 text-sm border border-gray-300 dark:border-gray-600 focus:border-blue-500 rounded-lg"
           />
           <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             {showAdvancedFilters && (
@@ -275,7 +275,7 @@ export function SmartSearchBar({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className={`h-7 px-1.5 ${showFilters ? 'bg-blue-100 text-blue-600' : ''}`}
+                className={`h-7 px-1.5 ${showFilters ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : ''}`}
               >
                 <Filter className="h-3 w-3" />
               </Button>
@@ -283,7 +283,7 @@ export function SmartSearchBar({
             <Button
               onClick={handleSearch}
               size="sm"
-              className="h-7 px-3 bg-blue-600 hover:bg-blue-700 text-xs"
+              className="h-7 px-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs"
             >
               Buscar
             </Button>
@@ -292,18 +292,18 @@ export function SmartSearchBar({
 
         {/* Sugestões */}
         {showSuggestions && suggestions.length > 0 && (
-          <Card ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 bg-white max-h-60 overflow-y-auto">
+          <Card ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-h-60 overflow-y-auto">
             <CardContent className="p-0">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion.id}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100 last:border-b-0 text-sm"
+                  className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-sm"
                 >
                   <span className="text-sm">{suggestion.icon}</span>
                   <div>
-                    <div className="font-medium text-gray-900 text-sm">{suggestion.text}</div>
-                    <div className="text-xs text-gray-500 capitalize">{suggestion.type}</div>
+                    <div className="font-medium text-gray-900 dark:text-white text-sm">{suggestion.text}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{suggestion.type}</div>
                   </div>
                 </button>
               ))}
@@ -343,9 +343,9 @@ export function SmartSearchBar({
 
       {/* Filtros avançados - Escondidos por padrão */}
       {showFilters && showAdvancedFilters && (
-        <Card className="mt-3 p-3 bg-gray-50 border border-gray-200 shadow-sm">
+        <Card className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+            <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
               <Filter className="h-3 w-3" />
               Filtros Avançados
             </h3>
@@ -353,7 +353,7 @@ export function SmartSearchBar({
               variant="ghost"
               size="sm"
               onClick={() => setShowFilters(false)}
-              className="text-gray-500 hover:text-gray-700 h-6 w-6 p-0"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 h-6 w-6 p-0"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -362,7 +362,7 @@ export function SmartSearchBar({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Estado */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Estado</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Estado</label>
               <EstadoCombobox
                 value={filters.state}
                 onValueChange={(newState) => {
@@ -375,7 +375,7 @@ export function SmartSearchBar({
 
             {/* Cidade */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Cidade</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Cidade</label>
               <CidadeCombobox
                 value={filters.city}
                 onValueChange={(newCity) => setFilters(prev => ({ ...prev, city: newCity }))}
@@ -387,11 +387,11 @@ export function SmartSearchBar({
 
             {/* Serviço */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Serviço</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Serviço</label>
               <select
                 value={filters.service}
                 onChange={(e) => setFilters(prev => ({ ...prev, service: e.target.value }))}
-                className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos os serviços</option>
                 {services.map(service => (
@@ -404,11 +404,11 @@ export function SmartSearchBar({
 
             {/* Avaliação */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Avaliação mínima</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Avaliação mínima</label>
               <select
                 value={filters.rating}
                 onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
-                className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Qualquer avaliação</option>
                 <option value="4">4+ estrelas</option>
@@ -419,11 +419,11 @@ export function SmartSearchBar({
 
             {/* Disponibilidade */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Disponibilidade</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Disponibilidade</label>
               <select
                 value={filters.availability}
                 onChange={(e) => setFilters(prev => ({ ...prev, availability: e.target.value }))}
-                className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos</option>
                 <option value="available">Disponível agora</option>
@@ -434,11 +434,11 @@ export function SmartSearchBar({
 
             {/* Tipo de usuário */}
             <div>
-              <label className="text-xs font-medium text-gray-700 mb-1 block">Tipo</label>
+              <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Tipo</label>
               <select
                 value={filters.userType}
                 onChange={(e) => setFilters(prev => ({ ...prev, userType: e.target.value }))}
-                className="w-full p-1.5 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-1.5 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">Todos</option>
                 <option value="professional">Profissionais</option>
@@ -448,12 +448,12 @@ export function SmartSearchBar({
           </div>
           
           {/* Botões de ação */}
-          <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200">
+          <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="outline"
               size="sm"
               onClick={clearFilters}
-              className="text-gray-600 text-xs h-7 px-2"
+              className="text-gray-600 dark:text-gray-400 text-xs h-7 px-2"
             >
               Limpar
             </Button>
@@ -463,7 +463,7 @@ export function SmartSearchBar({
                 handleSearch()
                 setShowFilters(false)
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-xs h-7 px-3"
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs h-7 px-3"
             >
               Aplicar
             </Button>

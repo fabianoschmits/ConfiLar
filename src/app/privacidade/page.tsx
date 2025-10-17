@@ -37,7 +37,7 @@ export default function PrivacidadePage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -46,7 +46,7 @@ export default function PrivacidadePage() {
                 <Shield className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Política de Privacidade</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Política de Privacidade</h1>
                 <p className="text-gray-600">ConfiLar - Proteção de Dados Pessoais</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function PrivacidadePage() {
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Dados de Identificação:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Identificação:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Nome completo</li>
                       <li>• Email</li>
@@ -126,7 +126,7 @@ export default function PrivacidadePage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Dados de Localização:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Localização:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Estado</li>
                       <li>• Cidade</li>
@@ -138,7 +138,7 @@ export default function PrivacidadePage() {
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Dados Profissionais:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados Profissionais:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Tipo de usuário</li>
                       <li>• Serviços oferecidos</li>
@@ -148,7 +148,7 @@ export default function PrivacidadePage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Dados de Uso:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Uso:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Histórico de navegação</li>
                       <li>• Interações na plataforma</li>
@@ -171,7 +171,7 @@ export default function PrivacidadePage() {
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Base Legal: Consentimento</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Base Legal: Consentimento</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Cadastro na plataforma</li>
                       <li>• Comunicação entre usuários</li>
@@ -180,7 +180,7 @@ export default function PrivacidadePage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Base Legal: Legítimo Interesse</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Base Legal: Legítimo Interesse</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Melhoria dos serviços</li>
                       <li>• Análise de uso</li>
@@ -206,21 +206,21 @@ export default function PrivacidadePage() {
                     <div className="flex items-start">
                       <Eye className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Acesso</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Acesso</h4>
                         <p className="text-gray-700 text-sm">Visualizar seus dados pessoais</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Correção</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Correção</h4>
                         <p className="text-gray-700 text-sm">Corrigir dados incorretos</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Download className="h-5 w-5 text-purple-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Portabilidade</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Portabilidade</h4>
                         <p className="text-gray-700 text-sm">Exportar seus dados</p>
                       </div>
                     </div>
@@ -229,21 +229,21 @@ export default function PrivacidadePage() {
                     <div className="flex items-start">
                       <Trash2 className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Exclusão</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Exclusão</h4>
                         <p className="text-gray-700 text-sm">Direito ao esquecimento</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <AlertTriangle className="h-5 w-5 text-orange-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Oposição</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Oposição</h4>
                         <p className="text-gray-700 text-sm">Opor-se ao tratamento</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Shield className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900">Revogação</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">Revogação</h4>
                         <p className="text-gray-700 text-sm">Revogar consentimento</p>
                       </div>
                     </div>
@@ -292,7 +292,7 @@ export default function PrivacidadePage() {
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Medidas Técnicas:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Medidas Técnicas:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Criptografia de dados</li>
                       <li>• Conexões seguras (HTTPS)</li>
@@ -301,7 +301,7 @@ export default function PrivacidadePage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Medidas Organizacionais:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Medidas Organizacionais:</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
                       <li>• Treinamento da equipe</li>
                       <li>• Políticas de acesso</li>
@@ -377,7 +377,7 @@ export default function PrivacidadePage() {
                   Para questões relacionadas à proteção de dados pessoais:
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-2">Encarregado de Proteção de Dados (DPO):</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Encarregado de Proteção de Dados (DPO):</h4>
                   <p className="text-gray-700 text-sm">
                     Email: dpo@confilar.com<br/>
                     Telefone: (11) 99999-9999<br/>

@@ -114,13 +114,13 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Download className="h-6 w-6 mr-2 text-blue-600" />
+          <CardTitle className="flex items-center text-gray-900 dark:text-white">
+            <Download className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
             Portabilidade de Dados
           </CardTitle>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             Exercite seu direito de portabilidade conforme a LGPD
           </p>
         </CardHeader>
@@ -128,9 +128,9 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
         <CardContent className="space-y-6">
           
           {/* Informações sobre Portabilidade */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2">O que é Portabilidade de Dados?</h3>
-            <p className="text-blue-700 text-sm">
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">O que é Portabilidade de Dados?</h3>
+            <p className="text-blue-700 dark:text-blue-400 text-sm">
               Você tem o direito de receber seus dados pessoais em formato estruturado, 
               de uso comum e legível por máquina, e de transmitir esses dados para outro 
               controlador, conforme previsto na LGPD.
@@ -139,20 +139,20 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
 
           {/* Tipos de Dados */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Dados que serão exportados:</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Dados que serão exportados:</h3>
             <div className="grid gap-3">
               {dataTypes.map((dataType, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
                   <div className="flex items-center space-x-3">
-                    <div className="text-blue-600">
+                    <div className="text-blue-600 dark:text-blue-400">
                       {dataType.icon}
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900">{dataType.name}</h4>
-                      <p className="text-sm text-gray-600">{dataType.description}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-white">{dataType.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{dataType.description}</p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800">
                     Incluído
                   </Badge>
                 </div>
@@ -161,9 +161,9 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
           </div>
 
           {/* Formato do Arquivo */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-900 mb-2">Formato do Arquivo:</h3>
-            <ul className="text-sm text-gray-700 space-y-1">
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Formato do Arquivo:</h3>
+            <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
               <li>• <strong>Formato:</strong> JSON (JavaScript Object Notation)</li>
               <li>• <strong>Codificação:</strong> UTF-8</li>
               <li>• <strong>Estrutura:</strong> Dados organizados por categoria</li>
@@ -173,10 +173,10 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
 
           {/* Status da Exportação */}
           {exportStatus === 'success' && (
-            <div className="bg-green-50 p-4 rounded-lg">
+            <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg border border-green-200 dark:border-green-800">
               <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                <p className="text-green-800 font-medium">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
+                <p className="text-green-800 dark:text-green-300 font-medium">
                   Dados exportados com sucesso! O download deve ter iniciado automaticamente.
                 </p>
               </div>
@@ -184,10 +184,10 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
           )}
 
           {exportStatus === 'error' && (
-            <div className="bg-red-50 p-4 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg border border-red-200 dark:border-red-800">
               <div className="flex items-center">
-                <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-                <p className="text-red-800 font-medium">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
+                <p className="text-red-800 dark:text-red-300 font-medium">
                   Erro ao exportar dados. Tente novamente ou entre em contato com o suporte.
                 </p>
               </div>
@@ -195,9 +195,9 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
           )}
 
           {/* Avisos Importantes */}
-          <div className="bg-amber-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-amber-800 mb-2">Avisos Importantes:</h3>
-            <ul className="text-amber-700 text-sm space-y-1">
+          <div className="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+            <h3 className="font-semibold text-amber-800 dark:text-amber-300 mb-2">Avisos Importantes:</h3>
+            <ul className="text-amber-700 dark:text-amber-400 text-sm space-y-1">
               <li>• O arquivo contém dados pessoais sensíveis - mantenha-o seguro</li>
               <li>• A exportação pode levar alguns minutos dependendo da quantidade de dados</li>
               <li>• Você pode solicitar uma nova exportação a qualquer momento</li>
@@ -206,11 +206,11 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button 
               onClick={handleExportData}
               disabled={isExporting}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
               {isExporting ? (
                 <>

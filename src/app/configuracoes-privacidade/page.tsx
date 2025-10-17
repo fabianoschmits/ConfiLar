@@ -45,11 +45,11 @@ export default function ConfiguracoesPrivacidadePage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
                 Acesso Restrito
               </h2>
               <p className="text-gray-600 mb-4">
@@ -125,7 +125,7 @@ export default function ConfiguracoesPrivacidadePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header */}
@@ -135,7 +135,7 @@ export default function ConfiguracoesPrivacidadePage() {
                 <Shield className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Configurações de Privacidade</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Configurações de Privacidade</h1>
                 <p className="text-gray-600">Gerencie seus dados pessoais conforme a LGPD</p>
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function ConfiguracoesPrivacidadePage() {
             
             {/* Configurações de Privacidade */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
                 <Settings className="h-5 w-5 mr-2" />
                 Configurações de Privacidade
               </h2>
@@ -175,7 +175,7 @@ export default function ConfiguracoesPrivacidadePage() {
                           {setting.icon}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{setting.title}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white dark:text-white">{setting.title}</h3>
                           <p className="text-sm text-gray-600">{setting.description}</p>
                         </div>
                       </div>
@@ -212,7 +212,7 @@ export default function ConfiguracoesPrivacidadePage() {
 
             {/* Direitos LGPD */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
                 Seus Direitos (LGPD)
               </h2>
@@ -226,7 +226,7 @@ export default function ConfiguracoesPrivacidadePage() {
                           {right.icon}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{right.title}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white dark:text-white">{right.title}</h3>
                           <p className="text-sm text-gray-600">{right.description}</p>
                         </div>
                       </div>
@@ -263,7 +263,7 @@ export default function ConfiguracoesPrivacidadePage() {
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Contato para Privacidade:</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Contato para Privacidade:</h4>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Email: privacidade@confilar.com</li>
                     <li>• DPO: dpo@confilar.com</li>
@@ -271,7 +271,7 @@ export default function ConfiguracoesPrivacidadePage() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Documentos Legais:</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Documentos Legais:</h4>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• <a href="/privacidade" className="text-blue-600 hover:underline">Política de Privacidade</a></li>
                     <li>• <a href="/termos" className="text-blue-600 hover:underline">Termos de Uso</a></li>

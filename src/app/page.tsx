@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import { PublicLayout } from '@/components/layout/PublicLayout'
+import { HomePageLayout } from '@/components/layout/HomePageLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -83,9 +84,9 @@ function HomeContent() {
 
   return (
     <PublicLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -94,16 +95,16 @@ function HomeContent() {
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Shield className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">ConfiLar</span>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
               </Link>
             </div>
 
             {/* Desktop Navigation - Simplificado */}
             <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/sobre" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/sobre" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
                 Sobre
               </Link>
-              <Link href="/ajuda" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/ajuda" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
                 Ajuda
               </Link>
             </nav>
@@ -121,7 +122,7 @@ function HomeContent() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -131,10 +132,10 @@ function HomeContent() {
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-4">
               <nav className="flex flex-col space-y-4">
-                <Link href="/sobre" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/sobre" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
                   Sobre
                 </Link>
-                <Link href="/ajuda" className="text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/ajuda" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
                   Ajuda
                 </Link>
                 <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
@@ -163,7 +164,7 @@ function HomeContent() {
                 </span>{' '}
                 de Confiança
               </h1>
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
                 A plataforma que conecta clientes e profissionais qualificados de forma segura, 
                 transparente e eficiente. Encontre os melhores serviços ou ofereça seus talentos.
               </p>
@@ -190,19 +191,19 @@ function HomeContent() {
                   <div className="text-2xl sm:text-3xl font-bold text-blue-600">
                     {statsLoading ? '...' : formatStatNumber(professionalsCount)}
                   </div>
-                  <div className="text-sm text-gray-600">Profissionais</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Profissionais</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-green-600">
                     {statsLoading ? '...' : formatStatNumber(reviewsCount)}
                   </div>
-                  <div className="text-sm text-gray-600">Avaliações</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Avaliações</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-purple-600">
                     {statsLoading ? '...' : formatStatNumber(citiesCount)}
                   </div>
-                  <div className="text-sm text-gray-600">Cidades</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Cidades</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-orange-600">
@@ -220,7 +221,7 @@ function HomeContent() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Por que escolher o ConfiLar?
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -236,8 +237,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Shield className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Segurança Garantida</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Segurança Garantida</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Sistema de verificação de identidade e avaliações para garantir 
                   a confiabilidade de todos os profissionais.
                 </p>
@@ -250,8 +251,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Search className="h-6 w-6 text-green-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Busca Inteligente</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Busca Inteligente</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Encontre profissionais por localização, especialidade e avaliações 
                   com nosso sistema de busca avançado.
                 </p>
@@ -264,8 +265,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <MessageCircle className="h-6 w-6 text-purple-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Comunicação Direta</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Comunicação Direta</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Sistema de mensagens integrado para facilitar a comunicação 
                   entre clientes e profissionais.
                 </p>
@@ -278,8 +279,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Star className="h-6 w-6 text-orange-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Sistema de Avaliações</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Sistema de Avaliações</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Avalie e seja avaliado para construir uma reputação sólida 
                   na plataforma.
                 </p>
@@ -292,8 +293,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Briefcase className="h-6 w-6 text-indigo-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Classificados</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Classificados</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Publique ofertas de serviços ou solicitações de forma 
                   organizada e eficiente.
                 </p>
@@ -306,8 +307,8 @@ function HomeContent() {
                 <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Heart className="h-6 w-6 text-pink-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Favoritos</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Favoritos</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Salve seus profissionais favoritos para contatar 
                   facilmente no futuro.
                 </p>
@@ -321,7 +322,7 @@ function HomeContent() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Categorias de Serviços
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -356,7 +357,7 @@ function HomeContent() {
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Como Funciona
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -408,7 +409,7 @@ function HomeContent() {
       <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Sistema de Confiança e Credibilidade
             </h2>
             <p className="text-gray-600 max-w-3xl mx-auto">
@@ -640,18 +641,18 @@ function HomeContent() {
       {/* Modal de Todas as Categorias */}
       {showServicesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
             {/* Header do Modal */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Todas as Categorias de Serviços</h2>
-                <p className="text-gray-600 mt-1">Explore todos os serviços disponíveis na plataforma</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Todas as Categorias de Serviços</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Explore todos os serviços disponíveis na plataforma</p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowServicesModal(false)}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -662,7 +663,7 @@ function HomeContent() {
               <div className="space-y-8">
                 {Object.entries(getServicesGroupedByCategory()).map(([category, categoryServices]) => (
                   <div key={category}>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                       <span className="text-2xl mr-3">{categoryServices[0]?.icon}</span>
                       {category}
                     </h3>
@@ -670,7 +671,7 @@ function HomeContent() {
                       {categoryServices.map((service) => (
                         <Card 
                           key={service.id} 
-                          className="border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                          className="border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all cursor-pointer"
                           onClick={() => {
                             setShowServicesModal(false)
                             router.push(`/buscar?service=${service.id}`)
@@ -678,9 +679,9 @@ function HomeContent() {
                         >
                           <CardContent className="p-3 text-center">
                             <div className="text-xl mb-2">{service.icon}</div>
-                            <h4 className="text-xs font-medium text-gray-900 leading-tight">{service.name}</h4>
+                            <h4 className="text-xs font-medium text-gray-900 dark:text-white leading-tight">{service.name}</h4>
                             {service.description && (
-                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">{service.description}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{service.description}</p>
                             )}
                           </CardContent>
                         </Card>
@@ -722,8 +723,10 @@ function HomeContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<LoadingOverlay isLoading={true} />}>
-      <HomeContent />
-    </Suspense>
+    <HomePageLayout>
+      <Suspense fallback={<LoadingOverlay isLoading={true} />}>
+        <HomeContent />
+      </Suspense>
+    </HomePageLayout>
   )
 }

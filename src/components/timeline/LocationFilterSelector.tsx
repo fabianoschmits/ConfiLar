@@ -108,27 +108,27 @@ export function LocationFilterSelector({
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+        className="w-full justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
       >
         <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium">
+          <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {getFilterIcon(currentFilter)} {getFilterLabel(currentFilter)}
           </span>
         </div>
         {isOpen ? (
-          <ChevronUp className="h-4 w-4" />
+          <ChevronUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
         ) : (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
         )}
       </Button>
 
       {/* Dropdown de Filtros */}
       {isOpen && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 backdrop-blur-md border-gray-200 shadow-lg">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
           <CardContent className="p-3">
             <div className="space-y-2">
-              <div className="text-xs font-medium text-gray-600 mb-2">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                 Filtrar por localização:
               </div>
               
@@ -140,8 +140,8 @@ export function LocationFilterSelector({
                     currentFilter.type === filter.type && 
                     currentFilter.city === filter.city &&
                     currentFilter.state === filter.state
-                      ? 'bg-blue-50 border border-blue-200 text-blue-700'
-                      : 'hover:bg-gray-50 border border-transparent text-gray-700'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -151,7 +151,7 @@ export function LocationFilterSelector({
                         <div className="font-medium text-sm">
                           {getFilterLabel(filter)}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {getFilterDescription(filter)}
                         </div>
                       </div>
@@ -159,7 +159,7 @@ export function LocationFilterSelector({
                     {currentFilter.type === filter.type && 
                      currentFilter.city === filter.city &&
                      currentFilter.state === filter.state && (
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                      <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400 text-xs">
                         Ativo
                       </Badge>
                     )}
@@ -168,8 +168,8 @@ export function LocationFilterSelector({
               ))}
             </div>
             
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="text-xs text-gray-500">
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 💡 <strong>Dica:</strong> Filtros locais mostram posts mais relevantes para você
               </div>
             </div>
@@ -179,16 +179,16 @@ export function LocationFilterSelector({
 
       {/* Seletor Custom de Localização */}
       {showCustomSelector && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 backdrop-blur-md border-gray-200 shadow-lg">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
           <CardContent className="p-4">
             <div className="space-y-4">
-              <div className="text-sm font-medium text-gray-700 mb-3">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                 🎯 Escolher localização específica
               </div>
               
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">
                     Estado
                   </label>
                   <EstadoCombobox
@@ -204,7 +204,7 @@ export function LocationFilterSelector({
                 </div>
                 
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">
+                  <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">
                     Cidade
                   </label>
                   <CidadeCombobox
@@ -223,7 +223,7 @@ export function LocationFilterSelector({
                 <Button
                   onClick={handleCustomLocationSelect}
                   disabled={!customState || !customCity}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-sm"
                 >
                   Aplicar Filtro
                 </Button>

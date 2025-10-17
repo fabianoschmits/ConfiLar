@@ -229,7 +229,7 @@ export function BansManagementEnhanced() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Gerenciamento de Banimentos</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gerenciamento de Banimentos</h2>
         <Button
           variant="outline"
           onClick={() => {
@@ -264,7 +264,7 @@ export function BansManagementEnhanced() {
             <div>
               <Label htmlFor="search">Buscar</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="search"
                   placeholder="Buscar por nome..."

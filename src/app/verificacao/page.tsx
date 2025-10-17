@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { supabase } from '@/lib/supabase'
+import { LightModeLayout } from '@/components/layout/LightModeLayout'
 
 export default function EmailVerificationSuccess() {
   const router = useRouter()
@@ -81,7 +82,7 @@ export default function EmailVerificationSuccess() {
           <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
             <CardContent className="p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
-              <h1 className="text-xl font-semibold text-gray-900 mb-4">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Verificando conta...
               </h1>
               <p className="text-gray-600">
@@ -98,7 +99,7 @@ export default function EmailVerificationSuccess() {
               <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                 Email verificado!
               </h1>
               <p className="text-gray-600 mb-8">
@@ -139,7 +140,7 @@ export default function EmailVerificationSuccess() {
               <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
                 <AlertTriangle className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                 {status === 'expired' ? 'Link expirado' : 'Erro de verificação'}
               </h1>
               <p className="text-gray-600 mb-8">
@@ -186,7 +187,7 @@ export default function EmailVerificationSuccess() {
                 <Button 
                   onClick={handleGoToHome}
                   variant="ghost"
-                  className="w-full text-gray-600 hover:text-gray-900 py-3"
+                  className="w-full text-gray-600 hover:text-gray-900 dark:text-white py-3"
                 >
                   Voltar para página inicial
                 </Button>
@@ -201,7 +202,8 @@ export default function EmailVerificationSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <LightModeLayout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header moderno */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -209,14 +211,14 @@ export default function EmailVerificationSuccess() {
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white font-semibold text-lg">C</span>
             </div>
-            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
           </div>
           
           <Button 
             onClick={handleGoToHome}
             variant="ghost"
             size="sm"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors"
           >
             Página inicial
           </Button>
@@ -227,6 +229,7 @@ export default function EmailVerificationSuccess() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
         {renderContent()}
       </div>
-    </div>
+      </div>
+    </LightModeLayout>
   )
 }

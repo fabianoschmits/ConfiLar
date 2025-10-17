@@ -22,10 +22,10 @@ export default function AdminDashboardPage() {
   return (
     <MainLayout requireAuth={true}>
       <AdminGuard>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           <div className="container mx-auto py-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 🎛️ Painel de Administração
               </h1>
               <p className="text-gray-600">

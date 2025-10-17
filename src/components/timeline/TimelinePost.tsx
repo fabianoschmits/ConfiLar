@@ -185,31 +185,41 @@ export function TimelinePost({
           
           {/* Informações do Usuário */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1 sm:gap-2 mb-1 overflow-x-auto scrollbar-hide">
-              <h3 className="text-sm font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate flex-shrink-0">
+            <div className="cursor-pointer">
+              <h3 className="font-semibold text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors">
                 <Link href={`/perfil/${post.user_id}`}>
                   {post.user_name}
                 </Link>
               </h3>
+            </div>
+            
+            <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+              {/* Tag de Tipo de Usuário */}
+              <Badge 
+                variant={post.user_type === 'professional' ? 'default' : 'secondary'}
+                className={`text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 transition-all duration-300 ${
+                  post.user_type === 'professional'
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
+                    : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
+                }`}
+              >
+                {post.user_type === 'professional' ? (
+                  <>
+                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3" />
+                    <span className="hidden sm:inline">Profissional</span>
+                    <span className="sm:hidden">Prof</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="h-2 w-2 sm:h-3 sm:w-3" />
+                    <span className="hidden sm:inline">Cliente</span>
+                    <span className="sm:hidden">Cliente</span>
+                  </>
+                )}
+              </Badge>
               
               {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
-              <div className="flex-shrink-0">
-                <DynamicAvailabilityBadge userId={post.user_id} />
-              </div>
-              
-              {/* Badge de Tipo (Cliente/Profissional) - Ambos em azul */}
-              <Badge 
-                variant="outline"
-                className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 border-blue-200 text-blue-700 bg-blue-50"
-              >
-                <User className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">
-                  {post.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                </span>
-                <span className="sm:hidden">
-                  {post.user_type === 'professional' ? 'Prof' : 'Cliente'}
-                </span>
-              </Badge>
+              <DynamicAvailabilityBadge userId={post.user_id} />
               
               {/* Badge de Serviço */}
               {post.service_category_id && (() => {
@@ -218,9 +228,9 @@ export function TimelinePost({
                 return (
                   <Badge 
                     variant="outline"
-                    className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full border-green-200 text-green-700 bg-green-50 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 max-w-[120px] sm:max-w-none"
+                    className="text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full border-green-200 text-green-700 bg-green-50 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 max-w-[90px] sm:max-w-[120px] md:max-w-none"
                   >
-                    <Briefcase className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
                     <span className="truncate">{service.name}</span>
                   </Badge>
                 )
@@ -232,8 +242,8 @@ export function TimelinePost({
             </div>
             
             {/* Localização */}
-            <div className="flex items-center text-xs text-gray-500">
-              <MapPin className="h-3 w-3 mr-1" />
+            <div className="flex items-center text-[9px] sm:text-xs text-gray-500 mt-1">
+              <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
               <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
             </div>
           </div>

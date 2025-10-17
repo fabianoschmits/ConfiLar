@@ -423,11 +423,11 @@ export default function ReputacaoPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="text-center">
                 <Loader2 className="h-8 w-8 mx-auto animate-spin text-gray-600 mb-4" />
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Carregando sua reputação...
                 </h1>
               </div>
@@ -441,7 +441,7 @@ export default function ReputacaoPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="text-center mb-8">
@@ -450,7 +450,7 @@ export default function ReputacaoPage() {
                   <Award className="h-12 w-12 text-blue-600" />
                 </div>
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Minha Reputação
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -466,7 +466,7 @@ export default function ReputacaoPage() {
                     onClick={() => setActiveTab('overview')}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'overview'
-                        ? 'border-gray-500 text-gray-900'
+                        ? 'border-gray-500 text-gray-900 dark:text-white'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -480,7 +480,7 @@ export default function ReputacaoPage() {
                     onClick={() => setActiveTab('reviews')}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'reviews'
-                        ? 'border-gray-700 text-gray-900'
+                        ? 'border-gray-700 text-gray-900 dark:text-white'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                     }`}
                   >
@@ -533,21 +533,21 @@ export default function ReputacaoPage() {
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                         <p className="text-xs text-gray-500 text-center">Visualizações</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalViews}</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalViews}</p>
                       </div>
                       
                       {/* Recomendações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                         <p className="text-xs text-gray-500 text-center">Recomendações</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalRecommendations}</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalRecommendations}</p>
                       </div>
                       
                       {/* Avaliações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                         <p className="text-xs text-gray-500 text-center">Avaliações</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalReviews}</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalReviews}</p>
                       </div>
                       
                       {/* Nota Média */}
@@ -555,7 +555,7 @@ export default function ReputacaoPage() {
                         <div className="flex flex-col items-center min-w-0 flex-1">
                           <Target className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                           <p className="text-xs text-gray-500 text-center">Nota Média</p>
-                          <p className="text-sm sm:text-base font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
+                          <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.averageRating.toFixed(1)}</p>
                         </div>
                       )}
                     </div>
@@ -627,7 +627,7 @@ export default function ReputacaoPage() {
                           onClick={() => setReviewsSubTab('received')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900'
+                              ? 'border-gray-500 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
@@ -641,7 +641,7 @@ export default function ReputacaoPage() {
                           onClick={() => setReviewsSubTab('given')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'given'
-                              ? 'border-gray-700 text-gray-900'
+                              ? 'border-gray-700 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
@@ -695,7 +695,7 @@ export default function ReputacaoPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 truncate">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                                     {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
@@ -740,7 +740,7 @@ export default function ReputacaoPage() {
                   ) : (
                     <div className="text-center py-8">
                       <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
                       </h3>
                       <p className="text-gray-600">
@@ -780,7 +780,7 @@ export default function ReputacaoPage() {
                           onClick={() => setRecommendationsSubTab('received')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900'
+                              ? 'border-gray-500 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
@@ -794,7 +794,7 @@ export default function ReputacaoPage() {
                           onClick={() => setRecommendationsSubTab('given')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             recommendationsSubTab === 'given'
-                              ? 'border-gray-700 text-gray-900'
+                              ? 'border-gray-700 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
@@ -848,7 +848,7 @@ export default function ReputacaoPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 truncate">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                                     {recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
@@ -886,7 +886,7 @@ export default function ReputacaoPage() {
                   ) : (
                     <div className="text-center py-8">
                       <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {searchTerm || filterType !== 'all' ? 'Nenhuma recomendação encontrada' : 'Nenhuma recomendação ainda'}
                       </h3>
                       <p className="text-gray-600">

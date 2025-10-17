@@ -140,8 +140,8 @@ export function EvaluationModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-yellow-500" />
+          <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+            <Star className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
             {isMutual ? `Avaliar ${targetUserName} (Avaliação Mútua)` : `Avaliar ${targetUserName}`}
           </DialogTitle>
         </DialogHeader>
@@ -149,7 +149,7 @@ export function EvaluationModal({
         <div className="space-y-4">
           {/* Rating */}
           <div>
-            <Label htmlFor="rating">Avaliação (1-5 estrelas)</Label>
+            <Label htmlFor="rating" className="text-gray-700 dark:text-gray-300">Avaliação (1-5 estrelas)</Label>
             <div className="flex items-center space-x-2 mt-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -158,15 +158,15 @@ export function EvaluationModal({
                   onClick={() => setRating(star)}
                   className={`p-1 rounded-full transition-colors ${
                     star <= rating
-                      ? 'text-yellow-400 hover:text-yellow-500'
-                      : 'text-gray-300 hover:text-gray-400'
+                      ? 'text-yellow-400 hover:text-yellow-500 dark:text-yellow-400 dark:hover:text-yellow-300'
+                      : 'text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500'
                   }`}
                   disabled={isSubmitting}
                 >
                   <Star className="h-6 w-6 fill-current" />
                 </button>
               ))}
-              <span className="ml-2 text-sm text-gray-600">
+              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                 {rating} de 5 estrelas
               </span>
             </div>
@@ -174,7 +174,7 @@ export function EvaluationModal({
 
           {/* Comment */}
           <div>
-            <Label htmlFor="comment">Comentário (opcional)</Label>
+            <Label htmlFor="comment" className="text-gray-700 dark:text-gray-300">Comentário (opcional)</Label>
             <Textarea
               id="comment"
               value={comment}

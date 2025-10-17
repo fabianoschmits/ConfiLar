@@ -28,6 +28,7 @@ import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import { checkCpfExists } from '@/lib/checkDuplicates'
 import { useAutoNotifications } from '@/hooks/useAutoNotifications'
+import { LightModeLayout } from '@/components/layout/LightModeLayout'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -680,7 +681,8 @@ export default function OnboardingPage() {
   const isStepValid = validateCurrentStep()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <LightModeLayout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Glassmorphism */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -688,14 +690,14 @@ export default function OnboardingPage() {
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
               <Shield className="text-white h-6 w-6" />
             </div>
-            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
           </div>
           
           <Button 
             onClick={() => router.push('/feed')}
             variant="ghost"
             size="sm"
-            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+            className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
           >
             <Home size={16} />
             <span>Dashboard</span>
@@ -712,7 +714,7 @@ export default function OnboardingPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <currentStepData.icon className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-3xl font-semibold text-gray-900 mb-4">
+              <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
                 {currentStepData.title}
               </h1>
               <p className="text-gray-600 text-lg">
@@ -743,7 +745,7 @@ export default function OnboardingPage() {
                         <Sparkles className="w-10 h-10 text-white" />
                       </div>
                       <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-gray-900">
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                           Bem-vindo ao ConfiLar!
                         </h3>
                         <p className="text-gray-600 text-lg">
@@ -1101,7 +1103,7 @@ export default function OnboardingPage() {
                                   errors.location_state ? 'border-red-400' : 'border-gray-300'
                                 )}
                               >
-                                <span className="text-gray-900">
+                                <span className="text-gray-900 dark:text-white">
                                   {watchedValues.location_state
                                     ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
                                     : "Selecione o estado"}
@@ -1162,7 +1164,7 @@ export default function OnboardingPage() {
                                   !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
                                 )}
                               >
-                                <span className="text-gray-900">
+                                <span className="text-gray-900 dark:text-white">
                                   {watchedValues.location_city
                                     ? watchedValues.location_city
                                     : watchedValues.location_state
@@ -1351,7 +1353,7 @@ export default function OnboardingPage() {
                                   type="button"
                                   className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
                                 >
-                                  <span className="text-gray-900">
+                                  <span className="text-gray-900 dark:text-white">
                                     {selectedServices.length === 0
                                       ? "Selecione os serviços..."
                                       : `${selectedServices.length} serviço(s)`}
@@ -1422,7 +1424,7 @@ export default function OnboardingPage() {
                         <Check className="w-10 h-10 text-white" />
                       </div>
                       <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-gray-900">
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                           Quase lá!
                         </h3>
                         <p className="text-gray-600 text-lg">
@@ -1450,7 +1452,7 @@ export default function OnboardingPage() {
 
                       {/* Resumo dos dados */}
                       <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
-                        <h4 className="font-semibold text-gray-900 mb-4 text-lg">📋 Resumo do seu perfil:</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-lg">📋 Resumo do seu perfil:</h4>
                         <div className="space-y-3 text-sm text-gray-700">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -1566,6 +1568,7 @@ export default function OnboardingPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </LightModeLayout>
   )
 }

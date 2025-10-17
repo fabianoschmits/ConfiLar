@@ -20,6 +20,7 @@ import {
   Shield,
   Info
 } from 'lucide-react'
+import { LightModeLayout } from '@/components/layout/LightModeLayout'
 
 const emailChangeSchema = z.object({
   newEmail: z.string()
@@ -93,11 +94,12 @@ export default function AlterarEmailPage() {
   // Loading quando verificando autenticação
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
           <CardContent className="p-8">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-6"></div>
-            <h1 className="text-xl font-semibold text-gray-900 mb-4">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Verificando autenticação...
             </h1>
             <p className="text-gray-600">
@@ -105,20 +107,22 @@ export default function AlterarEmailPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </LightModeLayout>
     )
   }
 
   // Sucesso - Email atualizado
   if (emailUpdated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
           <CardContent className="p-8">
             <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
               Email atualizado!
             </h1>
             <p className="text-gray-600 mb-8">
@@ -147,12 +151,14 @@ export default function AlterarEmailPage() {
           </CardContent>
         </Card>
       </div>
+      </LightModeLayout>
     )
   }
 
   return (
     <ReauthenticationGuard requiredAction="email">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header moderno */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="container flex h-16 items-center justify-between px-4">
@@ -160,14 +166,14 @@ export default function AlterarEmailPage() {
               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-semibold text-lg">C</span>
               </div>
-              <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
+              <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
             </div>
             
             <Button 
               onClick={handleBackToHome}
               variant="ghost"
               size="sm"
-              className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+              className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
             >
               <ArrowLeft size={16} />
               <span>Voltar</span>
@@ -182,7 +188,7 @@ export default function AlterarEmailPage() {
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
                 <Mail className="h-8 w-8 text-white" />
               </div>
-              <CardTitle className="text-2xl font-semibold text-gray-900">
+              <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Alterar email
               </CardTitle>
               <CardDescription className="text-gray-600">
@@ -193,7 +199,7 @@ export default function AlterarEmailPage() {
             <CardContent className="space-y-6">
               {/* Aviso importante */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                   <Info className="h-5 w-5 mr-2 text-blue-600" />
                   Importante
                 </h3>
@@ -206,7 +212,7 @@ export default function AlterarEmailPage() {
 
               {/* Email atual */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Email atual</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Email atual</h3>
                 <p className="text-sm text-gray-600 break-all">{user?.email}</p>
               </div>
 
@@ -273,7 +279,8 @@ export default function AlterarEmailPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </div>
+      </LightModeLayout>
     </ReauthenticationGuard>
   )
 }
