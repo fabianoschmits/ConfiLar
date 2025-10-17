@@ -98,7 +98,11 @@ export function LoadingOverlay({
         <div className="relative">
           {/* Logo ConfiLar */}
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-2xl">C</span>
+            <img 
+              src="/imagens/logo/Confilarsemfundo.png" 
+              alt="ConfiLar Logo" 
+              className="w-12 h-12 object-contain"
+            />
           </div>
           
           {/* Spinner Moderno */}
@@ -245,7 +249,11 @@ export function PageLoadingOverlay({
         {/* Spinner com logo */}
         <div className="relative">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-lg">C</span>
+            <img 
+              src="/imagens/logo/Confilarsemfundo.png" 
+              alt="ConfiLar Logo" 
+              className="w-10 h-10 object-contain"
+            />
           </div>
           <Loader2 className="absolute inset-0 w-12 h-12 text-blue-600/30 animate-spin" strokeWidth={1} />
         </div>
