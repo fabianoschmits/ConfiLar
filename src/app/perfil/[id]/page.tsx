@@ -337,7 +337,7 @@ export default function PublicProfilePage() {
     if (loading) {
         return (
             <MainLayout requireAuth={false}>
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         <div className="animate-pulse">
                             <div className="bg-white rounded-xl shadow-sm p-8">
@@ -360,13 +360,13 @@ export default function PublicProfilePage() {
     if (error || !profile) {
         return (
             <MainLayout requireAuth={false}>
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
                     <Card className="max-w-md mx-auto">
                         <CardContent className="p-8 text-center">
                             <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                                 <User className="h-8 w-8 text-red-600" />
                             </div>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
                                 {error || 'Perfil não encontrado'}
                             </h2>
                             <p className="text-gray-600 mb-6">
@@ -387,7 +387,7 @@ export default function PublicProfilePage() {
 
     return (
         <MainLayout requireAuth={false}>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Header do Perfil */}
                     <Card className="mb-8">
@@ -431,7 +431,7 @@ export default function PublicProfilePage() {
                                 {/* Nome e Badges Centralizados */}
                                 <div className="space-y-3">
                                     <div className="flex flex-col items-center space-y-2">
-                                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                                        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white dark:text-white">
                                             {profile.full_name}
                                         </h1>
                                         <div className="flex flex-wrap justify-center items-center gap-2">
@@ -563,7 +563,7 @@ export default function PublicProfilePage() {
                                                 <div className="flex items-center space-x-3">
                                                     <MapPin className="w-5 h-5 text-gray-400" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">Localização</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">Localização</p>
                                                         <p className="text-sm text-gray-600">
                                                             {profile.location_city && profile.location_state
                                                                 ? `${profile.location_city}, ${profile.location_state}`
@@ -578,7 +578,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Building2 className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Bairro</p>
                                                             <p className="text-sm text-gray-600">{profile.neighborhood}</p>
                                                         </div>
                                                     </div>
@@ -589,7 +589,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3 sm:col-span-2">
                                                         <Globe className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Endereço</p>
                                                             <p className="text-sm text-gray-600">{profile.address}</p>
                                                         </div>
                                                     </div>
@@ -600,7 +600,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Phone className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Telefone</p>
                                                             <p className="text-sm text-gray-600">{profile.phone}</p>
                                                         </div>
                                                     </div>
@@ -611,7 +611,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Mail className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Email</p>
                                                             <p className="text-sm text-gray-600">{profile.email}</p>
                                                         </div>
                                                     </div>
@@ -621,7 +621,7 @@ export default function PublicProfilePage() {
                                                 <div className="flex items-center space-x-3">
                                                     <Calendar className="w-5 h-5 text-gray-400" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">Membro desde</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">Membro desde</p>
                                                         <p className="text-sm text-gray-600">
                                                             {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
                                                         </p>
@@ -657,7 +657,7 @@ export default function PublicProfilePage() {
                                                 <div className="flex items-center space-x-3">
                                                     <MapPin className="w-5 h-5 text-gray-400" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">Localização</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">Localização</p>
                                                         <p className="text-sm text-gray-600">
                                                             {profile.location_city && profile.location_state
                                                                 ? `${profile.location_city}, ${profile.location_state}`
@@ -672,7 +672,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Building2 className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Bairro</p>
                                                             <p className="text-sm text-gray-600">{profile.neighborhood}</p>
                                                         </div>
                                                     </div>
@@ -683,7 +683,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3 sm:col-span-2">
                                                         <Globe className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Endereço</p>
                                                             <p className="text-sm text-gray-600">{profile.address}</p>
                                                         </div>
                                                     </div>
@@ -693,7 +693,7 @@ export default function PublicProfilePage() {
                                                 <div className="flex items-center space-x-3">
                                                     <Calendar className="w-5 h-5 text-gray-400" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-900">Membro desde</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">Membro desde</p>
                                                         <p className="text-sm text-gray-600">
                                                             {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
                                                         </p>
@@ -703,13 +703,13 @@ export default function PublicProfilePage() {
                                             
                                             {/* Dados borrados (telefone e email) */}
                                             <div className="border-t border-gray-200 pt-4">
-                                                <h4 className="text-sm font-medium text-gray-900 mb-3">Informações de Contato (Protegidas)</h4>
+                                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Informações de Contato (Protegidas)</h4>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     {/* Telefone borrado */}
                                                     <div className="flex items-center space-x-3">
                                                         <Phone className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Telefone</p>
                                                             <p className="text-sm text-gray-400 select-none">•••••••••••</p>
                                                         </div>
                                                     </div>
@@ -718,7 +718,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Mail className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Email</p>
                                                             <p className="text-sm text-gray-400 select-none">••••••••••••••••</p>
                                                         </div>
                                                     </div>
@@ -734,7 +734,7 @@ export default function PublicProfilePage() {
                                         <div className="flex items-center space-x-3">
                                             <MapPin className="w-5 h-5 text-gray-400" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">Localização</p>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">Localização</p>
                                                 <p className="text-sm text-gray-600">
                                                     {profile.location_city && profile.location_state
                                                         ? `${profile.location_city}, ${profile.location_state}`
@@ -749,7 +749,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3">
                                                         <Building2 className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Bairro</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Bairro</p>
                                                             <p className="text-sm text-gray-600">{profile.neighborhood}</p>
                                                         </div>
                                                     </div>
@@ -760,7 +760,7 @@ export default function PublicProfilePage() {
                                                     <div className="flex items-center space-x-3 sm:col-span-2">
                                                         <Globe className="w-5 h-5 text-gray-400" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">Endereço</p>
+                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">Endereço</p>
                                                             <p className="text-sm text-gray-600">{profile.address}</p>
                                                         </div>
                                                     </div>
@@ -770,7 +770,7 @@ export default function PublicProfilePage() {
                                         <div className="flex items-center space-x-3">
                                             <Calendar className="w-5 h-5 text-gray-400" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">Membro desde</p>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">Membro desde</p>
                                                 <p className="text-sm text-gray-600">
                                                     {format(new Date(profile.created_at), 'MMMM yyyy', { locale: ptBR })}
                                                 </p>
@@ -795,7 +795,7 @@ export default function PublicProfilePage() {
                                                         <div className="flex items-center space-x-3">
                                                             <Phone className="w-5 h-5 text-gray-400" />
                                                             <div>
-                                                                <p className="text-sm font-medium text-gray-900">Telefone</p>
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-white">Telefone</p>
                                                                 <p className="text-sm text-gray-600">{profile.phone}</p>
                                                             </div>
                                                         </div>
@@ -806,7 +806,7 @@ export default function PublicProfilePage() {
                                                         <div className="flex items-center space-x-3">
                                                             <Mail className="w-5 h-5 text-gray-400" />
                                                             <div>
-                                                                <p className="text-sm font-medium text-gray-900">Email</p>
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-white">Email</p>
                                                                 <p className="text-sm text-gray-600">{profile.email}</p>
                                                             </div>
                                                         </div>
@@ -840,7 +840,7 @@ export default function PublicProfilePage() {
                                                 {profile.professional_services.map((service, index) => (
                                                     <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                                                         <CheckCircle className="w-5 h-5 text-green-600" />
-                                                        <span className="text-gray-900">{service}</span>
+                                                        <span className="text-gray-900 dark:text-white">{service}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -853,7 +853,7 @@ export default function PublicProfilePage() {
                                 <Card>
                                     <CardContent className="p-8 text-center">
                                         <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Cliente</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cliente</h3>
                                         <p className="text-gray-600">Este usuário é um cliente e não oferece serviços.</p>
                                     </CardContent>
                                 </Card>
@@ -879,7 +879,7 @@ export default function PublicProfilePage() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {portfolioProjects.map((project) => (
                                                     <div key={project.id} className="bg-gray-50 rounded-lg p-4">
-                                                        <h4 className="font-medium text-gray-900 mb-2">{project.title}</h4>
+                                                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">{project.title}</h4>
                                                         <p className="text-sm text-gray-600 mb-3">{project.description}</p>
                                                         <div className="flex items-center justify-between text-xs text-gray-500">
                                                             <span>{format(new Date(project.created_at), 'dd/MM/yyyy')}</span>
@@ -897,7 +897,7 @@ export default function PublicProfilePage() {
                                 <Card>
                                     <CardContent className="p-8 text-center">
                                         <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Cliente</h3>
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cliente</h3>
                                         <p className="text-gray-600">Este usuário é um cliente e não possui portfólio.</p>
                                     </CardContent>
                                 </Card>

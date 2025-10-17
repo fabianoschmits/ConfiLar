@@ -41,7 +41,7 @@ export default function AjudaPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header da Página */}
             <div className="mb-8">
@@ -50,7 +50,7 @@ export default function AjudaPage() {
                   <Info className="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                     Central de Ajuda
                   </h1>
                   <p className="text-gray-600 mt-1">
@@ -82,7 +82,7 @@ export default function AjudaPage() {
                         <Users className="h-6 w-6 text-green-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Para Clientes</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Para Clientes</h4>
                         <p className="text-sm text-gray-600">
                           Encontre profissionais verificados, compare preços e contrate com segurança
                         </p>
@@ -93,7 +93,7 @@ export default function AjudaPage() {
                         <Star className="h-6 w-6 text-purple-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Para Profissionais</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Para Profissionais</h4>
                         <p className="text-sm text-gray-600">
                           Divulgue seus serviços, receba pedidos e gerencie sua agenda
                         </p>
@@ -172,7 +172,7 @@ export default function AjudaPage() {
                         <span className="text-sm font-semibold text-blue-600">1</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Crie sua conta</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Crie sua conta</h4>
                         <p className="text-gray-600">
                           Registre-se como cliente ou profissional e complete seu perfil com informações detalhadas.
                         </p>
@@ -183,7 +183,7 @@ export default function AjudaPage() {
                         <span className="text-sm font-semibold text-blue-600">2</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Busque ou ofereça serviços</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Busque ou ofereça serviços</h4>
                         <p className="text-gray-600">
                           Use nossa busca inteligente para encontrar profissionais ou divulgue seus serviços.
                         </p>
@@ -194,7 +194,7 @@ export default function AjudaPage() {
                         <span className="text-sm font-semibold text-blue-600">3</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Converse e negocie</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Converse e negocie</h4>
                         <p className="text-gray-600">
                           Use nosso sistema de mensagens para conversar diretamente com profissionais ou clientes.
                         </p>
@@ -205,7 +205,7 @@ export default function AjudaPage() {
                         <span className="text-sm font-semibold text-blue-600">4</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-2">Contrate e avalie</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Contrate e avalie</h4>
                         <p className="text-gray-600">
                           Feche o acordo e após o serviço, avalie a experiência para ajudar outros usuários.
                         </p>
@@ -233,21 +233,21 @@ export default function AjudaPage() {
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                       <Mail className="h-5 w-5 text-gray-600" />
                       <div>
-                        <p className="font-medium text-gray-900">Email</p>
+                        <p className="font-medium text-gray-900 dark:text-white">Email</p>
                         <p className="text-sm text-gray-600">suporte@confilar.com</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                       <MessageCircle className="h-5 w-5 text-gray-600" />
                       <div>
-                        <p className="font-medium text-gray-900">Chat</p>
+                        <p className="font-medium text-gray-900 dark:text-white">Chat</p>
                         <p className="text-sm text-gray-600">Suporte online</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                       <Phone className="h-5 w-5 text-gray-600" />
                       <div>
-                        <p className="font-medium text-gray-900">Telefone</p>
+                        <p className="font-medium text-gray-900 dark:text-white">Telefone</p>
                         <p className="text-sm text-gray-600">(11) 99999-9999</p>
                       </div>
                     </div>

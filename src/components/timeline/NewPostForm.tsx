@@ -42,8 +42,8 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
               <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg">
                 <ImageIcon className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Compartilhe seu trabalho!</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Compartilhe seu trabalho!</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
                 {profile?.user_type === 'professional' 
                   ? 'Mostre aos clientes o que você é capaz de fazer e inspire outros profissionais'
                   : 'Compartilhe trabalhos que foram feitos para você e ajude outros a encontrar bons profissionais'
@@ -53,7 +53,7 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
 
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Título do Trabalho</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Título do Trabalho</label>
           <MentionInput
             value={post.title}
             onChange={(value) => setPost({ ...post, title: value })}
@@ -62,16 +62,16 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
               : "Ex: Serviço de Limpeza Incrível!"
             }
             disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             minHeight="40px"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             💡 Dica: Use um título que chame atenção e descreva o resultado • Digite @ para mencionar alguém
           </p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Descrição</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Descrição</label>
           <MentionInput
             value={post.description}
             onChange={(value) => setPost({ ...post, description: value })}
@@ -80,17 +80,17 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
               : "Conte como foi a experiência, o que mais gostou, recomendações para outros clientes..."
             }
             disabled={isLoading}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             minHeight="100px"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             💡 Dica: Seja específico! Detalhes ajudam outros a entenderem melhor o trabalho • Digite @ para mencionar alguém
           </p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Serviço <span className="text-gray-500 font-normal">(opcional)</span>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            Serviço <span className="text-gray-500 dark:text-gray-400 font-normal">(opcional)</span>
           </label>
           <ServiceAutocomplete
             value={post.service}
@@ -101,15 +101,15 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
-            Fotos do Trabalho <span className="text-gray-500 font-normal">(opcional)</span>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            Fotos do Trabalho <span className="text-gray-500 dark:text-gray-400 font-normal">(opcional)</span>
           </label>
           <ImageUploadFeed
             currentImages={post.images}
             onImagesUpload={(images) => setPost({ ...post, images })}
             maxImages={5}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             📸 Fotos são opcionais, mas posts com imagens recebem mais atenção!
           </p>
         </div>
@@ -120,8 +120,8 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
         {postStatus !== 'idle' && (
           <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg ${
             postStatus === 'sending' 
-              ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-              : 'bg-green-50 text-green-700 border border-green-200'
+              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800' 
+              : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
           }`}>
             {postStatus === 'sending' ? (
               <>
@@ -139,7 +139,7 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
           </div>
         )}
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button 
             variant="outline" 
             onClick={onCancel}

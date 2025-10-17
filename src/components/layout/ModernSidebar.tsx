@@ -264,13 +264,13 @@ export function ModernSidebar() {
 
   const getCategoryColor = (color: string) => {
     const colors = {
-      blue: 'text-gray-600 bg-gray-100',
-      green: 'text-gray-600 bg-gray-100',
-      purple: 'text-gray-600 bg-gray-100',
-      orange: 'text-gray-600 bg-gray-100',
-      indigo: 'text-gray-600 bg-gray-100',
-      red: 'text-gray-600 bg-gray-100',
-      gray: 'text-gray-600 bg-gray-100'
+      blue: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      green: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      purple: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      orange: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      indigo: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      red: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
+      gray: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800'
     }
     return colors[color as keyof typeof colors] || colors.gray
   }
@@ -287,19 +287,19 @@ export function ModernSidebar() {
 
       {/* Sidebar Moderna */}
       <div className={`
-        fixed left-0 top-0 h-full bg-gray-50 border-r border-gray-200 shadow-sm z-[60]
+        fixed left-0 top-0 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-sm z-[60]
         w-64 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-100">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <Link href="/home" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-400 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gray-400 dark:bg-gray-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">C</span>
             </div>
             <div>
-              <span className="font-semibold text-gray-700">ConfiLar</span>
-              <p className="text-xs text-gray-500">Marketplace</p>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">ConfiLar</span>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Marketplace</p>
             </div>
           </Link>
         </div>
@@ -339,19 +339,19 @@ export function ModernSidebar() {
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors w-full text-left
                             ${isActive(item.href)
-                              ? 'bg-gray-200 text-gray-800 font-medium'
-                              : 'text-gray-600 hover:bg-gray-100'
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                            <div className={`${isActive(item.href) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}>
                               {item.icon}
                             </div>
                             <div>
                               <span className="block">{item.title}</span>
                               {item.description && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {item.description}
                                 </span>
                               )}
@@ -372,19 +372,19 @@ export function ModernSidebar() {
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors
                             ${isActive(item.href)
-                              ? 'bg-gray-200 text-gray-800 font-medium'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-gray-700' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                            <div className={`${isActive(item.href) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}>
                               {item.icon}
                             </div>
                             <div>
                               <span className="block">{item.title}</span>
                               {item.description && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   {item.description}
                                 </span>
                               )}
@@ -407,19 +407,19 @@ export function ModernSidebar() {
 
         {/* Informações do Usuário */}
         {isLoggedIn && (
-          <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
             <div className="space-y-2">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-xs text-gray-600 font-medium">
+                <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                   {profile?.user_type === 'professional' ? 'Profissional Ativo' : 'Cliente Ativo'}
                 </span>
               </div>
               
               {/* Localização */}
               {profile?.location_city && profile?.location_state && (
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
+                <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
                   <span className="truncate">
                     {profile.location_city}, {profile.location_state}
                   </span>

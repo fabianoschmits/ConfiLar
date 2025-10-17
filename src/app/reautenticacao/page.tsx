@@ -20,6 +20,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react'
+import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { ClientOnly } from '@/components/ClientOnly'
 
 export default function ReauthenticationPage() {
@@ -138,13 +139,14 @@ export default function ReauthenticationPage() {
   // Sucesso - Identidade confirmada
   if (isReauthenticated && otpVerified) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center bg-white/80 backdrop-blur-md border-0 shadow-xl">
           <CardContent className="p-8">
             <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <CheckCircle className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
               Identidade confirmada!
             </h1>
             <p className="text-gray-600 mb-8">
@@ -170,12 +172,14 @@ export default function ReauthenticationPage() {
           </CardContent>
         </Card>
       </div>
+      </LightModeLayout>
     )
   }
 
   return (
     <ClientOnly>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header moderno */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -183,14 +187,14 @@ export default function ReauthenticationPage() {
             <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white font-semibold text-lg">C</span>
             </div>
-            <span className="text-xl font-semibold text-gray-900">ConfiLar</span>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
           </div>
           
           <Button 
             onClick={handleBack}
             variant="ghost"
             size="sm"
-            className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+            className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
           >
             <ArrowLeft size={16} />
             <span>Voltar</span>
@@ -205,7 +209,7 @@ export default function ReauthenticationPage() {
             <div className={`mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg ${actionInfo.color}`}>
               {actionInfo.icon}
             </div>
-            <CardTitle className="text-2xl font-semibold text-gray-900">
+            <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
               {actionInfo.title}
             </CardTitle>
             <CardDescription className="text-gray-600">
@@ -218,7 +222,7 @@ export default function ReauthenticationPage() {
               // Primeira etapa: Solicitar código
               <>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
                     <Shield className="h-5 w-5 mr-2 text-blue-600" />
                     Verificação de segurança
                   </h3>
@@ -312,8 +316,9 @@ export default function ReauthenticationPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+        </div>
+        </div>
+      </LightModeLayout>
     </ClientOnly>
   )
 }

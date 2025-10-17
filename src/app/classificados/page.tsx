@@ -473,7 +473,7 @@ export default function ClassificadosPage() {
     return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
               
           {/* Estatísticas Compactas */}
@@ -483,30 +483,30 @@ export default function ClassificadosPage() {
               <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                 {/* Total de Anúncios */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Total</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.total}</p>
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.total}</p>
                 </div>
                 
                 {/* Ofertas */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <HandHeart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Ofertas</p>
-                  <p className="text-sm sm:text-base font-bold text-blue-700">{stats.offers}</p>
+                  <HandHeart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Ofertas</p>
+                  <p className="text-sm sm:text-base font-bold text-blue-700 dark:text-blue-400">{stats.offers}</p>
                 </div>
                 
                 {/* Solicitações */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Solicitações</p>
-                  <p className="text-sm sm:text-base font-bold text-green-700">{stats.requests}</p>
+                  <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Solicitações</p>
+                  <p className="text-sm sm:text-base font-bold text-green-700 dark:text-green-400">{stats.requests}</p>
                 </div>
                 
                 {/* Categorias */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Categorias</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats.categories}</p>
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Categorias</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.categories}</p>
                 </div>
               </div>
             </CardContent>
@@ -533,7 +533,7 @@ export default function ClassificadosPage() {
                 
                 {/* Sugestões de serviços */}
                 {filters.searchTerm.length > 1 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {services
                       .filter(service => 
                         service.name.toLowerCase().includes(filters.searchTerm.toLowerCase())
@@ -547,12 +547,12 @@ export default function ClassificadosPage() {
                             setFilters(newFilters)
                             executeSearch(newFilters)
                           }}
-                          className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center gap-2 border-b border-gray-100 last:border-b-0 text-sm"
+                          className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-sm dark:text-gray-300"
                         >
                           <span className="text-sm">{service.icon}</span>
                           <div>
-                            <div className="font-medium text-gray-900">{service.name}</div>
-                            <div className="text-xs text-gray-500">{service.description}</div>
+                            <div className="font-medium text-gray-900 dark:text-white">{service.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{service.description}</div>
                           </div>
                         </button>
                       ))}
@@ -567,8 +567,8 @@ export default function ClassificadosPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`h-10 px-3 flex items-center gap-2 ${
                     (filters.state || filters.city) 
-                      ? 'bg-blue-50 border-blue-300 text-blue-700' 
-                      : 'border-gray-300 text-gray-600'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400' 
+                      : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   <MapPin className="h-4 w-4" />
@@ -580,9 +580,9 @@ export default function ClassificadosPage() {
 
                 {/* Dropdown de filtros de localização */}
                 {showFilters && (
-                  <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 w-80 p-3">
+                  <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 w-80 p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                      <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
                         Localização
                       </h3>
@@ -590,7 +590,7 @@ export default function ClassificadosPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowFilters(false)}
-                        className="h-5 w-5 p-0 text-gray-500 hover:text-gray-700"
+                        className="h-5 w-5 p-0 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -599,7 +599,7 @@ export default function ClassificadosPage() {
                     <div className="space-y-2">
                       {/* Estado */}
                       <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Estado</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Estado</label>
                         <EstadoCombobox
                           value={filters.state}
                           onValueChange={(newState) => {
@@ -619,7 +619,7 @@ export default function ClassificadosPage() {
 
                       {/* Cidade */}
                       <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Cidade</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Cidade</label>
                         <CidadeCombobox
                           value={filters.city}
                           onValueChange={(newCity) => {
@@ -636,7 +636,7 @@ export default function ClassificadosPage() {
                     </div>
                     
                     {/* Botões de ação */}
-                    <div className="flex justify-between gap-2 mt-3 pt-2 border-t border-gray-200">
+                    <div className="flex justify-between gap-2 mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -645,7 +645,7 @@ export default function ClassificadosPage() {
                           setFilters(newFilters)
                           executeSearch(newFilters)
                         }}
-                        className="text-gray-600 text-xs h-6 px-2"
+                        className="text-gray-600 dark:text-gray-400 text-xs h-6 px-2"
                       >
                         Limpar
                       </Button>
@@ -666,19 +666,19 @@ export default function ClassificadosPage() {
           {/* Sistema de Abas */}
           <div className="mb-6">
             <div className="mb-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 <span className="font-medium">Ofertas:</span> Profissionais oferecendo serviços • 
                 <span className="font-medium"> Solicitações:</span> Clientes procurando serviços
               </p>
             </div>
-            <div className="border-b border-gray-200">
+            <div className="border-b border-gray-200 dark:border-gray-700">
               <nav className="-mb-px flex space-x-8">
                 <button
                   onClick={() => setActiveTab('all')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                     activeTab === 'all'
-                      ? 'border-gray-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-gray-500 dark:border-gray-400 text-gray-900 dark:text-white'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -690,8 +690,8 @@ export default function ClassificadosPage() {
                     onClick={() => setActiveTab('offers')}
                     className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === 'offers'
-                        ? 'border-blue-500 text-blue-700'
-                        : 'border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-300'
+                        ? 'border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -703,8 +703,8 @@ export default function ClassificadosPage() {
                     onClick={() => setActiveTab('requests')}
                     className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === 'requests'
-                        ? 'border-green-500 text-green-700'
-                        : 'border-transparent text-gray-500 hover:text-green-600 hover:border-green-300'
+                        ? 'border-green-500 dark:border-green-400 text-green-700 dark:text-green-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:border-green-300 dark:hover:border-green-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -719,14 +719,14 @@ export default function ClassificadosPage() {
           {/* Controles de Visualização e Botão Novo Anúncio */}
           <div className="flex justify-between items-center mb-6 gap-1 sm:gap-4">
             <div className="flex items-center gap-1 sm:gap-4">
-              <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+              <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                 {filteredAds.length} {filteredAds.length !== 1 ? 'resultados' : 'resultado'}
               </span>
               
               {/* Seletor de itens por página - Mobile e Desktop */}
               {!loading && filteredAds.length > 0 && (
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <label htmlFor="itemsPerPage" className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                  <label htmlFor="itemsPerPage" className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     Por página:
                   </label>
                   <Select
@@ -747,7 +747,7 @@ export default function ClassificadosPage() {
               )}
               
               {/* Botões Grid/List - Apenas Desktop */}
-              <div className="hidden sm:flex border border-gray-200 rounded-lg">
+              <div className="hidden sm:flex border border-gray-200 dark:border-gray-700 rounded-lg">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -773,7 +773,7 @@ export default function ClassificadosPage() {
                   <DialogTrigger asChild>
                     <Button 
                       size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
                       onClick={handleOpenCreateDialog}
                     >
                       <Plus className="h-3 w-3 sm:mr-1" />
@@ -781,9 +781,9 @@ export default function ClassificadosPage() {
                       <span className="sm:hidden ml-0.5">Novo</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
-                      <DialogTitle>Criar Novo Anúncio</DialogTitle>
+                      <DialogTitle className="text-gray-900 dark:text-white">Criar Novo Anúncio</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
@@ -827,19 +827,19 @@ export default function ClassificadosPage() {
                           <SelectContent>
                             <SelectItem value="offer">
                               <div className="flex items-center gap-2">
-                                <HandHeart className="h-4 w-4 text-emerald-600" />
+                                <HandHeart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                 <div>
-                                  <div className="font-medium text-emerald-700">Oferta de Serviço</div>
-                                  <div className="text-xs text-gray-500">Estou oferecendo um serviço</div>
+                                  <div className="font-medium text-emerald-700 dark:text-emerald-400">Oferta de Serviço</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">Estou oferecendo um serviço</div>
                                 </div>
                               </div>
                             </SelectItem>
                             <SelectItem value="request">
                               <div className="flex items-center gap-2">
-                                <ShoppingCart className="h-4 w-4 text-blue-600" />
+                                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 <div>
-                                  <div className="font-medium text-blue-700">Solicitação de Serviço</div>
-                                  <div className="text-xs text-gray-500">Preciso de um serviço</div>
+                                  <div className="font-medium text-blue-700 dark:text-blue-400">Solicitação de Serviço</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">Preciso de um serviço</div>
                                 </div>
                               </div>
                             </SelectItem>
@@ -898,9 +898,9 @@ export default function ClassificadosPage() {
 
               {/* Dialog de Edição */}
               <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl">
+                <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <DialogHeader>
-                    <DialogTitle>Editar Anúncio</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-white">Editar Anúncio</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
@@ -936,13 +936,13 @@ export default function ClassificadosPage() {
                         <SelectContent>
                           <SelectItem value="offer">
                             <div className="flex items-center gap-2">
-                              <ShoppingCart className="h-4 w-4 text-gray-700" />
+                              <ShoppingCart className="h-4 w-4 text-gray-700 dark:text-gray-300" />
                               <span>Oferta - Estou oferecendo um serviço</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="request">
                             <div className="flex items-center gap-2">
-                              <HandHeart className="h-4 w-4 text-gray-500" />
+                              <HandHeart className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                               <span>Solicitação - Preciso de um serviço</span>
                             </div>
                           </SelectItem>
@@ -1000,9 +1000,9 @@ export default function ClassificadosPage() {
 
               {/* Modal de Visualização do Anúncio */}
               <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
-                <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+                <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                   <DialogHeader className="pb-3 sm:pb-4">
-                    <DialogTitle className="text-base sm:text-lg md:text-xl font-bold leading-tight">
+                    <DialogTitle className="text-base sm:text-lg md:text-xl font-bold leading-tight text-gray-900 dark:text-white">
                       {selectedAd?.title}
                     </DialogTitle>
                   </DialogHeader>
@@ -1010,7 +1010,7 @@ export default function ClassificadosPage() {
                   {selectedAd && (
                     <div className="space-y-3 sm:space-y-6">
                       {/* Header com Avatar e Info do Usuário */}
-                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div className="relative self-center sm:self-start">
                           <Link href={`/perfil/${selectedAd.user_id}`} className="block">
                             <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
@@ -1027,7 +1027,7 @@ export default function ClassificadosPage() {
                         </div>
                         <div className="flex-1 w-full text-center sm:text-left">
                           <Link href={`/perfil/${selectedAd.user_id}`} className="block">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer">
                               {selectedAd.user_name}
                             </h3>
                           </Link>
@@ -1062,24 +1062,24 @@ export default function ClassificadosPage() {
 
                       {/* Descrição Completa */}
                       <div className="space-y-2 sm:space-y-3">
-                        <h4 className="text-sm sm:text-base font-semibold text-gray-900">Descrição</h4>
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Descrição</h4>
                         <div className="prose max-w-none">
-                          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                             {selectedAd.description}
                           </p>
                         </div>
                       </div>
 
                       {/* Informações Adicionais */}
-                      <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                      <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           <span>Publicado em {formatDate(selectedAd.created_at)}</span>
                         </div>
                       </div>
 
                       {/* Botões de Ação */}
-                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                         <Button
                           variant="outline"
                           onClick={() => setShowAdModal(false)}
@@ -1115,7 +1115,7 @@ export default function ClassificadosPage() {
                                       })
                                       setShowEditDialog(true)
                                     }}
-                                    className="text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                   >
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar anúncio
@@ -1126,7 +1126,7 @@ export default function ClassificadosPage() {
                                       setShowAdModal(false)
                                       handleDeleteAd(selectedAd.id)
                                     }}
-                                    className="text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                    className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Deletar anúncio
@@ -1200,7 +1200,7 @@ export default function ClassificadosPage() {
               <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Search className="h-12 w-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Nenhum anúncio encontrado
               </h3>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
@@ -1234,8 +1234,8 @@ export default function ClassificadosPage() {
                   key={ad.id} 
                   className={`group relative overflow-hidden rounded-2xl shadow-2xl transition-transform duration-300 hover:-translate-y-3 hover:scale-[1.02] ${
                     ad.ad_type === 'oferecer' 
-                      ? 'bg-white hover:animate-glow-blue' 
-                      : 'bg-white hover:animate-glow-emerald'
+                      ? 'bg-white dark:bg-gray-800 hover:animate-glow-blue' 
+                      : 'bg-white dark:bg-gray-800 hover:animate-glow-emerald'
                   }`}
                 >
                   {/* Header com tipo de anúncio e menu */}
@@ -1271,7 +1271,7 @@ export default function ClassificadosPage() {
                   <div className="px-4 pb-4">
                     {/* Título do serviço */}
                     <h3 
-                      className="font-bold text-gray-900 mb-2 line-clamp-2 text-lg cursor-pointer hover:text-blue-600 transition-colors"
+                      className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 text-lg cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleOpenAdModal(ad)
@@ -1282,7 +1282,7 @@ export default function ClassificadosPage() {
 
                     {/* Descrição */}
                     <p 
-                      className="text-gray-600 text-sm line-clamp-2 mb-3 cursor-pointer hover:text-gray-800 transition-colors"
+                      className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3 cursor-pointer hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleOpenAdModal(ad)
@@ -1297,8 +1297,8 @@ export default function ClassificadosPage() {
                         variant="outline" 
                         className={`text-xs font-medium ${
                           ad.ad_type === 'oferecer' 
-                            ? 'border-blue-400 text-blue-700 bg-blue-50' 
-                            : 'border-emerald-400 text-emerald-700 bg-emerald-50'
+                            ? 'border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                            : 'border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30'
                         }`}
                       >
                         {getCategoryIcon(ad.category)} {ad.category}
@@ -1306,7 +1306,7 @@ export default function ClassificadosPage() {
                     </div>
 
                     {/* Footer com usuário e ações */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                       {/* Info do usuário */}
                       <Link href={`/perfil/${ad.user_id}`} className="flex items-center gap-2 group/user">
                         <Avatar className={`w-8 h-8 ring-2 shadow-sm transition-all duration-200 ${
@@ -1317,14 +1317,14 @@ export default function ClassificadosPage() {
                           <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
                           <AvatarFallback className={`text-xs font-medium ${
                             ad.ad_type === 'oferecer' 
-                              ? 'bg-blue-100 text-blue-700' 
-                              : 'bg-emerald-100 text-emerald-700'
+                              ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400' 
+                              : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400'
                           }`}>
                             {ad.user_name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate group-hover/user:text-blue-600 transition-colors">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover/user:text-blue-600 dark:group-hover/user:text-blue-400 transition-colors">
                             {ad.user_name}
                           </p>
                           <p className="text-xs text-gray-500">

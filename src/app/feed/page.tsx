@@ -307,19 +307,19 @@ export default function FeedPage() {
   return (
     <MainLayout requireAuth={true}>
       <ErrorHandler>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-3 md:px-4 py-1 md:py-2">
         
         {/* Abas do Feed */}
         <div className="mb-4 md:mb-6">
-          <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-1">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-1">
             <div className="flex space-x-1">
               <button
                 onClick={() => setActiveTab('all')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'all'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,7 +333,7 @@ export default function FeedPage() {
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'posts'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -347,7 +347,7 @@ export default function FeedPage() {
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                   activeTab === 'notifications'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,7 +364,7 @@ export default function FeedPage() {
           <Button
             onClick={() => setShowFilters(!showFilters)}
             variant="outline"
-            className="bg-white/80 backdrop-blur-md border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <Filter className="h-4 w-4 mr-2" />
             Filtros
@@ -406,7 +406,7 @@ export default function FeedPage() {
               placeholder="Buscar por nome do usuário, serviço, categoria..."
               value={filters.search || ''}
               onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="w-full pl-10 pr-4 py-2 md:py-3 bg-white/80 backdrop-blur-md border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base"
+              className="w-full pl-10 pr-4 py-2 md:py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base dark:text-white dark:placeholder-gray-400"
             />
             {filters.search && (
               <button
@@ -425,19 +425,19 @@ export default function FeedPage() {
         {/* Filtros Colapsáveis - Responsivos */}
         {showFilters && (
           <div className="mb-6 md:mb-8 animate-in slide-in-from-top-2 duration-200">
-            <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-3 md:p-4">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-3 md:p-4">
               <div className="flex items-center space-x-3 md:space-x-4 mb-3 md:mb-4">
-                <Filter className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Filtros</h3>
+                <Filter className="h-4 w-4 md:h-5 md:w-5 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">Filtros</h3>
               </div>
 
               <div className="space-y-3 md:space-y-4">
               <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Categoria</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Categoria</label>
                   <select
                     value={filters.category || 'all'}
                     onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base"
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm md:text-base"
                   >
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>

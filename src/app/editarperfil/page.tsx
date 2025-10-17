@@ -501,7 +501,7 @@ export default function EditarPerfilPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         {/* Main Content */}
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
@@ -512,7 +512,7 @@ export default function EditarPerfilPage() {
                   <Edit3 className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Editar Perfil</h1>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Perfil</h1>
                   <p className="text-gray-600">Atualize suas informações pessoais</p>
                 </div>
               </div>
@@ -764,7 +764,7 @@ export default function EditarPerfilPage() {
                             errors.location_state ? 'border-red-400' : 'border-gray-300'
                           )}
                         >
-                          <span className="text-gray-900">
+                          <span className="text-gray-900 dark:text-white">
                             {watchedValues.location_state
                               ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
                               : "Selecione o estado"}
@@ -825,7 +825,7 @@ export default function EditarPerfilPage() {
                             !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
                           )}
                         >
-                          <span className="text-gray-900">
+                          <span className="text-gray-900 dark:text-white">
                             {watchedValues.location_city
                               ? watchedValues.location_city
                               : watchedValues.location_state
@@ -1044,7 +1044,7 @@ export default function EditarPerfilPage() {
                             type="button"
                             className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
                           >
-                            <span className="text-gray-900">
+                            <span className="text-gray-900 dark:text-white">
                               {selectedServices.length === 0
                                 ? "Selecione os serviços..."
                                 : `${selectedServices.length} serviço(s)`}

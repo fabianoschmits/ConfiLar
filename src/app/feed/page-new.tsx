@@ -198,7 +198,7 @@ export default function FeedPage() {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">Feed Social</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Feed Social</h1>
               <span className="text-sm text-gray-500">Descubra trabalhos incríveis</span>
             </div>
             {profile?.user_type === 'professional' && (
@@ -267,7 +267,7 @@ export default function FeedPage() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <h3 className="font-semibold text-gray-900">Profissional</h3>
+                            <h3 className="font-semibold text-gray-900 dark:text-white">Profissional</h3>
                           </div>
                           <div className="flex items-center space-x-2 text-sm text-gray-500">
                             <MapPin className="h-3 w-3" />
@@ -281,7 +281,7 @@ export default function FeedPage() {
 
                     <CardContent className="space-y-4">
                       <div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                           {post.title}
                         </h4>
                         <p className="text-gray-700">{post.description}</p>

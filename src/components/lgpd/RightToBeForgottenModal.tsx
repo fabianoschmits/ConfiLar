@@ -129,13 +129,13 @@ export function RightToBeForgottenModal({ isOpen, onClose }: RightToBeForgottenM
   if (step === 'warning') {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <Card className="w-full max-w-2xl">
+        <Card className="w-full max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center text-red-600">
+            <CardTitle className="flex items-center text-red-600 dark:text-red-400">
               <AlertTriangle className="h-6 w-6 mr-2" />
               Direito ao Esquecimento
             </CardTitle>
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               Exercite seu direito de ter seus dados pessoais excluídos
             </p>
           </CardHeader>
@@ -143,9 +143,9 @@ export function RightToBeForgottenModal({ isOpen, onClose }: RightToBeForgottenM
           <CardContent className="space-y-6">
             
             {/* Aviso Crítico */}
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <h3 className="font-semibold text-red-800 mb-2">⚠️ ATENÇÃO: Ação Irreversível</h3>
-              <p className="text-red-700 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg border border-red-200 dark:border-red-800">
+              <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2">⚠️ ATENÇÃO: Ação Irreversível</h3>
+              <p className="text-red-700 dark:text-red-400 text-sm">
                 A exclusão da sua conta é <strong>permanente e irreversível</strong>. 
                 Todos os seus dados serão removidos definitivamente do sistema.
               </p>
@@ -153,17 +153,17 @@ export function RightToBeForgottenModal({ isOpen, onClose }: RightToBeForgottenM
 
             {/* O que será deletado */}
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Dados que serão excluídos:</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Dados que serão excluídos:</h3>
               <div className="grid gap-3">
                 {dataToBeDeleted.map((data, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
                     <div className="flex items-center space-x-3">
-                      <div className="text-red-600">
+                      <div className="text-red-600 dark:text-red-400">
                         {data.icon}
                       </div>
                       <div>
-                        <h4 className="font-medium text-gray-900">{data.name}</h4>
-                        <p className="text-sm text-gray-600">{data.description}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{data.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{data.description}</p>
                       </div>
                     </div>
                     <Badge variant={data.critical ? "destructive" : "secondary"}>

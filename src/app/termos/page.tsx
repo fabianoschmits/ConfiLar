@@ -39,7 +39,7 @@ export default function TermosPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -48,7 +48,7 @@ export default function TermosPage() {
                 <FileText className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Termos de Uso</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Termos de Uso</h1>
                 <p className="text-gray-600">ConfiLar - Plataforma de Confiança Profissional</p>
               </div>
             </div>
@@ -95,7 +95,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Para os fins destes Termos:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Para os fins destes Termos:</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li><strong>"ConfiLar"</strong> refere-se à plataforma digital de conexão entre profissionais e clientes.</li>
                       <li><strong>"Usuário"</strong> é qualquer pessoa que acesse ou utilize a plataforma.</li>
@@ -157,7 +157,7 @@ export default function TermosPage() {
                   </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900">Para Clientes:</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Para Clientes:</h4>
                       <ul className="space-y-1 text-gray-700 text-sm">
                         <li>• Busca de profissionais por localização e especialidade</li>
                         <li>• Sistema de avaliações e recomendações</li>
@@ -167,7 +167,7 @@ export default function TermosPage() {
                       </ul>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-semibold text-gray-900">Para Profissionais:</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Para Profissionais:</h4>
                       <ul className="space-y-1 text-gray-700 text-sm">
                         <li>• Criação de perfil profissional</li>
                         <li>• Portfólio de trabalhos</li>
@@ -190,7 +190,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Requisitos para Cadastro:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Requisitos para Cadastro:</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Ter pelo menos 18 anos de idade</li>
                       <li>• Fornecer informações verdadeiras e completas</li>
@@ -201,7 +201,7 @@ export default function TermosPage() {
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Responsabilidades do Usuário:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Responsabilidades do Usuário:</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Manter confidenciais as credenciais de acesso</li>
                       <li>• Notificar imediatamente sobre uso não autorizado</li>
@@ -259,7 +259,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Direitos do ConfiLar:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Direitos do ConfiLar:</h4>
                     <p className="text-gray-700 mb-2">
                       A plataforma, incluindo design, código, funcionalidades e marca, 
                       são propriedade exclusiva do ConfiLar e protegidos por leis de 
@@ -268,7 +268,7 @@ export default function TermosPage() {
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Conteúdo do Usuário:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Conteúdo do Usuário:</h4>
                     <p className="text-gray-700 mb-2">
                       Você mantém os direitos sobre o conteúdo que publica, mas concede 
                       ao ConfiLar uma licença não exclusiva para usar, exibir e distribuir 
@@ -295,7 +295,7 @@ export default function TermosPage() {
                   </p>
                   
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Seus Direitos:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Seus Direitos:</h4>
                     <ul className="space-y-2 text-gray-700">
                       <li>• Acesso aos seus dados pessoais</li>
                       <li>• Correção de dados incorretos</li>
@@ -366,7 +366,7 @@ export default function TermosPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Rescisão pelo Usuário:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Rescisão pelo Usuário:</h4>
                     <p className="text-gray-700">
                       Você pode encerrar sua conta a qualquer momento através das 
                       configurações da conta ou entrando em contato conosco.
@@ -374,7 +374,7 @@ export default function TermosPage() {
                   </div>
                   
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Rescisão pelo ConfiLar:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Rescisão pelo ConfiLar:</h4>
                     <p className="text-gray-700">
                       Podemos suspender ou encerrar sua conta em caso de violação 
                       destes Termos, atividades suspeitas ou por motivos de segurança.

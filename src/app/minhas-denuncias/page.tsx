@@ -135,7 +135,7 @@ export default function MinhasDenunciasPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
@@ -151,12 +151,12 @@ export default function MinhasDenunciasPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Flag className="h-8 w-8 text-blue-500" />
                   Minhas Denúncias
                 </h1>
@@ -181,7 +181,7 @@ export default function MinhasDenunciasPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Total</p>
-                      <p className="text-2xl font-bold text-gray-900">{reports.length}</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{reports.length}</p>
                     </div>
                     <Flag className="h-8 w-8 text-blue-500" />
                   </div>
@@ -237,7 +237,7 @@ export default function MinhasDenunciasPage() {
                 <Card>
                   <CardContent className="p-8 text-center">
                     <Flag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                       Nenhuma denúncia encontrada
                     </h3>
                     <p className="text-gray-500">

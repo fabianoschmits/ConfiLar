@@ -12,10 +12,8 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
 import { 
-  Search,
   Users,
   UserCheck,
-  MessageCircle,
   ArrowRight,
   Briefcase,
   Star,
@@ -25,13 +23,13 @@ import {
   MapPin,
   Shield,
   Award,
-  Heart,
   Eye,
-  ChevronRight,
   Plus,
   Filter,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Search,
+  MessageCircle
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -55,42 +53,7 @@ export default function HomePage() {
     return null
   }
 
-  const handleNavigateTo = (path: string) => {
-    console.log('🔄 Navegando para:', path)
-    router.push(path)
-  }
 
-  // Cards de ação rápida
-  const quickActions = [
-    {
-      title: 'Buscar Profissionais',
-      description: 'Encontre profissionais qualificados',
-      icon: Search,
-      href: '/buscar',
-      color: 'blue'
-    },
-    {
-      title: 'Classificados',
-      description: 'Veja ofertas e solicitações',
-      icon: Briefcase,
-      href: '/classificados',
-      color: 'green'
-    },
-    {
-      title: 'Mensagens',
-      description: 'Converse com profissionais',
-      icon: MessageCircle,
-      href: '/mensagens',
-      color: 'purple'
-    },
-    {
-      title: 'Favoritos',
-      description: 'Profissionais salvos',
-      icon: Heart,
-      href: '/favoritos',
-      color: 'red'
-    }
-  ]
 
   // Passos para clientes
   const clientSteps = [
@@ -158,7 +121,7 @@ export default function HomePage() {
 
   return (
     <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header da Página */}
           <div className="text-center mb-12">
@@ -166,10 +129,10 @@ export default function HomePage() {
               <Shield className="h-4 w-4 mr-2" />
               Plataforma ConfiLar
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Bem-vindo ao ConfiLar
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
               A plataforma que conecta clientes e profissionais de forma segura e confiável. 
               Encontre os melhores profissionais ou ofereça seus serviços com total transparência e segurança.
             </p>
@@ -181,59 +144,35 @@ export default function HomePage() {
               <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Total</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 0}</p>
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.totalUsers || 0}</p>
                 </div>
                 
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 0}</p>
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.professionalsCount || 0}</p>
                 </div>
                 
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Clientes</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.clientsCount || 0}</p>
+                  <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.clientsCount || 0}</p>
                 </div>
                 
                 {/* Verificados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Verificados</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.verifiedCount || 0}</p>
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Verificados</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.verifiedCount || 0}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Ações Rápidas - Coluna Única */}
-          <div className="mb-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Ações Rápidas</h2>
-            <div className="max-w-md mx-auto space-y-3">
-              {quickActions.map((action, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow duration-200 cursor-pointer" onClick={() => handleNavigateTo(action.href)}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg bg-${action.color}-100`}>
-                          <action.icon className={`h-4 w-4 text-${action.color}-600`} />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 text-sm">{action.title}</h3>
-                          <p className="text-xs text-gray-600">{action.description}</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
 
           {/* Seção: Para Clientes */}
           <section className="mb-16">
@@ -242,8 +181,8 @@ export default function HomePage() {
                 <Users className="h-4 w-4 mr-2" />
                 Para Clientes
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Como Encontrar um Profissional</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Como Encontrar um Profissional</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                 Siga estes passos para encontrar o profissional ideal para seu projeto
               </p>
             </div>
@@ -256,10 +195,10 @@ export default function HomePage() {
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                         <step.icon className="h-6 w-6 text-blue-600" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">0{step.step}</div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">0{step.step}</div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{step.description}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{step.description}</p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
                         <li key={detailIndex} className="flex items-center text-sm text-gray-600">
@@ -281,8 +220,8 @@ export default function HomePage() {
                 <Briefcase className="h-4 w-4 mr-2" />
                 Para Profissionais
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Como Oferecer Seus Serviços</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Como Oferecer Seus Serviços</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                 Transforme sua experiência em oportunidades de negócio
               </p>
             </div>
@@ -295,10 +234,10 @@ export default function HomePage() {
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                         <step.icon className="h-6 w-6 text-green-600" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900">0{step.step}</div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">0{step.step}</div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4">{step.description}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{step.description}</p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
                         <li key={detailIndex} className="flex items-center text-sm text-gray-600">

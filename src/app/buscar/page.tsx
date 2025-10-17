@@ -293,7 +293,7 @@ export default function BuscarPage() {
 
     return (
       <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
 
           {/* Estatísticas - Card Compacto */}
@@ -302,30 +302,30 @@ export default function BuscarPage() {
               <div className="flex flex-row items-center justify-around gap-1 sm:gap-2">
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Total</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.totalUsers || 0}</p>
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.totalUsers || 0}</p>
                 </div>
                 
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Profissionais</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.professionalsCount || 0}</p>
+                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.professionalsCount || 0}</p>
                 </div>
                 
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Clientes</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.clientsCount || 0}</p>
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.clientsCount || 0}</p>
                 </div>
                 
                 {/* Resultados Filtrados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
-                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                  <p className="text-xs text-gray-500 text-center">Resultados</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900">{stats?.filteredCount || 0}</p>
+                  <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Resultados</p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.filteredCount || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -364,7 +364,7 @@ export default function BuscarPage() {
           {/* Controles de Visualização */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {allFilteredProfiles.length} resultado{allFilteredProfiles.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -391,13 +391,13 @@ export default function BuscarPage() {
 
           {/* Abas de Filtro por Tipo de Usuário */}
           <div className="mb-6">
-            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 rounded-lg overflow-x-auto">
+            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab('all')}
                 className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'all'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -411,8 +411,8 @@ export default function BuscarPage() {
                 onClick={() => setActiveTab('clients')}
                 className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'clients'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -426,8 +426,8 @@ export default function BuscarPage() {
                 onClick={() => setActiveTab('professionals')}
                 className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'professionals'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-white dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -442,7 +442,7 @@ export default function BuscarPage() {
           {/* Resultados */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {activeTab === 'all' ? 'Todos os Usuários' : 
                  activeTab === 'clients' ? 'Clientes' : 
                  'Profissionais'} ({displayProfiles.length})
@@ -474,10 +474,10 @@ export default function BuscarPage() {
                 <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <Search className="h-12 w-12 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Nenhum resultado encontrado
                 </h3>
-                <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
                   {filters.searchTerm || filters.state || filters.city || filters.service !== 'all' 
                     ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
                     : 'Não há usuários cadastrados no sistema ainda.'}
@@ -529,7 +529,7 @@ export default function BuscarPage() {
                             <div className="space-y-3">
                               <div className="flex items-center space-x-2 border-b pb-2">
                                 <Briefcase className="h-4 w-4 text-blue-600" />
-                                <h4 className="font-semibold text-gray-900">Serviços Oferecidos</h4>
+                                <h4 className="font-semibold text-gray-900 dark:text-white">Serviços Oferecidos</h4>
                               </div>
                               <div className="max-h-64 overflow-y-auto space-y-2">
                                 {profile.professional_services.map((service, index) => (
@@ -538,7 +538,7 @@ export default function BuscarPage() {
                                     className="flex items-start space-x-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                                   >
                                     <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm text-gray-900">{service}</span>
+                                    <span className="text-sm text-gray-900 dark:text-white">{service}</span>
                                   </div>
                                 ))}
                               </div>
@@ -568,7 +568,7 @@ export default function BuscarPage() {
                             onClick={() => handleProfileClick(profile.id)}
                             className="cursor-pointer"
                           >
-                            <h3 className="font-semibold text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors">
+                            <h3 className="font-semibold text-gray-900 dark:text-white dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                               {profile.full_name}
                             </h3>
                           </div>
@@ -626,7 +626,7 @@ export default function BuscarPage() {
           </div>
 
                       {/* Bio */}
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                         {profile.bio || 'Profissional qualificado e experiente.'}
                       </p>
 
@@ -648,7 +648,7 @@ export default function BuscarPage() {
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-gray-600 ml-2">
+                            <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
                               {rating > 0 ? `${rating.toFixed(1)} (${reviewCount} avaliações)` : 'Sem avaliações'}
                             </span>
                           </div>
@@ -770,7 +770,7 @@ export default function BuscarPage() {
 
             {/* Info da paginação */}
             {!loading && allFilteredProfiles.length > 0 && (
-              <div className="text-center mt-4 text-sm text-gray-600">
+              <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
                 Mostrando {startIndex + 1} a {Math.min(endIndex, allFilteredProfiles.length)} de {allFilteredProfiles.length} resultados
               </div>
             )}

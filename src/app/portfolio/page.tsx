@@ -28,7 +28,7 @@ export default function PortfolioPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <Card className="max-w-2xl mx-auto">
               <CardContent className="p-12 text-center">
@@ -36,7 +36,7 @@ export default function PortfolioPage() {
                   <div className="w-24 h-24 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
                     <Briefcase className="h-12 w-12 text-orange-600" />
                   </div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
                     Portfólio
                   </h1>
                   <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
@@ -55,7 +55,7 @@ export default function PortfolioPage() {
                 </div>
 
                 <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-                  <h3 className="font-semibold text-gray-900 mb-3">Funcionalidades planejadas:</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Funcionalidades planejadas:</h3>
                   <ul className="text-sm text-gray-600 space-y-2 text-left">
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2" />

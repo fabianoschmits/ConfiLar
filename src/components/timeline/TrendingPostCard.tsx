@@ -166,14 +166,14 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
         <CardContent className="p-4">
           <div className="animate-pulse">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
               </div>
             </div>
-            <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
           </div>
         </CardContent>
       </Card>
@@ -187,7 +187,7 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
   return (
     <>
       <Card 
-        className={`${className} cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50`}
+        className={`${className} cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-200 dark:border-yellow-700 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20`}
         onClick={() => setShowModal(true)}
       >
         <CardContent className="p-4">
@@ -195,7 +195,7 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               {getTrendingIcon(trendingPost.trending_reason)}
-              <span className="font-semibold text-sm">Post em Alta</span>
+              <span className="font-semibold text-sm dark:text-white">Post em Alta</span>
             </div>
             <Badge 
               variant="outline" 
@@ -216,13 +216,13 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
             />
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-semibold text-sm text-gray-900">
+                <h4 className="font-semibold text-sm text-gray-900 dark:text-white">
                   {trendingPost.user.full_name}
                 </h4>
                 {/* Status de Disponibilidade - Dinâmico */}
                 <DynamicAvailabilityBadge userId={trendingPost.user.id} />
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {trendingPost.location_city}, {trendingPost.location_state}
               </p>
             </div>
@@ -230,13 +230,13 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
 
           {/* Post Preview */}
           <div className="mb-3">
-            <p className="text-sm text-gray-700 line-clamp-3">
+            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">
               {trendingPost.content}
             </p>
           </div>
 
           {/* Engagement Stats */}
-          <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">
               <Heart className="h-3 w-3" />
               <span>{trendingPost.likes_count}</span>
@@ -249,7 +249,7 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
               <Eye className="h-3 w-3" />
               <span>{viewsCount}</span>
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-gray-400 dark:text-gray-500">
               {formatDistanceToNow(new Date(trendingPost.created_at), { 
                 addSuffix: true, 
                 locale: ptBR 
@@ -262,7 +262,7 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full text-xs bg-white/80 hover:bg-white"
+              className="w-full text-xs bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800"
             >
               Ver Post Completo
             </Button>

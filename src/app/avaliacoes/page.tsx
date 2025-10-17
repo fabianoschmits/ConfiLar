@@ -333,12 +333,12 @@ export default function AvaliacoesPage() {
     return (
       <ClientOnly>
         <MainLayout requireAuth={false}>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
               <Card className="max-w-2xl mx-auto">
                 <CardContent className="p-8 text-center">
                   <Star className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     Minhas Avaliações
                   </h2>
                   <p className="text-gray-600 mb-6">
@@ -415,14 +415,14 @@ export default function AvaliacoesPage() {
   return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
             <div className="text-center">
               <div className="relative">
                 <Loader2 className="h-12 w-12 animate-spin text-gray-400 mx-auto mb-4" />
                 <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
                 <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Carregando suas avaliações</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Carregando suas avaliações</h3>
               <p className="text-gray-600">Aguarde um momento...</p>
             </div>
           </div>
@@ -434,13 +434,13 @@ export default function AvaliacoesPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
                     <Award className="h-8 w-8 mr-3 text-gray-700" />
                     Minhas Avaliações
                   </h1>
@@ -459,28 +459,28 @@ export default function AvaliacoesPage() {
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                     <p className="text-xs text-gray-500 text-center">Recebidas</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.receivedRequests}</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.receivedRequests}</p>
                   </div>
                   
                   {/* Solicitações Enviadas */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <Edit className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                     <p className="text-xs text-gray-500 text-center">Enviadas</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.sentRequests}</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.sentRequests}</p>
                   </div>
                   
                   {/* Avaliações Recebidas */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                     <p className="text-xs text-gray-500 text-center">Avaliações</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.totalReviews}</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalReviews}</p>
                   </div>
                   
                   {/* Pendentes */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
                     <p className="text-xs text-gray-500 text-center">Pendentes</p>
-                    <p className="text-sm sm:text-base font-bold text-gray-900">{stats.pendingRequests}</p>
+                    <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.pendingRequests}</p>
                   </div>
                 </div>
               </CardContent>
@@ -494,7 +494,7 @@ export default function AvaliacoesPage() {
                     onClick={() => setActiveTab('requests')}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'requests'
-                        ? 'border-gray-500 text-gray-900'
+                        ? 'border-gray-500 text-gray-900 dark:text-white'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -508,7 +508,7 @@ export default function AvaliacoesPage() {
                     onClick={() => setActiveTab('reviews')}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                       activeTab === 'reviews'
-                        ? 'border-gray-500 text-gray-900'
+                        ? 'border-gray-500 text-gray-900 dark:text-white'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
@@ -550,7 +550,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setRequestsSubTab('received')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900'
+                              ? 'border-gray-500 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
@@ -564,7 +564,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setRequestsSubTab('sent')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             requestsSubTab === 'sent'
-                              ? 'border-gray-700 text-gray-900'
+                              ? 'border-gray-700 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
@@ -616,7 +616,7 @@ export default function AvaliacoesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                                     {request.requester_id === user.id ? 'Você' : request.requester_name} 
                                     {' '}↔️{' '}
                                     {request.target_id === user.id ? 'Você' : request.target_name}
@@ -685,7 +685,7 @@ export default function AvaliacoesPage() {
                   ) : (
                     <div className="text-center py-8">
                       <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         Nenhuma solicitação encontrada
                       </h3>
                       <p className="text-gray-600">
@@ -727,7 +727,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setReviewsSubTab('received')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900'
+                              ? 'border-gray-500 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
@@ -741,7 +741,7 @@ export default function AvaliacoesPage() {
                           onClick={() => setReviewsSubTab('given')}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
                             reviewsSubTab === 'given'
-                              ? 'border-gray-700 text-gray-900'
+                              ? 'border-gray-700 text-gray-900 dark:text-white'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
                           }`}
                         >
@@ -795,7 +795,7 @@ export default function AvaliacoesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
-                                  <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                                  <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                                     {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed?.full_name || ''}
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
@@ -866,7 +866,7 @@ export default function AvaliacoesPage() {
                   ) : (
                     <div className="text-center py-8">
                       <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                         {searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
                   </h3>
                   <p className="text-gray-600">

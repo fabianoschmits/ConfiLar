@@ -142,10 +142,10 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <DialogTitle className="flex items-center justify-between">
+        <DialogHeader className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+          <DialogTitle className="flex items-center justify-between text-gray-900 dark:text-white">
             <div className="flex items-center gap-2">
-              <Flag className="h-5 w-5 text-blue-500" />
+              <Flag className="h-5 w-5 text-blue-500 dark:text-blue-400" />
               <span>Minhas Denúncias</span>
               {reports.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
@@ -168,23 +168,23 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
         <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
           {reports.length === 0 ? (
             <div className="text-center py-12">
-              <Flag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-medium text-gray-900 mb-2">
+              <Flag className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
                 Nenhuma denúncia encontrada
               </h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
                 Você ainda não enviou nenhuma denúncia. Quando enviar, elas aparecerão aqui.
               </p>
             </div>
           ) : (
             <div className="grid gap-4">
               {reports.map((report) => (
-                <Card key={report.id} className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
+                <Card key={report.id} className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500 dark:border-l-blue-400">
                   <CardContent className="p-5">
                     {/* Header com badges */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <h4 className="font-semibold text-base text-gray-900">
+                        <h4 className="font-semibold text-base text-gray-900 dark:text-white">
                           Denúncia de {getTypeLabel(report.type)}
                         </h4>
                         <div className="flex flex-wrap gap-2">

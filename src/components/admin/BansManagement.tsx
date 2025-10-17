@@ -431,7 +431,7 @@ export function BansManagement() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Status</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
               <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -447,7 +447,7 @@ export function BansManagement() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700">Tipo</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
               <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
                 <SelectTrigger>
                   <SelectValue />
@@ -462,9 +462,9 @@ export function BansManagement() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700">Buscar</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Buscar</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   placeholder="Buscar por nome ou email..."
                   value={filters.search}
