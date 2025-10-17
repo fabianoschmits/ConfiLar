@@ -99,7 +99,7 @@ export function LoadingOverlay({
           {/* Logo ConfiLar */}
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
             <img 
-              src="/imagens/logo/Confilarsemfundo.png" 
+              src="/imagens/logo/confilarlogo5.png" 
               alt="ConfiLar Logo" 
               className="w-12 h-12 object-contain"
             />
@@ -250,7 +250,7 @@ export function PageLoadingOverlay({
         <div className="relative">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
             <img 
-              src="/imagens/logo/Confilarsemfundo.png" 
+              src="/imagens/logo/confilarlogo5.png" 
               alt="ConfiLar Logo" 
               className="w-10 h-10 object-contain"
             />

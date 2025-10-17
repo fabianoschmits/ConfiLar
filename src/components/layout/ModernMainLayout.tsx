@@ -51,7 +51,7 @@ export const ModernMainLayout: React.FC<ModernMainLayoutProps> = ({
       {/* Header Moderno */}
       <ModernHeader />
       
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 lg:ml-64 pb-20 lg:pb-0 pt-16">
+      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 lg:ml-48 pb-20 lg:pb-0 pt-16">
         {loading || !isReady ? (
           <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
@@ -60,7 +60,7 @@ export const ModernMainLayout: React.FC<ModernMainLayoutProps> = ({
             <div className="text-center space-y-6 max-w-md mx-auto p-8">
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mx-auto">
                 <img 
-                  src="/imagens/logo/Confilarsemfundo.png" 
+                  src="/imagens/logo/confilarlogo5.png" 
                   alt="ConfiLar Logo" 
                   className="w-12 h-12 object-contain"
                 />
