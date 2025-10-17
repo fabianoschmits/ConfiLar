@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import { PublicLayout } from '@/components/layout/PublicLayout'
@@ -93,11 +94,14 @@ function HomeContent() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <img 
-                    src="/imagens/logo/confilarlogo5.png" 
-                    alt="ConfiLar Logo" 
-                    className="w-full h-full object-contain"
-                  />
+            <Image
+              src="/imagens/logo/confilarlogo5.png"
+              alt="ConfiLar Logo"
+              width={40}
+              height={40}
+              priority
+              className="w-full h-full object-contain"
+            />
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
               </Link>
@@ -596,11 +600,14 @@ function HomeContent() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <img 
-                    src="/imagens/logo/confilarlogo5.png" 
-                    alt="ConfiLar Logo" 
-                    className="w-full h-full object-contain"
-                  />
+            <Image
+              src="/imagens/logo/confilarlogo5.png"
+              alt="ConfiLar Logo"
+              width={40}
+              height={40}
+              priority
+              className="w-full h-full object-contain"
+            />
                 </div>
                 <span className="text-xl font-bold">ConfiLar</span>
               </div>

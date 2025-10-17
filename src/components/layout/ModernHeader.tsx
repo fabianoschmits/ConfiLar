@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -253,9 +254,12 @@ export function ModernHeader({
               {/* Logo */}
               <Link href="/home" className="flex items-center space-x-2">
                 <div className="w-12 h-12 flex items-center justify-center">
-                  <img 
+                  <Image 
                     src="/imagens/logo/confilarlogo5.png" 
                     alt="ConfiLar Logo" 
+                    width={48}
+                    height={48}
+                    priority
                     className="w-[120%] h-[120%] object-contain"
                   />
                 </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { NavigationLink } from '@/components/ui/NavigationLink'
@@ -295,9 +296,12 @@ export function ModernSidebar() {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <Link href="/home" className="flex items-center space-x-2">
             <div className="w-16 h-16 flex items-center justify-center">
-              <img 
+              <Image 
                 src="/imagens/logo/confilarlogo5.png" 
                 alt="ConfiLar Logo" 
+                width={64}
+                height={64}
+                priority
                 className="w-[120%] h-[120%] object-contain"
               />
             </div>

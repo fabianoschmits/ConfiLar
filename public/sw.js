@@ -3,11 +3,12 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.1.0'
-const STATIC_CACHE = 'confilar-static-v1.1.0'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.1.0'
-const API_CACHE = 'confilar-api-v1.1.0'
-const IMAGE_CACHE = 'confilar-images-v1.1.0'
+const CACHE_NAME = 'confilar-pwa-v1.2.0'
+const STATIC_CACHE = 'confilar-static-v1.2.0'
+const DYNAMIC_CACHE = 'confilar-dynamic-v1.2.0'
+const API_CACHE = 'confilar-api-v1.2.0'
+const IMAGE_CACHE = 'confilar-images-v1.2.0'
+const DATA_CACHE = 'confilar-data-v1.2.0'
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
@@ -38,6 +39,14 @@ const CACHE_STRATEGIES = {
     '/auth/',
     '/supabase/',
     '/admin/'
+  ],
+  
+  // Stale-while-revalidate: Dados que podem ser um pouco antigos
+  STALE_WHILE_REVALIDATE: [
+    '/api/profiles/',
+    '/api/services/',
+    '/api/posts/',
+    '/api/notifications/'
   ],
   
   // Cache-only: Páginas offline
@@ -111,7 +120,8 @@ self.addEventListener('activate', (event) => {
                 cacheName !== STATIC_CACHE && 
                 cacheName !== DYNAMIC_CACHE && 
                 cacheName !== API_CACHE &&
-                cacheName !== IMAGE_CACHE) {
+                cacheName !== IMAGE_CACHE &&
+                cacheName !== DATA_CACHE) {
               console.log('🗑️ Removendo cache antigo:', cacheName)
               return caches.delete(cacheName)
             }
@@ -162,12 +172,17 @@ async function handleRequest(request) {
       return await cacheFirst(request)
     }
     
-    // 2. NETWORK-FIRST: Dados dinâmicos
+    // 2. STALE-WHILE-REVALIDATE: Dados que podem ser um pouco antigos
+    if (isStaleWhileRevalidate(requestUrl)) {
+      return await staleWhileRevalidate(request)
+    }
+    
+    // 3. NETWORK-FIRST: Dados dinâmicos
     if (isNetworkFirst(requestUrl)) {
       return await networkFirst(request)
     }
     
-    // 3. CACHE-ONLY: Páginas offline
+    // 4. CACHE-ONLY: Páginas offline
     if (isCacheOnly(requestUrl)) {
       return await cacheOnly(request)
     }
@@ -273,6 +288,26 @@ function formatBytes(bytes) {
   const sizes = ['B', 'KB', 'MB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// Stale-While-Revalidate: Para dados que podem ser um pouco antigos
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(DATA_CACHE)
+  const cached = await cache.match(request)
+  
+  // Buscar nova versão em background
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      cache.put(request, response.clone())
+    }
+    return response
+  }).catch(() => {
+    // Se falhar, retornar cached se existir
+    return cached
+  })
+  
+  // Retornar cached imediatamente se existir, senão aguardar fetch
+  return cached || await fetchPromise
 }
 
 // Network-First: Para dados dinâmicos
@@ -426,6 +461,10 @@ async function getOfflineFallback(request) {
 
 function isCacheFirst(url) {
   return CACHE_STRATEGIES.CACHE_FIRST.some(pattern => url.includes(pattern))
+}
+
+function isStaleWhileRevalidate(url) {
+  return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE.some(pattern => url.includes(pattern))
 }
 
 function isNetworkFirst(url) {
@@ -589,7 +628,7 @@ async function removeFromQueue(actionId) {
 // Limpar caches antigos
 async function cleanOldCaches() {
   const cacheNames = await caches.keys()
-  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE]
+  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE, DATA_CACHE]
   
   for (const cacheName of cacheNames) {
     if (!currentCaches.includes(cacheName)) {
