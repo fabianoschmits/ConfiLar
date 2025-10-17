@@ -252,8 +252,12 @@ export function ModernHeader({
               
               {/* Logo */}
               <Link href="/home" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">C</span>
+                <div className="w-12 h-12 flex items-center justify-center">
+                  <img 
+                    src="/imagens/logo/Confilarsemfundo.png" 
+                    alt="ConfiLar Logo" 
+                    className="w-[120%] h-[120%] object-contain"
+                  />
                 </div>
                 <span className="font-semibold text-gray-900 dark:text-white hidden sm:block">ConfiLar</span>
               </Link>

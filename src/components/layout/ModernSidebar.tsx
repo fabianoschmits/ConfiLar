@@ -294,8 +294,12 @@ export function ModernSidebar() {
         {/* Header da Sidebar */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <Link href="/home" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-400 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
+            <div className="w-16 h-16 flex items-center justify-center">
+              <img 
+                src="/imagens/logo/Confilarsemfundo.png" 
+                alt="ConfiLar Logo" 
+                className="w-[120%] h-[120%] object-contain"
+              />
             </div>
             <div>
               <span className="font-semibold text-gray-700 dark:text-gray-300">ConfiLar</span>

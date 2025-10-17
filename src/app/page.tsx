@@ -92,8 +92,12 @@ function HomeContent() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src="/imagens/logo/Confilarsemfundo.png" 
+                    alt="ConfiLar Logo" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
               </Link>
@@ -591,8 +595,12 @@ function HomeContent() {
             {/* Logo and Description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img 
+                    src="/imagens/logo/Confilarsemfundo.png" 
+                    alt="ConfiLar Logo" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold">ConfiLar</span>
               </div>
