@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 
 interface LoadingOverlayProps {
@@ -98,11 +99,14 @@ export function LoadingOverlay({
         <div className="relative">
           {/* Logo ConfiLar */}
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-            <img 
-              src="/imagens/logo/confilarlogo5.png" 
-              alt="ConfiLar Logo" 
-              className="w-12 h-12 object-contain"
-            />
+        <Image
+          src="/imagens/logo/confilarlogo5.png"
+          alt="ConfiLar Logo"
+          width={48}
+          height={48}
+          priority
+          className="w-12 h-12 object-contain"
+        />
           </div>
           
           {/* Spinner Moderno */}
