@@ -288,7 +288,7 @@ export function ModernSidebar() {
       {/* Sidebar Moderna */}
       <div className={`
         fixed left-0 top-0 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-sm z-[60]
-        w-64 transition-all duration-300 ease-in-out
+        w-48 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar */}
@@ -296,7 +296,7 @@ export function ModernSidebar() {
           <Link href="/home" className="flex items-center space-x-2">
             <div className="w-16 h-16 flex items-center justify-center">
               <img 
-                src="/imagens/logo/Confilarsemfundo.png" 
+                src="/imagens/logo/confilarlogo5.png" 
                 alt="ConfiLar Logo" 
                 className="w-[120%] h-[120%] object-contain"
               />
@@ -443,7 +443,7 @@ export function ModernSidebar() {
       </div>
 
       {/* Espaçador para o conteúdo principal */}
-      <div className="w-64 transition-all duration-300 ease-in-out" />
+      <div className="w-48 transition-all duration-300 ease-in-out" />
     </>
   )
 }

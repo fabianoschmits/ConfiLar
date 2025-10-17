@@ -60,7 +60,7 @@ export default function AuthPage() {
           <div className="flex items-center space-x-3">
             <div className="w-16 h-16 flex items-center justify-center shadow-lg">
               <img 
-                src="/imagens/logo/Confilarsemfundo.png" 
+                src="/imagens/logo/confilarlogo5.png" 
                 alt="ConfiLar Logo" 
                 className="w-full h-full object-contain"
               />

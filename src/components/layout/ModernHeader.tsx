@@ -254,7 +254,7 @@ export function ModernHeader({
               <Link href="/home" className="flex items-center space-x-2">
                 <div className="w-12 h-12 flex items-center justify-center">
                   <img 
-                    src="/imagens/logo/Confilarsemfundo.png" 
+                    src="/imagens/logo/confilarlogo5.png" 
                     alt="ConfiLar Logo" 
                     className="w-[120%] h-[120%] object-contain"
                   />
