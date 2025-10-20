@@ -204,4 +204,9 @@ Após seguir todos os passos, você deve ter:
 ## 🚀 **TESTE DEFINITIVO - WEBHOOK VERIFICADO**
 - **Data:** $(date)
 - **Commit:** Teste definitivo após verificar webhook
-- **Status:** Aguardando deploy automático...
+- **Status:** ❌ Webhook não funcionou na Vercel
+
+## 🌐 **TESTE NETLIFY - DEPLOY AUTOMÁTICO**
+- **Data:** $(date)
+- **Commit:** Teste deploy automático Netlify
+- **Status:** Aguardando deploy automático na Netlify...
