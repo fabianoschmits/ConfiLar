@@ -82,20 +82,29 @@ export function EvaluationModal({
       }
 
       // Criar a avaliação
+      console.log('📝 Criando avaliação:', {
+        reviewer_id: user.id,
+        reviewed_id: targetUserId,
+        rating: rating,
+        comment: comment.trim() || null
+      })
+
       const { error: reviewError } = await supabase
         .from('reviews')
         .insert({
           reviewer_id: user.id,
           reviewed_id: targetUserId,
-          rating_person: rating,
+          rating: rating,
           comment: comment.trim() || null,
-          review_type: 'professional_to_client' // ou 'client_to_professional' baseado no tipo de usuário
+          created_at: new Date().toISOString()
         })
 
       if (reviewError) {
-        console.error('Erro ao criar avaliação:', reviewError)
-        throw new Error('Erro ao salvar avaliação')
+        console.error('❌ Erro ao criar avaliação:', reviewError)
+        throw new Error(`Erro ao salvar avaliação: ${reviewError.message}`)
       }
+
+      console.log('✅ Avaliação criada com sucesso!')
 
       // Se for mútua, verificar se ambos já avaliaram
       if (isMutual) {

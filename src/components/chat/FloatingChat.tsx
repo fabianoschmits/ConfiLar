@@ -24,7 +24,6 @@ import { useFavorites } from '@/hooks/useFavorites'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
-import { RateLimitStatus } from '@/components/security/RateLimitStatus'
 import { RequestEvaluationButton } from './RequestEvaluationButton'
 
 export function FloatingChat() {
@@ -732,14 +731,6 @@ export function FloatingChat() {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Rate Limit Status */}
-                  <div className="px-3 py-2">
-                    <RateLimitStatus 
-                      type="message_sending" 
-                      showDetails={false}
-                      className="text-xs"
-                    />
-                  </div>
 
                   {/* Input de Mensagem */}
                   <div className="border-t border-gray-200 p-3">
