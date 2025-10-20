@@ -189,4 +189,9 @@ Após seguir todos os passos, você deve ter:
 ## 🧪 **TESTE REALIZADO**
 - **Data:** $(date)
 - **Commit:** Teste webhook Vercel
+- **Status:** ❌ Webhook não funcionou - precisa ser criado no GitHub
+
+## 🔄 **TESTE 2 - APÓS CRIAR WEBHOOK**
+- **Data:** $(date)
+- **Commit:** Teste webhook após configuração
 - **Status:** Aguardando deploy automático...
