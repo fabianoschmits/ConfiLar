@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { useMessageRateLimit } from '@/hooks/useApiRateLimit'
 import { useNotifications } from '@/components/notifications/NotificationProviderSimple'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -78,7 +77,6 @@ export interface ContactAgreement {
 export function useMessages() {
   const { user } = useAuthContext()
   const { addNotification } = useNotifications()
-  const { checkMessageRateLimit, recordMessageAttempt } = useMessageRateLimit()
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [contactAgreements, setContactAgreements] = useState<ContactAgreement[]>([])
@@ -207,29 +205,24 @@ export function useMessages() {
 
       if (convError) throw convError
 
-      // Preparar query de mensagens
-      let query = supabase
+      // Consulta de mensagens com campos específicos
+      const { data, error } = await supabase
         .from('messages')
-        .select('id, conversation_id, sender_id, receiver_id, content, created_at, is_read, updated_at')
+        .select(`
+          id,
+          conversation_id,
+          sender_id,
+          receiver_id,
+          content,
+          message_type,
+          reply_to_id,
+          created_at,
+          updated_at,
+          is_read
+        `)
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true })
-        .limit(50) // Limitar a 50 mensagens por vez
-
-      // Se o usuário deletou a conversa, mostrar apenas mensagens DEPOIS da deleção
-      if (conversation) {
-        const isClient = conversation.client_id === user.id
-        const isProfessional = conversation.professional_id === user.id
-
-        if (isClient && conversation.deleted_at_client) {
-          console.log('🔍 Filtrando mensagens antigas (deletadas pelo cliente):', conversation.deleted_at_client)
-          query = query.gt('created_at', conversation.deleted_at_client)
-        } else if (isProfessional && conversation.deleted_at_professional) {
-          console.log('🔍 Filtrando mensagens antigas (deletadas pelo profissional):', conversation.deleted_at_professional)
-          query = query.gt('created_at', conversation.deleted_at_professional)
-        }
-      }
-
-      const { data, error } = await query
+        .limit(50)
 
       if (error) throw error
 
@@ -377,16 +370,7 @@ export function useMessages() {
     if (!user?.id) return false
 
     try {
-      // Verificar rate limiting para mensagens
-      const rateLimitResult = await checkMessageRateLimit()
-      if (!rateLimitResult.allowed) {
-        const errorMessage = rateLimitResult.retryAfter 
-          ? `Muitas mensagens enviadas. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
-          : 'Muitas mensagens enviadas. Tente novamente mais tarde.'
-        
-        setError(errorMessage)
-        return false
-      }
+      console.log('📤 Iniciando envio de mensagem:', { conversationId, content, userId: user.id })
 
       setSending(true)
       setError(null)
@@ -398,9 +382,17 @@ export function useMessages() {
         .eq('id', conversationId)
         .maybeSingle()
 
-      if (convError || !conversationData) {
+      if (convError) {
+        console.error('❌ Erro ao buscar conversa:', convError)
+        throw new Error(`Erro ao buscar conversa: ${convError.message}`)
+      }
+      
+      if (!conversationData) {
+        console.error('❌ Conversa não encontrada:', conversationId)
         throw new Error('Conversa não encontrada')
       }
+      
+      console.log('✅ Conversa encontrada:', conversationData)
 
       const conversation = conversationData
       const isClient = conversation.client_id === user.id
@@ -438,6 +430,13 @@ export function useMessages() {
         ? conversation.professional_id 
         : conversation.client_id
 
+      console.log('📤 Preparando inserção de mensagem:', {
+        conversationId,
+        senderId: user.id,
+        receiverId,
+        content: content.trim()
+      })
+
       const { data, error } = await supabase
         .from('messages')
         .insert({
@@ -447,10 +446,26 @@ export function useMessages() {
           content: content.trim(),
           is_read: false
         })
-        .select()
+        .select(`
+          id,
+          conversation_id,
+          sender_id,
+          receiver_id,
+          content,
+          message_type,
+          reply_to_id,
+          created_at,
+          updated_at,
+          is_read
+        `)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Erro ao inserir mensagem:', error)
+        throw new Error(`Erro ao inserir mensagem: ${error.message}`)
+      }
+      
+      console.log('✅ Mensagem inserida com sucesso:', data)
 
       // Atualizar last_message_at na conversa (se não foi atualizado ao reativar)
       if (!wasDeleted) {
@@ -469,7 +484,6 @@ export function useMessages() {
       return true
     } catch (err) {
       // Registrar tentativa falhada
-      recordMessageAttempt()
       
       console.error('❌ Erro ao enviar mensagem:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
@@ -477,7 +491,7 @@ export function useMessages() {
     } finally {
       setSending(false)
     }
-  }, [user?.id, conversations, loadMessages, checkMessageRateLimit, recordMessageAttempt])
+  }, [user?.id, conversations, loadMessages])
 
   // Marcar mensagens como lidas
   const markMessagesAsRead = useCallback(async (conversationId: string) => {
