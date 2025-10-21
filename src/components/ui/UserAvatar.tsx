@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
+import { ReferralBadge } from '@/components/referral/ReferralBadge'
+import { useReferralStats } from '@/hooks/useReferralStats'
 
 interface UserAvatarProps {
   src?: string | null
@@ -10,6 +12,8 @@ interface UserAvatarProps {
   fallback?: string
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  userId?: string
+  showReferralBadge?: boolean
 }
 
 export function UserAvatar({ 
@@ -17,10 +21,15 @@ export function UserAvatar({
   alt = 'Usuário', 
   fallback = 'U',
   size = 'md',
-  className 
+  className,
+  userId,
+  showReferralBadge = true
 }: UserAvatarProps) {
   const [imageError, setImageError] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  
+  // Carregar stats de referral se userId fornecido
+  const { stats, loading: statsLoading } = useReferralStats(showReferralBadge && userId ? userId : undefined)
 
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -47,7 +56,38 @@ export function UserAvatar({
   // Se não há src ou houve erro, mostrar apenas o fallback
   if (!src || imageError) {
     return (
+      <div className="relative inline-block">
+        <Avatar className={cn(sizeClasses[size], className)}>
+          <AvatarFallback className={cn(
+            "bg-blue-100 text-blue-600 font-semibold border border-gray-300",
+            fallbackSize[size]
+          )}>
+            {fallback}
+          </AvatarFallback>
+        </Avatar>
+        {showReferralBadge && stats && stats.tier !== 'none' && !statsLoading && (
+          <div className="absolute -top-1 -right-1">
+            <ReferralBadge
+              tier={stats.tier}
+              totalReferrals={stats.totalReferrals}
+              size="sm"
+              showCount={false}
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative inline-block">
       <Avatar className={cn(sizeClasses[size], className)}>
+        <AvatarImage 
+          src={src} 
+          alt={alt}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+        />
         <AvatarFallback className={cn(
           "bg-blue-100 text-blue-600 font-semibold border border-gray-300",
           fallbackSize[size]
@@ -55,23 +95,16 @@ export function UserAvatar({
           {fallback}
         </AvatarFallback>
       </Avatar>
-    )
-  }
-
-  return (
-    <Avatar className={cn(sizeClasses[size], className)}>
-      <AvatarImage 
-        src={src} 
-        alt={alt}
-        onError={handleImageError}
-        onLoad={handleImageLoad}
-      />
-      <AvatarFallback className={cn(
-        "bg-blue-100 text-blue-600 font-semibold border border-gray-300",
-        fallbackSize[size]
-      )}>
-        {fallback}
-      </AvatarFallback>
-    </Avatar>
+      {showReferralBadge && stats && stats.tier !== 'none' && !statsLoading && (
+        <div className="absolute -top-1 -right-1">
+          <ReferralBadge
+            tier={stats.tier}
+            totalReferrals={stats.totalReferrals}
+            size="sm"
+            showCount={false}
+          />
+        </div>
+      )}
+    </div>
   )
 }

@@ -28,7 +28,8 @@ import {
   Shield,
   LogOut,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  UserPlus
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -135,6 +136,13 @@ export function ModernSidebar() {
           description: 'Avalie serviços'
         },
         {
+          id: 'referrals-management',
+          title: 'Indicações',
+          href: '/indicacoes',
+          icon: <UserPlus className="h-4 w-4" />,
+          description: 'Indique e ganhe recompensas'
+        },
+        {
           id: 'messages',
           title: 'Mensagens',
           href: '#',
@@ -230,6 +238,13 @@ export function ModernSidebar() {
           href: '/editarperfil',
           icon: <Settings className="h-4 w-4" />,
           description: 'Atualizar informações'
+        },
+        {
+          id: 'referrals',
+          title: 'Indicações',
+          href: '/indicacoes',
+          icon: <UserPlus className="h-4 w-4" />,
+          description: 'Indique amigos e ganhe recompensas'
         },
         {
           id: 'privacy-settings',

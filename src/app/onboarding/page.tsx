@@ -29,6 +29,7 @@ import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import { checkCpfExists } from '@/lib/checkDuplicates'
 import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
+import { createReferral, updateReferralMilestone } from '@/hooks/useReferralTracking'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -634,6 +635,23 @@ export default function OnboardingPage() {
       }
 
       console.log('✅ Perfil salvo com sucesso!')
+      
+      // Criar referral se houver código salvo
+      try {
+        console.log('👥 Verificando código de referral...')
+        const referralResult = await createReferral(user.id, 'onboarding')
+        
+        if (referralResult.success) {
+          console.log('✅ Referral criado com sucesso!')
+          // Marcar milestone de perfil completado
+          await updateReferralMilestone(user.id, 'profile_completed')
+        } else if (referralResult.error && !referralResult.error.includes('Nenhum código')) {
+          console.log('⚠️ Erro ao criar referral:', referralResult.error)
+        }
+      } catch (referralError) {
+        console.error('⚠️ Erro ao processar referral:', referralError)
+        // Não falhar o processo por causa do referral
+      }
       
       // Criar post de boas-vindas
       try {

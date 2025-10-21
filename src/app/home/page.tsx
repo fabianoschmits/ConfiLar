@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
+import { ReferralBadge } from '@/components/referral/ReferralBadge'
 import { 
   Users,
   UserCheck,
@@ -29,7 +30,10 @@ import {
   Clock,
   CheckCircle,
   Search,
-  MessageCircle
+  MessageCircle,
+  UserPlus,
+  Gift,
+  Zap
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -173,6 +177,118 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
+          {/* Seção: Programa de Indicações */}
+          <section className="mb-16">
+            <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-200 dark:border-green-800 overflow-hidden">
+              <CardContent className="p-8">
+                <div className="flex flex-col lg:flex-row items-center gap-8">
+                  {/* Ícone */}
+                  <div className="flex-shrink-0">
+                    <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                      <UserPlus className="w-10 h-10 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Conteúdo */}
+                  <div className="flex-1 text-center lg:text-left">
+                    <div className="flex items-center gap-3 justify-center lg:justify-start mb-3">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                        Programa de Indicações
+                      </h2>
+                      <Badge className="bg-green-600 hover:bg-green-700 text-white">
+                        Novidade! 🎉
+                      </Badge>
+                    </div>
+                    <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+                      Indique amigos para o ConfiLar e ganhe <strong>recompensas incríveis</strong>! 
+                      Quanto mais pessoas você indicar, mais badges e benefícios você desbloqueia.
+                    </p>
+
+                    {/* Benefícios em Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+                        <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Gift className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                            Ganhe Pontos
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Até 380 pontos por indicação
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+                        <div className="w-8 h-8 bg-yellow-600 dark:bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Award className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                            Badges Exclusivos
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            5 níveis: Bronze ao Diamante
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-gray-900/30 rounded-lg">
+                        <div className="w-8 h-8 bg-purple-600 dark:bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                            Benefícios VIP
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            Destaque e prioridade
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => router.push('/indicacoes')}
+                      size="lg"
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <UserPlus className="w-5 h-5 mr-2" />
+                      Começar a Indicar Agora
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </div>
+
+                  {/* Ilustração de Níveis */}
+                  <div className="flex-shrink-0 hidden xl:block">
+                    <div className="flex flex-col gap-2">
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center mb-1">
+                        Níveis Disponíveis
+                      </p>
+                      <div className="flex gap-2">
+                        {[
+                          { tier: 'bronze' as const, refs: 1 },
+                          { tier: 'silver' as const, refs: 5 },
+                          { tier: 'gold' as const, refs: 10 },
+                          { tier: 'platinum' as const, refs: 25 },
+                          { tier: 'diamond' as const, refs: 50 }
+                        ].map((level) => (
+                          <div key={level.tier} className="flex flex-col items-center">
+                            <ReferralBadge
+                              tier={level.tier}
+                              totalReferrals={level.refs}
+                              size="sm"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
 
           {/* Seção: Para Clientes */}
           <section className="mb-16">
