@@ -88,7 +88,7 @@ export function ReferralDashboard({ userId, className }: ReferralDashboardProps)
             {statCards.map((stat, index) => {
               const Icon = stat.icon
               return (
-                <div key={index} className="flex flex-col items-center text-center">
+                <div key={stat.title || `stat-${index}`} className="flex flex-col items-center text-center">
                   <div className={cn('p-1.5 md:p-2 rounded-lg mb-1', stat.bgColor)}>
                     <Icon className={cn('w-4 h-4 md:w-5 md:h-5', stat.color)} />
                   </div>
