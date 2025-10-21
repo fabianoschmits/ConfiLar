@@ -32,7 +32,7 @@ export function LikeButtonWithNotifications({
     <button
       onClick={toggleLike}
       disabled={isLiking}
-      className={`flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-red-500 transition-colors ${
+      className={`flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors ${
         isLiked ? 'text-red-500' : ''
       } ${className}`}
     >

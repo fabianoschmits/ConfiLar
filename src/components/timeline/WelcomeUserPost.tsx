@@ -85,7 +85,7 @@ export function WelcomeUserPost({
 
   return (
     <>
-      <Card className="mb-4 hover:shadow-md transition-shadow duration-200">
+      <Card className="mb-4 hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Card - Estilo da página de busca */}
           <div className="flex items-start space-x-3 mb-4">
@@ -101,7 +101,7 @@ export function WelcomeUserPost({
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
                   <Link href={`/perfil/${post.user_id || ''}`}>
                     {post.metadata?.user}
                   </Link>
@@ -115,11 +115,11 @@ export function WelcomeUserPost({
                 </Badge>
               </div>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <div className="flex items-center text-xs text-gray-500">
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <MapPin className="h-3 w-3 mr-1" />
                   {post.metadata?.location_city}, {post.metadata?.location_state}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   {formatTimeAgo(post.created_at)}
                 </div>
               </div>
@@ -143,18 +143,18 @@ export function WelcomeUserPost({
           </div>
 
           {/* Mensagem de Boas-vindas */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
-              <UserPlus className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-800">🎉 Bem-vindo(a) à comunidade!</span>
+              <UserPlus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">🎉 Bem-vindo(a) à comunidade!</span>
             </div>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               {post.metadata?.bio || 'Seja bem-vindo(a) à nossa plataforma! Estamos felizes em tê-lo(a) conosco e ansiosos para ver suas contribuições na comunidade.'}
             </p>
           </div>
 
           {/* Bio do usuário */}
-          <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
             {post.metadata?.bio || 'Profissional qualificado e experiente.'}
           </p>
 
@@ -168,14 +168,14 @@ export function WelcomeUserPost({
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600 ml-2">
+            <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">
               Novo membro - Sem avaliações ainda
             </span>
           </div>
 
           {/* Footer do Card - Estilo da página de busca */}
           <div className="flex items-center justify-between">
-            <div className="flex flex-col items-center text-xs text-gray-500">
+            <div className="flex flex-col items-center text-xs text-gray-500 dark:text-gray-400">
               <div className="flex items-center mb-0.5">
                 <Eye className="h-3 w-3 mr-1" />
                 <span className="font-medium">0</span>

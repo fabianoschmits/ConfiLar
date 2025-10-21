@@ -376,20 +376,20 @@ export function TimelinePost({
             />
             <button 
               onClick={() => setShowCommentSection(!showCommentSection)}
-              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
+              className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
             >
               <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base">{commentsCount}</span>
             </button>
             <button 
               onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-green-500 transition-colors"
+              className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
               title="Compartilhar post"
             >
               <Share2 className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base hidden sm:inline">Compartilhar</span>
             </button>
-            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-gray-500 transition-colors">
+            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
               <Eye className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base">{viewsCount}</span>
             </button>

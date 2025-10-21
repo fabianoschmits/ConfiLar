@@ -36,10 +36,10 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="relative p-2 hover:bg-gray-100 transition-colors"
+            className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             {/* Sino sempre visível */}
-            <Bell className="w-5 h-5 text-gray-600" />
+            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             
             {/* Badge de contador - sempre sobreposto */}
             {unreadCount > 0 && (
@@ -53,18 +53,18 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
         </PopoverTrigger>
 
         <PopoverContent 
-          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl"
+          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl"
           align="end"
           sideOffset={8}
         >
           {/* Header */}
-          <div className="p-4 pb-3 border-b border-gray-100">
+          <div className="p-4 pb-3 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <Bell className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Notificações
                   {unreadCount > 0 && (
                     <Badge className="bg-red-500 text-white font-medium px-2 py-1 rounded-full ml-2 text-xs">
@@ -72,7 +72,7 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
                     </Badge>
                   )}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Gerencie suas notificações e alertos
                 </p>
               </div>

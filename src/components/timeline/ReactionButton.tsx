@@ -43,8 +43,8 @@ export function ReactionButton({ postId, postOwnerId, postOwnerName, className }
     <Button
       variant="ghost"
       size="sm"
-      className={`flex items-center space-x-1 md:space-x-2 hover:bg-gray-100 ${className} ${
-        userReaction === 'like' ? 'bg-gray-100' : ''
+      className={`flex items-center space-x-1 md:space-x-2 hover:bg-gray-100 dark:hover:bg-gray-800 ${className} ${
+        userReaction === 'like' ? 'bg-gray-100 dark:bg-gray-800' : ''
       }`}
       onClick={handleReaction}
       disabled={isLoading || countsLoading}
@@ -53,7 +53,7 @@ export function ReactionButton({ postId, postOwnerId, postOwnerName, className }
           className={`h-4 w-4 md:h-5 md:w-5 ${
             userReaction === 'like' 
               ? 'fill-red-500 text-red-500' 
-              : 'text-gray-600 hover:text-gray-700'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`} 
         />
       {reactionCounts.like > 0 && (

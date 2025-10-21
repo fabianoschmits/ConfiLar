@@ -142,7 +142,7 @@ export function SimpleAutomaticPost({ post, onDelete, isDeleting = false }: Simp
 
   return (
     <>
-      <Card className="mb-2 bg-gray-50 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <Card className="mb-2 bg-gray-50 dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <CardContent className="py-2 px-3">
           {/* Linha principal com ação */}
           <div className="flex items-center justify-between">
@@ -156,7 +156,7 @@ export function SimpleAutomaticPost({ post, onDelete, isDeleting = false }: Simp
                 size="sm"
                 onClick={() => setShowDeleteDialog(true)}
                 disabled={isDeleting}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 ml-2"
+                className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ml-2"
               >
                 {isDeleting ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -168,7 +168,7 @@ export function SimpleAutomaticPost({ post, onDelete, isDeleting = false }: Simp
           </div>
 
           {/* Linha de informações (localização e tempo) - mais compacta */}
-          <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
             <div className="flex items-center">
               <span>📍 {post.metadata?.location_city || post.location_city || 'Cidade'}, {post.metadata?.location_state || post.location_state || 'Estado'}</span>
             </div>

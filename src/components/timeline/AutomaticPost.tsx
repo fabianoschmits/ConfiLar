@@ -118,7 +118,7 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
 
   return (
     <>
-      <Card className="mb-2 bg-gray-50 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <Card className="mb-2 bg-gray-50 dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <CardContent className="py-2 px-3">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
@@ -126,7 +126,7 @@ export function AutomaticPost({ post, onDelete, isDeleting = false }: AutomaticP
             </div>
             
             <div className="flex items-center space-x-2 ml-3">
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {formatTimeAgo(post.created_at)}
               </span>
               

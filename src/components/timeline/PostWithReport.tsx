@@ -21,7 +21,7 @@ interface PostWithReportProps {
 
 export function PostWithReport({ post }: PostWithReportProps) {
   return (
-    <div className="bg-white rounded-lg border p-4 space-y-3">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
       {/* Header do post */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -39,8 +39,8 @@ export function PostWithReport({ post }: PostWithReportProps) {
             )}
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">{post.professional.full_name}</h3>
-            <p className="text-sm text-gray-500">Profissional</p>
+            <h3 className="font-medium text-gray-900 dark:text-white">{post.professional.full_name}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Profissional</p>
           </div>
         </div>
 
@@ -74,12 +74,12 @@ export function PostWithReport({ post }: PostWithReportProps) {
 
       {/* Conteúdo do post */}
       <div>
-        <h2 className="font-semibold text-lg text-gray-900 mb-2">{post.title}</h2>
-        <p className="text-gray-700">{post.content}</p>
+        <h2 className="font-semibold text-lg text-gray-900 dark:text-white mb-2">{post.title}</h2>
+        <p className="text-gray-700 dark:text-gray-300">{post.content}</p>
       </div>
 
       {/* Ações do post */}
-      <div className="flex items-center justify-between pt-2 border-t">
+      <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm">
             Curtir
