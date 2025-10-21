@@ -57,8 +57,24 @@ export function useReferralStats(userId?: string) {
       return
     }
 
-    loadStats()
+    // Verificar se há sessão ativa antes de fazer a consulta
+    checkAuthAndLoadStats()
   }, [userId])
+
+  const checkAuthAndLoadStats = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      
+      loadStats()
+    } catch (err) {
+      console.error('Erro ao verificar autenticação:', err)
+      setLoading(false)
+    }
+  }
 
   const loadStats = async () => {
     try {
@@ -141,8 +157,24 @@ export function useReferralDashboard(userId?: string) {
       return
     }
 
-    loadDashboard()
+    // Verificar autenticação antes de carregar
+    checkAuthAndLoadDashboard()
   }, [userId])
+
+  const checkAuthAndLoadDashboard = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      
+      loadDashboard()
+    } catch (err) {
+      console.error('Erro ao verificar autenticação:', err)
+      setLoading(false)
+    }
+  }
 
   const loadDashboard = async () => {
     try {
@@ -299,8 +331,24 @@ export function useTopReferrers(limit: number = 10) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadTopReferrers()
+    // Verificar autenticação antes de carregar
+    checkAuthAndLoadTopReferrers()
   }, [limit])
+
+  const checkAuthAndLoadTopReferrers = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      
+      loadTopReferrers()
+    } catch (err) {
+      console.error('Erro ao verificar autenticação:', err)
+      setLoading(false)
+    }
+  }
 
   const loadTopReferrers = async () => {
     try {
