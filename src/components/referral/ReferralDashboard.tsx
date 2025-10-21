@@ -80,35 +80,33 @@ export function ReferralDashboard({ userId, className }: ReferralDashboardProps)
   ]
 
   return (
-    <div className={cn('space-y-6', className)}>
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn('p-3 rounded-lg', stat.bgColor)}>
-                    <Icon className={cn('w-6 h-6', stat.color)} />
+    <div className={cn('space-y-4', className)}>
+      {/* Card Único com 4 Estatísticas em Linha - Compacto */}
+      <Card className="border-2 border-blue-200 dark:border-blue-800">
+        <CardContent className="p-3 md:p-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
+            {statCards.map((stat, index) => {
+              const Icon = stat.icon
+              return (
+                <div key={index} className="flex flex-col items-center text-center">
+                  <div className={cn('p-1.5 md:p-2 rounded-lg mb-1', stat.bgColor)}>
+                    <Icon className={cn('w-4 h-4 md:w-5 md:h-5', stat.color)} />
                   </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                     {stat.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-base md:text-xl font-bold text-gray-900 dark:text-white">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-[9px] md:text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                     {stat.description}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Progresso para Próximo Nível */}
       {stats.tier !== 'diamond' && (

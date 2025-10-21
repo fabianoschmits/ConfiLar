@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { ReferralDashboard } from '@/components/referral/ReferralDashboard'
@@ -8,10 +8,14 @@ import { ReferralLinkCard } from '@/components/referral/ReferralLinkCard'
 import { ReferralHistory } from '@/components/referral/ReferralHistory'
 import { ReferralLeaderboard } from '@/components/referral/ReferralLeaderboard'
 import { Card, CardContent } from '@/components/ui/card'
-import { Users, TrendingUp, Award, Sparkles } from 'lucide-react'
+import { Users, TrendingUp, Award, Sparkles, ChevronDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function IndicacoesPage() {
   const { user, loading } = useAuthContext()
+  const [showHowItWorks, setShowHowItWorks] = useState(false)
+  const [showPointsTable, setShowPointsTable] = useState(false)
+  const [showTiersBenefits, setShowTiersBenefits] = useState(false)
 
   if (loading) {
     return (
@@ -71,125 +75,170 @@ export default function IndicacoesPage() {
             </p>
           </div>
 
-          {/* Como Funciona */}
+          {/* Como Funciona - Botão Compacto */}
           <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                Como Funciona
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                    1
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Compartilhe seu link</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Use seu código exclusivo para convidar amigos
-                    </p>
-                  </div>
+            <CardContent className="p-0">
+              <Button
+                variant="ghost"
+                onClick={() => setShowHowItWorks(!showHowItWorks)}
+                className="w-full flex items-center justify-between hover:bg-blue-100 dark:hover:bg-blue-900/30 px-3 py-2 h-auto rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white">
+                    Como Funciona
+                  </h3>
                 </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform ${
+                    showHowItWorks ? 'rotate-180' : ''
+                  }`}
+                />
+              </Button>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                    2
+              {showHowItWorks && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 px-6 pb-6 pt-4 border-t border-blue-200 dark:border-blue-800">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                      1
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Compartilhe seu link</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Use seu código exclusivo para convidar amigos
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Amigos se cadastram</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Cada cadastro via seu link te dá pontos
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                    3
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                      2
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Amigos se cadastram</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Cada cadastro via seu link te dá pontos
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">Ganhe recompensas</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Desbloqueie badges e benefícios exclusivos
-                    </p>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Ganhe recompensas</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Desbloqueie badges e benefícios exclusivos
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Dashboard de Estatísticas */}
+          {/* Dashboard de Estatísticas - Cards em linha única */}
           <ReferralDashboard userId={user.id} />
 
-          {/* Grid Principal */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Link de Indicação */}
-            <ReferralLinkCard userId={user.id} />
+          {/* Link de Indicação - Full width */}
+          <ReferralLinkCard userId={user.id} />
 
-            {/* Leaderboard */}
-            <ReferralLeaderboard limit={5} />
-          </div>
+          {/* Leaderboard - Full width */}
+          <ReferralLeaderboard limit={10} />
 
           {/* Histórico de Indicações */}
           <ReferralHistory userId={user.id} />
 
-          {/* Tabela de Pontos */}
+          {/* Tabela de Pontos - Accordion */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                Como Ganhar Pontos
-              </h3>
-              <div className="space-y-3">
-                {pointsTable.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-600 dark:bg-green-400 rounded-full" />
-                      <span className="text-gray-900 dark:text-white">{item.action}</span>
+            <CardContent className="p-4">
+              <Button
+                variant="ghost"
+                onClick={() => setShowPointsTable(!showPointsTable)}
+                className="w-full flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
+                    Como Ganhar Pontos
+                  </h3>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                    showPointsTable ? 'rotate-180' : ''
+                  }`}
+                />
+              </Button>
+
+              {showPointsTable && (
+                <div className="space-y-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {pointsTable.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                    >
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-600 dark:bg-green-400 rounded-full" />
+                        <span className="text-sm md:text-base text-gray-900 dark:text-white">{item.action}</span>
+                      </div>
+                      <span className="text-sm md:text-base font-bold text-green-600 dark:text-green-400">
+                        +{item.points} pts
+                      </span>
                     </div>
-                    <span className="font-bold text-green-600 dark:text-green-400">
-                      +{item.points} pontos
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Níveis e Recompensas */}
+          {/* Níveis e Recompensas - Accordion */}
           <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                Níveis e Benefícios
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tiersBenefits.map((tier, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <tier.icon className={`w-5 h-5 ${tier.color}`} />
-                      <h4 className="font-bold text-gray-900 dark:text-white">{tier.name}</h4>
+            <CardContent className="p-4">
+              <Button
+                variant="ghost"
+                onClick={() => setShowTiersBenefits(!showTiersBenefits)}
+                className="w-full flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
+                    Níveis e Benefícios
+                  </h3>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                    showTiersBenefits ? 'rotate-180' : ''
+                  }`}
+                />
+              </Button>
+
+              {showTiersBenefits && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {tiersBenefits.map((tier, index) => (
+                    <div
+                      key={index}
+                      className="p-3 md:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <tier.icon className={`w-4 h-4 md:w-5 md:h-5 ${tier.color}`} />
+                        <h4 className="font-bold text-sm md:text-base text-gray-900 dark:text-white">{tier.name}</h4>
+                      </div>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        {tier.requirement}
+                      </p>
+                      <ul className="space-y-1">
+                        {tier.benefits.map((benefit, idx) => (
+                          <li key={idx} className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1">
+                            <span className="text-green-600 dark:text-green-400">✓</span>
+                            {benefit}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {tier.requirement}
-                    </p>
-                    <ul className="space-y-1">
-                      {tier.benefits.map((benefit, idx) => (
-                        <li key={idx} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1">
-                          <span className="text-green-600 dark:text-green-400">✓</span>
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
