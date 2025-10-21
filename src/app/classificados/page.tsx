@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -1011,18 +1012,17 @@ export default function ClassificadosPage() {
                     <div className="space-y-3 sm:space-y-6">
                       {/* Header com Avatar e Info do Usuário */}
                       <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <div className="relative self-center sm:self-start">
-                          <Link href={`/perfil/${selectedAd.user_id}`} className="block">
-                            <Avatar className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer">
-                              <AvatarImage src={selectedAd.user_avatar_url} alt={`Avatar de ${selectedAd.user_name}`} />
-                              <AvatarFallback className={`font-medium text-sm sm:text-lg ${
-                                selectedAd.ad_type === 'oferecer' 
-                                  ? 'bg-gray-200 text-gray-800' 
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}>
-                                {selectedAd.user_name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                        <div className="self-center sm:self-start">
+                          <Link href={`/perfil/${selectedAd.user_id}`}>
+                            <UserAvatar
+                              src={selectedAd.user_avatar_url}
+                              alt={selectedAd.user_name}
+                              fallback={selectedAd.user_name.charAt(0).toUpperCase()}
+                              size="md"
+                              userId={selectedAd.user_id}
+                              showReferralBadge={true}
+                              className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer"
+                            />
                           </Link>
                         </div>
                         <div className="flex-1 w-full text-center sm:text-left">

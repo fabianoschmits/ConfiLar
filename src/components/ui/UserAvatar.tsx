@@ -10,7 +10,7 @@ interface UserAvatarProps {
   src?: string | null
   alt?: string
   fallback?: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
   userId?: string
   showReferralBadge?: boolean
@@ -34,14 +34,22 @@ export function UserAvatar({
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
-    lg: 'w-12 h-12'
+    lg: 'w-12 h-12',
+    xl: 'w-32 h-32'
   }
 
   const fallbackSize = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-lg'
+    lg: 'text-lg',
+    xl: 'text-4xl'
   }
+
+  // Tamanho do badge baseado no tamanho do avatar
+  const badgeSize = size === 'xl' ? 'lg' : size === 'lg' ? 'md' : 'sm'
+  
+  // Posicionamento do badge baseado no tamanho
+  const badgePosition = size === 'xl' ? 'top-0 right-0' : size === 'lg' ? '-top-2 -right-2' : '-top-1 -right-1'
 
   const handleImageError = () => {
     console.log('❌ Erro ao carregar avatar:', src)
@@ -66,11 +74,11 @@ export function UserAvatar({
           </AvatarFallback>
         </Avatar>
         {showReferralBadge && stats && stats.tier !== 'none' && !statsLoading && (
-          <div className="absolute -top-1 -right-1">
+          <div className={cn("absolute", badgePosition)}>
             <ReferralBadge
               tier={stats.tier}
               totalReferrals={stats.totalReferrals}
-              size="sm"
+              size={badgeSize}
               showCount={false}
             />
           </div>
@@ -96,11 +104,11 @@ export function UserAvatar({
         </AvatarFallback>
       </Avatar>
       {showReferralBadge && stats && stats.tier !== 'none' && !statsLoading && (
-        <div className="absolute -top-1 -right-1">
+        <div className={cn("absolute", badgePosition)}>
           <ReferralBadge
             tier={stats.tier}
             totalReferrals={stats.totalReferrals}
-            size="sm"
+            size={badgeSize}
             showCount={false}
           />
         </div>
