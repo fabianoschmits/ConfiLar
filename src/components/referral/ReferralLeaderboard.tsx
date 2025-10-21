@@ -98,7 +98,7 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
                 <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-gray-200 dark:ring-gray-700">
                   <AvatarImage src={referrer.avatarUrl || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
-                    {referrer.fullName.charAt(0).toUpperCase()}
+                    {referrer.fullName?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
 
@@ -128,7 +128,7 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
                     {referrer.totalReferrals === 1 ? 'indicação' : 'indicações'}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    {referrer.totalPoints.toLocaleString()} pts
+                    {(referrer.totalPoints || 0).toLocaleString()} pts
                   </p>
                 </div>
               </div>
