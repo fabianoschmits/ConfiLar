@@ -234,7 +234,7 @@ export default function AjudaPage() {
                       <Mail className="h-5 w-5 text-gray-600" />
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">Email</p>
-                        <p className="text-sm text-gray-600">suporte@confilar.com</p>
+                        <p className="text-sm text-gray-600">suporte@appconfilar.com.br</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">

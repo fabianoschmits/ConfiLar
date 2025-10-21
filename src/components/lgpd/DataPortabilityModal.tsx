@@ -237,8 +237,8 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
           <div className="text-xs text-gray-500 text-center">
             <p>
               Dúvidas sobre portabilidade de dados? Entre em contato: 
-              <a href="mailto:privacidade@confilar.com" className="text-blue-600 hover:underline ml-1">
-                privacidade@confilar.com
+              <a href="mailto:privacidade@appconfilar.com.br" className="text-blue-600 hover:underline ml-1">
+                privacidade@appconfilar.com.br
               </a>
             </p>
           </div>

@@ -99,7 +99,7 @@ export default function PrivacidadePage() {
                   <p className="text-blue-700 text-sm">
                     ConfiLar - Plataforma de Confiança Profissional<br/>
                     CNPJ: 00.000.000/0001-00<br/>
-                    Email: privacidade@confilar.com
+                    Email: privacidade@appconfilar.com.br
                   </p>
                 </div>
               </CardContent>
@@ -253,7 +253,7 @@ export default function PrivacidadePage() {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 mb-2">Como Exercer Seus Direitos:</h4>
                   <p className="text-blue-700 text-sm">
-                    Entre em contato através do email privacidade@confilar.com ou 
+                    Entre em contato através do email privacidade@appconfilar.com.br ou 
                     acesse as configurações da sua conta na plataforma.
                   </p>
                 </div>
@@ -379,7 +379,7 @@ export default function PrivacidadePage() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Encarregado de Proteção de Dados (DPO):</h4>
                   <p className="text-gray-700 text-sm">
-                    Email: dpo@confilar.com<br/>
+                    Email: privacidade@appconfilar.com.br<br/>
                     Telefone: (11) 99999-9999<br/>
                     Endereço: São Paulo, SP - Brasil
                   </p>

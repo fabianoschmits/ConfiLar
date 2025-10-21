@@ -634,7 +634,7 @@ function HomeContent() {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  contato@confilar.com
+                  contato@appconfilar.com.br
                 </li>
                 <li className="flex items-center">
                   <Phone className="h-4 w-4 mr-2" />

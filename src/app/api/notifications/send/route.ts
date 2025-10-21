@@ -10,7 +10,7 @@ const vapidKeys = {
 
 if (vapidKeys.publicKey && vapidKeys.privateKey) {
   webpush.setVapidDetails(
-    'mailto:contato@confilar.com',
+    'mailto:no-reply@appconfilar.com.br',
     vapidKeys.publicKey,
     vapidKeys.privateKey
   )
