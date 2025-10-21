@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   Popover,
@@ -554,14 +555,17 @@ export default function BuscarPage() {
                       <div className="flex items-start space-x-3 mb-4">
                         <div 
                           onClick={() => handleProfileClick(profile.id)}
-                          className="flex-shrink-0 cursor-pointer relative"
+                          className="flex-shrink-0 cursor-pointer"
                         >
-                          <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                            <AvatarImage src={profile.avatar_url || ''} alt={`Avatar de ${profile.full_name}`} />
-                            <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                              {profile.full_name?.charAt(0).toUpperCase() || 'P'}
-                            </AvatarFallback>
-                          </Avatar>
+                          <UserAvatar
+                            src={profile.avatar_url}
+                            alt={profile.full_name}
+                            fallback={profile.full_name?.charAt(0).toUpperCase() || 'P'}
+                            size="lg"
+                            userId={profile.id}
+                            showReferralBadge={true}
+                            className="hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div 

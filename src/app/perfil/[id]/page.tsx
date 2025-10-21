@@ -423,8 +423,9 @@ export default function PublicProfilePage() {
                                         src={profile.avatar_url}
                                         alt={profile.full_name}
                                         fallback={profile.full_name.charAt(0)}
-                                        size="lg"
-                                        className="w-32 h-32"
+                                        size="xl"
+                                        userId={profile.id}
+                                        showReferralBadge={true}
                                     />
                                 </div>
                                 

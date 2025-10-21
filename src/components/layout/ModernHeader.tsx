@@ -302,6 +302,8 @@ export function ModernHeader({
                     alt={profile?.full_name || 'Usuário'}
                     fallback={profile?.full_name?.charAt(0) || 'U'}
                     size="sm"
+                    userId={user?.id}
+                    showReferralBadge={true}
                   />
                   <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {profile?.full_name || 'Usuário'}
@@ -321,6 +323,8 @@ export function ModernHeader({
                           fallback={profile?.full_name?.charAt(0) || 'U'}
                           size="sm"
                           className="sm:w-10 sm:h-10"
+                          userId={user?.id}
+                          showReferralBadge={true}
                         />
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">

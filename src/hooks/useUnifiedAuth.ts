@@ -68,6 +68,7 @@ export type SignUpData = {
 export type BasicSignUpData = {
   email: string
   password: string
+  cpf_cnpj?: string
 }
 
 export type CompleteProfileData = {
@@ -422,6 +423,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         password: userData.password,
         options: {
           data: {
+            cpf_cnpj: userData.cpf_cnpj || null
             // Nome será preenchido no onboarding
           }
         }
