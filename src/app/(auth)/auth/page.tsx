@@ -6,9 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from '@/components/forms/LoginForm'
 import { BasicSignupForm } from '@/components/forms/BasicSignupForm'
-import { Check, ArrowLeft, Sparkles, X } from 'lucide-react'
+import { Check, ArrowLeft, Sparkles, X, Users } from 'lucide-react'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useReferralTracking } from '@/hooks/useReferralTracking'
 
 export default function AuthPage() {
   const router = useRouter()
@@ -16,6 +17,10 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState('login')
   const [registrationComplete, setRegistrationComplete] = useState(false)
   const [redirectPath, setRedirectPath] = useState('/feed')
+  const [referralInfo, setReferralInfo] = useState<{ code: string; userName?: string } | null>(null)
+
+  // Hook de tracking de referral
+  useReferralTracking()
 
   useEffect(() => {
     // Obter o parâmetro de redirecionamento da URL
@@ -36,7 +41,31 @@ export default function AuthPage() {
       setRegistrationComplete(true)
       setActiveTab('login')
     }
+
+    // Verificar se há código de referral
+    const refCode = searchParams.get('ref')
+    if (refCode) {
+      setReferralInfo({ code: refCode })
+      // Validar código (opcional, para mostrar nome do indicador)
+      validateReferralCode(refCode)
+    }
   }, [searchParams])
+
+  const validateReferralCode = async (code: string) => {
+    try {
+      const { data } = await fetch('/api/referrals/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      }).then(r => r.json())
+
+      if (data?.userName) {
+        setReferralInfo(prev => prev ? { ...prev, userName: data.userName } : null)
+      }
+    } catch (err) {
+      console.error('Erro ao validar código de referral:', err)
+    }
+  }
 
   const handleRegistrationComplete = () => {
     setRegistrationComplete(true)
@@ -83,6 +112,27 @@ export default function AuthPage() {
       {/* Main Content Moderno */}
       <div className="container py-12 md:py-24">
         <div className="mx-auto max-w-md">
+          {/* Banner de Indicação */}
+          {referralInfo && (
+            <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      🎉 Você foi indicado{referralInfo.userName && ` por ${referralInfo.userName}`}!
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Cadastre-se e ganhe benefícios exclusivos
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Header Card Moderno */}
           <Card className="mb-8 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="text-center p-8">

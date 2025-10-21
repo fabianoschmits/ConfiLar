@@ -42,7 +42,8 @@ import {
   BarChart3,
   ShieldCheck,
   Flag,
-  FileText
+  FileText,
+  UserPlus
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -473,6 +474,15 @@ export function ModernHeader({
                             >
                               <Star className="h-3 w-3" />
                               <span className="truncate">Avaliações</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/indicacoes')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            >
+                              <UserPlus className="h-3 w-3 text-green-600 dark:text-green-400" />
+                              <span className="truncate text-green-700 dark:text-green-300">Indicações</span>
                             </Button>
                             <Button
                               variant="ghost"

@@ -13,6 +13,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { checkEmailExists } from '@/lib/checkDuplicates'
 import { RefreshCw } from 'lucide-react'
+import { createReferral } from '@/hooks/useReferralTracking'
 
 // Schema simplificado para cadastro básico - email, senha e confirmação
 const basicSignupSchema = z.object({
@@ -136,6 +137,9 @@ export function BasicSignupForm() {
         setIsLoading(false)
         return
       }
+
+      // Nota: O referral será criado automaticamente no onboarding quando o usuário completar o perfil
+      // O código de referral já está salvo no localStorage e será usado lá
 
       // Mostrar notificação de sucesso
       toast.success('🎉 Conta criada com sucesso! Um email de confirmação foi enviado para você. Verifique sua caixa de entrada e clique no link para ativar sua conta.')
