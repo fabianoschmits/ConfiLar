@@ -71,7 +71,12 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {topReferrers.map((referrer, index) => {
+          {topReferrers.length === 0 ? (
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              Nenhum indicador encontrado
+            </div>
+          ) : (
+            topReferrers.map((referrer, index) => {
             const isTop3 = index < 3
             const positionIcon = getPositionIcon(index + 1)
 
@@ -133,7 +138,8 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
                 </div>
               </div>
             )
-          })}
+          })
+          )}
         </div>
       </CardContent>
     </Card>
