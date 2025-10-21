@@ -121,7 +121,7 @@ export function NewUserWelcomePost({
 
   return (
     <>
-      <Card className="mb-3 bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-3 md:p-4">
           {/* Header - Responsivo */}
           <div className="flex items-start space-x-3 mb-3">
@@ -138,7 +138,7 @@ export function NewUserWelcomePost({
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-sm md:text-base font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors truncate">
+                <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors truncate">
                   <Link href={`/perfil/${post.user_id || ''}`}>
                     {userName}
                   </Link>
@@ -164,20 +164,20 @@ export function NewUserWelcomePost({
                 </Badge>
               </div>
               
-              <div className="flex items-center text-xs text-gray-500 mb-2">
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
                 <MapPin className="h-3 w-3 mr-1" />
                 <span className="truncate">{userLocationCity}, {userLocationState}</span>
               </div>
               
               {/* Mensagem de boas-vindas personalizada e responsiva */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3 mb-2">
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 text-xs">🎉</span>
+                  <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 dark:text-blue-400 text-xs">🎉</span>
                   </div>
-                  <h4 className="font-semibold text-blue-900 text-sm">Bem-vindo à ConfiLar!</h4>
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 text-sm">Bem-vindo à ConfiLar!</h4>
                 </div>
-                <p className="text-blue-800 text-xs md:text-sm leading-relaxed">
+                <p className="text-blue-800 dark:text-blue-200 text-xs md:text-sm leading-relaxed">
                   {userType === 'professional' 
                     ? `Olá! Sou ${userName} e acabei de me juntar à plataforma! 🎉 Estou aqui para oferecer meus serviços profissionais e prestar um excelente trabalho para clientes. Fico feliz em fazer parte desta comunidade!`
                     : `Olá! Sou ${userName} e acabei de me juntar à plataforma! 🎉 Estou aqui para encontrar profissionais qualificados para meus projetos. Mal posso esperar para conhecer a comunidade!`
@@ -185,7 +185,7 @@ export function NewUserWelcomePost({
                 </p>
               </div>
               
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {formatTimeAgo(post.created_at)}
               </div>
             </div>
@@ -197,7 +197,7 @@ export function NewUserWelcomePost({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-7 w-7 p-0 hover:bg-gray-100"
+                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <MoreHorizontal className="h-3 w-3" />
                   </Button>
@@ -233,11 +233,11 @@ export function NewUserWelcomePost({
           {/* Botões de ação - Responsivos */}
           <div className="flex items-center justify-between pt-3 border-t">
             <div className="flex items-center gap-3">
-              <div className="flex items-center text-gray-500">
+              <div className="flex items-center text-gray-500 dark:text-gray-400">
                 <Eye className="h-3 w-3 mr-1" />
                 <span className="text-xs">{viewsCount || 0}</span>
               </div>
-              <div className="flex items-center text-gray-500">
+              <div className="flex items-center text-gray-500 dark:text-gray-400">
                 <MessageCircle className="h-3 w-3 mr-1" />
                 <span className="text-xs">{commentsCount || 0}</span>
               </div>

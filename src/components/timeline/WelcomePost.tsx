@@ -80,7 +80,7 @@ export function WelcomePost({
 
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow duration-200">
+      <Card className="hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Post */}
           <div className="flex items-start justify-between mb-4">
@@ -95,7 +95,7 @@ export function WelcomePost({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer transition-colors">
+                  <h3 className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 cursor-pointer transition-colors">
                     <Link href={`/perfil/${post.user_id || ''}`}>
                       {post.metadata?.user}
                     </Link>
@@ -108,11 +108,11 @@ export function WelcomePost({
                     Novo membro
                   </Badge>
                 </div>
-                <div className="flex items-center text-xs text-gray-500 mb-2">
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-2">
                   <MapPin className="h-3 w-3 mr-1" />
                   {post.metadata?.location_city}, {post.metadata?.location_state}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   {formatTimeAgo(post.created_at)}
                 </div>
               </div>
@@ -140,10 +140,10 @@ export function WelcomePost({
             <div className="flex items-center gap-2 mb-3">
               <div className="text-2xl">🎉</div>
               <div>
-                <h4 className="font-semibold text-gray-900">
+                <h4 className="font-semibold text-gray-900 dark:text-white">
                   {post.metadata?.user} se juntou à comunidade!
                 </h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Seja bem-vindo(a) à nossa plataforma de profissionais qualificados.
                 </p>
               </div>
@@ -183,7 +183,7 @@ export function WelcomePost({
               <ReactionButton postId={post.id} />
               <button 
                 onClick={() => setShowCommentSection(!showCommentSection)}
-                className="flex items-center space-x-1 md:space-x-2 text-gray-600 hover:text-blue-500 transition-colors"
+                className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
               >
                 <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="text-sm md:text-base">0</span>

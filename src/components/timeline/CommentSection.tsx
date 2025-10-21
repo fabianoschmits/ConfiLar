@@ -206,7 +206,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                   onClick={() => likeComment(comment.id)}
                   disabled={isLikingComment}
                   className={`flex items-center space-x-1 text-sm hover:text-red-500 transition-colors ${
-                    comment.is_liked ? 'text-red-500' : 'text-gray-500'
+                    comment.is_liked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   <Heart className={`w-4 h-4 ${comment.is_liked ? 'fill-current' : ''}`} />
@@ -219,7 +219,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                       startReply(comment.id)
                       setReplyingToUser(comment.user.full_name)
                     }}
-                    className="flex items-center space-x-1 text-sm text-gray-500 hover:text-blue-500 transition-colors"
+                    className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors"
                   >
                     <Reply className="w-4 h-4" />
                     <span>Responder</span>

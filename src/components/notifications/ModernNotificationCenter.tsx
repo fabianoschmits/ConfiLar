@@ -71,7 +71,7 @@ const NOTIFICATION_COLORS = {
   message: 'bg-blue-500',
   review: 'bg-yellow-500',
   booking: 'bg-green-500',
-  system: 'bg-gray-500',
+  system: 'bg-gray-50 dark:bg-gray-8000',
   achievement: 'bg-purple-500',
   verification: 'bg-indigo-500',
   success: 'bg-emerald-500',
@@ -146,8 +146,8 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-l-2xl">
-        <SheetHeader className="p-6 pb-4 border-b border-gray-100">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-l-2xl">
+        <SheetHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
               <SheetTitle className="flex items-center gap-2 text-lg font-semibold">
@@ -161,7 +161,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                   </Badge>
                 )}
               </SheetTitle>
-              <SheetDescription className="mt-1 text-gray-600">
+              <SheetDescription className="mt-1 text-gray-600 dark:text-gray-400">
                 {filteredNotifications.length} de {notifications.length} notificações
               </SheetDescription>
             </div>
@@ -189,7 +189,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
         <div className="flex-1 overflow-hidden flex flex-col">
           {/* Barra de Busca e Filtros */}
-          <div className="p-4 border-b bg-gray-50/50">
+          <div className="p-4 border-b bg-gray-50 dark:bg-gray-800/50">
             <div className="space-y-3">
               {/* Busca */}
               <div className="relative">
@@ -259,7 +259,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
               {showFilters && (
                 <div className="space-y-2 pt-2 border-t">
                   <div>
-                    <label className="text-xs font-medium text-gray-600 mb-1 block">Tipo</label>
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">Tipo</label>
                     <div className="flex flex-wrap gap-1">
                       <Button
                         variant={selectedType === 'all' ? 'default' : 'outline'}
@@ -300,7 +300,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
             {filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-6">
                 <BellOff className="w-12 h-12 text-gray-300 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {searchTerm || selectedType !== 'all' ? 'Nenhuma notificação encontrada' : 'Nenhuma notificação'}
                 </h3>
                 <p className="text-sm text-gray-500 mb-4">
@@ -319,7 +319,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
               <div className="space-y-1 p-2">
                 {filteredNotifications.map((notification) => {
                   const IconComponent = NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || Bell
-                  const iconColor = NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || 'bg-gray-500'
+                  const iconColor = NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || 'bg-gray-50 dark:bg-gray-8000'
                   const priorityColor = PRIORITY_COLORS[notification.priority as keyof typeof PRIORITY_COLORS] || 'bg-gray-100 text-gray-800'
                   const isExpanded = expandedNotifications.has(notification.id)
                   
@@ -327,7 +327,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                     <Card 
                       key={notification.id} 
                       className={`transition-all duration-200 hover:shadow-md ${
-                        !notification.is_read ? 'bg-blue-50/50 border-blue-200' : 'bg-white'
+                        !notification.is_read ? 'bg-blue-50/50 border-blue-200' : 'bg-white dark:bg-gray-800'
                       }`}
                     >
                       <CardContent className="p-4">
@@ -341,12 +341,12 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
+                                <h4 className="font-medium text-sm text-gray-900 dark:text-white line-clamp-2">
                                   {notification.title}
                                 </h4>
                                 
                                 {notification.message && (
-                                  <p className={`text-sm text-gray-600 mt-1 ${
+                                  <p className={`text-sm text-gray-600 dark:text-gray-400 mt-1 ${
                                     isExpanded ? '' : 'line-clamp-2'
                                   }`}>
                                     {notification.message}
@@ -420,7 +420,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
           {/* Footer com estatísticas */}
           {notifications.length > 0 && (
-            <div className="p-4 border-t bg-gray-50/50">
+            <div className="p-4 border-t bg-gray-50 dark:bg-gray-800/50">
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>
                   {unreadCount} não lidas de {notifications.length} total

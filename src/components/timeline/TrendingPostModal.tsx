@@ -268,7 +268,7 @@ export function TrendingPostModal({ isOpen, onClose, postId }: TrendingPostModal
                   size="sm"
                   onClick={handleLike}
                   className={`flex items-center gap-2 ${
-                    userReaction ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                    userReaction ? 'text-red-500' : 'text-gray-500 dark:text-gray-400 hover:text-red-500'
                   }`}
                   disabled={reactionsLoading}
                 >
@@ -280,7 +280,7 @@ export function TrendingPostModal({ isOpen, onClose, postId }: TrendingPostModal
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowComments(!showComments)}
-                  className="flex items-center gap-2 text-gray-500 hover:text-blue-500"
+                  className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-blue-500"
                 >
                   <MessageCircle className="h-4 w-4" />
                   Comentar
@@ -290,7 +290,7 @@ export function TrendingPostModal({ isOpen, onClose, postId }: TrendingPostModal
                   variant="ghost"
                   size="sm"
                   onClick={handleShare}
-                  className="flex items-center gap-2 text-gray-500 hover:text-green-500"
+                  className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-green-500"
                 >
                   <Share2 className="h-4 w-4" />
                   Compartilhar

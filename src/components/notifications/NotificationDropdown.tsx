@@ -64,11 +64,11 @@ const getNotificationIcon = (type: string) => {
     case 'achievement':
       return <Trophy className="h-4 w-4 text-orange-600" />;
     case 'info':
-      return <Info className="h-4 w-4 text-gray-600" />;
+      return <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
     case 'warning':
       return <AlertTriangle className="h-4 w-4 text-red-600" />;
     default:
-      return <Bell className="h-4 w-4 text-gray-600" />;
+      return <Bell className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
   }
 };
 
@@ -413,27 +413,27 @@ export const NotificationDropdown: React.FC = () => {
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative p-2 h-10 w-10 bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 shadow-lg hover:shadow-xl hover:bg-white transition-all duration-200 rounded-lg"
+          className="relative p-1 h-6 w-6 bg-white dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 rounded-lg"
         >
-          <Bell size={20} className="text-gray-600" />
+          <Bell size={14} className="text-gray-600 dark:text-gray-400" />
           
           {/* Indicador de conexão em tempo real */}
           {isConnecting && (
-            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-yellow-500 rounded-full border-2 border-white shadow-sm animate-pulse" 
+            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-yellow-500 rounded-full border border-white shadow-sm animate-pulse" 
                  title="Conectando..." />
           )}
           {isConnected && !isConnecting && (
-            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white shadow-sm animate-pulse" 
+            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full border border-white shadow-sm animate-pulse" 
                  title="Notificações em tempo real ativas" />
           )}
           {!isConnected && !isConnecting && (
-            <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white shadow-sm" 
+            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full border border-white shadow-sm" 
                  title="Conexão perdida" />
           )}
           
           {/* Contador de notificações não lidas */}
           {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-            <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-semibold shadow-md animate-pulse">
+            <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-semibold shadow-md animate-pulse">
               {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount)}
             </div>
           )}
@@ -442,23 +442,23 @@ export const NotificationDropdown: React.FC = () => {
 
       <DropdownMenuContent 
         align="end" 
-        className="w-80 sm:w-96 max-h-[80vh] overflow-hidden bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-xl mx-2 sm:mx-0"
+        className="w-80 sm:w-96 max-h-[80vh] overflow-hidden bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
           tableExists ? (
             <div className="w-full">
               {/* Header das Configurações Moderno */}
-              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 rounded-lg"
+                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 transition-all duration-200 rounded-lg"
                   >
                     <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5" />
                   </button>
-                  <Settings size={14} className="text-gray-600 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-semibold text-gray-900">Configurações</span>
+                  <Settings size={14} className="text-gray-600 dark:text-gray-400 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Configurações</span>
                 </div>
                 <button
                   onClick={savePreferences}
@@ -480,7 +480,7 @@ export const NotificationDropdown: React.FC = () => {
               </div>
 
               {/* Conteúdo das Configurações Moderno */}
-              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white">
+              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
                 {/* Canais de Notificação */}
                 <div className="space-y-4">
                   <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
@@ -488,8 +488,8 @@ export const NotificationDropdown: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <label htmlFor="push_enabled" className="text-xs sm:text-sm font-medium text-gray-900">Notificações Push</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <label htmlFor="push_enabled" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Notificações Push</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
@@ -500,7 +500,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
                               preferences.push_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -520,8 +520,8 @@ export const NotificationDropdown: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <label htmlFor="message_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Mensagens</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <label htmlFor="message_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Mensagens</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
@@ -532,7 +532,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
                               preferences.message_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -540,8 +540,8 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <label htmlFor="review_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Avaliações</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <label htmlFor="review_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Avaliações</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                       <button
@@ -552,7 +552,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
                               preferences.review_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -560,8 +560,8 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <label htmlFor="system_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Sistema</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <label htmlFor="system_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Sistema</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                         <button
@@ -572,7 +572,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
                               preferences.system_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -580,8 +580,8 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <label htmlFor="info_notifications" className="text-xs sm:text-sm font-medium text-gray-900">Informações</label>
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <label htmlFor="info_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Informações</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
                         <button
@@ -592,7 +592,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
                               preferences.info_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -609,32 +609,32 @@ export const NotificationDropdown: React.FC = () => {
         ) : (
           <>
             {/* Header das Notificações Moderno */}
-            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="flex items-center gap-2">
-                  <Bell size={14} className="text-blue-600 sm:w-4 sm:h-4" />
+            <div className="flex items-center justify-between px-1.5 py-1 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
+                  <Bell size={8} className="text-blue-600 dark:text-blue-400" />
                   {/* Indicador de conexão em tempo real */}
                   {isConnecting && (
-                    <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse" 
+                    <div className="h-1 w-1 bg-yellow-500 rounded-full animate-pulse" 
                          title="Conectando..." />
                   )}
                   {isConnected && !isConnecting && (
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" 
+                    <div className="h-1 w-1 bg-green-500 rounded-full animate-pulse" 
                          title="Notificações em tempo real ativas" />
                   )}
                   {!isConnected && !isConnecting && (
-                    <div className="h-2 w-2 bg-red-500 rounded-full" 
+                    <div className="h-1 w-1 bg-red-500 rounded-full" 
                          title="Conexão perdida" />
                   )}
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-gray-900">Notificações</span>
+                <span className="text-[8px] font-semibold text-gray-900 dark:text-white">Notificações</span>
                 {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-                  <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
+                  <Badge variant="destructive" className="text-[7px] px-0.5 py-0 h-3">
                     {isOpen ? visualUnreadCount : displayUnreadCount} não lidas
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-0.5">
                 {/* Botão de teste para notificações em tempo real */}
                 <button
                   onClick={() => addTestNotification(
@@ -642,57 +642,57 @@ export const NotificationDropdown: React.FC = () => {
                     'Esta é uma notificação de teste para verificar o sistema em tempo real.',
                     'info'
                   )}
-                  className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded-lg"
+                  className="p-0.5 h-3 w-3 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded"
                   title="Testar notificação em tempo real"
                 >
-                  <Bell size={14} className="sm:w-4 sm:h-4" />
+                  <Bell size={6} />
                 </button>
                 
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white text-gray-600 border border-gray-200 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 rounded-lg"
+                  className="p-0.5 h-3 w-3 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
                   title="Configurações (S)"
                 >
-                  <Settings size={14} className="sm:w-4 sm:h-4" />
+                  <Settings size={6} />
                 </button>
                 {notifications.length > 0 && (
                   <button
                     onClick={handleClearAll}
-                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg"
+                    className="p-0.5 h-3 w-3 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded"
                     title="Limpar todas (C)"
                   >
-                    <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                    <Trash2 size={6} />
                   </button>
                 )}
               </div>
             </div>
 
             {/* Instruções de Teclado */}
-                  <div className="px-3 sm:px-4 py-2 bg-gray-50 border-b border-gray-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 gap-2 sm:gap-0">
+                  <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 dark:text-gray-400 gap-2 sm:gap-0">
                       <div className="flex items-center gap-2 sm:gap-4">
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">↑↓</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">↑↓</kbd>
                           <span className="hidden sm:inline">Navegar</span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">Enter</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">Enter</kbd>
                           <span className="hidden sm:inline">Selecionar</span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">S</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">S</kbd>
                           <span className="hidden sm:inline">Configurações</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-4">
                         {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                           <span className="flex items-center gap-1">
-                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">M</kbd>
+                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">M</kbd>
                             <span className="hidden sm:inline">Marcar todas</span>
                           </span>
                         )}
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs">Esc</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">Esc</kbd>
                           <span className="hidden sm:inline">Fechar</span>
                         </span>
                       </div>
@@ -700,16 +700,16 @@ export const NotificationDropdown: React.FC = () => {
                   </div>
 
             {/* Lista de Notificações Moderna */}
-            <div className="max-h-80 overflow-y-auto bg-white">
+            <div className="max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
               {isLoading ? (
-                <div className="text-center py-8 bg-gray-50 m-4 rounded-lg">
+                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 m-4 rounded-lg">
                   <Loader2 size={32} className="mx-auto mb-4 text-gray-400 animate-spin" />
-                  <p className="text-sm font-medium text-gray-600">Carregando notificações...</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Carregando notificações...</p>
                 </div>
               ) : recentNotifications.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 m-4 rounded-lg">
+                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 m-4 rounded-lg">
                   <Bell size={32} className="mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm font-medium text-gray-600">Nenhuma notificação</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Nenhuma notificação</p>
                 </div>
               ) : (
                 <div className="space-y-1 p-2">
@@ -717,8 +717,8 @@ export const NotificationDropdown: React.FC = () => {
                     <div key={notification.id}>
                       <div
                         className={cn(
-                          "flex items-start gap-3 p-3 cursor-pointer border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg",
-                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white hover:bg-gray-50",
+                          "flex items-start gap-3 p-3 cursor-pointer border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg",
+                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800",
                           selectedIndex === index && "ring-2 ring-blue-500 bg-blue-50"
                         )}
                         onClick={() => handleNotificationClick(notification)}
@@ -734,12 +734,12 @@ export const NotificationDropdown: React.FC = () => {
                               )}>
                                 {notification.title}
                               </h4>
-                              <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
                                 {formatTimestamp(notification.created_at)}
                               </span>
                             </div>
                             
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                               {notification.message}
                             </p>
                           </div>
@@ -779,7 +779,7 @@ export const NotificationDropdown: React.FC = () => {
 
             {/* Footer Moderno */}
             {notifications.length > 0 && (
-              <div className="p-3 sm:p-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+              <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
                   {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                     <button
