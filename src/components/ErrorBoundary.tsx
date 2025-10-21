@@ -202,7 +202,7 @@ export class ErrorBoundary extends Component<Props, State> {
       errorId: this.state.errorId
     }
 
-    const bugReportUrl = `mailto:support@confilar.com?subject=Bug Report - ${this.state.errorId}&body=${encodeURIComponent(JSON.stringify(errorDetails, null, 2))}`
+    const bugReportUrl = `mailto:suporte@appconfilar.com.br?subject=Bug Report - ${this.state.errorId}&body=${encodeURIComponent(JSON.stringify(errorDetails, null, 2))}`
     window.open(bugReportUrl)
   }
 
@@ -307,10 +307,10 @@ export class ErrorBoundary extends Component<Props, State> {
               <p className="text-xs text-gray-500">
                 Se o problema persistir, entre em contato conosco em{' '}
                 <a 
-                  href="mailto:support@confilar.com" 
+                  href="mailto:suporte@appconfilar.com.br" 
                   className="text-blue-600 hover:text-blue-700 underline"
                 >
-                  support@confilar.com
+                  suporte@appconfilar.com.br
                 </a>
               </p>
             </div>

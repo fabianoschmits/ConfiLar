@@ -265,8 +265,8 @@ export default function ConfiguracoesPrivacidadePage() {
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Contato para Privacidade:</h4>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• Email: privacidade@confilar.com</li>
-                    <li>• DPO: dpo@confilar.com</li>
+                    <li>• Email: privacidade@appconfilar.com.br</li>
+                    <li>• DPO: privacidade@appconfilar.com.br</li>
                     <li>• Telefone: (11) 99999-9999</li>
                   </ul>
                 </div>
