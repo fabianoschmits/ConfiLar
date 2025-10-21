@@ -82,7 +82,7 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
 
             return (
               <div
-                key={referrer.userId}
+                key={referrer.userId || `referrer-${index}`}
                 className={cn(
                   'flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors',
                   isTop3 && 'bg-gradient-to-r from-yellow-50/50 to-amber-50/50 dark:from-yellow-950/10 dark:to-amber-950/10'
