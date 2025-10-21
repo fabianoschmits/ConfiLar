@@ -16,10 +16,20 @@ FROM pg_policies
 WHERE tablename IN ('user_referral_stats', 'referrals', 'referral_points_history', 'referral_badges', 'referral_challenges', 'user_challenge_progress')
 ORDER BY tablename, policyname;
 
--- 2. Remover políticas problemáticas
+-- 2. Remover políticas problemáticas existentes
 DROP POLICY IF EXISTS "Users can view their own referral stats" ON user_referral_stats;
-DROP POLICY IF EXISTS "Users can view their own referrals" ON referrals;
+DROP POLICY IF EXISTS "Users can update their own referral stats" ON user_referral_stats;
+DROP POLICY IF EXISTS "Users can insert their own referral stats" ON user_referral_stats;
+DROP POLICY IF EXISTS "Users can view referrals where they are referrer or referred" ON referrals;
+DROP POLICY IF EXISTS "Users can insert referrals" ON referrals;
+DROP POLICY IF EXISTS "Users can update referrals where they are referrer" ON referrals;
 DROP POLICY IF EXISTS "Users can view their own points history" ON referral_points_history;
+DROP POLICY IF EXISTS "Users can insert points history" ON referral_points_history;
+DROP POLICY IF EXISTS "Anyone can view referral badges" ON referral_badges;
+DROP POLICY IF EXISTS "Anyone can view referral challenges" ON referral_challenges;
+DROP POLICY IF EXISTS "Users can view their own challenge progress" ON user_challenge_progress;
+DROP POLICY IF EXISTS "Users can insert their own challenge progress" ON user_challenge_progress;
+DROP POLICY IF EXISTS "Users can update their own challenge progress" ON user_challenge_progress;
 
 -- 3. Criar políticas corretas para user_referral_stats
 CREATE POLICY "Users can view their own referral stats" ON user_referral_stats
