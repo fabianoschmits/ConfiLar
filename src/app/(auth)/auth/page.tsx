@@ -46,6 +46,8 @@ export default function AuthPage() {
     const refCode = searchParams.get('ref')
     if (refCode) {
       setReferralInfo({ code: refCode })
+      // Se há código de referral, mudar para aba de cadastro
+      setActiveTab('register')
       // Validar código (opcional, para mostrar nome do indicador)
       validateReferralCode(refCode)
     }
