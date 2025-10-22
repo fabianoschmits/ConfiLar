@@ -69,34 +69,54 @@ export async function createReferral(
   source?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    console.log('🔍 [createReferral] Iniciando criação de referral para userId:', referredUserId)
+    
     // Obter código de referral do localStorage
     const stored = localStorage.getItem(REFERRAL_STORAGE_KEY)
+    console.log('🔍 [createReferral] Dados no localStorage:', stored)
+    
     if (!stored) {
+      console.log('❌ [createReferral] Nenhum código de referral encontrado no localStorage')
       return { success: false, error: 'Nenhum código de referral encontrado' }
     }
 
     const data = JSON.parse(stored)
     const referralCode = data.code
+    console.log('🔍 [createReferral] Código de referral extraído:', referralCode)
 
     // Validar código
+    console.log('🔍 [createReferral] Buscando dados do referrer no banco...')
     const { data: statsData, error: statsError } = await supabase
       .from('user_referral_stats')
       .select('user_id')
       .eq('referral_code', referralCode)
       .single()
 
+    console.log('🔍 [createReferral] Resultado da busca:', { statsData, statsError })
+
     if (statsError || !statsData) {
+      console.error('❌ [createReferral] Código de referral inválido:', statsError)
       return { success: false, error: 'Código de referral inválido' }
     }
 
     const referrerId = statsData.user_id
+    console.log('🔍 [createReferral] ID do referrer encontrado:', referrerId)
 
     // Verificar se não é auto-referral
     if (referrerId === referredUserId) {
+      console.error('❌ [createReferral] Tentativa de auto-indicação detectada')
       return { success: false, error: 'Não é possível se auto-indicar' }
     }
 
     // Criar referral
+    console.log('🔍 [createReferral] Inserindo referral no banco:', {
+      referrer_id: referrerId,
+      referred_id: referredUserId,
+      referral_code: referralCode,
+      status: 'pending',
+      source: source || 'link_direto'
+    })
+    
     const { error: insertError } = await supabase
       .from('referrals')
       .insert({
@@ -111,19 +131,23 @@ export async function createReferral(
     if (insertError) {
       // Pode ser duplicado, o que é ok
       if (insertError.code === '23505') {
+        console.log('⚠️ [createReferral] Referral duplicado (já existe), considerando como sucesso')
         return { success: true }
       }
       
-      console.error('Erro ao criar referral:', insertError)
+      console.error('❌ [createReferral] Erro ao inserir referral:', insertError)
       return { success: false, error: insertError.message }
     }
 
+    console.log('✅ [createReferral] Referral inserido com sucesso!')
+
     // Limpar localStorage após criar referral
     localStorage.removeItem(REFERRAL_STORAGE_KEY)
+    console.log('🧹 [createReferral] localStorage limpo')
 
     return { success: true }
   } catch (err: any) {
-    console.error('Erro ao processar referral:', err)
+    console.error('❌ [createReferral] Erro ao processar referral:', err)
     return { success: false, error: err.message }
   }
 }
