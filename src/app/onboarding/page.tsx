@@ -26,61 +26,15 @@ import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
-import { checkCpfExists } from '@/lib/checkDuplicates'
 import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { createReferral, updateReferralMilestone } from '@/hooks/useReferralTracking'
 
-// Função para validar CPF
-const validateCPF = (cpf: string): boolean => {
-  cpf = cpf.replace(/[^\d]+/g, '');
-  if (cpf.length !== 11) return false;
-
-  const invalidCPFs = [
-    '00000000000', '11111111111', '22222222222', '33333333333', '44444444444',
-    '55555555555', '66666666666', '77777777777', '88888888888', '99999999999',
-    '12345678901', '12345678909'
-  ];
-
-  if (invalidCPFs.includes(cpf)) return false;
-  if (/^(\d)\1+$/.test(cpf)) return false;
-
-  let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpf.charAt(i)) * (10 - i);
-  }
-  let resto = soma % 11;
-  const primeiroDigito = resto < 2 ? 0 : 11 - resto;
-  
-  if (primeiroDigito !== parseInt(cpf.charAt(9))) return false;
-
-  soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpf.charAt(i)) * (11 - i);
-  }
-  resto = soma % 11;
-  const segundoDigito = resto < 2 ? 0 : 11 - resto;
-  
-  if (segundoDigito !== parseInt(cpf.charAt(10))) return false;
-
-  return true;
-}
 
 const onboardingSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  indicado_por: z.string().optional(), // Campo opcional para quem indicou
   phone: z.string().min(10, 'Telefone inválido'),
-  cpf_cnpj: z.string()
-    .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
-    .refine((value) => {
-      const cleanValue = value.replace(/\D/g, '')
-      if (cleanValue.length === 11) {
-        return validateCPF(value)
-      }
-      if (cleanValue.length === 14) {
-        return true
-      }
-      return false
-    }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   gender: z.enum(['male', 'female', 'other']),
   user_type: z.enum(['client', 'professional']),
@@ -120,8 +74,8 @@ export default function OnboardingPage() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
   const [showDataSummary, setShowDataSummary] = useState(false)
-  const [cpfExists, setCpfExists] = useState(false)
-  const [isCheckingCpf, setIsCheckingCpf] = useState(false)
+  const [referrerName, setReferrerName] = useState<string | null>(null) // Nome de quem indicou
+  const [hasReferralCode, setHasReferralCode] = useState(false) // Se foi indicado por alguém
   const { createWelcomePost } = useAutoNotifications()
 
   const {
@@ -149,6 +103,56 @@ export default function OnboardingPage() {
     }
   }, [user, router])
 
+  // Verificar se o usuário foi indicado por alguém
+  useEffect(() => {
+    const checkReferralCode = async () => {
+      try {
+        const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
+        const stored = localStorage.getItem(REFERRAL_STORAGE_KEY)
+        
+        if (!stored) {
+          console.log('🔍 [Onboarding] Nenhum código de referral encontrado')
+          setHasReferralCode(false)
+          return
+        }
+
+        const data = JSON.parse(stored)
+        const referralCode = data.code
+        console.log('🔍 [Onboarding] Código de referral encontrado:', referralCode)
+
+        // Buscar o nome do referrer no banco
+        const { data: statsData, error } = await supabase
+          .from('user_referral_stats')
+          .select(`
+            referral_code,
+            profiles!inner(full_name)
+          `)
+          .eq('referral_code', referralCode)
+          .maybeSingle()
+
+        if (error || !statsData) {
+          console.error('❌ [Onboarding] Erro ao buscar dados do referrer:', error)
+          setHasReferralCode(false)
+          return
+        }
+
+        const referrerFullName = (statsData.profiles as any)?.full_name
+        console.log('✅ [Onboarding] Nome do referrer encontrado:', referrerFullName)
+        
+        setReferrerName(referrerFullName)
+        setHasReferralCode(true)
+        
+        // Preencher o campo "indicado_por" automaticamente
+        setValue('indicado_por', referrerFullName)
+      } catch (err) {
+        console.error('❌ [Onboarding] Erro ao verificar código de referral:', err)
+        setHasReferralCode(false)
+      }
+    }
+
+    checkReferralCode()
+  }, [])
+
   // Steps para melhor organização
   const steps = [
     { 
@@ -165,7 +169,7 @@ export default function OnboardingPage() {
       shortTitle: 'Dados',
       icon: User, 
       description: 'Informações pessoais básicas',
-      fields: ['full_name', 'phone', 'cpf_cnpj', 'birth_date', 'gender']
+      fields: ['full_name', 'indicado_por', 'phone', 'birth_date', 'gender']
     },
     { 
       id: 3, 
@@ -230,12 +234,9 @@ export default function OnboardingPage() {
           values.full_name.length >= 2 &&
           values.phone && 
           values.phone.length >= 10 &&
-          values.cpf_cnpj && 
-          values.cpf_cnpj.length >= 11 &&
           values.birth_date &&
           values.gender &&
-          values.accept_terms && // Aceite dos termos obrigatório
-          !cpfExists // Não permitir avançar se CPF já existe
+          values.accept_terms // Aceite dos termos obrigatório
         )
       
       case 3: // Avatar - sempre válido (opcional)
@@ -316,59 +317,12 @@ export default function OnboardingPage() {
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
   }
 
-  // Formatação automática para CPF
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 3) return numbers
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
-  }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value)
     setValue('phone', formatted)
   }
 
-  // Função para verificar CPF em tempo real
-  const checkCpfInRealTime = async (cpf: string) => {
-    const cleanCpf = cpf.replace(/\D/g, '')
-    if (cleanCpf.length !== 11 || !validateCPF(cpf)) {
-      setCpfExists(false)
-      return
-    }
-
-    setIsCheckingCpf(true)
-    try {
-      const exists = await checkCpfExists(cpf)
-      setCpfExists(exists)
-    } catch (error) {
-      console.error('Erro ao verificar CPF:', error)
-      setCpfExists(false)
-    } finally {
-      setIsCheckingCpf(false)
-    }
-  }
-
-  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value)
-    setValue('cpf_cnpj', formatted)
-    
-    const cleanValue = formatted.replace(/\D/g, '')
-    if (cleanValue.length === 11) {
-      const isValid = validateCPF(formatted)
-      setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
-      
-      if (isValid) {
-        // Verificar se CPF já existe
-        checkCpfInRealTime(formatted)
-      } else {
-        setCpfExists(false)
-      }
-    } else {
-      setCpfExists(false)
-    }
-  }
 
   // Converter categorias para formato de string simples
   const serviceCategoryNames = services.map(cat => cat.name)
@@ -506,22 +460,7 @@ export default function OnboardingPage() {
       // ✅ VALIDAR DUPLICATAS ANTES DE SALVAR
       console.log('🔍 Verificando duplicatas...')
       
-      // Verificar se já temos as informações de duplicatas em tempo real
-      if (cpfExists) {
-        toast.error('❌ Este CPF/CNPJ já está cadastrado. Use o link de recuperação de conta.')
-        setIsLoading(false)
-        return
-      }
-      
-      // Verificação adicional para garantir
-      const cpfCheck = await checkCpfExists(data.cpf_cnpj)
-      if (cpfCheck) {
-        toast.error('❌ Este CPF/CNPJ já está cadastrado na plataforma')
-        setIsLoading(false)
-        return
-      }
-      
-      console.log('✅ CPF disponível')
+      console.log('✅ Dados validados')
       let avatarUrl = null
 
       // Upload da imagem se necessário
@@ -561,12 +500,21 @@ export default function OnboardingPage() {
       )
 
       // Preparar dados do perfil (apenas campos que existem na tabela)
+      console.log('🔍 [Onboarding] Dados do usuário autenticado:', {
+        id: user.id,
+        email: user.email,
+        user_metadata: (user as any)?.user_metadata
+      })
+      
+      const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj
+      console.log('🔍 [Onboarding] CPF extraído do user_metadata:', cpfFromMetadata)
+      
       const profileData = {
         id: user.id, // A tabela profiles usa 'id' como chave primária
         email: user.email, // Campo obrigatório na tabela
         full_name: data.full_name,
         phone: data.phone,
-        cpf_cnpj: data.cpf_cnpj,
+        cpf_cnpj: cpfFromMetadata || null, // CPF do cadastro inicial
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,
@@ -580,6 +528,8 @@ export default function OnboardingPage() {
         avatar_url: avatarUrl,
         profile_completed: true
       }
+      
+      console.log('🔍 [Onboarding] Dados do perfil que serão salvos:', profileData)
 
       console.log('📝 Dados do perfil que serão enviados:', profileData)
 
@@ -608,7 +558,7 @@ export default function OnboardingPage() {
           
           // Dados pessoais completos
           bio: autoBio,
-          cpf_cnpj: data.cpf_cnpj,
+          cpf_cnpj: (user as any)?.user_metadata?.cpf_cnpj || null,
           birth_date: data.birth_date,
           gender: data.gender,
           
@@ -816,6 +766,28 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
+                          <Label htmlFor="indicado_por" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Indicado por {hasReferralCode && <span className="text-xs text-green-600 font-semibold">(Preenchido automaticamente)</span>}
+                          </Label>
+                          <Input
+                            id="indicado_por"
+                            placeholder={hasReferralCode ? "" : "Nome de quem te indicou (opcional)"}
+                            {...register('indicado_por')}
+                            disabled={hasReferralCode}
+                            className={cn(
+                              "h-10",
+                              hasReferralCode ? 'bg-green-50 border-green-300 text-green-800 cursor-not-allowed' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {hasReferralCode && referrerName && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              Você foi indicado por {referrerName}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
                           <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Telefone <span className="text-red-500">*</span>
                           </Label>
@@ -837,70 +809,6 @@ export default function OnboardingPage() {
                           )}
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            CPF <span className="text-red-500">*</span>
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              id="cpf_cnpj"
-                              placeholder="000.000.000-00"
-                              {...register('cpf_cnpj')}
-                              onChange={handleCPFChange}
-                              className={cn(
-                                "h-10 pr-10",
-                                errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 
-                                cpfExists ? 'border-orange-500 focus:border-orange-500' :
-                                'focus:border-blue-500'
-                              )}
-                            />
-                            {isCheckingCpf && (
-                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <RefreshCw size={16} className="animate-spin text-blue-500" />
-                              </div>
-                            )}
-                          </div>
-                          
-                          {/* Mensagens de validação */}
-                          {errors.cpf_cnpj && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.cpf_cnpj.message}
-                            </p>
-                          )}
-                          
-                          {cpfExists && (
-                            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                              <p className="text-sm text-orange-800 font-medium mb-2">
-                                ⚠️ Este CPF/CNPJ já está cadastrado na plataforma
-                              </p>
-                              <p className="text-xs text-orange-700 mb-3">
-                                Você já possui uma conta com este CPF/CNPJ. Escolha uma das opções abaixo:
-                              </p>
-                              <div className="space-y-2">
-                                <a 
-                                  href="/recuperar-senha" 
-                                  className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
-                                >
-                                  🔑 Recuperar senha
-                                </a>
-                                <a 
-                                  href="/auth" 
-                                  className="block text-sm text-orange-600 hover:text-orange-700 underline font-medium"
-                                >
-                                  🔐 Fazer login
-                                </a>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {watchedValues.cpf_cnpj && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && validateCPF(watchedValues.cpf_cnpj) && !errors.cpf_cnpj && !cpfExists && (
-                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              CPF válido e disponível
-                            </p>
-                          )}
-                        </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700 flex items-center gap-1">
@@ -1480,7 +1388,7 @@ export default function OnboardingPage() {
                             <div>
                               <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
                               <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '***-****'}</p>
-                              <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
+                              <p><strong>CPF:</strong> {showDataSummary ? ((user as any)?.user_metadata?.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
                             </div>
                             <div>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
@@ -1522,7 +1430,7 @@ export default function OnboardingPage() {
                           <span className="font-semibold">Tudo pronto!</span>
                         </div>
                         <p className="text-green-700 text-sm">
-                          Seus dados estão corretos? Clique em "Finalizar" para completar seu cadastro.
+                          Seus dados estão corretos? Clique em &quot;Finalizar&quot; para completar seu cadastro.
                         </p>
                       </div>
                     </div>
@@ -1560,7 +1468,7 @@ export default function OnboardingPage() {
                             : "bg-blue-600 hover:bg-blue-700"
                         )}
                       >
-                        {currentStep === 2 && (cpfExists || !watchedValues.accept_terms) ? 'Resolva os problemas acima' : 'Próximo'}
+                        {currentStep === 2 && !watchedValues.accept_terms ? 'Aceite os termos' : 'Próximo'}
                         <ArrowRight className="w-4 h-4" />
                       </Button>
                     ) : (

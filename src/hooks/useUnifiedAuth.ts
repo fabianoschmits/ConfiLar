@@ -413,12 +413,17 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   const signUpBasic = useCallback(async (userData: BasicSignUpData) => {
     try {
+      console.log('🔍 [signUpBasic] Iniciando cadastro básico:', { 
+        email: userData.email,
+        cpf_cnpj: userData.cpf_cnpj 
+      })
+      
       Logger.info('auth', `Attempting basic signup for ${userData.email}`)
       
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
 
-      const { data, error } = await supabase.auth.signUp({
+      const signUpData = {
         email: userData.email,
         password: userData.password,
         options: {
@@ -427,20 +432,31 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
             // Nome será preenchido no onboarding
           }
         }
-      })
+      }
+
+      console.log('🔍 [signUpBasic] Dados que serão enviados para Supabase:', signUpData)
+
+      const { data, error } = await supabase.auth.signUp(signUpData)
 
       if (error) {
+        console.error('❌ [signUpBasic] Erro no cadastro:', error)
         Logger.error('auth', error, { context: 'signUpBasic' })
         dispatch({ type: 'SET_ERROR', payload: error.message })
         return { error }
       }
 
       if (data.user) {
+        console.log('✅ [signUpBasic] Cadastro bem-sucedido:', {
+          userId: data.user.id,
+          email: data.user.email,
+          user_metadata: data.user.user_metadata
+        })
         Logger.info('auth', `Basic signup successful for ${userData.email}`)
       }
 
       return { error: null }
     } catch (error) {
+      console.error('❌ [signUpBasic] Erro inesperado:', error)
       Logger.error('auth', error as Error, { context: 'signUpBasic' })
       const errorMessage = (error as Error).message
       dispatch({ type: 'SET_ERROR', payload: errorMessage })

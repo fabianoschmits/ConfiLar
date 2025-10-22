@@ -80,6 +80,7 @@ export function BasicSignupForm() {
   const [isCheckingEmail, setIsCheckingEmail] = useState(false)
   const [cpfExists, setCpfExists] = useState(false)
   const [isCheckingCpf, setIsCheckingCpf] = useState(false)
+  const [referrerName, setReferrerName] = useState<string | null>(null) // Nome de quem indicou
   const { signUpBasic } = useAuthContext()
   
   // CAPTCHA
@@ -88,6 +89,42 @@ export function BasicSignupForm() {
   // Evitar problemas de hidratação
   useEffect(() => {
     setIsMounted(true)
+  }, [])
+
+  // Buscar nome do indicador se houver código de referral na URL
+  useEffect(() => {
+    const checkReferrer = async () => {
+      try {
+        // Verificar se há código de referral na URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const refCode = urlParams.get('ref')
+        
+        if (!refCode) {
+          return
+        }
+
+        console.log('🔍 [BasicSignupForm] Código de referral encontrado na URL:', refCode)
+
+        // Buscar o nome do referrer no banco via API
+        const response = await fetch('/api/referrals/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: refCode })
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('✅ [BasicSignupForm] Nome do referrer encontrado:', data.userName)
+          setReferrerName(data.userName)
+        } else {
+          console.error('❌ [BasicSignupForm] Código de referral inválido')
+        }
+      } catch (err) {
+        console.error('❌ [BasicSignupForm] Erro ao buscar referrer:', err)
+      }
+    }
+
+    checkReferrer()
   }, [])
 
   const {
@@ -275,6 +312,27 @@ export function BasicSignupForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Banner de Indicação */}
+      {referrerName && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="bg-green-500 rounded-full p-2">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-green-800">
+                🎉 Você foi indicado por {referrerName}!
+              </p>
+              <p className="text-xs text-green-700 mt-1">
+                Complete seu cadastro e ambos receberão benefícios
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dados Básicos */}
       <div className="space-y-4 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">
