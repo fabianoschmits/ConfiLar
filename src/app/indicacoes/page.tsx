@@ -7,6 +7,7 @@ import { ReferralDashboard } from '@/components/referral/ReferralDashboard'
 import { ReferralLinkCard } from '@/components/referral/ReferralLinkCard'
 import { ReferralHistory } from '@/components/referral/ReferralHistory'
 import { ReferralLeaderboard } from '@/components/referral/ReferralLeaderboard'
+import { ReferralBadge } from '@/components/referral/ReferralBadge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Users, TrendingUp, Award, Sparkles, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -74,6 +75,63 @@ export default function IndicacoesPage() {
               mais badges e benefícios você desbloqueia.
             </p>
           </div>
+
+          {/* Níveis e Recompensas - Movido para o topo */}
+          <Card>
+            <CardContent className="p-4">
+              <Button
+                variant="ghost"
+                onClick={() => setShowTiersBenefits(!showTiersBenefits)}
+                className="w-full flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
+                    Níveis e Benefícios
+                  </h3>
+                </div>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                    showTiersBenefits ? 'rotate-180' : ''
+                  }`}
+                />
+              </Button>
+
+              {showTiersBenefits && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  {tiersBenefits.map((tier, index) => (
+                    <div
+                      key={index}
+                      className="p-2 md:p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+                    >
+                      <div className="flex flex-col items-center gap-2 mb-2">
+                        {/* Badge Real */}
+                        <ReferralBadge
+                          tier={tier.tierKey}
+                          totalReferrals={tier.minReferrals}
+                          size="sm"
+                        />
+                        <div className="text-center">
+                          <h4 className="font-bold text-xs md:text-sm text-gray-900 dark:text-white">{tier.name}</h4>
+                          <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400">
+                            {tier.requirement}
+                          </p>
+                        </div>
+                      </div>
+                      <ul className="space-y-1">
+                        {tier.benefits.map((benefit, idx) => (
+                          <li key={idx} className="text-[9px] md:text-[10px] text-gray-600 dark:text-gray-400 flex items-start gap-1">
+                            <span className="text-green-600 dark:text-green-400 text-[8px] md:text-[9px]">✓</span>
+                            {benefit}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Como Funciona - Botão Compacto */}
           <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
@@ -192,55 +250,6 @@ export default function IndicacoesPage() {
             </CardContent>
           </Card>
 
-          {/* Níveis e Recompensas - Accordion */}
-          <Card>
-            <CardContent className="p-4">
-              <Button
-                variant="ghost"
-                onClick={() => setShowTiersBenefits(!showTiersBenefits)}
-                className="w-full flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <h3 className="font-semibold text-base md:text-lg text-gray-900 dark:text-white">
-                    Níveis e Benefícios
-                  </h3>
-                </div>
-                <ChevronDown
-                  className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
-                    showTiersBenefits ? 'rotate-180' : ''
-                  }`}
-                />
-              </Button>
-
-              {showTiersBenefits && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {tiersBenefits.map((tier, index) => (
-                    <div
-                      key={index}
-                      className="p-3 md:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <tier.icon className={`w-4 h-4 md:w-5 md:h-5 ${tier.color}`} />
-                        <h4 className="font-bold text-sm md:text-base text-gray-900 dark:text-white">{tier.name}</h4>
-                      </div>
-                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        {tier.requirement}
-                      </p>
-                      <ul className="space-y-1">
-                        {tier.benefits.map((benefit, idx) => (
-                          <li key={idx} className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1">
-                            <span className="text-green-600 dark:text-green-400">✓</span>
-                            {benefit}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
     </MainLayout>
@@ -258,6 +267,8 @@ const pointsTable = [
 const tiersBenefits = [
   {
     name: 'Bronze',
+    tierKey: 'bronze' as const,
+    minReferrals: 1,
     icon: Award,
     color: 'text-amber-600',
     requirement: '1-4 indicações',
@@ -265,6 +276,8 @@ const tiersBenefits = [
   },
   {
     name: 'Prata',
+    tierKey: 'silver' as const,
+    minReferrals: 5,
     icon: Award,
     color: 'text-gray-400',
     requirement: '5-9 indicações',
@@ -272,6 +285,8 @@ const tiersBenefits = [
   },
   {
     name: 'Ouro',
+    tierKey: 'gold' as const,
+    minReferrals: 10,
     icon: Award,
     color: 'text-yellow-500',
     requirement: '10-24 indicações',
@@ -279,6 +294,8 @@ const tiersBenefits = [
   },
   {
     name: 'Platina',
+    tierKey: 'platinum' as const,
+    minReferrals: 25,
     icon: Award,
     color: 'text-cyan-500',
     requirement: '25-49 indicações',
@@ -286,6 +303,8 @@ const tiersBenefits = [
   },
   {
     name: 'Diamante',
+    tierKey: 'diamond' as const,
+    minReferrals: 50,
     icon: Sparkles,
     color: 'text-blue-500',
     requirement: '50+ indicações',

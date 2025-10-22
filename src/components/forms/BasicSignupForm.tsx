@@ -49,7 +49,7 @@ const validateCPF = (cpf: string): boolean => {
   return true;
 };
 
-// Schema para cadastro básico - email, CPF, senha e confirmação
+// Schema para cadastro básico - email, CPF, senha, confirmação e código de referência
 const basicSignupSchema = z.object({
   email: z.string().email('Email inválido'),
   cpf_cnpj: z.string()
@@ -59,6 +59,7 @@ const basicSignupSchema = z.object({
       return cleaned.length === 11 || cleaned.length === 14;
     }, 'CPF inválido')
     .refine((val) => validateCPF(val), 'CPF inválido'),
+  referral_code: z.string().optional(), // Código de referência (opcional)
   password: z.string()
     .min(8, 'Senha deve ter pelo menos 8 caracteres')
     .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
@@ -81,6 +82,9 @@ export function BasicSignupForm() {
   const [cpfExists, setCpfExists] = useState(false)
   const [isCheckingCpf, setIsCheckingCpf] = useState(false)
   const [referrerName, setReferrerName] = useState<string | null>(null) // Nome de quem indicou
+  const [referralCodeFromUrl, setReferralCodeFromUrl] = useState<string | null>(null) // Código de referência vindo da URL
+  const [isValidatingReferralCode, setIsValidatingReferralCode] = useState(false)
+  const [referralCodeValid, setReferralCodeValid] = useState<boolean | null>(null)
   const { signUpBasic } = useAuthContext()
   
   // CAPTCHA
@@ -104,6 +108,7 @@ export function BasicSignupForm() {
         }
 
         console.log('🔍 [BasicSignupForm] Código de referral encontrado na URL:', refCode)
+        setReferralCodeFromUrl(refCode)
 
         // Buscar o nome do referrer no banco via API
         const response = await fetch('/api/referrals/validate', {
@@ -116,11 +121,17 @@ export function BasicSignupForm() {
           const data = await response.json()
           console.log('✅ [BasicSignupForm] Nome do referrer encontrado:', data.userName)
           setReferrerName(data.userName)
+          setReferralCodeValid(true)
+          
+          // Preencher o campo automaticamente
+          setValue('referral_code', refCode)
         } else {
           console.error('❌ [BasicSignupForm] Código de referral inválido')
+          setReferralCodeValid(false)
         }
       } catch (err) {
         console.error('❌ [BasicSignupForm] Erro ao buscar referrer:', err)
+        setReferralCodeValid(false)
       }
     }
 
@@ -131,6 +142,7 @@ export function BasicSignupForm() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid },
   } = useForm<BasicSignupFormData>({
     resolver: zodResolver(basicSignupSchema),
@@ -214,6 +226,61 @@ export function BasicSignupForm() {
     return () => clearTimeout(timeoutId)
   }, [watchedValues.cpf_cnpj])
 
+  // Validação de código de referência digitado manualmente
+  const validateReferralCode = async (code: string) => {
+    if (!code || code.length < 6) {
+      setReferralCodeValid(null)
+      setReferrerName(null)
+      return
+    }
+
+    setIsValidatingReferralCode(true)
+    try {
+      const response = await fetch('/api/referrals/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setReferrerName(data.userName)
+        setReferralCodeValid(true)
+      } else {
+        setReferrerName(null)
+        setReferralCodeValid(false)
+      }
+    } catch (err) {
+      console.error('Erro ao validar código:', err)
+      setReferrerName(null)
+      setReferralCodeValid(false)
+    } finally {
+      setIsValidatingReferralCode(false)
+    }
+  }
+
+  // Debounce para validação de código de referência
+  useEffect(() => {
+    const code = watchedValues.referral_code
+    
+    // Se veio da URL, não validar novamente
+    if (referralCodeFromUrl) {
+      return
+    }
+
+    if (!code) {
+      setReferralCodeValid(null)
+      setReferrerName(null)
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      validateReferralCode(code)
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [watchedValues.referral_code, referralCodeFromUrl])
+
   // Função para verificar a força da senha
   const checkPasswordStrength = (password: string) => {
     const checks = {
@@ -278,6 +345,20 @@ export function BasicSignupForm() {
       }
       
       console.log('✅ CPF disponível')
+
+      // ✅ SALVAR CÓDIGO DE REFERÊNCIA NO LOCALSTORAGE (se foi digitado manualmente)
+      if (data.referral_code && !referralCodeFromUrl) {
+        console.log('💾 [Cadastro] Salvando código de referência digitado no localStorage:', data.referral_code)
+        const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
+        const expiryDate = new Date()
+        expiryDate.setDate(expiryDate.getDate() + 30)
+
+        localStorage.setItem(REFERRAL_STORAGE_KEY, JSON.stringify({
+          code: data.referral_code,
+          timestamp: Date.now(),
+          expiry: expiryDate.getTime()
+        }))
+      }
       
       const { error } = await signUpBasic({
         email: data.email,
@@ -465,6 +546,51 @@ export function BasicSignupForm() {
             
             {watchedValues.cpf_cnpj && !errors.cpf_cnpj && !cpfExists && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && (
               <p className="text-sm text-green-600 font-medium">✓ CPF disponível</p>
+            )}
+          </div>
+
+          {/* Código de Referência (Opcional) */}
+          <div className="space-y-2">
+            <Label htmlFor="referral_code" className="text-sm font-medium text-gray-700">
+              Código de Referência {referralCodeFromUrl && <span className="text-xs text-green-600">(Preenchido automaticamente)</span>}
+            </Label>
+            <div className="relative">
+              <Input
+                id="referral_code"
+                type="text"
+                placeholder={referralCodeFromUrl ? "" : "Digite o código de quem te indicou (opcional)"}
+                {...register('referral_code')}
+                disabled={!!referralCodeFromUrl}
+                className={cn(
+                  "transition-colors pr-10 uppercase",
+                  referralCodeFromUrl ? 'bg-green-50 border-green-300 text-green-800 cursor-not-allowed' : '',
+                  referralCodeValid === true ? 'border-green-500' : '',
+                  referralCodeValid === false ? 'border-red-500' : ''
+                )}
+              />
+              {isValidatingReferralCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
+            
+            {referralCodeValid === true && referrerName && (
+              <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+                ✓ Você será indicado por {referrerName}
+              </p>
+            )}
+            
+            {referralCodeValid === false && watchedValues.referral_code && (
+              <p className="text-sm text-red-500 font-medium">
+                ✗ Código de referência inválido
+              </p>
+            )}
+            
+            {!watchedValues.referral_code && !referralCodeFromUrl && (
+              <p className="text-xs text-gray-500">
+                Se alguém te indicou para o ConfiLar, digite o código dela aqui
+              </p>
             )}
           </div>
 

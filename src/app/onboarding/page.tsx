@@ -76,7 +76,8 @@ export default function OnboardingPage() {
   const [showDataSummary, setShowDataSummary] = useState(false)
   const [referrerName, setReferrerName] = useState<string | null>(null) // Nome de quem indicou
   const [hasReferralCode, setHasReferralCode] = useState(false) // Se foi indicado por alguém
-  const { createWelcomePost } = useAutoNotifications()
+  const [userCpf, setUserCpf] = useState<string | null>(null) // CPF do usuário
+  const { createWelcomePost} = useAutoNotifications()
 
   const {
     register,
@@ -95,12 +96,41 @@ export default function OnboardingPage() {
   const isProfessional = watchedValues.user_type === 'professional'
   const fullName = watchedValues.full_name || (user as any)?.user_metadata?.full_name || 'Usuário'
 
-  // Verificar se usuário está logado
+  // Verificar se usuário está logado e carregar CPF do banco
   useEffect(() => {
     if (!user) {
       router.push('/auth')
       return
     }
+
+    // Buscar CPF direto da tabela profiles (mesmo lugar que editar perfil usa)
+    const loadUserCpf = async () => {
+      try {
+        console.log('🔍 [Onboarding] Buscando CPF na tabela profiles...')
+        
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('cpf_cnpj')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (error) {
+          console.error('❌ [Onboarding] Erro ao buscar CPF:', error)
+          return
+        }
+
+        if (profileData?.cpf_cnpj) {
+          console.log('✅ [Onboarding] CPF encontrado na tabela profiles:', profileData.cpf_cnpj)
+          setUserCpf(profileData.cpf_cnpj)
+        } else {
+          console.log('⚠️ [Onboarding] CPF não encontrado na tabela profiles')
+        }
+      } catch (err) {
+        console.error('❌ [Onboarding] Erro ao buscar CPF:', err)
+      }
+    }
+
+    loadUserCpf()
   }, [user, router])
 
   // Verificar se o usuário foi indicado por alguém
@@ -499,22 +529,23 @@ export default function OnboardingPage() {
         }
       )
 
-      // Preparar dados do perfil (apenas campos que existem na tabela)
-      console.log('🔍 [Onboarding] Dados do usuário autenticado:', {
-        id: user.id,
-        email: user.email,
-        user_metadata: (user as any)?.user_metadata
-      })
+      // Buscar CPF direto da tabela profiles (mesmo lugar onde foi salvo no cadastro)
+      console.log('🔍 [Onboarding] Buscando CPF da tabela profiles...')
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('cpf_cnpj')
+        .eq('id', user.id)
+        .maybeSingle()
       
-      const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj
-      console.log('🔍 [Onboarding] CPF extraído do user_metadata:', cpfFromMetadata)
+      const cpfFromProfile = existingProfile?.cpf_cnpj || null
+      console.log('🔍 [Onboarding] CPF encontrado na tabela profiles:', cpfFromProfile)
       
       const profileData = {
         id: user.id, // A tabela profiles usa 'id' como chave primária
         email: user.email, // Campo obrigatório na tabela
         full_name: data.full_name,
         phone: data.phone,
-        cpf_cnpj: cpfFromMetadata || null, // CPF do cadastro inicial
+        cpf_cnpj: cpfFromProfile, // CPF do cadastro inicial (já está na tabela profiles)
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,
@@ -530,6 +561,7 @@ export default function OnboardingPage() {
       }
       
       console.log('🔍 [Onboarding] Dados do perfil que serão salvos:', profileData)
+      console.log('🔍 [Onboarding] CPF que será salvo:', profileData.cpf_cnpj)
 
       console.log('📝 Dados do perfil que serão enviados:', profileData)
 
@@ -1388,7 +1420,7 @@ export default function OnboardingPage() {
                             <div>
                               <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
                               <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '***-****'}</p>
-                              <p><strong>CPF:</strong> {showDataSummary ? ((user as any)?.user_metadata?.cpf_cnpj || 'Não informado') : '***.***.***-**'}</p>
+                              <p><strong>CPF:</strong> {showDataSummary ? (userCpf || 'Não informado') : '***.***.***-**'}</p>
                             </div>
                             <div>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>

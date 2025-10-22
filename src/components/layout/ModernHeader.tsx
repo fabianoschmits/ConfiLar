@@ -303,7 +303,7 @@ export function ModernHeader({
                     fallback={profile?.full_name?.charAt(0) || 'U'}
                     size="sm"
                     userId={user?.id}
-                    showReferralBadge={true}
+                    showReferralBadge={false}
                   />
                   <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {profile?.full_name || 'Usuário'}
