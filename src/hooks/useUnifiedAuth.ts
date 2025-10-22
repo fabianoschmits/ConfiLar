@@ -451,6 +451,30 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           email: data.user.email,
           user_metadata: data.user.user_metadata
         })
+        
+        // ✅ SALVAR CPF DIRETO NA TABELA PROFILES (mesmo lugar que editar perfil salva)
+        if (userData.cpf_cnpj) {
+          console.log('💾 [signUpBasic] Salvando CPF na tabela profiles...')
+          
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: data.user.id,
+              email: data.user.email,
+              cpf_cnpj: userData.cpf_cnpj,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'id'
+            })
+
+          if (profileError) {
+            console.error('❌ [signUpBasic] Erro ao salvar CPF na tabela profiles:', profileError)
+          } else {
+            console.log('✅ [signUpBasic] CPF salvo com sucesso na tabela profiles')
+          }
+        }
+        
         Logger.info('auth', `Basic signup successful for ${userData.email}`)
       }
 

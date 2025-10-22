@@ -358,9 +358,55 @@ export function useTopReferrers(limit: number = 10) {
       const { data, error: fetchError } = await supabase
         .rpc('get_top_referrers', { p_limit: limit })
 
-      if (fetchError) throw fetchError
+      if (fetchError) {
+        console.error('Erro na função get_top_referrers:', fetchError)
+        // Fallback: buscar dados diretamente
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('user_referral_stats')
+          .select(`
+            user_id,
+            referral_code,
+            total_referrals,
+            total_points,
+            tier,
+            rank,
+            profiles!inner(full_name, avatar_url)
+          `)
+          .neq('tier', 'none')
+          .order('total_referrals', { ascending: false })
+          .limit(limit)
 
-      setTopReferrers(data || [])
+        if (fallbackError) throw fallbackError
+
+        // Mapear dados do fallback
+        const mappedData = (fallbackData || []).map((item: any) => ({
+          userId: item.user_id,
+          fullName: item.profiles.full_name,
+          avatarUrl: item.profiles.avatar_url,
+          referralCode: item.referral_code,
+          totalReferrals: item.total_referrals,
+          totalPoints: item.total_points,
+          tier: item.tier,
+          rank: item.rank
+        }))
+
+        setTopReferrers(mappedData)
+        return
+      }
+
+      // Mapear dados da função RPC
+      const mappedData = (data || []).map((item: any) => ({
+        userId: item.user_id,
+        fullName: item.full_name,
+        avatarUrl: item.avatar_url,
+        referralCode: item.referral_code,
+        totalReferrals: item.total_referrals,
+        totalPoints: item.total_points,
+        tier: item.tier,
+        rank: item.rank
+      }))
+
+      setTopReferrers(mappedData)
     } catch (err: any) {
       console.error('Erro ao carregar top referrers:', err)
       setError(err.message)

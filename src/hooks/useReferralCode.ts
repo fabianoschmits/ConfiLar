@@ -33,12 +33,12 @@ export function useReferralCode(userId?: string) {
 
       setReferralCode(data.referral_code)
       
-      // Gerar link completo
+      // Gerar link completo - redireciona direto para a página de cadastro
       const baseUrl = typeof window !== 'undefined' 
         ? window.location.origin 
         : 'https://appconfilar.com.br'
       
-      setReferralLink(`${baseUrl}/?ref=${data.referral_code}`)
+      setReferralLink(`${baseUrl}/auth?ref=${data.referral_code}`)
     } catch (err: any) {
       console.error('Erro ao carregar código de referral:', err)
       setError(err.message)

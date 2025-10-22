@@ -5,6 +5,7 @@ import { ModernSidebar } from './ModernSidebar'
 import { ModernHeader } from './ModernHeader'
 import { ModernBottomNavigation } from './ModernBottomNavigation'
 import { LoginPrompt } from './LoginPrompt';
+import { ReferralTicker } from '@/components/referral/ReferralTicker'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { PageLoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
@@ -94,6 +95,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       
       {/* Bottom Navigation para mobile */}
       <ModernBottomNavigation />
+      
+      {/* Ticker de Top Indicadores - aparece em todo o projeto */}
+      {isLoggedIn && <ReferralTicker />}
     </>
   );
 };
