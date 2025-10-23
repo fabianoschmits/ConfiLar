@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { onCLS, onINP, onFCP, onLCP, onTTFB, Metric } from 'web-vitals'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 
 // ===================================
 // TIPOS
@@ -62,10 +62,10 @@ function getVitalRating(name: string, value: number): 'good' | 'needs-improvemen
 function sendToAnalytics(metric: VitalMetric, config: PerformanceConfig) {
   // Log sempre em desenvolvimento
   if (config.debugMode) {
-    Logger.performance.webVital(
-      metric.name, 
-      metric.value,
-      `${metric.rating} - Delta: ${metric.delta}ms`
+    logger.info(
+      `Web Vital: ${metric.name}`, 
+      'web-vital',
+      { value: metric.value, rating: metric.rating, delta: metric.delta }
     )
   }
 
@@ -118,7 +118,7 @@ function sendToAnalytics(metric: VitalMetric, config: PerformanceConfig) {
         timestamp: Date.now()
       })
     }).catch(error => {
-      Logger.error('performance-analytics', error, { metric: metric.name })
+      logger.error('performance-analytics', error, { metric: metric.name })
     })
   }
 }
@@ -146,7 +146,7 @@ function trackResourceTiming(config: PerformanceConfig) {
         if (isImportant) {
           const loadTime = resource.responseEnd - resource.requestStart
           
-          Logger.debug('performance', `Resource loaded: ${resource.name} (${loadTime}ms)`, {
+          logger.debug('performance', `Resource loaded: ${resource.name} (${loadTime}ms)`, {
             type: resource.initiatorType,
             size: resource.transferSize || 0,
             cached: resource.transferSize === 0,
@@ -155,7 +155,7 @@ function trackResourceTiming(config: PerformanceConfig) {
 
           // Alertar sobre recursos lentos
           if (loadTime > 2000) {
-            Logger.warn('performance', `Slow resource detected: ${resource.name} (${loadTime}ms)`)
+            logger.warn('performance', `Slow resource detected: ${resource.name} (${loadTime}ms)`)
           }
         }
       }
@@ -187,7 +187,7 @@ function trackNavigationTiming(config: PerformanceConfig) {
         windowLoad: navigation.loadEventEnd - navigation.fetchStart
       }
 
-      Logger.debug('performance', `Page load completed: ${metrics.windowLoad}ms`, {
+      logger.debug('performance', `Page load completed: ${metrics.windowLoad}ms`, {
         dns: metrics.dns,
         tcp: metrics.tcp,
         tls: metrics.tls,
@@ -210,7 +210,7 @@ function trackErrorMetrics(config: PerformanceConfig) {
 
   // Erros JavaScript
   window.addEventListener('error', (event) => {
-    Logger.error('js-error', new Error(event.message), {
+    logger.error('js-error', new Error(event.message), {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
@@ -220,7 +220,7 @@ function trackErrorMetrics(config: PerformanceConfig) {
 
   // Promises rejeitadas
   window.addEventListener('unhandledrejection', (event) => {
-    Logger.error('unhandled-promise', new Error(event.reason), {
+    logger.error('unhandled-promise', new Error(event.reason), {
       url: window.location.href,
       stack: event.reason?.stack
     })
@@ -230,7 +230,7 @@ function trackErrorMetrics(config: PerformanceConfig) {
   window.addEventListener('error', (event) => {
     if (event.target !== window) {
       const target = event.target as HTMLElement
-      Logger.error('resource-error', new Error(`Failed to load: ${target.tagName}`), {
+      logger.error('resource-error', new Error(`Failed to load: ${target.tagName}`), {
         tagName: target.tagName,
         src: (target as any).src || (target as any).href,
         url: window.location.href
@@ -277,7 +277,7 @@ export function PerformanceMonitor({ config: userConfig }: PerformanceMonitorPro
     // Error Tracking
     trackErrorMetrics(config)
 
-    Logger.info('performance-monitor', 'Performance monitoring initialized', { config })
+    logger.info('performance-monitor', 'Performance monitoring initialized', { config })
 
   }, [config])
 
@@ -297,11 +297,11 @@ export function usePerformanceMetrics() {
     if (result instanceof Promise) {
       return result.finally(() => {
         const duration = performance.now() - startTime
-        Logger.performance.renderTime(name, duration)
+        logger.info(`Render time: ${name}`, 'renderTime', { duration })
       })
     } else {
       const duration = performance.now() - startTime
-      Logger.performance.renderTime(name, duration)
+      logger.info(`Render time: ${name}`, 'renderTime', { duration })
       return result
     }
   }
@@ -311,12 +311,12 @@ export function usePerformanceMetrics() {
     
     return () => {
       const duration = performance.now() - startTime
-      Logger.performance.renderTime(componentName, duration)
+      logger.info(`Render time: ${componentName}`, 'renderTime', { duration })
     }
   }
 
   const trackUserAction = (action: string, metadata?: Record<string, any>) => {
-    Logger.ui.userAction(action, 'interaction', metadata)
+    logger.info(`User action: ${action}`, 'interaction', metadata)
   }
 
   return {

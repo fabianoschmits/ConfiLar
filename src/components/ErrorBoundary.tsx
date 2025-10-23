@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
 
 interface Props {
@@ -84,7 +84,10 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     // Log estruturado do erro
-    Logger.ui.errorBoundary(error, errorInfo.componentStack)
+    logger.error('ErrorBoundary caught error', { 
+      error, 
+      data: { componentStack: errorInfo.componentStack } 
+    })
 
     // Salvar detalhes do erro no estado
     this.setState({ 
@@ -99,8 +102,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
     // Verificar se é um erro conhecido e ignorável
     if (this.isIgnorableError(error)) {
-      Logger.debug('error-boundary', 'Ignorable error detected, auto-recovering', { 
-        errorMessage: error.message 
+      logger.debug('Ignorable error detected, auto-recovering', { 
+        context: 'error-boundary',
+        data: { errorMessage: error.message }
       })
       
       // Auto-recovery para erros conhecidos
@@ -165,9 +169,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleRetry = () => {
-    Logger.info('error-boundary', 'User requested retry', { 
-      retryCount: this.retryCount,
-      errorId: this.state.errorId 
+    logger.info('User requested retry', { 
+      context: 'error-boundary',
+      data: { 
+        retryCount: this.retryCount,
+        errorId: this.state.errorId 
+      }
     })
     
     if (this.retryCount < this.maxRetries) {
@@ -179,16 +186,18 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleGoHome = () => {
-    Logger.info('error-boundary', 'User navigating to home', { 
-      errorId: this.state.errorId 
+    logger.info('User navigating to home', { 
+      context: 'error-boundary',
+      data: { errorId: this.state.errorId }
     })
     
     window.location.href = '/'
   }
 
   private handleReportBug = () => {
-    Logger.info('error-boundary', 'User reporting bug', { 
-      errorId: this.state.errorId 
+    logger.info('User reporting bug', { 
+      context: 'error-boundary',
+      data: { errorId: this.state.errorId }
     })
 
     // Criar link para reportar bug com informações preenchidas
@@ -327,7 +336,7 @@ export class ErrorBoundary extends Component<Props, State> {
 export function useErrorHandler() {
   return {
     reportError: (error: Error, context?: string) => {
-      Logger.error(context || 'manual-error', error)
+      logger.error('Manual error reported', { context: context || 'manual-error', error })
       
       // Em produção, você pode forçar o error boundary
       if (process.env.NODE_ENV === 'production') {

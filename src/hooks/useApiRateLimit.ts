@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 
 interface ApiRateLimitOptions {
   endpoint: string
@@ -31,7 +31,7 @@ export function useApiRateLimit() {
     })
 
     if (!result.allowed) {
-      Logger.warn('api-rate-limit', `Rate limit exceeded for ${options.endpoint}`, {
+      logger.warn('api-rate-limit', `Rate limit exceeded for ${options.endpoint}`, {
         endpoint: options.endpoint,
         method: options.method,
         identifier,
@@ -57,7 +57,7 @@ export function useApiRateLimit() {
       identifier: `api_${options.endpoint}_${options.method}`
     })
 
-    Logger.debug('api-rate-limit', `API attempt recorded for ${options.endpoint}`, {
+    logger.debug('api-rate-limit', `API attempt recorded for ${options.endpoint}`, {
       endpoint: options.endpoint,
       method: options.method,
       identifier
@@ -111,7 +111,7 @@ export function useMessageRateLimit() {
     const result = checkRateLimit(identifier, RateLimitConfigs.MESSAGE_SENDING)
 
     if (!result.allowed) {
-      Logger.warn('message-rate-limit', `Message rate limit exceeded for ${identifier}`, {
+      logger.warn('message-rate-limit', `Message rate limit exceeded for ${identifier}`, {
         identifier,
         remainingAttempts: result.remainingAttempts,
         isBlocked: result.isBlocked,
@@ -130,7 +130,7 @@ export function useMessageRateLimit() {
     const identifier = user?.id || 'anonymous'
     recordAttempt(identifier, RateLimitConfigs.MESSAGE_SENDING)
 
-    Logger.debug('message-rate-limit', `Message attempt recorded for ${identifier}`, {
+    logger.debug('message-rate-limit', `Message attempt recorded for ${identifier}`, {
       identifier
     })
   }, [recordAttempt, user?.id])
@@ -155,7 +155,7 @@ export function usePostRateLimit() {
     const result = checkRateLimit(identifier, RateLimitConfigs.POST_CREATION)
 
     if (!result.allowed) {
-      Logger.warn('post-rate-limit', `Post rate limit exceeded for ${identifier}`, {
+      logger.warn('post-rate-limit', `Post rate limit exceeded for ${identifier}`, {
         identifier,
         remainingAttempts: result.remainingAttempts,
         isBlocked: result.isBlocked,
@@ -174,7 +174,7 @@ export function usePostRateLimit() {
     const identifier = user?.id || 'anonymous'
     recordAttempt(identifier, RateLimitConfigs.POST_CREATION)
 
-    Logger.debug('post-rate-limit', `Post attempt recorded for ${identifier}`, {
+    logger.debug('post-rate-limit', `Post attempt recorded for ${identifier}`, {
       identifier
     })
   }, [recordAttempt, user?.id])

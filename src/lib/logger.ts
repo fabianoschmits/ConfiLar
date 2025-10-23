@@ -1,310 +1,215 @@
-'use client'
+/**
+ * Sistema de Logging Condicional
+ * Logs aparecem apenas em desenvolvimento
+ * Em produção, são suprimidos para melhor performance e segurança
+ */
 
-interface LogEntry {
-  level: 'debug' | 'info' | 'warn' | 'error' | 'metric'
-  context: string
-  message: string
-  timestamp: string
-  userId?: string
-  sessionId?: string
-  metadata?: Record<string, any>
-  stack?: string
-}
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
-interface MetricEntry {
-  name: string
-  value: number
-  unit?: string
-  tags?: Record<string, string>
+interface LogOptions {
+  context?: string
+  data?: any
+  error?: Error
 }
 
 class Logger {
-  private static sessionId = Math.random().toString(36).substring(2, 15)
-  private static isDevelopment = process.env.NODE_ENV === 'development'
-  private static isProduction = process.env.NODE_ENV === 'production'
+  private isDevelopment: boolean
+  private isClient: boolean
 
-  private static getCurrentUserId(): string | undefined {
-    try {
-      // Tentar pegar do contexto de auth se disponível
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const auth = window.localStorage.getItem('supabase.auth.token')
-        if (auth) {
-          const parsed = JSON.parse(auth)
-          return parsed?.user?.id
-        }
-      }
-    } catch {
-      // Ignore errors
-    }
-    return undefined
+  constructor() {
+    this.isDevelopment = process.env.NODE_ENV === 'development'
+    this.isClient = typeof window !== 'undefined'
   }
 
-  private static createLogEntry(
-    level: LogEntry['level'],
-    context: string,
-    message: string,
-    metadata?: Record<string, any>,
-    error?: Error
-  ): LogEntry {
-    return {
-      level,
-      context,
-      message,
-      timestamp: new Date().toISOString(),
-      userId: this.getCurrentUserId(),
-      sessionId: this.sessionId,
-      metadata,
-      stack: error?.stack
-    }
-  }
-
-  private static log(entry: LogEntry) {
-    // Console para desenvolvimento
-    if (this.isDevelopment) {
-      const emoji = {
-        debug: '🔍',
-        info: 'ℹ️',
-        warn: '⚠️',
-        error: '❌',
-        metric: '📊'
-      }[entry.level]
-
-      const style = {
-        debug: 'color: #888',
-        info: 'color: #0066cc',
-        warn: 'color: #ff9900',
-        error: 'color: #cc0000',
-        metric: 'color: #9900cc'
-      }[entry.level]
-
-      console.groupCollapsed(
-        `${emoji} %c[${entry.context}] ${entry.message}`,
-        style
-      )
-      console.log('📅 Timestamp:', entry.timestamp)
-      if (entry.userId) console.log('👤 User ID:', entry.userId)
-      console.log('🎯 Session ID:', entry.sessionId)
-      if (entry.metadata) console.log('📋 Metadata:', entry.metadata)
-      if (entry.stack) console.log('📚 Stack:', entry.stack)
-      console.groupEnd()
-    }
-
-    // Enviar para serviço de logging em produção
-    if (this.isProduction) {
-      this.sendToLoggingService(entry)
-    }
-  }
-
-  private static sendToLoggingService(entry: LogEntry) {
-    // Em produção, você pode enviar para serviços como:
-    // - Sentry, LogRocket, DataDog, etc.
-    // Por enquanto, vamos apenas manter no localStorage para debug
-    try {
-      const logs = JSON.parse(localStorage.getItem('app-logs') || '[]')
-      logs.push(entry)
-      
-      // Manter apenas os últimos 100 logs
-      if (logs.length > 100) {
-        logs.shift()
-      }
-      
-      localStorage.setItem('app-logs', JSON.stringify(logs))
-    } catch {
-      // Ignore storage errors
-    }
-  }
-
-  // Métodos públicos
-  static debug(context: string, message: string, metadata?: Record<string, any>) {
-    this.log(this.createLogEntry('debug', context, message, metadata))
-  }
-
-  static info(context: string, message: string, metadata?: Record<string, any>) {
-    this.log(this.createLogEntry('info', context, message, metadata))
-  }
-
-  static warn(context: string, message: string, metadata?: Record<string, any>) {
-    this.log(this.createLogEntry('warn', context, message, metadata))
-  }
-
-  static error(context: string, error: Error | string, metadata?: Record<string, any>) {
-    const errorObj = typeof error === 'string' ? new Error(error) : error
-    this.log(this.createLogEntry('error', context, errorObj.message, metadata, errorObj))
-  }
-
-  static metric(name: string, data: MetricEntry) {
-    this.log(this.createLogEntry('metric', 'performance', `${name}: ${data.value}${data.unit || ''}`, {
-      metric: {
-        name,
-        value: data.value,
-        unit: data.unit,
-        tags: data.tags
-      }
-    }))
-  }
-
-  // Utilitários para contextos específicos
-  static auth = {
-    login: (email: string, success: boolean, metadata?: Record<string, any>) => {
-      Logger.info('auth', `Login ${success ? 'successful' : 'failed'} for ${email}`, {
-        action: 'login',
-        email,
-        success,
-        ...metadata
-      })
-    },
-
-    logout: (userId: string) => {
-      Logger.info('auth', `User ${userId} logged out`, {
-        action: 'logout',
-        userId
-      })
-    },
-
-    profileFetch: (userId: string, success: boolean, cached: boolean = false) => {
-      Logger.debug('auth', `Profile fetch ${success ? 'successful' : 'failed'} for ${userId}`, {
-        action: 'profile_fetch',
-        userId,
-        success,
-        cached
-      })
-    },
-
-    sessionTimeout: (userId: string, reason: string) => {
-      Logger.warn('auth', `Session timeout for ${userId}: ${reason}`, {
-        action: 'session_timeout',
-        userId,
-        reason
-      })
-    }
-  }
-
-  static api = {
-    request: (endpoint: string, method: string, duration: number) => {
-      Logger.debug('api', `${method} ${endpoint} completed in ${duration}ms`, {
-        endpoint,
-        method,
-        duration
-      })
-    },
-
-    error: (endpoint: string, method: string, error: Error, statusCode?: number) => {
-      Logger.error('api', error, {
-        endpoint,
-        method,
-        statusCode
-      })
-    },
-
-    cacheHit: (key: string) => {
-      Logger.debug('api', `Cache hit for ${key}`, {
-        action: 'cache_hit',
-        key
-      })
-    },
-
-    cacheMiss: (key: string) => {
-      Logger.debug('api', `Cache miss for ${key}`, {
-        action: 'cache_miss',
-        key
-      })
-    }
-  }
-
-  static ui = {
-    pageView: (page: string, loadTime?: number) => {
-      Logger.info('ui', `Page view: ${page}`, {
-        action: 'page_view',
-        page,
-        loadTime
-      })
-    },
-
-    userAction: (action: string, element: string, metadata?: Record<string, any>) => {
-      Logger.debug('ui', `User action: ${action} on ${element}`, {
-        action: 'user_action',
-        element,
-        actionType: action,
-        ...metadata
-      })
-    },
-
-    errorBoundary: (error: Error, componentStack: string) => {
-      Logger.error('ui', error, {
-        action: 'error_boundary',
-        componentStack
-      })
-    }
-  }
-
-  static performance = {
-    webVital: (name: string, value: number, rating: string) => {
-      Logger.metric(name, {
-        name,
-        value,
-        unit: 'ms',
-        tags: { rating, type: 'web_vital' }
-      })
-    },
-
-    renderTime: (component: string, duration: number) => {
-      Logger.metric('component_render', {
-        name: 'component_render',
-        value: duration,
-        unit: 'ms',
-        tags: { component }
-      })
-    },
-
-    bundleSize: (chunk: string, size: number) => {
-      Logger.metric('bundle_size', {
-        name: 'bundle_size',
-        value: size,
-        unit: 'bytes',
-        tags: { chunk }
-      })
-    }
-  }
-
-  // Método para debug em desenvolvimento
-  static getLogs(): LogEntry[] {
-    if (!this.isDevelopment) return []
+  /**
+   * Debug: Informações detalhadas para debugging
+   * Apenas em desenvolvimento
+   */
+  debug(message: string, contextOrOptions?: string | LogOptions, data?: any): void {
+    if (!this.isDevelopment) return
     
-    try {
-      return JSON.parse(localStorage.getItem('app-logs') || '[]')
-    } catch {
-      return []
+    // Suportar tanto formato antigo (3 args) quanto novo (2 args)
+    const options = typeof contextOrOptions === 'string' 
+      ? { context: contextOrOptions, data } 
+      : contextOrOptions
+    
+    const prefix = this.getPrefix('debug', options?.context)
+    console.debug(prefix, message, options?.data || '')
+  }
+
+  /**
+   * Info: Informações gerais do fluxo
+   * Apenas em desenvolvimento
+   */
+  info(message: string, contextOrOptions?: string | LogOptions, data?: any): void {
+    if (!this.isDevelopment) return
+    
+    // Suportar tanto formato antigo (3 args) quanto novo (2 args)
+    const options = typeof contextOrOptions === 'string' 
+      ? { context: contextOrOptions, data } 
+      : contextOrOptions
+    
+    const prefix = this.getPrefix('info', options?.context)
+    console.info(prefix, message, options?.data || '')
+  }
+
+  /**
+   * Warn: Avisos que não quebram a aplicação
+   * Aparece em desenvolvimento E produção (importante monitorar)
+   */
+  warn(message: string, contextOrOptions?: string | LogOptions, data?: any): void {
+    // Suportar tanto formato antigo (3 args) quanto novo (2 args)
+    const options = typeof contextOrOptions === 'string' 
+      ? { context: contextOrOptions, data } 
+      : contextOrOptions
+    
+    const prefix = this.getPrefix('warn', options?.context)
+    console.warn(prefix, message, options?.data || '')
+    
+    // Em produção, poderia enviar para serviço de monitoramento
+    if (!this.isDevelopment) {
+      this.sendToMonitoring('warn', message, options)
     }
   }
 
-  static clearLogs() {
-    if (this.isDevelopment) {
-      localStorage.removeItem('app-logs')
-      console.clear()
+  /**
+   * Error: Erros críticos
+   * SEMPRE aparece (desenvolvimento E produção)
+   */
+  error(message: string, contextOrOptions?: string | LogOptions | Error, data?: any): void {
+    // Suportar múltiplos formatos
+    let options: LogOptions | undefined
+    
+    if (contextOrOptions instanceof Error) {
+      options = { error: contextOrOptions, data }
+    } else if (typeof contextOrOptions === 'string') {
+      options = { context: contextOrOptions, data }
+    } else {
+      options = contextOrOptions
+    }
+    
+    const prefix = this.getPrefix('error', options?.context)
+    console.error(prefix, message, options?.error || options?.data || '')
+    
+    // Em produção, enviar para serviço de monitoramento
+    if (!this.isDevelopment) {
+      this.sendToMonitoring('error', message, options)
+    }
+  }
+
+  /**
+   * Success: Operações bem-sucedidas
+   * Apenas em desenvolvimento
+   */
+  success(message: string, options?: LogOptions): void {
+    if (!this.isDevelopment) return
+    
+    const prefix = this.getPrefix('success', options?.context)
+    console.log(prefix, `✅ ${message}`, options?.data || '')
+  }
+
+  /**
+   * Group: Agrupar logs relacionados
+   * Apenas em desenvolvimento
+   */
+  group(label: string, callback: () => void): void {
+    if (!this.isDevelopment) {
+      callback()
+      return
+    }
+    
+    console.group(`📦 ${label}`)
+    callback()
+    console.groupEnd()
+  }
+
+  /**
+   * Table: Mostrar dados em formato tabela
+   * Apenas em desenvolvimento
+   */
+  table(data: any): void {
+    if (!this.isDevelopment) return
+    console.table(data)
+  }
+
+  /**
+   * Time: Medir performance
+   * Apenas em desenvolvimento
+   */
+  time(label: string): void {
+    if (!this.isDevelopment) return
+    console.time(label)
+  }
+
+  timeEnd(label: string): void {
+    if (!this.isDevelopment) return
+    console.timeEnd(label)
+  }
+
+  /**
+   * Prefixo colorido baseado no nível
+   */
+  private getPrefix(level: LogLevel | 'success', context?: string): string {
+    const timestamp = new Date().toLocaleTimeString('pt-BR')
+    const ctx = context ? `[${context}]` : ''
+    
+    const emojis = {
+      debug: '🔍',
+      info: 'ℹ️',
+      warn: '⚠️',
+      error: '❌',
+      success: '✅'
+    }
+    
+    return `${emojis[level]} ${timestamp} ${ctx}`.trim()
+  }
+
+  /**
+   * Enviar para serviço de monitoramento em produção
+   * Placeholder - implementar integração com Sentry, LogRocket, etc
+   */
+  private sendToMonitoring(level: LogLevel, message: string, options?: LogOptions): void {
+    // Em produção, integrar com serviço de monitoramento
+    // Exemplos: Sentry, LogRocket, Bugsnag, DataDog
+    
+    if (this.isClient && window.navigator.sendBeacon) {
+      // Enviar de forma assíncrona sem bloquear
+      try {
+        const payload = JSON.stringify({
+          level,
+          message,
+          context: options?.context,
+          data: options?.data,
+          error: options?.error?.message,
+          stack: options?.error?.stack,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        })
+        
+        // Placeholder - substituir por endpoint real de monitoramento
+        // navigator.sendBeacon('/api/logs', payload)
+      } catch (e) {
+        // Falha silenciosa para não quebrar a aplicação
+      }
     }
   }
 }
 
-// Hook para usar logging em componentes React
-export function useLogger(context: string) {
-  return {
-    debug: (message: string, metadata?: Record<string, any>) => 
-      Logger.debug(context, message, metadata),
-    
-    info: (message: string, metadata?: Record<string, any>) => 
-      Logger.info(context, message, metadata),
-    
-    warn: (message: string, metadata?: Record<string, any>) => 
-      Logger.warn(context, message, metadata),
-    
-    error: (error: Error | string, metadata?: Record<string, any>) => 
-      Logger.error(context, error, metadata),
-    
-    metric: (name: string, data: MetricEntry) => 
-      Logger.metric(name, data)
-  }
-}
+// Exportar instância singleton
+export const logger = new Logger()
 
+// Exportar helpers individuais para facilitar uso
+export const debug = logger.debug.bind(logger)
+export const info = logger.info.bind(logger)
+export const warn = logger.warn.bind(logger)
+export const error = logger.error.bind(logger)
+export const success = logger.success.bind(logger)
+export const group = logger.group.bind(logger)
+export const table = logger.table.bind(logger)
+export const time = logger.time.bind(logger)
+export const timeEnd = logger.timeEnd.bind(logger)
+
+// Exportar classe para uso avançado
 export { Logger }
-export type { LogEntry, MetricEntry }
-
+export default logger

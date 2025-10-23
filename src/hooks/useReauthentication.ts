@@ -64,27 +64,58 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
     setError(null)
     
     try {
-      // Para reautenticação, vamos simular a verificação por enquanto
-      // Em uma implementação real, você usaria a API específica do Supabase
-      
-      // Simular delay de verificação
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Por enquanto, aceitar qualquer código de 6 dígitos
-      if (otp.length === 6 && /^\d+$/.test(otp)) {
-        console.log('✅ OTP verificado com sucesso')
-        setOtpVerified(true)
-        setIsReauthenticated(true)
-        setIsLoading(false)
-        toast.success('Reautenticação confirmada!')
-        
-        return { error: null }
-      } else {
-        const error = { message: 'Código inválido' }
+      // Validar formato do código
+      if (!otp || otp.length !== 6 || !/^\d+$/.test(otp)) {
+        const error = { message: 'Código deve ter 6 dígitos' }
         setError(error.message)
         setIsLoading(false)
         return { error }
       }
+
+      // Obter email do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user?.email) {
+        const error = { message: 'Usuário não encontrado' }
+        setError(error.message)
+        setIsLoading(false)
+        return { error }
+      }
+
+      // Verificar OTP usando a API oficial do Supabase
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email: user.email,
+        token: otp,
+        type: 'email'
+      })
+
+      if (verifyError) {
+        console.error('❌ Erro ao verificar OTP:', verifyError)
+        setError(verifyError.message)
+        setIsLoading(false)
+        return { error: verifyError }
+      }
+
+      if (!data.session) {
+        const error = { message: 'Código inválido ou expirado' }
+        setError(error.message)
+        setIsLoading(false)
+        return { error }
+      }
+
+      console.log('✅ OTP verificado com sucesso')
+      setOtpVerified(true)
+      setIsReauthenticated(true)
+      setIsLoading(false)
+      toast.success('Reautenticação confirmada!')
+      
+      // Salvar sessão de reautenticação (válida por 1 hora)
+      sessionStorage.setItem('reauth_session', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        user_id: user.id
+      }))
+      
+      return { error: null }
     } catch (error) {
       console.error('💥 Erro crítico na verificação do OTP:', error)
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'

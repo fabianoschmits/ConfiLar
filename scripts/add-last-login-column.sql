@@ -32,3 +32,4 @@ SELECT
   COUNT(last_login_at) as usuarios_com_data
 FROM public.profiles;
 
+
