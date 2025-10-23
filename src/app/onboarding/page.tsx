@@ -33,7 +33,6 @@ import { updateReferralMilestone } from '@/hooks/useReferralTracking'
 
 const onboardingSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  indicado_por: z.string().optional(), // Campo opcional para quem indicou
   phone: z.string().min(10, 'Telefone inválido'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   gender: z.enum(['male', 'female', 'other']),
@@ -74,9 +73,7 @@ export default function OnboardingPage() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
   const [showDataSummary, setShowDataSummary] = useState(false)
-  const [referrerName, setReferrerName] = useState<string | null>(null) // Nome de quem indicou
-  const [hasReferralCode, setHasReferralCode] = useState(false) // Se foi indicado por alguém
-  const [userCpf, setUserCpf] = useState<string | null>(null) // CPF do usuário
+  const [userCpf, setUserCpf] = useState<string | null>(null) // CPF do usuário (salvo no cadastro)
   const { createWelcomePost} = useAutoNotifications()
 
   const {
@@ -137,56 +134,6 @@ export default function OnboardingPage() {
     loadUserCpf()
   }, [user, router])
 
-  // Verificar se o usuário foi indicado por alguém
-  useEffect(() => {
-    const checkReferralCode = async () => {
-      try {
-        const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
-        const stored = localStorage.getItem(REFERRAL_STORAGE_KEY)
-        
-        if (!stored) {
-          console.log('🔍 [Onboarding] Nenhum código de referral encontrado')
-          setHasReferralCode(false)
-          return
-        }
-
-        const data = JSON.parse(stored)
-        const referralCode = data.code
-        console.log('🔍 [Onboarding] Código de referral encontrado:', referralCode)
-
-        // Buscar o nome do referrer no banco
-        const { data: statsData, error } = await supabase
-          .from('user_referral_stats')
-          .select(`
-            referral_code,
-            profiles!inner(full_name)
-          `)
-          .eq('referral_code', referralCode)
-          .maybeSingle()
-
-        if (error || !statsData) {
-          console.error('❌ [Onboarding] Erro ao buscar dados do referrer:', error)
-          setHasReferralCode(false)
-          return
-        }
-
-        const referrerFullName = (statsData.profiles as any)?.full_name
-        console.log('✅ [Onboarding] Nome do referrer encontrado:', referrerFullName)
-        
-        setReferrerName(referrerFullName)
-        setHasReferralCode(true)
-        
-        // Preencher o campo "indicado_por" automaticamente
-        setValue('indicado_por', referrerFullName)
-      } catch (err) {
-        console.error('❌ [Onboarding] Erro ao verificar código de referral:', err)
-        setHasReferralCode(false)
-      }
-    }
-
-    checkReferralCode()
-  }, [])
-
   // Steps para melhor organização
   const steps = [
     { 
@@ -203,7 +150,7 @@ export default function OnboardingPage() {
       shortTitle: 'Dados',
       icon: User, 
       description: 'Informações pessoais básicas',
-      fields: ['full_name', 'indicado_por', 'phone', 'birth_date', 'gender']
+      fields: ['full_name', 'phone', 'birth_date', 'gender']
     },
     { 
       id: 3, 
@@ -790,28 +737,6 @@ export default function OnboardingPage() {
                             <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                               <X className="w-3 h-3" />
                               {errors.full_name.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="indicado_por" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Indicado por {hasReferralCode && <span className="text-xs text-green-600 font-semibold">(Preenchido automaticamente)</span>}
-                          </Label>
-                          <Input
-                            id="indicado_por"
-                            placeholder={hasReferralCode ? "" : "Nome de quem te indicou (opcional)"}
-                            {...register('indicado_por')}
-                            disabled={hasReferralCode}
-                            className={cn(
-                              "h-10",
-                              hasReferralCode ? 'bg-green-50 border-green-300 text-green-800 cursor-not-allowed' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {hasReferralCode && referrerName && (
-                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              Você foi indicado por {referrerName}
                             </p>
                           )}
                         </div>
