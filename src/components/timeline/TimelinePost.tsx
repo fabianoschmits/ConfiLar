@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star, Share2, Briefcase } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -174,19 +175,22 @@ export function TimelinePost({
           {/* Avatar */}
           <div className="flex-shrink-0">
             <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
-              <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                <AvatarImage src={post.user_avatar || ''} alt={`Avatar de ${post.user_name}`} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm">
-                  {post.user_name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar 
+                src={post.user_avatar}
+                alt={post.user_name}
+                fallback={post.user_name?.charAt(0).toUpperCase() || 'U'}
+                size="lg"
+                userId={post.user_id}
+                showReferralBadge={true}
+                className="cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
+              />
             </Link>
           </div>
           
           {/* Informações do Usuário */}
           <div className="flex-1 min-w-0">
             <div className="cursor-pointer">
-              <h3 className="font-semibold text-gray-900 truncate hover:text-blue-600 cursor-pointer transition-colors">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                 <Link href={`/perfil/${post.user_id}`}>
                   {post.user_name}
                 </Link>
@@ -242,7 +246,7 @@ export function TimelinePost({
             </div>
             
             {/* Localização */}
-            <div className="flex items-center text-[9px] sm:text-xs text-gray-500 mt-1">
+            <div className="flex items-center text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
               <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
               <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
             </div>
@@ -264,10 +268,10 @@ export function TimelinePost({
 
             <CardContent className="space-y-3 px-3 md:px-6 -mt-2 pb-3 md:pb-6">
               <div className="-mt-2">
-                <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2">
+                <h4 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   <MentionText text={post.title} />
                 </h4>
-                <p className="text-sm md:text-base text-gray-700">
+                <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">
                   <MentionText text={post.description} />
                 </p>
               </div>

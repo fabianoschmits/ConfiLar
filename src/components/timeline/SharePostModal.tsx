@@ -172,14 +172,14 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
     <Modal isOpen={isOpen} onClose={onClose} title="Compartilhar Post" size="md">
       <div className="space-y-4">
         {/* Informações do post */}
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <h4 className="font-semibold text-sm text-blue-900 mb-1">Post a compartilhar:</h4>
-          <p className="text-sm text-blue-800">{postTitle}</p>
+        <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+          <h4 className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-1">Post a compartilhar:</h4>
+          <p className="text-sm text-blue-800 dark:text-blue-200">{postTitle}</p>
         </div>
 
         {/* Buscar usuários */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
             Buscar usuários
           </label>
           <div className="relative">
@@ -198,20 +198,20 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
 
         {/* Lista de usuários encontrados */}
         {searchQuery && (
-          <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-white dark:bg-gray-800">
             {isSearching ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
                 <span className="text-sm">Buscando usuários...</span>
               </div>
             ) : users.length > 0 ? (
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {users.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => toggleUserSelection(user)}
-                    className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 transition-colors ${
-                      selectedUsers.find(u => u.id === user.id) ? 'bg-blue-50' : ''
+                    className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      selectedUsers.find(u => u.id === user.id) ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                     }`}
                   >
                     <Avatar className="w-10 h-10">
@@ -221,8 +221,8 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 text-left">
-                      <div className="font-medium text-sm">{user.full_name}</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="font-medium text-sm dark:text-white">{user.full_name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                       </div>
                     </div>
@@ -237,7 +237,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 <span className="text-sm">Nenhum usuário encontrado</span>
               </div>
             )}
@@ -247,7 +247,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
         {/* Usuários selecionados */}
         {selectedUsers.length > 0 && (
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block flex items-center">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block flex items-center">
               <Users className="h-4 w-4 mr-1" />
               Selecionados ({selectedUsers.length})
             </label>
@@ -255,15 +255,15 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
               {selectedUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center space-x-2 text-gray-700 text-sm"
+                  className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-gray-700 dark:text-gray-200 text-sm"
                 >
                   <span>{user.full_name}</span>
                   <button
                     onClick={() => toggleUserSelection(user)}
-                    className="hover:bg-gray-100 rounded-full p-0.5 transition-colors"
+                    className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-0.5 transition-colors"
                     title="Remover"
                   >
-                    <X className="h-3.5 w-3.5 text-gray-500 hover:text-red-600" />
+                    <X className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 hover:text-red-600" />
                   </button>
                 </div>
               ))}
@@ -273,7 +273,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
 
         {/* Mensagem opcional */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
             Mensagem (opcional)
           </label>
           <Textarea
@@ -316,7 +316,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
             <Button
               onClick={handleShare}
               disabled={selectedUsers.length === 0 || isSharing}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isSharing ? (
                 <>
@@ -335,16 +335,16 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-2 text-gray-500">ou compartilhe via link</span>
+            <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">ou compartilhe via link</span>
           </div>
         </div>
 
         {/* Compartilhar via Link */}
-        <div className="border border-gray-200 rounded-lg p-3 md:p-4 space-y-3">
-          <h4 className="font-semibold text-sm text-gray-900 flex items-center">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
+          <h4 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center">
             <Link2 className="h-4 w-4 mr-2 flex-shrink-0" />
             Compartilhar via Link
           </h4>
@@ -354,7 +354,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
             <Input
               value={getPostUrl()}
               readOnly
-              className="flex-1 text-xs sm:text-sm bg-gray-50 min-w-0"
+              className="flex-1 text-xs sm:text-sm bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 min-w-0"
             />
             <Button
               onClick={handleCopyLink}

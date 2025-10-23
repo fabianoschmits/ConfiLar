@@ -8,12 +8,8 @@ import { toast } from 'sonner'
 
 // Função helper para usar o contexto de disponibilidade de forma opcional
 const useAvailabilityContextOptional = () => {
-  try {
-    const { useAvailabilityContext } = require('@/contexts/AvailabilityContext')
-    return useAvailabilityContext()
-  } catch {
-    return null
-  }
+  // Retorna null por padrão - o contexto será usado quando estiver implementado
+  return null
 }
 
 export interface AvailabilityState {
@@ -103,6 +99,24 @@ export const useAvailability = () => {
             padding: '16px 20px'
           }
         })
+        
+        // Mensagem informativa sobre inativação automática
+        setTimeout(() => {
+          toast.info('ℹ️ Importante: Inativação Automática', {
+            description: 'Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site',
+            duration: 6000,
+            style: {
+              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+              color: '#FFFFFF',
+              border: '1px solid #3B82F6',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)',
+              fontWeight: '500',
+              fontSize: '14px',
+              padding: '16px 20px'
+            }
+          })
+        }, 2000)
       } else {
         toast.info('⏸️ Indisponível', {
           description: 'Você não está mais disponível para receber orçamentos e ofertas',
@@ -205,6 +219,24 @@ export const useAvailability = () => {
             padding: '16px 20px'
           }
         })
+        
+        // Mensagem informativa sobre inativação automática
+        setTimeout(() => {
+          toast.info('ℹ️ Importante: Inativação Automática', {
+            description: 'Você será automaticamente marcado como indisponível se ficar 7 dias sem acessar o site',
+            duration: 6000,
+            style: {
+              background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+              color: '#FFFFFF',
+              border: '1px solid #3B82F6',
+              borderRadius: '12px',
+              boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)',
+              fontWeight: '500',
+              fontSize: '14px',
+              padding: '16px 20px'
+            }
+          })
+        }, 2000)
       } else {
         toast.info('⏸️ Indisponível', {
           description: 'Você não está mais disponível para receber orçamentos e ofertas',

@@ -321,8 +321,8 @@ export function ModernHeader({
                           src={profile?.avatar_url}
                           alt={profile?.full_name || 'Usuário'}
                           fallback={profile?.full_name?.charAt(0) || 'U'}
-                          size="sm"
-                          className="sm:w-10 sm:h-10"
+                          size="lg"
+                          className="w-11 h-11 sm:w-17 sm:h-17"
                           userId={user?.id}
                           showReferralBadge={true}
                         />

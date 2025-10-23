@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageCircle, Star, Loader2, Trash2, UserPlus } from 'lucide-react'
 import { ReactionButton } from './ReactionButton'
@@ -91,12 +92,15 @@ export function WelcomeUserPost({
           <div className="flex items-start space-x-3 mb-4">
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
-                <Avatar className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                  <AvatarImage src={post.metadata?.avatar_url || ''} alt={`Avatar de ${post.metadata?.user || 'Usuário'}`} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                    {post.metadata?.user?.charAt(0).toUpperCase() || 'N'}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  src={post.metadata?.avatar_url}
+                  alt={post.metadata?.user || 'Usuário'}
+                  fallback={post.metadata?.user?.charAt(0).toUpperCase() || 'N'}
+                  size="xl"
+                  userId={post.user_id}
+                  showReferralBadge={true}
+                  className="cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
+                />
               </Link>
             </div>
             <div className="flex-1 min-w-0">

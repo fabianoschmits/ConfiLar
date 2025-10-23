@@ -15,6 +15,8 @@ export function useReferralTracking() {
     const refCode = urlParams.get('ref')
 
     if (refCode) {
+      console.log('🔍 [useReferralTracking] Código de referral detectado na URL:', refCode)
+      
       // Salvar no localStorage com timestamp
       const expiryDate = new Date()
       expiryDate.setDate(expiryDate.getDate() + REFERRAL_EXPIRY_DAYS)
@@ -25,9 +27,10 @@ export function useReferralTracking() {
         expiry: expiryDate.getTime()
       }))
 
-      // Limpar URL (opcional, para não ficar aparecendo o ref)
-      const cleanUrl = window.location.pathname + window.location.hash
-      window.history.replaceState({}, document.title, cleanUrl)
+      console.log('✅ [useReferralTracking] Código salvo no localStorage')
+      
+      // NÃO limpar a URL aqui - deixar o formulário ler o parâmetro primeiro
+      // A URL será limpa apenas após o usuário se cadastrar
     }
   }, [])
 
@@ -154,7 +157,7 @@ export async function createReferral(
 
 export async function updateReferralMilestone(
   userId: string,
-  milestone: 'profile_completed' | 'first_post_made' | 'first_service_hired' | 'active_30_days'
+  milestone: 'profile_completed' | 'first_post_made' | 'first_review_made' | 'active_30_days'
 ): Promise<void> {
   try {
     // Verificar se o usuário foi indicado
@@ -207,24 +210,48 @@ export async function updateReferralMilestone(
 
 export async function checkAndUpdate30DaysActive(userId: string): Promise<void> {
   try {
+    console.log('🔍 [30 dias] Verificando se usuário está ativo por 30 dias:', userId)
+    
     // Verificar se o usuário foi indicado
     const { data: referralData, error: referralError } = await supabase
       .from('referrals')
-      .select('id, created_at, active_30_days, activated_at')
+      .select('id, created_at, active_30_days, activated_at, status')
       .eq('referred_id', userId)
-      .single()
+      .maybeSingle()
 
-    if (referralError || !referralData || referralData.active_30_days) {
+    if (referralError) {
+      // Silenciar erro se for problema de permissão ou tabela não acessível
+      if (referralError.code === 'PGRST116' || referralError.code === '42501') {
+        console.log('ℹ️ [30 dias] Usuário não foi indicado ou sem permissão de acesso')
+        return
+      }
+      console.warn('⚠️ [30 dias] Erro ao buscar referral:', referralError.message)
       return
     }
 
-    // Verificar se já passou 30 dias desde a ativação
-    const activatedDate = new Date(referralData.activated_at || referralData.created_at)
+    if (!referralData) {
+      console.log('ℹ️ [30 dias] Usuário não foi indicado')
+      return
+    }
+
+    if (referralData.active_30_days) {
+      console.log('✅ [30 dias] Milestone já marcado anteriormente')
+      return
+    }
+
+    // Verificar se já passou 30 dias desde a ativação (ou criação)
+    const referenceDate = referralData.activated_at || referralData.created_at
+    const activatedDate = new Date(referenceDate)
+    const now = Date.now()
     const daysSinceActivation = Math.floor(
-      (Date.now() - activatedDate.getTime()) / (1000 * 60 * 60 * 24)
+      (now - activatedDate.getTime()) / (1000 * 60 * 60 * 24)
     )
 
+    console.log('📅 [30 dias] Dias desde ativação:', daysSinceActivation)
+
     if (daysSinceActivation >= 30) {
+      console.log('🎉 [30 dias] Usuário completou 30 dias ativo! Marcando milestone...')
+      
       // Marcar como ativo por 30 dias
       const { error: updateError } = await supabase
         .from('referrals')
@@ -235,11 +262,16 @@ export async function checkAndUpdate30DaysActive(userId: string): Promise<void> 
         .eq('id', referralData.id)
 
       if (updateError) {
-        console.error('Erro ao marcar 30 dias ativo:', updateError)
+        console.error('❌ [30 dias] Erro ao marcar 30 dias ativo:', updateError)
+      } else {
+        console.log('✅ [30 dias] Milestone active_30_days marcado! (+150 pontos para indicador)')
+        console.log('✅ [30 dias] Status mudará para "completed" via trigger do banco')
       }
+    } else {
+      console.log(`⏳ [30 dias] Faltam ${30 - daysSinceActivation} dias para completar 30 dias`)
     }
   } catch (err) {
-    console.error('Erro ao verificar 30 dias ativo:', err)
+    console.error('❌ [30 dias] Erro ao verificar 30 dias ativo:', err)
   }
 }
 

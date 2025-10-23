@@ -212,6 +212,8 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
               alt={trendingPost.user.full_name}
               fallback={trendingPost.user.full_name.charAt(0).toUpperCase()}
               size="md"
+              userId={trendingPost.user.id}
+              showReferralBadge={true}
               className="w-10 h-10"
             />
             <div className="flex-1">

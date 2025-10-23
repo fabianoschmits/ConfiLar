@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { MapPin, Eye, MessageCircle, Loader2, MoreHorizontal, User } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -127,12 +128,15 @@ export function NewUserWelcomePost({
           <div className="flex items-start space-x-3 mb-3">
             <div className="flex-shrink-0">
               <Link href={`/perfil/${post.user_id || ''}`}>
-                <Avatar className="w-12 h-12 md:w-14 md:h-14 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                  <AvatarImage src={userAvatar} alt={`Avatar de ${userName}`} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium text-sm md:text-base">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  src={userAvatar}
+                  alt={userName}
+                  fallback={userName.charAt(0).toUpperCase()}
+                  size="lg"
+                  userId={post.user_id}
+                  showReferralBadge={true}
+                  className="cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all w-12 h-12 md:w-14 md:h-14"
+                />
               </Link>
             </div>
             
@@ -221,7 +225,7 @@ export function NewUserWelcomePost({
                         targetName={post.title}
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                        className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                       />
                     </DropdownMenuItem>
                   )}
@@ -258,7 +262,7 @@ export function NewUserWelcomePost({
               <Button 
                 size="sm"
                 onClick={() => openChat(post.user_id || '', userName)}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 py-1 h-7"
+                className="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs px-2 py-1 h-7"
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
                 <span className="hidden sm:inline">Contatar</span>

@@ -106,6 +106,40 @@ export function EvaluationModal({
 
       console.log('✅ Avaliação criada com sucesso!')
 
+      // ✅ VERIFICAR SE É A PRIMEIRA AVALIAÇÃO DO USUÁRIO (para referral milestone)
+      try {
+        // Contar quantas avaliações o usuário fez
+        const { count, error: countError } = await supabase
+          .from('reviews')
+          .select('*', { count: 'exact', head: true })
+          .eq('reviewer_id', user.id)
+        
+        if (!countError && count === 1) {
+          console.log('🎉 [Avaliação] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...')
+          
+          // Marcar milestone de primeira avaliação
+          const { error: milestoneError } = await supabase
+            .from('referrals')
+            .update({ 
+              first_review_made: true,
+              last_activity_at: new Date().toISOString()
+            })
+            .eq('referred_id', user.id)
+            .eq('first_review_made', false)
+          
+          if (milestoneError) {
+            console.warn('⚠️ [Avaliação] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
+          } else {
+            console.log('✅ [Avaliação] Milestone first_review_made marcado! (+100 pontos para indicador)')
+          }
+        } else {
+          console.log('📝 [Avaliação] Avaliação criada. Total de avaliações do usuário:', count)
+        }
+      } catch (milestoneError) {
+        console.warn('⚠️ [Avaliação] Erro ao processar milestone de primeira avaliação:', milestoneError)
+        // Não falhar a criação da avaliação se houver erro no milestone
+      }
+
       // Se for mútua, verificar se ambos já avaliaram
       if (isMutual) {
         await checkAndCompleteMutualEvaluation(requestId, user.id, targetUserId)
