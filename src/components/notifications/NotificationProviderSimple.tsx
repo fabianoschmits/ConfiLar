@@ -4,6 +4,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { NotificationSoundType } from '@/types/sound';
 
 export interface Notification {
   id: string;
@@ -50,6 +52,7 @@ interface NotificationProviderProps {
 
 export const NotificationProviderSimple: React.FC<NotificationProviderProps> = ({ children }) => {
   const { user } = useAuthContext();
+  const { playSound, isEnabled: soundEnabled } = useNotificationSound();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -106,6 +109,11 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
     };
 
     setNotifications(prev => [newNotification, ...prev]);
+    
+    // Tocar som da notificação
+    if (soundEnabled) {
+      playSound(notification.type as NotificationSoundType).catch(console.error);
+    }
     
     // Mostrar toast
     toast(notification.title, {
@@ -283,6 +291,11 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
             console.log('✅ Adicionando nova notificação ao estado:', newNotification.id)
             return [newNotification, ...prev]
           })
+          
+          // Tocar som da notificação
+          if (soundEnabled) {
+            playSound(newNotification.type as NotificationSoundType).catch(console.error);
+          }
           
           // Mostrar toast para nova notificação
           toast(newNotification.title, {

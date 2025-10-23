@@ -86,3 +86,4 @@ CREATE TRIGGER on_referral_milestones
 -- ✅ Concluído!
 SELECT 'Milestones atualizados com sucesso!' as status;
 
+

@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ReactNode, useState } from 'react'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 
 interface QueryProviderProps {
   children: ReactNode
@@ -20,7 +20,7 @@ function createQueryClient() {
         gcTime: 10 * 60 * 1000,
         // Retry apenas 2 vezes
         retry: (failureCount, error) => {
-          Logger.error('query-retry', error as Error, { 
+          logger.error('query-retry', error as Error, { 
             failureCount,
             willRetry: failureCount < 2 
           })
@@ -35,12 +35,12 @@ function createQueryClient() {
         // Retry mutations apenas 1 vez
         retry: 1,
         onError: (error) => {
-          Logger.error('react-query', error as Error, { 
+          logger.error('react-query', error as Error, { 
             context: 'mutation-error' 
           })
         },
         onSuccess: () => {
-          Logger.info('react-query', 'Mutation completed successfully')
+          logger.info('react-query', 'Mutation completed successfully')
         }
       }
     }
@@ -71,31 +71,31 @@ export function useQueryInvalidation() {
   return {
     // Invalidar perfis
     invalidateProfiles: () => {
-      Logger.api.cacheMiss('profiles-invalidated')
+      logger.info('Cache invalidated: profiles')
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
     },
     
     // Invalidar mensagens
     invalidateMessages: () => {
-      Logger.api.cacheMiss('messages-invalidated')
+      logger.info('Cache invalidated: messages')
       queryClient.invalidateQueries({ queryKey: ['messages'] })
     },
     
     // Invalidar conversas
     invalidateConversations: () => {
-      Logger.api.cacheMiss('conversations-invalidated')
+      logger.info('Cache invalidated: conversations')
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
     },
     
     // Invalidar anúncios
     invalidateClassifieds: () => {
-      Logger.api.cacheMiss('classifieds-invalidated')
+      logger.info('Cache invalidated: classifieds')
       queryClient.invalidateQueries({ queryKey: ['classifieds'] })
     },
     
     // Invalidar tudo
     invalidateAll: () => {
-      Logger.api.cacheMiss('all-cache-invalidated')
+      logger.info('All cache invalidated')
       queryClient.invalidateQueries()
     }
   }

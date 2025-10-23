@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useReducer } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Profile } from '@/types/database'
 import { Session } from '@supabase/supabase-js'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
 import { ProfileSchema, LoginSchema, SignUpSchema } from '@/lib/validation'
 import { useAutoNotifications } from './useAutoNotifications'
@@ -183,7 +183,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   // Criar perfil padrão
   const createDefaultProfile = useCallback((userId: string, email: string): Profile => {
-    Logger.auth.profileFetch(userId, false)
+    logger.info('Creating default profile', 'profileFetch', { userId, cached: false })
     
     return {
       id: userId,
@@ -229,7 +229,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     const startTime = Date.now()
     
     try {
-      Logger.debug('auth', `Fetching profile for user ${userId}`, { userId, retries })
+      logger.debug('auth', `Fetching profile for user ${userId}`, { userId, retries })
 
       const { data, error } = await supabase
         .from('profiles')
@@ -238,12 +238,12 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         .maybeSingle()
 
       const duration = Date.now() - startTime
-      Logger.api.request('profiles', 'GET', duration)
+      logger.info('API request completed', 'request', { endpoint: 'profiles', method: 'GET', duration })
 
       if (error) {
         if (error.code === 'PGRST116') {
           // Perfil não encontrado - criar padrão
-          Logger.warn('auth', `Profile not found for ${userId}, creating default profile`)
+          logger.warn('auth', `Profile not found for ${userId}, creating default profile`)
           const defaultProfile = createDefaultProfile(userId, email)
           dispatch({ type: 'SET_PROFILE', payload: defaultProfile })
           return defaultProfile
@@ -256,13 +256,13 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         // Validar dados do perfil
         const validation = ProfileSchema.safeParse(data)
         if (!validation.success) {
-          Logger.warn('auth', `Profile validation failed for ${userId}`, {
+          logger.warn('auth', `Profile validation failed for ${userId}`, {
             errors: validation.error.issues
           })
           // Usar dados mesmo com erros de validação, mas registrar
         }
 
-        Logger.auth.profileFetch(userId, true, false)
+        logger.info('Profile fetch completed', 'profileFetch', { userId, cached: true, failed: false })
         dispatch({ type: 'SET_PROFILE', payload: data as Profile })
         
         // ✅ Verificar milestone de 30 dias ativo (não aguardar para não travar o login)
@@ -280,10 +280,10 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
       throw new Error('No profile data returned')
     } catch (error) {
-      Logger.error('auth', error as Error, { userId, retries })
+      logger.error('auth', error as Error, { userId, retries })
       
       if (retries > 0) {
-        Logger.debug('auth', `Retrying profile fetch for ${userId}`, { retriesLeft: retries - 1 })
+        logger.debug('auth', `Retrying profile fetch for ${userId}`, { retriesLeft: retries - 1 })
         await new Promise(resolve => setTimeout(resolve, 1000))
         return fetchUserProfile(userId, email, retries - 1)
       }
@@ -301,7 +301,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     initializationRef.current = true
 
     try {
-      Logger.info('auth', 'Initializing authentication')
+      logger.info('auth', 'Initializing authentication')
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
 
@@ -317,7 +317,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          Logger.error('auth', error, { context: 'getSession' })
+          logger.error('auth', error, { context: 'getSession' })
           throw error
         }
 
@@ -328,14 +328,14 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           
           await fetchUserProfile(session.user.id, session.user.email!)
         } else {
-          Logger.info('auth', 'No active session found')
+          logger.info('auth', 'No active session found')
           dispatch({ type: 'SET_USER', payload: null })
           dispatch({ type: 'SET_PROFILE', payload: null })
           dispatch({ type: 'SET_SESSION', payload: null })
         }
       }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'initialization' })
+      logger.error('auth', error as Error, { context: 'initialization' })
       dispatch({ type: 'SET_ERROR', payload: (error as Error).message })
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false })
@@ -349,7 +349,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
-      Logger.info('auth', `Attempting login for ${email}`)
+      logger.info('auth', `Attempting login for ${email}`)
       
       // Verificar rate limiting
       const rateLimitResult = checkRateLimit(email, RateLimitConfigs.LOGIN)
@@ -358,7 +358,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           ? `Muitas tentativas de login. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
           : `Muitas tentativas de login. Tente novamente em ${rateLimitResult.retryAfter} segundos.`
         
-        Logger.warn('auth', `Rate limit exceeded for ${email}`, {
+        logger.warn('auth', `Rate limit exceeded for ${email}`, {
           attempts: rateLimitResult.remainingAttempts,
           isBlocked: rateLimitResult.isBlocked,
           retryAfter: rateLimitResult.retryAfter
@@ -371,7 +371,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       const validation = LoginSchema.safeParse({ email, password })
       if (!validation.success) {
         const error = validation.error.issues[0].message
-        Logger.warn('auth', `Login validation failed: ${error}`)
+        logger.warn('auth', `Login validation failed: ${error}`)
         return { error: { message: error } }
       }
 
@@ -385,19 +385,19 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       })
 
       const duration = Date.now() - startTime
-      Logger.api.request('auth/sign-in', 'POST', duration)
+      logger.info('API request completed', 'request', { endpoint: 'auth/sign-in', method: 'POST', duration })
 
       if (error) {
         // Registrar tentativa de login falhada
         recordAttempt(email, RateLimitConfigs.LOGIN)
         
-        Logger.auth.login(email, false, { error: error.message })
+        logger.info('Login failed', 'login', { email, success: false, error: error.message })
         dispatch({ type: 'SET_ERROR', payload: error.message })
         return { error }
       }
 
       if (data.user) {
-        Logger.auth.login(email, true)
+        logger.info('Login successful', 'login', { email, success: true })
         const userData = { id: data.user.id, email: data.user.email! }
         
         dispatch({ type: 'SET_USER', payload: userData })
@@ -406,13 +406,13 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         // Buscar perfil em background
         fetchUserProfile(data.user.id, data.user.email!)
           .catch(error => {
-            Logger.error('auth', error, { context: 'post-login-profile-fetch' })
+            logger.error('auth', error, { context: 'post-login-profile-fetch' })
           })
       }
 
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'signIn' })
+      logger.error('auth', error as Error, { context: 'signIn' })
       const errorMessage = (error as Error).message
       dispatch({ type: 'SET_ERROR', payload: errorMessage })
       return { error: { message: errorMessage } }
@@ -431,7 +431,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         cpf_cnpj: userData.cpf_cnpj 
       })
       
-      Logger.info('auth', `Attempting basic signup for ${userData.email}`)
+      logger.info('auth', `Attempting basic signup for ${userData.email}`)
       
       dispatch({ type: 'SET_LOADING', payload: true })
       dispatch({ type: 'SET_ERROR', payload: null })
@@ -453,7 +453,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
       if (error) {
         console.error('❌ [signUpBasic] Erro no cadastro:', error)
-        Logger.error('auth', error, { context: 'signUpBasic' })
+        logger.error('auth', error, { context: 'signUpBasic' })
         dispatch({ type: 'SET_ERROR', payload: error.message })
         return { error }
       }
@@ -507,13 +507,13 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
           console.warn('⚠️ [signUpBasic] Nenhum CPF fornecido para salvar')
         }
         
-        Logger.info('auth', `Basic signup successful for ${userData.email}`)
+        logger.info('auth', `Basic signup successful for ${userData.email}`)
       }
 
       return { error: null, data }
     } catch (error) {
       console.error('❌ [signUpBasic] Erro inesperado:', error)
-      Logger.error('auth', error as Error, { context: 'signUpBasic' })
+      logger.error('auth', error as Error, { context: 'signUpBasic' })
       const errorMessage = (error as Error).message
       dispatch({ type: 'SET_ERROR', payload: errorMessage })
       return { error: { message: errorMessage } }
@@ -527,7 +527,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   const completeProfile = useCallback(async (profileData: CompleteProfileData) => {
     try {
-      Logger.info('auth', `Completing profile for user`)
+      logger.info('auth', `Completing profile for user`)
       console.log('🔍 CompleteProfile recebeu dados:', profileData)
       
       dispatch({ type: 'SET_LOADING', payload: true })
@@ -617,10 +617,10 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       // Verificar resultado do perfil
       if (profileResult.status === 'fulfilled') {
         if (profileResult.value.error) {
-          Logger.error('auth', profileResult.value.error, { context: 'completeProfile - profile creation' })
+          logger.error('auth', profileResult.value.error, { context: 'completeProfile - profile creation' })
           throw new Error(`Erro ao criar perfil: ${profileResult.value.error.message}`)
         } else {
-          Logger.info('auth', `Profile completed successfully`)
+          logger.info('auth', `Profile completed successfully`)
           
           // Atualizar o contexto com o perfil criado
           dispatch({ type: 'SET_PROFILE', payload: profileInsertData as Profile })
@@ -632,33 +632,33 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
               profileData.full_name,
               profileData.user_type
             )
-            Logger.info('auth', `Welcome post created for ${profileData.full_name}`)
+            logger.info('auth', `Welcome post created for ${profileData.full_name}`)
           } catch (welcomeError) {
-            Logger.warn('auth', `Failed to create welcome post: ${welcomeError}`)
+            logger.warn('auth', `Failed to create welcome post: ${welcomeError}`)
             // Não falhar o cadastro se o post de boas-vindas falhar
           }
         }
       } else {
-        Logger.error('auth', profileResult.reason, { context: 'completeProfile - profile creation' })
+        logger.error('auth', profileResult.reason, { context: 'completeProfile - profile creation' })
         throw new Error(`Erro ao criar perfil: ${profileResult.reason}`)
       }
 
       // Verificar resultado das preferências
       if (preferencesResult.status === 'fulfilled') {
         if (preferencesResult.value.error) {
-          Logger.error('auth', preferencesResult.value.error, { context: 'completeProfile - preferences creation' })
+          logger.error('auth', preferencesResult.value.error, { context: 'completeProfile - preferences creation' })
           // Não falhar se as preferências não forem criadas
         } else {
-          Logger.info('auth', `Notification preferences created successfully`)
+          logger.info('auth', `Notification preferences created successfully`)
         }
       } else {
-        Logger.error('auth', preferencesResult.reason, { context: 'completeProfile - preferences creation' })
+        logger.error('auth', preferencesResult.reason, { context: 'completeProfile - preferences creation' })
         // Não falhar se as preferências não forem criadas
       }
 
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'completeProfile' })
+      logger.error('auth', error as Error, { context: 'completeProfile' })
       const errorMessage = (error as Error).message
       dispatch({ type: 'SET_ERROR', payload: errorMessage })
       return { error: { message: errorMessage } }
@@ -669,13 +669,13 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   const signUp = useCallback(async (userData: SignUpData) => {
     try {
-      Logger.info('auth', `Attempting signup for ${userData.email}`)
+      logger.info('auth', `Attempting signup for ${userData.email}`)
       
       // Validar dados de entrada
       const validation = SignUpSchema.safeParse(userData)
       if (!validation.success) {
         const error = validation.error.issues[0].message
-        Logger.warn('auth', `Signup validation failed: ${error}`)
+        logger.warn('auth', `Signup validation failed: ${error}`)
         return { error: { message: error } }
       }
 
@@ -694,16 +694,16 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       })
 
       if (error) {
-        Logger.error('auth', error, { context: 'signUp' })
+        logger.error('auth', error, { context: 'signUp' })
         dispatch({ type: 'SET_ERROR', payload: error.message })
         return { error }
       }
 
       if (data.user) {
-        Logger.info('auth', `Signup successful for ${userData.email}`)
+        logger.info('auth', `Signup successful for ${userData.email}`)
         
         // Criar perfil e preferências diretamente no frontend (solução recomendada pelo ChatGPT)
-        Logger.info('auth', `Creating profile and preferences directly for ${userData.email}`)
+        logger.info('auth', `Creating profile and preferences directly for ${userData.email}`)
         
         // Preparar dados do perfil
         const profileData = {
@@ -755,29 +755,29 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         // Verificar resultado do perfil
         if (profileResult.status === 'fulfilled') {
           if (profileResult.value.error) {
-            Logger.error('auth', profileResult.value.error, { context: 'signUp - profile creation' })
+            logger.error('auth', profileResult.value.error, { context: 'signUp - profile creation' })
           } else {
-            Logger.info('auth', `Profile created successfully for ${userData.email}`)
+            logger.info('auth', `Profile created successfully for ${userData.email}`)
           }
         } else {
-          Logger.error('auth', profileResult.reason, { context: 'signUp - profile creation' })
+          logger.error('auth', profileResult.reason, { context: 'signUp - profile creation' })
         }
 
         // Verificar resultado das preferências
         if (preferencesResult.status === 'fulfilled') {
           if (preferencesResult.value.error) {
-            Logger.error('auth', preferencesResult.value.error, { context: 'signUp - preferences creation' })
+            logger.error('auth', preferencesResult.value.error, { context: 'signUp - preferences creation' })
           } else {
-            Logger.info('auth', `Notification preferences created successfully for ${userData.email}`)
+            logger.info('auth', `Notification preferences created successfully for ${userData.email}`)
           }
         } else {
-          Logger.error('auth', preferencesResult.reason, { context: 'signUp - preferences creation' })
+          logger.error('auth', preferencesResult.reason, { context: 'signUp - preferences creation' })
         }
       }
 
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'signUp' })
+      logger.error('auth', error as Error, { context: 'signUp' })
       const errorMessage = (error as Error).message
       dispatch({ type: 'SET_ERROR', payload: errorMessage })
       return { error: { message: errorMessage } }
@@ -788,19 +788,19 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
   const signOut = useCallback(async () => {
     try {
-      Logger.info('auth', 'Attempting logout')
+      logger.info('auth', 'Attempting logout')
       
       const userId = state.user?.id
       
       const { error } = await supabase.auth.signOut()
       
       if (error) {
-        Logger.error('auth', error, { context: 'signOut' })
+        logger.error('auth', error, { context: 'signOut' })
         return { error }
       }
 
       if (userId) {
-        Logger.auth.logout(userId)
+        logger.info('User logged out', 'logout', { userId })
       }
 
       dispatch({ type: 'RESET_AUTH' })
@@ -808,7 +808,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'signOut' })
+      logger.error('auth', error as Error, { context: 'signOut' })
       return { error: { message: (error as Error).message } }
     }
   }, [state.user?.id, clearAllTimeouts])
@@ -819,13 +819,13 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         throw new Error('User not authenticated')
       }
 
-      Logger.debug('auth', `Updating profile for user ${state.user.id}`, { updates: Object.keys(updates) })
+      logger.debug('auth', `Updating profile for user ${state.user.id}`, { updates: Object.keys(updates) })
 
       // Validar updates
       const validation = ProfileSchema.partial().safeParse(updates)
       if (!validation.success) {
         const error = validation.error.issues[0].message
-        Logger.warn('auth', `Profile update validation failed: ${error}`)
+        logger.warn('auth', `Profile update validation failed: ${error}`)
         return { data: null, error: { message: error } }
       }
 
@@ -840,19 +840,19 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         .single()
 
       if (error) {
-        Logger.error('auth', error, { context: 'updateProfile' })
+        logger.error('auth', error, { context: 'updateProfile' })
         return { data: null, error: { message: error.message } }
       }
 
       if (data) {
-        Logger.info('auth', `Profile updated successfully for user ${state.user.id}`)
+        logger.info('auth', `Profile updated successfully for user ${state.user.id}`)
         dispatch({ type: 'SET_PROFILE', payload: data as Profile })
         return { data: data as Profile, error: null }
       }
 
       return { data: null, error: { message: 'No data returned' } }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'updateProfile' })
+      logger.error('auth', error as Error, { context: 'updateProfile' })
       return { data: null, error: { message: (error as Error).message } }
     }
   }, [state.user?.id])
@@ -863,7 +863,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         throw new Error('User not authenticated')
       }
 
-      Logger.debug('auth', `Uploading avatar for user ${state.user.id}`, { 
+      logger.debug('auth', `Uploading avatar for user ${state.user.id}`, { 
         fileName: file.name, 
         fileSize: file.size 
       })
@@ -877,7 +877,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         .upload(filePath, file)
 
       if (uploadError) {
-        Logger.error('auth', uploadError, { context: 'uploadAvatar' })
+        logger.error('auth', uploadError, { context: 'uploadAvatar' })
         return { data: null, error: { message: uploadError.message } }
       }
 
@@ -888,22 +888,22 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       // Atualizar perfil com nova URL do avatar
       await updateProfile({ avatar_url: publicUrl })
 
-      Logger.info('auth', `Avatar uploaded successfully for user ${state.user.id}`)
+      logger.info('auth', `Avatar uploaded successfully for user ${state.user.id}`)
       return { data: publicUrl, error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'uploadAvatar' })
+      logger.error('auth', error as Error, { context: 'uploadAvatar' })
       return { data: null, error: { message: (error as Error).message } }
     }
   }, [state.user?.id, updateProfile])
 
   const refreshAuth = useCallback(async () => {
     try {
-      Logger.debug('auth', 'Refreshing authentication')
+      logger.debug('auth', 'Refreshing authentication')
       
       const { data, error } = await supabase.auth.refreshSession()
       
       if (error) {
-        Logger.error('auth', error, { context: 'refreshAuth' })
+        logger.error('auth', error, { context: 'refreshAuth' })
         throw error
       }
 
@@ -916,73 +916,73 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         await fetchUserProfile(data.session.user.id, data.session.user.email!)
       }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'refreshAuth' })
+      logger.error('auth', error as Error, { context: 'refreshAuth' })
     }
   }, [fetchUserProfile])
 
   const resetPassword = useCallback(async (email: string) => {
     try {
-      Logger.info('auth', `Password reset requested for ${email}`)
+      logger.info('auth', `Password reset requested for ${email}`)
       
       const { error } = await supabase.auth.resetPasswordForEmail(email)
       
       if (error) {
-        Logger.error('auth', error, { context: 'resetPassword' })
+        logger.error('auth', error, { context: 'resetPassword' })
         return { error }
       }
 
-      Logger.info('auth', `Password reset email sent to ${email}`)
+      logger.info('auth', `Password reset email sent to ${email}`)
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'resetPassword' })
+      logger.error('auth', error as Error, { context: 'resetPassword' })
       return { error: { message: (error as Error).message } }
     }
   }, [])
 
   const updatePassword = useCallback(async (newPassword: string) => {
     try {
-      Logger.info('auth', 'Updating password')
+      logger.info('auth', 'Updating password')
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       })
       
       if (error) {
-        Logger.error('auth', error, { context: 'updatePassword' })
+        logger.error('auth', error, { context: 'updatePassword' })
         return { error }
       }
 
-      Logger.info('auth', 'Password updated successfully')
+      logger.info('auth', 'Password updated successfully')
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'updatePassword' })
+      logger.error('auth', error as Error, { context: 'updatePassword' })
       return { error: { message: (error as Error).message } }
     }
   }, [])
 
   const updateEmail = useCallback(async (newEmail: string) => {
     try {
-      Logger.info('auth', `Updating email to ${newEmail}`)
+      logger.info('auth', `Updating email to ${newEmail}`)
       
       const { error } = await supabase.auth.updateUser({
         email: newEmail
       })
       
       if (error) {
-        Logger.error('auth', error, { context: 'updateEmail' })
+        logger.error('auth', error, { context: 'updateEmail' })
         return { error }
       }
 
-      Logger.info('auth', 'Email update initiated')
+      logger.info('auth', 'Email update initiated')
       return { error: null }
     } catch (error) {
-      Logger.error('auth', error as Error, { context: 'updateEmail' })
+      logger.error('auth', error as Error, { context: 'updateEmail' })
       return { error: { message: (error as Error).message } }
     }
   }, [])
 
   const requireReauthentication = useCallback((action: 'password' | 'email' | 'general') => {
-    Logger.info('auth', `Reauthentication required for action: ${action}`)
+    logger.info('auth', `Reauthentication required for action: ${action}`)
     
     // Para compatibilidade - implementação básica
     // Em uma implementação completa, você redirecionaria para página de reautenticação
@@ -1005,7 +1005,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        Logger.debug('auth', `Auth state change: ${event}`, { 
+        logger.debug('auth', `Auth state change: ${event}`, { 
           hasSession: !!session,
           userEmail: session?.user?.email 
         })
@@ -1026,22 +1026,22 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
               // Buscar perfil em background
               fetchUserProfile(session.user.id, session.user.email!)
                 .catch(error => {
-                  Logger.error('auth', error, { context: 'auth-state-change-profile-fetch' })
+                  logger.error('auth', error, { context: 'auth-state-change-profile-fetch' })
                 })
             }
             break
 
           case 'SIGNED_OUT':
-            Logger.info('auth', 'User signed out via auth state change')
+            logger.info('auth', 'User signed out via auth state change')
             dispatch({ type: 'RESET_AUTH' })
             break
 
           case 'TOKEN_REFRESHED':
-            Logger.debug('auth', 'Token refreshed')
+            logger.debug('auth', 'Token refreshed')
             break
 
           default:
-            Logger.debug('auth', `Unhandled auth event: ${event}`)
+            logger.debug('auth', `Unhandled auth event: ${event}`)
         }
       }
     )

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Logger } from '@/lib/logger'
+import { logger } from '@/lib/logger'
 
 interface RateLimitConfig {
   maxAttempts: number
@@ -173,7 +173,7 @@ class RateLimitManager {
     this.setStoredState(identifier, type, state)
 
     // Log da tentativa
-    Logger.warn('rate-limit', `Rate limit attempt recorded for ${identifier}`, {
+    logger.warn('rate-limit', `Rate limit attempt recorded for ${identifier}`, {
       type,
       attempts: state.attempts,
       maxAttempts: config.maxAttempts,
@@ -186,7 +186,7 @@ class RateLimitManager {
     const key = this.getStorageKey(identifier, type)
     this.storage.delete(key)
     
-    Logger.info('rate-limit', `Rate limit reset for ${identifier}`, { type })
+    logger.info('Rate limit reset', 'rate-limit', { identifier, type })
   }
 
   getState(identifier: string, type: string = 'default'): RateLimitState | null {
