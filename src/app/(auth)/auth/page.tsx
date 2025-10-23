@@ -3,10 +3,10 @@
 import { useState, Suspense, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { LoginForm } from '@/components/forms/LoginForm'
 import { BasicSignupForm } from '@/components/forms/BasicSignupForm'
-import { Check, ArrowLeft, Sparkles, X, Users } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useReferralTracking } from '@/hooks/useReferralTracking'
@@ -16,19 +16,12 @@ export default function AuthPage() {
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('login')
   const [registrationComplete, setRegistrationComplete] = useState(false)
-  const [redirectPath, setRedirectPath] = useState('/feed')
   const [referralInfo, setReferralInfo] = useState<{ code: string; userName?: string } | null>(null)
 
   // Hook de tracking de referral
   useReferralTracking()
 
   useEffect(() => {
-    // Obter o parâmetro de redirecionamento da URL
-    const redirect = searchParams.get('redirect')
-    if (redirect) {
-      setRedirectPath(decodeURIComponent(redirect))
-    }
-
     // Obter o parâmetro de aba da URL
     const tab = searchParams.get('tab')
     if (tab === 'register') {
@@ -42,13 +35,14 @@ export default function AuthPage() {
       setActiveTab('login')
     }
 
-    // Verificar se há código de referral
+    // Verificar se há código de referral na URL
     const refCode = searchParams.get('ref')
     if (refCode) {
+      console.log('🔍 [AuthPage] Código de referral detectado:', refCode)
       setReferralInfo({ code: refCode })
-      // Se há código de referral, mudar para aba de cadastro
+      // Se há código de referral, mudar para aba de cadastro automaticamente
       setActiveTab('register')
-      // Validar código (opcional, para mostrar nome do indicador)
+      // Validar código para mostrar nome do indicador
       validateReferralCode(refCode)
     }
   }, [searchParams])
@@ -75,7 +69,7 @@ export default function AuthPage() {
   }
 
   const handleBackToHome = () => {
-    router.push(redirectPath)
+    router.push('/')
   }
 
   const handleLoginClick = () => {
@@ -114,45 +108,16 @@ export default function AuthPage() {
       {/* Main Content Moderno */}
       <div className="container py-12 md:py-24">
         <div className="mx-auto max-w-md">
-          {/* Banner de Indicação */}
-          {referralInfo && (
-            <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">
-                      🎉 Você foi indicado{referralInfo.userName && ` por ${referralInfo.userName}`}!
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Cadastre-se e ganhe benefícios exclusivos
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Header Card Moderno */}
-          <Card className="mb-8 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="text-center p-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Sparkles className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
-                Bem-vindo ao ConfiLar
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
-                Conecte-se com profissionais confiáveis ou encontre clientes para seus serviços
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Auth Forms Modernas */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-xl">
             <CardContent className="p-6">
+              {/* Título de Boas-vindas */}
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                  Bem-vindo ao ConfiLar
+                </h1>
+              </div>
+
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-gray-700 rounded-lg">
                   <TabsTrigger 

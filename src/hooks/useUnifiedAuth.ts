@@ -9,6 +9,8 @@ import { useRateLimit, RateLimitConfigs } from '@/hooks/useRateLimit'
 import { ProfileSchema, LoginSchema, SignUpSchema } from '@/lib/validation'
 import { useAutoNotifications } from './useAutoNotifications'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
+import { checkAndUpdate30DaysActive } from './useReferralTracking'
+import { checkAndUpdateInactiveAvailability } from './useAutoAvailability'
 
 // ===================================
 // TIPOS E INTERFACES
@@ -27,7 +29,7 @@ export interface AuthState {
 export interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: { message: string } | null }>
   signUp: (data: SignUpData) => Promise<{ error: { message: string } | null }>
-  signUpBasic: (data: BasicSignUpData) => Promise<{ error: { message: string } | null }>
+  signUpBasic: (data: BasicSignUpData) => Promise<{ error: { message: string } | null; data?: any }>
   completeProfile: (data: CompleteProfileData) => Promise<{ error: { message: string } | null }>
   signOut: () => Promise<{ error: { message: string } | null }>
   updateProfile: (updates: Partial<Profile>) => Promise<{ data: Profile | null; error: { message: string } | null }>
@@ -262,6 +264,17 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
         Logger.auth.profileFetch(userId, true, false)
         dispatch({ type: 'SET_PROFILE', payload: data as Profile })
+        
+        // ✅ Verificar milestone de 30 dias ativo (não aguardar para não travar o login)
+        checkAndUpdate30DaysActive(userId).catch(err => {
+          console.warn('⚠️ Erro ao verificar milestone de 30 dias:', err)
+        })
+        
+        // ✅ Verificar inatividade e atualizar disponibilidade (não aguardar para não travar o login)
+        checkAndUpdateInactiveAvailability(userId).catch(err => {
+          console.warn('⚠️ Erro ao verificar disponibilidade automática:', err)
+        })
+        
         return data as Profile
       }
 
@@ -455,8 +468,10 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         // ✅ SALVAR CPF DIRETO NA TABELA PROFILES (mesmo lugar que editar perfil salva)
         if (userData.cpf_cnpj) {
           console.log('💾 [signUpBasic] Salvando CPF na tabela profiles...')
+          console.log('💾 [signUpBasic] User ID:', data.user.id)
+          console.log('💾 [signUpBasic] CPF a ser salvo:', userData.cpf_cnpj)
           
-          const { error: profileError } = await supabase
+          const { data: upsertData, error: profileError } = await supabase
             .from('profiles')
             .upsert({
               id: data.user.id,
@@ -467,18 +482,35 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
             }, {
               onConflict: 'id'
             })
+            .select()
 
           if (profileError) {
             console.error('❌ [signUpBasic] Erro ao salvar CPF na tabela profiles:', profileError)
           } else {
             console.log('✅ [signUpBasic] CPF salvo com sucesso na tabela profiles')
+            console.log('✅ [signUpBasic] Dados salvos:', upsertData)
+            
+            // Verificar imediatamente se foi salvo
+            const { data: checkData, error: checkError } = await supabase
+              .from('profiles')
+              .select('cpf_cnpj')
+              .eq('id', data.user.id)
+              .single()
+            
+            if (checkError) {
+              console.error('❌ [signUpBasic] Erro ao verificar CPF salvo:', checkError)
+            } else {
+              console.log('✅ [signUpBasic] Verificação: CPF na tabela profiles:', checkData?.cpf_cnpj)
+            }
           }
+        } else {
+          console.warn('⚠️ [signUpBasic] Nenhum CPF fornecido para salvar')
         }
         
         Logger.info('auth', `Basic signup successful for ${userData.email}`)
       }
 
-      return { error: null }
+      return { error: null, data }
     } catch (error) {
       console.error('❌ [signUpBasic] Erro inesperado:', error)
       Logger.error('auth', error as Error, { context: 'signUpBasic' })

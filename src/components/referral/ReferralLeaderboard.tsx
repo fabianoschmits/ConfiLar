@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Trophy, Crown, Award, Medal } from 'lucide-react'
@@ -99,30 +100,35 @@ export function ReferralLeaderboard({ limit = 10, className }: ReferralLeaderboa
                   )}
                 </div>
 
-                {/* Avatar */}
-                <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-gray-200 dark:ring-gray-700">
-                  <AvatarImage src={referrer.avatarUrl || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
-                    {referrer.fullName?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                {/* Avatar e Nome - Link para perfil */}
+                <Link 
+                  href={`/perfil/${referrer.userId}`}
+                  className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                >
+                  <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-gray-200 dark:ring-gray-700">
+                    <AvatarImage src={referrer.avatarUrl || undefined} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold">
+                      {referrer.fullName?.charAt(0).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-gray-900 dark:text-white truncate">
-                      {referrer.fullName}
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-900 dark:text-white truncate hover:underline">
+                        {referrer.fullName}
+                      </p>
+                      <ReferralBadge
+                        tier={referrer.tier as any}
+                        totalReferrals={referrer.totalReferrals}
+                        size="sm"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Código: {referrer.referralCode}
                     </p>
-                    <ReferralBadge
-                      tier={referrer.tier as any}
-                      totalReferrals={referrer.totalReferrals}
-                      size="sm"
-                    />
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Código: {referrer.referralCode}
-                  </p>
-                </div>
+                </Link>
 
                 {/* Stats */}
                 <div className="text-right">

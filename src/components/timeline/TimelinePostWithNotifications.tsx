@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Share2, Eye, TrendingUp, MessageCircle } from 'lucide-react'
 import { LikeButtonWithNotifications } from './LikeButtonWithNotifications'
 import { CommentSectionWithNotifications } from './CommentSectionWithNotifications'
@@ -53,12 +54,14 @@ export function TimelinePostWithNotifications({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.user.avatar_url} alt={post.user.full_name} />
-              <AvatarFallback className="bg-blue-100 text-blue-700">
-                {post.user.full_name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              src={post.user.avatar_url}
+              alt={post.user.full_name}
+              fallback={post.user.full_name.charAt(0).toUpperCase()}
+              size="md"
+              userId={post.user.id}
+              showReferralBadge={true}
+            />
             <div>
               <h3 className="font-semibold text-gray-900">{post.user.full_name}</h3>
               <p className="text-sm text-gray-500">

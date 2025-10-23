@@ -95,19 +95,38 @@ export function BasicSignupForm() {
     setIsMounted(true)
   }, [])
 
-  // Buscar nome do indicador se houver código de referral na URL
+  // Buscar nome do indicador se houver código de referral na URL ou localStorage
   useEffect(() => {
     const checkReferrer = async () => {
       try {
-        // Verificar se há código de referral na URL
+        // 1. Tentar ler da URL primeiro
         const urlParams = new URLSearchParams(window.location.search)
-        const refCode = urlParams.get('ref')
+        let refCode = urlParams.get('ref')
+        
+        // 2. Se não houver na URL, tentar localStorage
+        if (!refCode) {
+          const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
+          const stored = localStorage.getItem(REFERRAL_STORAGE_KEY)
+          if (stored) {
+            try {
+              const data = JSON.parse(stored)
+              // Verificar se não expirou
+              if (Date.now() <= data.expiry) {
+                refCode = data.code
+                console.log('🔍 [BasicSignupForm] Código de referral recuperado do localStorage:', refCode)
+              }
+            } catch (err) {
+              console.error('Erro ao ler localStorage:', err)
+            }
+          }
+        } else {
+          console.log('🔍 [BasicSignupForm] Código de referral encontrado na URL:', refCode)
+        }
         
         if (!refCode) {
           return
         }
 
-        console.log('🔍 [BasicSignupForm] Código de referral encontrado na URL:', refCode)
         setReferralCodeFromUrl(refCode)
 
         // Buscar o nome do referrer no banco via API
@@ -122,9 +141,6 @@ export function BasicSignupForm() {
           console.log('✅ [BasicSignupForm] Nome do referrer encontrado:', data.userName)
           setReferrerName(data.userName)
           setReferralCodeValid(true)
-          
-          // Preencher o campo automaticamente
-          setValue('referral_code', refCode)
         } else {
           console.error('❌ [BasicSignupForm] Código de referral inválido')
           setReferralCodeValid(false)
@@ -234,6 +250,7 @@ export function BasicSignupForm() {
       return
     }
 
+    console.log('🔍 [BasicSignupForm] Iniciando validação do código:', code)
     setIsValidatingReferralCode(true)
     try {
       const response = await fetch('/api/referrals/validate', {
@@ -242,22 +259,39 @@ export function BasicSignupForm() {
         body: JSON.stringify({ code })
       })
 
+      console.log('📡 [BasicSignupForm] Resposta da API:', response.status)
+
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ [BasicSignupForm] Código válido! Dados:', data)
         setReferrerName(data.userName)
         setReferralCodeValid(true)
       } else {
+        const errorData = await response.json().catch(() => null)
+        console.error('❌ [BasicSignupForm] Código inválido. Erro:', errorData)
         setReferrerName(null)
         setReferralCodeValid(false)
       }
     } catch (err) {
-      console.error('Erro ao validar código:', err)
+      console.error('❌ [BasicSignupForm] Erro ao validar código:', err)
       setReferrerName(null)
       setReferralCodeValid(false)
     } finally {
       setIsValidatingReferralCode(false)
     }
   }
+
+  // Garantir que o código seja preenchido automaticamente no campo
+  useEffect(() => {
+    if (referralCodeFromUrl) {
+      console.log('🔄 [BasicSignupForm] Preenchendo campo referral_code com:', referralCodeFromUrl)
+      setValue('referral_code', referralCodeFromUrl, { 
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true
+      })
+    }
+  }, [referralCodeFromUrl, setValue])
 
   // Debounce para validação de código de referência
   useEffect(() => {
@@ -346,9 +380,9 @@ export function BasicSignupForm() {
       
       console.log('✅ CPF disponível')
 
-      // ✅ SALVAR CÓDIGO DE REFERÊNCIA NO LOCALSTORAGE (se foi digitado manualmente)
-      if (data.referral_code && !referralCodeFromUrl) {
-        console.log('💾 [Cadastro] Salvando código de referência digitado no localStorage:', data.referral_code)
+      // ✅ SALVAR CÓDIGO DE REFERÊNCIA NO LOCALSTORAGE (sempre que houver código)
+      if (data.referral_code) {
+        console.log('💾 [Cadastro] Salvando código de referência no localStorage:', data.referral_code)
         const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
         const expiryDate = new Date()
         expiryDate.setDate(expiryDate.getDate() + 30)
@@ -358,9 +392,13 @@ export function BasicSignupForm() {
           timestamp: Date.now(),
           expiry: expiryDate.getTime()
         }))
+        
+        console.log('✅ [Cadastro] Código salvo com sucesso! Será processado no onboarding.')
+      } else {
+        console.log('⚠️ [Cadastro] Nenhum código de referência para salvar')
       }
       
-      const { error } = await signUpBasic({
+      const { error, data: signUpData } = await signUpBasic({
         email: data.email,
         password: data.password,
         cpf_cnpj: data.cpf_cnpj,
@@ -373,8 +411,25 @@ export function BasicSignupForm() {
         return
       }
 
-      // Nota: O referral será criado automaticamente no onboarding quando o usuário completar o perfil
-      // O código de referral já está salvo no localStorage e será usado lá
+      console.log('✅ Conta criada com sucesso!')
+
+      // ✅ CRIAR REFERRAL IMEDIATAMENTE SE HOUVER CÓDIGO
+      if (data.referral_code && signUpData?.user?.id) {
+        try {
+          console.log('👥 [Cadastro] Criando referral para o usuário:', signUpData.user.id)
+          console.log('👥 [Cadastro] Código de referência:', data.referral_code)
+          
+          const referralResult = await createReferral(signUpData.user.id, 'signup_form')
+          
+          if (referralResult.success) {
+            console.log('✅ [Cadastro] Referral criado com sucesso!')
+          } else {
+            console.warn('⚠️ [Cadastro] Erro ao criar referral:', referralResult.error)
+          }
+        } catch (referralError) {
+          console.error('❌ [Cadastro] Erro ao processar referral:', referralError)
+        }
+      }
 
       // Mostrar notificação de sucesso
       toast.success('🎉 Conta criada com sucesso! Um email de confirmação foi enviado para você. Verifique sua caixa de entrada e clique no link para ativar sua conta.')
@@ -549,51 +604,6 @@ export function BasicSignupForm() {
             )}
           </div>
 
-          {/* Código de Referência (Opcional) */}
-          <div className="space-y-2">
-            <Label htmlFor="referral_code" className="text-sm font-medium text-gray-700">
-              Código de Referência {referralCodeFromUrl && <span className="text-xs text-green-600">(Preenchido automaticamente)</span>}
-            </Label>
-            <div className="relative">
-              <Input
-                id="referral_code"
-                type="text"
-                placeholder={referralCodeFromUrl ? "" : "Digite o código de quem te indicou (opcional)"}
-                {...register('referral_code')}
-                disabled={!!referralCodeFromUrl}
-                className={cn(
-                  "transition-colors pr-10 uppercase",
-                  referralCodeFromUrl ? 'bg-green-50 border-green-300 text-green-800 cursor-not-allowed' : '',
-                  referralCodeValid === true ? 'border-green-500' : '',
-                  referralCodeValid === false ? 'border-red-500' : ''
-                )}
-              />
-              {isValidatingReferralCode && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <RefreshCw size={16} className="animate-spin text-blue-500" />
-                </div>
-              )}
-            </div>
-            
-            {referralCodeValid === true && referrerName && (
-              <p className="text-sm text-green-600 font-medium flex items-center gap-1">
-                ✓ Você será indicado por {referrerName}
-              </p>
-            )}
-            
-            {referralCodeValid === false && watchedValues.referral_code && (
-              <p className="text-sm text-red-500 font-medium">
-                ✗ Código de referência inválido
-              </p>
-            )}
-            
-            {!watchedValues.referral_code && !referralCodeFromUrl && (
-              <p className="text-xs text-gray-500">
-                Se alguém te indicou para o ConfiLar, digite o código dela aqui
-              </p>
-            )}
-          </div>
-
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium text-gray-700">
               Senha *
@@ -671,6 +681,57 @@ export function BasicSignupForm() {
             )}
             
             {errors.confirmPassword && <p className="text-sm text-red-500 font-medium">{errors.confirmPassword.message}</p>}
+          </div>
+
+          {/* Código de Referência (Opcional) */}
+          <div className="space-y-2">
+            <Label htmlFor="referral_code" className="text-sm font-medium text-gray-700">
+              Código de Referência {referralCodeFromUrl && <span className="text-xs text-green-600">(Preenchido automaticamente)</span>}
+            </Label>
+            <div className="relative">
+              <Input
+                id="referral_code"
+                type="text"
+                placeholder={referralCodeFromUrl ? "" : "Digite o código de quem te indicou (opcional)"}
+                {...register('referral_code', {
+                  onChange: (e) => {
+                    // Converter para maiúsculas e remover espaços
+                    const value = e.target.value.toUpperCase().trim()
+                    e.target.value = value
+                  }
+                })}
+                disabled={!!referralCodeFromUrl}
+                className={cn(
+                  "transition-colors pr-10 uppercase",
+                  referralCodeFromUrl ? 'bg-green-50 border-green-300 text-green-800 cursor-not-allowed' : '',
+                  referralCodeValid === true ? 'border-green-500' : '',
+                  referralCodeValid === false ? 'border-red-500' : ''
+                )}
+              />
+              {isValidatingReferralCode && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <RefreshCw size={16} className="animate-spin text-blue-500" />
+                </div>
+              )}
+            </div>
+            
+            {referralCodeValid === true && referrerName && (
+              <p className="text-sm text-green-600 font-medium flex items-center gap-1">
+                ✓ Você será indicado por {referrerName}
+              </p>
+            )}
+            
+            {referralCodeValid === false && watchedValues.referral_code && (
+              <p className="text-sm text-red-500 font-medium">
+                ✗ Código de referência inválido
+              </p>
+            )}
+            
+            {!watchedValues.referral_code && !referralCodeFromUrl && (
+              <p className="text-xs text-gray-500">
+                Se alguém te indicou para o ConfiLar, digite o código dela aqui
+              </p>
+            )}
           </div>
         </div>
       </div>

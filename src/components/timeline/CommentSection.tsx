@@ -142,20 +142,20 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="font-semibold text-base">{comment.user.full_name}</span>
-              <span className="text-xs text-gray-500">
+              <span className="font-semibold text-base dark:text-white">{comment.user.full_name}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 {comment.user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
               </span>
-              <span className="text-xs text-gray-400">•</span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
                 {formatTimeAgo(comment.created_at)}
               </span>
               
               {/* Indicador de resposta */}
               {isReply && (
                 <>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
                     <Reply className="w-3 h-3" />
                     Resposta
                   </span>
@@ -195,7 +195,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                 </div>
               </div>
             ) : (
-              <div className="text-base text-gray-700 mb-2">
+              <div className="text-base text-gray-700 dark:text-gray-200 mb-2">
                 <MentionText text={comment.content} />
               </div>
             )}
@@ -300,9 +300,9 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
       {/* Formulário de novo comentário */}
       <div className="mt-4 w-full">
         {replyTo && (
-          <div className="mb-2 p-2 bg-blue-50 rounded-lg">
+          <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-700">
+              <span className="text-sm text-blue-700 dark:text-blue-300">
                 Respondendo a <span className="font-medium">{replyingToUser || 'usuário'}</span>
               </span>
               <Button
@@ -312,7 +312,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                   cancelReply()
                   setReplyingToUser(null)
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
               >
                 Cancelar
               </Button>

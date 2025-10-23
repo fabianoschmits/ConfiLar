@@ -4,7 +4,7 @@ import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, TrendingUp, Award, Star } from 'lucide-react'
 import { useReferralDashboard } from '@/hooks/useReferralStats'
-import { ReferralTierProgress } from './ReferralBadge'
+import { ReferralTierProgress, ReferralBadge } from './ReferralBadge'
 import { cn } from '@/lib/utils'
 
 interface ReferralDashboardProps {
@@ -87,11 +87,24 @@ export function ReferralDashboard({ userId, className }: ReferralDashboardProps)
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
             {statCards.map((stat, index) => {
               const Icon = stat.icon
+              const isNivelAtual = stat.title === 'Nível Atual'
+              
               return (
                 <div key={stat.title || `stat-${index}`} className="flex flex-col items-center text-center">
-                  <div className={cn('p-1.5 md:p-2 rounded-lg mb-1', stat.bgColor)}>
-                    <Icon className={cn('w-4 h-4 md:w-5 md:h-5', stat.color)} />
-                  </div>
+                  {isNivelAtual ? (
+                    // Badge do sistema de referral para Nível Atual
+                    <div className="mb-1">
+                      <ReferralBadge 
+                        tier={stats.tier as any}
+                        totalReferrals={stats.totalReferrals}
+                        size="lg"
+                      />
+                    </div>
+                  ) : (
+                    <div className={cn('p-1.5 md:p-2 rounded-lg mb-1', stat.bgColor)}>
+                      <Icon className={cn('w-4 h-4 md:w-5 md:h-5', stat.color)} />
+                    </div>
+                  )}
                   <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 mb-0.5">
                     {stat.title}
                   </p>

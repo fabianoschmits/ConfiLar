@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
-import { createReferral, updateReferralMilestone } from '@/hooks/useReferralTracking'
+import { updateReferralMilestone } from '@/hooks/useReferralTracking'
 
 
 const onboardingSchema = z.object({
@@ -106,13 +106,15 @@ export default function OnboardingPage() {
     // Buscar CPF direto da tabela profiles (mesmo lugar que editar perfil usa)
     const loadUserCpf = async () => {
       try {
-        console.log('🔍 [Onboarding] Buscando CPF na tabela profiles...')
+        console.log('🔍 [Onboarding] Buscando CPF na tabela profiles para user:', user.id)
         
         const { data: profileData, error } = await supabase
           .from('profiles')
-          .select('cpf_cnpj')
+          .select('cpf_cnpj, email')
           .eq('id', user.id)
           .maybeSingle()
+
+        console.log('🔍 [Onboarding] Resultado da busca:', { profileData, error })
 
         if (error) {
           console.error('❌ [Onboarding] Erro ao buscar CPF:', error)
@@ -121,9 +123,11 @@ export default function OnboardingPage() {
 
         if (profileData?.cpf_cnpj) {
           console.log('✅ [Onboarding] CPF encontrado na tabela profiles:', profileData.cpf_cnpj)
+          console.log('✅ [Onboarding] Email do perfil:', profileData.email)
           setUserCpf(profileData.cpf_cnpj)
         } else {
           console.log('⚠️ [Onboarding] CPF não encontrado na tabela profiles')
+          console.log('⚠️ [Onboarding] Profile data completo:', profileData)
         }
       } catch (err) {
         console.error('❌ [Onboarding] Erro ao buscar CPF:', err)
@@ -618,21 +622,14 @@ export default function OnboardingPage() {
 
       console.log('✅ Perfil salvo com sucesso!')
       
-      // Criar referral se houver código salvo
+      // Marcar milestone de perfil completado (se foi indicado)
       try {
-        console.log('👥 Verificando código de referral...')
-        const referralResult = await createReferral(user.id, 'onboarding')
-        
-        if (referralResult.success) {
-          console.log('✅ Referral criado com sucesso!')
-          // Marcar milestone de perfil completado
-          await updateReferralMilestone(user.id, 'profile_completed')
-        } else if (referralResult.error && !referralResult.error.includes('Nenhum código')) {
-          console.log('⚠️ Erro ao criar referral:', referralResult.error)
-        }
+        console.log('👥 Marcando milestone de perfil completado...')
+        await updateReferralMilestone(user.id, 'profile_completed')
+        console.log('✅ Milestone marcado com sucesso!')
       } catch (referralError) {
-        console.error('⚠️ Erro ao processar referral:', referralError)
-        // Não falhar o processo por causa do referral
+        console.warn('⚠️ Erro ao marcar milestone:', referralError)
+        // Não falhar o processo por causa do milestone
       }
       
       // Criar post de boas-vindas
@@ -1419,8 +1416,8 @@ export default function OnboardingPage() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
-                              <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '***-****'}</p>
-                              <p><strong>CPF:</strong> {showDataSummary ? (userCpf || 'Não informado') : '***.***.***-**'}</p>
+                              <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '(***) ***-****'}</p>
+                              <p><strong>CPF:</strong> {showDataSummary ? (userCpf ? userCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado') : '***.***.***-**'}</p>
                             </div>
                             <div>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>

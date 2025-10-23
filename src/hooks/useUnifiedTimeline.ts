@@ -416,6 +416,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
          const addPost = useCallback(async (newPost: any) => {
            try {
+             console.log('📝 [addPost] Criando novo post para usuário:', newPost.user_id)
+             
              // Salvar no banco de dados
              const { data, error } = await supabase
                .from('feed_posts')
@@ -434,6 +436,43 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                .single()
 
              if (error) throw error
+
+             console.log('✅ [addPost] Post criado com sucesso:', data.id)
+
+             // ✅ VERIFICAR SE É O PRIMEIRO POST DO USUÁRIO (para referral milestone)
+             try {
+               // Contar quantos posts o usuário tem (excluindo posts de sistema/boas-vindas)
+               const { count, error: countError } = await supabase
+                 .from('feed_posts')
+                 .select('*', { count: 'exact', head: true })
+                 .eq('professional_id', newPost.user_id)
+                 .or('tags.not.cs.["sistema","boas-vindas"],tags.is.null')
+               
+               if (!countError && count === 1) {
+                 console.log('🎉 [addPost] Este é o PRIMEIRO post do usuário! Marcando milestone...')
+                 
+                 // Marcar milestone de primeiro post
+                 const { error: milestoneError } = await supabase
+                   .from('referrals')
+                   .update({ 
+                     first_post_made: true,
+                     last_activity_at: new Date().toISOString()
+                   })
+                   .eq('referred_id', newPost.user_id)
+                   .eq('first_post_made', false)
+                 
+                 if (milestoneError) {
+                   console.warn('⚠️ [addPost] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
+                 } else {
+                   console.log('✅ [addPost] Milestone first_post_made marcado! (+30 pontos para indicador)')
+                 }
+               } else {
+                 console.log('📝 [addPost] Post criado. Total de posts do usuário:', count)
+               }
+             } catch (milestoneError) {
+               console.warn('⚠️ [addPost] Erro ao processar milestone de primeiro post:', milestoneError)
+               // Não falhar a criação do post se houver erro no milestone
+             }
 
              // Atualizar cache local
              const timelinePost = {

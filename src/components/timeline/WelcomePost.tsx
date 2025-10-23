@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Heart, MessageCircle, MapPin, Star, Eye, User, UserCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -86,12 +87,15 @@ export function WelcomePost({
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                <Avatar className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all">
-                  <AvatarImage src={post.metadata?.avatar_url || ''} alt={`Avatar de ${post.metadata?.user || 'Usuário'}`} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                    {post.metadata?.user?.charAt(0).toUpperCase() || 'P'}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  src={post.metadata?.avatar_url}
+                  alt={post.metadata?.user || 'Usuário'}
+                  fallback={post.metadata?.user?.charAt(0).toUpperCase() || 'P'}
+                  size="lg"
+                  userId={post.user_id}
+                  showReferralBadge={true}
+                  className="cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
+                />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
