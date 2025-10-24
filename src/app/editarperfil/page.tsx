@@ -667,6 +667,7 @@ export default function EditarPerfilPage() {
                         Verificado
                       </Badge>
                       <Button
+                        type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => setShowEmailForm(!showEmailForm)}
