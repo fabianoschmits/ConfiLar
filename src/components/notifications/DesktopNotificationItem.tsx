@@ -44,8 +44,10 @@ export function DesktopNotificationItem({
 
   return (
     <div
-      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 relative group ${
-        !notification.is_read ? 'bg-blue-50 border-blue-200' : 'bg-white'
+      className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 relative group ${
+        !notification.is_read 
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
+          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
       }`}
       onClick={() => onClick(notification)}
     >
@@ -62,25 +64,25 @@ export function DesktopNotificationItem({
             )}
           </div>
           
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
             {notification.message}
           </p>
           
           {/* Informações extras para posts compartilhados */}
           {notification.metadata?.type === 'shared_post' && notification.metadata?.post_title && (
-            <div className="mt-2 p-2 bg-gradient-to-r from-green-50 to-blue-50 rounded border border-green-200 hover:border-green-300 transition-colors">
-              <p className="text-xs text-gray-500 mb-1">📄 Post:</p>
-              <p className="text-sm font-medium text-gray-700 line-clamp-1 mb-1">
+            <div className="mt-2 p-2 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded border border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700 transition-colors">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">📄 Post:</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200 line-clamp-1 mb-1">
                 {notification.metadata.post_title}
               </p>
-              <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+              <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
                 <ExternalLink className="h-3 w-3" />
                 <span>Clique para ver o post</span>
               </div>
             </div>
           )}
           
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             {formatDistanceToNow(new Date(notification.created_at), { 
               addSuffix: true, 
               locale: ptBR 
@@ -98,7 +100,7 @@ export function DesktopNotificationItem({
                 e.stopPropagation()
                 onMarkAsRead(notification.id)
               }}
-              className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-6 w-6 p-0 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
               title="Marcar como lida"
             >
               <Check className="h-3 w-3" />
@@ -112,7 +114,7 @@ export function DesktopNotificationItem({
               e.stopPropagation()
               onDelete(notification.id, notification.title)
             }}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100"
+            className="h-6 w-6 p-0 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-100"
             title="Deletar notificação"
           >
             <Trash2 className="h-3.5 w-3.5" />

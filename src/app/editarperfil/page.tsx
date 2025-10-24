@@ -13,10 +13,11 @@ import { Label } from '@/components/ui/label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { 
   Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
-  Camera, Save, Edit3, Phone, Calendar, FileText
+  Camera, Save, Edit3, Phone, Calendar, FileText, Mail
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -25,6 +26,7 @@ import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
+import { ChangeEmailForm } from '@/components/forms/ChangeEmailForm'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -107,6 +109,7 @@ export default function EditarPerfilPage() {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
+  const [showEmailForm, setShowEmailForm] = useState(false)
 
   const {
     register,
@@ -645,6 +648,48 @@ export default function EditarPerfilPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Seção de Email */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {user?.email}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Email atual da conta
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-200 dark:border-green-800">
+                        Verificado
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowEmailForm(!showEmailForm)}
+                      >
+                        {showEmailForm ? 'Cancelar' : 'Alterar'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {showEmailForm && (
+                    <div className="mt-4">
+                      <ChangeEmailForm
+                        currentEmail={user?.email || ''}
+                        onSuccess={() => {
+                          setShowEmailForm(false)
+                          toast.success('Email alterado com sucesso!')
+                        }}
+                        onCancel={() => setShowEmailForm(false)}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
@@ -760,8 +805,8 @@ export default function EditarPerfilPage() {
                         <button
                           type="button"
                           className={cn(
-                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                            errors.location_state ? 'border-red-400' : 'border-gray-300'
+                            "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
+                            errors.location_state ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                           )}
                         >
                           <span className="text-gray-900 dark:text-white">
@@ -769,10 +814,10 @@ export default function EditarPerfilPage() {
                               ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
                               : "Selecione o estado"}
                           </span>
-                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
+                      <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" align="start">
                         <Command>
                           <CommandInput placeholder="Buscar estado..." />
                           <CommandList>
@@ -820,8 +865,8 @@ export default function EditarPerfilPage() {
                           type="button"
                           disabled={!watchedValues.location_state}
                           className={cn(
-                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                            errors.location_city ? 'border-red-400' : 'border-gray-300',
+                            "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
+                            errors.location_city ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600',
                             !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
                           )}
                         >
@@ -832,10 +877,10 @@ export default function EditarPerfilPage() {
                               ? "Selecione a cidade"
                               : "Selecione o estado primeiro"}
                           </span>
-                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
+                      <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" align="start">
                         <Command>
                           <CommandInput placeholder="Buscar cidade..." />
                           <CommandList>
@@ -1042,17 +1087,17 @@ export default function EditarPerfilPage() {
                         <PopoverTrigger asChild>
                           <button
                             type="button"
-                            className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10"
                           >
                             <span className="text-gray-900 dark:text-white">
                               {selectedServices.length === 0
                                 ? "Selecione os serviços..."
                                 : `${selectedServices.length} serviço(s)`}
                             </span>
-                            <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                            <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
+                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                           <Command>
                             <CommandInput placeholder="Buscar serviços..." />
                             <CommandList>
