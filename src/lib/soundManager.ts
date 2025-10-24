@@ -128,36 +128,48 @@ class SoundManager {
     }
   ): Promise<void> {
     if (!this.options.enabled) {
+      console.log('🔇 Sons desabilitados, não tocando')
       return
     }
 
     // Respeitar horário silencioso
     if (this.options.respectQuietHours && this.isQuietHours()) {
+      console.log('🌙 Horário silencioso, não tocando')
       return
     }
+
+    console.log(`🔊 [SoundManager] Tentando tocar: ${soundPath}`)
 
     try {
       let audio = this.sounds.get(soundPath)
 
       if (!audio) {
         // Se não estiver pré-carregado, carregar agora
-        await this.preload(soundPath)
-        audio = this.sounds.get(soundPath)
+        console.log(`📥 [SoundManager] Som não pré-carregado, carregando: ${soundPath}`)
+        try {
+          await this.preload(soundPath)
+          audio = this.sounds.get(soundPath)
+        } catch (preloadError) {
+          console.error(`❌ [SoundManager] Erro ao pré-carregar som: ${soundPath}`, preloadError)
+          return
+        }
       }
 
       if (!audio) {
-        console.log(`⚠️ Som não encontrado: ${soundPath}`)
+        console.warn(`⚠️ [SoundManager] Som não encontrado: ${soundPath}`)
         return // Falhar silenciosamente
       }
 
       // Se já estiver tocando, reiniciar
       if (this.currentlyPlaying.has(soundPath)) {
+        console.log(`🔄 [SoundManager] Som já tocando, reiniciando: ${soundPath}`)
         audio.currentTime = 0
       }
 
       // Configurar volume
       const volume = options?.volume ?? this.options.volume ?? 0.7
       audio.volume = Math.max(0, Math.min(1, volume))
+      console.log(`🔊 [SoundManager] Volume configurado: ${volume}`)
 
       // Configurar loop
       audio.loop = options?.loop ?? false
@@ -166,26 +178,33 @@ class SoundManager {
       this.currentlyPlaying.add(soundPath)
 
       // Tocar o som
+      console.log(`▶️ [SoundManager] Reproduzindo som: ${soundPath}`)
       const playPromise = audio.play()
 
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            // Som começou a tocar
+            console.log(`✅ [SoundManager] Som iniciado com sucesso: ${soundPath}`)
           })
           .catch(error => {
-            console.error('Erro ao tocar som:', error)
+            console.error(`❌ [SoundManager] Erro ao tocar som: ${soundPath}`, error)
             this.currentlyPlaying.delete(soundPath)
+            
+            // Se erro é por falta de interação do usuário, avisar
+            if (error.name === 'NotAllowedError') {
+              console.warn('⚠️ [SoundManager] Som bloqueado! Usuário precisa interagir com a página primeiro.')
+            }
           })
       }
 
       // Remover da lista quando terminar
       audio.onended = () => {
+        console.log(`🏁 [SoundManager] Som finalizado: ${soundPath}`)
         this.currentlyPlaying.delete(soundPath)
       }
 
     } catch (error) {
-      console.error('Erro ao tocar som:', error)
+      console.error(`❌ [SoundManager] Erro geral ao tocar som: ${soundPath}`, error)
     }
   }
 
@@ -199,10 +218,16 @@ class SoundManager {
     const config = NOTIFICATION_SOUND_CONFIG[type]
     
     if (!config) {
-      console.warn(`Tipo de notificação desconhecido: ${type}`)
+      console.warn(`⚠️ Tipo de notificação desconhecido: ${type}, usando som genérico`)
+      // Fallback para som genérico
+      await this.play('/sounds/notification-soft.mp3', {
+        volume: customVolume,
+        priority: 'normal'
+      })
       return
     }
 
+    console.log(`🔊 Tocando som para notificação tipo: ${type}`)
     await this.play(config.defaultSound, {
       volume: customVolume,
       priority: config.priority
