@@ -10,12 +10,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, XCircle, AlertCircle, Loader2, Play, RefreshCw } from 'lucide-react'
+import { PointSource } from '@/types/points'
 
 interface TestResult {
   name: string
   status: 'pending' | 'running' | 'success' | 'error'
   message: string
   details?: any
+}
+
+interface BalanceResult {
+  balance: number
+  level: number
+  total_earned: number
+  total_spent: number
+  locked_balance: number
+  available_balance: number
 }
 
 export default function TesteSistemaPontos() {
@@ -59,9 +69,11 @@ export default function TesteSistemaPontos() {
       
       if (error) throw error
       
+      const balanceData = data as BalanceResult
+      
       updateTest('1. Verificar Saldo', 'success', 
-        `✅ Saldo: ${data.balance} pontos`, 
-        { balance: data.balance, level: data.level, total_earned: data.total_earned }
+        `✅ Saldo: ${balanceData.balance} pontos`, 
+        { balance: balanceData.balance, level: balanceData.level, total_earned: balanceData.total_earned }
       )
     } catch (error: any) {
       updateTest('1. Verificar Saldo', 'error', `❌ Erro: ${error.message}`)
@@ -108,8 +120,8 @@ export default function TesteSistemaPontos() {
   const testMultiplePoints = async () => {
     updateTest('4. Múltiplas Ações', 'running', 'Testando diferentes ações...')
     try {
-      const actions = [
-        { action_type: 'profile_complete', description: 'Teste completar perfil' },
+      const actions: Array<{ action_type: PointSource; description: string }> = [
+        { action_type: 'profile_completion', description: 'Teste completar perfil' },
         { action_type: 'first_post', description: 'Teste primeiro post' }
       ]
       
@@ -288,7 +300,7 @@ export default function TesteSistemaPontos() {
         {
           verification_level: verification?.verification_level || 'email',
           fraud_score: fraud?.fraud_score || 0,
-          locked_points: balance?.locked_balance || 0
+          current_balance: balance?.balance || 0
         }
       )
     } catch (error: any) {
