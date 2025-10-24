@@ -430,7 +430,7 @@ export function ChangeEmailForm({
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="newEmail">Novo Email</Label>
             <Input
@@ -447,7 +447,6 @@ export function ChangeEmailForm({
             )}
           </div>
 
-
           <Alert>
             <Shield className="w-4 h-4" />
             <AlertDescription>
@@ -458,7 +457,8 @@ export function ChangeEmailForm({
 
           <div className="flex gap-2">
             <Button
-              type="submit"
+              type="button"
+              onClick={handleSubmit(onSubmit)}
               disabled={isLoading}
               className="flex-1"
             >
@@ -481,7 +481,7 @@ export function ChangeEmailForm({
               </Button>
             )}
           </div>
-        </form>
+        </div>
       </CardContent>
     </Card>
   )

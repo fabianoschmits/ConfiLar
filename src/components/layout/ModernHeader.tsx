@@ -43,7 +43,19 @@ import {
   ShieldCheck,
   Flag,
   FileText,
-  UserPlus
+  UserPlus,
+  Coins,
+  Trophy,
+  Target,
+  History,
+  TestTube,
+  Gift,
+  Zap,
+  ShoppingCart,
+  DollarSign,
+  Send,
+  Crown,
+  ShoppingBag
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -504,6 +516,113 @@ export function ModernHeader({
                         )}
                       </div>
 
+                      {/* ConfiPoints */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('confipoints')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                            ConfiPoints
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('confipoints') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('confipoints') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                            >
+                              <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                              <span className="truncate text-yellow-700 dark:text-yellow-300">Meus Pontos</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/ranking')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Trophy className="h-3 w-3" />
+                              <span className="truncate">Ranking</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/historico')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <History className="h-3 w-3" />
+                              <span className="truncate">Histórico</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/missoes')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Target className="h-3 w-3" />
+                              <span className="truncate">Missões</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/loja')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            >
+                              <ShoppingCart className="h-3 w-3 text-green-600 dark:text-green-400" />
+                              <span className="truncate text-green-700 dark:text-green-300">Loja</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/saque')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <DollarSign className="h-3 w-3" />
+                              <span className="truncate">Sacar</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/transferir')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Send className="h-3 w-3" />
+                              <span className="truncate">Transferir</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/premium')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                            >
+                              <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                              <span className="truncate text-purple-700 dark:text-purple-300">Premium</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/minhas-compras')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <ShoppingBag className="h-3 w-3" />
+                              <span className="truncate">Compras</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/teste-pontos')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <TestTube className="h-3 w-3" />
+                              <span className="truncate">Teste</span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
