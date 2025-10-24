@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Bell, Settings, Trash2, X, ArrowLeft, Smartphone } from 'lucide-react'
 import { useNotifications } from './NotificationProviderSimple'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { useNotificationSound } from '@/hooks/useNotificationSound'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ModernNotificationCenter } from './ModernNotificationCenter'
@@ -25,6 +26,7 @@ export function AdaptiveNotificationCenter({ isOpen, onClose }: AdaptiveNotifica
 function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCenterProps) {
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
   const { isSupported, isGranted, isSubscribed, requestPermission, subscribe, unsubscribe, isLoading, error } = usePushNotifications()
+  const { updatePreferences: updateSoundPreferences, isEnabled: soundEnabled } = useNotificationSound()
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [showSettings, setShowSettings] = useState(false)
   const [notificationSettings, setNotificationSettings] = useState({
@@ -84,7 +86,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     }
   }
 
-  const updateSetting = (key: string, value: boolean) => {
+  const updateSetting = async (key: string, value: boolean) => {
     const updatedSettings = { ...notificationSettings, [key]: value }
     
     // Atualizar estado
@@ -94,6 +96,75 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     localStorage.setItem('notificationSettings', JSON.stringify(updatedSettings))
     
     console.log(`🔔 Configuração salva automaticamente: ${key} = ${value}`)
+    
+    // CONECTAR AOS SISTEMAS REAIS
+    
+    // 1. Som - Conectar ao useNotificationSound
+    if (key === 'sound') {
+      try {
+        await updateSoundPreferences({ enabled: value })
+        console.log(`🔊 Som ${value ? 'ativado' : 'desativado'} no sistema real`)
+        toast.success(`Som ${value ? 'ativado' : 'desativado'}`)
+      } catch (error) {
+        console.error('❌ Erro ao atualizar som:', error)
+      }
+    }
+    
+    // 2. Vibração - Implementar Web Vibration API
+    if (key === 'vibration' && value) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(200) // Testar vibração
+        console.log('📳 Vibração testada')
+        toast.success('Vibração ativada')
+      } else {
+        console.log('⚠️ Vibração não suportada neste dispositivo')
+        toast.warning('Vibração não suportada neste dispositivo')
+      }
+    }
+    
+    // 3. Push - Conectar ao usePushNotifications
+    if (key === 'pushEnabled') {
+      try {
+        if (value) {
+          if (!isGranted) {
+            const granted = await requestPermission()
+            if (!granted) {
+              console.log('❌ Permissão negada')
+              // Reverter configuração
+              setNotificationSettings(prev => ({ ...prev, pushEnabled: false }))
+              localStorage.setItem('notificationSettings', JSON.stringify({ ...updatedSettings, pushEnabled: false }))
+              return
+            }
+          }
+          if (!isSubscribed) {
+            await subscribe()
+            console.log('🔔 Inscrito em notificações push')
+            toast.success('Notificações push ativadas')
+          }
+        } else {
+          if (isSubscribed) {
+            await unsubscribe()
+            console.log('🔕 Desinscrito de notificações push')
+            toast.success('Notificações push desativadas')
+          }
+        }
+      } catch (error) {
+        console.error('❌ Erro ao atualizar push:', error)
+      }
+    }
+    
+    // 4. Tipos de notificação - Mostrar feedback
+    if (['messages', 'reviews', 'favorites', 'recommendations', 'system'].includes(key)) {
+      const typeNames: Record<string, string> = {
+        messages: 'Mensagens',
+        reviews: 'Avaliações',
+        favorites: 'Favoritos',
+        recommendations: 'Recomendações',
+        system: 'Sistema'
+      }
+      toast.success(`${typeNames[key]} ${value ? 'ativadas' : 'desativadas'}`)
+      console.log(`📋 Filtro de ${typeNames[key]}: ${value ? 'ATIVADO' : 'DESATIVADO'}`)
+    }
   }
 
   const handlePushNotificationToggle = async () => {
@@ -146,32 +217,32 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
   // Se está mostrando configurações, renderizar painel de configurações
   if (showSettings) {
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col bg-white dark:bg-gray-900">
         {/* Header de Configurações */}
-        <div className="p-3 border-b border-gray-100 bg-gray-50/50">
+        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowSettings(false)}
-                className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
               >
-                <ArrowLeft className="w-4 h-4 text-gray-600" />
+                <ArrowLeft className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </button>
-              <h3 className="text-sm font-semibold text-gray-900">Configurações</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Configurações</h3>
             </div>
           </div>
         </div>
 
         {/* Conteúdo de Configurações */}
-        <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto">
+        <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto bg-white dark:bg-gray-900">
           {/* Notificações Push */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notificações Push</h4>
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Notificações Push</h4>
             
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Ativar notificações push</p>
-                <p className="text-xs text-gray-500">Receba notificações no navegador</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Ativar notificações push</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Receba notificações no navegador</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -186,8 +257,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Som</p>
-                <p className="text-xs text-gray-500">Reproduzir som ao receber</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Som</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Reproduzir som ao receber</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -202,8 +273,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Vibração</p>
-                <p className="text-xs text-gray-500">Vibrar no celular</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Vibração</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Vibrar no celular</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -217,16 +288,16 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-4"></div>
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4"></div>
 
           {/* Tipos de Notificação */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipos de Notificação</h4>
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tipos de Notificação</h4>
             
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Mensagens</p>
-                <p className="text-xs text-gray-500">Chat e mensagens diretas</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Mensagens</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Chat e mensagens diretas</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -241,8 +312,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Avaliações</p>
-                <p className="text-xs text-gray-500">Novas avaliações recebidas</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Avaliações</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Novas avaliações recebidas</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -257,8 +328,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Favoritos</p>
-                <p className="text-xs text-gray-500">Quando alguém favorita você</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Favoritos</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Quando alguém favorita você</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -273,8 +344,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Recomendações</p>
-                <p className="text-xs text-gray-500">Quando alguém recomenda você</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Recomendações</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Quando alguém recomenda você</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -289,8 +360,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">Sistema</p>
-                <p className="text-xs text-gray-500">Notificações importantes</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">Sistema</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Notificações importantes</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input 
@@ -305,11 +376,11 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
           </div>
 
           {/* Seção de Notificações Push */}
-          <div className="border-t border-gray-200 pt-4 mt-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notificações Push</h4>
+              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Notificações Push</h4>
               
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Smartphone className="w-5 h-5 text-blue-600 mt-0.5" />
                   <div className="flex-1">
@@ -403,13 +474,13 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
   }
 
     return (
-      <div className="flex flex-col">
+      <div className="flex flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-        <div className="p-3 border-b border-gray-100 bg-gray-50/50">
+        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-gray-600" />
-            <h3 className="text-sm font-semibold text-gray-900">Notificações</h3>
+            <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notificações</h3>
             {unreadCount > 0 && (
               <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {unreadCount}
@@ -419,30 +490,30 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowSettings(true)}
-              className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
               title="Configurações"
             >
-              <Settings className="w-4 h-4 text-gray-600" />
+              <Settings className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+              className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
-              <X className="w-4 h-4 text-gray-600" />
+              <X className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="p-3 border-b border-gray-100">
+      <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div className="flex gap-2">
             <button
               onClick={() => setFilter('all')}
             className={`px-3 py-1 text-xs rounded-full transition-colors ${
                 filter === 'all' 
-                  ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
             Todas
@@ -451,8 +522,8 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
               onClick={() => setFilter('unread')}
             className={`px-3 py-1 text-xs rounded-full transition-colors ${
                 filter === 'unread' 
-                  ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Não lidas
@@ -461,7 +532,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
       </div>
 
       {/* Lista de Notificações */}
-      <div className="divide-y divide-gray-100 overflow-y-auto max-h-[400px] md:max-h-[500px]">
+      <div className="divide-y divide-gray-100 dark:divide-gray-700 overflow-y-auto max-h-[400px] md:max-h-[500px] bg-white dark:bg-gray-900">
         {filteredNotifications.map((notification) => (
           <DesktopNotificationItem
             key={notification.id}
@@ -480,16 +551,16 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
       {/* Footer com ações */}
       {notifications.length > 0 && (
-        <div className="p-3 border-t border-gray-100 bg-gray-50/50">
+        <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between">
                       <button
               onClick={handleDeleteAll}
-              className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm"
+              className="flex items-center gap-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm"
                       >
               <Trash2 className="w-4 h-4" />
               Limpar todas
                       </button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {filteredNotifications.length} notificação{filteredNotifications.length !== 1 ? 'ões' : ''}
             </span>
           </div>
@@ -498,10 +569,10 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
       {/* Estado vazio */}
       {filteredNotifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Bell className="h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500">Nenhuma notificação</p>
-          <p className="text-sm text-gray-500">Você receberá notificações aqui</p>
+        <div className="flex flex-col items-center justify-center py-8 text-center bg-white dark:bg-gray-900">
+          <Bell className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">Nenhuma notificação</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Você receberá notificações aqui</p>
       </div>
       )}
     </div>
