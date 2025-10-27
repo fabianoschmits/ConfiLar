@@ -22,6 +22,7 @@ import {
 import { usePointsWithdrawals } from '@/hooks/useEconomy'
 import { usePoints } from '@/hooks/usePoints'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { formatBRL, validatePixKey, WITHDRAWAL_FEE_PERCENTAGE, MIN_WITHDRAWAL_POINTS } from '@/types/economy'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'

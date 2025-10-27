@@ -26,6 +26,7 @@ import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
+import { ClassifiedsSkeleton } from '@/components/ui/skeleton'
 import { 
   Search, 
   MapPin, 

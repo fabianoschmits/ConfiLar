@@ -20,6 +20,7 @@ import {
   Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff, Home, Save
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'

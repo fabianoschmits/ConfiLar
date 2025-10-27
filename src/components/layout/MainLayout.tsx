@@ -8,7 +8,6 @@ import { QuickActionMenu } from '@/components/navigation/QuickActionMenu'
 import { LoginPrompt } from './LoginPrompt';
 import { ReferralTicker } from '@/components/referral/ReferralTicker'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { PageLoadingOverlay } from "@/components/ui/LoadingOverlay";
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import { usePathname } from 'next/navigation';
@@ -19,10 +18,9 @@ interface MainLayoutProps {
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = false }) => {
-  const { user, profile, loading, isReady, error } = useAuthContext();
+  const { user, profile } = useAuthContext();
   const pathname = usePathname();
   const isLoggedIn = user && profile;
-  const isProfileLoading = user && !profile && !loading;
   const [mounted, setMounted] = useState(false);
   
   // Hook para redirecionamento automático
@@ -35,25 +33,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
     setMounted(true);
   }, []);
   
-  // Debug em desenvolvimento
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🏗️ MainLayout:', { 
-      hasUser: !!user, 
-      hasProfile: !!profile, 
-      loading, 
-      isReady,
-      error,
-      requireAuth,
-      pathname,
-      isLoggedIn,
-      isProfileLoading,
-      isCheckingProfile
-    });
-  }
-  
   // Se ainda não montou, mostrar loading
   if (!mounted) {
-    return <PageLoadingOverlay isLoading={true} message="Carregando..." />
+    return null
   }
   
   return (
@@ -65,9 +47,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       <ModernHeader />
       
       <main className={`min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200 lg:ml-48 pb-20 lg:pb-0 pt-12 sm:pt-16`}>
-        {loading || !isReady || isCheckingProfile || isProfileLoading ? (
-          <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : isCheckingProfile ? 'Verificando perfil...' : isProfileLoading ? 'Carregando perfil...' : 'Preparando interface...'} />
-        ) : requireAuth && !isLoggedIn ? (
+        {requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center space-y-4 max-w-md mx-auto p-6">

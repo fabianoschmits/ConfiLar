@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import {
   Popover,
   PopoverContent,
@@ -451,25 +452,7 @@ export default function BuscarPage() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-            <div className="flex-1">
-                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-4 bg-gray-200 rounded"></div>
-                        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <DashboardSkeleton />
             ) : displayProfiles.length === 0 ? (
               <div className="text-center py-12">
                 <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">

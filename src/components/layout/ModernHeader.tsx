@@ -232,10 +232,10 @@ export function ModernHeader({
 
   return (
     <>
-      {/* Header Moderno */}
-      <div className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-12 sm:h-16">
+      {/* Header Moderno - Flutuante no Mobile */}
+      <div className="lg:sticky fixed lg:top-0 top-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-full lg:left-0 lg:translate-x-0 z-50 lg:shadow-sm bg-white dark:bg-[#1b1b1b] lg:bg-white lg:dark:bg-gray-900 border rounded-full lg:rounded-none lg:border-b border-gray-200 dark:border-gray-700 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-none">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
             {/* Left side */}
             <div className="flex items-center space-x-4">
               {showBackButton && (

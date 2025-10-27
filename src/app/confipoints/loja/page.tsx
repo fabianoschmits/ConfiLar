@@ -19,6 +19,7 @@ import {
 import { usePointsPackages, usePointsPurchases } from '@/hooks/useEconomy'
 import { usePoints } from '@/hooks/usePoints'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { formatBRL } from '@/types/economy'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'

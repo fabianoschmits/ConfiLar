@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { usePointsPurchases, usePointsWithdrawals, usePointsTransfers, usePointsStore } from '@/hooks/useEconomy'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { formatBRL } from '@/types/economy'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 

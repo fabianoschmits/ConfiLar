@@ -25,6 +25,7 @@ import {
 import { usePointsTransfers } from '@/hooks/useEconomy'
 import { usePoints } from '@/hooks/usePoints'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { MIN_TRANSFER_POINTS } from '@/types/economy'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'

@@ -18,6 +18,7 @@ import {
   Camera, Save, Shield, Home, Edit3, Phone, Calendar, FileText
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
 import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
 import { services } from '@/data/services'

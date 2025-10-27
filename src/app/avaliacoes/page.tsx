@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'

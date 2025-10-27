@@ -20,6 +20,7 @@ import {
   Lock
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { DataPortabilityModal } from '@/components/lgpd/DataPortabilityModal'
 import { RightToBeForgottenModal } from '@/components/lgpd/RightToBeForgottenModal'
 import { ProfileVisibilitySettings } from '@/components/lgpd/ProfileVisibilitySettings'

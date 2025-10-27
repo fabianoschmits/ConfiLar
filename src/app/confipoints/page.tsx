@@ -28,11 +28,20 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { usePoints } from '@/hooks/usePoints'
 
 export default function ConfiPointsPage() {
   const { user, profile } = useAuthContext()
   const { balance: pointsData, loading: pointsLoading } = usePoints(user?.id)
+
+  if (pointsLoading) {
+    return (
+      <MainLayout requireAuth={true}>
+        <DashboardSkeleton />
+      </MainLayout>
+    )
+  }
 
   const premiumFeatures = [
     {

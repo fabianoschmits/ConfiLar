@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { usePoints } from '@/hooks/usePoints'
 import Link from 'next/link'
 
