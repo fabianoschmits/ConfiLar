@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star, Share2, Briefcase } from 'lucide-react'
+import { Heart, MessageCircle, MapPin, User, Eye, TrendingUp, Star, Share2, Briefcase, Crown, Sparkles, Clock } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
@@ -17,6 +17,8 @@ import { SimpleAutomaticPost } from './SimpleAutomaticPost'
 import { WelcomeUserPost } from './WelcomeUserPost'
 import { NewUserWelcomePost } from './NewUserWelcomePost'
 import { MentionText } from '@/components/ui/MentionText'
+import { PremiumPostCard } from './PremiumPostCard'
+import { PremiumLikeButton } from '@/components/points/PremiumLikeButton'
 import { SharePostModal } from './SharePostModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
@@ -64,11 +66,11 @@ export function TimelinePost({
   const isOldAutomaticPost = postType && ['review'].includes(postType)
   
   // Verificação adicional: se o título contém emojis de sistema, também considerar como post automático
-  const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
+  const isSystemPostByTitle = post.title?.includes('💡') || post.title?.includes('❤️') || post.title?.includes('⭐') || post.title?.includes('🎉')
   const isSystemPost = isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
   
   // Se for um post de boas-vindas de novo usuário, renderizar o componente NewUserWelcomePost
-  if (isWelcomeUserPost || (isSystemPostByTitle && post.title.includes('🎉'))) {
+  if (isWelcomeUserPost || (isSystemPostByTitle && post.title?.includes('🎉'))) {
     return (
       <NewUserWelcomePost
         post={post}
@@ -110,6 +112,44 @@ export function TimelinePost({
       />
     )
   }
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInMs = now.getTime() - date.getTime()
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
+
+    // Se foi há menos de 1 minuto
+    if (diffInMinutes < 1) {
+      return 'Agora'
+    }
+
+    // Se foi há menos de 1 hora
+    if (diffInMinutes < 60) {
+      return `há ${diffInMinutes} ${diffInMinutes === 1 ? 'minuto' : 'minutos'}`
+    }
+
+    // Se foi há menos de 24 horas
+    if (diffInHours < 24) {
+      return `há ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`
+    }
+
+    // Se foi há menos de 7 dias
+    if (diffInDays < 7) {
+      return `há ${diffInDays} ${diffInDays === 1 ? 'dia' : 'dias'}`
+    }
+
+    // Se foi há mais de 7 dias, mostrar data completa
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -168,8 +208,36 @@ export function TimelinePost({
     }
   }
 
+  // Verificar se é um post premium
+  const isPremiumPost = Boolean(post.is_featured || post.tags?.includes('premium'))
+  const premiumExpired = post.metadata?.expires_at ? new Date(post.metadata.expires_at) < new Date() : false
+  
+  // Se for um post premium ativo, usar o componente premium
+  if (isPremiumPost && !premiumExpired) {
+    return (
+      <PremiumPostCard
+        post={post}
+        onShare={onShare}
+        onLike={onLike}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        showComments={showComments}
+        isTrending={isTrending}
+        trendingReason={trendingReason}
+        isDeleting={isDeleting}
+      />
+    )
+  }
+  
   return (
-    <Card id={`post-${post.id}`} className="overflow-hidden transition-all duration-300">
+    <Card 
+      id={`post-${post.id}`} 
+      className={`overflow-hidden transition-all duration-300 ${
+        isPremiumPost && !premiumExpired 
+          ? 'border-2 border-yellow-400 bg-gradient-to-br from-yellow-50/50 to-yellow-100/50 dark:from-yellow-900/20 dark:to-yellow-800/20 shadow-lg shadow-yellow-200/50 dark:shadow-yellow-900/20' 
+          : ''
+      }`}
+    >
       <CardHeader className="pb-0 p-3 -mb-2">
         <div className="flex items-start space-x-3">
           {/* Avatar */}
@@ -225,6 +293,15 @@ export function TimelinePost({
               {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
               <DynamicAvailabilityBadge userId={post.user_id} />
               
+              {/* Badge Premium */}
+              {isPremiumPost && !premiumExpired && (
+                <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-[9px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 shadow-md">
+                  <Crown className="h-2 w-2 sm:h-3 sm:w-3" />
+                  <span className="hidden sm:inline">Premium</span>
+                  <span className="sm:hidden">⭐</span>
+                </Badge>
+              )}
+              
               {/* Badge de Serviço */}
               {post.service_category_id && (() => {
                 const service = services.find(s => s.id === post.service_category_id)
@@ -250,6 +327,12 @@ export function TimelinePost({
               <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
               <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
             </div>
+            
+            {/* Data e Hora da Postagem */}
+            <div className="flex items-center text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+              <span>{formatDateTime(post.created_at)}</span>
+            </div>
           </div>
           
           {/* Menu de Opções */}
@@ -268,7 +351,14 @@ export function TimelinePost({
 
             <CardContent className="space-y-3 px-3 md:px-6 -mt-2 pb-3 md:pb-6">
               <div className="-mt-2">
-                <h4 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h4 className={`text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 ${
+                  isPremiumPost && !premiumExpired 
+                    ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent font-bold' 
+                    : ''
+                }`}>
+                  {isPremiumPost && !premiumExpired && (
+                    <Sparkles className="h-4 w-4 inline mr-1 text-yellow-500" />
+                  )}
                   <MentionText text={post.title} />
                 </h4>
                 <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">
@@ -371,20 +461,50 @@ export function TimelinePost({
         )}
 
         {/* Ações do Post - Responsivas */}
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="flex items-center space-x-3 md:space-x-6">
-            <ReactionButton 
-              postId={post.id}
-              postOwnerId={post.user_id}
-              postOwnerName={post.user_name || 'Usuário'}
-            />
-            <button 
-              onClick={() => setShowCommentSection(!showCommentSection)}
-              className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">{commentsCount}</span>
+        <div className="pt-4 border-t">
+          {/* Primeira linha: Curtidas (Normal + Premium) + Comentários */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {/* Sistema de Curtidas Antigo */}
+              <ReactionButton 
+                postId={post.id}
+                postOwnerId={post.user_id}
+                postOwnerName={post.user_name || 'Usuário'}
+              />
+              
+              {/* Separador visual */}
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+              
+              {/* Sistema de Curtidas Premium */}
+              <PremiumLikeButton 
+                postId={post.id}
+                postCreatorId={post.user_id}
+                size="sm"
+                showStats={false}
+              />
+              
+              {/* Separador visual */}
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+              
+              {/* Botão de Comentários */}
+              <button 
+                onClick={() => setShowCommentSection(!showCommentSection)}
+                className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-sm md:text-base">{commentsCount}</span>
+              </button>
+            </div>
+            
+            {/* Contador de visualizações */}
+            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
+              <Eye className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">{viewsCount}</span>
             </button>
+          </div>
+          
+          {/* Segunda linha: Compartilhar */}
+          <div className="flex items-center justify-end">
             <button 
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
@@ -393,12 +513,7 @@ export function TimelinePost({
               <Share2 className="h-4 w-4 md:h-5 md:w-5" />
               <span className="text-sm md:text-base hidden sm:inline">Compartilhar</span>
             </button>
-            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
-              <Eye className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">{viewsCount}</span>
-            </button>
           </div>
-          
         </div>
 
       {/* Comentários */}

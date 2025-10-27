@@ -19,6 +19,7 @@ export interface TimelinePost extends TimelineItem {
   type: 'post'
   title: string
   description: string
+  content?: string
   images: string[]
   service_category_id?: string
   location_state?: string
@@ -26,6 +27,11 @@ export interface TimelinePost extends TimelineItem {
   likes_count: number
   comments_count: number
   is_liked?: boolean
+  is_featured?: boolean
+  tags?: string[]
+  premium_points_spent?: number
+  premium_expires_at?: string
+  premium_highlight_color?: string
   metadata?: {
     type?: string
     user?: string
@@ -39,6 +45,9 @@ export interface TimelinePost extends TimelineItem {
     location_state?: string
     bio?: string
     avatar_url?: string
+    points_spent?: number
+    expires_at?: string
+    created_at?: string
   }
 }
 

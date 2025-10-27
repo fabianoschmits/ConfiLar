@@ -16,7 +16,7 @@ interface Comment {
   id: string
   post_id: string
   user_id: string
-  parent_id: string | null
+  parent_comment_id: string | null
   content: string
   created_at: string
   user: CommentUser
@@ -37,7 +37,7 @@ export function useCommentsDebug(filters: CommentFilters) {
           id,
           post_id,
           user_id,
-          parent_id,
+          parent_comment_id,
           content,
           created_at,
           profiles!post_comments_user_id_fkey(

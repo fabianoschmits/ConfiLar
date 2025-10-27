@@ -19,6 +19,10 @@ interface ClassifiedAd {
   views: number
   user_avatar_url: string | null
   ad_type: string
+  is_featured?: boolean
+  premium_points_spent?: number
+  premium_expires_at?: string
+  premium_highlight_color?: string
 }
 
 interface ClassifiedFilters {

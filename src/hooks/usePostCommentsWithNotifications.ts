@@ -33,7 +33,7 @@ export function usePostCommentsWithNotifications({
       const insertData = {
         post_id: postId,
         user_id: user.id,
-        parent_id: commentData.parent_id,
+        parent_comment_id: commentData.parent_id,
         content: commentData.content,
         mentions
       }

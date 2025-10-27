@@ -43,11 +43,11 @@ export function usePostLikesWithPoints({ postId, postOwnerId, postOwnerName }: U
         // Remover pontos (se aplicável)
         try {
           // Verificar se há limite diário para dar like
-          const limitCheck = await checkDailyLimit('give_like')
+          const limitCheck = await checkDailyLimit('premium_like')
           if (limitCheck.canEarn) {
             // Adicionar pontos de volta (remover o gasto)
             await addPoints({
-              action_type: 'give_like',
+              action_type: 'premium_like',
               description: 'Removeu curtida (pontos devolvidos)',
               metadata: { 
                 post_id: postId, 
@@ -66,7 +66,7 @@ export function usePostLikesWithPoints({ postId, postOwnerId, postOwnerName }: U
         return { action: 'removed' }
       } else {
         // Verificar limite diário antes de curtir
-        const limitCheck = await checkDailyLimit('give_like')
+        const limitCheck = await checkDailyLimit('premium_like')
         if (!limitCheck.canEarn) {
           throw new Error(`Limite diário de curtidas atingido (${limitCheck.dailyLimit}). Tente novamente amanhã.`)
         }
@@ -84,7 +84,7 @@ export function usePostLikesWithPoints({ postId, postOwnerId, postOwnerName }: U
         // Adicionar pontos para quem curtiu (gastar pontos)
         try {
           await addPoints({
-            action_type: 'give_like',
+            action_type: 'premium_like',
             description: 'Curtiu um post',
             metadata: { 
               post_id: postId, 

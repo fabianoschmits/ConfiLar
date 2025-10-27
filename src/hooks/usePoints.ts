@@ -36,12 +36,36 @@ export function usePoints(userId?: string) {
     queryFn: async () => {
       if (!userId) return null
       
+      // Buscar diretamente da tabela user_points_balance
       const { data, error } = await supabase
-        .rpc('get_user_points_balance', { p_user_id: userId })
+        .from('user_points_balance')
+        .select('*')
+        .eq('user_id', userId)
         .single()
       
-      if (error) throw error
-      return data as UserPointsBalance
+      if (error) {
+        // Se não encontrar registro, criar um com saldo zero
+        if (error.code === 'PGRST116') {
+          return {
+            balance: 0,
+            level: 'bronze' as UserLevel,
+            total_earned: 0,
+            total_spent: 0,
+            available_balance: 0,
+            daily_earned: 0
+          } as UserPointsBalance
+        }
+        throw error
+      }
+      
+      return {
+        balance: data.balance || 0,
+        level: getLevelFromPoints(data.balance || 0),
+        total_earned: data.total_earned || 0,
+        total_spent: data.total_spent || 0,
+        available_balance: data.balance || 0,
+        daily_earned: data.daily_earned || 0
+      } as UserPointsBalance
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutos
@@ -167,7 +191,17 @@ export function usePoints(userId?: string) {
 
   return {
     // Estado
-    balance,
+    balance: balance || {
+      balance: 0,
+      level: 'bronze' as UserLevel,
+      total_earned: 0,
+      total_spent: 0,
+      available_balance: 0,
+      daily_earned: 0,
+      last_daily_reset: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
     stats: statsData,
     loading,
     error,
@@ -196,12 +230,7 @@ export function usePointsHistory(userId?: string, filters?: PointsHistoryFilters
       
       let query = supabase
         .from('point_transactions')
-        .select(`
-          *,
-          referral:referrals(id, referred_id),
-          post:feed_posts(id, content),
-          related_user:profiles!point_transactions_related_user_id_fkey(id, full_name, avatar_url)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
       

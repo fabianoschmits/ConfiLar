@@ -45,10 +45,8 @@ import {
   FileText,
   UserPlus,
   Coins,
-  Trophy,
   Target,
   History,
-  TestTube,
   Gift,
   Zap,
   ShoppingCart,
@@ -542,15 +540,6 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/ranking')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Trophy className="h-3 w-3" />
-                              <span className="truncate">Ranking</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
                               onClick={() => handleNavigation('/confipoints/historico')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
@@ -560,11 +549,11 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/missoes')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              onClick={() => handleNavigation('/confipoints/sistema-premium')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
                             >
-                              <Target className="h-3 w-3" />
-                              <span className="truncate">Missões</span>
+                              <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                              <span className="truncate text-purple-700 dark:text-purple-300">Sistema Premium</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -596,11 +585,38 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/premium')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                              onClick={() => handleNavigation('/confipoints/posts-premium')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                             >
-                              <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                              <span className="truncate text-purple-700 dark:text-purple-300">Premium</span>
+                              <FileText className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                              <span className="truncate text-blue-700 dark:text-blue-300">Posts Premium</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/anuncios-premium')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                            >
+                              <Briefcase className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                              <span className="truncate text-emerald-700 dark:text-emerald-300">Anúncios Premium</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/badges-vip')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                            >
+                              <Shield className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                              <span className="truncate text-amber-700 dark:text-amber-300">Badges VIP</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/curtidas-premium')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-pink-50 dark:bg-pink-950/20 hover:bg-pink-100 dark:hover:bg-pink-900/30"
+                            >
+                              <Heart className="h-3 w-3 text-pink-600 dark:text-pink-400" />
+                              <span className="truncate text-pink-700 dark:text-pink-300">Curtidas Premium</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -610,15 +626,6 @@ export function ModernHeader({
                             >
                               <ShoppingBag className="h-3 w-3" />
                               <span className="truncate">Compras</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/teste-pontos')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <TestTube className="h-3 w-3" />
-                              <span className="truncate">Teste</span>
                             </Button>
                           </div>
                         )}

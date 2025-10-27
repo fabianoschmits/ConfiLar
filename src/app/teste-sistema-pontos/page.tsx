@@ -81,14 +81,14 @@ export default function TesteSistemaPontos() {
   }
 
   // ============================================
-  // TESTE 2: Adicionar Pontos (Daily Login)
+  // TESTE 2: Adicionar Pontos (Referral)
   // ============================================
   const testAddPoints = async () => {
-    updateTest('2. Adicionar Pontos', 'running', 'Adicionando pontos de login diário...')
+    updateTest('2. Adicionar Pontos', 'running', 'Adicionando pontos de referral...')
     try {
       await addPoints({
-        action_type: 'daily_login',
-        description: 'Teste de login diário'
+        action_type: 'referral_signup',
+        description: 'Teste de referral'
       })
       
       updateTest('2. Adicionar Pontos', 'success', '✅ Pontos adicionados com sucesso')
@@ -103,7 +103,7 @@ export default function TesteSistemaPontos() {
   const testDailyLimit = async () => {
     updateTest('3. Verificar Limite Diário', 'running', 'Verificando limites...')
     try {
-      const limit = await checkDailyLimit('daily_login')
+      const limit = await checkDailyLimit('premium_like')
       
       updateTest('3. Verificar Limite Diário', 'success', 
         `✅ Limite: ${limit.remaining}/${limit.dailyLimit}`,
@@ -121,8 +121,8 @@ export default function TesteSistemaPontos() {
     updateTest('4. Múltiplas Ações', 'running', 'Testando diferentes ações...')
     try {
       const actions: Array<{ action_type: PointSource; description: string }> = [
-        { action_type: 'profile_completion', description: 'Teste completar perfil' },
-        { action_type: 'first_post', description: 'Teste primeiro post' }
+        { action_type: 'referral_profile_completed', description: 'Teste completar perfil' },
+        { action_type: 'premium_like', description: 'Teste curtida premium' }
       ]
       
       for (const action of actions) {

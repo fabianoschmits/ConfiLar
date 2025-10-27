@@ -232,6 +232,91 @@ export function Sidebar() {
       ]
     },
     ...(isLoggedIn ? [{
+      id: 'confipoints',
+      title: 'CONFIPOINTS',
+      icon: <Zap size={20} strokeWidth={2} />,
+      color: 'yellow',
+      items: [
+        {
+          id: 'my-points',
+          title: 'MEUS PONTOS',
+          href: '/confipoints',
+          icon: <Zap size={16} strokeWidth={2} />,
+          description: 'Saldo e estatísticas'
+        },
+        {
+          id: 'history',
+          title: 'HISTÓRICO',
+          href: '/confipoints/historico',
+          icon: <Clock size={16} strokeWidth={2} />,
+          description: 'Transações e atividades'
+        },
+        {
+          id: 'premium-system',
+          title: 'SISTEMA PREMIUM',
+          href: '/confipoints/sistema-premium',
+          icon: <Award size={16} strokeWidth={2} />,
+          description: 'Como funciona o premium'
+        },
+        {
+          id: 'premium-posts',
+          title: 'POSTS PREMIUM',
+          href: '/confipoints/posts-premium',
+          icon: <FileText size={16} strokeWidth={2} />,
+          description: 'Criar posts destacados'
+        },
+        {
+          id: 'premium-ads',
+          title: 'ANÚNCIOS PREMIUM',
+          href: '/confipoints/anuncios-premium',
+          icon: <Briefcase size={16} strokeWidth={2} />,
+          description: 'Criar anúncios destacados'
+        },
+        {
+          id: 'premium-likes',
+          title: 'CURTIDAS PREMIUM',
+          href: '/confipoints/curtidas-premium',
+          icon: <Heart size={16} strokeWidth={2} />,
+          description: 'Curtir com pontos'
+        },
+        {
+          id: 'vip-badges',
+          title: 'BADGES VIP',
+          href: '/confipoints/badges-vip',
+          icon: <Shield size={16} strokeWidth={2} />,
+          description: 'Badges de usuários premium'
+        },
+        {
+          id: 'store',
+          title: 'LOJA',
+          href: '/confipoints/loja',
+          icon: <CreditCard size={16} strokeWidth={2} />,
+          description: 'Comprar pontos'
+        },
+        {
+          id: 'withdraw',
+          title: 'SACAR',
+          href: '/confipoints/saque',
+          icon: <Wallet size={16} strokeWidth={2} />,
+          description: 'Converter pontos em dinheiro'
+        },
+        {
+          id: 'transfer',
+          title: 'TRANSFERIR',
+          href: '/confipoints/transferir',
+          icon: <TrendingUpIcon size={16} strokeWidth={2} />,
+          description: 'Enviar pontos para outros'
+        },
+        {
+          id: 'purchases',
+          title: 'MINHAS COMPRAS',
+          href: '/confipoints/minhas-compras',
+          icon: <BarChart3 size={16} strokeWidth={2} />,
+          description: 'Histórico de compras'
+        }
+      ]
+    }] : []),
+    ...(isLoggedIn ? [{
       id: 'account',
       title: 'CONTA',
       icon: <User size={20} strokeWidth={2} />,
@@ -291,7 +376,8 @@ export function Sidebar() {
       orange: 'bg-orange-500 text-white border-black',
       indigo: 'bg-indigo-500 text-white border-black',
       red: 'bg-red-500 text-white border-black',
-      gray: 'bg-gray-500 text-white border-black'
+      gray: 'bg-gray-500 text-white border-black',
+      yellow: 'bg-yellow-500 text-white border-black'
     }
     return colors[color as keyof typeof colors] || colors.blue
   }

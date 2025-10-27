@@ -77,7 +77,7 @@ export function PointsBalance({ className, showDetails = true }: PointsBalancePr
         {/* Saldo Principal */}
         <div className="text-center">
           <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-            {formatPoints(balance.balance)}
+            {formatPoints(balance.balance || 0)}
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">pontos disponíveis</p>
         </div>
@@ -110,7 +110,7 @@ export function PointsBalance({ className, showDetails = true }: PointsBalancePr
                     Progresso para {USER_LEVELS[nextLevel].name}
                   </span>
                   <span className="text-gray-600 dark:text-gray-400">
-                    {formatPoints(pointsToNext)} pontos restantes
+                    {formatPoints(pointsToNext || 0)} pontos restantes
                   </span>
                 </div>
                 <Progress 
@@ -129,7 +129,7 @@ export function PointsBalance({ className, showDetails = true }: PointsBalancePr
                 <div className="flex items-center justify-center gap-1 text-green-600 dark:text-green-400">
                   <TrendingUp className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    {formatPoints(balance.daily_earned)}
+                    {formatPoints(balance.daily_earned || 0)}
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Hoje</p>
@@ -139,7 +139,7 @@ export function PointsBalance({ className, showDetails = true }: PointsBalancePr
                 <div className="flex items-center justify-center gap-1 text-blue-600 dark:text-blue-400">
                   <Star className="w-4 h-4" />
                   <span className="text-sm font-medium">
-                    {formatPoints(balance.total_earned)}
+                    {formatPoints(balance.total_earned || 0)}
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Total ganho</p>
