@@ -1,0 +1,273 @@
+-- =====================================================
+-- VERIFICAR ESTRUTURA ATUAL E CORRIGIR TUDO
+-- =====================================================
+
+-- 1. VERIFICAR ESTRUTURA COMPLETA DE points_packages
+SELECT 
+  column_name, 
+  data_type, 
+  is_nullable, 
+  column_default
+FROM information_schema.columns 
+WHERE table_name = 'points_packages' 
+ORDER BY ordinal_position;
+
+-- 2. VERIFICAR DADOS EXISTENTES EM points_packages
+SELECT * FROM points_packages LIMIT 3;
+
+-- 3. ADICIONAR TODAS AS COLUNAS FALTANTES EM points_packages
+DO $$ 
+BEGIN
+  RAISE NOTICE 'Adicionando todas as colunas faltantes em points_packages...';
+  
+  -- Adicionar description se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'description') THEN
+    ALTER TABLE points_packages ADD COLUMN description TEXT;
+    RAISE NOTICE '✅ Coluna description adicionada';
+  END IF;
+  
+  -- Adicionar points se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'points') THEN
+    ALTER TABLE points_packages ADD COLUMN points INTEGER NOT NULL DEFAULT 0;
+    RAISE NOTICE '✅ Coluna points adicionada';
+  END IF;
+  
+  -- Adicionar points_amount se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'points_amount') THEN
+    ALTER TABLE points_packages ADD COLUMN points_amount INTEGER NOT NULL DEFAULT 0;
+    RAISE NOTICE '✅ Coluna points_amount adicionada';
+  END IF;
+  
+  -- Adicionar price_cents se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'price_cents') THEN
+    ALTER TABLE points_packages ADD COLUMN price_cents INTEGER NOT NULL DEFAULT 0;
+    RAISE NOTICE '✅ Coluna price_cents adicionada';
+  END IF;
+  
+  -- Adicionar price_brl se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'price_brl') THEN
+    ALTER TABLE points_packages ADD COLUMN price_brl DECIMAL(10,2) NOT NULL DEFAULT 0.00;
+    RAISE NOTICE '✅ Coluna price_brl adicionada';
+  END IF;
+  
+  -- Adicionar bonus_points se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'bonus_points') THEN
+    ALTER TABLE points_packages ADD COLUMN bonus_points INTEGER DEFAULT 0;
+    RAISE NOTICE '✅ Coluna bonus_points adicionada';
+  END IF;
+  
+  -- Adicionar is_featured se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'is_featured') THEN
+    ALTER TABLE points_packages ADD COLUMN is_featured BOOLEAN DEFAULT FALSE;
+    RAISE NOTICE '✅ Coluna is_featured adicionada';
+  END IF;
+  
+  -- Adicionar updated_at se não existir
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'updated_at') THEN
+    ALTER TABLE points_packages ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    RAISE NOTICE '✅ Coluna updated_at adicionada';
+  END IF;
+END $$;
+
+-- 4. ATUALIZAR REGISTROS EXISTENTES COM VALORES PADRÃO
+UPDATE points_packages 
+SET 
+  points = COALESCE(points, points_amount, 0),
+  price_brl = COALESCE(price_brl, price_cents / 100.0, 0.00),
+  description = COALESCE(description, 'Pacote de pontos'),
+  points_amount = COALESCE(points_amount, 0),
+  price_cents = COALESCE(price_cents, 0),
+  bonus_points = COALESCE(bonus_points, 0),
+  is_featured = COALESCE(is_featured, false)
+WHERE 
+  points IS NULL 
+  OR price_brl IS NULL 
+  OR description IS NULL 
+  OR points_amount IS NULL 
+  OR price_cents IS NULL 
+  OR bonus_points IS NULL 
+  OR is_featured IS NULL;
+
+-- 5. ADICIONAR VALOR PADRÃO PARA COLUNA SLUG SE NÃO TIVER
+DO $$ 
+BEGIN
+  -- Verificar se a coluna slug tem valor padrão
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'points_packages' 
+    AND column_name = 'slug' 
+    AND column_default IS NOT NULL
+  ) THEN
+    -- Adicionar valor padrão para slug
+    ALTER TABLE points_packages ALTER COLUMN slug SET DEFAULT gen_random_uuid()::text;
+    RAISE NOTICE '✅ Valor padrão adicionado para coluna slug';
+  ELSE
+    RAISE NOTICE '✅ Coluna slug já tem valor padrão';
+  END IF;
+END $$;
+
+-- 6. ATUALIZAR REGISTROS EXISTENTES QUE TÊM SLUG NULL
+UPDATE points_packages 
+SET slug = gen_random_uuid()::text 
+WHERE slug IS NULL;
+
+-- 7. VERIFICAR E CORRIGIR COLUNA total_points
+DO $$ 
+BEGIN
+  -- Verificar se a coluna total_points existe e tem restrição NOT NULL
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'points_packages' AND column_name = 'total_points') THEN
+    -- Verificar se tem restrição NOT NULL
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_name = 'points_packages' 
+      AND column_name = 'total_points' 
+      AND is_nullable = 'NO'
+    ) THEN
+      -- Remover restrição NOT NULL temporariamente
+      ALTER TABLE points_packages ALTER COLUMN total_points DROP NOT NULL;
+      RAISE NOTICE '✅ Restrição NOT NULL removida da coluna total_points';
+    END IF;
+  END IF;
+END $$;
+
+-- 8. AGORA INSERIR DADOS PADRÃO COM TODAS AS COLUNAS
+INSERT INTO points_packages (name, description, points, points_amount, price_cents, price_brl, bonus_points, is_active, is_featured, slug, total_points) VALUES
+  ('Pacote Básico', '100 pontos para começar', 100, 100, 1000, 10.00, 0, true, false, 'pacote-basico-' || gen_random_uuid()::text, 100),
+  ('Pacote Popular', '500 pontos com bônus', 500, 500, 4500, 45.00, 50, true, true, 'pacote-popular-' || gen_random_uuid()::text, 550),
+  ('Pacote Premium', '1000 pontos com bônus', 1000, 1000, 8500, 85.00, 150, true, false, 'pacote-premium-' || gen_random_uuid()::text, 1150),
+  ('Pacote VIP', '2500 pontos com bônus', 2500, 2500, 20000, 200.00, 500, true, true, 'pacote-vip-' || gen_random_uuid()::text, 3000),
+  ('Pacote Máximo', '5000 pontos com bônus', 5000, 5000, 37500, 375.00, 1250, true, false, 'pacote-maximo-' || gen_random_uuid()::text, 6250)
+ON CONFLICT (slug) DO NOTHING;
+
+-- 8. VERIFICAR SE OS DADOS FORAM INSERIDOS
+SELECT id, name, slug, points, points_amount, price_cents, price_brl FROM points_packages ORDER BY points;
+
+-- 9. INSERIR DADOS PADRÃO PARA ITENS DA LOJA
+INSERT INTO points_store_items (name, description, points_price, item_type, item_data, is_active, is_featured) VALUES
+  ('Badge "Primeiro Passo"', 'Badge especial para novos usuários', 50, 'badge', '{"badge_type": "achievement", "color": "blue"}', true, true),
+  ('Título "Iniciante"', 'Título personalizado para o perfil', 100, 'title', '{"title_text": "Iniciante", "color": "green"}', true, false),
+  ('Badge "Ativo"', 'Badge para usuários ativos', 200, 'badge', '{"badge_type": "activity", "color": "orange"}', true, false),
+  ('Título "Especialista"', 'Título para usuários experientes', 500, 'title', '{"title_text": "Especialista", "color": "purple"}', true, true),
+  ('Badge "VIP"', 'Badge exclusivo VIP', 1000, 'badge', '{"badge_type": "vip", "color": "gold"}', true, true),
+  ('Título "Lenda"', 'Título lendário', 2000, 'title', '{"title_text": "Lenda", "color": "rainbow"}', true, false)
+ON CONFLICT DO NOTHING;
+
+-- 10. INSERIR CONFIGURAÇÕES DO SISTEMA
+INSERT INTO points_system_config (config_key, config_value, description, is_active) VALUES
+  ('min_withdrawal_points', '{"value": 100}', 'Pontos mínimos para saque', true),
+  ('withdrawal_fee_percentage', '{"value": 5}', 'Taxa de saque em percentual', true),
+  ('min_transfer_points', '{"value": 10}', 'Pontos mínimos para transferência', true),
+  ('transfer_fee_percentage', '{"value": 2}', 'Taxa de transferência em percentual', true),
+  ('daily_login_bonus', '{"value": 5}', 'Bônus de login diário', true),
+  ('referral_bonus', '{"value": 50}', 'Bônus por indicação', true)
+ON CONFLICT (config_key) DO NOTHING;
+
+-- 11. CONFIGURAR RLS PARA TODAS AS TABELAS
+DO $$ 
+BEGIN
+  RAISE NOTICE 'Configurando RLS...';
+  
+  -- points_packages
+  ALTER TABLE points_packages ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Anyone can view active points packages" ON points_packages;
+  CREATE POLICY "Anyone can view active points packages"
+    ON points_packages FOR SELECT
+    USING (is_active = true);
+  
+  -- points_purchases
+  ALTER TABLE points_purchases ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Users can view own purchases" ON points_purchases;
+  CREATE POLICY "Users can view own purchases"
+    ON points_purchases FOR SELECT
+    USING (auth.uid() = user_id);
+  
+  -- points_withdrawals
+  ALTER TABLE points_withdrawals ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Users can view own withdrawals" ON points_withdrawals;
+  CREATE POLICY "Users can view own withdrawals"
+    ON points_withdrawals FOR SELECT
+    USING (auth.uid() = user_id);
+  
+  DROP POLICY IF EXISTS "Users can create withdrawals" ON points_withdrawals;
+  CREATE POLICY "Users can create withdrawals"
+    ON points_withdrawals FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+  
+  -- points_transfers
+  ALTER TABLE points_transfers ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Users can view own transfers" ON points_transfers;
+  CREATE POLICY "Users can view own transfers"
+    ON points_transfers FOR SELECT
+    USING (auth.uid() = from_user_id OR auth.uid() = to_user_id);
+  
+  DROP POLICY IF EXISTS "Users can create transfers" ON points_transfers;
+  CREATE POLICY "Users can create transfers"
+    ON points_transfers FOR INSERT
+    WITH CHECK (auth.uid() = from_user_id);
+  
+  -- points_store_items
+  ALTER TABLE points_store_items ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Anyone can view active store items" ON points_store_items;
+  CREATE POLICY "Anyone can view active store items"
+    ON points_store_items FOR SELECT
+    USING (is_active = true);
+  
+  -- points_store_purchases
+  ALTER TABLE points_store_purchases ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Users can view own store purchases" ON points_store_purchases;
+  CREATE POLICY "Users can view own store purchases"
+    ON points_store_purchases FOR SELECT
+    USING (auth.uid() = user_id);
+  
+  -- points_system_config
+  ALTER TABLE points_system_config ENABLE ROW LEVEL SECURITY;
+  DROP POLICY IF EXISTS "Anyone can view system config" ON points_system_config;
+  CREATE POLICY "Anyone can view system config"
+    ON points_system_config FOR SELECT
+    USING (is_active = true);
+  
+  RAISE NOTICE '✅ RLS configurado para todas as tabelas';
+END $$;
+
+-- 12. CRIAR ÍNDICES PARA PERFORMANCE
+CREATE INDEX IF NOT EXISTS idx_points_purchases_user_id ON points_purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_points_purchases_status ON points_purchases(payment_status);
+CREATE INDEX IF NOT EXISTS idx_points_withdrawals_user_id ON points_withdrawals(user_id);
+CREATE INDEX IF NOT EXISTS idx_points_withdrawals_status ON points_withdrawals(status);
+CREATE INDEX IF NOT EXISTS idx_points_transfers_from_user ON points_transfers(from_user_id);
+CREATE INDEX IF NOT EXISTS idx_points_transfers_to_user ON points_transfers(to_user_id);
+CREATE INDEX IF NOT EXISTS idx_points_transfers_status ON points_transfers(status);
+CREATE INDEX IF NOT EXISTS idx_points_store_purchases_user_id ON points_store_purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_points_store_purchases_item_id ON points_store_purchases(item_id);
+CREATE INDEX IF NOT EXISTS idx_points_store_purchases_active ON points_store_purchases(is_active);
+
+-- 13. VERIFICAÇÃO FINAL
+DO $$ 
+BEGIN
+  RAISE NOTICE '========================================';
+  RAISE NOTICE 'VERIFICAÇÃO FINAL:';
+  RAISE NOTICE '========================================';
+  
+  -- Verificar se os dados foram inseridos
+  IF EXISTS (SELECT 1 FROM points_packages WHERE name = 'Pacote Básico') THEN
+    RAISE NOTICE '✅ Pacotes de pontos inseridos com sucesso';
+  ELSE
+    RAISE NOTICE '❌ Falha ao inserir pacotes de pontos';
+  END IF;
+  
+  IF EXISTS (SELECT 1 FROM points_store_items WHERE name LIKE '%Badge%') THEN
+    RAISE NOTICE '✅ Itens da loja inseridos com sucesso';
+  ELSE
+    RAISE NOTICE '❌ Falha ao inserir itens da loja';
+  END IF;
+  
+  IF EXISTS (SELECT 1 FROM points_system_config WHERE config_key = 'min_withdrawal_points') THEN
+    RAISE NOTICE '✅ Configurações do sistema inseridas com sucesso';
+  ELSE
+    RAISE NOTICE '❌ Falha ao inserir configurações do sistema';
+  END IF;
+  
+  RAISE NOTICE '========================================';
+  RAISE NOTICE '✅ CORREÇÃO COMPLETA FINALIZADA!';
+  RAISE NOTICE '========================================';
+END $$;

@@ -8,9 +8,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Variáveis de ambiente do Supabase não encontradas')
 }
 
-// Debug: verificar se as variáveis estão sendo carregadas (removido para produção)
-// console.log('Supabase URL:', supabaseUrl)
-// console.log('Supabase Anon Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'undefined')
+// Debug: verificar se as variáveis estão sendo carregadas
+console.log('🔧 Supabase URL:', supabaseUrl)
+console.log('🔧 Supabase Anon Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'undefined')
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -18,6 +18,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey,
+    }
   }
 })
 

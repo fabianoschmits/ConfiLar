@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import { UnifiedTimelineItem, TimelineFilters, TimelineStats } from '@/types/timeline'
+import { UnifiedTimelineItem, TimelineFilters, TimelineStats, TimelinePost } from '@/types/timeline'
 import { LocationFilter } from '@/hooks/useLocationFilters'
 
 const ITEMS_PER_PAGE = 20
@@ -44,6 +44,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           created_at,
           updated_at,
           metadata,
+          is_featured,
+          tags,
           professional:profiles!feed_posts_professional_id_fkey(
             id,
             full_name,
@@ -60,6 +62,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           )
         `)
         // .eq('is_active', true) // Coluna não existe
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
@@ -224,6 +227,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               professional.full_name.ilike.%${searchTerm}%,
               user.full_name.ilike.%${searchTerm}%
             `.replace(/\s+/g, ''))
+            .order('is_featured', { ascending: false })
             .order('created_at', { ascending: false })
             .limit(10)
 
@@ -310,7 +314,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           user_type: post.metadata.user_type || userData?.user_type
         } : userData
 
-        return {
+        const timelinePost = {
           id: post.id,
           type: 'post' as const,
           created_at: post.created_at,
@@ -327,8 +331,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           likes_count: post.likes_count || 0,
           comments_count: post.comments_count || 0,
           is_liked: likedPosts.has(post.id),
+          is_featured: post.is_featured || false,
+          tags: post.tags || [],
           metadata: post.metadata
         }
+
+
+        return timelinePost
       })
 
       // Transformar atividades em TimelineActivity
@@ -355,9 +364,19 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Notificações removidas do feed por solicitação
       const timelineNotifications: any[] = []
 
-      // Combinar e ordenar todos os itens
+      // Combinar e ordenar todos os itens (priorizando posts destacados)
       const allItems = [...timelinePosts, ...timelineActivities, ...timelineNotifications]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort((a, b) => {
+          // Priorizar posts destacados (is_featured)
+          const aIsFeatured = a.is_featured || false
+          const bIsFeatured = b.is_featured || false
+          
+          if (aIsFeatured && !bIsFeatured) return -1
+          if (!aIsFeatured && bIsFeatured) return 1
+          
+          // Se ambos são destacados ou ambos não são, ordenar por data
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
         .slice(0, ITEMS_PER_PAGE)
 
       return allItems
@@ -418,24 +437,50 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
            try {
              console.log('📝 [addPost] Criando novo post para usuário:', newPost.user_id)
              
-             // Salvar no banco de dados
+             // Validar dados obrigatórios
+             if (!newPost.user_id) {
+               throw new Error('ID do usuário é obrigatório')
+             }
+             if (!newPost.title?.trim()) {
+               throw new Error('Título é obrigatório')
+             }
+             if (!newPost.description?.trim()) {
+               throw new Error('Descrição é obrigatória')
+             }
+             
+             // Preparar dados para inserção
+             const postData = {
+               professional_id: newPost.user_id,
+               user_id: newPost.user_id,
+               title: newPost.title.trim(),
+               description: newPost.description.trim(),
+               content: newPost.description.trim(), // Usar description como content também
+               images: Array.isArray(newPost.images) ? newPost.images : [],
+               service_category_id: newPost.service_category_id || null,
+               location_state: newPost.location_state || null,
+               location_city: newPost.location_city || null,
+               likes_count: 0,
+               comments_count: 0,
+               is_active: true,
+               is_public: true,
+               is_featured: false,
+               tags: null,
+               metadata: null
+             }
+             
+             console.log('📝 [addPost] Dados do post:', postData)
+             
+             // Criação do post
              const { data, error } = await supabase
                .from('feed_posts')
-               .insert({
-                 professional_id: newPost.user_id,
-                 title: newPost.title,
-                 description: newPost.description,
-                 images: newPost.images || [],
-                 service_category_id: newPost.service_category_id || null,
-                 location_state: newPost.location_state,
-                 location_city: newPost.location_city,
-                 likes_count: 0,
-                 comments_count: 0
-               })
+               .insert(postData)
                .select()
                .single()
 
-             if (error) throw error
+             if (error) {
+               console.error('❌ [addPost] Erro do Supabase:', error)
+               throw error
+             }
 
              console.log('✅ [addPost] Post criado com sucesso:', data.id)
 
@@ -446,7 +491,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                  .from('feed_posts')
                  .select('*', { count: 'exact', head: true })
                  .eq('professional_id', newPost.user_id)
-                 .or('tags.not.cs.["sistema","boas-vindas"],tags.is.null')
+                 .is('tags', null)
                
                if (!countError && count === 1) {
                  console.log('🎉 [addPost] Este é o PRIMEIRO post do usuário! Marcando milestone...')
@@ -708,11 +753,167 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
              console.log('🎉 Exclusão do post concluída com sucesso:', postId)
              return true
-           } catch (error) {
-             console.error('Erro ao deletar post:', error)
-             throw error
-           }
-         }, [queryClient, queryKey])
+          } catch (error) {
+            console.error('Erro ao deletar post:', error)
+            throw error
+          }
+        }, [queryClient, queryKey])
+
+  // Função para criar posts premium
+  const addPremiumPost = useCallback(async (newPost: Omit<TimelinePost, 'id' | 'created_at' | 'likes_count' | 'comments_count' | 'is_liked'> & { pointsToSpend: number }) => {
+    try {
+
+      // Verificar saldo do usuário
+      const { data: balanceData, error: balanceError } = await supabase
+        .from('user_points_balance')
+        .select('balance, total_spent')
+        .eq('user_id', newPost.user_id)
+        .single()
+
+      if (balanceError || !balanceData) {
+        throw new Error('Erro ao verificar saldo do usuário')
+      }
+
+      if (balanceData.balance < newPost.pointsToSpend) {
+        throw new Error(`Saldo insuficiente para criar post premium. Necessário: ${newPost.pointsToSpend} pontos`)
+      }
+
+      // Calcular data de expiração (7 dias)
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 7)
+
+      // Criar post premium diretamente na tabela
+      const postData = {
+        professional_id: newPost.user_id,
+        user_id: newPost.user_id,
+        title: newPost.title.trim(),
+        description: newPost.description?.trim() || '',
+        content: newPost.content || newPost.description?.trim() || '',
+        images: Array.isArray(newPost.images) ? newPost.images : [],
+        service_category_id: newPost.service_category_id || null,
+        location_state: newPost.location_state || null,
+        location_city: newPost.location_city || null,
+        likes_count: 0,
+        comments_count: 0,
+        is_active: true,
+        is_public: true,
+        is_featured: true, // Posts premium são destacados
+        tags: ['premium'],
+        metadata: {
+          type: 'premium',
+          points_spent: newPost.pointsToSpend,
+          created_at: new Date().toISOString(),
+          expires_at: expiresAt.toISOString()
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('feed_posts')
+        .insert(postData)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ [addPremiumPost] Erro do Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ [addPremiumPost] Post PREMIUM criado com sucesso:', data.id)
+
+      // DEBITAR PONTOS DO USUÁRIO
+      const newBalance = balanceData.balance - newPost.pointsToSpend
+      const newTotalSpent = (balanceData.total_spent || 0) + newPost.pointsToSpend
+      
+      const { error: deductError } = await supabase
+        .from('user_points_balance')
+        .update({ 
+          balance: newBalance,
+          available_balance: newBalance,
+          total_spent: newTotalSpent,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', newPost.user_id)
+
+      if (deductError) {
+        console.error('❌ [addPremiumPost] Erro ao debitar pontos:', deductError)
+        // Rollback: deletar o post criado
+        await supabase
+          .from('feed_posts')
+          .delete()
+          .eq('id', data.id)
+        throw new Error('Erro ao debitar pontos. Post não foi criado.')
+      }
+
+      // Atualizar estatísticas de pontos no perfil
+      const { data: currentProfile, error: profileSelectError } = await supabase
+        .from('profiles')
+        .select('total_points_spent')
+        .eq('id', newPost.user_id)
+        .single()
+
+      if (!profileSelectError && currentProfile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            total_points_spent: (currentProfile.total_points_spent || 0) + newPost.pointsToSpend,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', newPost.user_id)
+
+        if (profileError) {
+          console.warn('⚠️ [addPremiumPost] Erro ao atualizar estatísticas do perfil (não crítico):', profileError)
+        }
+      }
+
+      console.log('✅ [addPremiumPost] Pontos debitados com sucesso')
+
+      // Atualizar cache local
+      const timelinePost = {
+        id: data.id,
+        type: 'post' as const,
+        created_at: new Date().toISOString(),
+        user_id: newPost.user_id,
+        user_name: newPost.user_name,
+        user_avatar: newPost.user_avatar,
+        user_type: newPost.user_type,
+        title: newPost.title,
+        description: newPost.description || '',
+        images: newPost.images || [],
+        service_category_id: newPost.service_category_id,
+        location_state: newPost.location_state,
+        location_city: newPost.location_city,
+        likes_count: 0,
+        comments_count: 0,
+        is_liked: false,
+        is_featured: true, // Posts premium são destacados
+        tags: ['premium'],
+        metadata: {
+          type: 'premium',
+          points_spent: newPost.pointsToSpend,
+          created_at: new Date().toISOString(),
+          expires_at: expiresAt.toISOString()
+        }
+      } as UnifiedTimelineItem
+
+      // Invalidar queries relacionadas para atualizar a timeline
+      queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
+      queryClient.invalidateQueries({ queryKey: ['user-posts', newPost.user_id] })
+      queryClient.invalidateQueries({ queryKey: ['user-points', newPost.user_id] })
+
+      console.log('✅ [addPremiumPost] Post premium criado com sucesso!', {
+        id: timelinePost.id,
+        title: timelinePost.title,
+        is_featured: (timelinePost as any).is_featured,
+        tags: (timelinePost as any).tags
+      })
+
+      return timelinePost
+
+    } catch (error) {
+      console.error('❌ [addPremiumPost] Erro ao criar post premium:', error)
+      throw error
+    }
+  }, [supabase, queryClient])
 
   return {
     items,
@@ -723,6 +924,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     isFetchingNextPage,
     likePost,
     addPost,
+    addPremiumPost,
     editPost,
     deletePost,
     refetch

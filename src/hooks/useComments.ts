@@ -28,7 +28,7 @@ export function useComments(options: UseCommentsOptions) {
           id,
           post_id,
           user_id,
-          parent_id,
+          parent_comment_id,
           content,
           mentions,
           hashtags,
@@ -47,11 +47,11 @@ export function useComments(options: UseCommentsOptions) {
         .eq('is_deleted', false)
         .order('created_at', { ascending: true })
 
-      if (filters.parent_id) {
-        query = query.eq('parent_id', filters.parent_id)
+      if (filters.parent_comment_id) {
+        query = query.eq('parent_comment_id', filters.parent_comment_id)
       } else {
         // Carregar TODOS os comentários (principais e respostas) para organizar em threads
-        // Não filtrar por parent_id aqui, vamos organizar depois
+        // Não filtrar por parent_comment_id aqui, vamos organizar depois
       }
 
       if (filters.limit) {
@@ -107,7 +107,7 @@ export function useComments(options: UseCommentsOptions) {
       const insertData = {
         post_id: filters.post_id,
         user_id: user.id,
-        parent_id: commentData.parent_id,
+        parent_comment_id: commentData.parent_comment_id,
         content: commentData.content,
         mentions,
         hashtags
@@ -132,18 +132,18 @@ export function useComments(options: UseCommentsOptions) {
         const userName = user.user_metadata?.full_name || 'Usuário'
         
         // Se for uma resposta a um comentário
-        if (commentData.parent_id) {
+        if (commentData.parent_comment_id) {
           // Buscar o autor do comentário original
           const { data: parentComment } = await supabase
             .from('post_comments')
             .select('user_id, user:profiles!post_comments_user_id_fkey(id, full_name)')
-            .eq('id', commentData.parent_id)
+            .eq('id', commentData.parent_comment_id)
             .single()
           
           if (parentComment && parentComment.user_id !== user.id) {
             await NotificationService.createReplyNotification(
               filters.post_id,
-              commentData.parent_id,
+              commentData.parent_comment_id,
               parentComment.user_id,
               user.id,
               userName,
@@ -339,7 +339,7 @@ export function useComments(options: UseCommentsOptions) {
   const addComment = useCallback((content: string, parentId?: string) => {
     addCommentMutation.mutate({
       content,
-      parent_id: parentId
+      parent_comment_id: parentId
     })
   }, [addCommentMutation])
 
@@ -394,8 +394,8 @@ function organizeComments(comments: Comment[]): Comment[] {
 
   // Depois, organizar em hierarquia
   comments.forEach(comment => {
-    if (comment.parent_id) {
-      const parent = commentMap.get(comment.parent_id)
+    if (comment.parent_comment_id) {
+      const parent = commentMap.get(comment.parent_comment_id)
       if (parent) {
         parent.replies = parent.replies || []
         parent.replies.push(commentMap.get(comment.id)!)

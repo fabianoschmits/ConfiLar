@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { ModernSidebar } from './ModernSidebar'
 import { ModernHeader } from './ModernHeader'
-import { ModernBottomNavigation } from './ModernBottomNavigation'
+// import { ModernBottomNavigation } from './ModernBottomNavigation' // COMENTADO PARA TESTAR NOVO MENU
+import { QuickActionMenu } from '@/components/navigation/QuickActionMenu'
 import { LoginPrompt } from './LoginPrompt';
 import { ReferralTicker } from '@/components/referral/ReferralTicker'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -93,11 +94,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
         )}
       </main>
       
-      {/* Bottom Navigation para mobile */}
-      <ModernBottomNavigation />
-      
-      {/* Ticker de Top Indicadores - aparece em todo o projeto */}
+      {/* Ticker de Top Indicadores - aparece em todo o projeto - RODAPÉ DA PÁGINA */}
       {isLoggedIn && <ReferralTicker />}
+      
+      {/* Bottom Navigation para mobile - COMENTADO PARA TESTAR NOVO QUICK ACTION MENU */}
+      {/* <ModernBottomNavigation /> */}
+      
+      {/* Quick Action Menu para mobile - NOVO MENU EM TESTE - FLUTUANTE ACIMA DO TICKER */}
+      <QuickActionMenu />
     </>
   );
 };

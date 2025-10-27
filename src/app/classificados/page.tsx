@@ -50,9 +50,12 @@ import {
   Edit,
   Flag,
   HandHeart,
-  ShoppingCart
+  ShoppingCart,
+  Crown
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
+import { PremiumAdCard } from '@/components/classifieds/PremiumAdCard'
+import { PremiumAdForm } from '@/components/classifieds/PremiumAdForm'
 import { ReportButton } from '@/components/ReportButton'
 
 type AdType = 'all' | 'offers' | 'requests'
@@ -60,6 +63,7 @@ type AdType = 'all' | 'offers' | 'requests'
 export default function ClassificadosPage() {
   const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showPremiumAdDialog, setShowPremiumAdDialog] = useState(false)
   const [isCreatingAd, setIsCreatingAd] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isEditingAd, setIsEditingAd] = useState(false)
@@ -770,18 +774,19 @@ export default function ClassificadosPage() {
             
             <div className="flex items-center gap-1 sm:gap-4">
               {user && (
-                <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
-                      onClick={handleOpenCreateDialog}
-                    >
-                      <Plus className="h-3 w-3 sm:mr-1" />
-                      <span className="hidden sm:inline">Novo Anúncio</span>
-                      <span className="sm:hidden ml-0.5">Novo</span>
-                    </Button>
-                  </DialogTrigger>
+                <>
+                  <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
+                        onClick={handleOpenCreateDialog}
+                      >
+                        <Plus className="h-3 w-3 sm:mr-1" />
+                        <span className="hidden sm:inline">Novo Anúncio</span>
+                        <span className="sm:hidden ml-0.5">Novo</span>
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
                       <DialogTitle className="text-gray-900 dark:text-white">Criar Novo Anúncio</DialogTitle>
@@ -895,6 +900,34 @@ export default function ClassificadosPage() {
                     </div>
                   </DialogContent>
                 </Dialog>
+
+                {/* Botão Premium */}
+                <Dialog open={showPremiumAdDialog} onOpenChange={setShowPremiumAdDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap shadow-lg"
+                    >
+                      <Crown className="h-3 w-3 sm:mr-1" />
+                      <span className="hidden sm:inline">Premium</span>
+                      <span className="sm:hidden ml-0.5">⭐</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                    <DialogHeader>
+                      <DialogTitle className="text-gray-900 dark:text-white flex items-center">
+                        <Crown className="h-5 w-5 mr-2 text-yellow-500" />
+                        Criar Anúncio Premium
+                      </DialogTitle>
+                    </DialogHeader>
+                    <PremiumAdForm
+                      onSubmit={() => setShowPremiumAdDialog(false)}
+                      onCancel={() => setShowPremiumAdDialog(false)}
+                      isLoading={isCreatingAd}
+                    />
+                  </DialogContent>
+                </Dialog>
+                </>
               )}
 
               {/* Dialog de Edição */}
@@ -1229,7 +1262,26 @@ export default function ClassificadosPage() {
             </div>
           ) : (
             <div className={`grid gap-5 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {paginatedAds.map((ad) => (
+              {paginatedAds.map((ad) => {
+                // Verificar se é um anúncio premium
+                const isPremiumAd = false // Classified ads não têm sistema premium ainda
+                const premiumExpired = false // Classified ads não têm sistema premium ainda
+                
+                // Se for um anúncio premium ativo, usar o componente premium
+                if (isPremiumAd && !premiumExpired) {
+                  return (
+                    <PremiumAdCard
+                      key={ad.id}
+                      ad={ad}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                      onReport={() => {}}
+                    />
+                  )
+                }
+                
+                // Anúncio normal
+                return (
                 <div 
                   key={ad.id} 
                   className={`group relative overflow-hidden rounded-2xl shadow-2xl transition-transform duration-300 hover:-translate-y-3 hover:scale-[1.02] ${
@@ -1403,7 +1455,8 @@ export default function ClassificadosPage() {
                       : 'bg-emerald-500'
                   }`} />
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
 

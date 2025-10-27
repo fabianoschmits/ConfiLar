@@ -222,19 +222,19 @@ function TransactionItem({ transaction }: TransactionItemProps) {
 
 function getSourceIcon(source: PointSource): string {
   const icons: Record<PointSource, string> = {
+    // Sistema Premium (PAGAS)
+    premium_like: '⚡',
+    premium_post: '🚀',
+    premium_ad: '⭐',
+    
+    // Sistema de Referral (APENAS RANKING)
     referral_signup: '👥',
     referral_profile_completed: '✅',
     referral_first_post: '📝',
     referral_first_review: '⭐',
     referral_active_30_days: '🔥',
-    receive_like: '❤️',
-    give_like: '👍',
-    receive_comment: '💬',
-    give_comment: '✍️',
-    daily_login: '🌅',
-    profile_completion: '🎯',
-    first_post: '🚀',
-    create_classified: '📢',
+    
+    // Sistema de Níveis
     level_up: '🎉',
     milestone_reached: '🏆'
   }
@@ -243,19 +243,19 @@ function getSourceIcon(source: PointSource): string {
 
 function getSourceDescription(source: PointSource): string {
   const descriptions: Record<PointSource, string> = {
+    // Sistema Premium (PAGAS)
+    premium_like: 'Curtiu post premium',
+    premium_post: 'Criou post premium',
+    premium_ad: 'Criou anúncio premium',
+    
+    // Sistema de Referral (APENAS RANKING)
     referral_signup: 'Pessoa indicada se cadastrou',
     referral_profile_completed: 'Pessoa indicada completou perfil',
     referral_first_post: 'Pessoa indicada fez primeiro post',
     referral_first_review: 'Pessoa indicada fez primeira avaliação',
     referral_active_30_days: 'Pessoa indicada ficou ativa por 30 dias',
-    receive_like: 'Recebeu curtida em post',
-    give_like: 'Curtiu um post',
-    receive_comment: 'Recebeu comentário em post',
-    give_comment: 'Comentou um post',
-    daily_login: 'Login diário',
-    profile_completion: 'Completou perfil 100%',
-    first_post: 'Primeiro post no feed',
-    create_classified: 'Criou anúncio de serviço',
+    
+    // Sistema de Níveis
     level_up: 'Subiu de nível',
     milestone_reached: 'Alcançou marco'
   }

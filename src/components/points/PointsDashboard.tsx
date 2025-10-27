@@ -108,13 +108,13 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    +{formatPoints(dashboard.monthly_stats.earned)}
+                    +{formatPoints(dashboard.monthly_stats.earned || 0)}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Ganhos</p>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                    -{formatPoints(dashboard.monthly_stats.spent)}
+                    -{formatPoints(dashboard.monthly_stats.spent || 0)}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Gastos</p>
                 </div>
@@ -122,7 +122,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
               
               <div className="text-center">
                 <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {formatPoints(dashboard.monthly_stats.net)}
+                  {formatPoints(dashboard.monthly_stats.net || 0)}
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Saldo líquido</p>
               </div>
@@ -148,7 +148,7 @@ export function PointsDashboard({ className }: PointsDashboardProps) {
                     {USER_LEVELS[nextLevel].name}
                   </Badge>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {formatPoints(pointsToNext)} pontos restantes
+                    {formatPoints(pointsToNext || 0)} pontos restantes
                   </p>
                 </div>
                 
@@ -303,7 +303,7 @@ function LeaderboardTab({ leaderboard, loading }: LeaderboardTabProps) {
                 {/* Pontos */}
                 <div className="text-right">
                   <div className="text-lg font-bold text-gray-900 dark:text-white">
-                    {formatPoints(user.total_points_earned)}
+                    {formatPoints(user.total_points_earned || 0)}
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">pontos</p>
                 </div>
@@ -335,13 +335,13 @@ function StatsTab({ dashboard }: StatsTabProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {formatPoints(dashboard.balance.total_earned)}
+                {formatPoints(dashboard.balance.total_earned || 0)}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total ganho</p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {formatPoints(dashboard.balance.total_spent)}
+                {formatPoints(dashboard.balance.total_spent || 0)}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total gasto</p>
             </div>
@@ -349,7 +349,7 @@ function StatsTab({ dashboard }: StatsTabProps) {
           
           <div className="text-center">
             <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-              {formatPoints(dashboard.balance.balance)}
+              {formatPoints(dashboard.balance.balance || 0)}
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Saldo atual</p>
           </div>

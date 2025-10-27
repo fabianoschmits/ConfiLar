@@ -1,27 +1,22 @@
-# 🎯 ConfiPoints - Guia Completo para Usuários
+# 🎯 ConfiPoints - Sistema Premium de Pontos
 
 ## 💡 **O QUE É O CONFIPOINTS?**
 
-ConfiPoints é o sistema de pontos do ConfiLar que **recompensa sua participação** e permite que você **ganhe dinheiro real** através da plataforma!
+ConfiPoints é o sistema premium do ConfiLar que permite **comprar pontos** para usar em funcionalidades especiais e **ganhar dinheiro real** através de indicações!
 
-É simples: quanto mais você **participa, mais pontos ganha**. E esses pontos podem ser **trocados por dinheiro** ou **usados na plataforma**.
+É simples: **compre pontos** para usar em ações premium, **indique amigos** para ganhar pontos gratuitos, e **transforme pontos em dinheiro real**.
 
 ---
 
 ## 🎁 **COMO GANHAR PONTOS**
 
-### **1. Atividades Diárias** 📅
-- 🌅 **Login diário**: +10 pontos (todo dia)
-- 💬 **Receber curtida**: +2 pontos (até 500/dia)
-- 💭 **Receber comentário**: +5 pontos (até 200/dia)
+### **1. 💰 COMPRAR PONTOS (PRINCIPAL)**
+- 🛒 **Pacotes de pontos**: R$ 10,00 a R$ 375,00
+- 🎁 **Bônus progressivos**: Quanto mais compra, mais bônus
+- 👑 **Badges VIP automáticos**: Compras acima de R$ 20,00
 
-### **2. Conteúdo e Participação** 📝
-- ✍️ **Primeiro post**: +50 pontos (bônus único)
-- 📢 **Criar anúncio**: +100 pontos (até 10/dia)
-- 👤 **Completar perfil**: +150 pontos (bônus único)
-
-### **3. Sistema de Indicações** 🎯
-Indique amigos e ganhe muito mais!
+### **2. 🎯 SISTEMA DE INDICAÇÕES (GRATUITO)**
+Indique amigos e ganhe pontos sem gastar nada!
 - 👋 **Amigo se cadastrou**: +200 pontos
 - 📋 **Amigo completou perfil**: +150 pontos
 - 📝 **Amigo fez primeiro post**: +100 pontos
@@ -34,11 +29,11 @@ Indique amigos e ganhe muito mais!
 
 ## 💸 **O QUE FAZER COM OS PONTOS**
 
-### **1. Usar na Plataforma** 🎯
-- 💬 **Criar posts** (custo: pontos)
-- 📢 **Criar anúncios** (custo: pontos)
-- 👍 **Dar curtidas** (-2 pontos)
-- 💭 **Fazer comentários** (-1 ponto)
+### **1. Ações Premium na Plataforma** 🎯
+- 💎 **Curtir posts premium**: -5 pontos (destaque especial)
+- 💬 **Comentar posts premium**: -10 pontos (comentário destacado)
+- 🚀 **Criar posts premium**: -50 pontos (destaque por 7 dias)
+- ⭐ **Criar anúncios premium**: -200 pontos (destaque por 30 dias)
 
 ### **2. Trocar por Dinheiro** 💵
 - **Conversão:** 100 pontos = R$ 1,00

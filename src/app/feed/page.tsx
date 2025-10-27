@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Plus, Filter, Loader2, ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { Plus, Filter, Loader2, ChevronDown, ChevronUp, Search, Crown } from 'lucide-react'
 import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
@@ -17,6 +17,7 @@ import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
 import { NewPostForm } from '@/components/timeline/NewPostForm'
+import { PremiumPostForm } from '@/components/timeline/PremiumPostForm'
 import { EditPostModal } from '@/components/timeline/EditPostModal'
 import { Modal } from '@/components/ui/modal'
 import { LocationFilterSelector } from '@/components/timeline/LocationFilterSelector'
@@ -48,6 +49,7 @@ export default function FeedPage() {
   
   // Estados para formulário de novo post
   const [showNewPostForm, setShowNewPostForm] = useState(false)
+  const [showPremiumPostForm, setShowPremiumPostForm] = useState(false)
   const [isPosting, setIsPosting] = useState(false)
   const [postStatus, setPostStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
   
@@ -70,6 +72,7 @@ export default function FeedPage() {
     isFetchingNextPage,
     likePost,
     addPost,
+    addPremiumPost,
     editPost,
     deletePost
   } = useUnifiedTimeline({
@@ -88,7 +91,7 @@ export default function FeedPage() {
     const isOldAutomaticPost = postType && ['review'].includes(postType)
     
     // Verificação adicional: se o título contém emojis de sistema
-    const isSystemPostByTitle = post.title.includes('💡') || post.title.includes('❤️') || post.title.includes('⭐') || post.title.includes('🎉')
+    const isSystemPostByTitle = post.title?.includes('💡') || post.title?.includes('❤️') || post.title?.includes('⭐') || post.title?.includes('🎉')
     
     return isSimpleAutomaticPost || isWelcomeUserPost || isOldAutomaticPost || isSystemPostByTitle
   }
@@ -227,6 +230,40 @@ export default function FeedPage() {
       }, 1000)
     } catch (error) {
       console.error('Erro ao criar post:', error)
+      setPostStatus('idle')
+    } finally {
+      setIsPosting(false)
+    }
+  }
+
+  const handleNewPremiumPost = async (postData: { title: string; description: string; content: string; images: string[]; service: string; pointsToSpend: number }) => {
+    setIsPosting(true)
+    setPostStatus('sending')
+    try {
+      await addPremiumPost({
+        type: 'post',
+        user_id: profile?.id || '',
+        user_name: profile?.full_name || 'Usuário',
+        user_avatar: profile?.avatar_url,
+        user_type: profile?.user_type,
+        title: postData.title,
+        description: postData.description,
+        content: postData.content,
+        images: postData.images,
+        service_category_id: postData.service,
+        location_state: profile?.location_state,
+        location_city: profile?.location_city,
+        pointsToSpend: postData.pointsToSpend
+      })
+      
+      // Mostrar "Enviado!" por 1 segundo antes de fechar
+      setPostStatus('sent')
+      setTimeout(() => {
+        setShowPremiumPostForm(false)
+        setPostStatus('idle')
+      }, 1000)
+    } catch (error) {
+      console.error('Erro ao criar post premium:', error)
       setPostStatus('idle')
     } finally {
       setIsPosting(false)
@@ -375,16 +412,27 @@ export default function FeedPage() {
             )}
           </Button>
           
-          <Button 
-            onClick={() => setShowNewPostForm(!showNewPostForm)}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-3 py-2 md:px-4 md:py-2 text-sm md:text-base"
-          >
-            <Plus className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">
-              {profile?.user_type === 'professional' ? 'Novo Post' : 'Compartilhar'}
-            </span>
-            <span className="sm:hidden">Post</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowNewPostForm(!showNewPostForm)}
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-3 py-2 md:px-4 md:py-2 text-sm md:text-base"
+            >
+              <Plus className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">
+                {profile?.user_type === 'professional' ? 'Novo Post' : 'Compartilhar'}
+              </span>
+              <span className="sm:hidden">Post</span>
+            </Button>
+            
+            <Button 
+              onClick={() => setShowPremiumPostForm(!showPremiumPostForm)}
+              className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-3 py-2 md:px-4 md:py-2 text-sm md:text-base"
+            >
+              <Crown className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Premium</span>
+              <span className="sm:hidden">⭐</span>
+            </Button>
+          </div>
         </div>
 
 
@@ -461,6 +509,21 @@ export default function FeedPage() {
           <NewPostForm
             onSubmit={handleNewPost}
             onCancel={() => setShowNewPostForm(false)}
+            isLoading={isPosting}
+            postStatus={postStatus}
+          />
+        </Modal>
+
+        {/* Modal de Post Premium */}
+        <Modal
+          isOpen={showPremiumPostForm}
+          onClose={() => setShowPremiumPostForm(false)}
+          title="Post Premium"
+          size="lg"
+        >
+          <PremiumPostForm
+            onSubmit={handleNewPremiumPost}
+            onCancel={() => setShowPremiumPostForm(false)}
             isLoading={isPosting}
             postStatus={postStatus}
           />
@@ -706,7 +769,7 @@ export default function FeedPage() {
               </div>
             ) : (
               <>
-                {filteredItems.map(renderTimelineItem)}
+                {filteredItems.map((item) => renderTimelineItem(item))}
                 
                 {/* Loading automático para infinite scroll */}
                 {hasNextPage && (

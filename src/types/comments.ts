@@ -2,7 +2,7 @@ export interface Comment {
   id: string
   post_id: string
   user_id: string
-  parent_id?: string
+  parent_comment_id?: string
   content: string
   mentions: string[]
   hashtags: string[]
@@ -22,12 +22,12 @@ export interface Comment {
 
 export interface CommentFormData {
   content: string
-  parent_id?: string
+  parent_comment_id?: string
 }
 
 export interface CommentFilters {
   post_id: string
-  parent_id?: string
+  parent_comment_id?: string
   limit?: number
   offset?: number
 }

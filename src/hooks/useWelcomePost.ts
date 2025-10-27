@@ -20,6 +20,7 @@ export function useWelcomePost() {
           description: personalizedMessage,
           content: personalizedMessage,
           images: [],
+          service_category_id: null,
           location_state: 'SP', // Default
           location_city: 'São Paulo', // Default
           likes_count: 0,

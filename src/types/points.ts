@@ -7,21 +7,16 @@ export type UserLevel = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond'
 export type PointTransactionType = 'earn' | 'spend' | 'transfer' | 'purchase' | 'refund'
 
 export type PointSource = 
+  | 'premium_like'
+  | 'premium_post'
+  | 'premium_ad'
+  | 'level_up'
+  | 'milestone_reached'
   | 'referral_signup'
   | 'referral_profile_completed' 
   | 'referral_first_post'
   | 'referral_first_review'
   | 'referral_active_30_days'
-  | 'receive_like'
-  | 'give_like'
-  | 'receive_comment'
-  | 'give_comment'
-  | 'daily_login'
-  | 'profile_completion'
-  | 'first_post'
-  | 'create_classified'
-  | 'level_up'
-  | 'milestone_reached'
 
 export interface PointTransaction {
   id: string
@@ -141,96 +136,75 @@ export const POINTS_SOURCES_CONFIG: Record<PointSource, {
   daily_limit?: number; 
   description: string;
   icon: string;
+  is_featured?: boolean;
 }> = {
-  // Sistema de Referral
+  // Sistema de Ações Premium (PAGAS)
+  premium_like: { 
+    points: -5, 
+    daily_limit: 1000,
+    description: 'Curtir post (premium)',
+    icon: '⚡',
+    is_featured: true
+  },
+  premium_post: { 
+    points: -50, 
+    daily_limit: 50,
+    description: 'Criar post premium',
+    icon: '🚀',
+    is_featured: true
+  },
+  premium_ad: { 
+    points: -200, 
+    daily_limit: 20,
+    description: 'Criar anúncio premium destacado',
+    icon: '⭐',
+    is_featured: true
+  },
+  
+  // Sistema de Referral (APENAS RANKING - SEM PONTOS CONFIPOINTS)
   referral_signup: { 
-    points: 200, 
+    points: 0, 
     description: 'Pessoa indicada se cadastrou',
-    icon: '👥'
+    icon: '👥',
+    is_featured: false
   },
   referral_profile_completed: { 
-    points: 150, 
+    points: 0, 
     description: 'Pessoa indicada completou perfil',
-    icon: '✅'
+    icon: '✅',
+    is_featured: false
   },
   referral_first_post: { 
-    points: 100, 
+    points: 0, 
     description: 'Pessoa indicada fez primeiro post',
-    icon: '📝'
+    icon: '📝',
+    is_featured: false
   },
   referral_first_review: { 
-    points: 100, 
+    points: 0, 
     description: 'Pessoa indicada fez primeira avaliação',
-    icon: '⭐'
+    icon: '⭐',
+    is_featured: false
   },
   referral_active_30_days: { 
-    points: 300, 
+    points: 0, 
     description: 'Pessoa indicada ficou ativa por 30 dias',
-    icon: '🔥'
-  },
-  
-  // Sistema de Curtidas
-  receive_like: { 
-    points: 2, 
-    daily_limit: 500,
-    description: 'Recebeu curtida em post',
-    icon: '❤️'
-  },
-  give_like: { 
-    points: -2, 
-    daily_limit: 500,
-    description: 'Curtiu um post',
-    icon: '👍'
-  },
-  receive_comment: { 
-    points: 5, 
-    daily_limit: 200,
-    description: 'Recebeu comentário em post',
-    icon: '💬'
-  },
-  give_comment: { 
-    points: -1, 
-    daily_limit: 200,
-    description: 'Comentou um post',
-    icon: '✍️'
-  },
-  
-  // Sistema de Atividade
-  daily_login: { 
-    points: 10, 
-    daily_limit: 1,
-    description: 'Login diário',
-    icon: '🌅'
-  },
-  profile_completion: { 
-    points: 150, 
-    daily_limit: 1,
-    description: 'Completou perfil 100%',
-    icon: '🎯'
-  },
-  first_post: { 
-    points: 50, 
-    daily_limit: 1,
-    description: 'Primeiro post no feed',
-    icon: '🚀'
-  },
-  create_classified: { 
-    points: 100, 
-    daily_limit: 10,
-    description: 'Criou anúncio de serviço',
-    icon: '📢'
+    icon: '🔥',
+    is_featured: false
   },
   
   // Sistema de Níveis
   level_up: { 
     points: 0, 
     description: 'Subiu de nível',
-    icon: '🎉'
+    icon: '🎉',
+    is_featured: false
   },
   milestone_reached: { 
     points: 0, 
     description: 'Alcançou marco',
-    icon: '🏆'
+    icon: '🏆',
+    is_featured: false
   }
 }
 
@@ -256,6 +230,12 @@ export function getPointsToNextLevel(currentPoints: number, currentLevel: UserLe
   const nextLevel = getNextLevel(currentLevel)
   if (!nextLevel) return 0
   
+  // Verificar se o próximo nível existe
+  if (!USER_LEVELS[nextLevel]) {
+    console.warn(`Próximo nível inválido: ${nextLevel}`)
+    return 0
+  }
+  
   const nextLevelMinPoints = USER_LEVELS[nextLevel].min_points
   return Math.max(0, nextLevelMinPoints - currentPoints)
 }
@@ -263,6 +243,12 @@ export function getPointsToNextLevel(currentPoints: number, currentLevel: UserLe
 export function getLevelProgress(currentPoints: number, currentLevel: UserLevel): number {
   const nextLevel = getNextLevel(currentLevel)
   if (!nextLevel) return 100
+  
+  // Verificar se o nível atual existe
+  if (!USER_LEVELS[currentLevel]) {
+    console.warn(`Nível inválido: ${currentLevel}`)
+    return 0
+  }
   
   const currentLevelMinPoints = USER_LEVELS[currentLevel].min_points
   const nextLevelMinPoints = USER_LEVELS[nextLevel].min_points
@@ -273,6 +259,11 @@ export function getLevelProgress(currentPoints: number, currentLevel: UserLevel)
 }
 
 export function formatPoints(points: number): string {
+  // Verificar se points é válido
+  if (points === null || points === undefined || isNaN(points)) {
+    return '0'
+  }
+  
   if (points >= 1000000) {
     return `${(points / 1000000).toFixed(1)}M`
   }

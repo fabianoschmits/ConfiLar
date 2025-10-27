@@ -117,8 +117,8 @@ export function ReferralTicker({ className }: ReferralTickerProps) {
   if (isHidden) {
     return (
       <div className={cn(
-        "fixed left-0 right-0 z-[70] bg-black/5 dark:bg-white/5 backdrop-blur-[1px]",
-        "bottom-20 sm:bottom-0", // bottom-20 no mobile (acima do menu), bottom-0 no desktop
+        "fixed left-0 right-0 z-[60] bg-black/5 dark:bg-white/5 backdrop-blur-[1px]",
+        "bottom-0", // Sempre no rodapé da página (colado no fim)
         "h-5 sm:h-10 flex items-center justify-start", // h-5 no mobile, h-10 no desktop
         className
       )}>
@@ -135,8 +135,8 @@ export function ReferralTicker({ className }: ReferralTickerProps) {
 
   return (
     <div className={cn(
-      "fixed left-0 right-0 z-[70] bg-black/5 dark:bg-white/5 backdrop-blur-[1px]",
-      "bottom-20 sm:bottom-0", // bottom-20 no mobile (acima do menu), bottom-0 no desktop
+      "fixed left-0 right-0 z-[60] bg-black/5 dark:bg-white/5 backdrop-blur-[1px]",
+      "bottom-0 lg:bottom-0", // Sempre no rodapé da página (colado no fim)
       "h-5 sm:h-10 flex items-center overflow-hidden", // h-5 no mobile (ainda mais fino), h-10 no desktop
       className
     )}>

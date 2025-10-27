@@ -31,10 +31,8 @@ import {
   ChevronDown,
   UserPlus,
   Coins,
-  Trophy,
   Target,
   History,
-  TestTube,
   TrendingUp,
   Gift,
   Zap
@@ -183,13 +181,6 @@ export function ModernSidebar() {
           description: 'Dashboard completo'
         },
         {
-          id: 'confipoints-ranking',
-          title: 'Ranking',
-          href: '/confipoints/ranking',
-          icon: <Trophy className="h-4 w-4" />,
-          description: 'Ranking global'
-        },
-        {
           id: 'confipoints-history',
           title: 'Histórico',
           href: '/confipoints/historico',
@@ -238,13 +229,6 @@ export function ModernSidebar() {
           icon: <FileText className="h-4 w-4" />,
           description: 'Histórico completo'
         },
-        {
-          id: 'confipoints-test',
-          title: 'Teste',
-          href: '/teste-pontos',
-          icon: <TestTube className="h-4 w-4" />,
-          description: 'Testar sistema'
-        }
       ]
     }] : []),
     ...(isLoggedIn && profile?.user_type === 'professional' ? [{
