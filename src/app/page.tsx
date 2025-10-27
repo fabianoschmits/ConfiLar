@@ -46,6 +46,7 @@ import {
 } from 'lucide-react'
 import { services, getServicesGroupedByCategory } from '@/data/services'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 
 function HomeContent() {
   const router = useRouter()
@@ -75,7 +76,7 @@ function HomeContent() {
   }, [])
 
   if (loading || !mounted) {
-    return <LoadingOverlay isLoading={true} />
+    return <DashboardSkeleton />
   }
 
   // Se usuário está logado, não mostrar nada (já foi redirecionado)
@@ -739,7 +740,7 @@ function HomeContent() {
 export default function HomePage() {
   return (
     <HomePageLayout>
-      <Suspense fallback={<LoadingOverlay isLoading={true} />}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <HomeContent />
       </Suspense>
     </HomePageLayout>

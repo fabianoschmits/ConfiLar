@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { ClientOnly } from '@/components/ClientOnly'

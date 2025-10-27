@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { ReferralDashboard } from '@/components/referral/ReferralDashboard'
 import { ReferralLinkCard } from '@/components/referral/ReferralLinkCard'
 import { ReferralHistory } from '@/components/referral/ReferralHistory'

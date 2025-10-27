@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChangeEmailForm } from '@/components/forms/ChangeEmailForm'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Mail, TestTube } from 'lucide-react'

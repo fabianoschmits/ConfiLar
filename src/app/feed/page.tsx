@@ -27,6 +27,7 @@ import { services, getCategories } from '@/data/services'
 import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 import { ErrorHandler } from '@/components/ErrorHandler'
+import { FeedSkeleton } from '@/components/ui/skeleton'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -570,12 +571,7 @@ export default function FeedPage() {
           {/* Timeline Principal */}
           <div className="space-y-4 md:space-y-6">
             {isLoading && filteredItems.length === 0 ? (
-              <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12">
-                <div className="flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <span className="ml-3 text-gray-600 font-medium">Carregando timeline...</span>
-                </div>
-              </div>
+              <FeedSkeleton />
             ) : error ? (
               <div className="bg-white/80 backdrop-blur-md rounded-xl border border-gray-200 shadow-sm p-12 text-center">
                 <div className="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">

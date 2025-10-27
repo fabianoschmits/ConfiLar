@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { usePoints, usePointsHistory, usePointsDashboard } from '@/hooks/usePoints'
 import { usePointsPackages, usePointsPurchases, usePointsWithdrawals, usePointsTransfers, usePointsStore } from '@/hooks/useEconomy'
 import { supabase } from '@/lib/supabase'

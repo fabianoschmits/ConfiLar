@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
