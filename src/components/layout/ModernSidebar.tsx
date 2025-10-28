@@ -35,7 +35,10 @@ import {
   History,
   TrendingUp,
   Gift,
-  Zap
+  Zap,
+  Crown,
+  Send,
+  ShoppingCart
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -181,53 +184,25 @@ export function ModernSidebar() {
           description: 'Dashboard completo'
         },
         {
-          id: 'confipoints-history',
-          title: 'Histórico',
-          href: '/confipoints/historico',
-          icon: <History className="h-4 w-4" />,
-          description: 'Transações'
+          id: 'confipoints-buy',
+          title: 'Comprar Pontos',
+          href: '/confipoints/comprar',
+          icon: <ShoppingCart className="h-4 w-4" />,
+          description: 'Adquirir ConfiPoints'
         },
         {
-          id: 'confipoints-missions',
-          title: 'Missões',
-          href: '/confipoints/missoes',
-          icon: <Target className="h-4 w-4" />,
-          description: 'Desafios diários'
-        },
-        {
-          id: 'confipoints-store',
-          title: 'Loja de Pontos',
-          href: '/confipoints/loja',
-          icon: <TrendingUp className="h-4 w-4" />,
-          description: 'Comprar pontos'
-        },
-        {
-          id: 'confipoints-withdraw',
-          title: 'Sacar Pontos',
-          href: '/confipoints/saque',
-          icon: <Gift className="h-4 w-4" />,
-          description: 'Converter em dinheiro'
+          id: 'confipoints-use',
+          title: 'Usar Pontos',
+          href: '/confipoints/usar',
+          icon: <Crown className="h-4 w-4" />,
+          description: 'Posts e curtidas premium'
         },
         {
           id: 'confipoints-transfer',
           title: 'Transferir',
           href: '/confipoints/transferir',
-          icon: <Zap className="h-4 w-4" />,
+          icon: <Send className="h-4 w-4" />,
           description: 'Enviar pontos'
-        },
-        {
-          id: 'confipoints-premium',
-          title: 'Loja Premium',
-          href: '/confipoints/premium',
-          icon: <Star className="h-4 w-4" />,
-          description: 'Itens exclusivos'
-        },
-        {
-          id: 'confipoints-purchases',
-          title: 'Minhas Compras',
-          href: '/confipoints/minhas-compras',
-          icon: <FileText className="h-4 w-4" />,
-          description: 'Histórico completo'
         },
       ]
     }] : []),

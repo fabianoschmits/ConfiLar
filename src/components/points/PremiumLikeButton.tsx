@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePremiumLikes, usePremiumLikesStats } from '@/hooks/usePremiumLikes'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { usePoints } from '@/hooks/usePoints'
 import { cn } from '@/lib/utils'
 
 interface PremiumLikeButtonProps {
@@ -23,6 +24,7 @@ export function PremiumLikeButton({
   showStats = true 
 }: PremiumLikeButtonProps) {
   const { user } = useAuthContext()
+  const { balance } = usePoints(user?.id) // Passar o userId
   const { 
     likes, 
     stats, 
@@ -41,6 +43,7 @@ export function PremiumLikeButton({
   const premiumLikesCount = stats?.premium_likes || 0
   const totalLikesCount = stats?.total_likes || 0
   const pointsReceived = stats?.total_points_received || 0
+  const hasEnoughPoints = balance.balance >= 5 // Usar balance.balance
 
   const handlePremiumLike = () => {
     if (isOwnPost) {
@@ -51,9 +54,9 @@ export function PremiumLikeButton({
   }
 
   const sizeClasses = {
-    sm: 'h-8 px-2 text-xs',
-    default: 'h-10 px-3 text-sm',
-    lg: 'h-12 px-4 text-base'
+    sm: 'h-4 px-1 text-xs',
+    default: 'h-5 px-1.5 text-xs',
+    lg: 'h-6 px-2 text-sm'
   }
 
   const iconSizes = {
@@ -72,35 +75,50 @@ export function PremiumLikeButton({
               variant={userPremiumLiked ? 'default' : 'outline'}
               size={size}
               onClick={handlePremiumLike}
-              disabled={isOwnPost || isPremiumLiking}
+              disabled={isOwnPost || isPremiumLiking || !hasEnoughPoints}
               className={cn(
-                'transition-all duration-200',
+                'transition-all duration-200 mt-1 relative',
                 userPremiumLiked && 'bg-red-500 hover:bg-red-600 text-white',
-                isOwnPost && 'opacity-50 cursor-not-allowed'
+                isOwnPost && 'opacity-50 cursor-not-allowed',
+                !hasEnoughPoints && 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400'
               )}
             >
-              <Zap 
+              <Heart 
                 size={iconSizes[size]} 
                 className={cn(
-                  'mr-1',
                   userPremiumLiked && 'fill-current'
                 )}
               />
-              <Coins size={iconSizes[size] - 2} className="mr-1" />
-              <span className="text-xs font-medium">5</span>
-              {premiumLikesCount > 0 && (
-                <span className="ml-1 text-xs font-bold">({premiumLikesCount})</span>
-              )}
-              {userPremiumLikesCount > 0 && (
-                <span className="ml-1 text-xs text-green-400">✓{userPremiumLikesCount}</span>
-              )}
+              {/* Ícone de moedas sobreposto no canto superior direito */}
+              <Coins 
+                size={Math.max(iconSizes[size] + 16, 40)} 
+                className="absolute top-0 right-0 text-yellow-500" 
+              />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             <div className="text-center">
-              <p className="font-semibold">Curtida Premium</p>
-              <p className="text-xs">Gasta 5 pontos</p>
-              <p className="text-xs">Transfere 5 pontos para o criador</p>
+              <p className="font-semibold">🎉 Curtida Premium</p>
+              <p className="text-xs">💰 Gasta 5 ConfiPoints</p>
+              <p className="text-xs">🎁 Recompensa o criador com 5 pontos</p>
+              
+              {!hasEnoughPoints ? (
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                  <p className="text-xs text-red-600 font-semibold">❌ Saldo Insuficiente</p>
+                  <p className="text-xs text-red-500">Você tem {balance.balance} ConfiPoints</p>
+                  <p className="text-xs text-red-500">Precisa de 5 para curtir premium</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-green-400 mt-1">
+                    ✨ Incentiva criação de conteúdo de qualidade
+                  </p>
+                  <p className="text-xs text-blue-400 mt-1">
+                    💰 Seu saldo: {balance.balance} ConfiPoints
+                  </p>
+                </>
+              )}
+              
               {premiumLikesCount > 0 && (
                 <p className="text-xs text-yellow-400 mt-1">
                   ⚡ {premiumLikesCount} curtidas premium no total
@@ -108,10 +126,12 @@ export function PremiumLikeButton({
               )}
               {userPremiumLikesCount > 0 && (
                 <p className="text-xs text-green-400 mt-1">
-                  ✓ Você deu {userPremiumLikesCount} curtidas ({userPremiumLikesCount * 5} pontos enviados)
+                  ✓ Você recompensou {userPremiumLikesCount} vezes ({userPremiumLikesCount * 5} pontos enviados)
                 </p>
               )}
-              <p className="text-xs text-blue-400 mt-1">💡 Clique várias vezes para enviar mais pontos!</p>
+              {hasEnoughPoints && (
+                <p className="text-xs text-blue-400 mt-1">💡 Clique várias vezes para enviar mais recompensas!</p>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>

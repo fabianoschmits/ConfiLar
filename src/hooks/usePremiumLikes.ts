@@ -8,10 +8,12 @@ export interface PremiumLike {
   id: string
   post_id: string
   user_id: string
-  is_featured: boolean
+  is_premium: boolean
   points_spent: number
   points_transferred: number
+  premium_points_spent: number
   created_at: string
+  updated_at: string
 }
 
 export interface PremiumLikeStats {
@@ -65,7 +67,7 @@ export function usePremiumLikes(postId: string) {
   const userPremiumLikesCount = React.useMemo(() => {
     if (!user?.id || !likes) return 0
     return likes.filter(like => 
-      like.user_id === user.id && like.is_featured === true
+      like.user_id === user.id && like.is_premium === true
     ).length
   }, [likes, user?.id])
 
@@ -77,53 +79,23 @@ export function usePremiumLikes(postId: string) {
     mutationFn: async () => {
       if (!user?.id) throw new Error('Usuário não autenticado')
 
-      // Não verificar se já curtiu - permitir múltiplas curtidas premium
-
-      // Verificar saldo
-      const { data: balanceData, error: balanceError } = await supabase
-        .from('user_points_balance')
-        .select('balance')
-        .eq('user_id', user.id)
-        .single()
-
-      if (balanceError && balanceError.code !== 'PGRST116') {
-        throw new Error('Erro ao verificar saldo de pontos')
-      }
-
-      const balance = balanceData?.balance || 0
-      if (balance < 5) {
-        throw new Error('Saldo insuficiente para curtida premium')
-      }
-
-      // Buscar criador do post
-      const { data: post, error: postError } = await supabase
-        .from('feed_posts')
-        .select('user_id')
-        .eq('id', postId)
-        .single()
-
-      if (postError) {
-        throw new Error('Post não encontrado')
-      }
-
-      const postCreatorId = post.user_id
-
-      // Usar função RPC ultimate fix que bypassa triggers completamente
-      const { data, error } = await supabase
-        .rpc('handle_premium_like_transaction_ultimate_fix', {
-          p_post_id: postId,
-          p_user_id: user.id,
-          p_post_creator_id: postCreatorId,
-          p_points_to_spend: 5
+      // Usar API route para operações de pontos (bypass RLS)
+      const response = await fetch('/api/points/premium-like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'premium_like',
+          postId: postId,
+          userId: user.id
         })
+      })
 
-      if (error) {
-        console.error('Erro na transação:', error)
-        throw error
-      }
+      const data = await response.json()
 
-      if (data?.error) {
-        throw new Error(data.error)
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao enviar curtida premium')
       }
 
       return data
@@ -131,13 +103,28 @@ export function usePremiumLikes(postId: string) {
     onSuccess: (data) => {
       const totalLikes = data?.total_premium_likes || 1
       const totalPoints = data?.total_points_sent || 5
-      toast.success(`Curtida premium enviada! ${totalPoints} pontos transferidos para o criador (${totalLikes} curtidas premium)`)
+      
+      // Buscar quantas curtidas premium o usuário deu neste post
+      const userLikesInPost = likes?.filter(like => 
+        like.user_id === user?.id && like.is_premium === true
+      ).length || 0
+      
+      const userTotalDonated = userLikesInPost * 5
+      
+      toast.success(
+        `🎉 Curtida premium enviada!\n💰 ${totalPoints} pontos transferidos para o criador\n📊 ${totalLikes} curtidas premium no total neste post\n🎁 Você já deu ${userLikesInPost} curtidas premium neste post\n💝 Valor total doado: ${userTotalDonated} ConfiPoints`
+      )
+      
       queryClient.invalidateQueries({ queryKey: ['post-likes', postId] })
       queryClient.invalidateQueries({ queryKey: ['post-premium-stats', postId] })
       queryClient.invalidateQueries({ queryKey: ['user-points-balance', user?.id] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Erro ao curtir post premium')
+      if (error.message?.includes('Saldo insuficiente')) {
+        toast.error(error.message)
+      } else {
+        toast.error(error.message || '❌ Erro ao enviar curtida premium')
+      }
     }
   })
 
@@ -151,9 +138,12 @@ export function usePremiumLikes(postId: string) {
         .insert({
           post_id: postId,
           user_id: user.id,
-          is_featured: false,
+          is_premium: false,
+          points_spent: 0,
+          points_transferred: 0,
           premium_points_spent: 0,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
         .select()
         .single()
@@ -220,7 +210,7 @@ export function usePremiumLikesStats() {
       const { data, error } = await supabase
         .from('feed_posts_likes')
         .select('user_id, premium_points_spent')
-        .eq('is_featured', true)
+        .eq('is_premium', true)
 
       if (error) throw error
 

@@ -5,13 +5,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Heart, MessageCircle, Share2, Crown, Sparkles, Zap, Flame, Star, Trophy, Clock } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Crown, Sparkles, Zap, Flame, Star, Trophy, Clock, MapPin, User, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { TimelinePost as TimelinePostType } from '@/types/timeline'
 import { CommentSection } from './CommentSection'
 import { PostOptionsMenu } from './PostOptionsMenu'
 import { MentionText } from '@/components/ui/MentionText'
 import { SharePostModal } from './SharePostModal'
+import { PremiumLikeButton } from '@/components/points/PremiumLikeButton'
+import { useCommentsCount } from '@/hooks/useCommentsCount'
+import { ReactionButton } from './ReactionButton'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
 
 interface PremiumPostCardProps {
   post: TimelinePostType
@@ -38,6 +43,10 @@ export function PremiumPostCard({
 }: PremiumPostCardProps) {
   const [showCommentSection, setShowCommentSection] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const { user } = useAuthContext()
+  
+  // Hook para gerenciar contagem de comentários
+  const { count: commentsCount } = useCommentsCount(post.id)
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -96,38 +105,35 @@ export function PremiumPostCard({
     : 7
 
   return (
-    <div className="relative group">
-      {/* Efeito de brilho animado premium */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 animate-pulse"></div>
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 rounded-2xl blur opacity-30"></div>
-      
-      <Card 
-        id={`post-${post.id}`} 
-        className="relative overflow-hidden border-2 border-gradient-to-r from-amber-400 to-yellow-500 bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-amber-900/30 shadow-2xl shadow-amber-500/30 dark:shadow-amber-800/40 hover:shadow-amber-500/50 transition-all duration-500"
-      >
+    <>
+      <div className="relative group">
+        {/* Efeito de brilho dourado externo ao card */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-300 rounded-2xl blur-xl opacity-25 group-hover:opacity-35" style={{ animation: 'pulse 3s ease-in-out infinite' }}></div>
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 rounded-2xl blur opacity-20" style={{ animation: 'pulse 3s ease-in-out infinite' }}></div>
+        
+        <Card 
+          id={`post-${post.id}`} 
+          className="relative overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg shadow-amber-500/15 dark:shadow-amber-800/20 hover:shadow-amber-500/20 transition-all duration-300"
+        >
         {/* Badge Premium Fixo no Topo */}
         <div className="absolute top-0 right-0 z-20">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-bl-2xl opacity-80"></div>
-            <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-2 rounded-bl-2xl shadow-lg">
-              <div className="flex items-center gap-1.5">
-                <Crown className="h-4 w-4 text-white animate-pulse" fill="white" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Premium</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-bl-xl opacity-70"></div>
+            <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 px-3 py-1.5 rounded-bl-xl shadow-md">
+              <div className="flex items-center gap-1">
+                <Crown className="h-3 w-3 text-white" fill="white" />
+                <span className="text-xs font-semibold text-white uppercase tracking-wide">Premium</span>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Decoração superior com padrão */}
-        <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-amber-400/20 to-transparent"></div>
         
         {/* Header Premium */}
-        <CardContent className="pt-6 pb-4 px-6">
+        <CardContent className="pt-5 pb-0 px-6">
           {/* Header do usuário */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-sm opacity-50"></div>
                 <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity relative">
                   <UserAvatar 
                     src={post.user_avatar}
@@ -135,45 +141,83 @@ export function PremiumPostCard({
                     fallback={post.user_name?.charAt(0).toUpperCase() || 'U'}
                     size="lg"
                     userId={post.user_id}
-                    className="cursor-pointer hover:ring-2 hover:ring-amber-400 hover:ring-offset-2 transition-all relative z-10 border-2 border-amber-400"
+                    className="cursor-pointer hover:ring-2 hover:ring-gray-400 hover:ring-offset-2 transition-all relative z-10 w-14 h-14"
                   />
                 </Link>
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Link 
-                    href={`/perfil/${post.user_id}`}
-                    className="font-semibold text-amber-900 dark:text-amber-100 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-                  >
-                    {post.user_name || 'Usuário'}
-                  </Link>
-                  
-                  <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white border-0 shadow-md">
-                    <Star className="h-3 w-3 mr-1" />
-                    Premium
-                  </Badge>
-                  
-                  <Badge variant="outline" className="border-amber-400 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    Destacado
-                  </Badge>
-                </div>
+                <Link 
+                  href={`/perfil/${post.user_id}`}
+                  className="font-semibold text-gray-900 dark:text-gray-100 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                >
+                  {post.user_name || 'Usuário'}
+                </Link>
                 
-                <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300 mt-1">
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
                   <Clock className="h-3 w-3" />
                   <span>{formatDateTime(post.created_at)}</span>
-                  {daysLeft > 0 && (
+                  {user?.id === post.user_id && daysLeft > 0 && (
                     <>
                       <span>•</span>
-                      <span className="font-medium flex items-center gap-1">
+                      <span className="font-medium flex items-center gap-1 text-amber-600 dark:text-amber-400">
                         <Zap className="h-3 w-3" />
                         {daysLeft} dias restantes
                       </span>
                     </>
                   )}
                 </div>
+                
+                {/* Localização */}
+                <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  <span>{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
+                </div>
               </div>
+            </div>
+
+            {/* Badges do lado esquerdo do botão de denúncia */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              {/* Tag de Tipo de Usuário */}
+              <Badge 
+                variant={post.user_type === 'professional' ? 'default' : 'secondary'}
+                className={`text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 transition-all duration-300 ${
+                  post.user_type === 'professional'
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
+                    : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
+                }`}
+              >
+                {post.user_type === 'professional' ? (
+                  <>
+                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3" />
+                    <span className="hidden sm:inline">Profissional</span>
+                    <span className="sm:hidden">Prof</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="h-2 w-2 sm:h-3 sm:w-3" />
+                    <span className="hidden sm:inline">Cliente</span>
+                    <span className="sm:hidden">Cliente</span>
+                  </>
+                )}
+              </Badge>
+              
+              {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
+              <DynamicAvailabilityBadge userId={post.user_id} />
+              
+              {/* Badge Premium */}
+              <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-[9px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 shadow-md">
+                <Crown className="h-2 w-2 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">Premium</span>
+                <span className="sm:hidden">⭐</span>
+              </Badge>
+              
+              {/* Badge Destacado */}
+              <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
+                <Sparkles className="h-2 w-2 sm:h-3 sm:w-3" />
+                <span className="hidden sm:inline">Destacado</span>
+                <span className="sm:hidden">⭐</span>
+              </Badge>
             </div>
 
             {/* Menu de opções */}
@@ -187,7 +231,7 @@ export function PremiumPostCard({
           </div>
 
           {/* Título Premium */}
-          <h3 className="text-2xl font-bold text-amber-900 dark:text-amber-100 mb-3 pr-12">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 pr-12">
             {post.title}
           </h3>
 
@@ -196,7 +240,7 @@ export function PremiumPostCard({
             <div className="mb-4">
               <MentionText 
                 text={post.description} 
-                className="text-amber-800 dark:text-amber-200 leading-relaxed"
+                className="text-gray-800 dark:text-gray-200 leading-relaxed"
               />
             </div>
           )}
@@ -205,7 +249,7 @@ export function PremiumPostCard({
             <div className="mb-4">
               <MentionText 
                 text={post.content} 
-                className="text-amber-800 dark:text-amber-200 leading-relaxed"
+                className="text-gray-800 dark:text-gray-200 leading-relaxed"
               />
             </div>
           )}
@@ -216,14 +260,13 @@ export function PremiumPostCard({
               {post.images.slice(0, 3).map((image, index) => (
                 <div 
                   key={index}
-                  className="relative overflow-hidden rounded-xl border-2 border-amber-300 dark:border-amber-700 shadow-lg hover:shadow-amber-500/50 transition-all duration-300 group"
+                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 group"
                 >
                   <img 
                     src={image} 
                     alt={`Post image ${index + 1}`}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-amber-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
               ))}
               {post.images.length > 3 && (
@@ -235,27 +278,23 @@ export function PremiumPostCard({
           )}
 
           {/* Stats Premium */}
-          <div className="flex items-center gap-6 pt-3 border-t border-amber-300/50 dark:border-amber-700/50">
+          <div className="flex items-center gap-6 pt-0 pb-0 border-t border-gray-200 dark:border-gray-700">
             {/* Likes */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onLike && onLike(post.id)}
-              className="text-amber-700 dark:text-amber-300 hover:text-red-500 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-            >
-              <Heart className={`h-4 w-4 mr-1 ${post.is_liked ? 'fill-current text-red-500' : ''}`} />
-              <span>{post.likes_count || 0}</span>
-            </Button>
+            <ReactionButton 
+              postId={post.id}
+              postOwnerId={post.user_id}
+              postOwnerName={post.user_name || 'Usuário'}
+            />
 
             {/* Comentários */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowCommentSection(!showCommentSection)}
-              className="text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <MessageCircle className="h-4 w-4 mr-1" />
-              <span>{post.comments_count || 0}</span>
+              <span>{commentsCount}</span>
             </Button>
 
             {/* Share */}
@@ -263,32 +302,37 @@ export function PremiumPostCard({
               variant="ghost"
               size="sm"
               onClick={() => setShowShareModal(true)}
-              className="text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <Share2 className="h-4 w-4" />
+              <Share2 className="h-4 w-4 mr-1" />
+              Compartilhar
             </Button>
-          </div>
 
-          {/* Footer com badge */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-amber-300/50 dark:border-amber-700/50">
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
-              <Trophy className="h-4 w-4" />
-              <span className="font-medium">Post Premium • {post.metadata?.points_spent || 50} ConfiPoints gastos</span>
-            </div>
+            {/* Curtida Premium */}
+            <PremiumLikeButton 
+              postId={post.id}
+              postCreatorId={post.user_id}
+              size="sm"
+              showStats={false}
+            />
             
+            {/* Badge Trending no canto inferior direito */}
             {isTrending && trendingReason && (
-              <Badge variant="default" className="bg-gradient-to-r from-red-500 to-pink-500 text-white">
-                <Flame className="h-3 w-3 mr-1" />
-                Trending
-              </Badge>
+              <div className="absolute bottom-2 right-2 z-10">
+                <Badge variant="default" className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">
+                  <Flame className="h-3 w-3 mr-1" />
+                  Trending
+                </Badge>
+              </div>
             )}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Seção de comentários */}
       {showCommentSection && showComments && (
-        <div className="mt-4">
+        <div className="mt-4 bg-white dark:bg-gray-900 rounded-lg">
           <CommentSection 
             postId={post.id}
           />
@@ -302,6 +346,6 @@ export function PremiumPostCard({
         postTitle={post.title}
         onClose={() => setShowShareModal(false)}
       />
-    </div>
+    </>
   )
 }
