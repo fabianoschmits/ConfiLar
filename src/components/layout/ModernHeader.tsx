@@ -53,7 +53,14 @@ import {
   DollarSign,
   Send,
   Crown,
-  ShoppingBag
+  ShoppingBag,
+  Phone,
+  Building,
+  Edit,
+  Trophy,
+  Clock,
+  CreditCard,
+  Wallet
 } from 'lucide-react'
 
 interface ModernHeaderProps {
@@ -402,7 +409,7 @@ export function ModernHeader({
                         </div>
                       </div>
 
-                      {/* Principal */}
+                      {/* PRINCIPAL */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('principal')}
@@ -410,94 +417,93 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
-                            Principal
+                            PRINCIPAL
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('principal') ? 'rotate-180' : ''}`} />
                         </button>
                         {expandedSections.has('principal') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                          <div className="space-y-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/home')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <Home className="h-3 w-3" />
-                              <span className="truncate">Home</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/feed')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Users className="h-3 w-3" />
-                              <span className="truncate">Feed Social</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/buscar')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Search className="h-3 w-3" />
-                              <span className="truncate">Buscar</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Briefcase className="h-3 w-3" />
-                              <span className="truncate">Classificados</span>
+                              <span>HOME</span>
                             </Button>
                           </div>
                         )}
                       </div>
 
-
-                      {/* Gestão */}
+                      {/* DESCOBRIR */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('gestao')}
+                          onClick={() => toggleSection('descobrir')}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            Gestão
+                            <Search className="h-3 w-3" />
+                            DESCOBRIR
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('gestao') ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('descobrir') ? 'rotate-180' : ''}`} />
                         </button>
-                        {expandedSections.has('gestao') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                        {expandedSections.has('descobrir') && (
+                          <div className="space-y-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/favoritos')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              onClick={() => handleNavigation('/buscar')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Heart className="h-3 w-3" />
-                              <span className="truncate">Favoritos</span>
+                              <Search className="h-3 w-3" />
+                              <span>BUSCAR PROFISSIONAIS</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Briefcase className="h-3 w-3" />
+                              <span>CLASSIFICADOS</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/feed')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Users className="h-3 w-3" />
+                              <span>FEED SOCIAL</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/avaliacoes')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <Star className="h-3 w-3" />
-                              <span className="truncate">Avaliações</span>
+                              <span>AVALIAÇÕES</span>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/indicacoes')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
-                            >
-                              <UserPlus className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">Indicações</span>
-                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* COMUNICAÇÃO */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('comunicacao')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <MessageCircle className="h-3 w-3" />
+                            COMUNICAÇÃO
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('comunicacao') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('comunicacao') && (
+                          <div className="space-y-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -505,133 +511,165 @@ export function ModernHeader({
                                 openChat()
                                 setIsMenuExpanded(false)
                               }}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Mensagens</span>
+                              <span>MENSAGENS</span>
+                              {unreadCount > 0 && (
+                                <Badge variant="destructive" className="ml-auto text-xs px-1 py-0">
+                                  {unreadCount}
+                                </Badge>
+                              )}
                             </Button>
                           </div>
                         )}
                       </div>
 
-                      {/* ConfiPoints */}
+                      {/* GESTÃO */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('gestao')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            GESTÃO
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('gestao') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('gestao') && (
+                          <div className="space-y-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/favoritos')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Heart className="h-3 w-3" />
+                              <span>FAVORITOS</span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* CONFIPOINTS */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('confipoints')}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
-                            <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                            ConfiPoints
+                            <Zap className="h-3 w-3" />
+                            CONFIPOINTS
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('confipoints') ? 'rotate-180' : ''}`} />
                         </button>
                         {expandedSections.has('confipoints') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                          <div className="space-y-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                              <span className="truncate text-yellow-700 dark:text-yellow-300">Meus Pontos</span>
+                              <Zap className="h-3 w-3" />
+                              <span>MEUS PONTOS</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/historico')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <History className="h-3 w-3" />
-                              <span className="truncate">Histórico</span>
+                              <Clock className="h-3 w-3" />
+                              <span>HISTÓRICO</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/sistema-premium')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                              <span className="truncate text-purple-700 dark:text-purple-300">Sistema Premium</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/confipoints/loja')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
-                            >
-                              <ShoppingCart className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">Loja</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/confipoints/saque')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <DollarSign className="h-3 w-3" />
-                              <span className="truncate">Sacar</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/confipoints/transferir')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Send className="h-3 w-3" />
-                              <span className="truncate">Transferir</span>
+                              <Award className="h-3 w-3" />
+                              <span>SISTEMA PREMIUM</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/posts-premium')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <FileText className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                              <span className="truncate text-blue-700 dark:text-blue-300">Posts Premium</span>
+                              <FileText className="h-3 w-3" />
+                              <span>POSTS PREMIUM</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/anuncios-premium')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Briefcase className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                              <span className="truncate text-emerald-700 dark:text-emerald-300">Anúncios Premium</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/confipoints/badges-vip')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-amber-50 dark:bg-amber-950/20 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-                            >
-                              <Shield className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                              <span className="truncate text-amber-700 dark:text-amber-300">Badges VIP</span>
+                              <Briefcase className="h-3 w-3" />
+                              <span>ANÚNCIOS PREMIUM</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/curtidas-premium')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-pink-50 dark:bg-pink-950/20 hover:bg-pink-100 dark:hover:bg-pink-900/30"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Heart className="h-3 w-3 text-pink-600 dark:text-pink-400" />
-                              <span className="truncate text-pink-700 dark:text-pink-300">Curtidas Premium</span>
+                              <Heart className="h-3 w-3" />
+                              <span>CURTIDAS PREMIUM</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/badges-vip')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Shield className="h-3 w-3" />
+                              <span>BADGES VIP</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/loja')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <CreditCard className="h-3 w-3" />
+                              <span>LOJA</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/saque')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Wallet className="h-3 w-3" />
+                              <span>SACAR</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/confipoints/transferir')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <TrendingUp className="h-3 w-3" />
+                              <span>TRANSFERIR</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/confipoints/minhas-compras')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <ShoppingBag className="h-3 w-3" />
-                              <span className="truncate">Compras</span>
+                              <BarChart3 className="h-3 w-3" />
+                              <span>MINHAS COMPRAS</span>
                             </Button>
                           </div>
                         )}
                       </div>
 
-                      {/* Profissional */}
+                      {/* PROFISSIONAL */}
                       {profile?.user_type === 'professional' && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
                           <button
@@ -640,36 +678,36 @@ export function ModernHeader({
                           >
                             <div className="flex items-center gap-2">
                               <Briefcase className="h-3 w-3" />
-                              Profissional
+                              PROFISSIONAL
                             </div>
                             <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('profissional') ? 'rotate-180' : ''}`} />
                           </button>
                           {expandedSections.has('profissional') && (
-                            <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <div className="space-y-1 px-2 pb-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleNavigation('/portfolio')}
-                                className="flex items-center gap-1 text-xs py-1 h-7"
+                                className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                               >
-                                <Briefcase className="h-3 w-3" />
-                                <span className="truncate">Portfólio</span>
+                                <FileText className="h-3 w-3" />
+                                <span>MEU PORTFÓLIO</span>
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleNavigation('/reputacao')}
-                                className="flex items-center gap-1 text-xs py-1 h-7"
+                                className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                               >
-                                <Award className="h-3 w-3" />
-                                <span className="truncate">Reputação</span>
+                                <Trophy className="h-3 w-3" />
+                                <span>REPUTAÇÃO</span>
                               </Button>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {/* Suporte */}
+                      {/* SUPORTE */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
                           onClick={() => toggleSection('suporte')}
@@ -677,67 +715,57 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
-                            Suporte
+                            SUPORTE
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('suporte') ? 'rotate-180' : ''}`} />
                         </button>
                         {expandedSections.has('suporte') && (
-                          <div className="grid grid-cols-1 gap-1 px-2 pb-2">
+                          <div className="space-y-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/ajuda')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <HelpCircle className="h-3 w-3" />
-                              <span className="truncate">Central de Ajuda</span>
+                              <span>CENTRAL DE AJUDA</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/contato')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Contato</span>
+                              <Phone className="h-3 w-3" />
+                              <span>CONTATO</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/sobre')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
-                              <Users className="h-3 w-3" />
-                              <span className="truncate">Sobre Nós</span>
+                              <Building className="h-3 w-3" />
+                              <span>SOBRE NÓS</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/termos')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <FileText className="h-3 w-3" />
-                              <span className="truncate">Termos de Uso</span>
+                              <span>TERMOS DE USO</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/privacidade')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
                             >
                               <Shield className="h-3 w-3" />
-                              <span className="truncate">Política de Privacidade</span>
+                              <span>POLÍTICA DE PRIVACIDADE</span>
                             </Button>
-                            <UserReportsModal>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
-                              >
-                                <Flag className="h-3 w-3" />
-                                <span className="truncate">Minhas Denúncias</span>
-                              </Button>
-                            </UserReportsModal>
                           </div>
                         )}
                       </div>
@@ -771,45 +799,67 @@ export function ModernHeader({
                         </div>
                       )}
 
-                      {/* Conta */}
-                      <div className="py-3 sm:py-4">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 flex items-center gap-2">
-                          <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Conta
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Perfil</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/editarperfil')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Editar</span>
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Botão de Sair */}
-                      <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={handleSignOut}
-                          className="w-full text-xs sm:text-sm py-1.5 sm:py-2"
+                      {/* CONTA */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('conta')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
-                          <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                          Sair da Conta
-                        </Button>
+                          <div className="flex items-center gap-2">
+                            <User className="h-3 w-3" />
+                            CONTA
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('conta') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('conta') && (
+                          <div className="space-y-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <User className="h-3 w-3" />
+                              <span>MEU PERFIL</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Edit className="h-3 w-3" />
+                              <span>EDITAR PERFIL</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/configuracoes-privacidade')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Shield className="h-3 w-3" />
+                              <span>PRIVACIDADE</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/verificacao')}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start"
+                            >
+                              <Shield className="h-3 w-3" />
+                              <span>VERIFICAÇÃO</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleSignOut}
+                              className="flex items-center gap-2 text-xs py-1 h-7 w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                            >
+                              <LogOut className="h-3 w-3" />
+                              <span>SAIR</span>
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Informações do Usuário */}
