@@ -230,14 +230,19 @@ export function TimelinePost({
   }
   
   return (
-    <Card 
-      id={`post-${post.id}`} 
-      className={`overflow-hidden transition-all duration-300 ${
-        isPremiumPost && !premiumExpired 
-          ? 'border-2 border-yellow-400 bg-gradient-to-br from-yellow-50/50 to-yellow-100/50 dark:from-yellow-900/20 dark:to-yellow-800/20 shadow-lg shadow-yellow-200/50 dark:shadow-yellow-900/20' 
-          : ''
-      }`}
-    >
+    <div className={`relative ${
+      isPremiumPost && !premiumExpired 
+        ? '' 
+        : 'shadow-sm shadow-black/10 dark:shadow-white/10'
+    }`}>
+      <Card 
+        id={`post-${post.id}`} 
+        className={`overflow-hidden transition-all duration-300 ${
+          isPremiumPost && !premiumExpired 
+            ? 'border-2 border-yellow-400 bg-gradient-to-br from-yellow-50/50 to-yellow-100/50 dark:from-yellow-900/20 dark:to-yellow-800/20 shadow-lg shadow-yellow-200/50 dark:shadow-yellow-900/20' 
+            : ''
+        }`}
+      >
       <CardHeader className="pb-0 p-3 -mb-2">
         <div className="flex items-start space-x-3">
           {/* Avatar */}
@@ -257,15 +262,15 @@ export function TimelinePost({
           
           {/* Informações do Usuário */}
           <div className="flex-1 min-w-0">
-            <div className="cursor-pointer">
+            <div className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                 <Link href={`/perfil/${post.user_id}`}>
                   {post.user_name}
                 </Link>
               </h3>
-            </div>
-            
-            <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+              
+              {/* Badges no lado direito */}
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {/* Tag de Tipo de Usuário */}
               <Badge 
                 variant={post.user_type === 'professional' ? 'default' : 'secondary'}
@@ -320,6 +325,7 @@ export function TimelinePost({
               <div className="flex-shrink-0">
                 {getTrendingBadge()}
               </div>
+              </div>
             </div>
             
             {/* Localização */}
@@ -349,7 +355,7 @@ export function TimelinePost({
         </div>
       </CardHeader>
 
-            <CardContent className="space-y-3 px-3 md:px-6 -mt-2 pb-3 md:pb-6">
+            <CardContent className="space-y-3 px-6 -mt-2 pb-0">
               <div className="-mt-2">
                 <h4 className={`text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 ${
                   isPremiumPost && !premiumExpired 
@@ -460,60 +466,44 @@ export function TimelinePost({
           </div>
         )}
 
-        {/* Ações do Post - Responsivas */}
-        <div className="pt-4 border-t">
-          {/* Primeira linha: Curtidas (Normal + Premium) + Comentários */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              {/* Sistema de Curtidas Antigo */}
-              <ReactionButton 
-                postId={post.id}
-                postOwnerId={post.user_id}
-                postOwnerName={post.user_name || 'Usuário'}
-              />
-              
-              {/* Separador visual */}
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
-              
-              {/* Sistema de Curtidas Premium */}
-              <PremiumLikeButton 
-                postId={post.id}
-                postCreatorId={post.user_id}
-                size="sm"
-                showStats={false}
-              />
-              
-              {/* Separador visual */}
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
-              
-              {/* Botão de Comentários */}
-              <button 
-                onClick={() => setShowCommentSection(!showCommentSection)}
-                className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
-              >
-                <MessageCircle className="h-4 w-4 md:h-5 md:w-5" />
-                <span className="text-sm md:text-base">{commentsCount}</span>
-              </button>
-            </div>
-            
-            {/* Contador de visualizações */}
-            <button className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
-              <Eye className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">{viewsCount}</span>
-            </button>
-          </div>
-          
-          {/* Segunda linha: Compartilhar */}
-          <div className="flex items-center justify-end">
-            <button 
-              onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center space-x-1 md:space-x-2 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
-              title="Compartilhar post"
-            >
-              <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base hidden sm:inline">Compartilhar</span>
-            </button>
-          </div>
+        {/* Ações do Post */}
+        <div className="flex items-center gap-6 pt-0 pb-0 border-t border-gray-200 dark:border-gray-700">
+          {/* Likes */}
+          <ReactionButton 
+            postId={post.id}
+            postOwnerId={post.user_id}
+            postOwnerName={post.user_name || 'Usuário'}
+          />
+
+          {/* Comentários */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowCommentSection(!showCommentSection)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <MessageCircle className="h-4 w-4 mr-1" />
+            <span>{commentsCount}</span>
+          </Button>
+
+          {/* Share */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsShareModalOpen(true)}
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Share2 className="h-4 w-4 mr-1" />
+            Compartilhar
+          </Button>
+
+          {/* Curtida Premium */}
+          <PremiumLikeButton 
+            postId={post.id}
+            postCreatorId={post.user_id}
+            size="sm"
+            showStats={false}
+          />
         </div>
 
       {/* Comentários */}
@@ -534,5 +524,6 @@ export function TimelinePost({
         postTitle={post.title}
       />
     </Card>
+    </div>
   )
 }
