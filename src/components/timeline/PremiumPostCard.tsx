@@ -154,55 +154,35 @@ export function PremiumPostCard({
         </div>
         
         {/* Header Premium */}
-        <CardContent className="pt-5 pb-0 px-6">
+        <CardContent className="pt-4 sm:pt-5 pb-0 px-3 sm:px-4 md:px-6">
           {/* Header do usuário */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity relative">
-                  <UserAvatar 
-                    src={post.user_avatar}
-                    alt={post.user_name}
-                    fallback={post.user_name?.charAt(0).toUpperCase() || 'U'}
-                    size="lg"
-                    userId={post.user_id}
-                    className="cursor-pointer hover:ring-2 hover:ring-gray-400 hover:ring-offset-2 transition-all relative z-10 w-14 h-14"
-                  />
-                </Link>
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <Link 
-                  href={`/perfil/${post.user_id}`}
-                  className="font-semibold text-gray-900 dark:text-gray-100 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
-                >
-                  {post.user_name || 'Usuário'}
-                </Link>
-                
-                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{formatDateTime(post.created_at)}</span>
-                  {user?.id === post.user_id && daysLeft > 0 && (
-                    <>
-                      <span>•</span>
-                      <span className="font-medium flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                        <Zap className="h-3 w-3" />
-                        {daysLeft} dias restantes
-                      </span>
-                    </>
-                  )}
-                </div>
-                
-                {/* Localização */}
-                <div className="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  <span>{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
-                </div>
-              </div>
+          <div className="flex items-start space-x-2 sm:space-x-3">
+            {/* Avatar */}
+            <div className="flex-shrink-0">
+              <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
+                <UserAvatar 
+                  src={post.user_avatar}
+                  alt={post.user_name}
+                  fallback={post.user_name?.charAt(0).toUpperCase() || 'U'}
+                  size="lg"
+                  userId={post.user_id}
+                  showReferralBadge={true}
+                  className="cursor-pointer hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all"
+                />
+              </Link>
             </div>
-
-            {/* Badges do lado esquerdo do botão de denúncia */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            
+            {/* Informações do Usuário */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                  <Link href={`/perfil/${post.user_id}`}>
+                    {post.user_name || 'Usuário'}
+                  </Link>
+                </h3>
+                
+                {/* Badges no lado direito */}
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {/* Tag de Tipo de Usuário */}
               <Badge 
                 variant={post.user_type === 'professional' ? 'default' : 'secondary'}
@@ -243,34 +223,62 @@ export function PremiumPostCard({
                 <span className="hidden sm:inline">Destacado</span>
                 <span className="sm:hidden">⭐</span>
               </Badge>
+                </div>
+              </div>
+              
+              {/* Localização */}
+              <div className="flex items-center text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
+              </div>
+              
+              {/* Data e Hora da Postagem */}
+              <div className="flex items-center text-[9px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 flex-wrap">
+                <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                <span>{formatDateTime(post.created_at)}</span>
+                {user?.id === post.user_id && daysLeft > 0 && (
+                  <>
+                    <span className="mx-1">•</span>
+                    <span className="font-medium flex items-center gap-0.5 sm:gap-1 text-amber-600 dark:text-amber-400">
+                      <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                      <span className="hidden sm:inline">{daysLeft} dias restantes</span>
+                      <span className="sm:hidden">{daysLeft}d</span>
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
-
-            {/* Menu de opções */}
-            <PostOptionsMenu
-              postId={post.id}
-              postUserId={post.user_id}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              isDeleting={isDeleting}
-            />
-          </div>
-
-          {/* Título Premium */}
-          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3 pr-12">
-            {post.title}
-          </h3>
-
-          {/* Conteúdo */}
-          {cleanDescription && (
-            <div className="mb-4">
-              <MentionText 
-                text={cleanDescription} 
-                className="text-gray-800 dark:text-gray-200 leading-relaxed"
+            
+            {/* Menu de Opções */}
+            <div className="flex-shrink-0">
+              <PostOptionsMenu
+                postId={post.id}
+                postUserId={post.user_id}
+                postTitle={post.title}
+                onEdit={onEdit || (() => {})}
+                onDelete={onDelete || (() => {})}
+                isDeleting={isDeleting}
               />
             </div>
-          )}
+          </div>
 
-          {/* Galeria de Imagens - Estilo Instagram */}
+          {/* Conteúdo do Post */}
+          <div className="space-y-3 -mt-2">
+            {/* Título Premium */}
+            <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent font-bold">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 text-yellow-500" />
+              <MentionText text={post.title} />
+            </h4>
+
+            {/* Descrição */}
+            {cleanDescription && (
+              <p className="text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300">
+                <MentionText text={cleanDescription} />
+              </p>
+            )}
+          </div>
+
+          {/* Galeria de Imagens - Estilo Instagram Responsivo */}
           {post.images && post.images.length > 0 && (
             <div className="mt-4">
               {post.images.length === 1 ? (
@@ -280,7 +288,7 @@ export function PremiumPostCard({
                     src={post.images[0]}
                     alt="Imagem do post"
                     className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
-                      expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[400px] object-cover'
+                      expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[250px] sm:h-[350px] md:h-[400px] object-cover'
                     }`}
                     onClick={() => handleImageClick(post.images[0])}
                   />
@@ -298,7 +306,7 @@ export function PremiumPostCard({
                             ? 'object-contain max-h-screen' 
                             : expandedImage 
                               ? 'hidden' 
-                              : 'h-[300px] object-cover'
+                              : 'h-[200px] sm:h-[250px] md:h-[300px] object-cover'
                         }`}
                         onClick={() => handleImageClick(image)}
                       />
@@ -317,8 +325,8 @@ export function PremiumPostCard({
                           expandedImage === image 
                             ? 'object-contain max-h-screen' 
                             : index === 0 
-                              ? 'h-[400px] object-cover' 
-                              : 'h-[195px] object-cover'
+                              ? 'h-[250px] sm:h-[350px] md:h-[400px] object-cover' 
+                              : 'h-[120px] sm:h-[170px] md:h-[195px] object-cover'
                         }`}
                         onClick={() => handleImageClick(image)}
                       />
@@ -338,13 +346,13 @@ export function PremiumPostCard({
                             ? 'object-contain max-h-screen' 
                             : expandedImage 
                               ? 'hidden' 
-                              : 'h-[250px] object-cover'
+                              : 'h-[150px] sm:h-[200px] md:h-[250px] object-cover'
                         }`}
                         onClick={() => handleImageClick(image)}
                       />
                       {index === 3 && post.images.length > 4 && !expandedImage && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center pointer-events-none">
-                          <span className="text-white text-2xl font-bold">
+                          <span className="text-white text-xl sm:text-2xl font-bold">
                             +{post.images.length - 4}
                           </span>
                         </div>
@@ -371,24 +379,26 @@ export function PremiumPostCard({
           </div>
         )}
 
-          {/* Stats Premium */}
-          <div className="flex items-center gap-6 pt-0 pb-0 border-t border-gray-200 dark:border-gray-700">
+          {/* Stats Premium - Responsivo */}
+          <div className="flex items-center flex-wrap gap-2 sm:gap-4 md:gap-6 pt-3 pb-3 border-t border-gray-200 dark:border-gray-700">
             {/* Likes */}
-            <ReactionButton 
-              postId={post.id}
-              postOwnerId={post.user_id}
-              postOwnerName={post.user_name || 'Usuário'}
-            />
+            <div className="flex-shrink-0">
+              <ReactionButton 
+                postId={post.id}
+                postOwnerId={post.user_id}
+                postOwnerName={post.user_name || 'Usuário'}
+              />
+            </div>
 
             {/* Comentários */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowCommentSection(!showCommentSection)}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 flex-shrink-0 px-2 sm:px-3"
             >
-              <MessageCircle className="h-4 w-4 mr-1" />
-              <span>{commentsCount}</span>
+              <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+              <span className="text-xs sm:text-sm">{commentsCount}</span>
             </Button>
 
             {/* Share */}
@@ -396,26 +406,30 @@ export function PremiumPostCard({
               variant="ghost"
               size="sm"
               onClick={() => setShowShareModal(true)}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 flex-shrink-0 px-2 sm:px-3"
             >
-              <Share2 className="h-4 w-4 mr-1" />
-              Compartilhar
+              <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Compartilhar</span>
+              <span className="sm:hidden text-xs">Share</span>
             </Button>
 
             {/* Curtida Premium */}
-            <PremiumLikeButton 
-              postId={post.id}
-              postCreatorId={post.user_id}
-              size="sm"
-              showStats={false}
-            />
+            <div className="flex-shrink-0">
+              <PremiumLikeButton 
+                postId={post.id}
+                postCreatorId={post.user_id}
+                size="sm"
+                showStats={false}
+              />
+            </div>
             
             {/* Badge Trending no canto inferior direito */}
             {isTrending && trendingReason && (
               <div className="absolute bottom-2 right-2 z-10">
-                <Badge variant="default" className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">
+                <Badge variant="default" className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg text-xs">
                   <Flame className="h-3 w-3 mr-1" />
-                  Trending
+                  <span className="hidden sm:inline">Trending</span>
+                  <span className="sm:hidden">🔥</span>
                 </Badge>
               </div>
             )}
