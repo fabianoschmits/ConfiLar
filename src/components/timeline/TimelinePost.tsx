@@ -283,16 +283,16 @@ export function TimelinePost({
           </div>
           
           {/* Informações do Usuário */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="flex-1 min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
-                <Link href={`/perfil/${post.user_id}`} className="truncate block">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <h3 className="flex-1 min-w-0 max-w-[60%] sm:max-w-[70%] text-xs sm:text-sm md:text-base font-semibold text-gray-900 dark:text-white overflow-hidden">
+                <Link href={`/perfil/${post.user_id}`} className="truncate block hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {post.user_name}
                 </Link>
               </h3>
               
               {/* Ícones Compactos no lado direito */}
-              <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
+              <div className="flex items-center gap-0 flex-shrink-0">
                 <CompactUserBadges 
                   userType={post.user_type}
                   isAvailable={isAvailable}

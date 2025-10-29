@@ -22,7 +22,7 @@ export function CompactUserBadges({
   const [showPremiumTooltip, setShowPremiumTooltip] = useState(false)
 
   return (
-    <div className="flex items-center -space-x-1 sm:gap-0">
+    <div className="flex items-center -space-x-0.5 sm:gap-0">
       {/* Ícone de Tipo de Usuário */}
       <div 
         className="relative"
@@ -38,9 +38,9 @@ export function CompactUserBadges({
           onClick={() => setShowUserTypeTooltip(!showUserTypeTooltip)}
         >
           {userType === 'professional' ? (
-            <Briefcase className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
+            <Briefcase className="h-2 w-2 sm:h-3.5 sm:w-3.5" />
           ) : (
-            <User className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
+            <User className="h-2 w-2 sm:h-3.5 sm:w-3.5" />
           )}
         </button>
         
@@ -76,9 +76,9 @@ export function CompactUserBadges({
             onClick={() => setShowAvailabilityTooltip(!showAvailabilityTooltip)}
           >
             {isAvailable ? (
-              <Check className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
+              <Check className="h-2 w-2 sm:h-3.5 sm:w-3.5" />
             ) : (
-              <X className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
+              <X className="h-2 w-2 sm:h-3.5 sm:w-3.5" />
             )}
           </button>
           
@@ -110,7 +110,7 @@ export function CompactUserBadges({
             className="p-0 m-0 transition-all duration-200 hover:scale-125 flex items-center justify-center text-yellow-500 hover:text-yellow-600"
             onClick={() => setShowPremiumTooltip(!showPremiumTooltip)}
           >
-            <Crown className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" />
+            <Crown className="h-2 w-2 sm:h-3.5 sm:w-3.5" />
           </button>
           
           {/* Tooltip */}
