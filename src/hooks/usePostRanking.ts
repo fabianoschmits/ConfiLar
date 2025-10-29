@@ -60,14 +60,32 @@ export function usePostRanking(filters: {
 
       // Buscar contagens de visualizações para cada post
       const postsWithViews = await Promise.all((data || []).map(async (post) => {
-        const { data: viewsData } = await supabase
-          .from('post_views')
-          .select('id')
-          .eq('post_id', post.id)
-        
-        return {
-          ...post,
-          views_count: viewsData?.length || 0
+        try {
+          const { data: viewsData, error } = await supabase
+            .from('post_views')
+            .select('id')
+            .eq('post_id', post.id)
+          
+          // Se houver erro de permissão ou tabela não existir, usar 0
+          if (error && (error.code === 'PGRST205' || error.code === '42501' || 
+                       error.message?.includes('403') || error.message?.includes('permission denied'))) {
+            console.log('Sem permissão para acessar post_views, usando 0 visualizações')
+            return {
+              ...post,
+              views_count: 0
+            }
+          }
+          
+          return {
+            ...post,
+            views_count: viewsData?.length || 0
+          }
+        } catch (error) {
+          console.log('Erro ao buscar visualizações, usando 0:', error)
+          return {
+            ...post,
+            views_count: 0
+          }
         }
       }))
 

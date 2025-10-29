@@ -788,7 +788,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         user_id: newPost.user_id,
         title: newPost.title.trim(),
         description: newPost.description?.trim() || '',
-        content: newPost.content || newPost.description?.trim() || '',
+        content: newPost.description?.trim() || '', // Usar description como content
         images: Array.isArray(newPost.images) ? newPost.images : [],
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,

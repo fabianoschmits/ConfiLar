@@ -26,9 +26,10 @@ export function usePostViews(postId: string) {
           .eq('post_id', postId)
 
         if (error) {
-          // Se a tabela não existir, retornar 0
-          if (error.code === 'PGRST205') {
-            console.log('Tabela post_views não existe, retornando 0 visualizações')
+          // Se for erro de permissão (403) ou tabela não existir, retornar 0
+          if (error.code === 'PGRST205' || error.code === '42501' || 
+              error.message?.includes('403') || error.message?.includes('permission denied')) {
+            console.log('Sem permissão para acessar post_views, retornando 0 visualizações')
             return 0
           }
           throw error
@@ -41,6 +42,7 @@ export function usePostViews(postId: string) {
     },
     staleTime: 1000 * 60 * 5, // Cache por 5 minutos
     gcTime: 1000 * 60 * 10, // Manter no cache por 10 minutos
+    retry: false, // Não tentar novamente em caso de erro
   })
 
   // Mutation para registrar visualização
@@ -63,9 +65,10 @@ export function usePostViews(postId: string) {
           .single()
 
         if (error) {
-          // Se a tabela não existir, simular sucesso
-          if (error.code === 'PGRST205') {
-            console.log('Tabela post_views não existe, simulando registro')
+          // Se for erro de permissão (403) ou tabela não existir, simular sucesso
+          if (error.code === 'PGRST205' || error.code === '42501' || 
+              error.message?.includes('403') || error.message?.includes('permission denied')) {
+            console.log('Sem permissão para inserir em post_views, simulando registro')
             return { id: 'simulated' }
           }
           // Se for erro de duplicata, não é um erro real
@@ -76,16 +79,6 @@ export function usePostViews(postId: string) {
           // Se for erro de foreign key constraint, simular sucesso
           if (error.code === '23503') {
             console.log('Post não existe mais, simulando registro')
-            return { id: 'simulated' }
-          }
-          // Se for erro de permissão (403), simular sucesso
-          if (error.code === '42501') {
-            console.log('Sem permissão para inserir visualização, simulando registro')
-            return { id: 'simulated' }
-          }
-          // Se for erro 403 (permissão negada), simular sucesso
-          if (error.message?.includes('403') || error.message?.includes('permission denied')) {
-            console.log('Erro 403 - permissão negada, simulando registro')
             return { id: 'simulated' }
           }
           // Se for qualquer erro relacionado a post_views, simular sucesso
@@ -122,15 +115,27 @@ export function usePostViews(postId: string) {
     if (!user?.id) return
 
     const checkIfViewed = async () => {
-      const { data, error } = await supabase
-        .from('post_views')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', user.id)
-        .maybeSingle()
+      try {
+        const { data, error } = await supabase
+          .from('post_views')
+          .select('id')
+          .eq('post_id', postId)
+          .eq('user_id', user.id)
+          .maybeSingle()
 
-      if (!error && data) {
-        setHasViewed(true)
+        if (!error && data) {
+          setHasViewed(true)
+        } else if (error) {
+          // Se for erro de permissão ou tabela não existir, não fazer nada
+          if (error.code === 'PGRST205' || error.code === '42501' || 
+              error.message?.includes('403') || error.message?.includes('permission denied')) {
+            console.log('Sem permissão para verificar visualização em post_views')
+            return
+          }
+          console.log('Erro ao verificar visualização:', error)
+        }
+      } catch (error) {
+        console.log('Erro ao verificar visualização:', error)
       }
     }
 

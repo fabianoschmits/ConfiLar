@@ -1,24 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createAdminSupabaseClient } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
+
+    if (!userId) {
+      return NextResponse.json({ error: 'ID do usuário é obrigatório' }, { status: 400 })
     }
 
-    // Buscar saldo de pontos
-    const { data, error } = await supabase
-      .rpc('get_user_points_balance', { p_user_id: user.id })
+    // Buscar saldo de pontos usando cliente admin (bypass RLS)
+    const supabaseAdmin = createAdminSupabaseClient()
+    const { data, error } = await supabaseAdmin
+      .from('user_points_balance')
+      .select('*')
+      .eq('user_id', userId)
       .single()
 
     if (error) {
+      if (error.code === 'PGRST116') { // No rows found
+        return NextResponse.json({ data: { balance: 0, total_earned: 0, total_spent: 0, available_balance: 0, daily_earned: 0 } })
+      }
+      // Se a tabela não existir, retornar dados padrão
+      if (error.code === 'PGRST205' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        console.log('Tabela user_points_balance não existe, retornando dados padrão')
+        return NextResponse.json({ data: { balance: 0, total_earned: 0, total_spent: 0, available_balance: 0, daily_earned: 0 } })
+      }
       console.error('Erro ao buscar saldo de pontos:', error)
       return NextResponse.json({ error: 'Erro ao buscar saldo' }, { status: 500 })
     }

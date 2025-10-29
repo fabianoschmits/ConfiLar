@@ -43,7 +43,7 @@ export function PremiumLikeButton({
   const premiumLikesCount = stats?.premium_likes || 0
   const totalLikesCount = stats?.total_likes || 0
   const pointsReceived = stats?.total_points_received || 0
-  const hasEnoughPoints = balance.balance >= 5 // Usar balance.balance
+  const hasEnoughPoints = balance?.balance >= 5 // Verificação de segurança para balance
 
   const handlePremiumLike = () => {
     if (isOwnPost) {
@@ -105,7 +105,7 @@ export function PremiumLikeButton({
               {!hasEnoughPoints ? (
                 <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
                   <p className="text-xs text-red-600 font-semibold">❌ Saldo Insuficiente</p>
-                  <p className="text-xs text-red-500">Você tem {balance.balance} ConfiPoints</p>
+                  <p className="text-xs text-red-500">Você tem {balance?.balance || 0} ConfiPoints</p>
                   <p className="text-xs text-red-500">Precisa de 5 para curtir premium</p>
                 </div>
               ) : (
@@ -114,7 +114,7 @@ export function PremiumLikeButton({
                     ✨ Incentiva criação de conteúdo de qualidade
                   </p>
                   <p className="text-xs text-blue-400 mt-1">
-                    💰 Seu saldo: {balance.balance} ConfiPoints
+                    💰 Seu saldo: {balance?.balance || 0} ConfiPoints
                   </p>
                 </>
               )}

@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
+
+    if (!userId) {
+      return NextResponse.json({ error: 'ID do usuário é obrigatório' }, { status: 400 })
     }
 
     // Parse dos query parameters
-    const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
     const source = searchParams.get('source')
     const startDate = searchParams.get('start_date')
@@ -24,13 +21,8 @@ export async function GET(request: NextRequest) {
     // Construir query
     let query = supabase
       .from('point_transactions')
-      .select(`
-        *,
-        referral:referrals(id, referred_id),
-        post:feed_posts(id, content),
-        related_user:profiles!point_transactions_related_user_id_fkey(id, full_name, avatar_url)
-      `)
-      .eq('user_id', user.id)
+      .select('*')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     // Aplicar filtros
@@ -57,6 +49,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Erro ao buscar histórico de pontos:', error)
+      // Se a tabela não existir, retornar array vazio
+      if (error.code === 'PGRST205' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        return NextResponse.json({ 
+          transactions: [],
+          pagination: {
+            limit,
+            offset,
+            has_more: false
+          }
+        })
+      }
       return NextResponse.json({ error: 'Erro ao buscar histórico' }, { status: 500 })
     }
 

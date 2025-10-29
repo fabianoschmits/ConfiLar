@@ -7,7 +7,8 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
 interface CreatePremiumPostData {
-  content: string
+  title: string
+  description: string
   images?: string[]
   location_city?: string
   location_state?: string
@@ -45,9 +46,9 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
         .insert({
           professional_id: user.id,
           user_id: user.id,
-          title: 'Post Premium',
-          description: postData.content,
-          content: postData.content,
+          title: postData.title,
+          description: postData.description,
+          content: postData.description, // Usar description como content também
           images: postData.images || [],
           service_category_id: null,
           location_city: postData.location_city,

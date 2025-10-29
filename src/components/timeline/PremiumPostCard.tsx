@@ -17,6 +17,8 @@ import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { ReactionButton } from './ReactionButton'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
+import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
+import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
 
 interface PremiumPostCardProps {
   post: TimelinePostType
@@ -43,6 +45,7 @@ export function PremiumPostCard({
 }: PremiumPostCardProps) {
   const [showCommentSection, setShowCommentSection] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
   const { user } = useAuthContext()
   
   // Hook para gerenciar contagem de comentários
@@ -103,6 +106,28 @@ export function PremiumPostCard({
   const daysLeft = post.metadata?.expires_at 
     ? Math.ceil((new Date(post.metadata.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : 7
+
+  const handleImageClick = (imageUrl: string) => {
+    if (expandedImage === imageUrl) {
+      setExpandedImage(null)
+    } else {
+      setExpandedImage(imageUrl)
+    }
+  }
+
+  // Detectar vídeos do YouTube no conteúdo do post
+  const youtubeVideos = detectYouTubeUrls(post.description || '')
+  const cleanDescription = removeYouTubeUrls(post.description || '')
+  
+  // Debug: verificar se está detectando vídeos
+  if (post.description && post.description.includes('youtube')) {
+    console.log('🔍 PremiumPostCard Debug:', {
+      postId: post.id,
+      description: post.description,
+      youtubeVideos: youtubeVideos,
+      cleanDescription: cleanDescription
+    })
+  }
 
   return (
     <>
@@ -236,46 +261,115 @@ export function PremiumPostCard({
           </h3>
 
           {/* Conteúdo */}
-          {post.description && (
+          {cleanDescription && (
             <div className="mb-4">
               <MentionText 
-                text={post.description} 
+                text={cleanDescription} 
                 className="text-gray-800 dark:text-gray-200 leading-relaxed"
               />
             </div>
           )}
 
-          {post.content && post.content !== post.description && (
-            <div className="mb-4">
-              <MentionText 
-                text={post.content} 
-                className="text-gray-800 dark:text-gray-200 leading-relaxed"
-              />
-            </div>
-          )}
-
-          {/* Imagens com efeito especial */}
+          {/* Galeria de Imagens - Estilo Instagram */}
           {post.images && post.images.length > 0 && (
-            <div className="mb-4 grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(post.images.length, 3)}, 1fr)` }}>
-              {post.images.slice(0, 3).map((image, index) => (
-                <div 
-                  key={index}
-                  className="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300 group"
-                >
-                  <img 
-                    src={image} 
-                    alt={`Post image ${index + 1}`}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            <div className="mt-4">
+              {post.images.length === 1 ? (
+                // Uma imagem - tamanho médio quadrado
+                <div className="relative w-full">
+                  <img
+                    src={post.images[0]}
+                    alt="Imagem do post"
+                    className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                      expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[400px] object-cover'
+                    }`}
+                    onClick={() => handleImageClick(post.images[0])}
                   />
                 </div>
-              ))}
-              {post.images.length > 3 && (
-                <div className="absolute bottom-0 right-0 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1 rounded-tl-lg font-semibold text-sm">
-                  +{post.images.length - 3}
+              ) : post.images.length === 2 ? (
+                // Duas imagens - lado a lado
+                <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
+                  {post.images.map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={image}
+                        alt={`Imagem ${index + 1}`}
+                        className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                          expandedImage === image 
+                            ? 'object-contain max-h-screen' 
+                            : expandedImage 
+                              ? 'hidden' 
+                              : 'h-[300px] object-cover'
+                        }`}
+                        onClick={() => handleImageClick(image)}
+                      />
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
+              ) : post.images.length === 3 ? (
+                // Três imagens - uma grande e duas pequenas
+                <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
+                  {post.images.map((image, index) => (
+                    <div key={index} className={expandedImage && expandedImage !== image ? 'hidden' : index === 0 && !expandedImage ? 'row-span-2' : ''}>
+                      <img
+                        src={image}
+                        alt={`Imagem ${index + 1}`}
+                        className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                          expandedImage === image 
+                            ? 'object-contain max-h-screen' 
+                            : index === 0 
+                              ? 'h-[400px] object-cover' 
+                              : 'h-[195px] object-cover'
+                        }`}
+                        onClick={() => handleImageClick(image)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Quatro ou mais imagens - grid 2x2
+                <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-1'}`}>
+                  {post.images.slice(0, 4).map((image, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={image}
+                        alt={`Imagem ${index + 1}`}
+                        className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
+                          expandedImage === image 
+                            ? 'object-contain max-h-screen' 
+                            : expandedImage 
+                              ? 'hidden' 
+                              : 'h-[250px] object-cover'
+                        }`}
+                        onClick={() => handleImageClick(image)}
+                      />
+                      {index === 3 && post.images.length > 4 && !expandedImage && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center pointer-events-none">
+                          <span className="text-white text-2xl font-bold">
+                            +{post.images.length - 4}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+            )}
+          </div>
+        )}
+
+        {/* Vídeos do YouTube */}
+        {youtubeVideos.length > 0 && (
+          <div className="mt-4 space-y-3">
+            {youtubeVideos.map((video, index) => (
+              <YouTubePlayer
+                key={`${video.id}-${index}`}
+                videoId={video.id}
+                title="Vídeo do YouTube"
+                thumbnail={video.thumbnail}
+                className="w-full"
+              />
+            ))}
+          </div>
+        )}
 
           {/* Stats Premium */}
           <div className="flex items-center gap-6 pt-0 pb-0 border-t border-gray-200 dark:border-gray-700">

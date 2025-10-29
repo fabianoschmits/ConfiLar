@@ -237,7 +237,7 @@ export default function FeedPage() {
     }
   }
 
-  const handleNewPremiumPost = async (postData: { title: string; description: string; content: string; images: string[]; service: string; pointsToSpend: number }) => {
+  const handleNewPremiumPost = async (postData: { title: string; description: string; images: string[]; service: string; pointsToSpend: number }) => {
     setIsPosting(true)
     setPostStatus('sending')
     try {
@@ -249,7 +249,6 @@ export default function FeedPage() {
         user_type: profile?.user_type,
         title: postData.title,
         description: postData.description,
-        content: postData.content,
         images: postData.images,
         service_category_id: postData.service,
         location_state: profile?.location_state,
