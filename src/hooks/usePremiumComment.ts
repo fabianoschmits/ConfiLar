@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface UsePremiumCommentProps {
   postId: string
@@ -29,8 +30,8 @@ export function usePremiumComment({ postId, onSuccess, onError }: UsePremiumComm
         .single()
 
       if (balanceError) throw new Error('Erro ao verificar saldo')
-      if (!balance || balance.balance < 10) {
-        throw new Error('Saldo insuficiente. Necessário: 10 pontos para comentar')
+      if (!balance || balance.balance < PREMIUM_PRICES.COMMENT.POINTS) {
+        throw new Error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.COMMENT.POINTS} pontos para comentar`)
       }
 
       // Criar comentário premium
@@ -41,7 +42,7 @@ export function usePremiumComment({ postId, onSuccess, onError }: UsePremiumComm
           post_id: postId,
           content,
           is_featured: true,
-          premium_points_spent: 10
+          premium_points_spent: PREMIUM_PRICES.COMMENT.POINTS
         })
         .select()
         .single()
@@ -52,9 +53,9 @@ export function usePremiumComment({ postId, onSuccess, onError }: UsePremiumComm
       const { error: pointsError } = await supabase
         .rpc('add_points', {
           p_user_id: user.id,
-          p_points: -10,
+          p_points: -PREMIUM_PRICES.COMMENT.POINTS,
           p_source: 'premium_comment',
-          p_description: 'Comentou post premium'
+          p_description: 'Comentário premium em post'
         })
 
       if (pointsError) throw new Error('Erro ao processar pontos')
@@ -62,7 +63,7 @@ export function usePremiumComment({ postId, onSuccess, onError }: UsePremiumComm
       return data
     },
     onSuccess: () => {
-      toast.success('Comentário publicado com sucesso! (-10 pontos)')
+      toast.success(`Comentário premium publicado! (-${PREMIUM_PRICES.COMMENT.POINTS} pontos)`)
       queryClient.invalidateQueries({ queryKey: ['post-comments', postId] })
       queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })
       onSuccess?.()

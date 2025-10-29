@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface CreatePremiumPostData {
   title: string
@@ -36,8 +37,8 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
         .single()
 
       if (balanceError) throw new Error('Erro ao verificar saldo')
-      if (!balance || balance.balance < 50) {
-        throw new Error('Saldo insuficiente. Necessário: 50 pontos para post premium')
+      if (!balance || balance.balance < PREMIUM_PRICES.POST.POINTS) {
+        throw new Error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.POST.POINTS} pontos para post premium`)
       }
 
       // Criar post premium
@@ -61,8 +62,9 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
           tags: ['premium'],
           metadata: {
             type: 'premium',
-            points_spent: 50,
-            created_at: new Date().toISOString()
+            points_spent: PREMIUM_PRICES.POST.POINTS,
+            created_at: new Date().toISOString(),
+            premium_duration: PREMIUM_PRICES.POST.DURATION
           }
         })
         .select()
@@ -74,9 +76,9 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
       const { error: pointsError } = await supabase
         .rpc('add_points', {
           p_user_id: user.id,
-          p_points: -50,
+          p_points: -PREMIUM_PRICES.POST.POINTS,
           p_source: 'premium_post',
-          p_description: 'Criou post premium'
+          p_description: `Criou post premium (${PREMIUM_PRICES.POST.DURATION})`
         })
 
       if (pointsError) throw new Error('Erro ao processar pontos')
@@ -84,7 +86,7 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
       return data
     },
     onSuccess: () => {
-      toast.success('Post premium criado com sucesso! (-50 pontos)')
+      toast.success(`Post premium criado com sucesso! (-${PREMIUM_PRICES.POST.POINTS} pontos)`)
       queryClient.invalidateQueries({ queryKey: ['feed-posts'] })
       queryClient.invalidateQueries({ queryKey: ['user-posts', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })
