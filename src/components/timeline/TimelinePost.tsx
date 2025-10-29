@@ -292,7 +292,7 @@ export function TimelinePost({
               </h3>
               
               {/* Ícones Compactos no lado direito */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <CompactUserBadges 
                   userType={post.user_type}
                   isAvailable={isAvailable}
