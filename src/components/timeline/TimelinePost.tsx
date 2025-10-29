@@ -333,18 +333,6 @@ export function TimelinePost({
               <span>{formatDateTime(post.created_at)}</span>
             </div>
           </div>
-          
-          {/* Menu de Opções */}
-          <div className="flex-shrink-0">
-            <PostOptionsMenu
-              postId={post.id}
-              postUserId={post.user_id}
-              postTitle={post.title}
-              onEdit={onEdit || (() => {})}
-              onDelete={onDelete || (() => {})}
-              isDeleting={isDeleting}
-            />
-          </div>
         </div>
       </CardHeader>
 
@@ -515,6 +503,18 @@ export function TimelinePost({
               postCreatorId={post.user_id}
               size="sm"
               showStats={false}
+            />
+          </div>
+
+          {/* Menu de Opções - Movido para o canto direito */}
+          <div className="ml-auto flex-shrink-0">
+            <PostOptionsMenu
+              postId={post.id}
+              postUserId={post.user_id}
+              postTitle={post.title}
+              onEdit={onEdit || (() => {})}
+              onDelete={onDelete || (() => {})}
+              isDeleting={isDeleting}
             />
           </div>
         </div>
