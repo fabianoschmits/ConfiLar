@@ -17,6 +17,7 @@ import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { ReactionButton } from './ReactionButton'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
+import { CompactUserBadges } from '@/components/ui/CompactUserBadges'
 import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
 import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
 
@@ -46,10 +47,13 @@ export function PremiumPostCard({
   const [showCommentSection, setShowCommentSection] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [expandedImage, setExpandedImage] = useState<string | null>(null)
-  const { user } = useAuthContext()
+  const { user, profile } = useAuthContext()
   
   // Hook para gerenciar contagem de comentários
   const { count: commentsCount } = useCommentsCount(post.id)
+  
+  // Pegar disponibilidade do profile (se for do próprio usuário)
+  const isAvailable = user?.id === post.user_id ? profile?.is_available : undefined
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -180,48 +184,21 @@ export function PremiumPostCard({
                   </Link>
                 </h3>
                 
-                {/* Badges no lado direito */}
-                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              {/* Tag de Tipo de Usuário */}
-              <Badge 
-                variant={post.user_type === 'professional' ? 'default' : 'secondary'}
-                className={`text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 transition-all duration-300 ${
-                  post.user_type === 'professional'
-                    ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
-                    : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
-                }`}
-              >
-                {post.user_type === 'professional' ? (
-                  <>
-                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3" />
-                    <span className="hidden sm:inline">Profissional</span>
-                    <span className="sm:hidden">Prof</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="h-2 w-2 sm:h-3 sm:w-3" />
-                    <span className="hidden sm:inline">Cliente</span>
-                    <span className="sm:hidden">Cliente</span>
-                  </>
-                )}
-              </Badge>
-              
-              {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
-              <DynamicAvailabilityBadge userId={post.user_id} />
-              
-              {/* Badge Premium */}
-              <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-[9px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 shadow-md">
-                <Crown className="h-2 w-2 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">Premium</span>
-                <span className="sm:hidden">⭐</span>
-              </Badge>
-              
-              {/* Badge Destacado */}
-              <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
-                <Sparkles className="h-2 w-2 sm:h-3 sm:w-3" />
-                <span className="hidden sm:inline">Destacado</span>
-                <span className="sm:hidden">⭐</span>
-              </Badge>
+                {/* Ícones Compactos no lado direito */}
+                <div className="flex items-center gap-2">
+                  <CompactUserBadges 
+                    userType={post.user_type}
+                    isAvailable={isAvailable}
+                    isPremium={true}
+                    showPremium={true}
+                  />
+                  
+                  {/* Badge Destacado (mantém visível) */}
+                  <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
+                    <Sparkles className="h-2 w-2 sm:h-3 sm:w-3" />
+                    <span className="hidden sm:inline">Destacado</span>
+                    <span className="sm:hidden">⭐</span>
+                  </Badge>
                 </div>
               </div>
               
