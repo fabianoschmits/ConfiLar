@@ -20,6 +20,7 @@ interface PremiumPostFormProps {
     images: string[]
     service: string
     pointsToSpend: number
+    durationDays: number
   }) => Promise<void>
   onCancel: () => void
   isLoading: boolean
@@ -30,12 +31,20 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
   const { profile } = useAuthContext()
   const { balance } = usePoints(profile?.id)
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string
+    description: string
+    images: string[]
+    service: string
+    pointsToSpend: number
+    durationDays: number
+  }>({
     title: '',
     description: '',
     images: [] as string[],
     service: '',
-    pointsToSpend: PREMIUM_PRICES.POST.POINTS
+    pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS,
+    durationDays: 1
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,11 +60,36 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
 
   const premiumOptions = [
     { 
-      points: PREMIUM_PRICES.POST.POINTS, 
-      label: 'Premium', 
-      description: `Destaque por ${PREMIUM_PRICES.POST.DURATION}`, 
+      points: PREMIUM_PRICES.POST_1_DAY.POINTS, 
+      label: '1 Dia', 
+      description: 'Destaque por 24 horas', 
+      color: '#10B981',
+      days: 1,
+      badge: 'Teste'
+    },
+    { 
+      points: PREMIUM_PRICES.POST_7_DAYS.POINTS, 
+      label: '7 Dias', 
+      description: 'Destaque por 1 semana', 
       color: '#FFD700',
-      priceInBRL: `R$ ${PREMIUM_PRICES.POST.BRL.toFixed(2)}`
+      days: 7,
+      badge: 'Popular'
+    },
+    { 
+      points: PREMIUM_PRICES.POST_14_DAYS.POINTS, 
+      label: '14 Dias', 
+      description: 'Destaque por 2 semanas', 
+      color: '#FF6B6B',
+      days: 14,
+      badge: 'Econômico'
+    },
+    { 
+      points: PREMIUM_PRICES.POST_30_DAYS.POINTS, 
+      label: '30 Dias', 
+      description: 'Destaque por 1 mês', 
+      color: '#9B59B6',
+      days: 30,
+      badge: 'Máximo'
     }
   ]
 
@@ -70,7 +104,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
           <h3 className="text-xl font-bold text-yellow-600">Post Premium</h3>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Destaque seu post por {PREMIUM_PRICES.POST.DURATION} com maior visibilidade (R$ {PREMIUM_PRICES.POST.BRL.toFixed(2)})
+          Escolha a duração do destaque para seu post ter maior visibilidade
         </p>
       </div>
 
@@ -92,8 +126,8 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Opções Premium */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Post Premium - {PREMIUM_PRICES.POST.DURATION}:</Label>
-          <div className="grid grid-cols-1 gap-1">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Escolha a duração do destaque:</Label>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {premiumOptions.map((option) => (
               <Card 
                 key={option.points}
@@ -104,36 +138,53 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
                 } ${!canAfford && option.points > (balance?.balance || 0) ? 'opacity-50' : ''}`}
                 onClick={() => {
                   if (canAfford || option.points <= (balance?.balance || 0)) {
-                    setFormData(prev => ({ ...prev, pointsToSpend: option.points }))
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      pointsToSpend: option.points,
+                      durationDays: option.days
+                    }))
                   }
                 }}
               >
-                <CardContent className="p-1">
-                  <div className="text-center space-y-1">
+                <CardContent className="p-4">
+                  <div className="text-center space-y-3">
+                    {option.badge && (
+                      <Badge 
+                        className="mb-2"
+                        style={{ 
+                          backgroundColor: option.color,
+                          color: 'white',
+                          borderColor: option.color
+                        }}
+                      >
+                        {option.badge}
+                      </Badge>
+                    )}
                     <div 
-                      className="w-1.5 h-1.5 rounded-full border mx-auto"
+                      className="w-12 h-12 rounded-full border-4 mx-auto flex items-center justify-center"
                       style={{ 
                         backgroundColor: formData.pointsToSpend === option.points ? option.color : 'transparent',
                         borderColor: option.color
                       }}
-                    />
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{option.label}</div>
-                      <div className="flex flex-col items-center gap-1">
-                        <Badge 
-                          variant="outline" 
-                          style={{ borderColor: option.color, color: option.color }}
-                          className="bg-white dark:bg-gray-800 text-sm px-2 py-1"
-                        >
-                          {option.points} pts
-                        </Badge>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{option.priceInBRL}</span>
-                      </div>
+                    >
+                      <span className="text-xl font-bold" style={{ color: formData.pointsToSpend === option.points ? 'white' : option.color }}>
+                        {option.days}
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{option.description}</p>
+                    <div className="space-y-1">
+                      <div className="text-base font-bold text-gray-900 dark:text-gray-100">{option.label}</div>
+                      <Badge 
+                        variant="outline" 
+                        style={{ borderColor: option.color, color: option.color }}
+                        className="bg-white dark:bg-gray-800 text-base font-semibold px-3 py-1"
+                      >
+                        {option.points.toLocaleString('pt-BR')} pts
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-300">{option.description}</p>
                     {option.points > (balance?.balance || 0) && (
-                      <Badge variant="destructive" className="text-sm px-1 py-0">
-                        Insuficiente
+                      <Badge variant="destructive" className="text-xs">
+                        Saldo Insuficiente
                       </Badge>
                     )}
                   </div>

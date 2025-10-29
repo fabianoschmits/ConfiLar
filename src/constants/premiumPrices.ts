@@ -21,12 +21,45 @@ export const PREMIUM_PRICES = {
     DURATION: 'Permanente'
   },
   
-  // Post Premium
+  // Post Premium - Múltiplas Opções
   POST: {
     POINTS: 1000,
     BRL: 10.00,
     DESCRIPTION: 'Post em destaque no feed',
-    DURATION: '7 dias'
+    DURATION: '1 dia'
+  },
+  
+  // Opções de Post Premium por Duração (4 opções)
+  POST_1_DAY: {
+    POINTS: 1000,
+    BRL: 10.00,
+    DESCRIPTION: 'Post em destaque no feed',
+    DURATION: '1 dia',
+    DAYS: 1
+  },
+  
+  POST_7_DAYS: {
+    POINTS: 3000,
+    BRL: 30.00,
+    DESCRIPTION: 'Post em destaque no feed',
+    DURATION: '7 dias',
+    DAYS: 7
+  },
+  
+  POST_14_DAYS: {
+    POINTS: 5000,
+    BRL: 50.00,
+    DESCRIPTION: 'Post em destaque no feed',
+    DURATION: '14 dias',
+    DAYS: 14
+  },
+  
+  POST_30_DAYS: {
+    POINTS: 9000,
+    BRL: 90.00,
+    DESCRIPTION: 'Post em destaque no feed',
+    DURATION: '30 dias',
+    DAYS: 30
   },
   
   // Anúncio Premium
