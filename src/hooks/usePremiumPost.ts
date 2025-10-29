@@ -13,6 +13,8 @@ interface CreatePremiumPostData {
   images?: string[]
   location_city?: string
   location_state?: string
+  pointsToSpend: number
+  durationDays: number
 }
 
 interface UsePremiumPostProps {
@@ -37,9 +39,13 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
         .single()
 
       if (balanceError) throw new Error('Erro ao verificar saldo')
-      if (!balance || balance.balance < PREMIUM_PRICES.POST.POINTS) {
-        throw new Error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.POST.POINTS} pontos para post premium`)
+      if (!balance || balance.balance < postData.pointsToSpend) {
+        throw new Error(`Saldo insuficiente. Necessário: ${postData.pointsToSpend} pontos para post premium`)
       }
+
+      // Calcular data de expiração baseado na duração escolhida
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + postData.durationDays)
 
       // Criar post premium
       const { data, error } = await supabase
@@ -59,12 +65,17 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
           is_active: true,
           is_public: true,
           is_featured: true, // Posts premium são destacados
+          is_premium: true, // Marcar como premium
+          premium_points_spent: postData.pointsToSpend,
+          premium_expires_at: expiresAt.toISOString(),
+          premium_highlight_color: '#FFD700',
           tags: ['premium'],
           metadata: {
             type: 'premium',
-            points_spent: PREMIUM_PRICES.POST.POINTS,
+            points_spent: postData.pointsToSpend,
+            duration_days: postData.durationDays,
             created_at: new Date().toISOString(),
-            premium_duration: PREMIUM_PRICES.POST.DURATION
+            expires_at: expiresAt.toISOString()
           }
         })
         .select()
@@ -76,9 +87,9 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
       const { error: pointsError } = await supabase
         .rpc('add_points', {
           p_user_id: user.id,
-          p_points: -PREMIUM_PRICES.POST.POINTS,
+          p_points: -postData.pointsToSpend,
           p_source: 'premium_post',
-          p_description: `Criou post premium (${PREMIUM_PRICES.POST.DURATION})`
+          p_description: `Criou post premium (${postData.durationDays} dias - ${postData.pointsToSpend} pontos)`
         })
 
       if (pointsError) throw new Error('Erro ao processar pontos')
@@ -86,7 +97,7 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
       return data
     },
     onSuccess: () => {
-      toast.success(`Post premium criado com sucesso! (-${PREMIUM_PRICES.POST.POINTS} pontos)`)
+      toast.success(`Post premium criado com sucesso!`)
       queryClient.invalidateQueries({ queryKey: ['feed-posts'] })
       queryClient.invalidateQueries({ queryKey: ['user-posts', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })

@@ -1,92 +1,109 @@
--- =====================================================
--- VERIFICAR SISTEMA PREMIUM IMPLEMENTADO
--- =====================================================
+-- =============================================
+-- VERIFICAÇÃO DO SISTEMA DE POSTS PREMIUM
+-- =============================================
+-- Execute este script para verificar se tudo foi instalado corretamente
 
--- 1. VERIFICAR CONFIGURAÇÕES DE PONTOS
-SELECT 'CONFIGURAÇÕES DE PONTOS:' as info;
-SELECT action_key, points_value, daily_limit, description, is_active 
-FROM points_config 
-ORDER BY action_key;
+-- =============================================
+-- 1. VERIFICAR COLUNAS PREMIUM
+-- =============================================
+SELECT 
+  '✅ Colunas Premium' as verificacao,
+  column_name,
+  data_type,
+  column_default,
+  is_nullable
+FROM information_schema.columns
+WHERE table_name = 'feed_posts'
+  AND column_name IN ('is_premium', 'premium_points_spent', 'premium_expires_at', 'premium_highlight_color')
+ORDER BY column_name;
 
--- 2. VERIFICAR TABELA DE BADGES VIP
-SELECT 'TABELA DE BADGES VIP:' as info;
-SELECT column_name, data_type, is_nullable 
-FROM information_schema.columns 
-WHERE table_name = 'user_vip_badges' 
-ORDER BY ordinal_position;
-
--- 3. VERIFICAR COLUNAS PREMIUM EM FEED_POSTS
-SELECT 'COLUNAS PREMIUM EM FEED_POSTS:' as info;
-SELECT column_name, data_type, is_nullable, column_default
-FROM information_schema.columns 
-WHERE table_name = 'feed_posts' 
-AND column_name LIKE '%premium%'
-ORDER BY ordinal_position;
-
--- 4. VERIFICAR TRIGGERS CRIADOS
-SELECT 'TRIGGERS CRIADOS:' as info;
-SELECT trigger_name, event_manipulation, action_timing, action_statement
-FROM information_schema.triggers 
-WHERE trigger_name LIKE '%premium%' OR trigger_name LIKE '%vip%'
-ORDER BY trigger_name;
-
--- 5. VERIFICAR FUNÇÕES CRIADAS
-SELECT 'FUNÇÕES CRIADAS:' as info;
-SELECT routine_name, routine_type, data_type
-FROM information_schema.routines 
-WHERE routine_name LIKE '%premium%' OR routine_name LIKE '%vip%'
+-- =============================================
+-- 2. VERIFICAR FUNÇÕES CRIADAS
+-- =============================================
+SELECT 
+  '✅ Funções de Limpeza' as verificacao,
+  routine_name as funcao,
+  routine_type as tipo
+FROM information_schema.routines
+WHERE routine_name IN (
+  'delete_expired_premium_posts',
+  'deactivate_expired_premium_posts',
+  'maintain_premium_posts',
+  'check_post_expiration'
+)
 ORDER BY routine_name;
 
--- 6. VERIFICAR POLÍTICAS RLS
-SELECT 'POLÍTICAS RLS:' as info;
-SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual
-FROM pg_policies 
-WHERE tablename = 'user_vip_badges'
-ORDER BY policyname;
+-- =============================================
+-- 3. VERIFICAR VIEWS CRIADAS
+-- =============================================
+SELECT 
+  '✅ Views de Monitoramento' as verificacao,
+  table_name as view_name
+FROM information_schema.views
+WHERE table_name IN (
+  'v_expired_premium_posts',
+  'v_expiring_soon_premium_posts'
+)
+ORDER BY table_name;
 
--- 7. VERIFICAR ÍNDICES CRIADOS
-SELECT 'ÍNDICES CRIADOS:' as info;
-SELECT indexname, tablename, indexdef
-FROM pg_indexes 
-WHERE tablename = 'user_vip_badges'
+-- =============================================
+-- 4. VERIFICAR TRIGGER
+-- =============================================
+SELECT 
+  '✅ Trigger Automático' as verificacao,
+  trigger_name,
+  event_manipulation,
+  action_timing
+FROM information_schema.triggers
+WHERE trigger_name = 'trigger_check_post_expiration'
+  AND event_object_table = 'feed_posts';
+
+-- =============================================
+-- 5. VERIFICAR ÍNDICES
+-- =============================================
+SELECT 
+  '✅ Índices de Performance' as verificacao,
+  indexname as indice,
+  tablename as tabela
+FROM pg_indexes
+WHERE tablename = 'feed_posts'
+  AND indexname LIKE '%premium%'
 ORDER BY indexname;
 
--- 8. TESTE DE INSERÇÃO DE BADGE VIP (SIMULAÇÃO)
-SELECT 'TESTE DE BADGE VIP:' as info;
-SELECT 'Para testar, execute uma compra de pontos e verifique se o badge é criado automaticamente' as instrucao;
+-- =============================================
+-- 6. ESTATÍSTICAS DE POSTS
+-- =============================================
+SELECT 
+  '📊 Estatísticas Atuais' as info,
+  COUNT(*) as total_posts,
+  COUNT(*) FILTER (WHERE is_premium = TRUE) as posts_premium,
+  COUNT(*) FILTER (WHERE is_premium = TRUE AND is_active = TRUE) as posts_premium_ativos,
+  COUNT(*) FILTER (WHERE is_premium = TRUE AND premium_expires_at < NOW()) as posts_expirados
+FROM feed_posts;
 
--- 9. VERIFICAR SE SISTEMA DE PONTOS GRATUITOS FOI REMOVIDO
-SELECT 'PONTOS GRATUITOS REMOVIDOS:' as info;
-SELECT COUNT(*) as pontos_gratuitos_restantes
-FROM points_config 
-WHERE action_key IN (
-  'daily_login',
-  'receive_like', 
-  'give_like',
-  'receive_comment',
-  'give_comment',
-  'profile_completion',
-  'first_post',
-  'create_classified'
-);
+-- =============================================
+-- 7. TESTAR FUNÇÃO DE MANUTENÇÃO
+-- =============================================
+SELECT 
+  '🧪 Teste de Manutenção' as teste,
+  maintain_premium_posts() as resultado;
 
--- 10. RESUMO FINAL
-DO $$ 
+-- =============================================
+-- RESUMO
+-- =============================================
+DO $$
 BEGIN
-  RAISE NOTICE '========================================';
-  RAISE NOTICE 'VERIFICAÇÃO DO SISTEMA PREMIUM';
-  RAISE NOTICE '========================================';
-  RAISE NOTICE '✅ Script executado com sucesso!';
-  RAISE NOTICE '✅ Sistema de pontos gratuitos removido';
-  RAISE NOTICE '✅ Sistema de badges VIP criado';
-  RAISE NOTICE '✅ Sistema de posts premium criado';
-  RAISE NOTICE '✅ Sistema de indicações mantido';
-  RAISE NOTICE '========================================';
-  RAISE NOTICE 'PRÓXIMOS PASSOS:';
-  RAISE NOTICE '1. Teste comprando pontos';
-  RAISE NOTICE '2. Verifique se badges VIP são criados';
-  RAISE NOTICE '3. Teste criando posts premium';
-  RAISE NOTICE '4. Verifique sistema de indicações';
-  RAISE NOTICE '========================================';
+  RAISE NOTICE '';
+  RAISE NOTICE '====================================';
+  RAISE NOTICE '✅ VERIFICAÇÃO COMPLETA!';
+  RAISE NOTICE '====================================';
+  RAISE NOTICE '';
+  RAISE NOTICE 'Se você viu resultados em todas as seções acima,';
+  RAISE NOTICE 'o sistema está 100%% instalado e funcionando!';
+  RAISE NOTICE '';
+  RAISE NOTICE '📋 Próximos passos:';
+  RAISE NOTICE '1. Criar posts premium no app';
+  RAISE NOTICE '2. Configurar cron job para manutenção automática';
+  RAISE NOTICE '3. Monitorar com: SELECT * FROM v_expired_premium_posts';
+  RAISE NOTICE '';
 END $$;
-

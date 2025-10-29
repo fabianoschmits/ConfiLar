@@ -760,7 +760,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }, [queryClient, queryKey])
 
   // Função para criar posts premium
-  const addPremiumPost = useCallback(async (newPost: Omit<TimelinePost, 'id' | 'created_at' | 'likes_count' | 'comments_count' | 'is_liked'> & { pointsToSpend: number }) => {
+  const addPremiumPost = useCallback(async (newPost: Omit<TimelinePost, 'id' | 'created_at' | 'likes_count' | 'comments_count' | 'is_liked'> & { pointsToSpend: number; durationDays: number }) => {
     try {
 
       // Verificar saldo do usuário
@@ -778,9 +778,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         throw new Error(`Saldo insuficiente para criar post premium. Necessário: ${newPost.pointsToSpend} pontos`)
       }
 
-      // Calcular data de expiração (7 dias)
+      // Calcular data de expiração baseado na duração escolhida
       const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + 7)
+      expiresAt.setDate(expiresAt.getDate() + newPost.durationDays)
 
       // Criar post premium diretamente na tabela
       const postData = {
@@ -798,10 +798,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         is_active: true,
         is_public: true,
         is_featured: true, // Posts premium são destacados
+        is_premium: true, // Marcar como premium
+        premium_points_spent: newPost.pointsToSpend,
+        premium_expires_at: expiresAt.toISOString(),
+        premium_highlight_color: '#FFD700',
         tags: ['premium'],
         metadata: {
           type: 'premium',
           points_spent: newPost.pointsToSpend,
+          duration_days: newPost.durationDays,
           created_at: new Date().toISOString(),
           expires_at: expiresAt.toISOString()
         }

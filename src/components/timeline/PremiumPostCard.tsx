@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
@@ -154,8 +154,7 @@ export function PremiumPostCard({
         </div>
         
         {/* Header Premium */}
-        <CardContent className="pt-4 sm:pt-5 pb-0 px-3 sm:px-4 md:px-6">
-          {/* Header do usuário */}
+        <CardHeader className="pb-0 p-2 sm:p-3 md:p-4 -mb-2">
           <div className="flex items-start space-x-2 sm:space-x-3">
             {/* Avatar */}
             <div className="flex-shrink-0">
@@ -261,9 +260,10 @@ export function PremiumPostCard({
               />
             </div>
           </div>
+        </CardHeader>
 
-          {/* Conteúdo do Post */}
-          <div className="space-y-3 -mt-2">
+        <CardContent className="space-y-3 px-3 sm:px-4 md:px-6 -mt-2 pb-0">
+          <div className="-mt-2">
             {/* Título Premium */}
             <h4 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent font-bold">
               <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 text-yellow-500" />

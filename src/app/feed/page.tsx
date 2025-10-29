@@ -237,7 +237,14 @@ export default function FeedPage() {
     }
   }
 
-  const handleNewPremiumPost = async (postData: { title: string; description: string; images: string[]; service: string; pointsToSpend: number }) => {
+  const handleNewPremiumPost = async (postData: { 
+    title: string
+    description: string
+    images: string[]
+    service: string
+    pointsToSpend: number
+    durationDays: number
+  }) => {
     setIsPosting(true)
     setPostStatus('sending')
     try {
@@ -253,7 +260,8 @@ export default function FeedPage() {
         service_category_id: postData.service,
         location_state: profile?.location_state,
         location_city: profile?.location_city,
-        pointsToSpend: postData.pointsToSpend
+        pointsToSpend: postData.pointsToSpend,
+        durationDays: postData.durationDays
       })
       
       // Mostrar "Enviado!" por 1 segundo antes de fechar
