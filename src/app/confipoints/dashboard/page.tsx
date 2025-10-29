@@ -33,6 +33,7 @@ import {
   usePointsWithdrawals, 
   usePointsTransfers 
 } from '@/hooks/useEconomy'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -431,10 +432,10 @@ export default function ConfiPointsDashboardPage() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { name: 'Curtida Premium', cost: 5, description: 'Curtida com destaque especial', icon: '💎', link: '/feed' },
-                        { name: 'Comentário Premium', cost: 10, description: 'Comentário destacado no topo', icon: '💬', link: '/feed' },
-                        { name: 'Post Premium', cost: 50, description: 'Destaque por 7 dias no feed', icon: '🚀', link: '/feed' },
-                        { name: 'Anúncio Premium', cost: 200, description: 'Destaque por 30 dias', icon: '⭐', link: '/classificados' }
+                        { name: 'Curtida Premium', cost: PREMIUM_PRICES.LIKE.POINTS, description: PREMIUM_PRICES.LIKE.DESCRIPTION, icon: '💎', link: '/feed' },
+                        { name: 'Comentário Premium', cost: PREMIUM_PRICES.COMMENT.POINTS, description: PREMIUM_PRICES.COMMENT.DESCRIPTION, icon: '💬', link: '/feed' },
+                        { name: 'Post Premium', cost: PREMIUM_PRICES.POST.POINTS, description: `${PREMIUM_PRICES.POST.DESCRIPTION} (${PREMIUM_PRICES.POST.DURATION})`, icon: '🚀', link: '/feed' },
+                        { name: 'Anúncio Premium', cost: PREMIUM_PRICES.AD.POINTS, description: `${PREMIUM_PRICES.AD.DESCRIPTION} (${PREMIUM_PRICES.AD.DURATION})`, icon: '⭐', link: '/classificados' }
                       ].map((item, index) => (
                         <Link key={index} href={item.link}>
                           <Card className="hover:shadow-lg transition-shadow cursor-pointer">

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface UsePremiumLikeProps {
   postId: string
@@ -29,8 +30,8 @@ export function usePremiumLike({ postId, onSuccess, onError }: UsePremiumLikePro
         .single()
 
       if (balanceError) throw new Error('Erro ao verificar saldo')
-      if (!balance || balance.balance < 5) {
-        throw new Error('Saldo insuficiente. Necessário: 5 pontos para curtir')
+      if (!balance || balance.balance < PREMIUM_PRICES.LIKE.POINTS) {
+        throw new Error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.LIKE.POINTS} pontos para curtir`)
       }
 
       // Verificar se já curtiu
@@ -56,7 +57,7 @@ export function usePremiumLike({ postId, onSuccess, onError }: UsePremiumLikePro
           user_id: user.id,
           post_id: postId,
           is_featured: true,
-          premium_points_spent: 5
+          premium_points_spent: PREMIUM_PRICES.LIKE.POINTS
         })
         .select()
         .single()
@@ -67,9 +68,9 @@ export function usePremiumLike({ postId, onSuccess, onError }: UsePremiumLikePro
       const { error: pointsError } = await supabase
         .rpc('add_points', {
           p_user_id: user.id,
-          p_points: -5,
+          p_points: -PREMIUM_PRICES.LIKE.POINTS,
           p_source: 'premium_like',
-          p_description: 'Curtiu post premium'
+          p_description: 'Curtida premium em post'
         })
 
       if (pointsError) throw new Error('Erro ao processar pontos')
@@ -77,7 +78,7 @@ export function usePremiumLike({ postId, onSuccess, onError }: UsePremiumLikePro
       return data
     },
     onSuccess: () => {
-      toast.success('Post curtido com sucesso! (-5 pontos)')
+      toast.success(`Post curtido com sucesso! (-${PREMIUM_PRICES.LIKE.POINTS} pontos)`)
       queryClient.invalidateQueries({ queryKey: ['post-likes', postId] })
       queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })
       onSuccess?.()
