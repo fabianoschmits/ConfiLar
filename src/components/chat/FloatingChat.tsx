@@ -759,18 +759,20 @@ export function FloatingChat() {
           </Card>
           </div>
         ) : (
-          /* Botão Minimizado */
-          <Button
-            onClick={() => setIsExpanded(true)}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 p-4 rounded-full relative"
-          >
-            <MessageCircle className="h-6 w-6" />
-            {totalUnread > 0 && (
-              <Badge className="absolute -top-2 -right-2 bg-red-500 text-white font-medium text-xs min-w-5 h-5 flex items-center justify-center rounded-full">
-                {totalUnread}
-              </Badge>
-            )}
-          </Button>
+          /* Botão Minimizado (mostrar somente quando houver notificações) */
+          <>
+            {totalUnread > 0 ? (
+              <Button
+                onClick={() => setIsExpanded(true)}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 p-4 rounded-full relative"
+              >
+                <MessageCircle className="h-6 w-6" />
+                <Badge className="absolute -top-2 -right-2 bg-red-500 text-white font-medium text-xs min-w-5 h-5 flex items-center justify-center rounded-full">
+                  {totalUnread}
+                </Badge>
+              </Button>
+            ) : null}
+          </>
         )}
       </div>
     </>
