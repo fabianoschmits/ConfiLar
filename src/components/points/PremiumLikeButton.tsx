@@ -7,6 +7,7 @@ import { usePremiumLikes, usePremiumLikesStats } from '@/hooks/usePremiumLikes'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { usePoints } from '@/hooks/usePoints'
 import { cn } from '@/lib/utils'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface PremiumLikeButtonProps {
   postId: string
@@ -43,7 +44,7 @@ export function PremiumLikeButton({
   const premiumLikesCount = stats?.premium_likes || 0
   const totalLikesCount = stats?.total_likes || 0
   const pointsReceived = stats?.total_points_received || 0
-  const hasEnoughPoints = balance?.balance >= 5 // Verificação de segurança para balance
+  const hasEnoughPoints = balance?.balance >= PREMIUM_PRICES.LIKE.POINTS // Verificação de segurança para balance
 
   const handlePremiumLike = () => {
     if (isOwnPost) {
@@ -99,14 +100,14 @@ export function PremiumLikeButton({
           <TooltipContent>
             <div className="text-center">
               <p className="font-semibold">🎉 Curtida Premium</p>
-              <p className="text-xs">💰 Gasta 5 ConfiPoints</p>
-              <p className="text-xs">🎁 Recompensa o criador com 5 pontos</p>
+              <p className="text-xs">💰 Gasta {PREMIUM_PRICES.LIKE.POINTS} ConfiPoints (R$ {PREMIUM_PRICES.LIKE.BRL.toFixed(2)})</p>
+              <p className="text-xs">🎁 Recompensa o criador com {PREMIUM_PRICES.LIKE.POINTS} pontos</p>
               
               {!hasEnoughPoints ? (
                 <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
                   <p className="text-xs text-red-600 font-semibold">❌ Saldo Insuficiente</p>
                   <p className="text-xs text-red-500">Você tem {balance?.balance || 0} ConfiPoints</p>
-                  <p className="text-xs text-red-500">Precisa de 5 para curtir premium</p>
+                  <p className="text-xs text-red-500">Precisa de {PREMIUM_PRICES.LIKE.POINTS} para curtir premium</p>
                 </div>
               ) : (
                 <>
@@ -126,7 +127,7 @@ export function PremiumLikeButton({
               )}
               {userPremiumLikesCount > 0 && (
                 <p className="text-xs text-green-400 mt-1">
-                  ✓ Você recompensou {userPremiumLikesCount} vezes ({userPremiumLikesCount * 5} pontos enviados)
+                  ✓ Você recompensou {userPremiumLikesCount} vezes ({userPremiumLikesCount * PREMIUM_PRICES.LIKE.POINTS} pontos enviados)
                 </p>
               )}
               {hasEnoughPoints && (
