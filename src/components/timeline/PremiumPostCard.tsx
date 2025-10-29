@@ -177,15 +177,15 @@ export function PremiumPostCard({
             
             {/* Informações do Usuário */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
-                  <Link href={`/perfil/${post.user_id}`}>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="flex-1 min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                  <Link href={`/perfil/${post.user_id}`} className="truncate block">
                     {post.user_name || 'Usuário'}
                   </Link>
                 </h3>
                 
                 {/* Ícones Compactos no lado direito */}
-                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                <div className="flex items-center gap-0 flex-shrink-0 ml-auto">
                   <CompactUserBadges 
                     userType={post.user_type}
                     isAvailable={isAvailable}
