@@ -12,6 +12,7 @@ import { usePremiumAd } from '@/hooks/usePremiumAd'
 import { usePoints } from '@/hooks/usePoints'
 import { useIBGE } from '@/hooks/useIBGE'
 import { toast } from 'sonner'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface PremiumAdFormProps {
   onSubmit: (ad: {
@@ -78,8 +79,8 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       return
     }
 
-    if (balance.balance < 200) {
-      toast.error('Saldo insuficiente. Necessário: 200 pontos para anúncio premium')
+    if (balance.balance < PREMIUM_PRICES.AD.POINTS) {
+      toast.error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.AD.POINTS} pontos para anúncio premium (R$ ${PREMIUM_PRICES.AD.BRL.toFixed(2)})`)
       return
     }
 
@@ -166,7 +167,8 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600 dark:text-gray-400">Custo:</p>
-              <p className="text-lg font-bold text-yellow-600">200 pontos</p>
+              <p className="text-lg font-bold text-yellow-600">{PREMIUM_PRICES.AD.POINTS} pontos</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">R$ {PREMIUM_PRICES.AD.BRL.toFixed(2)} / {PREMIUM_PRICES.AD.DURATION}</p>
             </div>
           </div>
         </div>
@@ -388,17 +390,17 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
           ) : (
             <>
               <Crown className="h-4 w-4 mr-2" />
-              Criar Anúncio Premium (200 pontos)
+              Criar Anúncio Premium ({PREMIUM_PRICES.AD.POINTS} pontos)
             </>
           )}
         </Button>
       </div>
 
       {/* Aviso sobre saldo insuficiente */}
-      {balance.balance < 200 && (
+      {balance.balance < PREMIUM_PRICES.AD.POINTS && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
           <p className="text-sm text-red-700 dark:text-red-400">
-            ⚠️ Saldo insuficiente. Você precisa de 200 pontos para criar um anúncio premium.
+            ⚠️ Saldo insuficiente. Você precisa de {PREMIUM_PRICES.AD.POINTS} pontos (R$ {PREMIUM_PRICES.AD.BRL.toFixed(2)}) para criar um anúncio premium.
             <br />
             <span className="font-medium">Seu saldo atual: {balance.balance} pontos</span>
           </p>

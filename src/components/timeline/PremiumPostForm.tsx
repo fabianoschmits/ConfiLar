@@ -11,6 +11,7 @@ import { Star, Zap, Crown, Coins } from 'lucide-react'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
 import { usePoints } from '@/hooks/usePoints'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface PremiumPostFormProps {
   onSubmit: (postData: {
@@ -34,7 +35,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
     description: '',
     images: [] as string[],
     service: '',
-    pointsToSpend: 50
+    pointsToSpend: PREMIUM_PRICES.POST.POINTS
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,9 +50,13 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
   }
 
   const premiumOptions = [
-    { points: 50, label: 'Básico', description: 'Destaque por 7 dias', color: '#FFD700' },
-    { points: 100, label: 'Premium', description: 'Destaque por 14 dias', color: '#FF6B6B' },
-    { points: 200, label: 'VIP', description: 'Destaque por 30 dias', color: '#9B59B6' }
+    { 
+      points: PREMIUM_PRICES.POST.POINTS, 
+      label: 'Premium', 
+      description: `Destaque por ${PREMIUM_PRICES.POST.DURATION}`, 
+      color: '#FFD700',
+      priceInBRL: `R$ ${PREMIUM_PRICES.POST.BRL.toFixed(2)}`
+    }
   ]
 
   const canAfford = balance?.balance >= formData.pointsToSpend
@@ -65,7 +70,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
           <h3 className="text-xl font-bold text-yellow-600">Post Premium</h3>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Destaque seu post com cores especiais e maior visibilidade
+          Destaque seu post por {PREMIUM_PRICES.POST.DURATION} com maior visibilidade (R$ {PREMIUM_PRICES.POST.BRL.toFixed(2)})
         </p>
       </div>
 
@@ -87,8 +92,8 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Opções Premium */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Escolha o nível premium:</Label>
-          <div className="grid grid-cols-3 gap-1">
+          <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Post Premium - {PREMIUM_PRICES.POST.DURATION}:</Label>
+          <div className="grid grid-cols-1 gap-1">
             {premiumOptions.map((option) => (
               <Card 
                 key={option.points}
@@ -114,13 +119,16 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
                     />
                     <div className="space-y-1">
                       <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{option.label}</div>
-                      <Badge 
-                        variant="outline" 
-                        style={{ borderColor: option.color, color: option.color }}
-                        className="bg-white dark:bg-gray-800 text-sm px-1 py-0"
-                      >
-                        {option.points}
-                      </Badge>
+                      <div className="flex flex-col items-center gap-1">
+                        <Badge 
+                          variant="outline" 
+                          style={{ borderColor: option.color, color: option.color }}
+                          className="bg-white dark:bg-gray-800 text-sm px-2 py-1"
+                        >
+                          {option.points} pts
+                        </Badge>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{option.priceInBRL}</span>
+                      </div>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{option.description}</p>
                     {option.points > (balance?.balance || 0) && (
