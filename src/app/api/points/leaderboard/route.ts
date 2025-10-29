@@ -1,37 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse dos query parameters
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    // Buscar leaderboard
+    // Buscar leaderboard usando cliente público
     const { data, error } = await supabase
       .from('user_points_stats')
       .select(`
         user_id,
-        full_name,
-        points_balance,
-        user_level,
-        total_points_earned,
-        global_rank
+        balance,
+        level,
+        total_earned,
+        total_spent
       `)
-      .order('total_points_earned', { ascending: false })
+      .order('total_earned', { ascending: false })
       .limit(limit)
 
     if (error) {
       console.error('Erro ao buscar leaderboard:', error)
+      // Se a tabela não existir, retornar array vazio
+      if (error.code === 'PGRST205' || error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        console.log('Tabela user_points_stats não existe, retornando array vazio')
+        return NextResponse.json({ 
+          leaderboard: [],
+          total: 0
+        })
+      }
       return NextResponse.json({ error: 'Erro ao buscar leaderboard' }, { status: 500 })
     }
 

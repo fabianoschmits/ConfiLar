@@ -30,42 +30,40 @@ export function usePoints(userId?: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Buscar saldo de pontos
+  // Buscar saldo de pontos usando API route
   const { data: pointsData, isLoading: balanceLoading } = useQuery({
     queryKey: ['user-points-balance', userId],
     queryFn: async () => {
       if (!userId) return null
       
-      // Buscar diretamente da tabela user_points_balance
-      const { data, error } = await supabase
-        .from('user_points_balance')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+      // Usar API route pública restaurada
+      const response = await fetch(`/api/points/balance?userId=${userId}`)
+      const result = await response.json()
       
-      if (error) {
-        // Se não encontrar registro, criar um com saldo zero
-        if (error.code === 'PGRST116') {
-          return {
-            balance: 0,
-            level: 'bronze' as UserLevel,
-            total_earned: 0,
-            total_spent: 0,
-            available_balance: 0,
-            daily_earned: 0
-          } as UserPointsBalance
-        }
-        throw error
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao buscar saldo')
       }
       
-      return {
-        balance: data.balance || 0,
-        level: getLevelFromPoints(data.balance || 0),
-        total_earned: data.total_earned || 0,
-        total_spent: data.total_spent || 0,
-        available_balance: data.balance || 0,
-        daily_earned: data.daily_earned || 0
-      } as UserPointsBalance
+      // Mapear dados do banco para formato esperado pelo frontend
+      const dbData = result.data
+      const levelMap: Record<number, UserLevel> = {
+        1: 'bronze',
+        2: 'silver', 
+        3: 'gold',
+        4: 'platinum',
+        5: 'diamond'
+      }
+      
+      const mappedData: UserPointsBalance = {
+        balance: dbData.balance || 0,
+        level: levelMap[Number(dbData.level)] || 'bronze',
+        daily_earned: 0, // Campo não existe no banco, usar 0
+        total_earned: dbData.total_earned || 0,
+        total_spent: dbData.total_spent || 0,
+        last_daily_reset: dbData.updated_at || new Date().toISOString()
+      }
+      
+      return mappedData
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutos
@@ -191,17 +189,7 @@ export function usePoints(userId?: string) {
 
   return {
     // Estado
-    balance: balance || {
-      balance: 0,
-      level: 'bronze' as UserLevel,
-      total_earned: 0,
-      total_spent: 0,
-      available_balance: 0,
-      daily_earned: 0,
-      last_daily_reset: new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    },
+    balance,
     stats: statsData,
     loading,
     error,
@@ -228,41 +216,25 @@ export function usePointsHistory(userId?: string, filters?: PointsHistoryFilters
     queryFn: async () => {
       if (!userId) return []
       
-      let query = supabase
-        .from('point_transactions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+      // Usar API route pública restaurada para histórico
+      const searchParams = new URLSearchParams()
+      searchParams.set('userId', userId)
       
-      // Aplicar filtros
-      if (filters?.type) {
-        query = query.eq('type', filters.type)
+      if (filters?.type) searchParams.set('type', filters.type)
+      if (filters?.source) searchParams.set('source', filters.source)
+      if (filters?.start_date) searchParams.set('start_date', filters.start_date)
+      if (filters?.end_date) searchParams.set('end_date', filters.end_date)
+      if (filters?.limit) searchParams.set('limit', filters.limit.toString())
+      if (filters?.offset) searchParams.set('offset', filters.offset.toString())
+      
+      const response = await fetch(`/api/points/history?${searchParams.toString()}`)
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao buscar histórico')
       }
       
-      if (filters?.source) {
-        query = query.eq('source', filters.source)
-      }
-      
-      if (filters?.start_date) {
-        query = query.gte('created_at', filters.start_date)
-      }
-      
-      if (filters?.end_date) {
-        query = query.lte('created_at', filters.end_date)
-      }
-      
-      if (filters?.limit) {
-        query = query.limit(filters.limit)
-      }
-      
-      if (filters?.offset) {
-        query = query.range(filters.offset, (filters.offset + (filters.limit || 20)) - 1)
-      }
-      
-      const { data, error } = await query
-      
-      if (error) throw error
-      return data as PointTransaction[]
+      return result.transactions || []
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutos
@@ -330,21 +302,15 @@ export function usePointsLeaderboard(limit: number = 10) {
   const { data: leaderboard, isLoading, error } = useQuery({
     queryKey: ['points-leaderboard', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_points_stats')
-        .select(`
-          user_id,
-          full_name,
-          points_balance,
-          user_level,
-          total_points_earned,
-          global_rank
-        `)
-        .order('total_points_earned', { ascending: false })
-        .limit(limit)
+      // Usar API route pública restaurada para leaderboard
+      const response = await fetch(`/api/points/leaderboard?limit=${limit}`)
+      const result = await response.json()
       
-      if (error) throw error
-      return data
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao buscar leaderboard')
+      }
+      
+      return result.leaderboard || []
     },
     staleTime: 1000 * 60 * 10, // 10 minutos
   })

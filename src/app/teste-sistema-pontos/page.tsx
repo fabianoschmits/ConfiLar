@@ -104,7 +104,7 @@ export default function TesteSistemaPontos() {
   const testDailyLimit = async () => {
     updateTest('3. Verificar Limite Diário', 'running', 'Verificando limites...')
     try {
-      const limit = await checkDailyLimit('premium_like')
+      const limit = await checkDailyLimit('give_like')
       
       updateTest('3. Verificar Limite Diário', 'success', 
         `✅ Limite: ${limit.remaining}/${limit.dailyLimit}`,
@@ -123,7 +123,7 @@ export default function TesteSistemaPontos() {
     try {
       const actions: Array<{ action_type: PointSource; description: string }> = [
         { action_type: 'referral_profile_completed', description: 'Teste completar perfil' },
-        { action_type: 'premium_like', description: 'Teste curtida premium' }
+        { action_type: 'give_like', description: 'Teste curtida premium' }
       ]
       
       for (const action of actions) {

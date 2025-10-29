@@ -24,6 +24,8 @@ import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
 import { services } from '@/data/services'
+import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
+import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
 
 interface TimelinePostProps {
   post: TimelinePostType
@@ -208,6 +210,20 @@ export function TimelinePost({
     }
   }
 
+  // Detectar vídeos do YouTube no conteúdo do post
+  const youtubeVideos = detectYouTubeUrls(post.description || '')
+  const cleanDescription = removeYouTubeUrls(post.description || '')
+  
+  // Debug: verificar se está detectando vídeos
+  if (post.description && post.description.includes('youtube')) {
+    console.log('🔍 TimelinePost Debug:', {
+      postId: post.id,
+      description: post.description,
+      youtubeVideos: youtubeVideos,
+      cleanDescription: cleanDescription
+    })
+  }
+
   // Verificar se é um post premium
   const isPremiumPost = Boolean(post.is_featured || post.tags?.includes('premium'))
   const premiumExpired = post.metadata?.expires_at ? new Date(post.metadata.expires_at) < new Date() : false
@@ -368,7 +384,7 @@ export function TimelinePost({
                   <MentionText text={post.title} />
                 </h4>
                 <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">
-                  <MentionText text={post.description} />
+                  <MentionText text={cleanDescription} />
                 </p>
               </div>
 
@@ -463,6 +479,21 @@ export function TimelinePost({
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Vídeos do YouTube */}
+        {youtubeVideos.length > 0 && (
+          <div className="mt-4 space-y-3">
+            {youtubeVideos.map((video, index) => (
+              <YouTubePlayer
+                key={`${video.id}-${index}`}
+                videoId={video.id}
+                title="Vídeo do YouTube"
+                thumbnail={video.thumbnail}
+                className="w-full"
+              />
+            ))}
           </div>
         )}
 
