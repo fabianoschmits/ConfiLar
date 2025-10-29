@@ -23,6 +23,8 @@ import { SharePostModal } from './SharePostModal'
 import { usePostViews, usePostViewTracker } from '@/hooks/usePostViews'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBadge'
+import { CompactUserBadges } from '@/components/ui/CompactUserBadges'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { services } from '@/data/services'
 import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
 import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
@@ -53,6 +55,7 @@ export function TimelinePost({
   const [showCommentSection, setShowCommentSection] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [expandedImage, setExpandedImage] = useState<string | null>(null)
+  const { user, profile } = useAuthContext()
   
   // Hook para gerenciar visualizações
   const { viewsCount } = usePostViews(post.id)
@@ -60,6 +63,9 @@ export function TimelinePost({
   
   // Hook para gerenciar contagem de comentários
   const { count: commentsCount } = useCommentsCount(post.id)
+  
+  // Pegar disponibilidade do profile (se for do próprio usuário)
+  const isAvailable = user?.id === post.user_id ? profile?.is_available : undefined
 
   // Verificar tipos de posts automáticos
   const postType = post.metadata?.type
@@ -285,62 +291,33 @@ export function TimelinePost({
                 </Link>
               </h3>
               
-              {/* Badges no lado direito */}
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              {/* Tag de Tipo de Usuário */}
-              <Badge 
-                variant={post.user_type === 'professional' ? 'default' : 'secondary'}
-                className={`text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 transition-all duration-300 ${
-                  post.user_type === 'professional'
-                    ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
-                    : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
-                }`}
-              >
-                {post.user_type === 'professional' ? (
-                  <>
-                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3" />
-                    <span className="hidden sm:inline">Profissional</span>
-                    <span className="sm:hidden">Prof</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="h-2 w-2 sm:h-3 sm:w-3" />
-                    <span className="hidden sm:inline">Cliente</span>
-                    <span className="sm:hidden">Cliente</span>
-                  </>
-                )}
-              </Badge>
-              
-              {/* Badge de Status (Disponível/Indisponível) - Dinâmico */}
-              <DynamicAvailabilityBadge userId={post.user_id} />
-              
-              {/* Badge Premium */}
-              {isPremiumPost && !premiumExpired && (
-                <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-[9px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 shadow-md">
-                  <Crown className="h-2 w-2 sm:h-3 sm:w-3" />
-                  <span className="hidden sm:inline">Premium</span>
-                  <span className="sm:hidden">⭐</span>
-                </Badge>
-              )}
-              
-              {/* Badge de Serviço */}
-              {post.service_category_id && (() => {
-                const service = services.find(s => s.id === post.service_category_id)
-                if (!service) return null
-                return (
-                  <Badge 
-                    variant="outline"
-                    className="text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full border-green-200 text-green-700 bg-green-50 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 max-w-[90px] sm:max-w-[120px] md:max-w-none"
-                  >
-                    <Briefcase className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
-                    <span className="truncate">{service.name}</span>
-                  </Badge>
-                )
-              })()}
-              
-              <div className="flex-shrink-0">
-                {getTrendingBadge()}
-              </div>
+              {/* Ícones Compactos no lado direito */}
+              <div className="flex items-center gap-2">
+                <CompactUserBadges 
+                  userType={post.user_type}
+                  isAvailable={isAvailable}
+                  isPremium={isPremiumPost && !premiumExpired}
+                  showPremium={isPremiumPost && !premiumExpired}
+                />
+                
+                {/* Badge de Serviço (mantém visível) */}
+                {post.service_category_id && (() => {
+                  const service = services.find(s => s.id === post.service_category_id)
+                  if (!service) return null
+                  return (
+                    <Badge 
+                      variant="outline"
+                      className="text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full border-green-200 text-green-700 bg-green-50 flex items-center gap-0.5 sm:gap-1 whitespace-nowrap flex-shrink-0 max-w-[90px] sm:max-w-[120px] md:max-w-none"
+                    >
+                      <Briefcase className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
+                      <span className="truncate">{service.name}</span>
+                    </Badge>
+                  )
+                })()}
+                
+                <div className="flex-shrink-0">
+                  {getTrendingBadge()}
+                </div>
               </div>
             </div>
             
