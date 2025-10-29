@@ -259,8 +259,8 @@ export function TimelinePost({
             : ''
         }`}
       >
-      <CardHeader className="pb-0 p-3 -mb-2">
-        <div className="flex items-start space-x-3">
+      <CardHeader className="pb-0 p-2 sm:p-3 md:p-4 -mb-2">
+        <div className="flex items-start space-x-2 sm:space-x-3">
           {/* Avatar */}
           <div className="flex-shrink-0">
             <Link href={`/perfil/${post.user_id}`} className="hover:opacity-80 transition-opacity">
@@ -371,19 +371,19 @@ export function TimelinePost({
         </div>
       </CardHeader>
 
-            <CardContent className="space-y-3 px-6 -mt-2 pb-0">
+            <CardContent className="space-y-3 px-3 sm:px-4 md:px-6 -mt-2 pb-0">
               <div className="-mt-2">
-                <h4 className={`text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 ${
+                <h4 className={`text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 ${
                   isPremiumPost && !premiumExpired 
                     ? 'bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent font-bold' 
                     : ''
                 }`}>
                   {isPremiumPost && !premiumExpired && (
-                    <Sparkles className="h-4 w-4 inline mr-1 text-yellow-500" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 text-yellow-500" />
                   )}
                   <MentionText text={post.title} />
                 </h4>
-                <p className="text-sm md:text-base text-gray-700 dark:text-gray-300">
+                <p className="text-xs sm:text-sm md:text-base text-gray-700 dark:text-gray-300">
                   <MentionText text={cleanDescription} />
                 </p>
               </div>
@@ -400,7 +400,7 @@ export function TimelinePost({
                   width={500}
                   height={500}
                   className={`w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 ${
-                    expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[400px] object-cover'
+                    expandedImage === post.images[0] ? 'object-contain max-h-screen' : 'h-[250px] sm:h-[350px] md:h-[400px] object-cover'
                   }`}
                   onClick={() => handleImageClick(post.images[0])}
                 />
@@ -420,7 +420,7 @@ export function TimelinePost({
                           ? 'object-contain max-h-screen' 
                           : expandedImage 
                             ? 'hidden' 
-                            : 'h-[300px] object-cover'
+                            : 'h-[200px] sm:h-[250px] md:h-[300px] object-cover'
                       }`}
                       onClick={() => handleImageClick(image)}
                     />
@@ -441,8 +441,8 @@ export function TimelinePost({
                         expandedImage === image 
                           ? 'object-contain max-h-screen' 
                           : index === 0 
-                            ? 'h-[400px] object-cover' 
-                            : 'h-[195px] object-cover'
+                            ? 'h-[250px] sm:h-[350px] md:h-[400px] object-cover' 
+                            : 'h-[120px] sm:h-[170px] md:h-[195px] object-cover'
                       }`}
                       onClick={() => handleImageClick(image)}
                     />
@@ -464,13 +464,13 @@ export function TimelinePost({
                           ? 'object-contain max-h-screen' 
                           : expandedImage 
                             ? 'hidden' 
-                            : 'h-[250px] object-cover'
+                            : 'h-[150px] sm:h-[200px] md:h-[250px] object-cover'
                       }`}
                       onClick={() => handleImageClick(image)}
                     />
                     {index === 3 && post.images.length > 4 && !expandedImage && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center pointer-events-none">
-                        <span className="text-white text-2xl font-bold">
+                        <span className="text-white text-xl sm:text-2xl font-bold">
                           +{post.images.length - 4}
                         </span>
                       </div>
@@ -497,24 +497,26 @@ export function TimelinePost({
           </div>
         )}
 
-        {/* Ações do Post */}
-        <div className="flex items-center gap-6 pt-0 pb-0 border-t border-gray-200 dark:border-gray-700">
+        {/* Ações do Post - Responsivo */}
+        <div className="flex items-center flex-wrap gap-2 sm:gap-4 md:gap-6 pt-3 pb-3 border-t border-gray-200 dark:border-gray-700">
           {/* Likes */}
-          <ReactionButton 
-            postId={post.id}
-            postOwnerId={post.user_id}
-            postOwnerName={post.user_name || 'Usuário'}
-          />
+          <div className="flex-shrink-0">
+            <ReactionButton 
+              postId={post.id}
+              postOwnerId={post.user_id}
+              postOwnerName={post.user_name || 'Usuário'}
+            />
+          </div>
 
           {/* Comentários */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowCommentSection(!showCommentSection)}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 flex-shrink-0 px-2 sm:px-3"
           >
-            <MessageCircle className="h-4 w-4 mr-1" />
-            <span>{commentsCount}</span>
+            <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+            <span className="text-xs sm:text-sm">{commentsCount}</span>
           </Button>
 
           {/* Share */}
@@ -522,19 +524,22 @@ export function TimelinePost({
             variant="ghost"
             size="sm"
             onClick={() => setIsShareModalOpen(true)}
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 flex-shrink-0 px-2 sm:px-3"
           >
-            <Share2 className="h-4 w-4 mr-1" />
-            Compartilhar
+            <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+            <span className="hidden sm:inline text-xs sm:text-sm">Compartilhar</span>
+            <span className="sm:hidden text-xs">Share</span>
           </Button>
 
           {/* Curtida Premium */}
-          <PremiumLikeButton 
-            postId={post.id}
-            postCreatorId={post.user_id}
-            size="sm"
-            showStats={false}
-          />
+          <div className="flex-shrink-0">
+            <PremiumLikeButton 
+              postId={post.id}
+              postCreatorId={post.user_id}
+              size="sm"
+              showStats={false}
+            />
+          </div>
         </div>
 
       {/* Comentários */}

@@ -170,18 +170,11 @@ export function ModernSidebar() {
       color: 'yellow',
       items: [
         {
-          id: 'confipoints-overview',
-          title: 'Como Funciona',
-          href: '/confipoints',
-          icon: <Coins className="h-4 w-4" />,
-          description: 'Entenda o sistema'
-        },
-        {
           id: 'confipoints-dashboard',
-          title: 'Meus Pontos',
+          title: 'Dashboard',
           href: '/confipoints/dashboard',
           icon: <BarChart3 className="h-4 w-4" />,
-          description: 'Dashboard completo'
+          description: 'Visão geral e histórico'
         },
         {
           id: 'confipoints-buy',
@@ -191,11 +184,11 @@ export function ModernSidebar() {
           description: 'Adquirir ConfiPoints'
         },
         {
-          id: 'confipoints-use',
-          title: 'Usar Pontos',
-          href: '/confipoints/usar',
+          id: 'confipoints-store',
+          title: 'Loja Premium',
+          href: '/confipoints/loja',
           icon: <Crown className="h-4 w-4" />,
-          description: 'Posts e curtidas premium'
+          description: 'Itens e recursos exclusivos'
         },
         {
           id: 'confipoints-transfer',
@@ -203,6 +196,13 @@ export function ModernSidebar() {
           href: '/confipoints/transferir',
           icon: <Send className="h-4 w-4" />,
           description: 'Enviar pontos'
+        },
+        {
+          id: 'confipoints-withdraw',
+          title: 'Sacar',
+          href: '/confipoints/saque',
+          icon: <Zap className="h-4 w-4" />,
+          description: 'Converter em dinheiro'
         },
       ]
     }] : []),
