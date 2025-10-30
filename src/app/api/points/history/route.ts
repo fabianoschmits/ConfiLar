@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
   try {
+    // Criar cliente Supabase com contexto de autenticação
+    const supabase = createRouteHandlerClient({ cookies })
+    
+    // Verificar autenticação
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+    
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
-    if (!userId) {
-      return NextResponse.json({ error: 'ID do usuário é obrigatório' }, { status: 400 })
+    // Verificar se o userId corresponde ao usuário autenticado
+    if (userId && userId !== user.id) {
+      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
     }
+
+    // Usar o ID do usuário autenticado
+    const authenticatedUserId = user.id
 
     // Parse dos query parameters
     const type = searchParams.get('type')
@@ -18,11 +32,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Construir query
+    // Construir query - agora com o cliente autenticado
     let query = supabase
       .from('point_transactions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', authenticatedUserId)
       .order('created_at', { ascending: false })
 
     // Aplicar filtros

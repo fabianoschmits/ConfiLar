@@ -175,22 +175,37 @@ export function usePointsTransfers(userId?: string) {
     queryFn: async () => {
       if (!userId) return []
       
-      const { data, error } = await supabase
-        .from('points_transfers')
-        .select(`
-          *,
-          from_user:profiles!points_transfers_from_user_id_fkey(id, full_name, avatar_url),
-          to_user:profiles!points_transfers_to_user_id_fkey(id, full_name, avatar_url)
-        `)
-        .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-        .order('created_at', { ascending: false })
-        .limit(50)
-      
-      if (error) throw error
-      return data
+      try {
+        const { data, error } = await supabase
+          .from('points_transfers')
+          .select(`
+            *,
+            from_user:profiles!points_transfers_from_user_id_fkey(id, full_name, avatar_url),
+            to_user:profiles!points_transfers_to_user_id_fkey(id, full_name, avatar_url)
+          `)
+          .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
+          .order('created_at', { ascending: false })
+          .limit(50)
+        
+        // Se a tabela não existir, retornar array vazio em vez de erro
+        if (error) {
+          if (error.code === 'PGRST204' || error.code === 'PGRST116' || error.code === '42P01' || 
+              error.message?.includes('relation') || error.message?.includes('does not exist')) {
+            console.warn('⚠️ Tabela points_transfers não existe, retornando array vazio')
+            return []
+          }
+          throw error
+        }
+        
+        return data || []
+      } catch (err) {
+        console.warn('⚠️ Erro ao buscar transferências:', err)
+        return []
+      }
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutos
+    retry: false, // Não tentar novamente se falhar
   })
 
   const createTransferMutation = useMutation({

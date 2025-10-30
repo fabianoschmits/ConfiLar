@@ -216,28 +216,55 @@ export function usePointsHistory(userId?: string, filters?: PointsHistoryFilters
     queryFn: async () => {
       if (!userId) return []
       
-      // Usar API route pública restaurada para histórico
-      const searchParams = new URLSearchParams()
-      searchParams.set('userId', userId)
+      // Buscar diretamente da tabela point_transactions
+      // O RLS garante que o usuário só vê suas próprias transações
+      let query = supabase
+        .from('point_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
       
-      if (filters?.type) searchParams.set('type', filters.type)
-      if (filters?.source) searchParams.set('source', filters.source)
-      if (filters?.start_date) searchParams.set('start_date', filters.start_date)
-      if (filters?.end_date) searchParams.set('end_date', filters.end_date)
-      if (filters?.limit) searchParams.set('limit', filters.limit.toString())
-      if (filters?.offset) searchParams.set('offset', filters.offset.toString())
-      
-      const response = await fetch(`/api/points/history?${searchParams.toString()}`)
-      const result = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao buscar histórico')
+      // Aplicar filtros
+      if (filters?.type) {
+        query = query.eq('type', filters.type)
       }
       
-      return result.transactions || []
+      if (filters?.source) {
+        query = query.eq('source', filters.source)
+      }
+      
+      if (filters?.start_date) {
+        query = query.gte('created_at', filters.start_date)
+      }
+      
+      if (filters?.end_date) {
+        query = query.lte('created_at', filters.end_date)
+      }
+      
+      // Aplicar limite
+      const limit = filters?.limit || 20
+      const offset = filters?.offset || 0
+      query = query.range(offset, offset + limit - 1)
+      
+      const { data, error: queryError } = await query
+      
+      if (queryError) {
+        console.error('Erro ao buscar transações:', queryError)
+        // Se a tabela não existir, retornar array vazio
+        if (queryError.code === 'PGRST204' || queryError.code === 'PGRST116' || 
+            queryError.message?.includes('relation') || queryError.message?.includes('does not exist')) {
+          console.warn('⚠️ Tabela point_transactions não encontrada')
+          return []
+        }
+        throw queryError
+      }
+      
+      console.log('✅ Transações carregadas:', data?.length || 0)
+      return data || []
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 2, // 2 minutos
+    retry: 3, // Tentar 3 vezes antes de falhar
   })
 
   return {

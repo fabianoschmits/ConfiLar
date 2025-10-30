@@ -271,11 +271,11 @@ export default function IndicacoesPage() {
 }
 
 const pointsTable = [
-  { action: 'Indicação se cadastra', points: 50 },
-  { action: 'Indicação completa perfil', points: 50 },
-  { action: 'Indicação faz primeiro post', points: 30 },
+  { action: 'Indicação se cadastra', points: 200 },
+  { action: 'Indicação completa perfil', points: 150 },
+  { action: 'Indicação faz primeiro post', points: 100 },
   { action: 'Indicação faz primeira avaliação', points: 100 },
-  { action: 'Indicação fica ativa por 30 dias', points: 150 }
+  { action: 'Indicação fica ativa por 30 dias', points: 300 }
 ]
 
 const tiersBenefits = [
