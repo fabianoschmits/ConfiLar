@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { AdaptiveNotificationCenter } from './AdaptiveNotificationCenter'
+import { soundManager } from '@/lib/soundManager'
 
 interface SimpleHeaderBellProps {
   className?: string
@@ -29,9 +30,17 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
     return null
   }
 
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      // Tocar som ao abrir o sino de notificações
+      soundManager.play('/sounds/New/very-fast.mp3', { volume: 0.3 })
+    }
+    setIsOpen(open)
+  }
+
   return (
     <div className={`relative ${className}`}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             variant="ghost"

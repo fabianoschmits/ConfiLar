@@ -2,6 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { logger } from '@/lib/logger'
+import { soundManager } from '@/lib/soundManager'
 import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
 
 interface Props {
@@ -39,6 +40,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Tocar som de erro do sistema
+    soundManager.play('/sounds/New/error.mp3', { volume: 0.5 }).catch(err => {
+      console.warn('⚠️ Erro ao tocar som de erro:', err)
+    })
+    
     // Incrementar contador de retry
     this.retryCount++
 

@@ -14,7 +14,7 @@ import { AvailabilityProvider } from "@/contexts/AvailabilityContext"
 import { LoadingProvider } from "@/hooks/useLoading"
 import { LoadingOverlayProvider } from "@/components/ui/LoadingOverlayProvider"
 import { QueryProvider } from "@/lib/queryClient"
-import { Toaster } from "sonner"
+import { ToasterWithSounds } from "@/components/ui/ToasterWithSounds"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { ServiceWorkerCleaner } from "@/components/ServiceWorkerCleaner"
 import { Suspense } from "react"
@@ -64,20 +64,54 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        {/* Script inline para prevenir FOUC (Flash of Unstyled Content) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('confilar-theme');
+                  if (theme) {
+                    try {
+                      var themeData = JSON.parse(theme);
+                      theme = themeData.theme || theme;
+                    } catch(e) {
+                      // Se não for JSON, usar o valor direto
+                    }
+                    if (theme === 'dark') {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  } else {
+                    // Tema padrão: light
+                    document.documentElement.classList.remove('dark');
+                  }
+                } catch(e) {
+                  console.error('Erro ao carregar tema:', e);
+                }
+              })();
+            `,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/imagens/logo/confilarlogo5.png" />
         <meta name="msapplication-TileImage" content="/imagens/logo/confilarlogo5.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
+        <meta name="color-scheme" content="light dark" />
       </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
-          disableTransitionOnChange
+          disableTransitionOnChange={false}
           storageKey="confilar-theme"
+          forcedTheme={undefined}
+          enableColorScheme={true}
+          nonce={undefined}
         >
           <ServiceWorkerCleaner />
           <ErrorBoundary>
@@ -99,7 +133,7 @@ export default async function RootLayout({
                           <CookieConsentBanner />
                           <PWAManager />
                           {/* <DevTestButton /> */}
-                          <Toaster position="top-right" richColors />
+                          <ToasterWithSounds position="top-right" richColors />
                           {/* <AuthContextDebug /> */}
                         </FloatingChatProviderSimple>
                       </NotificationProviderSimple>

@@ -3,24 +3,26 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.2.0'
-const STATIC_CACHE = 'confilar-static-v1.2.0'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.2.0'
-const API_CACHE = 'confilar-api-v1.2.0'
-const IMAGE_CACHE = 'confilar-images-v1.2.0'
-const DATA_CACHE = 'confilar-data-v1.2.0'
+const CACHE_NAME = 'confilar-pwa-v1.3.0'
+const STATIC_CACHE = 'confilar-static-v1.3.0'
+const DYNAMIC_CACHE = 'confilar-dynamic-v1.3.0'
+const API_CACHE = 'confilar-api-v1.3.0'
+const IMAGE_CACHE = 'confilar-images-v1.3.0'
+const DATA_CACHE = 'confilar-data-v1.3.0'
+const SOUND_CACHE = 'confilar-sounds-v1.3.0'
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
 // =====================================================
 
 const CACHE_STRATEGIES = {
-  // Cache-first: Assets estáticos (CSS, JS, imagens)
+  // Cache-first: Assets estáticos (CSS, JS, imagens, sons)
   CACHE_FIRST: [
     '/static/',
     '/_next/static/',
     '/icons/',
     '/images/',
+    '/sounds/',
     '.css',
     '.js',
     '.png',
@@ -30,7 +32,11 @@ const CACHE_STRATEGIES = {
     '.ico',
     '.woff',
     '.woff2',
-    '.ttf'
+    '.ttf',
+    '.mp3',
+    '.wav',
+    '.ogg',
+    '.m4a'
   ],
   
   // Network-first: Dados dinâmicos (APIs, dados do usuário)
@@ -64,7 +70,22 @@ const OFFLINE_PAGES = [
   '/chat',
   '/favoritos',
   '/buscar',
-  '/classificados'
+  '/classificados',
+  '/feed'
+]
+
+// Sons essenciais para funcionamento offline
+const ESSENTIAL_SOUNDS = [
+  '/sounds/New/atualizar.mp3',
+  '/sounds/New/click.mp3',
+  '/sounds/New/clickbuttons.mp3',
+  '/sounds/New/error.mp3',
+  '/sounds/New/fast.mp3',
+  '/sounds/New/notification-off.mp3',
+  '/sounds/New/notification-pluck-on.mp3',
+  '/sounds/New/notification-reversed.mp3',
+  '/sounds/New/switchMode.mp3',
+  '/sounds/New/very-fast.mp3'
 ]
 
 // =====================================================
@@ -88,13 +109,25 @@ self.addEventListener('install', (event) => {
           '/icon-512x512.png',
           '/icon-192x192-maskable.png',
           '/icon-512x512-maskable.png'
-        ])
+        ]).catch(err => {
+          console.warn('⚠️ Alguns assets estáticos não puderam ser cacheados:', err)
+        })
       }),
       
       // Cache de páginas offline
       caches.open(DYNAMIC_CACHE).then((cache) => {
         console.log('📱 Cacheando páginas offline...')
-        return cache.addAll(OFFLINE_PAGES)
+        return cache.addAll(OFFLINE_PAGES).catch(err => {
+          console.warn('⚠️ Algumas páginas não puderam ser cacheadas:', err)
+        })
+      }),
+      
+      // Cache de sons essenciais
+      caches.open(SOUND_CACHE).then((cache) => {
+        console.log('🔊 Cacheando sons essenciais...')
+        return cache.addAll(ESSENTIAL_SOUNDS).catch(err => {
+          console.warn('⚠️ Alguns sons não puderam ser cacheados:', err)
+        })
       })
     ]).then(() => {
       console.log('✅ ConfiLar PWA: Cache inicial criado com sucesso!')
@@ -121,7 +154,8 @@ self.addEventListener('activate', (event) => {
                 cacheName !== DYNAMIC_CACHE && 
                 cacheName !== API_CACHE &&
                 cacheName !== IMAGE_CACHE &&
-                cacheName !== DATA_CACHE) {
+                cacheName !== DATA_CACHE &&
+                cacheName !== SOUND_CACHE) {
               console.log('🗑️ Removendo cache antigo:', cacheName)
               return caches.delete(cacheName)
             }
@@ -204,17 +238,21 @@ async function handleRequest(request) {
 async function cacheFirst(request) {
   const url = new URL(request.url)
   const isImage = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i.test(url.pathname)
+  const isSound = /\.(mp3|wav|ogg|m4a)$/i.test(url.pathname)
   
-  // Cache de imagens separado
-  const cacheName = isImage ? IMAGE_CACHE : STATIC_CACHE
+  // Cache separado para cada tipo
+  let cacheName = STATIC_CACHE
+  if (isImage) cacheName = IMAGE_CACHE
+  if (isSound) cacheName = SOUND_CACHE
+  
   const cache = await caches.open(cacheName)
   const cached = await cache.match(request)
   
   if (cached) {
     console.log('📦 Cache hit (static):', request.url)
-    // Se for imagem, atualizar em background
-    if (isImage) {
-      fetchAndUpdateImage(request, cache)
+    // Se for imagem ou som, atualizar em background
+    if (isImage || isSound) {
+      fetchAndUpdateAsset(request, cache)
     }
     return cached
   }
@@ -222,19 +260,19 @@ async function cacheFirst(request) {
   try {
     const response = await fetch(request)
     if (response.ok) {
-      // Só cachear imagens < 5MB
-      if (isImage) {
-        const clonedResponse = response.clone()
-        const blob = await clonedResponse.blob()
-        
-        if (blob.size < 5 * 1024 * 1024) { // 5MB
-          cache.put(request, response.clone())
+      const clonedResponse = response.clone()
+      const blob = await clonedResponse.blob()
+      
+      // Só cachear arquivos < 5MB
+      if (blob.size < 5 * 1024 * 1024) { // 5MB
+        cache.put(request, response.clone())
+        if (isImage) {
           console.log('📸 Imagem cacheada:', url.pathname, `(${formatBytes(blob.size)})`)
-        } else {
-          console.log('⚠️ Imagem muito grande, não cacheada:', url.pathname)
+        } else if (isSound) {
+          console.log('🔊 Som cacheado:', url.pathname, `(${formatBytes(blob.size)})`)
         }
       } else {
-        cache.put(request, response.clone())
+        console.log('⚠️ Arquivo muito grande, não cacheado:', url.pathname)
       }
     }
     return response
@@ -246,12 +284,20 @@ async function cacheFirst(request) {
       return getImagePlaceholder()
     }
     
+    // Se for som, retornar resposta vazia (silêncio)
+    if (isSound) {
+      return new Response(new Blob(), { 
+        status: 200,
+        headers: { 'Content-Type': 'audio/mpeg' }
+      })
+    }
+    
     return new Response('Asset não disponível offline', { status: 503 })
   }
 }
 
-// Atualizar imagem em background
-async function fetchAndUpdateImage(request, cache) {
+// Atualizar asset em background (imagem ou som)
+async function fetchAndUpdateAsset(request, cache) {
   try {
     const response = await fetch(request)
     if (response.ok) {
@@ -628,7 +674,7 @@ async function removeFromQueue(actionId) {
 // Limpar caches antigos
 async function cleanOldCaches() {
   const cacheNames = await caches.keys()
-  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE, DATA_CACHE]
+  const currentCaches = [CACHE_NAME, STATIC_CACHE, DYNAMIC_CACHE, API_CACHE, IMAGE_CACHE, DATA_CACHE, SOUND_CACHE]
   
   for (const cacheName of cacheNames) {
     if (!currentCaches.includes(cacheName)) {
