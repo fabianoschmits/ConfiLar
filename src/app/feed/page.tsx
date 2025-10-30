@@ -13,6 +13,7 @@ import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { TimelinePost } from '@/components/timeline/TimelinePost'
 import { TimelineActivity } from '@/components/timeline/TimelineActivity'
 import { TimelineNotification } from '@/components/timeline/TimelineNotification'
@@ -75,10 +76,24 @@ export default function FeedPage() {
     addPost,
     addPremiumPost,
     editPost,
-    deletePost
+    deletePost,
+    refetch
   } = useUnifiedTimeline({
     ...filters,
     location_filter: currentFilter
+  })
+
+  // Hook para pull-to-refresh
+  const {
+    containerRef,
+    isPulling,
+    isRefreshing,
+    pullDistance,
+    shouldRefresh
+  } = usePullToRefresh({
+    onRefresh: async () => {
+      await refetch()
+    }
   })
 
   // Função para identificar se um post é automático
@@ -574,7 +589,41 @@ export default function FeedPage() {
         )}
 
         {/* Layout Principal - Responsivo */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto" ref={containerRef}>
+          {/* Indicador de Pull-to-Refresh */}
+          {(isPulling || isRefreshing) && (
+            <div 
+              className="flex items-center justify-center py-4 transition-all duration-200"
+              style={{
+                opacity: isPulling ? Math.min(pullDistance / 80, 1) : 1,
+                transform: `translateY(${Math.min(pullDistance / 2, 40)}px)`
+              }}
+            >
+              <div className="flex items-center space-x-2 text-blue-600">
+                {isRefreshing ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="text-sm font-medium">Atualizando...</span>
+                  </>
+                ) : shouldRefresh ? (
+                  <>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm font-medium">Solte para atualizar</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                    <span className="text-sm font-medium">Puxe para atualizar</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          
           {/* Timeline Principal */}
           <div className="space-y-4 md:space-y-6">
             {isLoading && filteredItems.length === 0 ? (

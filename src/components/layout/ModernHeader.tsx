@@ -17,6 +17,7 @@ import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 import { useAvailability } from '@/hooks/useAvailability'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { soundManager } from '@/lib/soundManager'
 import { 
   Search,
   Bell,
@@ -304,7 +305,10 @@ export function ModernHeader({
               <div className="relative -ml-1">
                 <Button
                   variant="ghost"
-                  onClick={() => setIsMenuExpanded(!isMenuExpanded)}
+                  onClick={() => {
+                    soundManager.play('/sounds/New/very-fast.mp3', { volume: 0.3 })
+                    setIsMenuExpanded(!isMenuExpanded)
+                  }}
                   className="flex items-center gap-2 px-3 py-2"
                 >
                   <UserAvatar 

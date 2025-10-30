@@ -3,6 +3,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { useAvailability } from '@/hooks/useAvailability'
+import { soundManager } from '@/lib/soundManager'
 import { 
   ToggleRight, 
   ToggleLeft, 
@@ -53,6 +54,8 @@ export function AvailabilityToggle({
   const sizeClasses = getSizeClasses()
 
   const handleToggle = async () => {
+    // Tocar som antes de alternar
+    soundManager.play('/sounds/New/clickbuttons.mp3', { volume: 0.4 })
     await toggleAvailability()
   }
 
@@ -113,6 +116,8 @@ export function AvailabilityToggleCompact({ className = '' }: { className?: stri
   const { isAvailable, loading, toggleAvailability } = useAvailability()
 
   const handleToggle = async () => {
+    // Tocar som antes de alternar
+    soundManager.play('/sounds/New/clickbuttons.mp3', { volume: 0.4 })
     await toggleAvailability()
   }
 
