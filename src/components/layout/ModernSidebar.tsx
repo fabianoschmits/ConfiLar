@@ -197,13 +197,6 @@ export function ModernSidebar() {
           icon: <Send className="h-4 w-4" />,
           description: 'Enviar pontos'
         },
-        {
-          id: 'confipoints-withdraw',
-          title: 'Sacar',
-          href: '/confipoints/saque',
-          icon: <Zap className="h-4 w-4" />,
-          description: 'Converter em dinheiro'
-        },
       ]
     }] : []),
     ...(isLoggedIn && profile?.user_type === 'professional' ? [{

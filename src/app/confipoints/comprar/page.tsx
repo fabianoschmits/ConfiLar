@@ -432,7 +432,7 @@ export default function ComprarPontosPage() {
                       <li>• ConfiPoints não expiram e podem ser usados a qualquer momento</li>
                       <li>• Todos os pagamentos são processados de forma segura via PIX</li>
                       <li>• Você pode transferir pontos para outros usuários sem taxas</li>
-                      <li>• Você pode sacar seus pontos (mínimo: 10.000 pts = R$ 100,00)</li>
+                      <li>• Você pode transferir seus pontos para outros usuários</li>
                       <li>• Suporte 24/7 para dúvidas sobre compras</li>
                       <li>• Quanto maior o pacote, maior o bônus (até 25%)</li>
                     </ul>

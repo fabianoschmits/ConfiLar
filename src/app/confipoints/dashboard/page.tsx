@@ -30,7 +30,6 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { usePoints } from '@/hooks/usePoints'
 import { 
   usePointsPurchases, 
-  usePointsWithdrawals, 
   usePointsTransfers 
 } from '@/hooks/useEconomy'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
@@ -42,7 +41,6 @@ export default function ConfiPointsDashboardPage() {
   const { user, profile } = useAuthContext()
   const { balance, loading: loadingPoints } = usePoints(user?.id)
   const { purchases, loading: loadingPurchases } = usePointsPurchases(user?.id)
-  const { withdrawals, loading: loadingWithdrawals } = usePointsWithdrawals(user?.id)
   const { transfers, loading: loadingTransfers } = usePointsTransfers(user?.id)
   
   const [activeTab, setActiveTab] = useState('visao-geral')
@@ -80,14 +78,6 @@ export default function ConfiPointsDashboardPage() {
       date: p.created_at,
       status: p.status
     })) || []),
-    ...(withdrawals?.map((w: any) => ({
-      id: w.id,
-      type: 'withdrawal',
-      amount: -w.points_amount,
-      description: `Saque de ${w.points_amount} pontos (R$ ${(w.points_amount / 100).toFixed(2)})`,
-      date: w.created_at,
-      status: w.status
-    })) || []),
     ...(transfers?.map((t: any) => {
       const isSent = t.from_user_id === user?.id
       return {
@@ -106,7 +96,6 @@ export default function ConfiPointsDashboardPage() {
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'purchase': return <ShoppingBag className="h-4 w-4" />
-      case 'withdrawal': return <Wallet className="h-4 w-4" />
       case 'transfer_sent': return <Send className="h-4 w-4" />
       case 'transfer_received': return <Gift className="h-4 w-4" />
       default: return <Coins className="h-4 w-4" />
@@ -116,7 +105,6 @@ export default function ConfiPointsDashboardPage() {
   const getTransactionColor = (type: string) => {
     switch (type) {
       case 'purchase': return 'text-green-600'
-      case 'withdrawal': return 'text-red-600'
       case 'transfer_sent': return 'text-orange-600'
       case 'transfer_received': return 'text-green-600'
       default: return 'text-gray-600'
@@ -263,15 +251,6 @@ export default function ConfiPointsDashboardPage() {
                           <span className="flex items-center gap-2">
                             <Send className="h-4 w-4" />
                             Transferir Pontos
-                          </span>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/confipoints/saque">
-                        <Button className="w-full justify-between" variant="outline">
-                          <span className="flex items-center gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Sacar Pontos
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -499,26 +478,6 @@ export default function ConfiPointsDashboardPage() {
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-base">
-                        <Wallet className="h-5 w-5 text-green-600" />
-                        Sacar
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Converta seus pontos em dinheiro real via PIX.
-                      </p>
-                      <Link href="/confipoints/saque">
-                        <Button className="w-full" variant="outline">
-                          Sacar
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </div>
-
                 <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3">
@@ -530,9 +489,7 @@ export default function ConfiPointsDashboardPage() {
                         <p className="text-sm text-yellow-800 dark:text-yellow-200">
                           <strong>100 pontos = R$ 1,00</strong>
                           <br />
-                          Saque mínimo: 10.000 pontos (R$ 100,00)
-                          <br />
-                          Taxa de saque: 5%
+                          Use seus pontos na loja, posts premium, curtidas e muito mais!
                         </p>
                       </div>
                     </div>
@@ -550,7 +507,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(loadingPurchases || loadingWithdrawals || loadingTransfers) ? (
+                    {(loadingPurchases || loadingTransfers) ? (
                       <p className="text-center py-8 text-gray-500">Carregando...</p>
                     ) : allTransactions.length === 0 ? (
                       <p className="text-center py-8 text-gray-500">

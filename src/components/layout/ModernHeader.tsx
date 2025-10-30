@@ -572,15 +572,6 @@ export function ModernHeader({
                               <Send className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                               <span className="truncate text-blue-700 dark:text-blue-300">Transferir</span>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/confipoints/saque')}
-                              className="flex items-center gap-1 text-xs py-1 h-7 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
-                            >
-                              <DollarSign className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                              <span className="truncate text-emerald-700 dark:text-emerald-300">Sacar</span>
-                            </Button>
                           </div>
                         )}
                       </div>
