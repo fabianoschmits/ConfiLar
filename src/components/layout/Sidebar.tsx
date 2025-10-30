@@ -294,13 +294,6 @@ export function Sidebar() {
           description: 'Comprar pontos'
         },
         {
-          id: 'withdraw',
-          title: 'SACAR',
-          href: '/confipoints/saque',
-          icon: <Wallet size={16} strokeWidth={2} />,
-          description: 'Converter pontos em dinheiro'
-        },
-        {
           id: 'transfer',
           title: 'TRANSFERIR',
           href: '/confipoints/transferir',
