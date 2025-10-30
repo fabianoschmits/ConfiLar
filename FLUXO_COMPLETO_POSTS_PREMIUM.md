@@ -9,18 +9,18 @@
 | Duração | Pontos | Valor (R$) | Custo/Dia | Economia | Badge |
 |---------|--------|------------|-----------|----------|-------|
 | **1 dia** 🟢 | 1.000 | R$ 10,00 | 1.000 pts/dia | - | **Teste** |
-| **7 dias** 🟡 | 3.000 | R$ 30,00 | 429 pts/dia | **57%** | **Popular** |
-| **14 dias** 🔴 | 5.000 | R$ 50,00 | 357 pts/dia | **64%** | **Econômico** |
-| **30 dias** 🟣 | 9.000 | R$ 90,00 | 300 pts/dia | **70%** | **Máximo** |
+| **7 dias** 🟡 | 6.000 | R$ 60,00 | 857 pts/dia | **14%** | **Popular** |
+| **14 dias** 🔴 | 10.000 | R$ 100,00 | 714 pts/dia | **29%** | **Econômico** |
+| **30 dias** 🟣 | 18.000 | R$ 180,00 | 600 pts/dia | **40%** | **Máximo** |
 
 ### 💡 **Justificativa dos Preços:**
 
 - **1 dia (1.000 pts)**: Opção acessível para testar o sistema
-- **7 dias (3.000 pts)**: Boa relação custo/benefício (57% economia vs. 1 dia)
-- **14 dias (5.000 pts)**: Melhor valor intermediário (64% economia)
-- **30 dias (9.000 pts)**: Máxima economia para quem quer destaque prolongado (70% economia)
+- **7 dias (6.000 pts)**: Boa relação custo/benefício (14% economia vs. 1 dia)
+- **14 dias (10.000 pts)**: Melhor valor intermediário (29% economia)
+- **30 dias (18.000 pts)**: Máxima economia para quem quer destaque prolongado (40% economia)
 
-**Evita saturação**: Com 1 dia a 1.000 pontos, não fica tão barato a ponto de todo mundo postar premium o tempo todo.
+**Evita saturação**: Com preços mais altos, mantém o valor premium dos posts em destaque.
 
 ---
 
@@ -40,8 +40,8 @@ Saldo Atual: 10.000 pontos 💰
 │  1 Dia   │  7 Dias  │ 14 Dias  │ 30 Dias  │
 │  🟢      │  🟡      │  🔴      │  🟣      │
 │  Teste   │ Popular  │Econômico │ Máximo   │
-│   [1]    │   [7]    │   [14]   │   [30]   │
-│ 1.000pts │ 3.000pts │ 5.000pts │ 9.000pts │
+│   [1K]   │   [6K]   │   [10K]  │   [18K]  │
+│ 1.000pts │ 6.000pts │10.000pts │18.000pts │
 │24 horas  │1 semana  │2 semanas │  1 mês   │
 └──────────┴──────────┴──────────┴──────────┘
 
@@ -58,9 +58,9 @@ Saldo Atual: 10.000 pontos 💰
 
 ### **2️⃣ USUÁRIO ESCOLHE E PUBLICA**
 
-**Exemplo**: Usuário escolhe **7 dias (3.000 pontos)**
+**Exemplo**: Usuário escolhe **7 dias (6.000 pontos)**
 
-1. ✅ Verifica saldo: `balance >= 3.000`
+1. ✅ Verifica saldo: `balance >= 6.000`
 2. ✅ Preenche título e descrição
 3. ✅ Clica em "Publicar Post Premium"
 
@@ -87,7 +87,7 @@ await supabase.from('feed_posts').insert({
   title: 'Meu Post Premium',
   description: 'Conteúdo...',
   is_premium: true,
-  premium_points_spent: 3000,
+  premium_points_spent: 6000,
   premium_expires_at: '2025-11-05T12:00:00Z',
   premium_highlight_color: '#FFD700',
   is_featured: true,
@@ -118,7 +118,7 @@ await supabase.rpc('add_points', {
 INSERT INTO feed_posts (
   id, user_id, title, description,
   is_premium,              -- TRUE
-  premium_points_spent,    -- 3000
+  premium_points_spent,    -- 6000 (exemplo para 7 dias)
   premium_expires_at,      -- 2025-11-05T12:00:00Z
   premium_highlight_color, -- #FFD700
   is_featured,             -- TRUE
@@ -324,9 +324,9 @@ Criar 4 posts premium, um de cada duração:
 | Post | Duração | Pontos | Esperado |
 |------|---------|--------|----------|
 | Post 1 | 1 dia | 1.000 | Expira em 24h |
-| Post 2 | 7 dias | 3.000 | Expira em 7 dias |
-| Post 3 | 14 dias | 5.000 | Expira em 14 dias |
-| Post 4 | 30 dias | 9.000 | Expira em 30 dias |
+| Post 2 | 7 dias | 6.000 | Expira em 7 dias |
+| Post 3 | 14 dias | 10.000 | Expira em 14 dias |
+| Post 4 | 30 dias | 18.000 | Expira em 30 dias |
 
 **Verificar**:
 ```sql

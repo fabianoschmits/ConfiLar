@@ -39,24 +39,24 @@ export const PREMIUM_PRICES = {
   },
   
   POST_7_DAYS: {
-    POINTS: 3000,
-    BRL: 30.00,
+    POINTS: 6000,
+    BRL: 60.00,
     DESCRIPTION: 'Post em destaque no feed',
     DURATION: '7 dias',
     DAYS: 7
   },
   
   POST_14_DAYS: {
-    POINTS: 5000,
-    BRL: 50.00,
+    POINTS: 10000,
+    BRL: 100.00,
     DESCRIPTION: 'Post em destaque no feed',
     DURATION: '14 dias',
     DAYS: 14
   },
   
   POST_30_DAYS: {
-    POINTS: 9000,
-    BRL: 90.00,
+    POINTS: 18000,
+    BRL: 180.00,
     DESCRIPTION: 'Post em destaque no feed',
     DURATION: '30 dias',
     DAYS: 30
