@@ -477,6 +477,7 @@ export default function ConfiPointsDashboardPage() {
                       </Link>
                     </CardContent>
                   </Card>
+                </div>
 
                 <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
                   <CardContent className="p-6">
