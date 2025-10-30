@@ -38,7 +38,8 @@ import {
   Edit,
   BarChart3,
   BookOpen,
-  Award
+  Award,
+  Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -288,9 +289,9 @@ export function Sidebar() {
         },
         {
           id: 'store',
-          title: 'LOJA',
-          href: '/confipoints/loja',
-          icon: <CreditCard size={16} strokeWidth={2} />,
+          title: 'LOJA PREMIUM',
+          href: '/confipoints/comprar',
+          icon: <Crown size={16} strokeWidth={2} />,
           description: 'Comprar pontos'
         },
         {

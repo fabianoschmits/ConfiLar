@@ -240,8 +240,8 @@ export default function ConfiPointsDashboardPage() {
                       <Link href="/confipoints/comprar">
                         <Button className="w-full justify-between" variant="outline">
                           <span className="flex items-center gap-2">
-                            <ShoppingBag className="h-4 w-4" />
-                            Comprar Pontos
+                            <Crown className="h-4 w-4" />
+                            Loja Premium
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -251,15 +251,6 @@ export default function ConfiPointsDashboardPage() {
                           <span className="flex items-center gap-2">
                             <Send className="h-4 w-4" />
                             Transferir Pontos
-                          </span>
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Link href="/confipoints/loja">
-                        <Button className="w-full justify-between" variant="outline">
-                          <span className="flex items-center gap-2">
-                            <Crown className="h-4 w-4" />
-                            Loja Premium
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -451,9 +442,9 @@ export default function ConfiPointsDashboardPage() {
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                         Compre badges exclusivos, recursos especiais e muito mais.
                       </p>
-                      <Link href="/confipoints/loja">
+                      <Link href="/confipoints/comprar">
                         <Button className="w-full" variant="outline">
-                          Ver Loja
+                          Loja Premium
                         </Button>
                       </Link>
                     </CardContent>
