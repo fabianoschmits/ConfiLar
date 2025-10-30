@@ -186,6 +186,40 @@ export function useSupabaseReviews() {
 
       if (error) throw error
 
+      // ✅ VERIFICAR SE É A PRIMEIRA AVALIAÇÃO DO USUÁRIO (para referral milestone)
+      if (data && data.reviewer_id) {
+        try {
+          // Contar quantas avaliações o usuário fez
+          const { count, error: countError } = await supabase
+            .from('reviews')
+            .select('*', { count: 'exact', head: true })
+            .eq('reviewer_id', data.reviewer_id)
+          
+          if (!countError && count === 1) {
+            console.log('🎉 [Review] Esta é a PRIMEIRA avaliação do usuário! Marcando milestone...')
+            
+            // Marcar milestone de primeira avaliação
+            const { error: milestoneError } = await supabase
+              .from('referrals')
+              .update({ 
+                first_review_made: true,
+                last_activity_at: new Date().toISOString()
+              })
+              .eq('referred_id', data.reviewer_id)
+              .eq('first_review_made', false)
+            
+            if (milestoneError) {
+              console.warn('⚠️ [Review] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
+            } else {
+              console.log('✅ [Review] Milestone first_review_made marcado! (+100 pontos para indicador)')
+            }
+          }
+        } catch (milestoneError) {
+          console.warn('⚠️ [Review] Erro ao processar milestone de primeira avaliação:', milestoneError)
+          // Não falhar a criação da avaliação se houver erro no milestone
+        }
+      }
+
       // Criar notificação para o usuário avaliado
       if (data && data.reviewed_id !== data.reviewer_id) {
         await createReviewNotification(data)

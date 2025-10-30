@@ -27,11 +27,7 @@ import {
   Star
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { usePoints } from '@/hooks/usePoints'
-import { 
-  usePointsPurchases, 
-  usePointsTransfers 
-} from '@/hooks/useEconomy'
+import { usePoints, usePointsHistory } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
@@ -40,8 +36,7 @@ import { ptBR } from 'date-fns/locale'
 export default function ConfiPointsDashboardPage() {
   const { user, profile } = useAuthContext()
   const { balance, loading: loadingPoints } = usePoints(user?.id)
-  const { purchases, loading: loadingPurchases } = usePointsPurchases(user?.id)
-  const { transfers, loading: loadingTransfers } = usePointsTransfers(user?.id)
+  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 50 })
   
   const [activeTab, setActiveTab] = useState('visao-geral')
 
@@ -68,47 +63,92 @@ export default function ConfiPointsDashboardPage() {
   const nextLevel = getNextLevel(balance?.balance || 0)
   const progress = nextLevel ? ((balance?.balance || 0) / nextLevel.target) * 100 : 100
 
-  // Combinar todas as transações
-  const allTransactions = [
-    ...(purchases?.map((p: any) => ({
-      id: p.id,
-      type: 'purchase',
-      amount: p.points_amount,
-      description: `Compra de ${p.points_amount} pontos`,
-      date: p.created_at,
-      status: p.status
-    })) || []),
-    ...(transfers?.map((t: any) => {
-      const isSent = t.from_user_id === user?.id
-      return {
-        id: t.id,
-        type: isSent ? 'transfer_sent' : 'transfer_received',
-        amount: isSent ? -t.amount : t.amount,
-        description: isSent 
-          ? `Transferência para ${t.to_user?.full_name || 'Usuário'}`
-          : `Recebido de ${t.from_user?.full_name || 'Usuário'}`,
-        date: t.created_at,
-        status: 'completed'
+  // Mapear transações do histórico para formato da UI
+  const allTransactions = (transactions || []).map((t: any) => {
+    const isPositive = t.amount > 0 || t.type === 'earn' || t.type === 'purchase' || t.type === 'refund'
+    
+    let typeLabel = ''
+    let description = t.description || ''
+    
+    // Determinar tipo e descrição baseado na transação
+    switch (t.type) {
+      case 'earn':
+        typeLabel = 'received'
+        if (!description) description = `Ganhou ${Math.abs(t.amount)} pontos`
+        break
+      case 'spend':
+        typeLabel = 'spent'
+        if (!description) description = `Gastou ${Math.abs(t.amount)} pontos`
+        break
+      case 'transfer':
+        typeLabel = isPositive ? 'transfer_received' : 'transfer_sent'
+        if (!description) {
+          description = isPositive 
+            ? `Recebeu transferência de ${Math.abs(t.amount)} pontos`
+            : `Transferiu ${Math.abs(t.amount)} pontos`
+        }
+        break
+      case 'purchase':
+        typeLabel = 'purchase'
+        if (!description) description = `Comprou ${Math.abs(t.amount)} pontos`
+        break
+      case 'refund':
+        typeLabel = 'refund'
+        if (!description) description = `Reembolso de ${Math.abs(t.amount)} pontos`
+        break
+      default:
+        typeLabel = t.type || 'other'
+        if (!description) description = `Transação de ${Math.abs(t.amount)} pontos`
+    }
+
+    // Adicionar informações sobre a fonte se disponível
+    if (t.source) {
+      const sourceLabels: Record<string, string> = {
+        'referral': '(Indicação)',
+        'post': '(Post)',
+        'like': '(Curtida)',
+        'daily': '(Bônus Diário)',
+        'purchase': '(Compra)',
+        'transfer': '(Transferência)',
+        'premium_post': '(Post Premium)',
+        'store': '(Loja)',
+        'bonus': '(Bônus)'
       }
-    }) || [])
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      if (sourceLabels[t.source]) {
+        description += ` ${sourceLabels[t.source]}`
+      }
+    }
+
+    return {
+      id: t.id,
+      type: typeLabel,
+      amount: t.amount,
+      description,
+      date: t.created_at,
+      status: 'completed',
+      source: t.source,
+      metadata: t.metadata
+    }
+  })
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
       case 'purchase': return <ShoppingBag className="h-4 w-4" />
       case 'transfer_sent': return <Send className="h-4 w-4" />
       case 'transfer_received': return <Gift className="h-4 w-4" />
+      case 'spent': return <ArrowDownRight className="h-4 w-4" />
+      case 'received': return <ArrowUpRight className="h-4 w-4" />
+      case 'refund': return <History className="h-4 w-4" />
       default: return <Coins className="h-4 w-4" />
     }
   }
 
-  const getTransactionColor = (type: string) => {
-    switch (type) {
-      case 'purchase': return 'text-green-600'
-      case 'transfer_sent': return 'text-orange-600'
-      case 'transfer_received': return 'text-green-600'
-      default: return 'text-gray-600'
+  const getTransactionColor = (type: string, amount: number) => {
+    // Se o amount é positivo, é verde; se negativo, é vermelho
+    if (amount > 0 || type === 'purchase' || type === 'received' || type === 'transfer_received' || type === 'refund') {
+      return 'text-green-600 dark:text-green-400'
     }
+    return 'text-red-600 dark:text-red-400'
   }
 
   return (
@@ -499,7 +539,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(loadingPurchases || loadingTransfers) ? (
+                    {loadingHistory ? (
                       <p className="text-center py-8 text-gray-500">Carregando...</p>
                     ) : allTransactions.length === 0 ? (
                       <p className="text-center py-8 text-gray-500">
@@ -515,7 +555,7 @@ export default function ConfiPointsDashboardPage() {
                                   ? 'bg-green-100 dark:bg-green-900/20' 
                                   : 'bg-red-100 dark:bg-red-900/20'
                               }`}>
-                                <div className={getTransactionColor(transaction.type)}>
+                                <div className={getTransactionColor(transaction.type, transaction.amount)}>
                                   {getTransactionIcon(transaction.type)}
                                 </div>
                               </div>

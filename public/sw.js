@@ -3,13 +3,13 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.3.0'
-const STATIC_CACHE = 'confilar-static-v1.3.0'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.3.0'
-const API_CACHE = 'confilar-api-v1.3.0'
-const IMAGE_CACHE = 'confilar-images-v1.3.0'
-const DATA_CACHE = 'confilar-data-v1.3.0'
-const SOUND_CACHE = 'confilar-sounds-v1.3.0'
+const CACHE_NAME = 'confilar-pwa-v1.3.1'
+const STATIC_CACHE = 'confilar-static-v1.3.1'
+const DYNAMIC_CACHE = 'confilar-dynamic-v1.3.1'
+const API_CACHE = 'confilar-api-v1.3.1'
+const IMAGE_CACHE = 'confilar-images-v1.3.1'
+const DATA_CACHE = 'confilar-data-v1.3.1'
+const SOUND_CACHE = 'confilar-sounds-v1.3.1'
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
@@ -201,6 +201,12 @@ async function handleRequest(request) {
   const requestUrl = request.url
   
   try {
+    // ⚠️ IMPORTANTE: Só cachear requisições GET
+    if (request.method !== 'GET') {
+      console.log('🚫 Método não GET, apenas fazendo fetch:', request.method, url.pathname)
+      return await fetch(request)
+    }
+    
     // 1. CACHE-FIRST: Assets estáticos
     if (isCacheFirst(requestUrl)) {
       return await cacheFirst(request)
@@ -259,13 +265,16 @@ async function cacheFirst(request) {
   
   try {
     const response = await fetch(request)
-    if (response.ok) {
+    // ⚠️ Não cachear respostas parciais (206) ou com erro
+    if (response.ok && response.status !== 206) {
       const clonedResponse = response.clone()
       const blob = await clonedResponse.blob()
       
       // Só cachear arquivos < 5MB
       if (blob.size < 5 * 1024 * 1024) { // 5MB
-        cache.put(request, response.clone())
+        cache.put(request, response.clone()).catch(err => {
+          console.warn('⚠️ Erro ao cachear:', url.pathname, err.message)
+        })
         if (isImage) {
           console.log('📸 Imagem cacheada:', url.pathname, `(${formatBytes(blob.size)})`)
         } else if (isSound) {
@@ -300,8 +309,11 @@ async function cacheFirst(request) {
 async function fetchAndUpdateAsset(request, cache) {
   try {
     const response = await fetch(request)
-    if (response.ok) {
-      cache.put(request, response.clone())
+    // ⚠️ Não cachear respostas parciais (206) ou com erro
+    if (response.ok && response.status !== 206) {
+      cache.put(request, response.clone()).catch(err => {
+        console.warn('⚠️ Erro ao atualizar asset em background:', err.message)
+      })
     }
   } catch (error) {
     // Ignorar erros de atualização em background
@@ -343,8 +355,11 @@ async function staleWhileRevalidate(request) {
   
   // Buscar nova versão em background
   const fetchPromise = fetch(request).then(response => {
-    if (response.ok) {
-      cache.put(request, response.clone())
+    // ⚠️ Não cachear respostas parciais (206) ou com erro
+    if (response.ok && response.status !== 206) {
+      cache.put(request, response.clone()).catch(err => {
+        console.warn('⚠️ Erro ao cachear (stale-while-revalidate):', err.message)
+      })
     }
     return response
   }).catch(() => {
@@ -360,9 +375,12 @@ async function staleWhileRevalidate(request) {
 async function networkFirst(request) {
   try {
     const response = await fetch(request)
-    if (response.ok) {
+    // ⚠️ Não cachear respostas parciais (206) ou com erro
+    if (response.ok && response.status !== 206) {
       const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, response.clone())
+      cache.put(request, response.clone()).catch(err => {
+        console.warn('⚠️ Erro ao cachear (network-first):', err.message)
+      })
     }
     return response
   } catch (error) {
@@ -394,10 +412,12 @@ async function cacheOnly(request) {
 async function networkWithFallback(request) {
   try {
     const response = await fetch(request)
-    if (response.ok) {
-      // Cachear respostas bem-sucedidas
+    // ⚠️ Não cachear respostas parciais (206) ou com erro
+    if (response.ok && response.status !== 206) {
       const cache = await caches.open(DYNAMIC_CACHE)
-      cache.put(request, response.clone())
+      cache.put(request, response.clone()).catch(err => {
+        console.warn('⚠️ Erro ao cachear (fallback):', err.message)
+      })
     }
     return response
   } catch (error) {

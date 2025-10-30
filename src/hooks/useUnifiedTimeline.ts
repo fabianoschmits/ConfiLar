@@ -825,22 +825,22 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       console.log('✅ [addPremiumPost] Post PREMIUM criado com sucesso:', data.id)
 
-      // DEBITAR PONTOS DO USUÁRIO
-      const newBalance = balanceData.balance - newPost.pointsToSpend
-      const newTotalSpent = (balanceData.total_spent || 0) + newPost.pointsToSpend
-      
-      const { error: deductError } = await supabase
-        .from('user_points_balance')
-        .update({ 
-          balance: newBalance,
-          available_balance: newBalance,
-          total_spent: newTotalSpent,
-          updated_at: new Date().toISOString()
+      // DEBITAR PONTOS DO USUÁRIO usando add_points (registra a transação)
+      const { error: pointsError } = await supabase
+        .rpc('add_points', {
+          p_user_id: newPost.user_id,
+          p_points: -newPost.pointsToSpend,
+          p_source: 'premium_post',
+          p_description: `Criou post premium (${newPost.durationDays} dia${newPost.durationDays > 1 ? 's' : ''} - ${newPost.pointsToSpend} pontos)`,
+          p_metadata: {
+            post_id: data.id,
+            duration_days: newPost.durationDays,
+            post_title: newPost.title
+          }
         })
-        .eq('user_id', newPost.user_id)
 
-      if (deductError) {
-        console.error('❌ [addPremiumPost] Erro ao debitar pontos:', deductError)
+      if (pointsError) {
+        console.error('❌ [addPremiumPost] Erro ao debitar pontos:', pointsError)
         // Rollback: deletar o post criado
         await supabase
           .from('feed_posts')
@@ -848,6 +848,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           .eq('id', data.id)
         throw new Error('Erro ao debitar pontos. Post não foi criado.')
       }
+
+      console.log('✅ [addPremiumPost] Pontos debitados com sucesso e transação registrada')
 
       // Atualizar estatísticas de pontos no perfil
       const { data: currentProfile, error: profileSelectError } = await supabase
