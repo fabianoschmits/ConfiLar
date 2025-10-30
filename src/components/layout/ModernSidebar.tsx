@@ -177,18 +177,11 @@ export function ModernSidebar() {
           description: 'Visão geral e histórico'
         },
         {
-          id: 'confipoints-buy',
-          title: 'Comprar Pontos',
-          href: '/confipoints/comprar',
-          icon: <ShoppingCart className="h-4 w-4" />,
-          description: 'Adquirir ConfiPoints'
-        },
-        {
           id: 'confipoints-store',
           title: 'Loja Premium',
-          href: '/confipoints/loja',
+          href: '/confipoints/comprar',
           icon: <Crown className="h-4 w-4" />,
-          description: 'Itens e recursos exclusivos'
+          description: 'Adquirir ConfiPoints'
         },
         {
           id: 'confipoints-transfer',
