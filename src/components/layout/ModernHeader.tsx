@@ -429,24 +429,15 @@ export function ModernHeader({
                               <Home className="h-3 w-3" />
                               <span className="truncate">Home</span>
                             </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Descobrir */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('descobrir')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Search className="h-3 w-3" />
-                            Descobrir
-                          </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('descobrir') ? 'rotate-180' : ''}`} />
-                        </button>
-                        {expandedSections.has('descobrir') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/feed')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Users className="h-3 w-3" />
+                              <span className="truncate">Feed Social</span>
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -464,59 +455,6 @@ export function ModernHeader({
                             >
                               <Briefcase className="h-3 w-3" />
                               <span className="truncate">Classificados</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/feed')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Users className="h-3 w-3" />
-                              <span className="truncate">Feed Social</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/avaliacoes')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <Star className="h-3 w-3" />
-                              <span className="truncate">Avaliações</span>
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Comunicação */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('comunicacao')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <MessageCircle className="h-3 w-3" />
-                            Comunicação
-                          </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('comunicacao') ? 'rotate-180' : ''}`} />
-                        </button>
-                        {expandedSections.has('comunicacao') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                openChat()
-                                setIsMenuExpanded(false)
-                              }}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Mensagens</span>
-                              {unreadCount > 0 && (
-                                <Badge variant="destructive" className="ml-auto text-xs px-1 py-0">
-                                  {unreadCount}
-                                </Badge>
-                              )}
                             </Button>
                           </div>
                         )}
@@ -544,6 +482,41 @@ export function ModernHeader({
                             >
                               <Heart className="h-3 w-3" />
                               <span className="truncate">Favoritos</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/avaliacoes')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <Star className="h-3 w-3" />
+                              <span className="truncate">Avaliações</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/indicacoes')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <UserPlus className="h-3 w-3" />
+                              <span className="truncate">Indicações</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                openChat()
+                                setIsMenuExpanded(false)
+                              }}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              <span className="truncate">Mensagens</span>
+                              {unreadCount > 0 && (
+                                <Badge variant="destructive" className="ml-auto text-xs px-1 py-0">
+                                  {unreadCount}
+                                </Badge>
+                              )}
                             </Button>
                           </div>
                         )}
@@ -663,7 +636,7 @@ export function ModernHeader({
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('suporte') ? 'rotate-180' : ''}`} />
                         </button>
                         {expandedSections.has('suporte') && (
-                          <div className="grid grid-cols-1 gap-1 px-2 pb-2">
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
