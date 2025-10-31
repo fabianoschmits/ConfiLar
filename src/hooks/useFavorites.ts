@@ -152,6 +152,32 @@ export function useFavorites() {
         // Não falhar a operação se o post não for criado
       }
 
+      // Criar notificação para o usuário favoritado
+      try {
+        if (profile?.full_name) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: professionalId,
+              type: 'favorite',
+              title: '❤️ Novo Favorito!',
+              message: `${profile.full_name} adicionou você aos favoritos`,
+              action_url: `/perfil/${user.id}`,
+              priority: 'normal',
+              metadata: {
+                from_user_id: user.id,
+                from_user_name: profile.full_name,
+                type: 'favorite'
+              },
+              is_read: false
+            })
+          console.log('✅ Notificação de favorito criada')
+        }
+      } catch (notifError) {
+        console.error('⚠️ Erro ao criar notificação de favorito:', notifError)
+        // Não falhar a operação se a notificação não for criada
+      }
+
       return true
     } catch (err) {
       console.error('❌ Erro ao adicionar favorito:', err)
