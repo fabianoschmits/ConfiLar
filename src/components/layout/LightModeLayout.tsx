@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 
 interface LightModeLayoutProps {
@@ -8,12 +8,16 @@ interface LightModeLayoutProps {
 }
 
 export function LightModeLayout({ children }: LightModeLayoutProps) {
-  const { setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+  const [hasForced, setHasForced] = useState(false)
 
   useEffect(() => {
-    // Forçar modo claro para estas páginas
-    setTheme('light')
-  }, [setTheme])
+    // Forçar modo claro APENAS uma vez quando componente montar
+    if (!hasForced && theme !== 'light') {
+      setTheme('light')
+      setHasForced(true)
+    }
+  }, [theme, setTheme, hasForced])
 
   return <>{children}</>
 }

@@ -68,93 +68,76 @@ export function PremiumLikeButton({
 
   return (
     <TooltipProvider>
-      <div className={cn('flex items-center gap-2', className)}>
-        {/* Botão de Curtida Premium */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant={userPremiumLiked ? 'default' : 'outline'}
-              size={size}
-              onClick={handlePremiumLike}
-              disabled={isOwnPost || isPremiumLiking || !hasEnoughPoints}
-              className={cn(
-                'transition-all duration-200 mt-1 relative',
-                userPremiumLiked && 'bg-red-500 hover:bg-red-600 text-white',
-                isOwnPost && 'opacity-50 cursor-not-allowed',
-                !hasEnoughPoints && 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400'
-              )}
-            >
-              <Heart 
-                size={iconSizes[size]} 
-                className={cn(
-                  userPremiumLiked && 'fill-current'
-                )}
-              />
-              {/* Ícone de moedas sobreposto no canto superior direito */}
-              <Coins 
-                size={Math.max(iconSizes[size] + 16, 40)} 
-                className="absolute top-0 right-0 text-yellow-500" 
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="text-center">
-              <p className="font-semibold">🎉 Curtida Premium</p>
-              <p className="text-xs">💰 Gasta {PREMIUM_PRICES.LIKE.POINTS} ConfiPoints (R$ {PREMIUM_PRICES.LIKE.BRL.toFixed(2)})</p>
-              <p className="text-xs">🎁 Recompensa o criador com {PREMIUM_PRICES.LIKE.POINTS} pontos</p>
-              
-              {!hasEnoughPoints ? (
-                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                  <p className="text-xs text-red-600 font-semibold">❌ Saldo Insuficiente</p>
-                  <p className="text-xs text-red-500">Você tem {balance?.balance || 0} ConfiPoints</p>
-                  <p className="text-xs text-red-500">Precisa de {PREMIUM_PRICES.LIKE.POINTS} para curtir premium</p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-xs text-green-400 mt-1">
-                    ✨ Incentiva criação de conteúdo de qualidade
-                  </p>
-                  <p className="text-xs text-blue-400 mt-1">
-                    💰 Seu saldo: {balance?.balance || 0} ConfiPoints
-                  </p>
-                </>
-              )}
-              
-              {premiumLikesCount > 0 && (
-                <p className="text-xs text-yellow-400 mt-1">
-                  ⚡ {premiumLikesCount} curtidas premium no total
-                </p>
-              )}
-              {userPremiumLikesCount > 0 && (
-                <p className="text-xs text-green-400 mt-1">
-                  ✓ Você recompensou {userPremiumLikesCount} vezes ({userPremiumLikesCount * PREMIUM_PRICES.LIKE.POINTS} pontos enviados)
-                </p>
-              )}
-              {hasEnoughPoints && (
-                <p className="text-xs text-blue-400 mt-1">💡 Clique várias vezes para enviar mais recompensas!</p>
-              )}
-            </div>
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Estatísticas */}
-        {showStats && stats && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {premiumLikesCount > 0 && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Zap size={12} />
-                {premiumLikesCount}
-              </Badge>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={userPremiumLiked ? 'default' : 'outline'}
+            size={size}
+            onClick={handlePremiumLike}
+            disabled={isOwnPost || isPremiumLiking || !hasEnoughPoints}
+            className={cn(
+              'transition-all duration-200 relative px-2',
+              userPremiumLiked && 'bg-red-500 hover:bg-red-600 text-white',
+              isOwnPost && 'opacity-50 cursor-not-allowed',
+              !hasEnoughPoints && 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400',
+              className
             )}
-            {pointsReceived > 0 && (
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Coins size={12} />
-                {pointsReceived}
-              </Badge>
+          >
+            <Heart 
+              size={iconSizes[size]} 
+              className={cn(
+                userPremiumLiked && 'fill-current'
+              )}
+            />
+            <span className="ml-1 text-xs">{userPremiumLikesCount}</span>
+            
+            {/* Ícone de moedas sobreposto no canto superior direito */}
+            {userPremiumLikesCount > 0 && (
+              <Coins 
+                size={iconSizes[size] + 4} 
+                className="absolute -top-1 -right-1 text-yellow-500 animate-bounce" 
+              />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="text-center">
+            <p className="font-semibold">🎉 Curtida Premium</p>
+            <p className="text-xs">💰 Gasta {PREMIUM_PRICES.LIKE.POINTS} ConfiPoints</p>
+            <p className="text-xs">🎁 Recompensa o criador com {PREMIUM_PRICES.LIKE.POINTS} pontos</p>
+            
+            {!hasEnoughPoints ? (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                <p className="text-xs text-red-600 font-semibold">❌ Saldo Insuficiente</p>
+                <p className="text-xs text-red-500">Você tem {balance?.balance || 0} ConfiPoints</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-green-400 mt-1">
+                  ✨ Incentiva criação de conteúdo de qualidade
+                </p>
+                <p className="text-xs text-blue-400 mt-1">
+                  💰 Saldo: {balance?.balance || 0} ConfiPoints
+                </p>
+              </>
+            )}
+            
+            {premiumLikesCount > 0 && (
+              <p className="text-xs text-yellow-400 mt-1">
+                ⚡ {premiumLikesCount} curtidas premium neste post
+              </p>
+            )}
+            {userPremiumLikesCount > 0 && (
+              <p className="text-xs text-green-400 mt-1">
+                ✓ Você deu {userPremiumLikesCount} likes premium aqui
+              </p>
+            )}
+            {hasEnoughPoints && (
+              <p className="text-xs text-blue-400 mt-1">💡 Clique várias vezes para enviar mais!</p>
             )}
           </div>
-        )}
-      </div>
+        </TooltipContent>
+      </Tooltip>
     </TooltipProvider>
   )
 }

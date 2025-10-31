@@ -92,12 +92,16 @@ export function useThemePersistence() {
     setIsHydrated(true)
   }, []) // Rodar apenas uma vez ao montar
 
-  // Salvar tema sempre que mudar
+  // Salvar tema sempre que mudar (com debounce)
   useEffect(() => {
     if (!isHydrated) return
     if (!theme) return
 
-    saveTheme(theme)
+    const timeoutId = setTimeout(() => {
+      saveTheme(theme)
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
   }, [theme, isHydrated])
 
   // Listener para mudanças no localStorage (sincronização entre abas)
@@ -127,51 +131,6 @@ export function useThemePersistence() {
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [theme, setTheme])
-
-  // Listener para visibilitychange (quando o usuário volta para o app)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Verificar se o tema no storage mudou
-        const savedTheme = loadTheme()
-        
-        if (savedTheme && savedTheme !== theme) {
-          console.log('🔄 App restaurado, verificando tema:', savedTheme)
-          setTheme(savedTheme)
-        } else if (theme) {
-          // Reforçar o tema atual
-          console.log('✅ App restaurado, mantendo tema:', theme)
-          saveTheme(theme)
-        }
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [theme, setTheme])
-
-  // Listener para beforeunload (antes de fechar/minimizar)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleBeforeUnload = () => {
-      if (theme) {
-        console.log('💾 Salvando tema antes de sair:', theme)
-        saveTheme(theme)
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [theme])
 
   return {
     isHydrated,

@@ -33,17 +33,8 @@ export function ThemeToggle() {
     
     console.log('🎨 Alterando tema:', { de: currentTheme, para: newTheme })
     
-    // Aplicar o novo tema
+    // Aplicar o novo tema (next-themes já cuida do DOM)
     setTheme(newTheme)
-
-    // Forçar atualização do DOM
-    requestAnimationFrame(() => {
-      if (newTheme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    })
 
     // Liberar o botão após um curto delay
     setTimeout(() => {
