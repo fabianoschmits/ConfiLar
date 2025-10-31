@@ -143,6 +143,52 @@ export async function POST(request: NextRequest) {
       // Não fazer rollback aqui pois o usuário já pagou
     }
 
+    // 4. Criar notificação para o criador do post
+    try {
+      // Buscar nome do usuário que deu premium like
+      const { data: likerProfile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', userId)
+        .single()
+
+      const likerName = likerProfile?.full_name || 'Usuário'
+
+      // Buscar título do post
+      const { data: postData } = await supabase
+        .from('feed_posts')
+        .select('title')
+        .eq('id', postId)
+        .single()
+
+      const postTitle = postData?.title || 'seu post'
+
+      // Criar notificação para o criador do post
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: postCreatorId,
+          type: 'achievement',
+          title: '💰 Curtida Premium Recebida!',
+          message: `${likerName} deu uma curtida premium em "${postTitle.substring(0, 30)}${postTitle.length > 30 ? '...' : ''}" (+${pointsCost} pontos)`,
+          action_url: `/feed?post=${postId}`,
+          priority: 'high',
+          metadata: {
+            post_id: postId,
+            from_user_id: userId,
+            from_user_name: likerName,
+            points_received: pointsCost,
+            type: 'premium_like_received'
+          },
+          is_read: false
+        })
+      
+      console.log('✅ [Premium Like API] Notificação criada para criador do post')
+    } catch (notifError) {
+      console.error('⚠️ [Premium Like API] Erro ao criar notificação:', notifError)
+      // Não fazer rollback pois o usuário já pagou
+    }
+
     console.log('✅ [Premium Like API] Premium like concluído com sucesso!')
 
     return NextResponse.json({ 
