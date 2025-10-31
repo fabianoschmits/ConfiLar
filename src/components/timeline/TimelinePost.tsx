@@ -464,12 +464,22 @@ export function TimelinePost({
 
         {/* Ações do Post - Responsivo */}
         <div className="flex items-center flex-wrap gap-2 sm:gap-4 md:gap-6 pt-3 pb-3 border-t border-gray-200 dark:border-gray-700">
-          {/* Likes */}
+          {/* Likes Normal */}
           <div className="flex-shrink-0">
             <ReactionButton 
               postId={post.id}
               postOwnerId={post.user_id}
               postOwnerName={post.user_name || 'Usuário'}
+            />
+          </div>
+
+          {/* Likes Premium */}
+          <div className="flex-shrink-0">
+            <PremiumLikeButton 
+              postId={post.id}
+              postCreatorId={post.user_id}
+              size="sm"
+              showStats={true}
             />
           </div>
 
@@ -495,16 +505,6 @@ export function TimelinePost({
             <span className="hidden sm:inline text-xs sm:text-sm">Compartilhar</span>
             <span className="sm:hidden text-xs">Share</span>
           </Button>
-
-          {/* Curtida Premium */}
-          <div className="flex-shrink-0">
-            <PremiumLikeButton 
-              postId={post.id}
-              postCreatorId={post.user_id}
-              size="sm"
-              showStats={false}
-            />
-          </div>
 
           {/* Menu de Opções - Movido para o canto direito */}
           <div className="ml-auto flex-shrink-0">

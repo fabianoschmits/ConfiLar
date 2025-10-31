@@ -85,6 +85,7 @@ export function usePremiumLikes(postId: string) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // ⚠️ IMPORTANTE: Enviar cookies de autenticação
         body: JSON.stringify({
           action: 'premium_like',
           postId: postId,
