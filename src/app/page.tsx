@@ -69,48 +69,29 @@ function HomeContent() {
       try {
         setReferralStats(prev => ({ ...prev, loading: true }))
 
-        let totalReferralsCount = 0
-        let totalUsersParticipating = 0
+        // Usar função RPC pública para obter estatísticas agregadas
+        const { data, error } = await supabase.rpc('get_public_referral_stats')
 
-        // Buscar total de indicações registradas
-        const { count, error: referralsError } = await supabase
-          .from('referrals')
-          .select('*', { count: 'exact', head: true })
-
-        if (!referralsError && count !== null) {
-          totalReferralsCount = count
+        if (error) {
+          console.error('Erro ao buscar estatísticas de referal:', error)
+          setReferralStats({
+            totalReferrals: 0,
+            totalUsersParticipating: 0,
+            loading: false
+          })
+        } else if (data) {
+          setReferralStats({
+            totalReferrals: data.total_referrals || 0,
+            totalUsersParticipating: data.total_users_participating || 0,
+            loading: false
+          })
         } else {
-          console.warn('Não foi possível buscar total de indicações (pode ser RLS):', referralsError?.message)
+          setReferralStats({
+            totalReferrals: 0,
+            totalUsersParticipating: 0,
+            loading: false
+          })
         }
-
-        // Buscar total de usuários que participam do programa
-        // Primeiro tenta pela tabela user_referral_stats (mais precisa)
-        const { count: statsCount, error: statsError } = await supabase
-          .from('user_referral_stats')
-          .select('*', { count: 'exact', head: true })
-          .gt('total_referrals', 0)
-
-        if (!statsError && statsCount !== null) {
-          totalUsersParticipating = statsCount
-        } else {
-          // Se não conseguir, tenta pela tabela profiles
-          const { count: profilesCount, error: profilesError } = await supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true })
-            .not('referral_code', 'is', null)
-
-          if (!profilesError && profilesCount !== null) {
-            totalUsersParticipating = profilesCount
-          } else {
-            console.warn('Não foi possível buscar usuários participando:', profilesError?.message)
-          }
-        }
-
-        setReferralStats({
-          totalReferrals: totalReferralsCount,
-          totalUsersParticipating,
-          loading: false
-        })
       } catch (error) {
         console.error('Erro ao buscar estatísticas de referal:', error)
         setReferralStats({
