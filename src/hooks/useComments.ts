@@ -244,7 +244,31 @@ export function useComments(options: UseCommentsOptions) {
           .eq('id', existingLike.id)
         
         if (error) throw error
-        return { action: 'removed' }
+        
+        // Atualizar contador no comentário (decrementar)
+        try {
+          await supabase.rpc('decrement_comment_likes_count', { 
+            comment_id: commentId 
+          })
+        } catch {
+          // Se a função não existir, tentar atualizar diretamente
+          const { data: comment } = await supabase
+            .from('post_comments')
+            .select('likes_count')
+            .eq('id', commentId)
+            .single()
+          
+          if (comment) {
+            await supabase
+              .from('post_comments')
+              .update({ 
+                likes_count: Math.max((comment.likes_count || 0) - 1, 0) 
+              })
+              .eq('id', commentId)
+          }
+        }
+        
+        return { action: 'removed', commentId }
       } else {
         // Adicionar like
         const { error } = await supabase
@@ -255,11 +279,60 @@ export function useComments(options: UseCommentsOptions) {
           })
         
         if (error) throw error
-        return { action: 'added' }
+        
+        // Atualizar contador no comentário (incrementar)
+        try {
+          await supabase.rpc('increment_comment_likes_count', { 
+            comment_id: commentId 
+          })
+        } catch {
+          // Se a função não existir, tentar atualizar diretamente
+          const { data: comment } = await supabase
+            .from('post_comments')
+            .select('likes_count')
+            .eq('id', commentId)
+            .single()
+          
+          if (comment) {
+            await supabase
+              .from('post_comments')
+              .update({ 
+                likes_count: (comment.likes_count || 0) + 1 
+              })
+              .eq('id', commentId)
+          }
+        }
+        
+        return { action: 'added', commentId }
       }
     },
-    onSuccess: () => {
-      // Invalidar cache de comentários
+    onSuccess: (result) => {
+      // Atualizar cache otimisticamente
+      queryClient.setQueryData(['comments', filters], (oldComments: Comment[] = []) => {
+        const updateCommentLikes = (comments: Comment[]): Comment[] => {
+          return comments.map(comment => {
+            if (comment.id === result.commentId) {
+              return {
+                ...comment,
+                is_liked: result.action === 'added',
+                likes_count: result.action === 'added' 
+                  ? (comment.likes_count || 0) + 1 
+                  : Math.max((comment.likes_count || 0) - 1, 0)
+              }
+            }
+            if (comment.replies && comment.replies.length > 0) {
+              return {
+                ...comment,
+                replies: updateCommentLikes(comment.replies)
+              }
+            }
+            return comment
+          })
+        }
+        return updateCommentLikes(oldComments)
+      })
+      
+      // Invalidar cache de comentários para garantir sincronização
       queryClient.invalidateQueries({
         queryKey: ['comments', filters]
       })

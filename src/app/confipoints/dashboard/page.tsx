@@ -36,9 +36,10 @@ import { ptBR } from 'date-fns/locale'
 export default function ConfiPointsDashboardPage() {
   const { user, profile } = useAuthContext()
   const { balance, loading: loadingPoints } = usePoints(user?.id)
-  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 50 })
+  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 100 })
   
   const [activeTab, setActiveTab] = useState('visao-geral')
+  const [visibleTransactionsCount, setVisibleTransactionsCount] = useState(10)
 
   // Calcular nível baseado nos pontos
   const calculateLevel = (points: number) => {
@@ -546,53 +547,74 @@ export default function ConfiPointsDashboardPage() {
                         Nenhuma transação ainda
                       </p>
                     ) : (
-                      <div className="space-y-3">
-                        {allTransactions.map((transaction) => (
-                          <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                                transaction.amount > 0 
-                                  ? 'bg-green-100 dark:bg-green-900/20' 
-                                  : 'bg-red-100 dark:bg-red-900/20'
-                              }`}>
-                                <div className={getTransactionColor(transaction.type, transaction.amount)}>
-                                  {getTransactionIcon(transaction.type)}
+                      <>
+                        <div className="space-y-3">
+                          {allTransactions.slice(0, visibleTransactionsCount).map((transaction) => (
+                            <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  transaction.amount > 0 
+                                    ? 'bg-green-100 dark:bg-green-900/20' 
+                                    : 'bg-red-100 dark:bg-red-900/20'
+                                }`}>
+                                  <div className={getTransactionColor(transaction.type, transaction.amount)}>
+                                    {getTransactionIcon(transaction.type)}
+                                  </div>
                                 </div>
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                  {transaction.description}
-                                </p>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {formatDistanceToNow(new Date(transaction.date), { 
-                                      addSuffix: true, 
-                                      locale: ptBR 
-                                    })}
+                                <div>
+                                  <p className="font-medium text-gray-900 dark:text-white">
+                                    {transaction.description}
                                   </p>
-                                  <Badge 
-                                    variant={transaction.status === 'completed' ? 'default' : 'outline'}
-                                    className="text-xs"
-                                  >
-                                    {transaction.status === 'completed' ? 'Concluído' : 
-                                     transaction.status === 'pending' ? 'Pendente' : 
-                                     transaction.status === 'processing' ? 'Processando' : 
-                                     transaction.status}
-                                  </Badge>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                      {formatDistanceToNow(new Date(transaction.date), { 
+                                        addSuffix: true, 
+                                        locale: ptBR 
+                                      })}
+                                    </p>
+                                    <Badge 
+                                      variant={transaction.status === 'completed' ? 'default' : 'outline'}
+                                      className="text-xs"
+                                    >
+                                      {transaction.status === 'completed' ? 'Concluído' : 
+                                       transaction.status === 'pending' ? 'Pendente' : 
+                                       transaction.status === 'processing' ? 'Processando' : 
+                                       transaction.status}
+                                    </Badge>
+                                  </div>
                                 </div>
                               </div>
+                              <div className="text-right">
+                                <p className={`text-lg font-bold ${
+                                  transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString('pt-BR')}
+                                </p>
+                                <p className="text-xs text-gray-500">pontos</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className={`text-lg font-bold ${
-                                transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                                {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString('pt-BR')}
-                              </p>
-                              <p className="text-xs text-gray-500">pontos</p>
-                            </div>
+                          ))}
+                        </div>
+                        {allTransactions.length > visibleTransactionsCount && (
+                          <div className="mt-6 flex justify-center">
+                            <Button
+                              variant="outline"
+                              onClick={() => setVisibleTransactionsCount(prev => Math.min(prev + 10, allTransactions.length))}
+                              className="w-full sm:w-auto"
+                            >
+                              Ver mais ({allTransactions.length - visibleTransactionsCount} restantes)
+                              <ChevronRight className="h-4 w-4 ml-2" />
+                            </Button>
                           </div>
-                        ))}
-                      </div>
+                        )}
+                        {allTransactions.length > 0 && visibleTransactionsCount >= allTransactions.length && (
+                          <div className="mt-6 flex justify-center">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Todas as {allTransactions.length} transações foram exibidas
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </CardContent>
                 </Card>

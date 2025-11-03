@@ -9,6 +9,31 @@ import { usePoints } from '@/hooks/usePoints'
 import { cn } from '@/lib/utils'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
+// CSS para animação de batida do coração
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes heartBeat {
+      0%, 100% {
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.3) rotate(-5deg);
+      }
+      50% {
+        transform: scale(1.2) rotate(5deg);
+      }
+      75% {
+        transform: scale(1.15) rotate(-3deg);
+      }
+    }
+  `
+  if (!document.head.querySelector('#premium-like-animations')) {
+    style.id = 'premium-like-animations'
+    document.head.appendChild(style)
+  }
+}
+
 interface PremiumLikeButtonProps {
   postId: string
   postCreatorId: string
@@ -39,6 +64,8 @@ export function PremiumLikeButton({
     isUnliking
   } = usePremiumLikes(postId)
 
+  const [isAnimating, setIsAnimating] = React.useState(false)
+
   const isOwnPost = user?.id === postCreatorId
   const hasLiked = likes.some(like => like.user_id === user?.id)
   
@@ -63,6 +90,10 @@ export function PremiumLikeButton({
     if (isOwnPost) {
       return // Não pode curtir próprio post
     }
+
+    // Ativar animação
+    setIsAnimating(true)
+    setTimeout(() => setIsAnimating(false), 600) // Duração da animação
 
     premiumLike()
   }
@@ -89,20 +120,36 @@ export function PremiumLikeButton({
             onClick={handlePremiumLike}
             disabled={isOwnPost || isPremiumLiking || !hasEnoughPoints}
             className={cn(
-              'transition-all duration-200 relative px-2',
+              'transition-all duration-200 relative px-2 overflow-visible',
               userPremiumLiked && 'bg-red-500 hover:bg-red-600 text-white',
               isOwnPost && 'opacity-50 cursor-not-allowed',
               !hasEnoughPoints && 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400',
+              isAnimating && 'animate-pulse scale-110',
               className
             )}
           >
             <Heart 
               size={iconSizes[size]} 
               className={cn(
-                userPremiumLiked && 'fill-current'
+                'transition-all duration-300',
+                userPremiumLiked && 'fill-current',
+                isAnimating && 'animate-[heartBeat_0.6s_ease-in-out] scale-125'
               )}
+              style={{
+                animation: isAnimating ? 'heartBeat 0.6s ease-in-out' : undefined
+              }}
             />
-            <span className="ml-1 text-xs">{premiumLikesCount}</span>
+            <span className={cn(
+              "ml-1 text-xs transition-all duration-300 flex items-center gap-1",
+              isAnimating && "scale-110 font-bold"
+            )}>
+              <span className="hidden sm:inline font-semibold">Premium</span>
+              <span className={cn(
+                "font-medium",
+                userPremiumLiked && "text-white",
+                !userPremiumLiked && "text-gray-700 dark:text-gray-300"
+              )}>{premiumLikesCount}</span>
+            </span>
             
             {/* Ícone de moedas sobreposto no canto superior direito - mostrar se usuário deu like premium */}
             {userPremiumLiked && (
@@ -110,6 +157,17 @@ export function PremiumLikeButton({
                 size={iconSizes[size] + 4} 
                 className="absolute -top-1 -right-1 text-yellow-500 animate-bounce" 
               />
+            )}
+            
+            {/* Efeito de partículas ao clicar */}
+            {isAnimating && (
+              <>
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="absolute animate-ping text-yellow-400 opacity-75">
+                    ✨
+                  </span>
+                </span>
+              </>
             )}
           </Button>
         </TooltipTrigger>
