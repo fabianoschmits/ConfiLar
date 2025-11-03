@@ -13,10 +13,13 @@ interface CreatePremiumAdData {
   service_type: string
   location_city: string
   location_state: string
+  ad_type: 'oferecer' | 'procurar'
   price_range: string
   contact_phone?: string
   contact_email?: string
   images?: string[]
+  pointsToSpend: number
+  durationDays: number
 }
 
 interface UsePremiumAdProps {
@@ -41,27 +44,43 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
         .single()
 
       if (balanceError) throw new Error('Erro ao verificar saldo')
-      if (!balance || balance.balance < PREMIUM_PRICES.AD.POINTS) {
-        throw new Error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.AD.POINTS} pontos para anúncio premium`)
+      if (!balance || balance.balance < adData.pointsToSpend) {
+        throw new Error(`Saldo insuficiente. Necessário: ${adData.pointsToSpend.toLocaleString('pt-BR')} pontos para anúncio premium`)
       }
 
-      // Criar anúncio premium
+      // Calcular data de expiração baseado na duração escolhida
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + adData.durationDays)
+
+      // Buscar nome do usuário do perfil
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, user_type')
+        .eq('id', user.id)
+        .single()
+
+      // Criar anúncio premium na tabela classified_ads
       const { data, error } = await supabase
-        .from('classifieds')
+        .from('classified_ads')
         .insert({
           user_id: user.id,
+          user_name: profile?.full_name || 'Usuário',
+          user_type: profile?.user_type || 'client',
           title: adData.title,
           description: adData.description,
-          service_type: adData.service_type,
+          category: adData.service_type, // category é o nome da coluna na tabela
           location_city: adData.location_city,
           location_state: adData.location_state,
+          ad_type: adData.ad_type,
           price_range: adData.price_range,
           contact_phone: adData.contact_phone,
           contact_email: adData.contact_email,
           images: adData.images || [],
+          is_active: true,
+          is_premium: true,
           is_featured: true,
-          premium_points_spent: PREMIUM_PRICES.AD.POINTS,
-          premium_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
+          premium_points_spent: adData.pointsToSpend,
+          premium_expires_at: expiresAt.toISOString(),
           premium_highlight_color: '#FFD700'
         })
         .select()
@@ -73,19 +92,19 @@ export function usePremiumAd({ onSuccess, onError }: UsePremiumAdProps) {
       const { error: pointsError } = await supabase
         .rpc('add_points', {
           p_user_id: user.id,
-          p_points: -PREMIUM_PRICES.AD.POINTS,
+          p_points: -adData.pointsToSpend,
           p_source: 'premium_ad',
-          p_description: `Criou anúncio premium (${PREMIUM_PRICES.AD.DURATION})`
+          p_description: `Criou anúncio premium (${adData.durationDays} dia${adData.durationDays > 1 ? 's' : ''} - ${adData.pointsToSpend.toLocaleString('pt-BR')} pontos)`
         })
 
       if (pointsError) throw new Error('Erro ao processar pontos')
 
       return data
     },
-    onSuccess: () => {
-      toast.success(`Anúncio premium criado com sucesso! (-${PREMIUM_PRICES.AD.POINTS} pontos)`)
+    onSuccess: (data, variables) => {
+      toast.success(`Anúncio premium criado com sucesso! (-${variables.pointsToSpend.toLocaleString('pt-BR')} pontos)`)
+      queryClient.invalidateQueries({ queryKey: ['classified-ads'] })
       queryClient.invalidateQueries({ queryKey: ['user-classifieds', user?.id] })
-      queryClient.invalidateQueries({ queryKey: ['classifieds'] })
       queryClient.invalidateQueries({ queryKey: ['user-points', user?.id] })
       onSuccess?.()
     },

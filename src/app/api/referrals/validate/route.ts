@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase'
+import { withRateLimit } from '@/lib/rateLimitMiddleware'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/referrals/validate
+ * 
+ * Valida um código de referral (rota pública, mas com rate limiting).
+ * 
+ * Segurança:
+ * - ✅ Rate limiting agressivo (previne brute force)
+ * - ✅ Valida formato do código
+ * - ⚠️ Usa Service Role para bypass RLS (necessário antes do cadastro)
+ */
+const handler = async (request: NextRequest) => {
   try {
     const { code } = await request.json()
 
@@ -16,6 +27,16 @@ export async function POST(request: NextRequest) {
 
     // Converter para maiúsculas para garantir case-insensitive
     const normalizedCode = code.toUpperCase().trim()
+    
+    // Validar formato do código (6-12 caracteres alfanuméricos)
+    const codeRegex = /^[A-Z0-9]{6,12}$/
+    if (!codeRegex.test(normalizedCode)) {
+      return NextResponse.json(
+        { error: 'Código de referral inválido' },
+        { status: 400 }
+      )
+    }
+    
     console.log('🔍 [API validate] Código normalizado:', normalizedCode)
 
     // Usar admin client para bypass RLS (usuário ainda não está autenticado)
@@ -75,3 +96,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST = withRateLimit(handler, 'API_DEFAULT')

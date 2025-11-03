@@ -62,10 +62,40 @@ export const PREMIUM_PRICES = {
     DAYS: 30
   },
   
-  // Anúncio Premium
+  // Anúncio Premium - Opções por Duração
+  AD_1_DAY: {
+    POINTS: 2000,
+    BRL: 20.00,
+    DESCRIPTION: 'Anúncio destacado',
+    DURATION: '1 dia',
+    DAYS: 1
+  },
+  AD_7_DAYS: {
+    POINTS: 12000,
+    BRL: 120.00,
+    DESCRIPTION: 'Anúncio destacado',
+    DURATION: '7 dias',
+    DAYS: 7
+  },
+  AD_14_DAYS: {
+    POINTS: 20000,
+    BRL: 200.00,
+    DESCRIPTION: 'Anúncio destacado',
+    DURATION: '14 dias',
+    DAYS: 14
+  },
+  AD_30_DAYS: {
+    POINTS: 35000,
+    BRL: 350.00,
+    DESCRIPTION: 'Anúncio destacado',
+    DURATION: '30 dias',
+    DAYS: 30
+  },
+  
+  // Anúncio Premium (compatibilidade - mantém valor antigo de 30 dias)
   AD: {
-    POINTS: 5000,
-    BRL: 50.00,
+    POINTS: 35000,
+    BRL: 350.00,
     DESCRIPTION: 'Anúncio destacado',
     DURATION: '30 dias'
   }

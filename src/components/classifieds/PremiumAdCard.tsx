@@ -226,31 +226,48 @@ export function PremiumAdCard({
           {/* Galeria de Imagens */}
           {ad.images && ad.images.length > 0 && (
             <div className="mt-4">
-              {ad.images.length === 1 ? (
+              {expandedImage ? (
+                // Imagem expandida centralizada
+                <div className="relative w-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-xl p-4 min-h-[400px]">
+                  <div className="absolute top-2 right-2 z-10">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExpandedImage(null)}
+                      className="bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-lg"
+                    >
+                      <span className="text-xl">×</span>
+                    </Button>
+                  </div>
+                  <img
+                    src={expandedImage}
+                    alt="Imagem expandida do anúncio premium"
+                    className="max-w-full max-h-[600px] w-auto h-auto object-contain rounded-lg shadow-lg"
+                    onClick={(e) => e.stopPropagation()}
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                </div>
+              ) : ad.images.length === 1 ? (
+                // Uma única imagem
                 <div className="relative w-full">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-300 to-yellow-400 rounded-xl blur-sm opacity-20"></div>
                   <img
                     src={ad.images[0]}
                     alt="Imagem do anúncio premium"
-                    className={`relative w-full rounded-xl cursor-pointer hover:opacity-90 transition-all duration-300 border border-amber-200 ${
-                      expandedImage === ad.images[0] ? 'object-contain max-h-screen' : 'h-[300px] object-cover'
-                    }`}
+                    className="relative w-full h-[300px] rounded-xl cursor-pointer hover:opacity-90 transition-all duration-300 border border-amber-200 object-cover"
                     onClick={() => handleImageClick(ad.images[0])}
                   />
                 </div>
               ) : (
-                <div className={`${expandedImage ? 'block' : 'grid grid-cols-2 gap-2'}`}>
+                // Múltiplas imagens em grid
+                <div className="grid grid-cols-2 gap-2">
                   {ad.images.slice(0, 4).map((image, index) => (
                     <div key={index} className="relative">
                       <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-300 to-yellow-400 rounded-lg blur-sm opacity-20"></div>
                       <img
                         src={image}
                         alt={`Imagem ${index + 1}`}
-                        className={`relative w-full rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 border border-amber-200 ${
-                          expandedImage === image 
-                            ? 'object-contain max-h-screen' 
-                            : 'h-[150px] object-cover'
-                        }`}
+                        className="relative w-full h-[150px] rounded-lg cursor-pointer hover:opacity-90 transition-all duration-300 border border-amber-200 object-cover"
                         onClick={() => handleImageClick(image)}
                       />
                       {index === 3 && ad.images.length > 4 && (

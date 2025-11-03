@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 
 const execAsync = promisify(exec)
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/admin/tests/run
+ * 
+ * Executa testes automatizados (apenas para administradores).
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação admin (withAdminAuth)
+ * - ✅ Comandos limitados a tipos de teste específicos
+ */
+export const POST = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { testType, suiteId } = await request.json()
 
+    // Validar tipo de teste (limitar comandos permitidos para prevenir command injection)
+    const allowedTestTypes = ['unit', 'integration', 'e2e', 'all']
+    if (!testType || !allowedTestTypes.includes(testType)) {
+      return NextResponse.json({ error: 'Tipo de teste inválido' }, { status: 400 })
+    }
+
     let command = ''
     
+    // Comandos permitidos apenas (whitelist)
     switch (testType) {
       case 'unit':
         command = 'npm run test:ci'
@@ -55,4 +72,4 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
-}
+})

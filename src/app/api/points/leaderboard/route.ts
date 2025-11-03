@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { withRateLimit } from '@/lib/rateLimitMiddleware'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/points/leaderboard
+ * 
+ * Retorna o ranking de pontos dos usuários.
+ * 
+ * Segurança:
+ * - ⚠️ Rota pública (mas com rate limiting)
+ * - ⚠️ Expõe user_id (considerar mascarar em produção)
+ */
+const handler = async (request: NextRequest) => {
   try {
     // Parse dos query parameters
     const { searchParams } = new URL(request.url)
@@ -42,3 +52,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 }
+
+export const GET = withRateLimit(handler, 'API_DEFAULT')
