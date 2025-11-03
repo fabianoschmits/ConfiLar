@@ -36,11 +36,24 @@ export function usePoints(userId?: string) {
     queryFn: async () => {
       if (!userId) return null
       
-      // Usar API route pública restaurada
-      const response = await fetch(`/api/points/balance?userId=${userId}`)
+      // Usar API route protegida (requer autenticação)
+      // ✅ Não enviar userId - backend sempre usa o usuário autenticado dos cookies
+      const response = await fetch(`/api/points/balance`, {
+        credentials: 'include', // ✅ IMPORTANTE: Enviar cookies de autenticação
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
       const result = await response.json()
       
       if (!response.ok) {
+        // Se erro 401, pode ser que o usuário não esteja autenticado ainda
+        if (response.status === 401) {
+          console.warn('Usuário não autenticado ao buscar saldo. Aguardando autenticação...')
+          // Retornar null para não quebrar o componente
+          return null
+        }
         throw new Error(result.error || 'Erro ao buscar saldo')
       }
       
@@ -329,8 +342,10 @@ export function usePointsLeaderboard(limit: number = 10) {
   const { data: leaderboard, isLoading, error } = useQuery({
     queryKey: ['points-leaderboard', limit],
     queryFn: async () => {
-      // Usar API route pública restaurada para leaderboard
-      const response = await fetch(`/api/points/leaderboard?limit=${limit}`)
+      // Usar API route pública para leaderboard
+      const response = await fetch(`/api/points/leaderboard?limit=${limit}`, {
+        credentials: 'include' // Enviar cookies (mesmo que seja pública, ajuda com CORS)
+      })
       const result = await response.json()
       
       if (!response.ok) {

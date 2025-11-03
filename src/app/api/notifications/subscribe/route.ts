@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withAuth } from '@/lib/authenticatedRoute'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 import webpush from 'web-push'
 
@@ -16,21 +17,38 @@ if (vapidKeys.publicKey && vapidKeys.privateKey) {
   )
 }
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/notifications/subscribe
+ * 
+ * Registra uma subscription de notificações push para o usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Usa sempre user.id autenticado (ignora userId do body)
+ * - ✅ Previne que usuários criem subscriptions para outros usuários
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const { subscription, userId } = await request.json()
+    const { subscription } = await request.json()
 
-    if (!subscription || !userId) {
-      return NextResponse.json({ error: 'Subscription e userId são obrigatórios' }, { status: 400 })
+    if (!subscription || !subscription.endpoint || !subscription.keys) {
+      return NextResponse.json(
+        { error: 'Subscription válida é obrigatória' },
+        { status: 400 }
+      )
     }
 
+    // ✅ Sempre usar o ID do usuário autenticado (ignorar userId do body)
+    const authenticatedUserId = user.id
+
+    // Usar admin client apenas após validar autenticação
     const adminSupabase = createAdminSupabaseClient()
 
-    // Salvar subscription no banco
+    // Salvar subscription no banco usando ID autenticado
     const { data, error } = await adminSupabase
       .from('push_subscriptions')
       .upsert({
-        user_id: userId,
+        user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
         endpoint: subscription.endpoint,
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
@@ -45,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao salvar subscription' }, { status: 500 })
     }
 
-    console.log('✅ Push subscription salva para usuário:', userId)
+    console.log('✅ Push subscription salva para usuário:', authenticatedUserId)
 
     return NextResponse.json({ success: true, subscription: data })
   } catch (error) {
@@ -54,7 +72,7 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : 'Erro interno do servidor' 
     }, { status: 500 })
   }
-}
+})
 
 
 

@@ -79,17 +79,17 @@ export function usePremiumLikes(postId: string) {
     mutationFn: async () => {
       if (!user?.id) throw new Error('Usuário não autenticado')
 
-      // Usar API route para operações de pontos (bypass RLS)
+      // Usar API route para operações de pontos
+      // Nota: Backend usa sempre o usuário autenticado dos cookies, não o userId do body
       const response = await fetch('/api/points/premium-like', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // ⚠️ IMPORTANTE: Enviar cookies de autenticação
+        credentials: 'include', // ✅ IMPORTANTE: Enviar cookies de autenticação
         body: JSON.stringify({
-          action: 'premium_like',
-          postId: postId,
-          userId: user.id
+          postId: postId
+          // userId removido - backend sempre usa o usuário autenticado dos cookies
         })
       })
 

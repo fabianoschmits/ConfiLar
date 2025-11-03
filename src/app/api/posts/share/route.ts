@@ -1,22 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { withAuth } from '@/lib/authenticatedRoute'
+import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/posts/share
+ * 
+ * Compartilha um post com uma lista de usuários, criando notificações.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Usa sempre user.id autenticado (ignora fromUserId do body)
+ * - ✅ Busca nome real do usuário do banco de dados
+ * - ✅ Previne impersonação e spam
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const body = await request.json()
-    const { postId, userIds, message, fromUserId, fromUserName } = body
+    const { postId, userIds, message } = body
 
-    console.log('📤 API: Compartilhando post:', { postId, userIds: userIds.length, fromUserId })
+    // ✅ IGNORAR fromUserId e fromUserName do body - sempre usar dados autenticados
+    const authenticatedUserId = user.id
 
-    if (!postId || !userIds || !Array.isArray(userIds) || userIds.length === 0 || !fromUserId) {
+    console.log('📤 API: Compartilhando post:', { postId, userIds: userIds?.length, authenticatedUserId })
+
+    // Validar dados de entrada
+    if (!postId) {
       return NextResponse.json(
-        { error: 'Dados inválidos. postId, userIds (array) e fromUserId são obrigatórios.' },
+        { error: 'postId é obrigatório' },
         { status: 400 }
       )
     }
 
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return NextResponse.json(
+        { error: 'userIds deve ser um array não vazio' },
+        { status: 400 }
+      )
+    }
+
+    // Validar que todos os userIds são UUIDs válidos
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    for (const userId of userIds) {
+      if (!uuidRegex.test(userId)) {
+        return NextResponse.json(
+          { error: `userId inválido: ${userId}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Usar admin client apenas após validar autenticação
+    const adminSupabase = createAdminSupabaseClient()
+
     // Buscar informações do post
-    const { data: postData, error: postError } = await supabase
+    const { data: postData, error: postError } = await adminSupabase
       .from('feed_posts')
       .select('title, id')
       .eq('id', postId)
@@ -30,6 +67,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // ✅ Buscar nome real do usuário autenticado do banco de dados
+    const { data: profileData, error: profileError } = await supabaseAuth
+      .from('profiles')
+      .select('full_name')
+      .eq('id', authenticatedUserId)
+      .single()
+
+    if (profileError || !profileData) {
+      console.error('❌ API: Erro ao buscar perfil:', profileError)
+      return NextResponse.json(
+        { error: 'Erro ao buscar informações do usuário' },
+        { status: 500 }
+      )
+    }
+
+    const fromUserName = profileData.full_name || 'Usuário'
+
     // Criar notificações para cada usuário
     const notifications = userIds.map((userId: string) => ({
       user_id: userId,
@@ -42,14 +96,14 @@ export async function POST(request: NextRequest) {
         post_id: postId,
         post_title: postData.title,
         shared_by: fromUserName,
-        from_user_id: fromUserId,
+        from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
         message: message || null,
         type: 'shared_post'
       },
       is_read: false
     }))
 
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from('notifications')
       .insert(notifications)
       .select()
@@ -76,5 +130,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 

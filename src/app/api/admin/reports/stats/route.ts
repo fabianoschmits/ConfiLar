@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+// Forçar rota dinâmica (não fazer static generation)
+export const dynamic = 'force-dynamic'
+
+/**
+ * GET /api/admin/reports/stats
+ * 
+ * Retorna estatísticas das denúncias.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem visualizar estatísticas
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const adminSupabase = createAdminSupabaseClient()
 
@@ -70,4 +83,4 @@ export async function GET(request: NextRequest) {
     console.error('Erro ao buscar estatísticas:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

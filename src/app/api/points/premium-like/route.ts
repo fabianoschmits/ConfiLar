@@ -1,26 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withAuth } from '@/lib/authenticatedRoute'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/points/premium-like
+ * 
+ * Cria uma curtida premium em um post, deduzindo pontos do usuário autenticado
+ * e adicionando pontos ao criador do post.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Usa sempre user.id autenticado (ignora userId do body)
+ * - ✅ Previne fraude financeira e manipulação de identidade
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     console.log('🔍 [Premium Like API] Iniciando requisição...')
     
-    // Parse do body PRIMEIRO para pegar userId
+    // Parse do body
     const body = await request.json()
-    const { postId, userId } = body
+    const { postId } = body
     
-    console.log('🔍 [Premium Like API] Body recebido:', { postId, userId })
+    // ✅ IGNORAR userId do body - sempre usar user.id autenticado
+    const authenticatedUserId = user.id
     
-    if (!userId) {
-      return NextResponse.json({ error: 'userId é obrigatório' }, { status: 400 })
-    }
+    console.log('🔍 [Premium Like API] Body recebido:', { postId, authenticatedUserId })
     
     // Validar dados
     if (!postId) {
       return NextResponse.json({ error: 'postId é obrigatório' }, { status: 400 })
     }
 
-    // Usar cliente admin para bypass RLS
+    // Usar cliente admin para bypass RLS (após validar autenticação)
     const supabase = createAdminSupabaseClient()
     
     // Buscar informações do post
@@ -41,15 +52,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Não permitir curtir próprio post
-    if (userId === postCreatorId) {
+    if (authenticatedUserId === postCreatorId) {
       return NextResponse.json({ error: 'Você não pode curtir seu próprio post' }, { status: 400 })
     }
 
-    // Verificar saldo do usuário
+    // Verificar saldo do usuário autenticado
     const { data: balance, error: balanceError } = await supabase
       .from('user_points_balance')
       .select('balance')
-      .eq('user_id', userId)
+      .eq('user_id', authenticatedUserId) // 🔒 Sempre ID autenticado
       .single()
 
     if (balanceError) {
@@ -70,7 +81,7 @@ export async function POST(request: NextRequest) {
       .from('feed_posts_likes')
       .select('id, is_premium')
       .eq('post_id', postId)
-      .eq('user_id', userId)
+      .eq('user_id', authenticatedUserId) // 🔒 Sempre ID autenticado
     
     if (likeCheckError) {
       console.error('❌ [Premium Like API] Erro ao verificar like existente:', likeCheckError)
@@ -86,7 +97,7 @@ export async function POST(request: NextRequest) {
       .from('feed_posts_likes')
       .insert({
         post_id: postId,
-        user_id: userId,
+        user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
         is_premium: true,
         premium_points_spent: pointsCost,
         created_at: new Date().toISOString()
@@ -102,10 +113,10 @@ export async function POST(request: NextRequest) {
     
     console.log('✅ [Premium Like API] Like premium criado com sucesso')
 
-    // 2. Deduzir pontos do usuário que curtiu
+    // 2. Deduzir pontos do usuário autenticado que curtiu
     const { error: deductError } = await supabase
       .rpc('add_points', {
-        p_user_id: userId,
+        p_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
         p_points: -pointsCost,
         p_source: 'premium_like',
         p_description: 'Curtida premium em post',
@@ -134,7 +145,7 @@ export async function POST(request: NextRequest) {
         p_description: 'Recebeu curtida premium em post',
         p_metadata: {
           post_id: postId,
-          from_user_id: userId
+          from_user_id: authenticatedUserId // 🔒 Sempre ID autenticado
         }
       })
 
@@ -145,11 +156,11 @@ export async function POST(request: NextRequest) {
 
     // 4. Criar notificação para o criador do post
     try {
-      // Buscar nome do usuário que deu premium like
+      // Buscar nome do usuário autenticado que deu premium like
       const { data: likerProfile } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', userId)
+        .eq('id', authenticatedUserId) // 🔒 Sempre ID autenticado
         .single()
 
       const likerName = likerProfile?.full_name || 'Usuário'
@@ -175,7 +186,7 @@ export async function POST(request: NextRequest) {
           priority: 'high',
           metadata: {
             post_id: postId,
-            from_user_id: userId,
+            from_user_id: authenticatedUserId, // 🔒 Sempre ID autenticado
             from_user_name: likerName,
             points_received: pointsCost,
             type: 'premium_like_received'
@@ -204,5 +215,5 @@ export async function POST(request: NextRequest) {
       error: 'Erro interno do servidor' 
     }, { status: 500 })
   }
-}
+})
 

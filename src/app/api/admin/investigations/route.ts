@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/investigations
+ * 
+ * Lista investigações agrupadas por usuário.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem visualizar investigações
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const adminSupabase = createAdminSupabaseClient()
     
@@ -78,4 +88,4 @@ export async function GET(request: NextRequest) {
     console.error('Erro na API de investigações:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})
