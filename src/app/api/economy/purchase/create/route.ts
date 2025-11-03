@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/economy/purchase/create
+ * 
+ * Cria uma compra de pacote de pontos para o usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Sempre cria compra para o usuário autenticado (user.id)
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse do body
     const body = await request.json()
     const { package_id, payment_method } = body
@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     }
 
-    // Criar compra
-    const { data, error } = await supabase.rpc('create_points_purchase', {
-      p_user_id: user.id,
+    // Criar compra para o usuário autenticado
+    const { data, error } = await supabaseAuth.rpc('create_points_purchase', {
+      p_user_id: user.id, // 🔒 Sempre ID autenticado
       p_package_id: package_id,
       p_payment_method: payment_method
     })
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar detalhes da compra criada
-    const { data: purchase, error: fetchError } = await supabase
+    const { data: purchase, error: fetchError } = await supabaseAuth
       .from('points_purchases')
       .select(`
         *,
@@ -57,4 +57,4 @@ export async function POST(request: NextRequest) {
     console.error('Erro na API de criar compra:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

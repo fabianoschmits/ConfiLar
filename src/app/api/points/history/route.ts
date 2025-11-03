@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/points/history
+ * 
+ * Retorna o histórico de transações de pontos do usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Usa sempre user.id autenticado (ignora qualquer userId na query)
+ * - ✅ Mais seguro e simples - não aceita userId como parâmetro
+ */
+export const GET = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    // Criar cliente Supabase com contexto de autenticação
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
+    // ✅ Sempre usar o ID do usuário autenticado (não aceitar da query)
+    const authenticatedUserId = user.id
     
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    // Verificar se o userId corresponde ao usuário autenticado
-    if (userId && userId !== user.id) {
-      return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
-    }
-
-    // Usar o ID do usuário autenticado
-    const authenticatedUserId = user.id
 
     // Parse dos query parameters
     const type = searchParams.get('type')
@@ -32,11 +26,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Construir query - agora com o cliente autenticado
-    let query = supabase
+    // Construir query - usando sempre o ID do usuário autenticado
+    let query = supabaseAuth
       .from('point_transactions')
       .select('*')
-      .eq('user_id', authenticatedUserId)
+      .eq('user_id', authenticatedUserId) // 🔒 Sempre ID autenticado
       .order('created_at', { ascending: false })
 
     // Aplicar filtros
@@ -89,4 +83,4 @@ export async function GET(request: NextRequest) {
     console.error('Erro na API de histórico de pontos:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/users/search
+ * 
+ * Busca usuário pelo nome completo.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth) - previne enumeration attacks
+ * - ✅ Busca apenas por nome, não expõe informações sensíveis
+ */
+export const GET = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const searchParams = request.nextUrl.searchParams
     const name = searchParams.get('name')
@@ -16,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuário pelo nome completo (case insensitive)
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAuth
       .from('profiles')
       .select('id, full_name')
       .ilike('full_name', name)
@@ -28,7 +37,7 @@ export async function GET(request: NextRequest) {
       console.log('🔍 API: Tentando busca parcial...')
       
       // Tentar busca parcial se não encontrar exato
-      const { data: partialData, error: partialError } = await supabase
+      const { data: partialData, error: partialError } = await supabaseAuth
         .from('profiles')
         .select('id, full_name')
         .ilike('full_name', `%${name}%`)
@@ -56,5 +65,5 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
