@@ -52,10 +52,10 @@ import {
   Flag,
   HandHeart,
   ShoppingCart,
-  Crown
+  Crown,
+  Sparkles
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
-import { PremiumAdCard } from '@/components/classifieds/PremiumAdCard'
 import { PremiumAdForm } from '@/components/classifieds/PremiumAdForm'
 import { ReportButton } from '@/components/ReportButton'
 
@@ -71,6 +71,7 @@ export default function ClassificadosPage() {
   const [editingAdId, setEditingAdId] = useState<string | null>(null)
   const [showAdModal, setShowAdModal] = useState(false)
   const [selectedAd, setSelectedAd] = useState<any>(null)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [currentPage, setCurrentPage] = useState(1)
@@ -914,18 +915,20 @@ export default function ClassificadosPage() {
                       <span className="sm:hidden ml-0.5">⭐</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                    <DialogHeader>
-                      <DialogTitle className="text-gray-900 dark:text-white flex items-center">
-                        <Crown className="h-5 w-5 mr-2 text-yellow-500" />
-                        Criar Anúncio Premium
+                  <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+                    <DialogHeader className="mb-4 sm:mb-6">
+                      <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                        <span>Criar Anúncio Premium</span>
                       </DialogTitle>
                     </DialogHeader>
-                    <PremiumAdForm
-                      onSubmit={() => setShowPremiumAdDialog(false)}
-                      onCancel={() => setShowPremiumAdDialog(false)}
-                      isLoading={isCreatingAd}
-                    />
+                    <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-1">
+                      <PremiumAdForm
+                        onSubmit={() => setShowPremiumAdDialog(false)}
+                        onCancel={() => setShowPremiumAdDialog(false)}
+                        isLoading={isCreatingAd}
+                      />
+                    </div>
                   </DialogContent>
                 </Dialog>
                 </>
@@ -1104,12 +1107,114 @@ export default function ClassificadosPage() {
                         </div>
                       </div>
 
+                      {/* Galeria de Imagens */}
+                      {selectedAd.images && selectedAd.images.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">Fotos do Serviço</h4>
+                          {expandedImage ? (
+                            /* Imagem Expandida - Centralizada */
+                            <div 
+                              className="fixed inset-0 z-50 bg-black/90 dark:bg-black/95 flex items-center justify-center p-4"
+                              onClick={() => setExpandedImage(null)}
+                            >
+                              <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setExpandedImage(null)
+                                  }}
+                                  className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur-sm transition-all"
+                                >
+                                  <X className="h-6 w-6" />
+                                </button>
+                                <img
+                                  src={expandedImage}
+                                  alt={`${selectedAd.title} - Imagem expandida`}
+                                  className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            /* Grid de Miniaturas */
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                              {selectedAd.images.map((image: string, index: number) => (
+                                <div 
+                                  key={index} 
+                                  className="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 hover:border-amber-400 dark:hover:border-amber-600 transition-all"
+                                  onClick={() => setExpandedImage(image)}
+                                >
+                                  <img
+                                    src={image}
+                                    alt={`${selectedAd.title} - Foto ${index + 1}`}
+                                    className="w-full h-32 sm:h-40 object-cover hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
+                                    <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+                                      Clique para expandir
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Informações de Contato (apenas para premium) */}
+                      {(selectedAd.is_premium && !(selectedAd.premium_expires_at ? new Date(selectedAd.premium_expires_at) < new Date() : false)) && (selectedAd.contact_phone || selectedAd.contact_email) && (
+                        <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                          <h4 className="text-sm sm:text-base font-semibold text-amber-900 dark:text-amber-200 mb-2">Informações de Contato</h4>
+                          <div className="space-y-2">
+                            {selectedAd.contact_phone && (
+                              <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                                <span className="font-semibold">📞 Telefone:</span>
+                                <span>{selectedAd.contact_phone}</span>
+                              </div>
+                            )}
+                            {selectedAd.contact_email && (
+                              <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                                <span className="font-semibold">✉️ Email:</span>
+                                <span>{selectedAd.contact_email}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Faixa de Preço (se houver) */}
+                      {selectedAd.price_range && (
+                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                            <span className="font-semibold mr-2">💰 Faixa de Preço:</span>
+                            <span>{selectedAd.price_range}</span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Informações Adicionais */}
                       <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           <span>Publicado em {formatDate(selectedAd.created_at)}</span>
                         </div>
+                        {/* Duração do anúncio premium (apenas para o criador) */}
+                        {user && selectedAd.user_id === user.id && selectedAd.is_premium && selectedAd.premium_expires_at && (
+                          <div className="flex items-center text-xs sm:text-sm text-blue-600 dark:text-blue-400 mt-2">
+                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                            <span>
+                              Duração: {(() => {
+                                const expiresAt = new Date(selectedAd.premium_expires_at)
+                                const now = new Date()
+                                const daysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                                return `${daysRemaining} dia${daysRemaining > 1 ? 's' : ''} restante${daysRemaining > 1 ? 's' : ''}`
+                              })()}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Botões de Ação */}
@@ -1265,39 +1370,42 @@ export default function ClassificadosPage() {
             <div className={`grid gap-5 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => {
                 // Verificar se é um anúncio premium
-                const isPremiumAd = false // Classified ads não têm sistema premium ainda
-                const premiumExpired = false // Classified ads não têm sistema premium ainda
+                const isPremiumAd = ad.is_premium || false
+                const premiumExpired = ad.premium_expires_at 
+                  ? new Date(ad.premium_expires_at) < new Date()
+                  : false
+                const isActivePremium = isPremiumAd && !premiumExpired
                 
-                // Se for um anúncio premium ativo, usar o componente premium
-                if (isPremiumAd && !premiumExpired) {
-                  return (
-                    <PremiumAdCard
-                      key={ad.id}
-                      ad={ad}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                      onReport={() => {}}
-                    />
-                  )
-                }
-                
-                // Anúncio normal
+                // Card único para normal e premium (com estilos condicionais)
                 return (
                 <div 
                   key={ad.id} 
                   className={`group relative overflow-hidden rounded-2xl shadow-2xl transition-transform duration-300 hover:-translate-y-3 hover:scale-[1.02] ${
-                    ad.ad_type === 'oferecer' 
-                      ? 'bg-white dark:bg-gray-800 hover:animate-glow-blue' 
-                      : 'bg-white dark:bg-gray-800 hover:animate-glow-emerald'
+                    isActivePremium
+                      ? 'bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-amber-100/50 dark:from-amber-900/20 dark:via-yellow-900/15 dark:to-amber-800/10 border-2 border-amber-300 dark:border-amber-700 shadow-amber-200/50 dark:shadow-amber-900/30'
+                      : ad.ad_type === 'oferecer' 
+                        ? 'bg-white dark:bg-gray-800 hover:animate-glow-blue border border-gray-200 dark:border-gray-700' 
+                        : 'bg-white dark:bg-gray-800 hover:animate-glow-emerald border border-gray-200 dark:border-gray-700'
                   }`}
                 >
+                  {/* Badge Premium - aparece apenas se for premium */}
+                  {isActivePremium && (
+                    <div className="absolute top-3 right-3 z-10">
+                      <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-lg flex items-center gap-1 px-2 py-1">
+                        <Crown className="h-3 w-3" />
+                        <span className="text-xs font-bold">PREMIUM</span>
+                      </Badge>
+                    </div>
+                  )}
                   {/* Header com tipo de anúncio e menu */}
                   <div className="flex items-center justify-between p-4 pb-2">
                     <div className="flex items-center gap-2">
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
-                        ad.ad_type === 'oferecer' 
-                          ? 'bg-blue-500 text-white shadow-md' 
-                          : 'bg-emerald-500 text-white shadow-md'
+                        isActivePremium
+                          ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg'
+                          : ad.ad_type === 'oferecer' 
+                            ? 'bg-blue-500 text-white shadow-md' 
+                            : 'bg-emerald-500 text-white shadow-md'
                       }`}>
                         {ad.ad_type === 'oferecer' ? (
                           <>
@@ -1311,7 +1419,11 @@ export default function ClassificadosPage() {
                           </>
                         )}
                       </div>
-                      <div className="flex items-center text-xs text-gray-500">
+                      <div className={`flex items-center text-xs ${
+                        isActivePremium 
+                          ? 'text-amber-700 dark:text-amber-400 font-medium' 
+                          : 'text-gray-500'
+                      }`}>
                         <MapPin className="h-3 w-3 mr-1" />
                         {ad.location_city}
                       </div>
@@ -1324,14 +1436,41 @@ export default function ClassificadosPage() {
                   <div className="px-4 pb-4">
                     {/* Título do serviço */}
                     <h3 
-                      className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 text-lg cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className={`font-bold mb-2 line-clamp-2 text-lg cursor-pointer transition-colors ${
+                        isActivePremium
+                          ? 'text-gray-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400'
+                          : 'text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400'
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation()
                         handleOpenAdModal(ad)
                       }}
                     >
+                      {isActivePremium && <Sparkles className="h-4 w-4 inline mr-1.5 text-amber-500" />}
                       {ad.title}
                     </h3>
+
+                    {/* Miniatura de imagem (se houver imagens) */}
+                    {ad.images && ad.images.length > 0 && (
+                      <div className="relative mb-3 cursor-pointer" onClick={(e) => {
+                        e.stopPropagation()
+                        handleOpenAdModal(ad)
+                      }}>
+                        <img
+                          src={ad.images[0]}
+                          alt={ad.title}
+                          className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                        {ad.images.length > 1 && (
+                          <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                            +{ad.images.length - 1}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Descrição */}
                     <p 
@@ -1344,14 +1483,68 @@ export default function ClassificadosPage() {
                       {ad.description}
                     </p>
 
+                    {/* Informações de contato (apenas para premium) */}
+                    {isActivePremium && (ad.contact_phone || ad.contact_email) && (
+                      <div className="mb-3 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                        {ad.contact_phone && (
+                          <div className="flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300 mb-1">
+                            <span className="font-semibold">📞</span>
+                            <span>{ad.contact_phone}</span>
+                          </div>
+                        )}
+                        {ad.contact_email && (
+                          <div className="flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-300">
+                            <span className="font-semibold">✉️</span>
+                            <span>{ad.contact_email}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Faixa de preço (se houver) */}
+                    {ad.price_range && (
+                      <div className="mb-3">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            isActivePremium
+                              ? 'border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30'
+                              : 'border-gray-400 dark:border-gray-600 text-gray-700 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30'
+                          }`}
+                        >
+                          💰 {ad.price_range}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Duração do anúncio premium (apenas para o criador) */}
+                    {isActivePremium && user && ad.user_id === user.id && ad.premium_expires_at && (
+                      <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-1.5 text-xs text-blue-800 dark:text-blue-300">
+                          <Calendar className="h-3 w-3" />
+                          <span className="font-semibold">Duração:</span>
+                          <span>
+                            {(() => {
+                              const expiresAt = new Date(ad.premium_expires_at)
+                              const now = new Date()
+                              const daysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                              return `${daysRemaining} dia${daysRemaining > 1 ? 's' : ''} restante${daysRemaining > 1 ? 's' : ''}`
+                            })()}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Categoria */}
                     <div className="flex items-center gap-2 mb-4">
                       <Badge 
                         variant="outline" 
                         className={`text-xs font-medium ${
-                          ad.ad_type === 'oferecer' 
-                            ? 'border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
-                            : 'border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30'
+                          isActivePremium
+                            ? 'border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30'
+                            : ad.ad_type === 'oferecer' 
+                              ? 'border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                              : 'border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30'
                         }`}
                       >
                         {getCategoryIcon(ad.category)} {ad.category}
@@ -1363,15 +1556,19 @@ export default function ClassificadosPage() {
                       {/* Info do usuário */}
                       <Link href={`/perfil/${ad.user_id}`} className="flex items-center gap-2 group/user">
                         <Avatar className={`w-8 h-8 ring-2 shadow-sm transition-all duration-200 ${
-                          ad.ad_type === 'oferecer'
-                            ? 'ring-blue-200 group-hover/user:ring-blue-400'
-                            : 'ring-emerald-200 group-hover/user:ring-emerald-400'
+                          isActivePremium
+                            ? 'ring-amber-300 dark:ring-amber-700 group-hover/user:ring-amber-500 dark:group-hover/user:ring-amber-500'
+                            : ad.ad_type === 'oferecer'
+                              ? 'ring-blue-200 group-hover/user:ring-blue-400'
+                              : 'ring-emerald-200 group-hover/user:ring-emerald-400'
                         }`}>
                           <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
                           <AvatarFallback className={`text-xs font-medium ${
-                            ad.ad_type === 'oferecer' 
-                              ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400' 
-                              : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400'
+                            isActivePremium
+                              ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400'
+                              : ad.ad_type === 'oferecer' 
+                                ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400' 
+                                : 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400'
                           }`}>
                             {ad.user_name.charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -1437,9 +1634,11 @@ export default function ClassificadosPage() {
                           size="sm"
                           onClick={() => handleContactUser(ad.user_id, ad.user_name)}
                           className={`${
-                            ad.ad_type === 'oferecer' 
-                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' 
-                              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg'
+                            isActivePremium
+                              ? 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-lg hover:shadow-xl'
+                              : ad.ad_type === 'oferecer' 
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg' 
+                                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg'
                           } transition-all duration-200 text-xs font-medium px-4 py-2`}
                         >
                           <MessageCircle className="h-3 w-3 mr-1.5" />
@@ -1451,9 +1650,11 @@ export default function ClassificadosPage() {
 
                   {/* Indicador visual lateral */}
                   <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
-                    ad.ad_type === 'oferecer' 
-                      ? 'bg-blue-500' 
-                      : 'bg-emerald-500'
+                    isActivePremium
+                      ? 'bg-gradient-to-b from-amber-500 via-yellow-500 to-amber-600'
+                      : ad.ad_type === 'oferecer' 
+                        ? 'bg-blue-500' 
+                        : 'bg-emerald-500'
                   }`} />
                 </div>
                 )

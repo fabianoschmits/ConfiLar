@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFile, stat } from 'fs/promises'
 import { join } from 'path'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/tests/status
+ * 
+ * Retorna status dos testes (apenas para administradores).
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação admin (withAdminAuth)
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const testType = searchParams.get('type') || 'all'
@@ -28,7 +37,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     }, { status: 500 })
   }
-}
+})
 
 async function getTestResults(type: string) {
   try {

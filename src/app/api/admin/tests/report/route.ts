@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/tests/report
+ * 
+ * Retorna relatório de testes (apenas para administradores).
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação admin (withAdminAuth)
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const testId = searchParams.get('id')
@@ -60,4 +69,4 @@ export async function GET(request: NextRequest) {
       error: error.message
     }, { status: 500 })
   }
-}
+})

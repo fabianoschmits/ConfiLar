@@ -4,15 +4,21 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Crown, Loader2, Sparkles, Star, Zap, Target, TrendingUp } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Combobox } from '@/components/ui/Combobox'
+import { EstadoCombobox, CidadeCombobox } from '@/components/ui/LocationComboboxes'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
-import { ServiceAutocomplete } from '@/components/ui/ServiceAutocomplete'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Crown, Coins, Zap, HandHeart, ShoppingCart, Loader2 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { usePremiumAd } from '@/hooks/usePremiumAd'
 import { usePoints } from '@/hooks/usePoints'
 import { useIBGE } from '@/hooks/useIBGE'
 import { toast } from 'sonner'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
+import { services } from '@/data/services'
 
 interface PremiumAdFormProps {
   onSubmit: (ad: {
@@ -22,31 +28,56 @@ interface PremiumAdFormProps {
     location_city: string
     location_state: string
     price_range: string
-    contact_phone?: string
-    contact_email?: string
     images?: string[]
+    pointsToSpend: number
+    durationDays: number
   }) => void
   onCancel: () => void
   isLoading?: boolean
 }
 
 export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: PremiumAdFormProps) {
-  const { profile } = useAuthContext()
-  const { balance } = usePoints()
+  const { profile, user } = useAuthContext()
+  const { balance, loading: balanceLoading } = usePoints(user?.id)
   const { estados, cidades, loadCidades } = useIBGE()
+  
+  const [formData, setFormData] = useState<{
+    title: string
+    description: string
+    category: string
+    location_state: string
+    location_city: string
+    ad_type: 'offer' | 'request'
+    price_range: string
+    images: string[]
+    pointsToSpend: number
+    durationDays: number
+  }>({
+    title: '',
+    description: '',
+    category: '',
+    location_state: '',
+    location_city: '',
+    ad_type: 'offer',
+    price_range: '',
+    images: [],
+    pointsToSpend: PREMIUM_PRICES.AD_1_DAY.POINTS,
+    durationDays: 1
+  })
+
   const { createPremiumAd, isProcessing } = usePremiumAd({
     onSuccess: () => {
       toast.success('Anúncio premium criado com sucesso! 🌟')
       onSubmit({
-        title: '',
-        description: '',
-        service_type: '',
-        location_city: '',
-        location_state: '',
-        price_range: '',
-        contact_phone: '',
-        contact_email: '',
-        images: []
+        title: formData.title,
+        description: formData.description,
+        service_type: formData.category,
+        location_city: formData.location_city,
+        location_state: formData.location_state,
+        price_range: formData.price_range,
+        images: formData.images,
+        pointsToSpend: formData.pointsToSpend,
+        durationDays: formData.durationDays
       })
     },
     onError: (error) => {
@@ -54,85 +85,11 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
     }
   })
 
-  const [ad, setAd] = useState({
-    title: '',
-    description: '',
-    service_type: '',
-    location_city: '',
-    location_state: '',
-    price_range: '',
-    contact_phone: '',
-    contact_email: '',
-    images: [] as string[]
-  })
-
-  const [showPremiumFeatures, setShowPremiumFeatures] = useState(false)
-
-  const handleSubmit = async () => {
-    if (!ad.title.trim() || !ad.description.trim() || !ad.service_type.trim()) {
-      toast.error('Título, descrição e categoria são obrigatórios')
-      return
-    }
-
-    if (!ad.location_city.trim() || !ad.location_state.trim()) {
-      toast.error('Localização é obrigatória')
-      return
-    }
-
-    if (balance.balance < PREMIUM_PRICES.AD.POINTS) {
-      toast.error(`Saldo insuficiente. Necessário: ${PREMIUM_PRICES.AD.POINTS} pontos para anúncio premium (R$ ${PREMIUM_PRICES.AD.BRL.toFixed(2)})`)
-      return
-    }
-
-    try {
-      await createPremiumAd({
-        title: ad.title,
-        description: ad.description,
-        service_type: ad.service_type,
-        location_city: ad.location_city,
-        location_state: ad.location_state,
-        price_range: ad.price_range,
-        contact_phone: ad.contact_phone,
-        contact_email: ad.contact_email,
-        images: ad.images
-      })
-    } catch (error) {
-      console.error('Erro ao criar anúncio premium:', error)
-    }
-  }
-
-  const premiumFeatures = [
-    {
-      icon: <Crown className="h-5 w-5 text-yellow-500" />,
-      title: "Destaque Premium",
-      description: "Seu anúncio aparece com borda dourada e ícone premium"
-    },
-    {
-      icon: <TrendingUp className="h-5 w-5 text-green-500" />,
-      title: "Prioridade no Feed",
-      description: "Aparece no topo dos resultados por 30 dias"
-    },
-    {
-      icon: <Target className="h-5 w-5 text-blue-500" />,
-      title: "Alcance Ampliado",
-      description: "Visibilidade 5x maior que anúncios normais"
-    },
-    {
-      icon: <Star className="h-5 w-5 text-purple-500" />,
-      title: "Credibilidade Premium",
-      description: "Badge premium aumenta confiança dos clientes"
-    },
-    {
-      icon: <Zap className="h-5 w-5 text-orange-500" />,
-      title: "Resposta Rápida",
-      description: "Maior chance de ser contatado primeiro"
-    },
-    {
-      icon: <Sparkles className="h-5 w-5 text-pink-500" />,
-      title: "Duração Estendida",
-      description: "Anúncio ativo por 30 dias (vs 7 dias normal)"
-    }
-  ]
+  // Opções de categorias para o Combobox
+  const categoryOptions = services.map(service => ({
+    value: service.name,
+    label: `${service.icon} ${service.name}`
+  }))
 
   const priceRanges = [
     'Até R$ 100',
@@ -144,265 +101,391 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
     'A combinar'
   ]
 
+  const premiumOptions = [
+    { 
+      points: PREMIUM_PRICES.AD_1_DAY.POINTS, 
+      label: '1 Dia', 
+      description: 'Destaque por 24 horas', 
+      color: '#10B981',
+      days: 1,
+      badge: 'Teste'
+    },
+    { 
+      points: PREMIUM_PRICES.AD_7_DAYS.POINTS, 
+      label: '7 Dias', 
+      description: 'Destaque por 1 semana', 
+      color: '#FFD700',
+      days: 7,
+      badge: 'Popular'
+    },
+    { 
+      points: PREMIUM_PRICES.AD_14_DAYS.POINTS, 
+      label: '14 Dias', 
+      description: 'Destaque por 2 semanas', 
+      color: '#FF6B6B',
+      days: 14,
+      badge: 'Econômico'
+    },
+    { 
+      points: PREMIUM_PRICES.AD_30_DAYS.POINTS, 
+      label: '30 Dias', 
+      description: 'Destaque por 1 mês', 
+      color: '#9B59B6',
+      days: 30,
+      badge: 'Máximo'
+    }
+  ]
+
+  const canAfford = balance?.balance ? balance.balance >= formData.pointsToSpend : false
+
+  const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.description.trim() || !formData.category.trim()) {
+      toast.error('Título, descrição e categoria são obrigatórios')
+      return
+    }
+
+    if (!formData.location_city.trim() || !formData.location_state.trim()) {
+      toast.error('Localização é obrigatória')
+      return
+    }
+
+    if (!balance) {
+      toast.error('Carregando saldo, aguarde...')
+      return
+    }
+
+    if (balance.balance < formData.pointsToSpend) {
+      toast.error(`Saldo insuficiente. Necessário: ${formData.pointsToSpend.toLocaleString('pt-BR')} pontos`)
+      return
+    }
+
+    try {
+      await createPremiumAd({
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        service_type: formData.category.trim(),
+        location_city: formData.location_city.trim(),
+        location_state: formData.location_state.trim(),
+        ad_type: formData.ad_type === 'offer' ? 'oferecer' : 'procurar',
+        price_range: formData.price_range || '',
+        images: formData.images || [],
+        pointsToSpend: formData.pointsToSpend,
+        durationDays: formData.durationDays
+      })
+    } catch (error) {
+      console.error('Erro ao criar anúncio premium:', error)
+    }
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header Premium */}
-      <div className="text-center">
-        <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-full shadow-lg">
-          <Crown className="h-10 w-10 text-white" />
+      <div className="text-center space-y-2">
+        <div className="flex items-center justify-center gap-2">
+          <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
+          <h3 className="text-lg sm:text-xl font-bold text-yellow-600">Anúncio Premium</h3>
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          🌟 Criar Anúncio Premium
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Destaque seu serviço e alcance mais clientes com um anúncio premium!
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 px-2">
+          Escolha a duração do destaque para seu anúncio ter maior visibilidade
         </p>
-        
-        {/* Saldo e Custo */}
-        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Seu saldo:</p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">{balance.balance} pontos</p>
+      </div>
+
+      {/* Saldo Atual */}
+      <Card className="border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 dark:text-yellow-400" />
+              <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">Seus ConfiPoints:</span>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Custo:</p>
-              <p className="text-lg font-bold text-yellow-600">{PREMIUM_PRICES.AD.POINTS} pontos</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">R$ {PREMIUM_PRICES.AD.BRL.toFixed(2)} / {PREMIUM_PRICES.AD.DURATION}</p>
-            </div>
+            {balanceLoading || !balance ? (
+              <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+                Carregando...
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+                {balance.balance.toLocaleString('pt-BR')} pontos
+              </Badge>
+            )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Opções Premium */}
+      <div className="space-y-2 sm:space-y-3">
+        <Label className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
+          Escolha a duração do destaque:
+        </Label>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+          {premiumOptions.map((option) => (
+            <Card 
+              key={option.points}
+              className={`cursor-pointer transition-all ${
+                formData.pointsToSpend === option.points 
+                  ? 'ring-1 ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600' 
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
+              } ${!canAfford && option.points > (balance?.balance || 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (balance && option.points <= balance.balance) {
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    pointsToSpend: option.points,
+                    durationDays: option.days
+                  }))
+                }
+              }}
+            >
+              <CardContent className="p-2 sm:p-4">
+                <div className="text-center space-y-1 sm:space-y-3">
+                  {option.badge && (
+                    <Badge 
+                      className="mb-1 sm:mb-2 text-[8px] sm:text-xs px-1 sm:px-2"
+                      style={{ 
+                        backgroundColor: option.color,
+                        color: 'white',
+                        borderColor: option.color
+                      }}
+                    >
+                      {option.badge}
+                    </Badge>
+                  )}
+                  <div 
+                    className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-2 sm:border-4 mx-auto flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: formData.pointsToSpend === option.points ? option.color : 'transparent',
+                      borderColor: option.color
+                    }}
+                  >
+                    <span className="text-sm sm:text-xl font-bold" style={{ color: formData.pointsToSpend === option.points ? 'white' : option.color }}>
+                      {option.days}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs sm:text-base font-bold text-gray-900 dark:text-gray-100">{option.label}</div>
+                    <Badge 
+                      variant="outline" 
+                      style={{ borderColor: option.color, color: option.color }}
+                      className="bg-white dark:bg-gray-800 text-[10px] sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1"
+                    >
+                      {option.points.toLocaleString('pt-BR')} pts
+                    </Badge>
+                  </div>
+                  <p className="text-[9px] sm:text-xs text-gray-600 dark:text-gray-300">{option.description}</p>
+                  {option.points > (balance?.balance || 0) && (
+                    <Badge variant="destructive" className="text-[8px] sm:text-xs">
+                      Saldo Insuficiente
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
 
-      {/* Botão para mostrar funcionalidades premium */}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => setShowPremiumFeatures(!showPremiumFeatures)}
-        className="w-full border-yellow-300 text-yellow-700 hover:bg-yellow-50 dark:border-yellow-600 dark:text-yellow-400 dark:hover:bg-yellow-900/20"
-      >
-        <Crown className="h-4 w-4 mr-2" />
-        {showPremiumFeatures ? 'Ocultar' : 'Ver'} Funcionalidades Premium
-      </Button>
-
-      {/* Funcionalidades Premium */}
-      {showPremiumFeatures && (
-        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-4 space-y-3">
-          <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
-            <Sparkles className="h-5 w-5 mr-2 text-yellow-500" />
-            O que você ganha com um Anúncio Premium:
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {premiumFeatures.map((feature, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                {feature.icon}
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white text-sm">
-                    {feature.title}
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Formulário */}
-      <div className="space-y-4">
+      {/* Formulário - Igual ao modal normal */}
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            Categoria do Serviço <span className="text-yellow-500">*</span>
-          </label>
-          <ServiceAutocomplete
-            value={ad.service_type}
-            onChange={(value) => setAd({ ...ad, service_type: value })}
-            placeholder="Selecione a categoria do seu serviço..."
-            disabled={isLoading || isProcessing}
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            Título do Anúncio <span className="text-yellow-500">*</span>
-          </label>
+          <Label htmlFor="title" className="text-xs sm:text-sm">Título *</Label>
           <Input
-            placeholder="Ex: Reforma de Cozinha Completa - Qualidade Garantida"
-            value={ad.title}
-            onChange={(e) => setAd({ ...ad, title: e.target.value })}
-            disabled={isLoading || isProcessing}
-            className="border-gray-300 dark:border-gray-600 focus:ring-yellow-500"
-            maxLength={100}
+            id="title"
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            placeholder={
+              formData.ad_type === 'offer' 
+                ? "Ex: Ofereço serviços de pintura" 
+                : "Ex: Preciso de um pedreiro"
+            }
+            className="text-sm sm:text-base h-9 sm:h-10"
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            💡 Dica: Use um título que chame atenção e destaque seus diferenciais
-          </p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            Descrição Detalhada <span className="text-yellow-500">*</span>
-          </label>
+          <Label htmlFor="description" className="text-xs sm:text-sm">Descrição *</Label>
           <Textarea
-            placeholder="Descreva seu serviço em detalhes: experiência, materiais usados, garantias oferecidas, diferenciais..."
-            value={ad.description}
-            onChange={(e) => setAd({ ...ad, description: e.target.value })}
-            disabled={isLoading || isProcessing}
-            className="border-gray-300 dark:border-gray-600 focus:ring-yellow-500 min-h-[120px]"
-            maxLength={1000}
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            placeholder={
+              formData.ad_type === 'offer' 
+                ? "Descreva os serviços que você oferece, sua experiência, disponibilidade, etc..." 
+                : "Descreva o que você precisa, quando precisa, orçamento disponível, etc..."
+            }
+            rows={4}
+            className="text-sm sm:text-base resize-y"
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            💡 Dica: Seja específico! Detalhes ajudam clientes a entenderem melhor seu serviço
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Estado <span className="text-yellow-500">*</span>
-            </label>
-            <select
-              value={ad.location_state}
-              onChange={(e) => {
-                setAd({ ...ad, location_state: e.target.value, location_city: '' })
-                loadCidades(e.target.value)
-              }}
-              disabled={isLoading || isProcessing}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-            >
-              <option value="">Selecione o estado</option>
-              {estados.map((estado) => (
-                <option key={estado.id} value={estado.sigla}>
-                  {estado.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Cidade <span className="text-yellow-500">*</span>
-            </label>
-            <select
-              value={ad.location_city}
-              onChange={(e) => setAd({ ...ad, location_city: e.target.value })}
-              disabled={isLoading || isProcessing || !ad.location_state}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-            >
-              <option value="">Selecione a cidade</option>
-              {cidades.map((cidade) => (
-                <option key={cidade.id} value={cidade.nome}>
-                  {cidade.nome}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            Faixa de Preço
-          </label>
-          <select
-            value={ad.price_range}
-            onChange={(e) => setAd({ ...ad, price_range: e.target.value })}
-            disabled={isLoading || isProcessing}
-            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+          <Label htmlFor="ad_type" className="text-xs sm:text-sm">Tipo de Anúncio *</Label>
+          <Select 
+            value={formData.ad_type} 
+            onValueChange={(value: 'offer' | 'request') => setFormData(prev => ({ ...prev, ad_type: value }))}
           >
-            <option value="">Selecione a faixa de preço</option>
-            {priceRanges.map((range) => (
-              <option key={range} value={range}>
-                {range}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
+              <SelectValue placeholder="Selecione o tipo de anúncio" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="offer">
+                <div className="flex items-center gap-2">
+                  <HandHeart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <div>
+                    <div className="font-medium text-emerald-700 dark:text-emerald-400 text-sm">Oferta de Serviço</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Estou oferecendo um serviço</div>
+                  </div>
+                </div>
+              </SelectItem>
+              <SelectItem value="request">
+                <div className="flex items-center gap-2">
+                  <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <div>
+                    <div className="font-medium text-blue-700 dark:text-blue-400 text-sm">Solicitação de Serviço</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Preciso de um serviço</div>
+                  </div>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Telefone de Contato
-            </label>
-            <Input
-              placeholder="(11) 99999-9999"
-              value={ad.contact_phone}
-              onChange={(e) => setAd({ ...ad, contact_phone: e.target.value })}
-              disabled={isLoading || isProcessing}
-              className="border-gray-300 dark:border-gray-600 focus:ring-yellow-500"
+            <Label htmlFor="category" className="text-xs sm:text-sm">Serviços *</Label>
+            <Combobox
+              options={categoryOptions}
+              value={formData.category}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+              placeholder="Selecione"
+              searchPlaceholder="Buscar categoria..."
+              emptyMessage="Nenhuma categoria encontrada."
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-              Email de Contato
-            </label>
-            <Input
-              type="email"
-              placeholder="seu@email.com"
-              value={ad.contact_email}
-              onChange={(e) => setAd({ ...ad, contact_email: e.target.value })}
-              disabled={isLoading || isProcessing}
-              className="border-gray-300 dark:border-gray-600 focus:ring-yellow-500"
+            <Label htmlFor="state" className="text-xs sm:text-sm">Estado *</Label>
+            <EstadoCombobox
+              value={formData.location_state}
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, location_state: value, location_city: '' }))
+                if (value) loadCidades(value)
+              }}
             />
           </div>
+        </div>
+
+        {formData.location_state && (
+          <div>
+            <Label htmlFor="city" className="text-xs sm:text-sm">Cidade *</Label>
+            <CidadeCombobox
+              value={formData.location_city}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, location_city: value }))}
+              estadoSigla={formData.location_state}
+            />
+          </div>
+        )}
+
+        <div>
+          <Label htmlFor="price_range" className="text-xs sm:text-sm">Faixa de Preço</Label>
+          <Select
+            value={formData.price_range || undefined}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, price_range: value === 'none' ? '' : value }))}
+          >
+            <SelectTrigger className="h-9 sm:h-10 text-sm sm:text-base">
+              <SelectValue placeholder="Selecione a faixa de preço" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Não especificado</SelectItem>
+              {priceRanges.map((range) => (
+                <SelectItem key={range} value={range}>
+                  {range}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-            Fotos do Serviço
-          </label>
+          <Label className="text-xs sm:text-sm">Fotos do Serviço</Label>
           <ImageUploadFeed
-            currentImages={ad.images}
-            onImagesUpload={(images) => setAd({ ...ad, images })}
+            currentImages={formData.images}
+            onImagesUpload={(images) => setFormData(prev => ({ ...prev, images }))}
             maxImages={15}
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
             💡 Dica: Anúncios com fotos têm muito mais engajamento! (Máximo: 15 fotos)
           </p>
         </div>
       </div>
 
-      {/* Botões de Ação */}
-      <div className="flex space-x-3 pt-4">
+      {/* Resumo do Custo */}
+      <Card className="border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20">
+        <CardContent className="p-2 sm:p-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400" />
+              <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">Custo do Anúncio Premium:</span>
+            </div>
+            <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+              {formData.pointsToSpend.toLocaleString('pt-BR')} ConfiPoints
+            </Badge>
+          </div>
+          {balance && (
+            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-300 mt-1 sm:mt-0.5">
+              Saldo após criação: {(balance.balance - formData.pointsToSpend).toLocaleString('pt-BR')} pontos
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Botões */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 sm:pt-4">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isLoading || isProcessing}
-          className="flex-1"
+          className="flex-1 w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base"
         >
           Cancelar
         </Button>
-        
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={isLoading || isProcessing || balance.balance < 200}
-          className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0"
+          disabled={isLoading || isProcessing || balanceLoading || !balance || !canAfford || !formData.title.trim() || !formData.description.trim() || !formData.category.trim()}
+          className="flex-1 w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0 h-10 sm:h-11 text-sm sm:text-base font-medium"
         >
           {isProcessing ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Criando Anúncio Premium...
+              <span className="hidden sm:inline">Criando Anúncio Premium...</span>
+              <span className="sm:hidden">Criando...</span>
             </>
           ) : (
             <>
-              <Crown className="h-4 w-4 mr-2" />
-              Criar Anúncio Premium ({PREMIUM_PRICES.AD.POINTS} pontos)
+              <Crown className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="hidden sm:inline">Criar Anúncio Premium</span>
+              <span className="sm:hidden">Criar Premium</span>
             </>
           )}
         </Button>
       </div>
 
       {/* Aviso sobre saldo insuficiente */}
-      {balance.balance < PREMIUM_PRICES.AD.POINTS && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-          <p className="text-sm text-red-700 dark:text-red-400">
-            ⚠️ Saldo insuficiente. Você precisa de {PREMIUM_PRICES.AD.POINTS} pontos (R$ {PREMIUM_PRICES.AD.BRL.toFixed(2)}) para criar um anúncio premium.
-            <br />
-            <span className="font-medium">Seu saldo atual: {balance.balance} pontos</span>
+      {balance && balance.balance < formData.pointsToSpend && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2.5 sm:p-3">
+          <p className="text-xs sm:text-sm text-red-700 dark:text-red-400">
+            ⚠️ Saldo insuficiente. Você precisa de {formData.pointsToSpend.toLocaleString('pt-BR')} pontos para criar este anúncio premium.
+            <br className="hidden sm:block" />
+            <span className="font-medium block sm:inline mt-1 sm:mt-0">Seu saldo atual: {balance.balance.toLocaleString('pt-BR')} pontos</span>
+          </p>
+        </div>
+      )}
+      
+      {/* Aviso sobre carregamento */}
+      {balanceLoading && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 sm:p-3">
+          <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
+            ⏳ Carregando informações do saldo...
           </p>
         </div>
       )}

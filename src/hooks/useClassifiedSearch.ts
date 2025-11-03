@@ -20,9 +20,14 @@ interface ClassifiedAd {
   user_avatar_url: string | null
   ad_type: string
   is_featured?: boolean
+  is_premium?: boolean
   premium_points_spent?: number
   premium_expires_at?: string
   premium_highlight_color?: string
+  price_range?: string
+  contact_phone?: string
+  contact_email?: string
+  images?: string[]
 }
 
 interface ClassifiedFilters {
@@ -58,7 +63,7 @@ export function useClassifiedSearch() {
       
       console.log('📋 Tentando carregar dados reais da tabela classified_ads')
       
-      // Tentar buscar dados reais primeiro (usando apenas colunas que existem)
+      // Tentar buscar dados reais primeiro (incluindo campos premium)
       const { data, error } = await supabase
         .from('classified_ads')
         .select(`
@@ -74,9 +79,21 @@ export function useClassifiedSearch() {
           created_at,
           is_active,
           views,
-          ad_type
+          ad_type,
+          is_premium,
+          is_featured,
+          premium_points_spent,
+          premium_expires_at,
+          premium_highlight_color,
+          price_range,
+          contact_phone,
+          contact_email,
+          images
         `)
         .eq('is_active', true)
+        // Ordenar: premium primeiro, depois por data (mais recente primeiro)
+        .order('is_premium', { ascending: false })
+        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
 
       console.log('🔍 Resultado da query:', { data: data?.length || 0, error: error?.message || 'Nenhum erro' })
@@ -110,6 +127,11 @@ export function useClassifiedSearch() {
 
       const adsWithUserInfo = data?.map(ad => {
         const profile = profilesMap.get(ad.user_id)
+        // Verificar se premium está expirado
+        const premiumExpired = ad.is_premium && ad.premium_expires_at 
+          ? new Date(ad.premium_expires_at) < new Date()
+          : false
+        
         return {
           id: ad.id,
           user_id: ad.user_id,
@@ -124,9 +146,30 @@ export function useClassifiedSearch() {
           is_active: ad.is_active,
           views: ad.views || 0,
           user_avatar_url: profile?.avatar_url || profile?.profile_photo_url || null,
-          ad_type: ad.ad_type
+          ad_type: ad.ad_type,
+          is_premium: ad.is_premium && !premiumExpired, // Só marcar como premium se não estiver expirado
+          is_featured: ad.is_featured && !premiumExpired,
+          premium_points_spent: ad.premium_points_spent,
+          premium_expires_at: ad.premium_expires_at,
+          premium_highlight_color: ad.premium_highlight_color,
+          price_range: ad.price_range,
+          contact_phone: ad.contact_phone,
+          contact_email: ad.contact_email,
+          images: ad.images || []
         }
       }) || []
+      
+      // Ordenar manualmente: premium primeiro, depois por data
+      adsWithUserInfo.sort((a, b) => {
+        // Premium primeiro
+        if (a.is_premium && !b.is_premium) return -1
+        if (!a.is_premium && b.is_premium) return 1
+        // Featured depois
+        if (a.is_featured && !b.is_featured) return -1
+        if (!a.is_featured && b.is_featured) return 1
+        // Por data (mais recente primeiro)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
 
       setClassifiedAds(adsWithUserInfo)
       setFilteredAds(adsWithUserInfo)
