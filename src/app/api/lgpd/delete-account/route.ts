@@ -1,33 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { headers } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
+import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/lgpd/delete-account
+ * 
+ * Deleta permanentemente a conta e todos os dados do usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Requer confirmação de senha adicional
+ * - ✅ Deleta apenas dados do próprio usuário autenticado
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const headersList = await headers()
-    const authorization = headersList.get('authorization')
-    
-    if (!authorization) {
-      return NextResponse.json({ error: 'Token de autorização necessário' }, { status: 401 })
-    }
-
-    // Usar o cliente supabase já configurado
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
-    }
-
     const { password } = await request.json()
     
     if (!password) {
       return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 })
     }
 
-    // Verificar senha antes de deletar
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    // Verificar senha antes de deletar (reautenticação obrigatória)
+    const { error: signInError } = await supabaseAuth.auth.signInWithPassword({
       email: user.email!,
       password: password
     })
@@ -35,6 +29,9 @@ export async function POST(request: NextRequest) {
     if (signInError) {
       return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 })
     }
+
+    // Usar admin client para operações de deleção
+    const supabase = createAdminSupabaseClient()
 
     // Iniciar transação de exclusão
     const deleteOperations = [
@@ -106,4 +103,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

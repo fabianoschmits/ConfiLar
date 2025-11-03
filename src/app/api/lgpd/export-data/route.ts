@@ -1,50 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { headers } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/lgpd/export-data
+ * 
+ * Exporta todos os dados do usuário autenticado em formato JSON.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Exporta apenas dados do próprio usuário autenticado
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const headersList = await headers()
-    const authorization = headersList.get('authorization')
-    
-    if (!authorization) {
-      return NextResponse.json({ error: 'Token de autorização necessário' }, { status: 401 })
-    }
-
-    // Usar o cliente supabase já configurado
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
-    }
-
-    // Coletar todos os dados do usuário
+    // Coletar todos os dados do usuário autenticado
     const userData = {
       // Dados básicos do perfil
-      profile: await getProfileData(supabase, user.id),
+      profile: await getProfileData(supabaseAuth, user.id),
       
       // Mensagens
-      messages: await getMessagesData(supabase, user.id),
+      messages: await getMessagesData(supabaseAuth, user.id),
       
       // Conversas
-      conversations: await getConversationsData(supabase, user.id),
+      conversations: await getConversationsData(supabaseAuth, user.id),
       
       // Avaliações
-      reviews: await getReviewsData(supabase, user.id),
+      reviews: await getReviewsData(supabaseAuth, user.id),
       
       // Favoritos
-      favorites: await getFavoritesData(supabase, user.id),
+      favorites: await getFavoritesData(supabaseAuth, user.id),
       
       // Classificados
-      classifieds: await getClassifiedsData(supabase, user.id),
+      classifieds: await getClassifiedsData(supabaseAuth, user.id),
       
       // Notificações
-      notifications: await getNotificationsData(supabase, user.id),
+      notifications: await getNotificationsData(supabaseAuth, user.id),
       
       // Posts do feed
-      feedPosts: await getFeedPostsData(supabase, user.id),
+      feedPosts: await getFeedPostsData(supabaseAuth, user.id),
       
       // Metadados
       metadata: {
@@ -82,7 +74,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
 
 // Funções auxiliares para coletar dados
 async function getProfileData(supabase: any, userId: string) {

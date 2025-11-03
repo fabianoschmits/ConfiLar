@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/economy/withdrawal/create
+ * 
+ * Cria uma solicitação de saque de pontos para o usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Sempre cria saque para o usuário autenticado (user.id)
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse do body
     const body = await request.json()
     const { points_amount, pix_key, pix_key_type } = body
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Valor mínimo de saque: 10.000 pontos' }, { status: 400 })
     }
 
-    // Criar saque
-    const { data, error } = await supabase.rpc('create_withdrawal', {
-      p_user_id: user.id,
+    // Criar saque para o usuário autenticado
+    const { data, error } = await supabaseAuth.rpc('create_withdrawal', {
+      p_user_id: user.id, // 🔒 Sempre ID autenticado
       p_points_amount: points_amount,
       p_pix_key: pix_key,
       p_pix_key_type: pix_key_type
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar detalhes do saque criado
-    const { data: withdrawal, error: fetchError } = await supabase
+    const { data: withdrawal, error: fetchError } = await supabaseAuth
       .from('points_withdrawals')
       .select('*')
       .eq('id', data)
@@ -59,4 +59,4 @@ export async function POST(request: NextRequest) {
     console.error('Erro na API de criar saque:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

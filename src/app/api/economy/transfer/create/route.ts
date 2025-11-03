@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/economy/transfer/create
+ * 
+ * Cria uma transferência de pontos do usuário autenticado para outro usuário.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Sempre transfere do usuário autenticado (user.id como from_user_id)
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse do body
     const body = await request.json()
     const { to_user_id, points_amount, message } = body
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Valor mínimo de transferência: 100 pontos' }, { status: 400 })
     }
 
-    // Criar transferência
-    const { data, error } = await supabase.rpc('transfer_points', {
-      p_from_user_id: user.id,
+    // Criar transferência do usuário autenticado
+    const { data, error } = await supabaseAuth.rpc('transfer_points', {
+      p_from_user_id: user.id, // 🔒 Sempre ID autenticado
       p_to_user_id: to_user_id,
       p_points_amount: points_amount,
       p_message: message || null
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar detalhes da transferência criada
-    const { data: transfer, error: fetchError } = await supabase
+    const { data: transfer, error: fetchError } = await supabaseAuth
       .from('points_transfers')
       .select(`
         *,
@@ -67,4 +67,4 @@ export async function POST(request: NextRequest) {
     console.error('Erro na API de criar transferência:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

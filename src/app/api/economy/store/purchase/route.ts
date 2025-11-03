@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/economy/store/purchase
+ * 
+ * Realiza uma compra de item da loja usando pontos do usuário autenticado.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Sempre compra usando pontos do usuário autenticado (user.id)
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse do body
     const body = await request.json()
     const { item_id } = body
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar item
-    const { data: item, error: itemError } = await supabase
+    const { data: item, error: itemError } = await supabaseAuth
       .from('points_store_items')
       .select('*')
       .eq('id', item_id)
@@ -33,22 +33,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Item não encontrado' }, { status: 404 })
     }
 
-    // Verificar saldo
-    const { data: profile } = await supabase
+    // Verificar saldo do usuário autenticado
+    const { data: profile } = await supabaseAuth
       .from('profiles')
       .select('points_balance')
-      .eq('id', user.id)
+      .eq('id', user.id) // 🔒 Sempre ID autenticado
       .single()
 
     if (!profile || profile.points_balance < item.points_price) {
       return NextResponse.json({ error: 'Saldo insuficiente' }, { status: 400 })
     }
 
-    // Criar compra na loja
-    const { data: purchase, error: purchaseError } = await supabase
+    // Criar compra na loja para o usuário autenticado
+    const { data: purchase, error: purchaseError } = await supabaseAuth
       .from('points_store_purchases')
       .insert({
-        user_id: user.id,
+        user_id: user.id, // 🔒 Sempre ID autenticado
         item_id: item_id,
         points_spent: item.points_price,
         expires_at: item.duration_days 
@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao processar compra' }, { status: 500 })
     }
 
-    // Remover pontos do usuário (usar deduct_points ao invés de add_points negativo)
-    await supabase.rpc('deduct_points', {
-      p_user_id: user.id,
+    // Remover pontos do usuário autenticado (usar deduct_points ao invés de add_points negativo)
+    await supabaseAuth.rpc('deduct_points', {
+      p_user_id: user.id, // 🔒 Sempre ID autenticado
       p_points: item.points_price,
       p_source: 'store_purchase',
       p_description: `Comprou: ${item.name}`
@@ -83,4 +83,4 @@ export async function POST(request: NextRequest) {
     console.error('Erro na API de compra na loja:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})

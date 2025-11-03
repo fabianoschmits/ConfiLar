@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { withAuth } from '@/lib/authenticatedRoute'
 import { AddPointsRequest } from '@/types/points'
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/points/add
+ * 
+ * Adiciona pontos ao usuário autenticado baseado em uma ação.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação (withAuth)
+ * - ✅ Sempre adiciona pontos ao usuário autenticado (user.id)
+ */
+export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
-    
-    // Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
-    }
-
     // Parse do body
     const body: AddPointsRequest = await request.json()
     
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar valor de pontos da configuração
-    const { data: config, error: configError } = await supabase
+    const { data: config, error: configError } = await supabaseAuth
       .from('points_config')
       .select('points_value')
       .eq('action_key', body.action_type)
@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
       related_user_id: body.related_user_id
     }
     
-    // Adicionar pontos
-    const { data, error } = await supabase
+    // Adicionar pontos ao usuário autenticado
+    const { data, error } = await supabaseAuth
       .rpc('add_points', {
-        p_user_id: user.id,
+        p_user_id: user.id, // 🔒 Sempre ID autenticado
         p_points: points,
         p_source: body.action_type,
         p_description: body.description,
@@ -67,4 +67,4 @@ export async function POST(request: NextRequest) {
     console.error('Erro na API de adicionar pontos:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})
