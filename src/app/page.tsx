@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   Search,
   Users,
@@ -26,27 +25,22 @@ import {
   Sparkles,
   MessageCircle,
   Award,
-  Clock,
-  Zap,
+  Eye,
   Heart,
   Briefcase,
   Phone,
   Mail,
-  Building,
-  Eye,
-  ThumbsUp,
   Menu,
   X,
-  ChevronDown,
-  Play,
-  Globe,
-  Smartphone,
-  Laptop,
-  Tablet
+  ThumbsUp,
+  CheckCircle2,
+  Gift,
+  Zap,
+  BarChart3,
 } from 'lucide-react'
-import { services, getServicesGroupedByCategory } from '@/data/services'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { supabase } from '@/lib/supabase'
 
 function HomeContent() {
   const router = useRouter()
@@ -54,12 +48,83 @@ function HomeContent() {
   const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [showServicesModal, setShowServicesModal] = useState(false)
   const { professionalsCount, reviewsCount, citiesCount, servicesCount, loading: statsLoading } = useHomeStats()
+  const [referralStats, setReferralStats] = useState<{
+    totalReferrals: number
+    totalUsersParticipating: number
+    loading: boolean
+  }>({
+    totalReferrals: 0,
+    totalUsersParticipating: 0,
+    loading: true
+  })
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Buscar estatísticas do programa de referal
+  useEffect(() => {
+    const fetchReferralStats = async () => {
+      try {
+        setReferralStats(prev => ({ ...prev, loading: true }))
+
+        let totalReferralsCount = 0
+        let totalUsersParticipating = 0
+
+        // Buscar total de indicações registradas
+        const { count, error: referralsError } = await supabase
+          .from('referrals')
+          .select('*', { count: 'exact', head: true })
+
+        if (!referralsError && count !== null) {
+          totalReferralsCount = count
+        } else {
+          console.warn('Não foi possível buscar total de indicações (pode ser RLS):', referralsError?.message)
+        }
+
+        // Buscar total de usuários que participam do programa
+        // Primeiro tenta pela tabela user_referral_stats (mais precisa)
+        const { count: statsCount, error: statsError } = await supabase
+          .from('user_referral_stats')
+          .select('*', { count: 'exact', head: true })
+          .gt('total_referrals', 0)
+
+        if (!statsError && statsCount !== null) {
+          totalUsersParticipating = statsCount
+        } else {
+          // Se não conseguir, tenta pela tabela profiles
+          const { count: profilesCount, error: profilesError } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .not('referral_code', 'is', null)
+
+          if (!profilesError && profilesCount !== null) {
+            totalUsersParticipating = profilesCount
+          } else {
+            console.warn('Não foi possível buscar usuários participando:', profilesError?.message)
+          }
+        }
+
+        setReferralStats({
+          totalReferrals: totalReferralsCount,
+          totalUsersParticipating,
+          loading: false
+        })
+      } catch (error) {
+        console.error('Erro ao buscar estatísticas de referal:', error)
+        setReferralStats({
+          totalReferrals: 0,
+          totalUsersParticipating: 0,
+          loading: false
+        })
+      }
+    }
+
+    if (mounted) {
+      fetchReferralStats()
+    }
+  }, [mounted])
 
   // Redirecionar usuários logados para o feed social
   useEffect(() => {
@@ -95,20 +160,20 @@ function HomeContent() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 flex items-center justify-center">
-            <Image
-              src="/imagens/logo/confilarlogo5.png"
-              alt="ConfiLar Logo"
-              width={40}
-              height={40}
-              priority
-              className="w-full h-full object-contain"
-            />
+                  <Image
+                    src="/imagens/logo/confilarlogo5.png"
+                    alt="ConfiLar Logo"
+                    width={40}
+                    height={40}
+                    priority
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
               </Link>
             </div>
 
-            {/* Desktop Navigation - Simplificado */}
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
               <Link href="/sobre" className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors">
                 Sobre
@@ -124,7 +189,7 @@ function HomeContent() {
                 <Link href="/auth">Entrar</Link>
               </Button>
               <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link href="/auth">Criar Conta</Link>
+                <Link href="/auth?tab=register">Criar Conta</Link>
               </Button>
             </div>
 
@@ -137,7 +202,7 @@ function HomeContent() {
             </button>
           </div>
 
-          {/* Mobile Menu - Simplificado */}
+          {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-4">
               <nav className="flex flex-col space-y-4">
@@ -152,7 +217,7 @@ function HomeContent() {
                     <Link href="/auth">Entrar</Link>
                   </Button>
                   <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white justify-start">
-                    <Link href="/auth">Criar Conta</Link>
+                    <Link href="/auth?tab=register">Criar Conta</Link>
                   </Button>
                 </div>
               </nav>
@@ -161,32 +226,35 @@ function HomeContent() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section - Explicação Didática */}
       <section className="relative py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                Conecte-se com{' '}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+                O que é o{' '}
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Profissionais
-                </span>{' '}
-                de Confiança
+                  ConfiLar
+                </span>?
               </h1>
-              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-                A plataforma que conecta clientes e profissionais qualificados de forma segura, 
-                transparente e eficiente. Encontre os melhores serviços ou ofereça seus talentos.
+              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-4 max-w-4xl mx-auto font-medium">
+                Uma plataforma <strong>transparente e confiável</strong> que conecta pessoas que precisam de serviços 
+                com profissionais qualificados através de <strong>indicações, recomendações e anúncios</strong>.
+              </p>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+                Aqui você encontra profissionais verificados, pode ver quem já contratou, ler recomendações reais 
+                e publicar seus próprios anúncios de serviços de forma segura.
               </p>
               
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3">
-                  <Link href="/auth">
-                    Começar Agora
+                <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6">
+                  <Link href="/auth?tab=register">
+                    Começar Agora Grátis
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild className="text-lg px-8 py-3">
+                <Button size="lg" variant="outline" asChild className="text-lg px-8 py-6 border-2">
                   <Link href="/buscar">
                     <Search className="mr-2 h-5 w-5" />
                     Buscar Profissionais
@@ -194,132 +262,438 @@ function HomeContent() {
                 </Button>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                    {statsLoading ? '...' : formatStatNumber(professionalsCount)}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Profissionais</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-green-600">
-                    {statsLoading ? '...' : formatStatNumber(reviewsCount)}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Avaliações</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-purple-600">
-                    {statsLoading ? '...' : formatStatNumber(citiesCount)}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Cidades</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-orange-600">
-                    {statsLoading ? '...' : formatStatNumber(servicesCount)}
-                  </div>
-                  <div className="text-sm text-gray-600">Serviços Oferecidos</div>
-                </div>
+              {/* Cards de Estatísticas */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 mt-12">
+                <Card className="border-2 border-blue-200 dark:border-blue-800 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                      {statsLoading ? '...' : formatStatNumber(professionalsCount)}
+                    </div>
+                    <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">Profissionais</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Verificados na plataforma</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-green-200 dark:border-green-800 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
+                      {statsLoading ? '...' : formatStatNumber(reviewsCount)}
+                    </div>
+                    <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">Avaliações</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Experiências compartilhadas</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-purple-200 dark:border-purple-800 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                      {statsLoading ? '...' : formatStatNumber(citiesCount)}
+                    </div>
+                    <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">Cidades</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Em todo o Brasil</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-orange-200 dark:border-orange-800 shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl sm:text-4xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                      {statsLoading ? '...' : formatStatNumber(servicesCount)}
+                    </div>
+                    <div className="text-sm sm:text-base text-gray-600 dark:text-gray-400 font-medium">Serviços</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Diferentes categorias</div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
+      {/* Seção: Como Funciona - Didática */}
+      <section className="py-16 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Como o ConfiLar Funciona?
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Uma plataforma simples, transparente e focada em <strong>confiança</strong>. Veja as principais formas de usar:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {/* 1. Transparência */}
+            <Card className="border-2 border-blue-200 dark:border-blue-800 hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Eye className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <CardTitle className="text-center">🔍 Transparência Total</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Veja <strong>quem já contratou</strong> cada profissional, <strong>quem recomendou</strong> e 
+                  todas as <strong>avaliações reais</strong>. Nada fica escondido - você decide com todas as informações.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* 2. Indicações */}
+            <Card className="border-2 border-green-200 dark:border-green-800 hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <CardTitle className="text-center">🤝 Sistema de Indicações</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>Indique amigos</strong> e ganhe pontos, badges e benefícios! Quanto mais pessoas você indicar, 
+                  mais você ganha. É um programa de recompensas baseado em confiança.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* 3. Recomendações */}
+            <Card className="border-2 border-purple-200 dark:border-purple-800 hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <ThumbsUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <CardTitle className="text-center">👍 Recomendações Públicas</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Depois de contratar um profissional, você pode <strong>recomendá-lo publicamente</strong>. 
+                  Sua recomendação aparece no perfil dele para todos verem, criando um histórico de confiança.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* 4. Anúncios de Serviços */}
+            <Card className="border-2 border-orange-200 dark:border-orange-800 hover:shadow-xl transition-all">
+              <CardHeader>
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <CardTitle className="text-center">📢 Anúncios de Serviços</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>Publique anúncios</strong> oferecendo seus serviços ou <strong>busque anúncios</strong> de quem 
+                  precisa. Anúncios premium aparecem destacados e têm maior visibilidade.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção: Principais Funcionalidades Detalhadas */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Nossas Principais Funcionalidades
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Tudo que você precisa para encontrar ou oferecer serviços com segurança e transparência.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* 1. Transparência e Confiança */}
+            <Card className="border-2 border-blue-200 dark:border-blue-800 shadow-lg">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Eye className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                      Transparência e Confiança
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">
+                      No ConfiLar, <strong>tudo é transparente</strong>. Você pode ver:
+                    </p>
+                    <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Quem já contratou</strong> cada profissional - você vê nomes, fotos e datas</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Todas as avaliações e comentários</strong> de quem já usou o serviço</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Histórico completo</strong> de trabalhos realizados e recomendações recebidas</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Verificação de identidade</strong> para garantir que o profissional é quem diz ser</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 2. Sistema de Indicações e Recomendações */}
+            <Card className="border-2 border-green-200 dark:border-green-800 shadow-lg">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                      Indicações e Recomendações
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">
+                      Duas formas poderosas de construir confiança na plataforma:
+                    </p>
+                    
+                    <div className="grid md:grid-cols-2 gap-6 mb-4">
+                      <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                          <Gift className="h-5 w-5 text-green-600" />
+                          Programa de Indicações
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          <strong>Indique amigos</strong> e ganhe recompensas:
+                        </p>
+                        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 ml-6">
+                          <li>• Ganhe pontos por cada indicação</li>
+                          <li>• Desbloqueie badges exclusivos</li>
+                          <li>• Suba de nível (Bronze, Prata, Ouro, Platina, Diamante)</li>
+                          <li>• Acesse benefícios especiais</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                          <ThumbsUp className="h-5 w-5 text-purple-600" />
+                          Recomendações Públicas
+                        </h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          <strong>Recomende profissionais</strong> que você contratou:
+                        </p>
+                        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 ml-6">
+                          <li>• Sua recomendação aparece publicamente</li>
+                          <li>• Ajuda outros usuários a escolherem melhor</li>
+                          <li>• Cria um histórico confiável para o profissional</li>
+                          <li>• Você contribui para a transparência da plataforma</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 3. Anúncios de Serviços */}
+            <Card className="border-2 border-orange-200 dark:border-orange-800 shadow-lg">
+              <CardContent className="p-6 md:p-8">
+                <div className="flex flex-col md:flex-row items-start gap-6">
+                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                      Anúncios de Serviços entre Usuários
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4 text-lg">
+                      Publique ou encontre serviços de forma simples e organizada:
+                    </p>
+                    <ul className="space-y-3 text-gray-600 dark:text-gray-400">
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Ofereça seus serviços:</strong> Crie anúncios detalhados com fotos, descrição e preços</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Solicite serviços:</strong> Publique o que você precisa e receba propostas</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Anúncios Premium:</strong> Destaque seu anúncio para maior visibilidade</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                        <span><strong>Busca inteligente:</strong> Filtre por categoria, localização e tipo de anúncio</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Card do Programa de Referal */}
+      <section className="py-16 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              🎁 Programa de Indicações
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Indique amigos e ganhe recompensas incríveis! Quanto mais você indica, mais benefícios você recebe.
+            </p>
+          </div>
+
+          <Card className="border-2 border-blue-200 dark:border-blue-800 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+            <CardContent className="p-6 md:p-8">
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                      <Gift className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Como Funciona?
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                        1
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Cadastre-se</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Crie sua conta gratuitamente e receba seu código único de indicação
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                        2
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Indique Amigos</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Compartilhe seu código com amigos. Quando eles se cadastrarem usando seu código, você ganha pontos
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                        3
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Ganhe Recompensas</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Acumule pontos, desbloqueie badges e suba de nível (Bronze → Prata → Ouro → Platina → Diamante)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 font-bold">
+                        4
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Benefícios Exclusivos</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Cada nível desbloqueia benefícios especiais, como anúncios premium grátis e maior visibilidade
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                  <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4 text-center">
+                    Estatísticas do Programa
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                        {referralStats.loading ? (
+                          <span className="text-gray-400">...</span>
+                        ) : (
+                          formatStatNumber(referralStats.totalReferrals)
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Total de Indicações</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                      <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                        {referralStats.loading ? (
+                          <span className="text-gray-400">...</span>
+                        ) : (
+                          formatStatNumber(referralStats.totalUsersParticipating)
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Usuários Participando</div>
+                    </div>
+                  </div>
+                  <div className="mt-6 text-center">
+                    <Button asChild className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      <Link href="/auth?tab=register">
+                        Começar a Indicar
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Seção: Por que escolher o ConfiLar */}
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Por que escolher o ConfiLar?
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Nossa plataforma oferece todas as ferramentas necessárias para conectar 
-              clientes e profissionais de forma segura e eficiente.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* Feature 1 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-2 hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-6 w-6 text-blue-600" />
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Segurança Garantida</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Sistema de verificação de identidade e avaliações para garantir 
-                  a confiabilidade de todos os profissionais.
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">100% Transparente</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Veja tudo: quem contratou, quem recomendou, todas as avaliações. 
+                  Nada fica escondido - você decide com todas as informações.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Feature 2 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="border-2 hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-6 w-6 text-green-600" />
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Busca Inteligente</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Encontre profissionais por localização, especialidade e avaliações 
-                  com nosso sistema de busca avançado.
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Profissionais Verificados</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Sistema de verificação de identidade garante que você está lidando 
+                  com pessoas reais e confiáveis.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Feature 3 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="border-2 hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="h-6 w-6 text-purple-600" />
+                <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageCircle className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Comunicação Direta</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Sistema de mensagens integrado para facilitar a comunicação 
-                  entre clientes e profissionais.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Feature 4 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Star className="h-6 w-6 text-orange-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Sistema de Avaliações</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Avalie e seja avaliado para construir uma reputação sólida 
-                  na plataforma.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Feature 5 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="h-6 w-6 text-indigo-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Classificados</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Publique ofertas de serviços ou solicitações de forma 
-                  organizada e eficiente.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Feature 6 */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Heart className="h-6 w-6 text-pink-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Favoritos</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Salve seus profissionais favoritos para contatar 
-                  facilmente no futuro.
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Sistema de mensagens integrado para você negociar e fechar acordos 
+                  diretamente com os profissionais.
                 </p>
               </CardContent>
             </Card>
@@ -327,268 +701,29 @@ function HomeContent() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Categorias de Serviços
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Encontre profissionais especializados em diversas áreas de atuação.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {services.slice(0, 12).map((service) => (
-              <Card key={service.id} className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl mb-2">{service.icon}</div>
-                  <h3 className="text-xs font-medium text-gray-900 leading-tight">{service.name}</h3>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowServicesModal(true)}
-            >
-              Ver Todas as Categorias
-              <ArrowRight className="ml-2 h-4 w-4" />
+      {/* CTA Final */}
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+            Pronto para começar?
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Junte-se a milhares de pessoas que já confiam no ConfiLar para encontrar 
+            os melhores profissionais ou oferecer seus serviços.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" asChild className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-6">
+              <Link href="/auth?tab=register">
+                Criar Conta Grátis
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Como Funciona
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Simples, rápido e seguro. Veja como é fácil usar nossa plataforma.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-blue-600">1</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Crie sua Conta</h3>
-              <p className="text-gray-600 text-sm">
-                Cadastre-se gratuitamente como cliente ou profissional 
-                e complete seu perfil.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-green-600">2</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Busque ou Ofereça</h3>
-              <p className="text-gray-600 text-sm">
-                Encontre profissionais qualificados ou publique 
-                seus serviços na plataforma.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-purple-600">3</span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Conecte-se</h3>
-              <p className="text-gray-600 text-sm">
-                Entre em contato, negocie e realize o serviço 
-                com segurança e transparência.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sistema de Recomendações e Favoritos */}
-      <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Sistema de Confiança e Credibilidade
-            </h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
-              Nossa plataforma oferece ferramentas transparentes para você tomar decisões mais seguras 
-              e confiáveis ao escolher profissionais.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Sistema de Recomendações */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <Heart className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">Sistema de Recomendações</h3>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-green-600">1</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Recomendações Públicas</h4>
-                    <p className="text-sm text-gray-600">
-                      Usuários podem recomendar profissionais que já contrataram, 
-                      criando um histórico público de experiências positivas.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-green-600">2</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Transparência Total</h4>
-                    <p className="text-sm text-gray-600">
-                      Você pode ver exatamente quem recomendou cada profissional, 
-                      incluindo nome, foto e data da recomendação.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-green-600">3</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Credibilidade Comprovada</h4>
-                    <p className="text-sm text-gray-600">
-                      Cada recomendação é uma prova real de qualidade, 
-                      ajudando você a escolher profissionais confiáveis.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sistema de Favoritos */}
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <Star className="h-6 w-6 text-yellow-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">Sistema de Favoritos</h3>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-yellow-600">1</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Lista Pessoal</h4>
-                    <p className="text-sm text-gray-600">
-                      Salve profissionais que chamaram sua atenção em sua lista de favoritos 
-                      para consultar facilmente depois.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-yellow-600">2</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Visibilidade Pública</h4>
-                    <p className="text-sm text-gray-600">
-                      Profissionais podem ver quantas pessoas os adicionaram aos favoritos, 
-                      aumentando sua credibilidade na plataforma.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-yellow-600">3</span>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-900">Indicador de Popularidade</h4>
-                    <p className="text-sm text-gray-600">
-                      O número de favoritos serve como um indicador de qualidade e 
-                      popularidade entre os usuários da plataforma.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Benefícios do Sistema */}
-          <div className="mt-16 bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-            <h3 className="text-xl font-semibold text-gray-900 text-center mb-8">
-              Por que isso é importante para você?
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-8 w-8 text-blue-600" />
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Mais Segurança</h4>
-                <p className="text-sm text-gray-600">
-                  Veja quem já contratou e aprovou o profissional antes de tomar sua decisão.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 text-green-600" />
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Comunidade Ativa</h4>
-                <p className="text-sm text-gray-600">
-                  Participe de uma rede de usuários que compartilham experiências reais.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="h-8 w-8 text-purple-600" />
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Qualidade Garantida</h4>
-                <p className="text-sm text-gray-600">
-                  Profissionais com mais recomendações e favoritos são mais confiáveis.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-6">
-              Quer começar a usar essas ferramentas para encontrar os melhores profissionais?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Link href="/auth">
-                  Criar Conta Grátis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/buscar">
-                  <Search className="mr-2 h-4 w-4" />
-                  Explorar Profissionais
-                </Link>
-              </Button>
-            </div>
+            <Button size="lg" variant="outline" asChild className="border-2 border-white text-white hover:bg-white/10 text-lg px-8 py-6">
+              <Link href="/buscar">
+                <Search className="mr-2 h-5 w-5" />
+                Explorar Agora
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -601,20 +736,20 @@ function HomeContent() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 flex items-center justify-center">
-            <Image
-              src="/imagens/logo/confilarlogo5.png"
-              alt="ConfiLar Logo"
-              width={40}
-              height={40}
-              priority
-              className="w-full h-full object-contain"
-            />
+                  <Image
+                    src="/imagens/logo/confilarlogo5.png"
+                    alt="ConfiLar Logo"
+                    width={40}
+                    height={40}
+                    priority
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold">ConfiLar</span>
               </div>
               <p className="text-gray-400 text-sm mb-4">
-                A plataforma que conecta clientes e profissionais de forma segura, 
-                transparente e eficiente. Construa relacionamentos de confiança.
+                Plataforma transparente que conecta clientes e profissionais através de 
+                indicações, recomendações e anúncios de serviços. Confiança e transparência em primeiro lugar.
               </p>
             </div>
 
@@ -622,10 +757,10 @@ function HomeContent() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Links Rápidos</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/sobre" className="text-gray-400 hover:text-white transition-colors">Sobre</Link></li>
-                <li><Link href="/ajuda" className="text-gray-400 hover:text-white transition-colors">Ajuda</Link></li>
+                <li><Link href="/sobre" className="text-gray-400 hover:text-white transition-colors">Sobre Nós</Link></li>
+                <li><Link href="/ajuda" className="text-gray-400 hover:text-white transition-colors">Central de Ajuda</Link></li>
+                <li><Link href="/termos" className="text-gray-400 hover:text-white transition-colors">Termos de Uso</Link></li>
                 <li><Link href="/buscar" className="text-gray-400 hover:text-white transition-colors">Buscar</Link></li>
-                <li><Link href="/classificados" className="text-gray-400 hover:text-white transition-colors">Classificados</Link></li>
               </ul>
             </div>
 
@@ -635,11 +770,9 @@ function HomeContent() {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-center">
                   <Mail className="h-4 w-4 mr-2" />
-                  contato@appconfilar.com.br
-                </li>
-                <li className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2" />
-                  (11) 99999-9999
+                  <a href="mailto:contato@appconfilar.com.br" className="hover:text-white transition-colors">
+                    contato@appconfilar.com.br
+                  </a>
                 </li>
               </ul>
             </div>
@@ -653,86 +786,6 @@ function HomeContent() {
         </div>
       </footer>
       </div>
-
-      {/* Modal de Todas as Categorias */}
-      {showServicesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            {/* Header do Modal */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Todas as Categorias de Serviços</h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">Explore todos os serviços disponíveis na plataforma</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowServicesModal(false)}
-                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Conteúdo do Modal */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <div className="space-y-8">
-                {Object.entries(getServicesGroupedByCategory()).map(([category, categoryServices]) => (
-                  <div key={category}>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                      <span className="text-2xl mr-3">{categoryServices[0]?.icon}</span>
-                      {category}
-                    </h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {categoryServices.map((service) => (
-                        <Card 
-                          key={service.id} 
-                          className="border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md transition-all cursor-pointer"
-                          onClick={() => {
-                            setShowServicesModal(false)
-                            router.push(`/buscar?service=${service.id}`)
-                          }}
-                        >
-                          <CardContent className="p-3 text-center">
-                            <div className="text-xl mb-2">{service.icon}</div>
-                            <h4 className="text-xs font-medium text-gray-900 dark:text-white leading-tight">{service.name}</h4>
-                            {service.description && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{service.description}</p>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer do Modal */}
-            <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
-              <p className="text-sm text-gray-600">
-                Total de {services.length} serviços disponíveis
-              </p>
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowServicesModal(false)}
-                >
-                  Fechar
-                </Button>
-                <Button 
-                  onClick={() => {
-                    setShowServicesModal(false)
-                    router.push('/buscar')
-                  }}
-                >
-                  Buscar Profissionais
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </PublicLayout>
   )
 }
