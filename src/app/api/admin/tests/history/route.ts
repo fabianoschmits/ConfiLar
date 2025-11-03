@@ -1,21 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
+import { createAdminSupabaseClient } from '@/lib/supabase'
 
 // Exportar config de runtime para garantir execução dinâmica
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-// Usar service role para operações administrativas
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/tests/history
+ * 
+ * Lista histórico de testes executados.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem visualizar histórico de testes
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
+
+    // Usar admin client (após validar que é admin)
+    const supabaseAdmin = createAdminSupabaseClient()
 
     // Buscar histórico de testes
     const { data: tests, error } = await supabaseAdmin
@@ -47,11 +54,23 @@ export async function GET(request: NextRequest) {
       error: error.message
     }, { status: 500 })
   }
-}
+})
 
-export async function POST(request: NextRequest) {
+/**
+ * POST /api/admin/tests/history
+ * 
+ * Salva resultado de teste no histórico.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem salvar testes
+ */
+export const POST = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const testData = await request.json()
+
+    // Usar admin client (após validar que é admin)
+    const supabaseAdmin = createAdminSupabaseClient()
 
     // Salvar resultado do teste
     const { data, error } = await supabaseAdmin
@@ -90,4 +109,4 @@ export async function POST(request: NextRequest) {
       error: error.message
     }, { status: 500 })
   }
-}
+})

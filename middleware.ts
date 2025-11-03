@@ -81,6 +81,11 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Se for uma rota de API, apenas sincronizar cookies e retornar (sem redirecionamentos)
+  if (pathname.startsWith('/api')) {
+    return response
+  }
+
   // Permitir acesso à rota de logout sem interferência
   if (pathname === '/logout') {
     return response
@@ -126,12 +131,14 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * 
+     * NOTA: Incluímos rotas /api para que o middleware sincronize cookies de autenticação
+     * mas as rotas de API não serão redirecionadas pelo middleware, apenas terão cookies sincronizados
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

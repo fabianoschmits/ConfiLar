@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withAdminAuth } from '@/lib/authenticatedRoute'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+/**
+ * GET /api/admin/reports
+ * 
+ * Lista todas as denúncias do sistema.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem visualizar denúncias
+ */
+export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const adminSupabase = createAdminSupabaseClient()
     
@@ -123,9 +133,18 @@ export async function GET(request: NextRequest) {
     console.error('Erro na API de denúncias:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})
 
-export async function PUT(request: NextRequest) {
+/**
+ * PUT /api/admin/reports
+ * 
+ * Atualiza o status de uma denúncia.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem atualizar denúncias
+ */
+export const PUT = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { reportId, status, notes, resolution } = await request.json()
     const adminSupabase = createAdminSupabaseClient()
@@ -144,14 +163,24 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao atualizar denúncia' }, { status: 500 })
     }
 
+    console.log(`✅ Denúncia ${reportId} atualizada por admin ${user.id}`)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Erro na API de atualização:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})
 
-export async function DELETE(request: NextRequest) {
+/**
+ * DELETE /api/admin/reports
+ * 
+ * Deleta uma denúncia.
+ * 
+ * Segurança:
+ * - ✅ Requer autenticação de admin (withAdminAuth)
+ * - ✅ Apenas administradores podem deletar denúncias
+ */
+export const DELETE = withAdminAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
     const { searchParams } = new URL(request.url)
     const reportId = searchParams.get('id')
@@ -172,9 +201,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Erro ao deletar denúncia' }, { status: 500 })
     }
 
+    console.log(`✅ Denúncia ${reportId} deletada por admin ${user.id}`)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Erro na API de exclusão:', error)
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-}
+})
