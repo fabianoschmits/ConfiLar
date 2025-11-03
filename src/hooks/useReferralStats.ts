@@ -199,7 +199,7 @@ export function useReferralDashboard(userId?: string) {
           status,
           profile_completed,
           first_post_made,
-          first_service_hired,
+          first_review_made,
           created_at,
           activated_at
         `)

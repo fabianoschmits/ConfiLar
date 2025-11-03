@@ -41,8 +41,21 @@ export function PremiumLikeButton({
 
   const isOwnPost = user?.id === postCreatorId
   const hasLiked = likes.some(like => like.user_id === user?.id)
-  const premiumLikesCount = stats?.premium_likes || 0
-  const totalLikesCount = stats?.total_likes || 0
+  
+  // Calcular total de premium likes do post
+  // Usar stats se disponível, caso contrário calcular diretamente dos likes
+  const premiumLikesCount = React.useMemo(() => {
+    if (stats?.premium_likes !== undefined) {
+      return stats.premium_likes
+    }
+    // Fallback: calcular diretamente dos likes
+    if (likes) {
+      return likes.filter(like => like.is_premium === true).length
+    }
+    return 0
+  }, [stats?.premium_likes, likes])
+  
+  const totalLikesCount = stats?.total_likes || likes?.length || 0
   const pointsReceived = stats?.total_points_received || 0
   const hasEnoughPoints = balance?.balance >= PREMIUM_PRICES.LIKE.POINTS // Verificação de segurança para balance
 
@@ -89,10 +102,10 @@ export function PremiumLikeButton({
                 userPremiumLiked && 'fill-current'
               )}
             />
-            <span className="ml-1 text-xs">{userPremiumLikesCount}</span>
+            <span className="ml-1 text-xs">{premiumLikesCount}</span>
             
-            {/* Ícone de moedas sobreposto no canto superior direito */}
-            {userPremiumLikesCount > 0 && (
+            {/* Ícone de moedas sobreposto no canto superior direito - mostrar se usuário deu like premium */}
+            {userPremiumLiked && (
               <Coins 
                 size={iconSizes[size] + 4} 
                 className="absolute -top-1 -right-1 text-yellow-500 animate-bounce" 
