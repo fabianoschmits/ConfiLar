@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
 /**
- * CRON Job para desativar classificados premium expirados
+ * CRON Job para manter classificados premium: desativa expirados e cria notificações
  * 
- * Esta rota deve ser chamada periodicamente (ex: a cada hora) por um serviço externo
+ * Esta rota deve ser chamada diariamente às 23:59 (horário de Brasília) por um serviço externo
  * como Vercel Cron, GitHub Actions, ou similar.
+ * 
+ * Funções executadas:
+ * - Desativa anúncios premium expirados
+ * - Cria notificações para anúncios expirando em breve (24h)
+ * - Cria notificações para anúncios que acabaram de expirar
  * 
  * Segurança: Usa Service Role Key para bypassar RLS
  */
@@ -24,66 +29,34 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminSupabaseClient()
 
-    // Buscar classificados premium expirados
-    const now = new Date().toISOString()
-    
-    const { data: expiredAds, error: fetchError } = await supabase
-      .from('classified_ads')
-      .select('id, title, premium_expires_at')
-      .eq('is_premium', true)
-      .eq('is_active', true)
-      .lt('premium_expires_at', now)
+    // Usar função do banco que faz tudo: desativa expirados e cria notificações
+    const { data: result, error: rpcError } = await supabase
+      .rpc('maintain_premium_classifieds')
 
-    if (fetchError) {
-      console.error('❌ Erro ao buscar classificados expirados:', fetchError)
+    if (rpcError) {
+      console.error('❌ Erro ao executar manutenção de classificados premium:', rpcError)
       return NextResponse.json(
-        { error: 'Erro ao buscar classificados expirados', details: fetchError.message },
+        { error: 'Erro ao executar manutenção', details: rpcError.message },
         { status: 500 }
       )
     }
 
-    if (!expiredAds || expiredAds.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'Nenhum classificado premium expirado encontrado',
-        deactivated: 0
-      })
-    }
+    const deactivatedCount = result?.deactivated_count || 0
+    const expiringNotifications = result?.expiring_notifications || 0
+    const expiredNotifications = result?.expired_notifications || 0
 
-    // Desativar classificados premium expirados
-    const { data: updated, error: updateError } = await supabase
-      .from('classified_ads')
-      .update({
-        is_active: false,
-        is_premium: false,
-        is_featured: false,
-        updated_at: new Date().toISOString()
-      })
-      .eq('is_premium', true)
-      .eq('is_active', true)
-      .lt('premium_expires_at', now)
-      .select('id')
-
-    if (updateError) {
-      console.error('❌ Erro ao desativar classificados expirados:', updateError)
-      return NextResponse.json(
-        { error: 'Erro ao desativar classificados expirados', details: updateError.message },
-        { status: 500 }
-      )
-    }
-
-    const deactivatedCount = updated?.length || 0
-
-    console.log(`✅ ${deactivatedCount} classificados premium expirados foram desativados`)
+    console.log(`✅ Manutenção concluída:`)
+    console.log(`   - ${deactivatedCount} classificados desativados`)
+    console.log(`   - ${expiringNotifications} notificações de expiração criadas`)
+    console.log(`   - ${expiredNotifications} notificações de expirados criadas`)
 
     return NextResponse.json({
       success: true,
-      message: `${deactivatedCount} classificados premium expirados foram desativados`,
+      message: 'Manutenção de classificados premium concluída',
       deactivated: deactivatedCount,
-      expiredAds: expiredAds.map(ad => ({
-        id: ad.id,
-        title: ad.title
-      }))
+      expiring_notifications: expiringNotifications,
+      expired_notifications: expiredNotifications,
+      timestamp: result?.timestamp
     })
   } catch (error: any) {
     console.error('❌ Erro inesperado no CRON job:', error)
