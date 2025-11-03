@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 // Configuração do Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -12,19 +13,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 console.log('🔧 Supabase URL:', supabaseUrl)
 console.log('🔧 Supabase Anon Key:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'undefined')
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce'
-  },
-  global: {
-    headers: {
-      'apikey': supabaseAnonKey,
-    }
-  }
-})
+/**
+ * Cliente Supabase para uso no frontend (browser)
+ * Usa createBrowserClient do @supabase/ssr que sincroniza cookies automaticamente
+ * com o middleware, permitindo que as rotas de API leiam a sessão
+ */
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
 
 // Cliente para operações do lado do servidor
