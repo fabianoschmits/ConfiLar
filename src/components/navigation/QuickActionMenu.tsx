@@ -2,7 +2,19 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Home, Users, Search, Briefcase, User } from 'lucide-react'
+import { 
+  Home, 
+  Users, 
+  Search, 
+  Briefcase, 
+  User, 
+  LogIn, 
+  UserPlus, 
+  Mail, 
+  FileText, 
+  Info, 
+  HelpCircle 
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useScrollDirection } from '@/hooks/useScrollDirection'
 import { useAuthContext } from '@/contexts/AuthContext'
@@ -20,12 +32,48 @@ export function QuickActionMenu() {
   const { isVisible } = useScrollDirection()
   const { user, profile } = useAuthContext()
 
-  // Não renderizar se o usuário não estiver logado
-  if (!user || !profile) {
-    return null
-  }
+  // Menu para usuários não logados (página inicial e outras públicas)
+  const publicQuickActions: QuickActionItem[] = [
+    {
+      id: 'register',
+      label: 'Cadastro',
+      href: '/auth?tab=register',
+      icon: UserPlus
+    },
+    {
+      id: 'login',
+      label: 'Login',
+      href: '/auth',
+      icon: LogIn
+    },
+    {
+      id: 'about',
+      label: 'Sobre',
+      href: '/sobre',
+      icon: Info
+    },
+    {
+      id: 'help',
+      label: 'Ajuda',
+      href: '/ajuda',
+      icon: HelpCircle
+    },
+    {
+      id: 'terms',
+      label: 'Termos',
+      href: '/termos',
+      icon: FileText
+    },
+    {
+      id: 'contact',
+      label: 'Contato',
+      href: 'mailto:contato@appconfilar.com.br',
+      icon: Mail
+    }
+  ]
 
-  const quickActions: QuickActionItem[] = [
+  // Menu para usuários logados
+  const loggedInQuickActions: QuickActionItem[] = [
     {
       id: 'home',
       label: 'Home',
@@ -53,10 +101,13 @@ export function QuickActionMenu() {
     {
       id: 'profile',
       label: 'Perfil',
-      href: `/perfil/${profile.id}`,
+      href: profile ? `/perfil/${profile.id}` : '/home',
       icon: User
     }
   ]
+
+  // Usar ações públicas se não estiver logado, senão usar ações de logado
+  const quickActions = (!user || !profile) ? publicQuickActions : loggedInQuickActions
 
   return (
     <div
@@ -65,18 +116,17 @@ export function QuickActionMenu() {
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-[72px] opacity-0 pointer-events-none'
       )}
     >
-      <nav className="bg-white dark:bg-[#1b1b1b] rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-center gap-4 sm:gap-6 md:gap-8">
+      <nav className="bg-white dark:bg-[#1b1b1b] rounded-full px-1.5 sm:px-3 py-2 sm:py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md border border-gray-200 dark:border-gray-700 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 md:gap-3 nowrap min-w-max">
           {quickActions.map((action) => {
             const Icon = action.icon
-            const isActive = pathname === action.href || pathname.startsWith(action.href)
-            
-            return (
-              <Link
-                key={action.id}
-                href={action.href}
-                className="flex flex-col items-center gap-1 relative transition-all duration-200 hover:scale-110"
-              >
+            // Para contato (mailto), usar <a> em vez de <Link>
+            const isContact = action.id === 'contact'
+            // Para mailto, não verificar pathname
+            const isActive = isContact ? false : (pathname === action.href || pathname.startsWith(action.href))
+
+            const content = (
+              <>
                 {/* Badge de notificação */}
                 {action.badge && action.badge > 0 && (
                   <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -91,18 +141,36 @@ export function QuickActionMenu() {
                     ? 'text-orange-500 dark:text-orange-500' 
                     : 'text-gray-600 dark:text-white'
                 )}>
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 
                 {/* Label */}
                 <span className={cn(
-                  'text-[10px] sm:text-xs font-medium transition-colors duration-200',
+                  'text-[8px] sm:text-[9px] font-medium transition-colors duration-200 whitespace-nowrap',
                   isActive 
                     ? 'text-orange-500 dark:text-orange-500' 
                     : 'text-gray-600 dark:text-white'
                 )}>
                   {action.label}
                 </span>
+              </>
+            )
+
+            return isContact ? (
+              <a
+                key={action.id}
+                href={action.href}
+                className="flex flex-col items-center gap-1 relative transition-all duration-200 hover:scale-110"
+              >
+                {content}
+              </a>
+            ) : (
+              <Link
+                key={action.id}
+                href={action.href}
+                className="flex flex-col items-center gap-1 relative transition-all duration-200 hover:scale-110"
+              >
+                {content}
               </Link>
             )
           })}
