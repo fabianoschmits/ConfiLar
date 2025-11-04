@@ -563,6 +563,17 @@ export function ModernHeader({
                               <Send className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                               <span className="truncate text-blue-700 dark:text-blue-300">Transferir</span>
                             </Button>
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNavigation('/confipoints/admin')}
+                                className="flex items-center gap-1 text-xs py-1 h-7 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800"
+                              >
+                                <BarChart3 className="h-3 w-3 text-red-600 dark:text-red-400" />
+                                <span className="truncate text-red-700 dark:text-red-300">Admin</span>
+                              </Button>
+                            )}
                           </div>
                         )}
                       </div>

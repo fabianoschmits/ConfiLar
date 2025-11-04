@@ -71,6 +71,7 @@ export function Sidebar() {
   const { unreadCount } = useSupabaseNotifications()
   const { openChat } = useFloatingChat()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const isAdmin = user?.id === 'f7444305-a3bd-4d71-874a-bb95fd27f96a'
 
   // Sempre renderizar o componente para navegação
   const isLoggedIn = user && profile
@@ -301,6 +302,15 @@ export function Sidebar() {
           icon: <TrendingUpIcon size={16} strokeWidth={2} />,
           description: 'Enviar pontos para outros'
         },
+        ...(isAdmin ? [{
+          id: 'admin-dashboard',
+          title: 'ADMIN DASHBOARD',
+          href: '/confipoints/admin',
+          icon: <BarChart3 size={16} strokeWidth={2} />,
+          description: 'Gerenciar ConfiPoints',
+          badge: 'ADMIN',
+          badgeColor: 'red'
+        }] : []),
         {
           id: 'purchases',
           title: 'MINHAS COMPRAS',

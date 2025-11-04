@@ -442,7 +442,14 @@ export const NotificationDropdown: React.FC = () => {
 
       <DropdownMenuContent 
         align="end" 
-        className="w-80 sm:w-96 max-h-[80vh] overflow-hidden bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 flex flex-col"
+        className="w-80 sm:w-96 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0"
+        style={{ 
+          maxHeight: '80vh',
+          height: '80vh',
+          display: 'flex', 
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
@@ -607,34 +614,46 @@ export const NotificationDropdown: React.FC = () => {
             <NotificationPreferencesFallback onBack={() => setShowSettings(false)} />
           )
         ) : (
-          <>
+          <div className="flex flex-col h-full w-full" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
             {/* Header das Notificações Moderno - Fixo */}
-            <div className="flex items-center justify-between px-1.5 py-1 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex-shrink-0">
-              <div className="flex items-center gap-1">
-                <div className="flex items-center gap-0.5">
-                  <Bell size={8} className="text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
+              <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Bell size={14} className="text-blue-600 dark:text-blue-400 sm:w-4 sm:h-4" />
                   {/* Indicador de conexão em tempo real */}
                   {isConnecting && (
-                    <div className="h-1 w-1 bg-yellow-500 rounded-full animate-pulse" 
+                    <div className="h-1.5 w-1.5 bg-yellow-500 rounded-full animate-pulse" 
                          title="Conectando..." />
                   )}
                   {isConnected && !isConnecting && (
-                    <div className="h-1 w-1 bg-green-500 rounded-full animate-pulse" 
+                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" 
                          title="Notificações em tempo real ativas" />
                   )}
                   {!isConnected && !isConnecting && (
-                    <div className="h-1 w-1 bg-red-500 rounded-full" 
+                    <div className="h-1.5 w-1.5 bg-red-500 rounded-full" 
                          title="Conexão perdida" />
                   )}
                 </div>
-                <span className="text-[8px] font-semibold text-gray-900 dark:text-white">Notificações</span>
-                {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-                  <Badge variant="destructive" className="text-[7px] px-0.5 py-0 h-3">
-                    {isOpen ? visualUnreadCount : displayUnreadCount} não lidas
-                  </Badge>
-                )}
+                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Notificações</span>
+                
+                {/* Contador de não lidas - SEMPRE VISÍVEL */}
+                <Badge variant={(isOpen ? visualUnreadCount : displayUnreadCount) > 0 ? "destructive" : "secondary"} className="text-xs px-2 py-0.5 h-5 sm:h-6">
+                  {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount) || 0} não lidas
+                </Badge>
               </div>
-              <div className="flex items-center gap-0.5">
+              
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {/* Botão Limpar todas - SEMPRE VISÍVEL */}
+                <button
+                  onClick={handleClearAll}
+                  disabled={notifications.length === 0}
+                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  title="Limpar todas (C)"
+                >
+                  <Trash2 size={12} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Limpar todas</span>
+                </button>
+                
                 {/* Botão de teste para notificações em tempo real */}
                 <button
                   onClick={() => addTestNotification(
@@ -642,33 +661,24 @@ export const NotificationDropdown: React.FC = () => {
                     'Esta é uma notificação de teste para verificar o sistema em tempo real.',
                     'info'
                   )}
-                  className="p-0.5 h-3 w-3 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded"
+                  className="p-1.5 sm:p-2 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded"
                   title="Testar notificação em tempo real"
                 >
-                  <Bell size={6} />
+                  <Bell size={12} className="sm:w-4 sm:h-4" />
                 </button>
                 
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="p-0.5 h-3 w-3 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
+                  className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
                   title="Configurações (S)"
                 >
-                  <Settings size={6} />
+                  <Settings size={12} className="sm:w-4 sm:h-4" />
                 </button>
-                {notifications.length > 0 && (
-                  <button
-                    onClick={handleClearAll}
-                    className="p-0.5 h-3 w-3 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded"
-                    title="Limpar todas (C)"
-                  >
-                    <Trash2 size={6} />
-                  </button>
-                )}
               </div>
             </div>
 
             {/* Instruções de Teclado - Fixo */}
-                  <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 dark:text-gray-400 gap-2 sm:gap-0">
                       <div className="flex items-center gap-2 sm:gap-4">
                         <span className="flex items-center gap-1">
@@ -697,10 +707,19 @@ export const NotificationDropdown: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                  </div>
+            </div>
 
-            {/* Lista de Notificações Moderna - Com scroll */}
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-800 min-h-0">
+            {/* Lista de Notificações Moderna - Com scroll - OCUPA ESPAÇO DISPONÍVEL */}
+            <div className="overflow-y-auto bg-white dark:bg-gray-800 overscroll-contain" style={{ 
+              flex: '1 1 auto', 
+              minHeight: 0,
+              width: '100%',
+              overflowY: 'auto', 
+              overflowX: 'hidden',
+              WebkitOverflowScrolling: 'touch',
+              position: 'relative',
+              maxHeight: '100%'
+            }}>
               {isLoading ? (
                 <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 m-4 rounded-lg">
                   <Loader2 size={32} className="mx-auto mb-4 text-gray-400 animate-spin" />
@@ -777,46 +796,27 @@ export const NotificationDropdown: React.FC = () => {
               )}
             </div>
 
-            {/* Footer Moderno - Fixo no final */}
-            {notifications.length > 0 && (
-              <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 flex-shrink-0 sticky bottom-0">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
-                  {/* Contador fixo */}
-                  <div className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2">
-                    {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-                      <Badge variant="destructive" className="text-xs px-2 py-1">
-                        {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount)} não lidas
-                      </Badge>
-                    )}
+            {/* Footer Moderno - Apenas botão "Marcar todas como lidas" quando houver não lidas */}
+            {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
+              <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 bg-white dark:bg-gray-800 w-full" style={{ 
+                flexShrink: 0, 
+                flexGrow: 0,
+                width: '100%',
+                position: 'relative',
+                zIndex: 20
+              }}>
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="w-full px-3 sm:px-4 py-2 bg-green-500 text-white border border-green-600 shadow-sm hover:shadow-md hover:bg-green-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <Check size={12} className="sm:w-4 sm:h-4" />
+                    <span>Marcar todas como lidas</span>
                   </div>
-                  
-                  <div className="w-full sm:w-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-                    {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-                      <button
-                        onClick={handleMarkAllAsRead}
-                        className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-green-500 text-white border border-green-600 shadow-sm hover:shadow-md hover:bg-green-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          <Check size={10} className="sm:w-3 sm:h-3" />
-                          <span>Marcar todas como lidas</span>
-                        </div>
-                      </button>
-                    )}
-                    
-                    <button
-                      onClick={handleClearAll}
-                      className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Trash2 size={10} className="sm:w-3 sm:h-3" />
-                        <span>Limpar todas</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
+                </button>
               </div>
             )}
-          </>
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
