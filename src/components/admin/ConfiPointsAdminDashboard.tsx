@@ -1,19 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
+import {
+  Zap,
+  Users,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Calendar,
+  RefreshCw,
+  Search,
+  Clock,
+  ExternalLink,
+  Gift,
+  Heart,
+  FileText,
+  Briefcase,
+  ArrowRightLeft,
+  CheckCircle
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select'
 import {
   Table,
@@ -21,38 +41,11 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from '@/components/ui/table'
-import {
-  Zap,
-  TrendingUp,
-  TrendingDown,
-  Users,
-  Activity,
-  DollarSign,
-  Calendar,
-  ArrowUpDown,
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-  ExternalLink,
-  User,
-  Clock,
-  Gift,
-  Heart,
-  FileText,
-  Briefcase,
-  ArrowRightLeft,
-  Star
-} from 'lucide-react'
-import Link from 'next/link'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-interface ConfiPointsStats {
+interface AdminStats {
   total_users_with_points: number
   total_points_in_circulation: number
   total_points_earned_all_time: number
@@ -66,7 +59,7 @@ interface ConfiPointsStats {
   points_spent_this_month: number
 }
 
-interface ConfiPointsUser {
+interface AdminUser {
   user_id: string
   full_name: string
   email: string
@@ -79,7 +72,7 @@ interface ConfiPointsUser {
   transaction_count: number
 }
 
-interface ConfiPointsTransaction {
+interface AdminTransaction {
   id: string
   user_id: string
   user_name: string
@@ -95,7 +88,7 @@ interface ConfiPointsTransaction {
   created_at: string
 }
 
-interface SourceStats {
+interface SourceStat {
   source: string
   total_earned: number
   total_spent: number
@@ -111,210 +104,207 @@ export function ConfiPointsAdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
   const [filterUserId, setFilterUserId] = useState<string>('')
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeMainTab, setActiveMainTab] = useState('overview') // Aba principal
+  const [activeTab, setActiveTab] = useState('overview') // Aba de transações (dentro da aba de transações)
   const itemsPerPage = 20
 
   // Buscar TODAS as transações para a aba detalhada (sem paginação inicial)
   const { data: allTransactionsData, isLoading: allTransactionsLoading } = useQuery({
     queryKey: ['admin-confipoints-all-transactions'],
     queryFn: async () => {
-      // Construir parâmetros dinamicamente, omitindo valores null
-      const params: any = {
-        p_limit: 1000, // Buscar mais transações para análise
-        p_offset: 0
-      }
-      
-      const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
-      if (error) {
+      try {
+        const params: any = {
+          p_limit: 10000, // Buscar muitas transações
+          p_offset: 0
+        }
+
+        const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
+
+        if (error) {
+          console.error('Erro ao buscar todas as transações:', error)
+          return []
+        }
+
+        // Se retornar um objeto único, converter para array
+        if (data && !Array.isArray(data)) {
+          return [data]
+        }
+
+        return data || []
+      } catch (error) {
         console.error('Erro ao buscar todas as transações:', error)
-        throw error
+        return []
       }
-      if (Array.isArray(data)) {
-        return data as ConfiPointsTransaction[]
-      }
-      return []
-    },
-    enabled: activeTab === 'detailed', // Só buscar quando a aba estiver ativa
-    retry: 2,
+    }
   })
 
   // Buscar estatísticas gerais
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<AdminStats>({
     queryKey: ['admin-confipoints-stats'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_confipoints_stats')
+
       if (error) {
         console.error('Erro ao buscar estatísticas:', error)
         throw error
       }
-      return data as ConfiPointsStats
-    },
-    refetchInterval: 30000, // Atualizar a cada 30 segundos
-    retry: 2, // Tentar apenas 2 vezes
+
+      return data as AdminStats
+    }
   })
 
   // Buscar usuários
-  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
     queryKey: ['admin-confipoints-users', usersPage, usersOrderBy],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_admin_confipoints_users', {
-          p_limit: itemsPerPage,
-          p_offset: usersPage * itemsPerPage,
-          p_order_by: usersOrderBy
-        })
-        
-        if (error) {
-          console.error('Erro ao buscar usuários:', error)
-          console.error('Detalhes do erro (JSON):', JSON.stringify({
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-            fullError: error
-          }, null, 2))
-          throw error
-        }
-        
-        // Se retornar null, retornar array vazio
-        if (data === null || data === undefined) {
-          return []
-        }
-        
-        // Garantir que retorna array
-        if (Array.isArray(data)) {
-          return data as ConfiPointsUser[]
-        }
-        
-        // Se for objeto único, converter para array
-        if (typeof data === 'object') {
-          return [data] as ConfiPointsUser[]
-        }
-        
-        return []
-      } catch (err: any) {
-        console.error('Erro na query de usuários:', err)
-        throw err
+      const params: any = {
+        p_limit: itemsPerPage,
+        p_offset: usersPage * itemsPerPage,
+        p_order_by: usersOrderBy
       }
-    },
-    retry: 1,
+
+      const { data, error } = await supabase.rpc('get_admin_confipoints_users', params)
+
+      if (error) {
+        console.error('Erro ao buscar usuários:', JSON.stringify({
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        }, null, 2))
+        throw error
+      }
+
+      // Se retornar um objeto único, converter para array
+      if (data && !Array.isArray(data)) {
+        return [data]
+      }
+
+      return data || []
+    }
   })
 
-  // Buscar transações
-  const { data: transactionsData, isLoading: transactionsLoading, refetch: refetchTransactions } = useQuery({
+  // Buscar transações paginadas
+  const { data: transactionsData, isLoading: transactionsLoading, refetch: refetchTransactions } = useQuery<AdminTransaction[]>({
     queryKey: ['admin-confipoints-transactions', transactionsPage, filterType, filterUserId],
     queryFn: async () => {
-      try {
-        // Construir parâmetros dinamicamente, omitindo valores null
-        const params: any = {
-          p_limit: itemsPerPage,
-          p_offset: transactionsPage * itemsPerPage
-        }
-        
-        // Adicionar apenas parâmetros não nulos
-        if (filterUserId) {
-          params.p_user_id = filterUserId
-        }
-        if (filterType && filterType !== 'all') {
-          params.p_type = filterType
-        }
-        
-        console.log('Chamando RPC com parâmetros:', JSON.stringify(params, null, 2))
-        
-        const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
-        
-        if (error) {
-          console.error('Erro ao buscar transações:', error)
-          console.error('Detalhes do erro (JSON):', JSON.stringify({
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            code: error.code,
-            fullError: error
-          }, null, 2))
-          throw error
-        }
-        
-        // Se retornar null, retornar array vazio
-        if (data === null || data === undefined) {
-          return []
-        }
-        
-        // Garantir que retorna array
-        if (Array.isArray(data)) {
-          return data as ConfiPointsTransaction[]
-        }
-        
-        // Se for objeto único, converter para array
-        if (typeof data === 'object') {
-          return [data] as ConfiPointsTransaction[]
-        }
-        
-        return []
-      } catch (err: any) {
-        console.error('Erro na query de transações:', err)
-        throw err
+      const params: any = {
+        p_limit: itemsPerPage,
+        p_offset: transactionsPage * itemsPerPage
       }
-    },
-    retry: 1,
+
+      if (filterType !== 'all') {
+        params.p_type = filterType
+      }
+
+      if (filterUserId) {
+        params.p_user_id = filterUserId
+      }
+
+      const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
+
+      if (error) {
+        console.error('Erro ao buscar transações:', JSON.stringify({
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: error
+        }, null, 2))
+        throw error
+      }
+
+      // Se retornar um objeto único, converter para array
+      if (data && !Array.isArray(data)) {
+        return [data]
+      }
+
+      return data || []
+    }
   })
 
   // Buscar estatísticas por fonte
-  const { data: sourceStats, isLoading: sourceStatsLoading } = useQuery({
-    queryKey: ['admin-confipoints-sources'],
+  const { data: sourceStats, isLoading: sourceStatsLoading, refetch: refetchSourceStats } = useQuery<SourceStat[]>({
+    queryKey: ['admin-confipoints-by-source'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_admin_confipoints_by_source')
+
       if (error) {
         console.error('Erro ao buscar estatísticas por fonte:', error)
         throw error
       }
-      // Garantir que retorna array
-      if (Array.isArray(data)) {
-        return data as SourceStats[]
+
+      // Se retornar um objeto único, converter para array
+      if (data && !Array.isArray(data)) {
+        return [data]
       }
-      return []
-    },
-    retry: 2,
+
+      return data || []
+    }
   })
 
   // Filtrar usuários por termo de busca
-  const filteredUsers = usersData?.filter(user => 
-    user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
+  const filteredUsers = useMemo(() => {
+    if (!usersData) return []
+    if (!searchTerm) return usersData
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR').format(value)
+    const term = searchTerm.toLowerCase()
+    return usersData.filter(user =>
+      user.full_name?.toLowerCase().includes(term) ||
+      user.email?.toLowerCase().includes(term)
+    )
+  }, [usersData, searchTerm])
+
+  // Agrupar transações por categoria
+  const groupedTransactions = useMemo(() => {
+    if (!allTransactionsData || !Array.isArray(allTransactionsData)) return {}
+
+    const grouped: Record<string, AdminTransaction[]> = {}
+
+    allTransactionsData.forEach((transaction) => {
+      const category = getSourceCategory(transaction.source)
+      if (!grouped[category]) {
+        grouped[category] = []
+      }
+      grouped[category].push(transaction)
+    })
+
+    return grouped
+  }, [allTransactionsData])
+
+  // Funções auxiliares
+  function formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value)
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A'
-    return format(new Date(dateString), "dd 'de' MMM 'de' yyyy 'às' HH:mm", { locale: ptBR })
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString)
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
   }
 
-  const getTransactionTypeColor = (type: string) => {
-    return type === 'earn' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-  }
-
-  const getTransactionTypeBadge = (type: string) => {
+  function getTransactionTypeBadge(type: 'earn' | 'spend') {
     return type === 'earn' ? 'default' : 'destructive'
   }
 
-  // Agrupar transações por tipo/fonte
-  const groupedTransactions = allTransactionsData?.reduce((acc, transaction) => {
-    const source = transaction.source || 'outros'
-    const category = getSourceCategory(source)
-    
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(transaction)
-    return acc
-  }, {} as Record<string, ConfiPointsTransaction[]>) || {}
+  function getTransactionTypeColor(type: 'earn' | 'spend') {
+    return type === 'earn'
+      ? 'text-green-600 dark:text-green-400'
+      : 'text-red-600 dark:text-red-400'
+  }
 
-  // Função para categorizar sources
+  // Função para categorizar fonte
   function getSourceCategory(source: string): string {
-    if (source.startsWith('referral_') || source === 'referral') {
+    if (source === 'referral_bonus' || source === 'receive_referral_bonus') {
       return 'Bônus de Indicações'
     }
     if (source === 'premium_like' || source === 'receive_premium_like') {
@@ -381,15 +371,15 @@ export function ConfiPointsAdminDashboard() {
   const sortedCategories = categoryOrder.filter(cat => groupedTransactions[cat]?.length > 0)
 
   return (
-    <div className="space-y-6">
-      {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+      {/* Cabeçalho - Responsivo */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Zap className="h-6 w-6 text-yellow-500" />
-            Dashboard de ConfiPoints
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
+            <span>Dashboard de ConfiPoints</span>
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             Visão completa das atividades, emissões e gastos do sistema de ConfiPoints
           </p>
         </div>
@@ -398,461 +388,320 @@ export function ConfiPointsAdminDashboard() {
             refetchStats()
             refetchUsers()
             refetchTransactions()
+            refetchSourceStats()
           }}
           variant="outline"
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
+          size="sm"
         >
           <RefreshCw className="h-4 w-4" />
-          Atualizar
+          <span>Atualizar</span>
         </Button>
       </div>
 
-      {/* Estatísticas Gerais */}
-      {statsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
+      {/* Tabs Principais - Responsivo */}
+      <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
+        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-4 gap-1 p-1 bg-gray-100 dark:bg-gray-800">
+            <TabsTrigger 
+              value="overview" 
+              className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 inline" />
+              <span className="hidden sm:inline">Visão Geral</span>
+              <span className="sm:hidden">Geral</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users" 
+              className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 inline" />
+              <span className="hidden sm:inline">Usuários</span>
+              <span className="sm:hidden">Users</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="transactions" 
+              className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 inline" />
+              <span className="hidden sm:inline">Transações</span>
+              <span className="sm:hidden">Trans.</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="sources" 
+              className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 inline" />
+              <span className="hidden sm:inline">Por Fonte</span>
+              <span className="sm:hidden">Fonte</span>
+            </TabsTrigger>
+          </TabsList>
         </div>
-      ) : stats ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Usuários com Pontos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatCurrency(stats.total_users_with_points)}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Usuários ativos
-              </p>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-yellow-500" />
-                Pontos em Circulação
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                {formatCurrency(stats.total_points_in_circulation)}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Saldo total
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-                Total Ganho
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                {formatCurrency(stats.total_points_earned_all_time)}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Desde o início
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-500" />
-                Total Gasto
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-600 dark:text-red-400">
-                {formatCurrency(stats.total_points_spent_all_time)}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Desde o início
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
-
-      {/* Estatísticas do Dia */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Hoje
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Transações:</span>
-                  <span className="font-semibold">{stats.transactions_today}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-green-600 dark:text-green-400">Ganhos:</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
-                    +{formatCurrency(stats.points_earned_today)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-red-600 dark:text-red-400">Gastos:</span>
-                  <span className="font-semibold text-red-600 dark:text-red-400">
-                    -{formatCurrency(stats.points_spent_today)}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Este Mês
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Transações:</span>
-                  <span className="font-semibold">{stats.transactions_this_month}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-green-600 dark:text-green-400">Ganhos:</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
-                    +{formatCurrency(stats.points_earned_this_month)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-red-600 dark:text-red-400">Gastos:</span>
-                  <span className="font-semibold text-red-600 dark:text-red-400">
-                    -{formatCurrency(stats.points_spent_this_month)}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Total de Transações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                {formatCurrency(stats.total_transactions)}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Todas as transações
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Estatísticas por Fonte */}
-      {sourceStatsLoading ? (
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse">Carregando...</div>
-          </CardContent>
-        </Card>
-      ) : sourceStats && sourceStats.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Estatísticas por Fonte
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fonte</TableHead>
-                    <TableHead className="text-right">Ganhos</TableHead>
-                    <TableHead className="text-right">Gastos</TableHead>
-                    <TableHead className="text-right">Saldo Líquido</TableHead>
-                    <TableHead className="text-right">Transações</TableHead>
-                    <TableHead className="text-right">Usuários Únicos</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sourceStats.map((source, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{source.source}</TableCell>
-                      <TableCell className="text-right text-green-600 dark:text-green-400">
-                        +{formatCurrency(source.total_earned)}
-                      </TableCell>
-                      <TableCell className="text-right text-red-600 dark:text-red-400">
-                        -{formatCurrency(source.total_spent)}
-                      </TableCell>
-                      <TableCell className={`text-right font-semibold ${
-                        source.net_points >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {source.net_points >= 0 ? '+' : ''}{formatCurrency(source.net_points)}
-                      </TableCell>
-                      <TableCell className="text-right">{formatCurrency(source.transaction_count)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(source.unique_users)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+        {/* Aba: Visão Geral */}
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6 mt-4">
+          {/* Estatísticas Gerais */}
+          {statsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      ) : null}
+          ) : stats ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Usuários com Pontos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                    {formatCurrency(stats.total_users_with_points)}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Usuários ativos
+                  </p>
+                </CardContent>
+              </Card>
 
-      {/* Lista de Usuários */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Usuários e Saldos
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nome ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-64"
-                />
-              </div>
-              <Select value={usersOrderBy} onValueChange={(value: any) => setUsersOrderBy(value)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="balance_desc">Saldo (Maior)</SelectItem>
-                  <SelectItem value="balance_asc">Saldo (Menor)</SelectItem>
-                  <SelectItem value="earned_desc">Ganhos (Maior)</SelectItem>
-                  <SelectItem value="spent_desc">Gastos (Maior)</SelectItem>
-                  <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
-                </SelectContent>
-              </Select>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
+                    Pontos em Circulação
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {formatCurrency(stats.total_points_in_circulation)}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Saldo total
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                    Total Ganho
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
+                    {formatCurrency(stats.total_points_earned_all_time)}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Desde o início
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
+                    Total Gasto
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400">
+                    {formatCurrency(stats.total_points_spent_all_time)}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Desde o início
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {usersLoading ? (
-            <div className="text-center py-8">Carregando usuários...</div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">Nenhum usuário encontrado</div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead className="text-right">Saldo</TableHead>
-                      <TableHead className="text-right">Total Ganho</TableHead>
-                      <TableHead className="text-right">Total Gasto</TableHead>
-                      <TableHead className="text-right">Transações</TableHead>
-                      <TableHead>Última Transação</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((user) => (
-                      <TableRow key={user.user_id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={user.avatar_url || undefined} />
-                              <AvatarFallback>
-                                {user.full_name?.charAt(0) || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{user.full_name}</div>
-                              <div className="text-xs text-gray-500">{user.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                            {formatCurrency(user.balance)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right text-green-600 dark:text-green-400">
-                          {formatCurrency(user.total_earned)}
-                        </TableCell>
-                        <TableCell className="text-right text-red-600 dark:text-red-400">
-                          {formatCurrency(user.total_spent)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(user.transaction_count)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Clock className="h-3 w-3" />
-                            {user.last_transaction_date ? formatDate(user.last_transaction_date) : 'N/A'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Link href={`/perfil/${user.user_id}`}>
-                            <Button variant="ghost" size="sm" className="gap-1">
-                              <ExternalLink className="h-3 w-3" />
-                              Ver Perfil
-                            </Button>
-                          </Link>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Mostrando {filteredUsers.length} de {usersData?.length || 0} usuários
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setUsersPage(Math.max(0, usersPage - 1))}
-                    disabled={usersPage === 0}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setUsersPage(usersPage + 1)}
-                    disabled={filteredUsers.length < itemsPerPage}
-                  >
-                    Próxima
-                  </Button>
-                </div>
-              </div>
-            </>
+          ) : null}
+
+          {/* Estatísticas do Dia */}
+          {stats && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Hoje
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Transações:</span>
+                      <span className="font-semibold">{stats.transactions_today}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-green-600 dark:text-green-400">Ganhos:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">
+                        +{formatCurrency(stats.points_earned_today)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-red-600 dark:text-red-400">Gastos:</span>
+                      <span className="font-semibold text-red-600 dark:text-red-400">
+                        -{formatCurrency(stats.points_spent_today)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Este Mês
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Transações:</span>
+                      <span className="font-semibold">{stats.transactions_this_month}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-green-600 dark:text-green-400">Ganhos:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">
+                        +{formatCurrency(stats.points_earned_this_month)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs sm:text-sm">
+                      <span className="text-red-600 dark:text-red-400">Gastos:</span>
+                      <span className="font-semibold text-red-600 dark:text-red-400">
+                        -{formatCurrency(stats.points_spent_this_month)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                    <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Total de Transações
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                    {formatCurrency(stats.total_transactions)}
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Todas as transações
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      {/* Transações com Abas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Transações Detalhadas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="detailed">Detalhado por Tipo</TabsTrigger>
-            </TabsList>
-
-            {/* Aba: Visão Geral */}
-            <TabsContent value="overview" className="space-y-4 mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="w-40">
-                      <SelectValue />
+        {/* Aba: Usuários */}
+        <TabsContent value="users" className="space-y-4 sm:space-y-6 mt-4">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Usuários e Saldos
+                </CardTitle>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar por nome ou email..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-8 w-full sm:w-64 text-sm"
+                    />
+                  </div>
+                  <Select value={usersOrderBy} onValueChange={(value: any) => setUsersOrderBy(value)}>
+                    <SelectTrigger className="w-full sm:w-48 text-sm">
+                      <SelectValue placeholder="Ordenar por" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas</SelectItem>
-                      <SelectItem value="earn">Ganhos</SelectItem>
-                      <SelectItem value="spend">Gastos</SelectItem>
+                      <SelectItem value="balance_desc">Saldo (Maior)</SelectItem>
+                      <SelectItem value="balance_asc">Saldo (Menor)</SelectItem>
+                      <SelectItem value="earned_desc">Ganhos (Maior)</SelectItem>
+                      <SelectItem value="spent_desc">Gastos (Maior)</SelectItem>
+                      <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-
-              {transactionsLoading ? (
-                <div className="text-center py-8">Carregando transações...</div>
-              ) : transactionsData && transactionsData.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Nenhuma transação encontrada</div>
+            </CardHeader>
+            <CardContent>
+              {usersLoading ? (
+                <div className="text-center py-8">Carregando usuários...</div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">Nenhum usuário encontrado</div>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Usuário</TableHead>
-                          <TableHead>Tipo</TableHead>
-                          <TableHead>Valor</TableHead>
-                          <TableHead>Fonte</TableHead>
-                          <TableHead>Descrição</TableHead>
-                          <TableHead>Data</TableHead>
-                          <TableHead>Ações</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Usuário</TableHead>
+                          <TableHead className="text-right text-xs sm:text-sm">Saldo</TableHead>
+                          <TableHead className="text-right text-xs sm:text-sm hidden sm:table-cell">Total Ganho</TableHead>
+                          <TableHead className="text-right text-xs sm:text-sm hidden lg:table-cell">Total Gasto</TableHead>
+                          <TableHead className="text-right text-xs sm:text-sm hidden lg:table-cell">Transações</TableHead>
+                          <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Última Transação</TableHead>
+                          <TableHead className="text-xs sm:text-sm">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {transactionsData?.map((transaction) => (
-                          <TableRow key={transaction.id}>
+                        {filteredUsers.map((user) => (
+                          <TableRow key={user.user_id}>
                             <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarImage src={transaction.user_avatar_url || undefined} />
-                                  <AvatarFallback>
-                                    {transaction.user_name?.charAt(0) || 'U'}
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
+                                  <AvatarImage src={user.avatar_url || undefined} />
+                                  <AvatarFallback className="text-xs">
+                                    {user.full_name?.charAt(0) || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div>
-                                  <div className="font-medium text-sm">{transaction.user_name}</div>
-                                  <div className="text-xs text-gray-500">{transaction.user_email}</div>
+                                <div className="min-w-0">
+                                  <div className="font-medium text-xs sm:text-sm truncate">{user.full_name}</div>
+                                  <div className="text-xs text-gray-500 truncate hidden sm:block">{user.email}</div>
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell>
-                              <Badge variant={getTransactionTypeBadge(transaction.type)}>
-                                {transaction.type === 'earn' ? 'Ganho' : 'Gasto'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <span className={`font-semibold ${getTransactionTypeColor(transaction.type)}`}>
-                                {transaction.type === 'earn' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
+                            <TableCell className="text-right">
+                              <span className="font-semibold text-yellow-600 dark:text-yellow-400 text-xs sm:text-sm">
+                                {formatCurrency(user.balance)}
                               </span>
                             </TableCell>
-                            <TableCell>
-                              <span className="text-sm">{transaction.source}</span>
+                            <TableCell className="text-right text-green-600 dark:text-green-400 hidden sm:table-cell text-xs sm:text-sm">
+                              {formatCurrency(user.total_earned)}
                             </TableCell>
-                            <TableCell>
-                              <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {transaction.description || 'N/A'}
-                              </span>
+                            <TableCell className="text-right text-red-600 dark:text-red-400 hidden lg:table-cell text-xs sm:text-sm">
+                              {formatCurrency(user.total_spent)}
                             </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                            <TableCell className="text-right hidden lg:table-cell text-xs sm:text-sm">
+                              {formatCurrency(user.transaction_count)}
+                            </TableCell>
+                            <TableCell className="hidden xl:table-cell">
+                              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                                 <Clock className="h-3 w-3" />
-                                {formatDate(transaction.created_at)}
+                                {user.last_transaction_date ? formatDate(user.last_transaction_date) : 'N/A'}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Link href={`/perfil/${transaction.user_id}`}>
-                                <Button variant="ghost" size="sm" className="gap-1">
+                              <Link href={`/perfil/${user.user_id}`}>
+                                <Button variant="ghost" size="sm" className="gap-1 h-7 sm:h-8 text-xs">
                                   <ExternalLink className="h-3 w-3" />
-                                  Perfil
+                                  <span className="hidden sm:inline">Ver Perfil</span>
+                                  <span className="sm:hidden">Ver</span>
                                 </Button>
                               </Link>
                             </TableCell>
@@ -861,24 +710,26 @@ export function ConfiPointsAdminDashboard() {
                       </TableBody>
                     </Table>
                   </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Página {transactionsPage + 1}
+                  <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
+                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
+                      Mostrando {filteredUsers.length} de {usersData?.length || 0} usuários
                     </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setTransactionsPage(Math.max(0, transactionsPage - 1))}
-                        disabled={transactionsPage === 0}
+                        onClick={() => setUsersPage(Math.max(0, usersPage - 1))}
+                        disabled={usersPage === 0}
+                        className="text-xs"
                       >
                         Anterior
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setTransactionsPage(transactionsPage + 1)}
-                        disabled={(transactionsData?.length || 0) < itemsPerPage}
+                        onClick={() => setUsersPage(usersPage + 1)}
+                        disabled={filteredUsers.length < itemsPerPage}
+                        className="text-xs"
                       >
                         Próxima
                       </Button>
@@ -886,146 +737,342 @@ export function ConfiPointsAdminDashboard() {
                   </div>
                 </>
               )}
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            {/* Aba: Detalhado por Tipo */}
-            <TabsContent value="detailed" className="space-y-6 mt-4">
-              {allTransactionsLoading ? (
-                <div className="text-center py-8">Carregando todas as transações...</div>
-              ) : sortedCategories.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Nenhuma transação encontrada</div>
-              ) : (
-                sortedCategories.map((category) => {
-                  const transactions = groupedTransactions[category] || []
-                  const totalEarned = transactions
-                    .filter(t => t.type === 'earn')
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  const totalSpent = transactions
-                    .filter(t => t.type === 'spend')
-                    .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-                  const netPoints = totalEarned - totalSpent
+        {/* Aba: Transações */}
+        <TabsContent value="transactions" className="space-y-4 sm:space-y-6 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+                Transações Detalhadas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <TabsList className="grid w-full grid-cols-2 gap-1">
+                    <TabsTrigger value="overview" className="text-xs sm:text-sm">Visão Geral</TabsTrigger>
+                    <TabsTrigger value="detailed" className="text-xs sm:text-sm">Detalhado por Tipo</TabsTrigger>
+                  </TabsList>
+                </div>
 
-                  return (
-                    <Card key={category}>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center gap-2">
-                            {getCategoryIcon(category)}
-                            <span>{category}</span>
-                            <Badge variant="secondary" className="ml-2">
-                              {transactions.length} transações
-                            </Badge>
-                          </CardTitle>
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="text-green-600 dark:text-green-400">
-                              Ganhos: +{formatCurrency(totalEarned)}
-                            </div>
-                            <div className="text-red-600 dark:text-red-400">
-                              Gastos: -{formatCurrency(totalSpent)}
-                            </div>
-                            <div className={`font-semibold ${netPoints >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              Líquido: {netPoints >= 0 ? '+' : ''}{formatCurrency(netPoints)}
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Usuário</TableHead>
-                                <TableHead>Relacionado</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Valor</TableHead>
-                                <TableHead>Fonte</TableHead>
-                                <TableHead>Descrição</TableHead>
-                                <TableHead>Data</TableHead>
-                                <TableHead>Ações</TableHead>
+                {/* Aba: Visão Geral */}
+                <TabsContent value="overview" className="space-y-4 mt-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mb-4">
+                    <Select value={filterType} onValueChange={setFilterType}>
+                      <SelectTrigger className="w-full sm:w-40 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="earn">Ganhos</SelectItem>
+                        <SelectItem value="spend">Gastos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {transactionsLoading ? (
+                    <div className="text-center py-8">Carregando transações...</div>
+                  ) : transactionsData && transactionsData.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">Nenhuma transação encontrada</div>
+                  ) : (
+                    <>
+                      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="text-xs sm:text-sm">Usuário</TableHead>
+                              <TableHead className="text-xs sm:text-sm">Tipo</TableHead>
+                              <TableHead className="text-xs sm:text-sm">Valor</TableHead>
+                              <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Fonte</TableHead>
+                              <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Descrição</TableHead>
+                              <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Data</TableHead>
+                              <TableHead className="text-xs sm:text-sm">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {transactionsData?.map((transaction) => (
+                              <TableRow key={transaction.id}>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                                      <AvatarImage src={transaction.user_avatar_url || undefined} />
+                                      <AvatarFallback className="text-xs">
+                                        {transaction.user_name?.charAt(0) || 'U'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0">
+                                      <div className="font-medium text-xs sm:text-sm truncate">{transaction.user_name}</div>
+                                      <div className="text-xs text-gray-500 truncate hidden sm:block">{transaction.user_email}</div>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={getTransactionTypeBadge(transaction.type)} className="text-xs">
+                                    {transaction.type === 'earn' ? 'Ganho' : 'Gasto'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <span className={`font-semibold text-xs sm:text-sm ${getTransactionTypeColor(transaction.type)}`}>
+                                    {transaction.type === 'earn' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                  <span className="text-xs sm:text-sm">{transaction.source}</span>
+                                </TableCell>
+                                <TableCell className="hidden lg:table-cell">
+                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                                    {transaction.description || 'N/A'}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="hidden xl:table-cell">
+                                  <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDate(transaction.created_at)}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Link href={`/perfil/${transaction.user_id}`}>
+                                    <Button variant="ghost" size="sm" className="gap-1 h-7 sm:h-8 text-xs">
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span className="hidden sm:inline">Perfil</span>
+                                      <span className="sm:hidden">Ver</span>
+                                    </Button>
+                                  </Link>
+                                </TableCell>
                               </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {transactions
-                                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                                .map((transaction) => (
-                                  <TableRow key={transaction.id}>
-                                    <TableCell>
-                                      <Link href={`/perfil/${transaction.user_id}`} className="flex items-center gap-2 hover:underline">
-                                        <Avatar className="h-6 w-6">
-                                          <AvatarImage src={transaction.user_avatar_url || undefined} />
-                                          <AvatarFallback>
-                                            {transaction.user_name?.charAt(0) || 'U'}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                          <div className="font-medium text-sm">{transaction.user_name}</div>
-                                          <div className="text-xs text-gray-500">{transaction.user_email}</div>
-                                        </div>
-                                      </Link>
-                                    </TableCell>
-                                    <TableCell>
-                                      {transaction.related_user_id && transaction.related_user_name ? (
-                                        <Link href={`/perfil/${transaction.related_user_id}`} className="flex items-center gap-2 hover:underline">
-                                          <Avatar className="h-5 w-5">
-                                            <AvatarFallback className="text-xs">
-                                              {transaction.related_user_name?.charAt(0) || 'U'}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <span className="text-sm text-blue-600 dark:text-blue-400">
-                                            {transaction.related_user_name}
-                                          </span>
-                                        </Link>
-                                      ) : (
-                                        <span className="text-sm text-gray-400">-</span>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <Badge variant={getTransactionTypeBadge(transaction.type)}>
-                                        {transaction.type === 'earn' ? 'Ganho' : 'Gasto'}
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className={`font-semibold ${getTransactionTypeColor(transaction.type)}`}>
-                                        {transaction.type === 'earn' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className="text-sm font-medium">{transaction.source}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                                        {transaction.description || 'N/A'}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-                                        <Clock className="h-3 w-3" />
-                                        {formatDate(transaction.created_at)}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Link href={`/perfil/${transaction.user_id}`}>
-                                        <Button variant="ghost" size="sm" className="gap-1">
-                                          <ExternalLink className="h-3 w-3" />
-                                          Perfil
-                                        </Button>
-                                      </Link>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                            </TableBody>
-                          </Table>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
+                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                          Página {transactionsPage + 1}
                         </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setTransactionsPage(Math.max(0, transactionsPage - 1))}
+                            disabled={transactionsPage === 0}
+                            className="text-xs"
+                          >
+                            Anterior
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setTransactionsPage(transactionsPage + 1)}
+                            disabled={(transactionsData?.length || 0) < itemsPerPage}
+                            className="text-xs"
+                          >
+                            Próxima
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </TabsContent>
+
+                {/* Aba: Detalhado por Tipo */}
+                <TabsContent value="detailed" className="space-y-4 sm:space-y-6 mt-4">
+                  {allTransactionsLoading ? (
+                    <div className="text-center py-8">Carregando todas as transações...</div>
+                  ) : sortedCategories.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">Nenhuma transação encontrada</div>
+                  ) : (
+                    sortedCategories.map((category) => {
+                      const transactions = groupedTransactions[category] || []
+                      const totalEarned = transactions
+                        .filter(t => t.type === 'earn')
+                        .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                      const totalSpent = transactions
+                        .filter(t => t.type === 'spend')
+                        .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                      const netPoints = totalEarned - totalSpent
+
+                      return (
+                        <Card key={category}>
+                          <CardHeader>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                {getCategoryIcon(category)}
+                                <span>{category}</span>
+                                <Badge variant="secondary" className="ml-2 text-xs">
+                                  {transactions.length} transações
+                                </Badge>
+                              </CardTitle>
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                                <div className="text-green-600 dark:text-green-400">
+                                  Ganhos: +{formatCurrency(totalEarned)}
+                                </div>
+                                <div className="text-red-600 dark:text-red-400">
+                                  Gastos: -{formatCurrency(totalSpent)}
+                                </div>
+                                <div className={`font-semibold ${netPoints >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                  Líquido: {netPoints >= 0 ? '+' : ''}{formatCurrency(netPoints)}
+                                </div>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="text-xs sm:text-sm">Usuário</TableHead>
+                                    <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Relacionado</TableHead>
+                                    <TableHead className="text-xs sm:text-sm">Tipo</TableHead>
+                                    <TableHead className="text-xs sm:text-sm">Valor</TableHead>
+                                    <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Fonte</TableHead>
+                                    <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Data</TableHead>
+                                    <TableHead className="text-xs sm:text-sm">Ações</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {transactions
+                                    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                    .map((transaction) => (
+                                      <TableRow key={transaction.id}>
+                                        <TableCell>
+                                          <Link href={`/perfil/${transaction.user_id}`} className="flex items-center gap-2 hover:underline">
+                                            <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+                                              <AvatarImage src={transaction.user_avatar_url || undefined} />
+                                              <AvatarFallback className="text-xs">
+                                                {transaction.user_name?.charAt(0) || 'U'}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                              <div className="font-medium text-xs sm:text-sm truncate">{transaction.user_name}</div>
+                                              <div className="text-xs text-gray-500 truncate hidden sm:block">{transaction.user_email}</div>
+                                            </div>
+                                          </Link>
+                                        </TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                          {transaction.related_user_id && transaction.related_user_name ? (
+                                            <Link href={`/perfil/${transaction.related_user_id}`} className="flex items-center gap-2 hover:underline">
+                                              <Avatar className="h-4 w-4 sm:h-5 sm:w-5">
+                                                <AvatarFallback className="text-xs">
+                                                  {transaction.related_user_name?.charAt(0) || 'U'}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              <span className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 truncate">
+                                                {transaction.related_user_name}
+                                              </span>
+                                            </Link>
+                                          ) : (
+                                            <span className="text-xs sm:text-sm text-gray-400">-</span>
+                                          )}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge variant={getTransactionTypeBadge(transaction.type)} className="text-xs">
+                                            {transaction.type === 'earn' ? 'Ganho' : 'Gasto'}
+                                          </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                          <span className={`font-semibold text-xs sm:text-sm ${getTransactionTypeColor(transaction.type)}`}>
+                                            {transaction.type === 'earn' ? '+' : '-'}{formatCurrency(Math.abs(transaction.amount))}
+                                          </span>
+                                        </TableCell>
+                                        <TableCell className="hidden lg:table-cell">
+                                          <span className="text-xs sm:text-sm font-medium">{transaction.source}</span>
+                                        </TableCell>
+                                        <TableCell className="hidden xl:table-cell">
+                                          <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                                            <Clock className="h-3 w-3" />
+                                            {formatDate(transaction.created_at)}
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Link href={`/perfil/${transaction.user_id}`}>
+                                            <Button variant="ghost" size="sm" className="gap-1 h-7 sm:h-8 text-xs">
+                                              <ExternalLink className="h-3 w-3" />
+                                              <span className="hidden sm:inline">Perfil</span>
+                                              <span className="sm:hidden">Ver</span>
+                                            </Button>
+                                          </Link>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Aba: Por Fonte */}
+        <TabsContent value="sources" className="space-y-4 sm:space-y-6 mt-4">
+          {sourceStatsLoading ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="animate-pulse">Carregando...</div>
+              </CardContent>
+            </Card>
+          ) : sourceStats && sourceStats.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Estatísticas por Fonte
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-xs sm:text-sm">Fonte</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm">Ganhos</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm">Gastos</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden sm:table-cell">Saldo Líquido</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden lg:table-cell">Transações</TableHead>
+                        <TableHead className="text-right text-xs sm:text-sm hidden xl:table-cell">Usuários Únicos</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sourceStats.map((source, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium text-xs sm:text-sm">{source.source}</TableCell>
+                          <TableCell className="text-right text-green-600 dark:text-green-400 text-xs sm:text-sm">
+                            +{formatCurrency(source.total_earned)}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600 dark:text-red-400 text-xs sm:text-sm">
+                            -{formatCurrency(source.total_spent)}
+                          </TableCell>
+                          <TableCell className={`text-right font-semibold hidden sm:table-cell text-xs sm:text-sm ${
+                            source.net_points >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {source.net_points >= 0 ? '+' : ''}{formatCurrency(source.net_points)}
+                          </TableCell>
+                          <TableCell className="text-right hidden lg:table-cell text-xs sm:text-sm">{formatCurrency(source.transaction_count)}</TableCell>
+                          <TableCell className="text-right hidden xl:table-cell text-xs sm:text-sm">{formatCurrency(source.unique_users)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center text-gray-500">
+                Nenhuma estatística por fonte disponível
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
-
