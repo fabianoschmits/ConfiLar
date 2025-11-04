@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { UserAvatar } from '@/components/ui/UserAvatar'
@@ -94,6 +95,8 @@ export default function PublicProfilePage() {
     const [showContactInfo, setShowContactInfo] = useState(false)
     const [viewStats, setViewStats] = useState<{ total_views: number; views_today: number } | null>(null)
     const [mutualEvaluation, setMutualEvaluation] = useState(false)
+    const [recommendations, setRecommendations] = useState<any[]>([])
+    const [recommendationsLoading, setRecommendationsLoading] = useState(false)
 
     // Hooks customizados - sempre chamados com valores consistentes
     const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
@@ -187,6 +190,54 @@ export default function PublicProfilePage() {
         }
     }, [userId, getViewStats])
 
+    // Função para carregar recomendações
+    const loadRecommendations = async () => {
+        if (!userId) return
+        
+        try {
+            setRecommendationsLoading(true)
+            const { data, error } = await supabase
+                .from('user_recommendations')
+                .select(`
+                    id,
+                    recommender_id,
+                    recommended_id,
+                    recommendation_type,
+                    created_at,
+                    recommender:profiles!user_recommendations_recommender_id_fkey (
+                        id,
+                        full_name,
+                        avatar_url,
+                        user_type,
+                        location_city,
+                        location_state,
+                        rating,
+                        is_verified
+                    )
+                `)
+                .eq('recommended_id', userId)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+
+            // Transformar os dados para o formato correto
+            const transformedData = data.map((item: any) => ({
+                id: item.id,
+                recommender_id: item.recommender_id,
+                recommended_id: item.recommended_id,
+                recommendation_type: item.recommendation_type,
+                created_at: item.created_at,
+                recommender: Array.isArray(item.recommender) ? item.recommender[0] : item.recommender
+            }))
+
+            setRecommendations(transformedData)
+        } catch (error) {
+            console.error('Erro ao carregar recomendações:', error)
+        } finally {
+            setRecommendationsLoading(false)
+        }
+    }
+
     useEffect(() => {
         if (userId) {
             console.log('📊 Perfil Público - Carregando avaliações para usuário:', userId)
@@ -194,8 +245,10 @@ export default function PublicProfilePage() {
             fetchUserReviewStats(userId)
             updateProfileStats(userId)
             checkMutualEvaluation()
+            loadRecommendations()
         }
-    }, [userId, fetchUserReviews, fetchUserReviewStats])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId])
 
     // Funções definidas após todos os hooks
     const fetchProfile = async () => {
@@ -515,13 +568,107 @@ export default function PublicProfilePage() {
                     </Card>
 
                     {/* Conteúdo Principal */}
-                    <Tabs defaultValue={isProfessional ? "services" : "about"} className="space-y-6">
-                        <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                    <Tabs defaultValue="recommendations" className="space-y-6">
+                        <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                            <TabsTrigger value="recommendations" className="text-xs sm:text-sm">Recomend.</TabsTrigger>
                             {isProfessional && <TabsTrigger value="services">Serviços</TabsTrigger>}
                             <TabsTrigger value="reviews">Avaliações</TabsTrigger>
                             {isProfessional && <TabsTrigger value="portfolio">Portfólio</TabsTrigger>}
                             <TabsTrigger value="about">Sobre</TabsTrigger>
                         </TabsList>
+
+                        {/* Aba de Recomendações - PRIMEIRA ABA */}
+                        <TabsContent value="recommendations" className="space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center space-x-2">
+                                        <ThumbsUp className="w-5 h-5" />
+                                        <span>Recomendações</span>
+                                        {recommendations.length > 0 && (
+                                            <Badge variant="secondary" className="ml-2">
+                                                {recommendations.length}
+                                            </Badge>
+                                        )}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {recommendationsLoading ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <div className="text-center">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-2"></div>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">Carregando recomendações...</p>
+                                            </div>
+                                        </div>
+                                    ) : recommendations.length === 0 ? (
+                                        <div className="text-center py-8">
+                                            <ThumbsUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                            <p className="text-gray-600 dark:text-gray-400">
+                                                Este usuário ainda não recebeu recomendações.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {recommendations.map((rec) => (
+                                                <Link 
+                                                    key={rec.id} 
+                                                    href={`/perfil/${rec.recommender.id}`}
+                                                    className="block"
+                                                >
+                                                    <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                                                        <CardContent className="p-4">
+                                                            <div className="flex items-start gap-3">
+                                                                <UserAvatar
+                                                                    src={rec.recommender.avatar_url}
+                                                                    alt={rec.recommender.full_name}
+                                                                    fallback={rec.recommender.full_name?.charAt(0) || 'U'}
+                                                                    size="md"
+                                                                />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                        <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                                                            {rec.recommender.full_name}
+                                                                        </h4>
+                                                                        {rec.recommender.is_verified && (
+                                                                            <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                                                        )}
+                                                                    </div>
+                                                                    {rec.recommender.location_city && rec.recommender.location_state && (
+                                                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                                                                            <MapPin className="w-3 h-3" />
+                                                                            {rec.recommender.location_city}, {rec.recommender.location_state}
+                                                                        </p>
+                                                                    )}
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        {rec.recommender.rating > 0 && (
+                                                                            <div className="flex items-center gap-1">
+                                                                                <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                                    {rec.recommender.rating.toFixed(1)}
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                        <Badge 
+                                                                            variant={rec.recommender.user_type === 'professional' ? 'default' : 'secondary'}
+                                                                            className="text-xs"
+                                                                        >
+                                                                            {rec.recommender.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                                                        </Badge>
+                                                                    </div>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        {format(new Date(rec.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
                         <TabsContent value="about" className="space-y-6">
                             {/* Informações do Usuário - Sistema de Privacidade */}
