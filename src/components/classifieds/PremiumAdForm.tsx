@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -84,6 +84,29 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       toast.error(`Erro ao criar anúncio premium: ${error}`)
     }
   })
+
+  // Pré-preencher estado e cidade do usuário quando o componente for montado
+  useEffect(() => {
+    if (profile?.location_state && profile?.location_city) {
+      // Carregar cidades do estado do usuário primeiro
+      loadCidades(profile.location_state).then(() => {
+        // Após carregar as cidades, definir o formulário
+        setFormData(prev => ({
+          ...prev,
+          location_state: profile.location_state || '',
+          location_city: profile.location_city || ''
+        }))
+      }).catch(() => {
+        // Se falhar ao carregar cidades, ainda assim definir o estado e cidade
+        setFormData(prev => ({
+          ...prev,
+          location_state: profile.location_state || '',
+          location_city: profile.location_city || ''
+        }))
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.location_state, profile?.location_city])
 
   // Opções de categorias para o Combobox
   const categoryOptions = services.map(service => ({
