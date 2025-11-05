@@ -11,6 +11,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useAutoRedirect } from '@/hooks/useAutoRedirect';
 import { useProfileCheck } from '@/hooks/useProfileCheck';
 import { usePathname } from 'next/navigation';
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -51,12 +52,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center space-y-4 max-w-md mx-auto p-6">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mx-auto">
-                <img 
-                  src="/imagens/logo/confilarlogo5.png" 
-                  alt="ConfiLar Logo" 
-                  className="w-12 h-12 object-contain"
-                />
+              <div className="h-10 flex items-center">
+                <BrandLogo width={120} height={28} href="/home" />
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Acesso Restrito</h2>

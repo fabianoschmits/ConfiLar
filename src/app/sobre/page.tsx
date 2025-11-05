@@ -6,6 +6,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 // Desabilitar SSG para esta página
 export const dynamic = 'force-dynamic'
@@ -146,11 +147,7 @@ export default function SobrePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 flex items-center justify-center">
-                <img 
-                  src="/imagens/logo/confilarlogo5.png" 
-                  alt="ConfiLar Logo" 
-                  className="w-full h-full object-contain"
-                />
+                <BrandLogo width={160} height={40} />
               </div>
               <span className="text-2xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
             </div>

@@ -284,7 +284,8 @@ export function useConfiLarCache() {
     '/icon-512x512.png',
     '/icon-192x192-maskable.png',
     '/icon-512x512-maskable.png',
-    '/imagens/logo/confilarlogo5.png',
+    '/imagens/logo/ConfiLar - azul horizontal sem fundo.png',
+    '/imagens/logo/ConfiLar - branco horizontal sem fundo.png',
   ]
 
   return useStaticCache({

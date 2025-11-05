@@ -41,6 +41,7 @@ import {
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 function HomeContent() {
   const router = useRouter()
@@ -141,14 +142,7 @@ function HomeContent() {
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <Image
-                    src="/imagens/logo/confilarlogo5.png"
-                    alt="ConfiLar Logo"
-                    width={40}
-                    height={40}
-                    priority
-                    className="w-full h-full object-contain"
-                  />
+                  <BrandLogo width={40} height={40} />
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
               </Link>
@@ -717,14 +711,7 @@ function HomeContent() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <Image
-                    src="/imagens/logo/confilarlogo5.png"
-                    alt="ConfiLar Logo"
-                    width={40}
-                    height={40}
-                    priority
-                    className="w-full h-full object-contain"
-                  />
+                  <BrandLogo width={40} height={40} />
                 </div>
                 <span className="text-xl font-bold">ConfiLar</span>
               </div>

@@ -42,6 +42,7 @@ import {
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 interface SidebarItem {
   id: string
@@ -347,21 +348,11 @@ export function ModernSidebar() {
       `}>
         {/* Header da Sidebar */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-          <Link href="/home" className="flex items-center space-x-2">
-            <div className="w-16 h-16 flex items-center justify-center">
-              <Image 
-                src="/imagens/logo/confilarlogo5.png" 
-                alt="ConfiLar Logo" 
-                width={64}
-                height={64}
-                priority
-                className="w-[120%] h-[120%] object-contain"
-              />
+          <Link href="/home" className="flex flex-col items-center space-y-1 w-full">
+            <div className="h-10 flex items-center justify-center">
+              <BrandLogo width={120} height={28} href="/home" />
             </div>
-            <div>
-              <span className="font-semibold text-gray-700 dark:text-gray-300">ConfiLar</span>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Marketplace</p>
-            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Marketplace</p>
           </Link>
         </div>
 

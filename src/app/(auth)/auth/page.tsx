@@ -10,6 +10,7 @@ import { ArrowLeft } from 'lucide-react'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useReferralTracking } from '@/hooks/useReferralTracking'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 export default function AuthPage() {
   const router = useRouter()
@@ -83,12 +84,8 @@ export default function AuthPage() {
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
-            <div className="w-16 h-16 flex items-center justify-center shadow-lg">
-              <img 
-                src="/imagens/logo/confilarlogo5.png" 
-                alt="ConfiLar Logo" 
-                className="w-full h-full object-contain"
-              />
+            <div className="flex items-center justify-center">
+              <BrandLogo width={160} height={40} />
             </div>
             <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
           </div>

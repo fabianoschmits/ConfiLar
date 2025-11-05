@@ -57,6 +57,7 @@ import {
   Crown,
   ShoppingBag
 } from 'lucide-react'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 interface ModernHeaderProps {
   showBackButton?: boolean
@@ -266,17 +267,16 @@ export function ModernHeader({
               
               {/* Logo */}
               <Link href="/home" className="flex items-center space-x-2">
-                <div className="w-12 h-12 flex items-center justify-center">
-                  <Image 
-                    src="/imagens/logo/confilarlogo5.png" 
-                    alt="ConfiLar Logo" 
-                    width={48}
-                    height={48}
-                    priority
-                    className="w-[120%] h-[120%] object-contain"
-                  />
+                <div className="h-12 flex items-center justify-center">
+                  {/* Mobile: 30% menor */}
+                  <div className="block sm:hidden">
+                    <BrandLogo width={84} height={22} href="/home" />
+                  </div>
+                  {/* Desktop/tablet: padrão */}
+                  <div className="hidden sm:block">
+                    <BrandLogo width={120} height={32} href="/home" />
+                  </div>
                 </div>
-                <span className="font-semibold text-gray-900 dark:text-white hidden sm:block">ConfiLar</span>
               </Link>
             </div>
 

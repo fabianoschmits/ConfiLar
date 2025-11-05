@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { BrandLogo } from '@/components/common/BrandLogo'
 
 interface LoadingOverlayProps {
   isLoading: boolean
@@ -99,14 +100,7 @@ export function LoadingOverlay({
         <div className="relative">
           {/* Logo ConfiLar */}
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-        <Image
-          src="/imagens/logo/confilarlogo5.png"
-          alt="ConfiLar Logo"
-          width={48}
-          height={48}
-          priority
-          className="w-12 h-12 object-contain"
-        />
+        <BrandLogo width={48} height={48} />
           </div>
           
           {/* Spinner Moderno */}
@@ -253,11 +247,7 @@ export function PageLoadingOverlay({
         {/* Spinner com logo */}
         <div className="relative">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <img 
-              src="/imagens/logo/confilarlogo5.png" 
-              alt="ConfiLar Logo" 
-              className="w-10 h-10 object-contain"
-            />
+            <BrandLogo width={100} height={100} />
           </div>
           <Loader2 className="absolute inset-0 w-12 h-12 text-blue-600/30 animate-spin" strokeWidth={1} />
         </div>
