@@ -141,10 +141,7 @@ function HomeContent() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <BrandLogo width={40} height={40} />
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
+                <BrandLogo width={120} height={32} className="object-contain" />
               </Link>
             </div>
 

@@ -192,3 +192,6 @@ WHERE table_name = 'classified_ads'
 AND column_name IN ('is_premium', 'is_featured', 'premium_points_spent', 'premium_expires_at', 'premium_highlight_color', 'images', 'price_range', 'contact_phone', 'contact_email')
 ORDER BY ordinal_position;
 
+
+
+

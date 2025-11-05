@@ -235,3 +235,6 @@ WHERE is_premium = true
 
 **Status:** ✅ Código completo e pronto para teste após executar o script SQL!
 
+
+
+
