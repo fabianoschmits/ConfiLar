@@ -44,6 +44,8 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ALLOWED_USER_ORDER_BY, isValidOrderBy, type UserOrderBy } from '@/lib/admin-constants'
+import { useAdminRateLimit } from '@/hooks/useAdminRateLimit'
 
 interface AdminStats {
   total_users_with_points: number
@@ -100,7 +102,7 @@ interface SourceStat {
 export function ConfiPointsAdminDashboard() {
   const [usersPage, setUsersPage] = useState(0)
   const [transactionsPage, setTransactionsPage] = useState(0)
-  const [usersOrderBy, setUsersOrderBy] = useState<'balance_desc' | 'balance_asc' | 'earned_desc' | 'spent_desc' | 'name_asc'>('balance_desc')
+  const [usersOrderBy, setUsersOrderBy] = useState<UserOrderBy>('balance_desc')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
   const [filterUserId, setFilterUserId] = useState<string>('')
@@ -108,21 +110,128 @@ export function ConfiPointsAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview') // Aba de transações (dentro da aba de transações)
   const itemsPerPage = 20
 
+  // Rate limiting para operações admin
+  const { checkRateLimit, isLimited } = useAdminRateLimit({
+    maxRequests: 30,
+    windowMs: 60 * 1000 // 30 requisições por minuto
+  })
+
+  // Helper para timeout de queries
+  const createQueryWithTimeout = <T,>(fn: () => Promise<T>, timeoutMs: number = 30000): Promise<T> => {
+    return Promise.race([
+      fn(),
+      new Promise<T>((_, reject) => 
+        setTimeout(() => reject(new Error('Query timeout após 30 segundos')), timeoutMs)
+      )
+    ])
+  }
+
   // Buscar TODAS as transações para a aba detalhada (sem paginação inicial)
   const { data: allTransactionsData, isLoading: allTransactionsLoading } = useQuery({
     queryKey: ['admin-confipoints-all-transactions'],
     queryFn: async () => {
-      try {
-        const params: any = {
-          p_limit: 10000, // Buscar muitas transações
-          p_offset: 0
-        }
+      return createQueryWithTimeout(async () => {
+        try {
+          const params: any = {
+            p_limit: 1000, // Limite reduzido para melhor performance
+            p_offset: 0
+          }
 
-        const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
+          const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
+
+          if (error) {
+            // Log simplificado em produção
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Erro ao buscar todas as transações:', error)
+            } else {
+              console.error('Erro ao buscar todas as transações:', error.message)
+            }
+            return []
+          }
+
+          // Se retornar um objeto único, converter para array
+          if (data && !Array.isArray(data)) {
+            return [data]
+          }
+
+          return data || []
+        } catch (error: any) {
+          // Log simplificado em produção
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Erro ao buscar todas as transações:', error)
+          } else {
+            console.error('Erro ao buscar todas as transações:', error?.message || 'Erro desconhecido')
+          }
+          return []
+        }
+      }, 30000)
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    retry: 2,
+    refetchOnWindowFocus: false
+  })
+
+  // Buscar estatísticas gerais
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<AdminStats>({
+    queryKey: ['admin-confipoints-stats'],
+    queryFn: async () => {
+      return createQueryWithTimeout(async () => {
+        const { data, error } = await supabase.rpc('get_admin_confipoints_stats')
 
         if (error) {
-          console.error('Erro ao buscar todas as transações:', error)
-          return []
+          // Log simplificado em produção
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Erro ao buscar estatísticas:', error)
+          } else {
+            console.error('Erro ao buscar estatísticas:', error.message)
+          }
+          throw error
+        }
+
+        return data as AdminStats
+      }, 30000).catch((error: any) => {
+        if (error?.message?.includes('timeout')) {
+          console.error('Timeout ao buscar estatísticas após 30 segundos')
+        }
+        throw error
+      })
+    },
+    staleTime: 1 * 60 * 1000, // 1 minuto (estatísticas mudam frequentemente)
+    gcTime: 3 * 60 * 1000, // 3 minutos
+    retry: 2,
+    refetchOnWindowFocus: false
+  })
+
+  // Buscar usuários
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
+    queryKey: ['admin-confipoints-users', usersPage, usersOrderBy],
+    queryFn: async () => {
+      return createQueryWithTimeout(async () => {
+        // Validar order_by antes de enviar
+        const validOrderBy = isValidOrderBy(usersOrderBy) ? usersOrderBy : 'balance_desc'
+        
+        const params: any = {
+          p_limit: itemsPerPage,
+          p_offset: usersPage * itemsPerPage,
+          p_order_by: validOrderBy
+        }
+
+        const { data, error } = await supabase.rpc('get_admin_confipoints_users', params)
+
+        if (error) {
+          // Log simplificado em produção (menos detalhes sensíveis)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Erro ao buscar usuários:', JSON.stringify({
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code
+            }, null, 2))
+          } else {
+            console.error('Erro ao buscar usuários:', error.message)
+          }
+          throw error
         }
 
         // Se retornar um objeto único, converter para array
@@ -131,117 +240,107 @@ export function ConfiPointsAdminDashboard() {
         }
 
         return data || []
-      } catch (error) {
-        console.error('Erro ao buscar todas as transações:', error)
-        return []
-      }
-    }
-  })
-
-  // Buscar estatísticas gerais
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<AdminStats>({
-    queryKey: ['admin-confipoints-stats'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_confipoints_stats')
-
-      if (error) {
-        console.error('Erro ao buscar estatísticas:', error)
+      }, 30000).catch((error: any) => {
+        if (error?.message?.includes('timeout')) {
+          console.error('Timeout ao buscar usuários após 30 segundos')
+        }
         throw error
-      }
-
-      return data as AdminStats
-    }
-  })
-
-  // Buscar usuários
-  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
-    queryKey: ['admin-confipoints-users', usersPage, usersOrderBy],
-    queryFn: async () => {
-      const params: any = {
-        p_limit: itemsPerPage,
-        p_offset: usersPage * itemsPerPage,
-        p_order_by: usersOrderBy
-      }
-
-      const { data, error } = await supabase.rpc('get_admin_confipoints_users', params)
-
-      if (error) {
-        console.error('Erro ao buscar usuários:', JSON.stringify({
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          fullError: error
-        }, null, 2))
-        throw error
-      }
-
-      // Se retornar um objeto único, converter para array
-      if (data && !Array.isArray(data)) {
-        return [data]
-      }
-
-      return data || []
-    }
+      })
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    retry: 2,
+    refetchOnWindowFocus: false
   })
 
   // Buscar transações paginadas
   const { data: transactionsData, isLoading: transactionsLoading, refetch: refetchTransactions } = useQuery<AdminTransaction[]>({
     queryKey: ['admin-confipoints-transactions', transactionsPage, filterType, filterUserId],
     queryFn: async () => {
-      const params: any = {
-        p_limit: itemsPerPage,
-        p_offset: transactionsPage * itemsPerPage
-      }
+      return createQueryWithTimeout(async () => {
+        const params: any = {
+          p_limit: itemsPerPage,
+          p_offset: transactionsPage * itemsPerPage
+        }
 
-      if (filterType !== 'all') {
-        params.p_type = filterType
-      }
+        if (filterType !== 'all') {
+          params.p_type = filterType
+        }
 
-      if (filterUserId) {
-        params.p_user_id = filterUserId
-      }
+        if (filterUserId) {
+          params.p_user_id = filterUserId
+        }
 
-      const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
+        const { data, error } = await supabase.rpc('get_admin_confipoints_transactions', params)
 
-      if (error) {
-        console.error('Erro ao buscar transações:', JSON.stringify({
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-          fullError: error
-        }, null, 2))
+        if (error) {
+          // Log simplificado em produção (menos detalhes sensíveis)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Erro ao buscar transações:', JSON.stringify({
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+              code: error.code
+            }, null, 2))
+          } else {
+            console.error('Erro ao buscar transações:', error.message)
+          }
+          throw error
+        }
+
+        // Se retornar um objeto único, converter para array
+        if (data && !Array.isArray(data)) {
+          return [data]
+        }
+
+        return data || []
+      }, 30000).catch((error: any) => {
+        if (error?.message?.includes('timeout')) {
+          console.error('Timeout ao buscar transações após 30 segundos')
+        }
         throw error
-      }
-
-      // Se retornar um objeto único, converter para array
-      if (data && !Array.isArray(data)) {
-        return [data]
-      }
-
-      return data || []
-    }
+      })
+    },
+    staleTime: 1 * 60 * 1000, // 1 minuto
+    gcTime: 3 * 60 * 1000, // 3 minutos
+    retry: 2,
+    refetchOnWindowFocus: false
   })
 
   // Buscar estatísticas por fonte
   const { data: sourceStats, isLoading: sourceStatsLoading, refetch: refetchSourceStats } = useQuery<SourceStat[]>({
     queryKey: ['admin-confipoints-by-source'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_confipoints_by_source')
+      return createQueryWithTimeout(async () => {
+        const { data, error } = await supabase.rpc('get_admin_confipoints_by_source')
 
-      if (error) {
-        console.error('Erro ao buscar estatísticas por fonte:', error)
+        if (error) {
+          // Log simplificado em produção
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Erro ao buscar estatísticas por fonte:', error)
+          } else {
+            console.error('Erro ao buscar estatísticas por fonte:', error.message)
+          }
+          throw error
+        }
+
+        // Se retornar um objeto único, converter para array
+        if (data && !Array.isArray(data)) {
+          return [data]
+        }
+
+        return data || []
+      }, 30000).catch((error: any) => {
+        if (error?.message?.includes('timeout')) {
+          console.error('Timeout ao buscar estatísticas por fonte após 30 segundos')
+        }
         throw error
-      }
-
-      // Se retornar um objeto único, converter para array
-      if (data && !Array.isArray(data)) {
-        return [data]
-      }
-
-      return data || []
-    }
+      })
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
+    retry: 2,
+    refetchOnWindowFocus: false
   })
 
   // Filtrar usuários por termo de busca
@@ -290,6 +389,16 @@ export function ConfiPointsAdminDashboard() {
       hour: '2-digit',
       minute: '2-digit'
     }).format(date)
+  }
+
+  function maskEmail(email: string): string {
+    if (!email || !email.includes('@')) return email
+    const [localPart, domain] = email.split('@')
+    if (localPart.length <= 2) return email
+    const maskedLocal = localPart.substring(0, 2) + '***'
+    const [domainName, domainExt] = domain.split('.')
+    const maskedDomain = domainName.substring(0, 2) + '***.' + domainExt
+    return `${maskedLocal}@${maskedDomain}`
   }
 
   function getTransactionTypeBadge(type: 'earn' | 'spend') {
@@ -385,6 +494,10 @@ export function ConfiPointsAdminDashboard() {
         </div>
         <Button
           onClick={() => {
+            if (!checkRateLimit()) {
+              alert('Muitas requisições. Aguarde um momento antes de atualizar novamente.')
+              return
+            }
             refetchStats()
             refetchUsers()
             refetchTransactions()
@@ -393,6 +506,7 @@ export function ConfiPointsAdminDashboard() {
           variant="outline"
           className="gap-2 w-full sm:w-auto"
           size="sm"
+          disabled={isLimited}
         >
           <RefreshCw className="h-4 w-4" />
           <span>Atualizar</span>
@@ -624,16 +738,32 @@ export function ConfiPointsAdminDashboard() {
                       className="pl-8 w-full sm:w-64 text-sm"
                     />
                   </div>
-                  <Select value={usersOrderBy} onValueChange={(value: any) => setUsersOrderBy(value)}>
+                  <Select 
+                    value={usersOrderBy} 
+                    onValueChange={(value: string) => {
+                      if (isValidOrderBy(value)) {
+                        setUsersOrderBy(value)
+                      }
+                    }}
+                  >
                     <SelectTrigger className="w-full sm:w-48 text-sm">
                       <SelectValue placeholder="Ordenar por" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="balance_desc">Saldo (Maior)</SelectItem>
-                      <SelectItem value="balance_asc">Saldo (Menor)</SelectItem>
-                      <SelectItem value="earned_desc">Ganhos (Maior)</SelectItem>
-                      <SelectItem value="spent_desc">Gastos (Maior)</SelectItem>
-                      <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
+                      {ALLOWED_USER_ORDER_BY.map((orderBy) => {
+                        const labels: Record<UserOrderBy, string> = {
+                          balance_desc: 'Saldo (Maior)',
+                          balance_asc: 'Saldo (Menor)',
+                          earned_desc: 'Ganhos (Maior)',
+                          spent_desc: 'Gastos (Maior)',
+                          name_asc: 'Nome (A-Z)'
+                        }
+                        return (
+                          <SelectItem key={orderBy} value={orderBy}>
+                            {labels[orderBy]}
+                          </SelectItem>
+                        )
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -672,7 +802,9 @@ export function ConfiPointsAdminDashboard() {
                                 </Avatar>
                                 <div className="min-w-0">
                                   <div className="font-medium text-xs sm:text-sm truncate">{user.full_name}</div>
-                                  <div className="text-xs text-gray-500 truncate hidden sm:block">{user.email}</div>
+                                  <div className="text-xs text-gray-500 truncate hidden sm:block">
+                                    {user.email ? maskEmail(user.email) : 'N/A'}
+                                  </div>
                                 </div>
                               </div>
                             </TableCell>
@@ -806,7 +938,9 @@ export function ConfiPointsAdminDashboard() {
                                     </Avatar>
                                     <div className="min-w-0">
                                       <div className="font-medium text-xs sm:text-sm truncate">{transaction.user_name}</div>
-                                      <div className="text-xs text-gray-500 truncate hidden sm:block">{transaction.user_email}</div>
+                                      <div className="text-xs text-gray-500 truncate hidden sm:block">
+                                        {transaction.user_email ? maskEmail(transaction.user_email) : 'N/A'}
+                                      </div>
                                     </div>
                                   </div>
                                 </TableCell>
@@ -947,7 +1081,9 @@ export function ConfiPointsAdminDashboard() {
                                             </Avatar>
                                             <div className="min-w-0">
                                               <div className="font-medium text-xs sm:text-sm truncate">{transaction.user_name}</div>
-                                              <div className="text-xs text-gray-500 truncate hidden sm:block">{transaction.user_email}</div>
+                                              <div className="text-xs text-gray-500 truncate hidden sm:block">
+                                                {transaction.user_email ? maskEmail(transaction.user_email) : 'N/A'}
+                                              </div>
                                             </div>
                                           </Link>
                                         </TableCell>

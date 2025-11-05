@@ -87,68 +87,39 @@ export async function createReferral(
     const referralCode = data.code
     console.log('🔍 [createReferral] Código de referral extraído:', referralCode)
 
-    // Validar código
-    console.log('🔍 [createReferral] Buscando dados do referrer no banco...')
-    const { data: statsData, error: statsError } = await supabase
-      .from('user_referral_stats')
-      .select('user_id')
-      .eq('referral_code', referralCode)
-      .single()
-
-    console.log('🔍 [createReferral] Resultado da busca:', { statsData, statsError })
-
-    if (statsError || !statsData) {
-      console.error('❌ [createReferral] Código de referral inválido:', statsError)
-      return { success: false, error: 'Código de referral inválido' }
-    }
-
-    const referrerId = statsData.user_id
-    console.log('🔍 [createReferral] ID do referrer encontrado:', referrerId)
-
-    // Verificar se não é auto-referral
-    if (referrerId === referredUserId) {
-      console.error('❌ [createReferral] Tentativa de auto-indicação detectada')
-      return { success: false, error: 'Não é possível se auto-indicar' }
-    }
-
-    // Criar referral
-    console.log('🔍 [createReferral] Inserindo referral no banco:', {
-      referrer_id: referrerId,
-      referred_id: referredUserId,
-      referral_code: referralCode,
-      status: 'pending',
-      source: source || 'link_direto'
-    })
-    
-    const { error: insertError } = await supabase
-      .from('referrals')
-      .insert({
-        referrer_id: referrerId,
-        referred_id: referredUserId,
-        referral_code: referralCode,
-        status: 'pending',
-        source: source || 'link_direto',
-        created_at: new Date().toISOString()
+    // Usar API route para criar referral (bypass RLS com Service Role)
+    console.log('🔍 [createReferral] Chamando API route para criar referral...')
+    const response = await fetch('/api/referrals/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        referredUserId,
+        referralCode,
+        source: source || 'link_direto'
       })
+    })
 
-    if (insertError) {
-      // Pode ser duplicado, o que é ok
-      if (insertError.code === '23505') {
-        console.log('⚠️ [createReferral] Referral duplicado (já existe), considerando como sucesso')
-        return { success: true }
-      }
-      
-      console.error('❌ [createReferral] Erro ao inserir referral:', insertError)
-      return { success: false, error: insertError.message }
+    const result = await response.json()
+    console.log('🔍 [createReferral] Resposta da API:', result)
+
+    if (!response.ok) {
+      console.error('❌ [createReferral] Erro na API:', result.error)
+      return { success: false, error: result.error || 'Erro ao criar referral' }
     }
 
-    console.log('✅ [createReferral] Referral inserido com sucesso!')
-
-    // Limpar localStorage após criar referral
-    localStorage.removeItem(REFERRAL_STORAGE_KEY)
-    console.log('🧹 [createReferral] localStorage limpo')
-
-    return { success: true }
+    if (result.success) {
+      console.log('✅ [createReferral] Referral criado com sucesso via API!')
+      
+      // NÃO limpar localStorage aqui - manter para o onboarding poder usar
+      // O código será limpo apenas após o onboarding ser completado
+      // Isso garante que o código esteja disponível mesmo se o usuário fechar o navegador
+      console.log('💾 [createReferral] Código mantido no localStorage para uso no onboarding')
+      
+      return { success: true }
+    } else {
+      console.error('❌ [createReferral] API retornou erro:', result.error)
+      return { success: false, error: result.error || 'Erro ao criar referral' }
+    }
   } catch (err: any) {
     console.error('❌ [createReferral] Erro ao processar referral:', err)
     return { success: false, error: err.message }

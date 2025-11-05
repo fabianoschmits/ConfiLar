@@ -50,9 +50,17 @@ DECLARE
   v_admin_id UUID := 'f7444305-a3bd-4d71-874a-bb95fd27f96a';
   v_current_user UUID := auth.uid();
   v_result JSON;
+  v_validated_order_by TEXT;
 BEGIN
   IF v_current_user IS NULL OR v_current_user != v_admin_id THEN
     RAISE EXCEPTION 'Acesso negado. Apenas administradores podem acessar esta função.';
+  END IF;
+
+  -- Validar p_order_by (whitelist)
+  IF p_order_by IN ('balance_desc', 'balance_asc', 'earned_desc', 'spent_desc', 'name_asc') THEN
+    v_validated_order_by := p_order_by;
+  ELSE
+    v_validated_order_by := 'balance_desc';
   END IF;
 
   WITH ordered_users AS (
@@ -71,14 +79,14 @@ BEGIN
     LEFT JOIN profiles p ON p.id = upb.user_id
     ORDER BY 
       CASE 
-        WHEN p_order_by = 'balance_desc' THEN upb.balance::TEXT
-        WHEN p_order_by = 'earned_desc' THEN upb.total_earned::TEXT
-        WHEN p_order_by = 'spent_desc' THEN upb.total_spent::TEXT
+        WHEN v_validated_order_by = 'balance_desc' THEN upb.balance::TEXT
+        WHEN v_validated_order_by = 'earned_desc' THEN upb.total_earned::TEXT
+        WHEN v_validated_order_by = 'spent_desc' THEN upb.total_spent::TEXT
         ELSE upb.balance::TEXT
       END DESC NULLS LAST,
       CASE 
-        WHEN p_order_by = 'balance_asc' THEN upb.balance::TEXT
-        WHEN p_order_by = 'name_asc' THEN COALESCE(p.full_name, '')
+        WHEN v_validated_order_by = 'balance_asc' THEN upb.balance::TEXT
+        WHEN v_validated_order_by = 'name_asc' THEN COALESCE(p.full_name, '')
         ELSE upb.balance::TEXT
       END ASC NULLS LAST
     LIMIT p_limit OFFSET p_offset

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useAdmin } from '@/hooks/useAdmin'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { supabase } from '@/lib/supabase'
 import { StarRating } from '@/components/ui/StarRating'
@@ -82,7 +83,7 @@ export function ModernHeader({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   
   // Verificar se o usuário é admin
-  const isAdmin = user?.id === 'f7444305-a3bd-4d71-874a-bb95fd27f96a'
+  const { isAdmin } = useAdmin()
   const [reputationStats, setReputationStats] = useState({
     totalViews: 0,
     totalRecommendations: 0,

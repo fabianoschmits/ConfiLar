@@ -29,7 +29,7 @@ import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
-import { updateReferralMilestone } from '@/hooks/useReferralTracking'
+import { updateReferralMilestone, createReferral } from '@/hooks/useReferralTracking'
 
 
 const onboardingSchema = z.object({
@@ -570,6 +570,27 @@ export default function OnboardingPage() {
 
       console.log('✅ Perfil salvo com sucesso!')
       
+      // ✅ CRIAR REFERRAL SE AINDA NÃO FOI CRIADO (fallback)
+      // Isso garante que mesmo se o referral não foi criado no cadastro, será criado aqui
+      const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
+      let referralCreated = false
+      
+      try {
+        console.log('👥 [Onboarding] Verificando se referral precisa ser criado...')
+        const referralResult = await createReferral(user.id, 'onboarding_complete')
+        
+        if (referralResult.success) {
+          console.log('✅ [Onboarding] Referral criado/verificado com sucesso!')
+          referralCreated = true
+        } else if (referralResult.error && !referralResult.error.includes('Nenhum código')) {
+          // Só logar se não for erro de "nenhum código" (é esperado se não houver código)
+          console.warn('⚠️ [Onboarding] Aviso ao criar referral:', referralResult.error)
+        }
+      } catch (referralCreateError) {
+        console.warn('⚠️ [Onboarding] Erro ao criar referral (não crítico):', referralCreateError)
+        // Não falhar o processo por causa do referral
+      }
+      
       // Marcar milestone de perfil completado (se foi indicado)
       try {
         console.log('👥 Marcando milestone de perfil completado...')
@@ -578,6 +599,17 @@ export default function OnboardingPage() {
       } catch (referralError) {
         console.warn('⚠️ Erro ao marcar milestone:', referralError)
         // Não falhar o processo por causa do milestone
+      }
+      
+      // Limpar localStorage APENAS após completar o onboarding
+      // Isso garante que o código esteja disponível durante todo o processo
+      if (referralCreated && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(REFERRAL_STORAGE_KEY)
+          console.log('🧹 [Onboarding] Código de referral removido do localStorage após completar onboarding')
+        } catch (err) {
+          console.warn('⚠️ [Onboarding] Erro ao limpar localStorage:', err)
+        }
       }
       
       // Criar post de boas-vindas

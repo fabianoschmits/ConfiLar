@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -281,8 +281,21 @@ export function BasicSignupForm() {
     }
   }
 
+  // Ref para controlar o número de execuções do loop
+  const loopCountRef = useRef<number>(0)
+  const MAX_LOOP_COUNT = 20
+
   // Garantir que o código seja preenchido automaticamente no campo
   useEffect(() => {
+    // Limitar o número de execuções
+    if (loopCountRef.current >= MAX_LOOP_COUNT) {
+      console.log('⏸️ [BasicSignupForm] Loop limitado atingido. Parando execuções.')
+      return
+    }
+
+    loopCountRef.current += 1
+    console.log(`🔄 [BasicSignupForm] Execução ${loopCountRef.current}/${MAX_LOOP_COUNT}`)
+
     if (referralCodeFromUrl) {
       console.log('🔄 [BasicSignupForm] Preenchendo campo referral_code com:', referralCodeFromUrl)
       setValue('referral_code', referralCodeFromUrl, { 
@@ -290,8 +303,32 @@ export function BasicSignupForm() {
         shouldDirty: true,
         shouldTouch: true
       })
+    } else {
+      // Se não houver código da URL, tentar restaurar do localStorage
+      // Isso garante que o código seja restaurado mesmo se o usuário voltar à página
+      const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
+      try {
+        const stored = localStorage.getItem(REFERRAL_STORAGE_KEY)
+        if (stored) {
+          const data = JSON.parse(stored)
+          // Verificar se não expirou
+          if (Date.now() <= data.expiry && data.code) {
+            console.log('🔄 [BasicSignupForm] Restaurando código do localStorage:', data.code)
+            setValue('referral_code', data.code, { 
+              shouldValidate: true,
+              shouldDirty: true,
+              shouldTouch: true
+            })
+            setReferralCodeFromUrl(data.code)
+            // Validar o código restaurado
+            validateReferralCode(data.code)
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao restaurar código do localStorage:', err)
+      }
     }
-  }, [referralCodeFromUrl, setValue])
+  }, [referralCodeFromUrl, setValue, validateReferralCode])
 
   // Debounce para validação de código de referência
   useEffect(() => {

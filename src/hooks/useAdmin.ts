@@ -54,15 +54,32 @@ export function useAdmin() {
       setState(prev => ({ ...prev, loading: true, error: null }))
 
       // Verificar se o usuário é administrador
-      const { data: adminData, error: adminError } = await supabase
+      let adminData = null
+      const { data, error: adminError } = await supabase
         .from('admins')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
 
-      if (adminError && adminError.code !== 'PGRST116') {
-        throw adminError
+      // Tratar erros 406 (Not Acceptable) e 403 (Forbidden) como "não é admin"
+      if (adminError) {
+        // PGRST116 = nenhuma linha retornada (usuário não é admin)
+        // 406 = Not Acceptable (RLS ou formato)
+        // 403 = Forbidden (sem permissão)
+        if (adminError.code === 'PGRST116' || 
+            adminError.code === 'PGRST301' ||
+            adminError.message?.includes('406') ||
+            adminError.message?.includes('403') ||
+            adminError.message?.includes('Not Acceptable') ||
+            adminError.message?.includes('Forbidden')) {
+          // Usuário não é admin, não é erro - deixar adminData como null
+        } else {
+          // Outro tipo de erro, logar mas não falhar
+          console.warn('Erro ao verificar status de administrador:', adminError)
+        }
+      } else {
+        adminData = data
       }
 
       const isAdmin = !!adminData

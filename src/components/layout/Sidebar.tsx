@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useAdmin } from '@/hooks/useAdmin';
 import { NavigationLink } from '@/components/ui/NavigationLink';
 import {
   Home,
@@ -71,7 +72,7 @@ export function Sidebar() {
   const { unreadCount } = useSupabaseNotifications()
   const { openChat } = useFloatingChat()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const isAdmin = user?.id === 'f7444305-a3bd-4d71-874a-bb95fd27f96a'
+  const { isAdmin } = useAdmin()
 
   // Sempre renderizar o componente para navegação
   const isLoggedIn = user && profile

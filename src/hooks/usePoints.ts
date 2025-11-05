@@ -94,11 +94,26 @@ export function usePoints(userId?: string) {
         .eq('user_id', userId)
         .single()
       
-      if (error) throw error
+      // Tratar erros 406 e 403 - retornar null (stats não disponíveis ainda)
+      if (error) {
+        // Se for erro 406, 403, ou não encontrado, retornar null
+        if (error.code === 'PGRST116' || 
+            error.code === 'PGRST301' ||
+            error.message?.includes('406') ||
+            error.message?.includes('403') ||
+            error.message?.includes('Not Acceptable') ||
+            error.message?.includes('Forbidden')) {
+          // View pode não existir ou RLS bloqueando - retornar null
+          return null
+        }
+        // Outros erros, lançar
+        throw error
+      }
       return data
     },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutos
+    retry: false, // Não tentar novamente em caso de erro
   })
 
   // Atualizar estado quando dados mudam
