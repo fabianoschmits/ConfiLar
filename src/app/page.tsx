@@ -707,10 +707,7 @@ function HomeContent() {
             {/* Logo and Description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <BrandLogo width={40} height={40} />
-                </div>
-                <span className="text-xl font-bold">ConfiLar</span>
+                <BrandLogo width={120} height={32} className="object-contain" />
               </div>
               <p className="text-gray-400 text-sm mb-4">
                 Plataforma transparente que conecta clientes e profissionais através de 

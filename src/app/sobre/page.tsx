@@ -146,10 +146,7 @@ export default function SobrePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <BrandLogo width={160} height={40} />
-              </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">ConfiLar</span>
+              <BrandLogo width={160} height={40} className="object-contain" />
             </div>
             <div className="flex space-x-3">
               <Link href="/auth" className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">

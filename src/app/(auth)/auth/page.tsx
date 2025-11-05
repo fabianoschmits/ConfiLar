@@ -84,10 +84,7 @@ export default function AuthPage() {
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center">
-              <BrandLogo width={160} height={40} />
-            </div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-white">ConfiLar</span>
+            <BrandLogo width={160} height={40} className="object-contain" />
           </div>
           
           <Button 
