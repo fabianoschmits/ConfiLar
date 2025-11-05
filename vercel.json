@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/expired-premium-classifieds",
-      "schedule": "0 * * * *"
-    }
-  ]
-}
