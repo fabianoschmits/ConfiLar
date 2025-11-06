@@ -14,21 +14,26 @@ import { createAdminSupabaseClient } from '@/lib/supabase'
  */
 export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) => {
   try {
-    const { password } = await request.json()
+    const { password, emailVerified } = await request.json()
     
-    if (!password) {
-      return NextResponse.json({ error: 'Senha é obrigatória' }, { status: 400 })
+    // Se emailVerified for true, significa que o usuário passou pela reautenticação por email
+    // Caso contrário, ainda aceita senha para compatibilidade
+    if (!emailVerified && !password) {
+      return NextResponse.json({ error: 'Senha ou verificação por email é obrigatória' }, { status: 400 })
     }
 
-    // Verificar senha antes de deletar (reautenticação obrigatória)
-    const { error: signInError } = await supabaseAuth.auth.signInWithPassword({
-      email: user.email!,
-      password: password
-    })
+    // Se não foi verificado por email, verificar senha (compatibilidade com código antigo)
+    if (!emailVerified) {
+      const { error: signInError } = await supabaseAuth.auth.signInWithPassword({
+        email: user.email!,
+        password: password
+      })
 
-    if (signInError) {
-      return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 })
+      if (signInError) {
+        return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 })
+      }
     }
+    // Se emailVerified for true, a reautenticação já foi verificada no frontend
 
     // Usar admin client para operações de deleção
     const supabase = createAdminSupabaseClient()

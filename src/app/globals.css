@@ -43,6 +43,30 @@
   animation: glow-emerald 2s ease-in-out infinite;
 }
 
+/* Animação de slide-in de cima para baixo para menu dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, opacity;
+  /* Garantir que funciona bem em mobile */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+  /* Sobrescrever animações padrão do Radix */
+  transform-origin: top center !important;
+}
+
 /* Modern Design System Variables */
 :root {
   /* Colors */

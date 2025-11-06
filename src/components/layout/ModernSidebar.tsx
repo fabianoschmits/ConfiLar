@@ -274,7 +274,7 @@ export function ModernSidebar() {
         {
           id: 'edit-profile',
           title: 'Editar Perfil',
-          href: '/editarperfil',
+          href: '/editarperfil/dados-da-conta',
           icon: <Settings className="h-4 w-4" />,
           description: 'Atualizar informações'
         },

@@ -62,9 +62,10 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
         </PopoverTrigger>
 
         <PopoverContent 
-          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl"
+          className="w-80 max-w-[calc(100vw-2rem)] p-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl animate-slide-down"
           align="end"
           sideOffset={8}
+          side="bottom"
         >
           {/* Header */}
           <div className="p-4 pb-3 border-b border-gray-100 dark:border-gray-700">

@@ -135,7 +135,7 @@ export function Navigation() {
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => handleNavigation('/editarperfil')}
+              onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
               className="hidden sm:flex"
             >
               <User className="h-4 w-4 mr-2" />

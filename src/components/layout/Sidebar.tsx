@@ -337,7 +337,7 @@ export function Sidebar() {
         {
           id: 'edit-profile',
           title: 'EDITAR PERFIL',
-          href: '/editarperfil',
+          href: '/editarperfil/dados-da-conta',
           icon: <Edit size={16} strokeWidth={2} />,
           description: 'Atualizar informações'
         },

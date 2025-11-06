@@ -55,7 +55,8 @@ import {
   DollarSign,
   Send,
   Crown,
-  ShoppingBag
+  ShoppingBag,
+  MapPin
 } from 'lucide-react'
 import { BrandLogo } from '@/components/common/BrandLogo'
 
@@ -307,7 +308,7 @@ export function ModernHeader({
                     soundManager.play('/sounds/New/very-fast.mp3', { volume: 0.3 })
                     setIsMenuExpanded(!isMenuExpanded)
                   }}
-                  className="flex items-center gap-2 px-3 py-2"
+                  className="flex items-center gap-1 px-2 py-2"
                 >
                   <UserAvatar 
                     src={profile?.avatar_url}
@@ -317,15 +318,12 @@ export function ModernHeader({
                     userId={user?.id}
                     showReferralBadge={false}
                   />
-                  <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {profile?.full_name || 'Usuário'}
-                  </span>
                   <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </Button>
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-80 sm:w-80 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden">
+                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden animate-slide-down">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -618,6 +616,71 @@ export function ModernHeader({
                         </div>
                       )}
 
+                      {/* Meu Perfil */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('meu-perfil')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <User className="h-3 w-3" />
+                            Meu Perfil
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('meu-perfil') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('meu-perfil') && (
+                          <div className="flex flex-col gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
+                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                            >
+                              <User className="h-3 w-3" />
+                              <span>Dados da Conta</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil/seguranca')}
+                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                            >
+                              <Shield className="h-3 w-3" />
+                              <span>Segurança</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil/endereco')}
+                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                            >
+                              <MapPin className="h-3 w-3" />
+                              <span>Endereço</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil/tipo-conta')}
+                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                            >
+                              <Briefcase className="h-3 w-3" />
+                              <span>Tipo de Conta</span>
+                            </Button>
+                            {profile?.user_type === 'professional' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleNavigation('/editarperfil/dados-profissionais')}
+                                className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                              >
+                                <Briefcase className="h-3 w-3" />
+                                <span>Dados Profissionais</span>
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       {/* Suporte */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
@@ -739,7 +802,7 @@ export function ModernHeader({
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleNavigation('/editarperfil')}
+                            onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
                             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
                           >
                             <Settings className="h-3 w-3 sm:h-4 sm:w-4" />

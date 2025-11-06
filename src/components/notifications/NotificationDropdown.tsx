@@ -442,7 +442,8 @@ export const NotificationDropdown: React.FC = () => {
 
       <DropdownMenuContent 
         align="end" 
-        className="w-80 sm:w-96 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0"
+        side="bottom"
+        className="w-80 sm:w-96 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0 animate-slide-down"
         style={{ 
           maxHeight: '80vh',
           height: '80vh',

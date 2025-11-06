@@ -19,7 +19,7 @@ export function useProfileCheck() {
 
       // Verificar se já está na página de onboarding ou editar perfil para evitar loop
       const currentPath = window.location.pathname
-      if (currentPath === '/onboarding' || currentPath === '/editarperfil' || currentPath === '/editar-perfil') {
+      if (currentPath === '/onboarding' || currentPath.startsWith('/editarperfil') || currentPath === '/editar-perfil') {
         setIsChecking(false)
         return
       }
