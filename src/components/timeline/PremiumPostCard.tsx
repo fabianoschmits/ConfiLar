@@ -191,6 +191,7 @@ export function PremiumPostCard({
                     isAvailable={isAvailable}
                     isPremium={true}
                     showPremium={true}
+                    userId={post.user_id}
                   />
                   
                   {/* Badge Destacado (mantém visível) */}

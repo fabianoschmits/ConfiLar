@@ -32,10 +32,34 @@ export function ConfiPointsChart({ timeRange }: ConfiPointsChartProps) {
       startDate.setDate(startDate.getDate() - days)
 
       // Buscar transações de pontos
-      const { data: transactions } = await supabase
-        .from('points_transactions')
-        .select('created_at, points, action_type')
-        .gte('created_at', startDate.toISOString())
+      let transactions: any[] = []
+      try {
+        const { data, error } = await supabase
+          .from('points_transactions')
+          .select('created_at, points, action_type')
+          .gte('created_at', startDate.toISOString())
+        
+        if (error) {
+          // Se a tabela não existir, usar array vazio
+          if (error.code === 'PGRST116' || error.code === 'PGRST205' || error.message.includes('relation') || error.message.includes('does not exist')) {
+            console.warn('Tabela points_transactions não existe ou não há permissão para acessar')
+            transactions = []
+          } else {
+            throw error
+          }
+        } else {
+          transactions = data || []
+        }
+      } catch (error: any) {
+        // Se houver erro 400 (bad request), pode ser que a tabela não existe ou a query está malformada
+        if (error?.code === 'PGRST116' || error?.code === 'PGRST205' || error?.status === 400) {
+          console.warn('Não foi possível buscar transações de pontos')
+          transactions = []
+        } else {
+          console.error('Erro ao buscar transações de pontos:', error)
+          transactions = []
+        }
+      }
 
       // Agrupar por data
       const grouped: Record<string, { earned: number; spent: number; balance: number }> = {}

@@ -50,9 +50,9 @@ export default function AdminBansPage() {
   const fetchBans = async () => {
     setLoading(true)
     try {
-      // Verificar se a tabela bans existe, se não, usar tabela alternativa ou criar
+      // Usar a tabela correta: user_bans
       let query = supabase
-        .from('bans')
+        .from('user_bans')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -65,9 +65,9 @@ export default function AdminBansPage() {
       const { data: bansData, error } = await query
 
       if (error) {
-        // Se a tabela não existir, retornar array vazio
-        if (error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist')) {
-          console.warn('Tabela bans não existe ainda')
+        // Se a tabela não existir ou houver erro de RLS, retornar array vazio
+        if (error.code === 'PGRST116' || error.code === 'PGRST205' || error.message.includes('relation') || error.message.includes('does not exist')) {
+          console.warn('Tabela user_bans não existe ou não há permissão para acessar')
           setBans([])
           return
         }
@@ -102,7 +102,7 @@ export default function AdminBansPage() {
   const createBan = async () => {
     try {
       const { error } = await supabase
-        .from('bans')
+        .from('user_bans')
         .insert({
           user_id: banForm.user_id,
           reason: banForm.reason,
@@ -125,7 +125,7 @@ export default function AdminBansPage() {
   const unbanUser = async (banId: string) => {
     try {
       const { error } = await supabase
-        .from('bans')
+        .from('user_bans')
         .update({ is_active: false })
         .eq('id', banId)
 

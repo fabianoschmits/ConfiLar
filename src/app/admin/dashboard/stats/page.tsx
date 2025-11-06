@@ -87,14 +87,27 @@ export default function AdminStatsPage() {
         .eq('status', 'pending')
 
       // Banimentos
-      const { count: totalBans } = await supabase
-        .from('bans')
-        .select('*', { count: 'exact', head: true })
+      let totalBans = 0
+      let activeBans = 0
+      try {
+        const { count: total } = await supabase
+          .from('user_bans')
+          .select('*', { count: 'exact', head: true })
 
-      const { count: activeBans } = await supabase
-        .from('bans')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
+        const { count: active } = await supabase
+          .from('user_bans')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true)
+
+        totalBans = total || 0
+        activeBans = active || 0
+      } catch (error: any) {
+        // Se a tabela não existir, usar 0
+        if (error?.code === 'PGRST116' || error?.code === 'PGRST205') {
+          totalBans = 0
+          activeBans = 0
+        }
+      }
 
       setStats({
         totalUsers: totalUsers || 0,

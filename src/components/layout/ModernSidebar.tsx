@@ -103,6 +103,13 @@ export function ModernSidebar() {
           description: 'Visão geral'
         },
         {
+          id: 'classificados',
+          title: 'Classificados',
+          href: '/classificados',
+          icon: <Briefcase className="h-4 w-4" />,
+          description: 'Anúncios e ofertas'
+        },
+        {
           id: 'feed',
           title: 'Feed Social',
           href: '/feed',
@@ -115,13 +122,6 @@ export function ModernSidebar() {
           href: '/buscar',
           icon: <Search className="h-4 w-4" />,
           description: 'Profissionais/Clientes'
-        },
-        {
-          id: 'classificados',
-          title: 'Classificados',
-          href: '/classificados',
-          icon: <Briefcase className="h-4 w-4" />,
-          description: 'Anúncios e ofertas'
         },
       ]
     },
@@ -423,20 +423,33 @@ export function ModernSidebar() {
                           onClick={() => setIsMobileOpen(false)}
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors
-                            ${isActive(item.href)
+                            ${item.id === 'referrals' || item.id === 'referrals-management'
+                              ? isActive(item.href)
+                                ? 'bg-green-200 dark:bg-green-900/30 text-green-800 dark:text-green-200 font-medium'
+                                : 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
+                              : isActive(item.href)
                               ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}>
+                            <div className={`
+                              ${item.id === 'referrals' || item.id === 'referrals-management'
+                                ? isActive(item.href)
+                                  ? 'text-green-700 dark:text-green-300'
+                                  : 'text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300'
+                                : isActive(item.href)
+                                ? 'text-gray-700 dark:text-gray-300'
+                                : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
+                              }
+                            `}>
                               {item.icon}
                             </div>
                             <div>
                               <span className="block">{item.title}</span>
                               {item.description && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                <span className={`text-xs ${item.id === 'referrals' || item.id === 'referrals-management' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
                                   {item.description}
                                 </span>
                               )}

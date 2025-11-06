@@ -50,8 +50,8 @@ export default function ComprarPontosPage() {
       features: [
         '1.000 ConfiPoints',
         `${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(1000 / PREMIUM_PRICES.COMMENT.POINTS)} comentários premium`,
-        `${Math.floor(1000 / PREMIUM_PRICES.POST.POINTS)} post premium`
+        `${Math.floor(1000 / PREMIUM_PRICES.POST.POINTS)} post premium`,
+        `${Math.floor(1000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncio premium`
       ],
       uses: `1 post premium ou ${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas`
     },
@@ -70,8 +70,9 @@ export default function ComprarPontosPage() {
         '5.000 ConfiPoints',
         '+500 pontos bônus',
         `${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(5500 / PREMIUM_PRICES.COMMENT.POINTS)} comentários premium`,
-        'Suporte prioritário'
+        `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
+        `${Math.floor(5500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
+        'Suporte via Email'
       ],
       uses: `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas`
     },
@@ -90,11 +91,12 @@ export default function ComprarPontosPage() {
         '10.000 ConfiPoints',
         '+1.500 pontos bônus (15%)',
         `${Math.floor(11500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(11500 / PREMIUM_PRICES.COMMENT.POINTS)} comentários premium`,
-        'Suporte VIP 24/7',
+        `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
+        `${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
+        'Suporte via Email',
         'Badge exclusivo'
       ],
-      uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(11500 / PREMIUM_PRICES.AD.POINTS)} anúncios premium`
+      uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
     },
     {
       id: 'enterprise',
@@ -111,12 +113,13 @@ export default function ComprarPontosPage() {
         '25.000 ConfiPoints',
         '+5.000 pontos bônus (20%)',
         `${Math.floor(30000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(30000 / PREMIUM_PRICES.COMMENT.POINTS)} comentários premium`,
-        'Suporte dedicado',
+        `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
+        `${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
+        'Suporte via Email',
         'Relatórios avançados',
         'Consultoria premium'
       ],
-      uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(30000 / PREMIUM_PRICES.AD.POINTS)} anúncios premium`
+      uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
     },
     {
       id: 'mega',
@@ -133,13 +136,14 @@ export default function ComprarPontosPage() {
         '50.000 ConfiPoints',
         '+12.500 pontos bônus (25%)',
         `${Math.floor(62500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(62500 / PREMIUM_PRICES.COMMENT.POINTS)} comentários premium`,
-        'Gerente de conta dedicado',
+        `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
+        `${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
+        'Suporte via Email',
         'Prioridade máxima',
         'Acesso antecipado a recursos',
         'Badge VIP exclusivo'
       ],
-      uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(62500 / PREMIUM_PRICES.AD.POINTS)} anúncios premium`
+      uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
     }
   ]
 
@@ -378,7 +382,7 @@ export default function ComprarPontosPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg border border-pink-200 dark:border-pink-800">
                     <div className="flex items-center gap-2 mb-2">
                       <Heart className="w-5 h-5 text-pink-600" />
@@ -386,15 +390,6 @@ export default function ComprarPontosPage() {
                     </div>
                     <p className="text-2xl font-bold text-pink-700 dark:text-pink-300">{PREMIUM_PRICES.LIKE.POINTS} pts</p>
                     <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">R$ {PREMIUM_PRICES.LIKE.BRL.toFixed(2)}</p>
-                  </div>
-                  
-                  <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Heart className="w-5 h-5 text-blue-600" />
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-100">Comentário Premium</h4>
-                    </div>
-                    <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{PREMIUM_PRICES.COMMENT.POINTS} pts</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">R$ {PREMIUM_PRICES.COMMENT.BRL.toFixed(2)}</p>
                   </div>
                   
                   <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
@@ -411,8 +406,13 @@ export default function ComprarPontosPage() {
                       <Star className="w-5 h-5 text-amber-600" />
                       <h4 className="font-semibold text-amber-900 dark:text-amber-100">Anúncio Premium</h4>
                     </div>
-                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{PREMIUM_PRICES.AD.POINTS} pts</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">R$ {PREMIUM_PRICES.AD.BRL.toFixed(2)} / {PREMIUM_PRICES.AD.DURATION}</p>
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{PREMIUM_PRICES.AD_1_DAY.POINTS} pts</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">A partir de R$ {PREMIUM_PRICES.AD_1_DAY.BRL.toFixed(2)} / {PREMIUM_PRICES.AD_1_DAY.DURATION}</p>
+                    {pointsData?.balance && pointsData.balance >= PREMIUM_PRICES.AD_1_DAY.POINTS && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-semibold">
+                        Você pode fazer {Math.floor(pointsData.balance / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncio(s)
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -433,7 +433,7 @@ export default function ComprarPontosPage() {
                       <li>• Todos os pagamentos são processados de forma segura via PIX</li>
                       <li>• Você pode transferir pontos para outros usuários sem taxas</li>
                       <li>• Você pode transferir seus pontos para outros usuários</li>
-                      <li>• Suporte 24/7 para dúvidas sobre compras</li>
+                      <li>• Suporte via Email para dúvidas sobre compras</li>
                       <li>• Quanto maior o pacote, maior o bônus (até 25%)</li>
                     </ul>
                   </div>

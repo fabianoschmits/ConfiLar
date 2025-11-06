@@ -201,9 +201,10 @@ export function NewUserWelcomePost({
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-transparent border-0 shadow-none"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreHorizontal className="h-3 w-3" />
+                    <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">

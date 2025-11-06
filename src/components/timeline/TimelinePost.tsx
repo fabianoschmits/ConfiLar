@@ -298,6 +298,7 @@ export function TimelinePost({
                   isAvailable={isAvailable}
                   isPremium={isPremiumPost && !premiumExpired}
                   showPremium={isPremiumPost && !premiumExpired}
+                  userId={post.user_id}
                 />
                 
                 {/* Badge de Serviço (mantém visível) */}

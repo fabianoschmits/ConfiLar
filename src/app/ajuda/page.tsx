@@ -227,28 +227,14 @@ export default function AjudaPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 mb-6">
-                    Nossa equipe de suporte está sempre pronta para ajudar você.
+                    Entre em contato conosco via email para suporte.
                   </p>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                      <Mail className="h-5 w-5 text-gray-600" />
+                  <div className="flex justify-center">
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Email</p>
-                        <p className="text-sm text-gray-600">suporte@appconfilar.com.br</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                      <MessageCircle className="h-5 w-5 text-gray-600" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Chat</p>
-                        <p className="text-sm text-gray-600">Suporte online</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-                      <Phone className="h-5 w-5 text-gray-600" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Telefone</p>
-                        <p className="text-sm text-gray-600">(11) 99999-9999</p>
+                        <p className="font-medium text-gray-900 dark:text-white">Suporte via Email</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">suporte@appconfilar.com.br</p>
                       </div>
                     </div>
                   </div>
