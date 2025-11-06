@@ -33,7 +33,24 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
     setError(null)
     
     try {
-      const { data, error } = await supabase.auth.reauthenticate()
+      // Obter email do usuário atual
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user?.email) {
+        const error = { message: 'Usuário não encontrado' }
+        setError(error.message)
+        setIsLoading(false)
+        return { error }
+      }
+
+      // Enviar OTP para reautenticação usando signInWithOtp
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: user.email,
+        options: {
+          shouldCreateUser: false, // Não criar novo usuário, apenas enviar OTP
+          emailRedirectTo: undefined // Não redirecionar, apenas enviar OTP
+        }
+      })
       
       if (error) {
         console.error('❌ Erro na reautenticação:', error)
@@ -83,10 +100,11 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
       }
 
       // Verificar OTP usando a API oficial do Supabase
+      // Quando usamos signInWithOtp, o tipo é 'magiclink' ou 'email'
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: user.email,
         token: otp,
-        type: 'email'
+        type: 'magiclink' // Tipo correto para signInWithOtp
       })
 
       if (verifyError) {

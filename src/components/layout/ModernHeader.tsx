@@ -326,32 +326,39 @@ export function ModernHeader({
                   <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden animate-slide-down">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
-                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
-                        <UserAvatar 
-                          src={profile?.avatar_url}
-                          alt={profile?.full_name || 'Usuário'}
-                          fallback={profile?.full_name?.charAt(0) || 'U'}
-                          size="lg"
-                          className="w-11 h-11 sm:w-17 sm:h-17"
-                          userId={user?.id}
-                          showReferralBadge={true}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
-                            {profile?.full_name || 'Usuário'}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                            {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                          </p>
-                          <div className="flex gap-1 mt-1">
-                            <div className="text-xs">
-                              {getVerificationBadge()}
-                              {getPremiumBadge()}
+                      <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">
+                        {/* Link para o perfil - apenas foto e nome */}
+                        <Link 
+                          href={`/perfil/${profile?.id}`}
+                          onClick={() => setIsMenuExpanded(false)}
+                          className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
+                        >
+                          <UserAvatar 
+                            src={profile?.avatar_url}
+                            alt={profile?.full_name || 'Usuário'}
+                            fallback={profile?.full_name?.charAt(0) || 'U'}
+                            size="lg"
+                            className="w-11 h-11 sm:w-17 sm:h-17 flex-shrink-0"
+                            userId={user?.id}
+                            showReferralBadge={true}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
+                              {profile?.full_name || 'Usuário'}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                              {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                            </p>
+                            <div className="flex gap-1 mt-1">
+                              <div className="text-xs">
+                                {getVerificationBadge()}
+                                {getPremiumBadge()}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        {/* Toggle de Disponibilidade */}
-                        <div className="flex-shrink-0">
+                        </Link>
+                        {/* Toggle de Disponibilidade - separado do link */}
+                        <div className="flex-shrink-0 ml-2">
                           <AvailabilityToggleCompact />
                         </div>
                       </div>
@@ -782,34 +789,6 @@ export function ModernHeader({
                           )}
                         </div>
                       )}
-
-                      {/* Conta */}
-                      <div className="py-3 sm:py-4">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mb-2 sm:mb-3 flex items-center gap-2">
-                          <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                          Conta
-                        </h4>
-                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation(`/perfil/${profile?.id}`)}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Perfil</span>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
-                            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-1.5 sm:py-2"
-                          >
-                            <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="truncate">Editar</span>
-                          </Button>
-                        </div>
-                      </div>
 
                       {/* Botão de Sair */}
                       <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">

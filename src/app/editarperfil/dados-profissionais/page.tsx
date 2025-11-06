@@ -47,6 +47,17 @@ export default function DadosProfissionaisPage() {
   const watchedValues = watch()
   const serviceCategoryNames = services.map(cat => cat.name)
 
+  // Salvar página anterior ao montar o componente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer || window.location.href
+      // Salvar apenas se não for uma página de editar perfil
+      if (!referrer.includes('/editarperfil/')) {
+        sessionStorage.setItem('previousPage', referrer)
+      }
+    }
+  }, [])
+
   // Carregar dados do perfil existente
   useEffect(() => {
     const loadProfileData = async () => {
@@ -137,6 +148,16 @@ export default function DadosProfissionaisPage() {
 
       console.log('✅ Dados profissionais salvos com sucesso!')
       toast.success('🎉 Dados profissionais atualizados com sucesso!')
+      
+      // Redirecionar para página anterior após salvar
+      setTimeout(() => {
+        const previousPage = sessionStorage.getItem('previousPage')
+        if (previousPage && previousPage !== window.location.href) {
+          router.push(previousPage)
+        } else {
+          router.back()
+        }
+      }, 1000)
       
     } catch (error) {
       console.error('Erro ao atualizar dados profissionais:', error)

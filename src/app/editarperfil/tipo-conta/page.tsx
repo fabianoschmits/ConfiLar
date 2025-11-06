@@ -25,7 +25,7 @@ const accountTypeSchema = z.object({
 type AccountTypeFormData = z.infer<typeof accountTypeSchema>
 
 export default function TipoContaPage() {
-  const { user } = useAuthContext()
+  const { user, updateProfile } = useAuthContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -42,6 +42,17 @@ export default function TipoContaPage() {
   })
 
   const watchedValues = watch()
+
+  // Salvar página anterior ao montar o componente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer || window.location.href
+      // Salvar apenas se não for uma página de editar perfil
+      if (!referrer.includes('/editarperfil/')) {
+        sessionStorage.setItem('previousPage', referrer)
+      }
+    }
+  }, [])
 
   // Carregar dados do perfil existente
   useEffect(() => {
@@ -108,8 +119,31 @@ export default function TipoContaPage() {
         console.warn('⚠️ Erro ao atualizar metadados do usuário:', userUpdateError)
       }
 
+      // Atualizar perfil no contexto para refletir mudanças imediatamente
+      // Isso garante que o menu dropdown seja atualizado sem precisar recarregar a página
+      const { error: updateError } = await updateProfile({
+        user_type: data.user_type
+      })
+
+      if (updateError) {
+        console.warn('⚠️ Erro ao atualizar perfil no contexto:', updateError)
+        // Mesmo com erro, continuar pois o update no banco já foi feito
+      } else {
+        console.log('✅ Perfil atualizado no contexto com sucesso!')
+      }
+
       console.log('✅ Tipo de conta salvo com sucesso!')
       toast.success('🎉 Tipo de conta atualizado com sucesso!')
+      
+      // Redirecionar para página anterior após salvar
+      setTimeout(() => {
+        const previousPage = sessionStorage.getItem('previousPage')
+        if (previousPage && previousPage !== window.location.href) {
+          router.push(previousPage)
+        } else {
+          router.back()
+        }
+      }, 1000)
       
     } catch (error) {
       console.error('Erro ao atualizar tipo de conta:', error)

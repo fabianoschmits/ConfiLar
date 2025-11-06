@@ -924,14 +924,23 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     try {
       logger.info('auth', `Password reset requested for ${email}`)
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email)
+      // Obter a URL base do site (funciona tanto em dev quanto em produção)
+      const siteUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : process.env.NEXT_PUBLIC_SITE_URL || 'https://appconfilar.com.br'
+      
+      const redirectTo = `${siteUrl}/nova-senha`
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectTo
+      })
       
       if (error) {
         logger.error('auth', error, { context: 'resetPassword' })
         return { error }
       }
 
-      logger.info('auth', `Password reset email sent to ${email}`)
+      logger.info('auth', `Password reset email sent to ${email} with redirect to ${redirectTo}`)
       return { error: null }
     } catch (error) {
       logger.error('auth', error as Error, { context: 'resetPassword' })

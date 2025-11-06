@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-// import { useAuthContext } from '@/contexts/AuthContext'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -30,20 +30,8 @@ export default function RecuperarSenhaPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
-
-  // const { resetPassword } = useAuthContext()
-  const resetPassword = async (email: string) => {
-    // Implementação temporária
-    console.log('Reset password for:', email)
-    return { error: null }
-  }
+  // Todos os hooks devem ser chamados antes de qualquer early return
+  const { resetPassword } = useAuthContext()
   const router = useRouter()
 
   const {
@@ -54,6 +42,14 @@ export default function RecuperarSenhaPage() {
   } = useForm<RecoveryFormData>({
     resolver: zodResolver(recoverySchema),
   })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   const onSubmit = async (data: RecoveryFormData) => {
     setIsLoading(true)

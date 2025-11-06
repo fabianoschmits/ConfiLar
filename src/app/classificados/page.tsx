@@ -27,6 +27,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
 import { ClassifiedsSkeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { 
   Search, 
   MapPin, 
@@ -1335,37 +1336,23 @@ export default function ClassificadosPage() {
               ))}
             </div>
           ) : paginatedAds.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Nenhum anúncio encontrado
-              </h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                {filters.searchTerm || filters.state || filters.city || filters.category !== 'all' 
+            <EmptyState
+              icon={<Search className="h-12 w-12 text-gray-400" />}
+              title="Nenhum anúncio encontrado"
+              description={
+                filters.searchTerm || filters.state || filters.city || filters.category !== 'all'
                   ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
-                  : 'Não há anúncios cadastrados no sistema ainda.'}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Limpar Filtros
-                </Button>
-                <Button
-                  onClick={() => setFilters(prev => ({ ...prev, searchTerm: '', state: '', city: '', category: 'all' }))}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Search className="h-4 w-4" />
-                  Nova Busca
-                </Button>
-              </div>
-            </div>
+                  : 'Não há anúncios cadastrados no sistema ainda.'
+              }
+              action={
+                filters.searchTerm || filters.state || filters.city || filters.category !== 'all'
+                  ? {
+                      label: 'Limpar Filtros',
+                      onClick: clearFilters
+                    }
+                  : undefined
+              }
+            />
           ) : (
             <div className={`grid gap-5 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {paginatedAds.map((ad) => {
