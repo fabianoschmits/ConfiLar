@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { ProfilePageSkeleton, ReviewListSkeleton, Skeleton } from '@/components/ui/skeleton'
 import { 
   MapPin, 
   Star, 
@@ -396,13 +396,13 @@ export default function PublicProfilePage() {
 
     // Retornos condicionais após todos os hooks
     if (!mounted) {
-        return <DashboardSkeleton />
+        return <ProfilePageSkeleton />
     }
 
     if (loading) {
         return (
             <MainLayout requireAuth={false}>
-                <DashboardSkeleton />
+                <ProfilePageSkeleton />
             </MainLayout>
         )
     }
@@ -604,11 +604,19 @@ export default function PublicProfilePage() {
                                 </CardHeader>
                                 <CardContent>
                                     {recommendationsLoading ? (
-                                        <div className="flex items-center justify-center py-8">
-                                            <div className="text-center">
-                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-2"></div>
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">Carregando recomendações...</p>
-                                            </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {Array.from({ length: 4 }).map((_, i) => (
+                                                <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in">
+                                                    <div className="flex items-center space-x-3">
+                                                        <Skeleton variant="circle" width={40} height={40} />
+                                                        <div className="flex-1 space-y-2">
+                                                            <Skeleton width="60%" height={18} />
+                                                            <Skeleton width="40%" height={14} />
+                                                        </div>
+                                                    </div>
+                                                    <Skeleton width="100%" height={16} />
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : recommendations.length === 0 ? (
                                         <div className="text-center py-8">
@@ -1021,9 +1029,14 @@ export default function PublicProfilePage() {
                                     </CardHeader>
                                     <CardContent>
                                         {portfolioLoading ? (
-                                            <div className="text-center py-8">
-                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                                                <p className="text-gray-600 dark:text-gray-400 mt-2">Carregando portfólio...</p>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {Array.from({ length: 3 }).map((_, i) => (
+                                                    <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2 animate-fade-in">
+                                                        <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
+                                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2 animate-pulse" />
+                                                    </div>
+                                                ))}
                                             </div>
                                         ) : portfolioProjects && portfolioProjects.length > 0 ? (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1069,10 +1082,7 @@ export default function PublicProfilePage() {
                                 </CardHeader>
                                 <CardContent>
                                     {reviewsLoading ? (
-                                        <div className="text-center py-8">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                                            <p className="text-gray-600 dark:text-gray-400 mt-2">Carregando avaliações...</p>
-                                        </div>
+                                        <ReviewListSkeleton count={3} />
                                     ) : reviews && reviews.length > 0 ? (
                                         <div className="space-y-4">
                                             {reviews.map((review) => (

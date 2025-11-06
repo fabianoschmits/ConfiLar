@@ -33,7 +33,7 @@ import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Skeleton } from '@/components/ui/skeleton'
+import { TransactionSkeleton } from '@/components/ui/skeleton'
 
 export default function ConfiPointsDashboardPage() {
   const { user, profile } = useAuthContext()
@@ -543,18 +543,7 @@ export default function ConfiPointsDashboardPage() {
                   </CardHeader>
                   <CardContent>
                     {loadingHistory ? (
-                      <div className="space-y-4">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-                            <Skeleton variant="avatar" width={40} height={40} />
-                            <div className="flex-1 space-y-2">
-                              <Skeleton width="60%" height={16} />
-                              <Skeleton width="40%" height={12} />
-                            </div>
-                            <Skeleton width={80} height={20} />
-                          </div>
-                        ))}
-                      </div>
+                      <TransactionSkeleton />
                     ) : allTransactions.length === 0 ? (
                       <EmptyState
                         icon={<History className="h-12 w-12 text-gray-400" />}

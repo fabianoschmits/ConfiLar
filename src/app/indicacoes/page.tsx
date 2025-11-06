@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { ReferralDashboardSkeleton } from '@/components/ui/skeleton'
 import { ReferralDashboard } from '@/components/referral/ReferralDashboard'
 import { ReferralLinkCard } from '@/components/referral/ReferralLinkCard'
 import { ReferralHistory } from '@/components/referral/ReferralHistory'
@@ -28,13 +28,7 @@ export default function IndicacoesPage() {
       <MainLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
           <div className="max-w-7xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded" />
-                <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded" />
-              </div>
-            </div>
+            <ReferralDashboardSkeleton />
           </div>
         </div>
       </MainLayout>

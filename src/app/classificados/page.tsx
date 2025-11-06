@@ -26,7 +26,7 @@ import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
-import { ClassifiedsSkeleton } from '@/components/ui/skeleton'
+import { ClassifiedsListSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { 
   Search, 
@@ -1324,25 +1324,7 @@ export default function ClassificadosPage() {
 
           {/* Lista de Anúncios */}
           {loading ? (
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                      <div className="flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-4 bg-gray-200 rounded"></div>
-                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ClassifiedsListSkeleton viewMode={viewMode} />
           ) : paginatedAds.length === 0 ? (
             <EmptyState
               icon={<Search className="h-12 w-12 text-gray-400" />}

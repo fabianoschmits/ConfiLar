@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import { useFavorites } from '@/hooks/useFavorites'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { FavoriteListSkeleton } from '@/components/ui/skeleton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -201,12 +201,7 @@ export default function FavoritesPage() {
 
           {/* Estados de Loading e Erro */}
           {loading && (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 mx-auto animate-spin text-red-600 mb-4" />
-                <p className="text-gray-600">Carregando seus favoritos...</p>
-              </div>
-            </div>
+            <FavoriteListSkeleton count={6} />
           )}
 
           {error && (

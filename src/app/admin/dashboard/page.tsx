@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Users, TrendingUp, MessageCircle, AlertTriangle } from 'lucide-react'
+import { DashboardSkeleton } from '@/components/ui/skeleton'
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState({
@@ -62,9 +63,7 @@ export default function AdminDashboardPage() {
       </h1>
 
       {stats.loading ? (
-        <div className="text-center py-12 text-gray-500">
-          Carregando...
-        </div>
+        <DashboardSkeleton />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">

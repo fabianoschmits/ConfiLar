@@ -8,6 +8,7 @@ import { Trophy, Crown, Medal, Award, Star, Users } from 'lucide-react'
 import { usePointsLeaderboard } from '@/hooks/usePoints'
 import { formatPoints, USER_LEVELS } from '@/types/points'
 import { cn } from '@/lib/utils'
+import { RankingListSkeleton } from '@/components/ui/skeleton'
 
 export default function ConfiPointsRankingPage() {
   const { leaderboard, loading, error } = usePointsLeaderboard(50)
@@ -48,24 +49,7 @@ export default function ConfiPointsRankingPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <Card>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
-                          </div>
-                          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ))}
-              </div>
+              <RankingListSkeleton count={10} />
             </div>
           </div>
         </div>

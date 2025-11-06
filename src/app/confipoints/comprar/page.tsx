@@ -23,6 +23,7 @@ import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { usePoints } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import { MicroInteraction } from '@/components/ui/MicroInteraction'
+import { PackageSkeleton } from '@/components/ui/skeleton'
 
 export default function ComprarPontosPage() {
   const { user, profile } = useAuthContext()
@@ -31,7 +32,11 @@ export default function ComprarPontosPage() {
   if (pointsLoading) {
     return (
       <MainLayout requireAuth={true}>
-        <DashboardSkeleton />
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
+          <div className="max-w-7xl mx-auto">
+            <PackageSkeleton />
+          </div>
+        </div>
       </MainLayout>
     )
   }

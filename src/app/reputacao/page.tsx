@@ -34,7 +34,7 @@ import {
   Zap
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { ReviewListSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -428,12 +428,7 @@ export default function ReputacaoPage() {
         <MainLayout requireAuth={true}>
           <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 mx-auto animate-spin text-gray-600 mb-4" />
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Carregando sua reputação...
-                </h1>
-              </div>
+              <ReviewListSkeleton count={5} />
             </div>
           </div>
         </MainLayout>

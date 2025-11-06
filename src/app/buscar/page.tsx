@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { UserListSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import {
@@ -454,7 +454,7 @@ export default function BuscarPage() {
             </div>
 
             {loading ? (
-              <DashboardSkeleton />
+              <UserListSkeleton count={6} />
             ) : displayProfiles.length === 0 ? (
               <EmptyState
                 icon={<Search className="h-12 w-12 text-gray-400" />}

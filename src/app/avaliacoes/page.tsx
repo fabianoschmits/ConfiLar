@@ -39,7 +39,7 @@ import {
 } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { ReviewListSkeleton } from '@/components/ui/skeleton'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -415,18 +415,12 @@ export default function AvaliacoesPage() {
   const filteredRequests = getFilteredRequests()
 
   if (loading) {
-  return (
+    return (
       <ClientOnly>
         <MainLayout requireAuth={true}>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-            <div className="text-center">
-              <div className="relative">
-                <Loader2 className="h-12 w-12 animate-spin text-gray-400 mx-auto mb-4" />
-                <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
-                <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Carregando suas avaliações</h3>
-              <p className="text-gray-600">Aguarde um momento...</p>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <ReviewListSkeleton count={5} />
             </div>
           </div>
         </MainLayout>

@@ -28,6 +28,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { MIN_TRANSFER_POINTS } from '@/types/economy'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { TransferListSkeleton } from '@/components/ui/skeleton'
 
 export default function TransferirConfiPointsPage() {
   const { user } = useAuthContext()
@@ -326,15 +327,17 @@ export default function TransferirConfiPointsPage() {
             </div>
 
             {/* Histórico de Transferências */}
-            {transfers && transfers.length > 0 && (
-              <Card className="mt-8">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ArrowLeftRight className="w-5 h-5 text-purple-600" />
-                    Histórico de Transferências
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ArrowLeftRight className="w-5 h-5 text-purple-600" />
+                  Histórico de Transferências
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <TransferListSkeleton count={5} />
+                ) : transfers && transfers.length > 0 ? (
                   <div className="space-y-3">
                     {transfers.map((transfer: any) => {
                       const isSent = transfer.from_user_id === user?.id
@@ -383,9 +386,15 @@ export default function TransferirConfiPointsPage() {
                       )
                     })}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Nenhuma transferência ainda</p>
+                    <p className="text-sm mt-1">Suas transferências aparecerão aqui</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

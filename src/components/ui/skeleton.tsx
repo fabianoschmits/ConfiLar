@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface SkeletonProps {
   className?: string
@@ -214,6 +215,506 @@ export function PackageSkeleton() {
           <Skeleton width="100%" height={40} />
         </div>
       ))}
+    </div>
+  )
+}
+
+// Skeleton para card de anúncio classificado
+export function ClassifiedsCardSkeleton() {
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-lg animate-fade-in bg-white dark:bg-gray-800">
+      {/* Header com tipo de anúncio e localização */}
+      <div className="flex items-center justify-between p-4 pb-2">
+        <div className="flex items-center gap-2">
+          <Skeleton width={80} height={24} className="rounded-full" />
+          <Skeleton width={100} height={14} />
+        </div>
+      </div>
+      
+      {/* Conteúdo principal */}
+      <div className="px-4 pb-4 space-y-3">
+        {/* Título */}
+        <Skeleton width="85%" height={24} />
+        
+        {/* Imagem do anúncio */}
+        <Skeleton width="100%" height={128} className="rounded-lg" />
+        
+        {/* Descrição */}
+        <div className="space-y-2">
+          <Skeleton width="100%" height={16} />
+          <Skeleton width="90%" height={16} />
+        </div>
+        
+        {/* Badge de categoria */}
+        <Skeleton width={100} height={24} className="rounded-full" />
+      </div>
+      
+      {/* Footer com usuário */}
+      <div className="flex items-center justify-between pt-3 px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-2">
+          <Skeleton variant="circle" width={32} height={32} />
+          <Skeleton width={80} height={16} />
+        </div>
+        <Skeleton width={100} height={32} className="rounded-md" />
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para lista de anúncios classificados
+export function ClassifiedsListSkeleton({ viewMode = 'grid' }: { viewMode?: 'grid' | 'list' }) {
+  const count = viewMode === 'grid' ? 6 : 4
+  return (
+    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <ClassifiedsCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para card de usuário (buscar, favoritos)
+export function UserCardSkeleton() {
+  return (
+    <Card className="hover:shadow-md transition-shadow duration-200 animate-fade-in">
+      <CardContent className="p-6">
+        {/* Badge de Serviços (canto superior direito) */}
+        <div className="absolute top-2 right-2">
+          <Skeleton width={70} height={24} className="rounded-md" />
+        </div>
+        
+        {/* Header do Card */}
+        <div className="flex items-start space-x-3 mb-4">
+          {/* Avatar */}
+          <Skeleton variant="circle" width={64} height={64} />
+          
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Nome */}
+            <Skeleton width="60%" height={20} />
+            
+            {/* Badges (Tipo e Disponibilidade) */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Skeleton width={90} height={20} className="rounded-full" />
+              <Skeleton width={80} height={20} className="rounded-full" />
+            </div>
+            
+            {/* Localização */}
+            <Skeleton width="70%" height={14} />
+          </div>
+        </div>
+        
+        {/* Bio */}
+        <div className="mb-4 space-y-2">
+          <Skeleton width="100%" height={16} />
+          <Skeleton width="85%" height={16} />
+        </div>
+        
+        {/* Avaliações */}
+        <div className="flex items-center mb-4">
+          <div className="flex gap-1 mr-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} width={16} height={16} className="rounded-sm" />
+            ))}
+          </div>
+          <Skeleton width={120} height={14} />
+        </div>
+        
+        {/* Visualizações */}
+        <div className="mb-4">
+          <Skeleton width={100} height={14} />
+        </div>
+        
+        {/* Footer do Card */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Skeleton width={80} height={14} />
+          <div className="flex gap-2">
+            <Skeleton width={36} height={32} className="rounded-md" />
+            <Skeleton width={36} height={32} className="rounded-md" />
+            <Skeleton width={90} height={32} className="rounded-md" />
+            <Skeleton width={36} height={32} className="rounded-md" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Skeleton para lista de usuários
+export function UserListSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: count }).map((_, i) => (
+        <UserCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton completo para página de perfil
+export function ProfilePageSkeleton() {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header do perfil */}
+      <Card className="mb-8">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
+          {/* Header com 3 pontinhos */}
+          <div className="flex justify-end mb-4">
+            <Skeleton width={32} height={32} className="rounded-md" />
+          </div>
+          
+          <div className="flex flex-col items-center text-center space-y-6">
+            {/* Avatar Centralizado */}
+            <Skeleton variant="circle" width={120} height={120} />
+            
+            {/* Nome e Badges Centralizados */}
+            <div className="space-y-3 w-full">
+              <Skeleton width="50%" height={32} className="mx-auto" />
+              
+              {/* Badges */}
+              <div className="flex flex-wrap justify-center items-center gap-2">
+                <Skeleton width={100} height={24} className="rounded-full" />
+                <Skeleton width={100} height={24} className="rounded-full" />
+              </div>
+              
+              {/* Informações de Rating e Tipo Centralizadas */}
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <Skeleton width={150} height={16} />
+                <Skeleton width={100} height={16} />
+                <Skeleton width={120} height={16} />
+              </div>
+              
+              {/* Bio Centralizada */}
+              <div className="space-y-2 pt-2 max-w-2xl mx-auto">
+                <Skeleton width="100%" height={16} />
+                <Skeleton width="90%" height={16} className="mx-auto" />
+                <Skeleton width="70%" height={16} className="mx-auto" />
+              </div>
+            </div>
+            
+            {/* Botões de Ação Centralizados */}
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+              <Skeleton width={180} height={40} className="rounded-md" />
+              <Skeleton width={140} height={40} className="rounded-md" />
+            </div>
+            
+            {/* Estatísticas */}
+            <div className="w-full max-w-2xl mx-auto mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="text-center space-y-1">
+                    <Skeleton width={60} height={28} className="mx-auto" />
+                    <Skeleton width={80} height={14} className="mx-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Tabs skeleton */}
+      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+        <div className="flex space-x-4">
+          <Skeleton width={100} height={40} />
+          <Skeleton width={100} height={40} />
+          <Skeleton width={100} height={40} />
+          <Skeleton width={100} height={40} />
+        </div>
+      </div>
+      
+      {/* Conteúdo das tabs */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2">
+                <Skeleton width="100%" height={150} />
+                <Skeleton width="80%" height={16} />
+                <Skeleton width="60%" height={14} />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Skeleton para card de avaliação
+export function ReviewCardSkeleton() {
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in bg-white dark:bg-gray-800">
+      <div className="flex items-start space-x-3">
+        {/* Avatar do revisor */}
+        <Skeleton variant="circle" width={48} height={48} />
+        
+        <div className="flex-1 space-y-2">
+          {/* Nome e data */}
+          <div className="flex items-center justify-between">
+            <Skeleton width="40%" height={18} />
+            <Skeleton width="30%" height={14} />
+          </div>
+          
+          {/* Rating com estrelas */}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} width={16} height={16} className="rounded-sm" />
+              ))}
+            </div>
+            <Skeleton width={80} height={14} />
+          </div>
+          
+          {/* Comentário */}
+          <div className="space-y-2 pt-2">
+            <Skeleton width="100%" height={16} />
+            <Skeleton width="90%" height={16} />
+            <Skeleton width="70%" height={16} />
+          </div>
+        </div>
+      </div>
+      
+      {/* Ações */}
+      <div className="flex items-center space-x-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <Skeleton width={80} height={32} className="rounded-md" />
+        <Skeleton width={80} height={32} className="rounded-md" />
+        <Skeleton width={80} height={32} className="rounded-md" />
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para lista de avaliações
+export function ReviewListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <ReviewCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para card de favorito
+export function FavoriteCardSkeleton() {
+  return (
+    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 animate-fade-in">
+      <CardContent className="p-3 sm:p-4">
+        {/* Header do Card com Avatar e Info do Usuário */}
+        <div className="flex items-start space-x-3 mb-3">
+          <Skeleton variant="circle" width={48} height={48} />
+          
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-center justify-between">
+              <Skeleton width="50%" height={20} />
+              <Skeleton width={24} height={24} className="rounded-md" />
+            </div>
+            
+            {/* Badges */}
+            <div className="flex items-center gap-2">
+              <Skeleton width={90} height={20} className="rounded-full" />
+              <Skeleton width={80} height={20} className="rounded-full" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Conteúdo do Card */}
+        <div className="mb-3 space-y-2">
+          {/* Bio */}
+          <Skeleton width="100%" height={16} />
+          <Skeleton width="85%" height={16} />
+          
+          {/* Localização e data */}
+          <div className="space-y-1 pt-2">
+            <Skeleton width="60%" height={14} />
+            <Skeleton width="50%" height={14} />
+            <Skeleton width="70%" height={14} />
+          </div>
+        </div>
+        
+        {/* Footer do Card */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+          <Skeleton width={100} height={32} className="rounded-md" />
+          <Skeleton width={36} height={32} className="rounded-md" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Skeleton para lista de favoritos
+export function FavoriteListSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: count }).map((_, i) => (
+        <FavoriteCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para card de indicação
+export function ReferralCardSkeleton() {
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in">
+      <div className="flex items-center space-x-3">
+        <Skeleton variant="circle" width={48} height={48} />
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton width="50%" height={18} />
+            <Skeleton width={80} height={20} className="rounded-full" />
+          </div>
+          
+          <Skeleton width="40%" height={14} />
+          <Skeleton width="60%" height={14} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para lista de indicações
+export function ReferralListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <ReferralCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para tabela admin
+export function AdminTableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden animate-fade-in">
+      {/* Header */}
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+        {Array.from({ length: cols }).map((_, i) => (
+          <Skeleton key={i} width="80%" height={16} />
+        ))}
+      </div>
+      
+      {/* Rows */}
+      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        {Array.from({ length: rows }).map((_, rowIndex) => (
+          <div key={rowIndex} className="p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+            {Array.from({ length: cols }).map((_, colIndex) => (
+              <Skeleton key={colIndex} width={colIndex === cols - 1 ? "60%" : "90%"} height={16} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para card de ranking
+export function RankingCardSkeleton() {
+  return (
+    <Card className="transition-all duration-200 hover:shadow-md animate-fade-in">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          {/* Posição */}
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800">
+            <Skeleton width={24} height={24} />
+          </div>
+          
+          {/* Avatar */}
+          <Skeleton variant="circle" width={48} height={48} />
+          
+          {/* Informações */}
+          <div className="flex-1 min-w-0 space-y-2">
+            <Skeleton width="50%" height={20} />
+            <div className="flex items-center gap-2">
+              <Skeleton width={80} height={20} className="rounded-full" />
+              <Skeleton width={40} height={14} />
+            </div>
+          </div>
+          
+          {/* Pontos */}
+          <div className="text-right space-y-1">
+            <Skeleton width={80} height={24} />
+            <Skeleton width={60} height={14} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Skeleton para lista de ranking
+export function RankingListSkeleton({ count = 10 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <RankingCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para card de transferência
+export function TransferCardSkeleton() {
+  return (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Skeleton variant="circle" width={40} height={40} />
+          <div className="space-y-2">
+            <Skeleton width={120} height={16} />
+            <Skeleton width={80} height={12} />
+          </div>
+        </div>
+        <Skeleton width={80} height={20} />
+      </div>
+      
+      <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+        <Skeleton width="100%" height={14} />
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para lista de transferências
+export function TransferListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <TransferCardSkeleton key={i} />
+      ))}
+    </div>
+  )
+}
+
+// Skeleton para dashboard de indicações
+export function ReferralDashboardSkeleton() {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Cards de estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2">
+            <Skeleton width="60%" height={16} />
+            <Skeleton width="40%" height={24} />
+            <Skeleton width="80%" height={12} />
+          </div>
+        ))}
+      </div>
+      
+      {/* Link card */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
+        <Skeleton width="30%" height={20} />
+        <Skeleton width="100%" height={50} />
+        <Skeleton width="100%" height={40} />
+      </div>
+      
+      {/* Leaderboard */}
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
+        <Skeleton width="40%" height={24} />
+        <ReferralListSkeleton count={5} />
+      </div>
     </div>
   )
 }

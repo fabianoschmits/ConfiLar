@@ -38,11 +38,15 @@ export function SimpleTable<T extends { id: string }>({
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
           {loading ? (
-            <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
-                Carregando...
-              </td>
-            </tr>
+            Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}>
+                {columns.map((column) => (
+                  <td key={column.key} className="px-4 py-3">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${Math.random() * 40 + 60}%` }} />
+                  </td>
+                ))}
+              </tr>
+            ))
           ) : data.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
