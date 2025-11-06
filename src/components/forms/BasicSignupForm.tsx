@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -778,18 +779,19 @@ export function BasicSignupForm() {
 
       {/* Botão de cadastro */}
       <div className="pt-4">
-        <Button
+        <LoadingButton
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
           disabled={!isMounted || isLoading || !isValid || !isCaptchaValid || isBlocked || watchedValues.password !== watchedValues.confirmPassword || emailExists || cpfExists}
+          isLoading={isLoading}
+          loadingText="Criando conta..."
         >
           {!isMounted ? 'Criar conta' : 
-           isLoading ? 'Criando conta...' : 
            isBlocked ? 'Aguarde para tentar novamente' :
            !isCaptchaValid ? 'Complete a verificação de segurança' :
            emailExists || cpfExists ? 'Resolva o problema acima' :
            'Criar conta'}
-        </Button>
+        </LoadingButton>
         
         {/* Mensagem explicativa quando há duplicatas */}
         {emailExists && (

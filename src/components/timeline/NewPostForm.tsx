@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Send, Image as ImageIcon, Loader2 } from 'lucide-react'
@@ -147,23 +148,16 @@ export function NewPostForm({ onSubmit, onCancel, isLoading = false, postStatus 
           >
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <LoadingButton
+            onClick={handleSubmit}
             disabled={!post.title.trim() || !post.description.trim() || isLoading}
+            isLoading={isLoading}
+            loadingText="Publicando..."
             className="min-w-[120px]"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Publicando...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4 mr-2" />
-                Publicar
-              </>
-            )}
-          </Button>
+            <Send className="h-4 w-4 mr-2" />
+            Publicar
+          </LoadingButton>
         </div>
       </div>
     </div>

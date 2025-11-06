@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -260,23 +261,16 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
           >
             Cancelar
           </Button>
-          <Button
+          <LoadingButton
             type="submit"
             className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
             disabled={isLoading || !canAfford || !formData.title.trim() || !formData.description.trim()}
+            isLoading={isLoading}
+            loadingText={postStatus === 'sending' ? 'Criando...' : 'Enviado!'}
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {postStatus === 'sending' ? 'Criando...' : 'Enviado!'}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Star className="h-4 w-4" />
-                Criar Post Premium
-              </div>
-            )}
-          </Button>
+            <Star className="h-4 w-4" />
+            Criar Post Premium
+          </LoadingButton>
         </div>
       </form>
     </div>

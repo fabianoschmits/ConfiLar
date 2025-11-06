@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -288,23 +289,16 @@ export default function DadosProfissionaisPage() {
 
               {/* Botão de Salvar */}
               <div className="flex justify-center pt-6">
-                <Button
+                <LoadingButton
                   type="submit"
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 text-base font-medium"
                   disabled={isLoading}
+                  isLoading={isLoading}
+                  loadingText="Salvando..."
                 >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      Salvar Alterações
-                    </>
-                  )}
-                </Button>
+                  <Save className="w-5 h-5" />
+                  Salvar Alterações
+                </LoadingButton>
               </div>
             </form>
           </div>

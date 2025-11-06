@@ -35,6 +35,8 @@ import {
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -739,18 +741,16 @@ export default function ReputacaoPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Star className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        {searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
-                      </h3>
-                      <p className="text-gray-600">
-                        {searchTerm || filterType !== 'all' 
+                    <EmptyState
+                      icon={<Star className="h-16 w-16 text-gray-400" />}
+                      title={searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
+                      description={
+                        searchTerm || filterType !== 'all'
                           ? 'Tente ajustar os filtros de busca.'
                           : 'Você ainda não recebeu avaliações. Continue usando a plataforma!'
-                        }
-                      </p>
-                    </div>
+                      }
+                      variant="minimal"
+                    />
                   )}
                 </CardContent>
               </Card>

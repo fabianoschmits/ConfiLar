@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -471,26 +472,18 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
         >
           Cancelar
         </Button>
-        <Button
+        <LoadingButton
           type="button"
           onClick={handleSubmit}
           disabled={isLoading || isProcessing || balanceLoading || !balance || !canAfford || !formData.title.trim() || !formData.description.trim() || !formData.category.trim()}
+          isLoading={isProcessing}
+          loadingText="Criando Anúncio Premium..."
           className="flex-1 w-full sm:w-auto bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-0 h-10 sm:h-11 text-sm sm:text-base font-medium"
         >
-          {isProcessing ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              <span className="hidden sm:inline">Criando Anúncio Premium...</span>
-              <span className="sm:hidden">Criando...</span>
-            </>
-          ) : (
-            <>
-              <Crown className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span className="hidden sm:inline">Criar Anúncio Premium</span>
-              <span className="sm:hidden">Criar Premium</span>
-            </>
-          )}
-        </Button>
+          <Crown className="h-4 w-4 mr-2 flex-shrink-0" />
+          <span className="hidden sm:inline">Criar Anúncio Premium</span>
+          <span className="sm:hidden">Criar Premium</span>
+        </LoadingButton>
       </div>
 
       {/* Aviso sobre saldo insuficiente */}

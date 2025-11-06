@@ -41,6 +41,8 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
@@ -684,18 +686,16 @@ export default function AvaliacoesPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <Clock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        Nenhuma solicitação encontrada
-                      </h3>
-                      <p className="text-gray-600">
-                        {requestsSubTab === 'received' 
+                    <EmptyState
+                      icon={<Clock className="h-16 w-16 text-gray-400" />}
+                      title="Nenhuma solicitação encontrada"
+                      description={
+                        requestsSubTab === 'received'
                           ? 'Você ainda não recebeu solicitações de avaliação'
                           : 'Você ainda não enviou solicitações de avaliação'
-                        }
-                      </p>
-                    </div>
+                      }
+                      variant="minimal"
+                    />
                   )}
                 </CardContent>
               </Card>

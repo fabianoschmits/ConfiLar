@@ -27,6 +27,8 @@ import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { useRouter } from 'next/navigation'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
 
 export default function FavoritesPage() {
   const [mounted, setMounted] = useState(false)
@@ -208,15 +210,13 @@ export default function FavoritesPage() {
           )}
 
           {error && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-4" />
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button onClick={() => window.location.reload()}>
-                  Tentar Novamente
-                </Button>
-              </CardContent>
-            </Card>
+            <ErrorState
+              title="Erro ao carregar favoritos"
+              message={error}
+              onRetry={() => window.location.reload()}
+              showHomeButton={false}
+              variant="default"
+            />
           )}
 
           {/* Abas de Filtro */}
@@ -275,20 +275,15 @@ export default function FavoritesPage() {
           {!loading && !error && (
             <>
               {favorites.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                      Nenhum favorito ainda
-                    </h3>
-                    <p className="text-gray-600 mb-6">
-                      Comece adicionando pessoas aos seus favoritos para encontrá-las facilmente depois.
-                    </p>
-                    <Button asChild>
-                      <a href="/buscar">Buscar Profissionais</a>
-                    </Button>
-                  </CardContent>
-                </Card>
+                <EmptyState
+                  icon={<Heart className="h-16 w-16 text-gray-400" />}
+                  title="Nenhum favorito ainda"
+                  description="Comece adicionando pessoas aos seus favoritos para encontrá-las facilmente depois."
+                  action={{
+                    label: 'Buscar Profissionais',
+                    onClick: () => router.push('/buscar')
+                  }}
+                />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {getFilteredFavorites().map((favorite) => (

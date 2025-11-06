@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
 import {
   Popover,
   PopoverContent,
@@ -454,37 +456,23 @@ export default function BuscarPage() {
             {loading ? (
               <DashboardSkeleton />
             ) : displayProfiles.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Search className="h-12 w-12 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  Nenhum resultado encontrado
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                  {filters.searchTerm || filters.state || filters.city || filters.service !== 'all' 
+              <EmptyState
+                icon={<Search className="h-12 w-12 text-gray-400" />}
+                title="Nenhum resultado encontrado"
+                description={
+                  filters.searchTerm || filters.state || filters.city || filters.service !== 'all'
                     ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
-                    : 'Não há usuários cadastrados no sistema ainda.'}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button
-                    onClick={clearFilters}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <X className="h-4 w-4" />
-                    Limpar Filtros
-                  </Button>
-                  <Button
-                    onClick={() => setFilters(prev => ({ ...prev, searchTerm: '', state: '', city: '', service: 'all' }))}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Nova Busca
-                  </Button>
-                </div>
-              </div>
+                    : 'Não há usuários cadastrados no sistema ainda.'
+                }
+                action={
+                  filters.searchTerm || filters.state || filters.city || filters.service !== 'all'
+                    ? {
+                        label: 'Limpar Filtros',
+                        onClick: clearFilters
+                      }
+                    : undefined
+                }
+              />
             ) : (
               <div className={`grid gap-6 ${
                 viewMode === 'grid' 
