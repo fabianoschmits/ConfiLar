@@ -270,11 +270,11 @@ export function ModernHeader({
                 <div className="h-12 flex items-center justify-center">
                   {/* Mobile: 30% menor */}
                   <div className="block sm:hidden">
-                    <BrandLogo width={84} height={22} href="/home" />
+                    <BrandLogo width={84} height={22} />
                   </div>
                   {/* Desktop/tablet: padrão */}
                   <div className="hidden sm:block">
-                    <BrandLogo width={120} height={32} href="/home" />
+                    <BrandLogo width={120} height={32} />
                   </div>
                 </div>
               </Link>

@@ -350,7 +350,7 @@ export function ModernSidebar() {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <Link href="/home" className="flex flex-col items-center space-y-1 w-full">
             <div className="h-10 flex items-center justify-center">
-              <BrandLogo width={120} height={28} href="/home" />
+              <BrandLogo width={120} height={28} />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">Marketplace</p>
           </Link>

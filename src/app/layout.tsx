@@ -97,8 +97,8 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
-        <link rel="apple-touch-icon" href="/imagens/logo/ConfiLar - branco vertical com fundo azul.png" />
-        <meta name="msapplication-TileImage" content="/imagens/logo/ConfiLar - branco vertical com fundo azul.png" />
+        <link rel="apple-touch-icon" href="/imagens/logo/Logo branco - fundo verde - Vertical.png" />
+        <meta name="msapplication-TileImage" content="/imagens/logo/Logo branco - fundo verde - Vertical.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
         <meta name="color-scheme" content="light dark" />
       </head>

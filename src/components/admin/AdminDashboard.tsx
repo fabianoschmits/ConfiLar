@@ -29,11 +29,13 @@ import {
   Play,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  FileText
 } from 'lucide-react'
 import { ReportsManagement } from './ReportsManagement'
 import { BansManagementEnhanced as BansManagement } from './BansManagementEnhanced'
 import { TestsManagement } from './TestsManagement'
+import { AdminLogsViewer } from './AdminLogsViewer'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -520,7 +522,7 @@ export function AdminDashboard() {
       {/* Tabs principais - Responsivo com scroll horizontal */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="overflow-x-auto">
-          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-9 gap-1 p-1">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-10 gap-1 p-1">
             <TabsTrigger value="overview" className="whitespace-nowrap text-xs sm:text-sm">
               <span className="hidden sm:inline">Visão Geral</span>
               <span className="sm:hidden">Geral</span>
@@ -557,6 +559,11 @@ export function AdminDashboard() {
               <TestTube className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               <span className="hidden sm:inline">Testes</span>
               <span className="sm:hidden">Test</span>
+            </TabsTrigger>
+            <TabsTrigger value="logs" className="whitespace-nowrap text-xs sm:text-sm">
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Logs</span>
+              <span className="sm:hidden">Logs</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -1035,6 +1042,11 @@ export function AdminDashboard() {
         {/* Tab: Testes - Sistema de Testes Automatizados */}
         <TabsContent value="tests" className="space-y-4">
           <TestsManagement />
+        </TabsContent>
+
+        {/* Tab: Logs - Visualizador de Logs do Sistema */}
+        <TabsContent value="logs" className="space-y-4">
+          <AdminLogsViewer />
         </TabsContent>
       </Tabs>
     </div>

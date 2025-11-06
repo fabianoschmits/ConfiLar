@@ -9,9 +9,9 @@ interface BrandLogoProps {
   className?: string
 }
 
-export function BrandLogo({ width = 120, height = 32, withText = false, href = '/', className }: BrandLogoProps) {
-  const lightSrc = "/imagens/logo/ConfiLar - azul horizontal sem fundo.png"
-  const darkSrc = "/imagens/logo/ConfiLar - branco horizontal sem fundo.png"
+export function BrandLogo({ width = 120, height = 32, withText = false, href, className }: BrandLogoProps) {
+  const lightSrc = "/imagens/logo/Logo azul - sem fundo - horizontal.png"
+  const darkSrc = "/imagens/logo/Logo branco - sem fundo - horizontal.png"
 
   const content = (
     <div className={`flex items-center ${className || ''}`}>

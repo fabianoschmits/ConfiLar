@@ -117,8 +117,8 @@ export function CacheManager({ className }: CacheManagerProps) {
         '/icon-512x512.png',
         '/icon-192x192-maskable.png',
         '/icon-512x512-maskable.png',
-        '/imagens/logo/ConfiLar - azul horizontal sem fundo.png',
-        '/imagens/logo/ConfiLar - branco horizontal sem fundo.png',
+        '/imagens/logo/Logo azul - sem fundo - horizontal.png',
+        '/imagens/logo/Logo branco - sem fundo - horizontal.png',
       ]
 
       await cache.addAll(assetsToCache)

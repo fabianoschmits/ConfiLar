@@ -60,7 +60,7 @@ export const ModernMainLayout: React.FC<ModernMainLayoutProps> = ({
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center space-y-6 max-w-md mx-auto p-8">
               <div className="h-10 flex items-center">
-                <BrandLogo width={120} height={28} href="/home" />
+                <BrandLogo width={120} height={28} />
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Acesso Restrito</h2>
