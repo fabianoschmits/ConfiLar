@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Star, Loader2, CheckCircle, Clock } from 'lucide-react'
 import { useEvaluationRequests } from '@/hooks/useEvaluationRequests'
@@ -171,16 +172,14 @@ export function RequestEvaluationButton({
             <Button variant="outline" onClick={() => setShowDialog(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleRequestEvaluation} disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                'Solicitar'
-              )}
-            </Button>
+            <LoadingButton 
+              onClick={handleRequestEvaluation} 
+              disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Enviando..."
+            >
+              Solicitar
+            </LoadingButton>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

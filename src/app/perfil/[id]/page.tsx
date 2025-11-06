@@ -57,6 +57,7 @@ import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { useProfileViews } from '@/hooks/useProfileViews'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { ReportButton } from '@/components/ReportButton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface PublicProfile {
     id: string
@@ -115,7 +116,9 @@ export default function PublicProfilePage() {
 
             if (reviewError) {
                 console.error('Erro ao obter dados da avaliação:', reviewError)
-                toast.error('Erro ao obter dados da avaliação')
+                toast.error('Erro ao obter dados da avaliação', {
+                  description: 'Não foi possível carregar os dados da avaliação. Tente novamente.'
+                })
                 return
             }
 
@@ -127,7 +130,9 @@ export default function PublicProfilePage() {
 
             if (deleteError) {
                 console.error('Erro ao deletar avaliação:', deleteError)
-                toast.error('Erro ao deletar avaliação')
+                toast.error('Erro ao deletar avaliação', {
+                  description: 'Não foi possível deletar a avaliação. Tente novamente.'
+                })
                 return
             }
 
@@ -154,7 +159,9 @@ export default function PublicProfilePage() {
             }
         } catch (error) {
             console.error('Erro ao deletar avaliação:', error)
-            toast.error('Erro ao deletar avaliação')
+            toast.error('Erro ao deletar avaliação', {
+              description: 'Não foi possível deletar a avaliação. Tente novamente.'
+            })
         }
     }
 
@@ -369,12 +376,16 @@ export default function PublicProfilePage() {
 
     const handleContact = () => {
         if (!user) {
-            toast.error('Você precisa estar logado para entrar em contato')
+            toast.error('Login necessário', {
+              description: 'Você precisa estar logado para entrar em contato com outros usuários.'
+            })
             return
         }
         
         if (userId === user.id) {
-            toast.error('Você não pode entrar em contato consigo mesmo')
+            toast.error('Ação inválida', {
+              description: 'Você não pode entrar em contato consigo mesmo.'
+            })
             return
         }
         
@@ -979,7 +990,12 @@ export default function PublicProfilePage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-gray-600 dark:text-gray-400">Nenhum serviço informado.</p>
+                                            <EmptyState
+                                                icon={<Briefcase className="h-12 w-12 text-gray-400" />}
+                                                title="Nenhum serviço informado"
+                                                description="Este profissional ainda não cadastrou seus serviços."
+                                                variant="minimal"
+                                            />
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1023,7 +1039,12 @@ export default function PublicProfilePage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-gray-600 dark:text-gray-400">Nenhum projeto no portfólio.</p>
+                                            <EmptyState
+                                                icon={<ImageIcon className="h-12 w-12 text-gray-400" />}
+                                                title="Nenhum projeto no portfólio"
+                                                description="Este profissional ainda não adicionou projetos ao seu portfólio."
+                                                variant="minimal"
+                                            />
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1066,7 +1087,12 @@ export default function PublicProfilePage() {
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-600 dark:text-gray-400">Nenhuma avaliação encontrada.</p>
+                                        <EmptyState
+                                            icon={<Star className="h-12 w-12 text-gray-400" />}
+                                            title="Nenhuma avaliação encontrada"
+                                            description="Este usuário ainda não recebeu avaliações de outros usuários."
+                                            variant="minimal"
+                                        />
                                     )}
                                 </CardContent>
                             </Card>

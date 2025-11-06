@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/ui/LoadingButton'
+import { ProgressIndicator } from '@/components/ui/ProgressIndicator'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -94,6 +95,8 @@ export default function DadosDaContaPage() {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   const {
     register,
@@ -136,7 +139,9 @@ export default function DadosDaContaPage() {
 
         if (error) {
           console.error('Erro ao carregar perfil:', error)
-          toast.error('Erro ao carregar dados do perfil')
+          toast.error('Erro ao carregar dados do perfil', {
+            description: 'Não foi possível carregar suas informações. Tente recarregar a página.'
+          })
           return
         }
 
@@ -241,7 +246,9 @@ export default function DadosDaContaPage() {
       
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      toast.error('Erro ao gerar avatar automático')
+      toast.error('Erro ao gerar avatar automático', {
+        description: 'Não foi possível gerar o avatar. Tente novamente ou faça upload de uma foto.'
+      })
     } finally {
       setIsGeneratingAvatar(false)
     }
@@ -311,7 +318,9 @@ export default function DadosDaContaPage() {
 
   const onSubmit = async (data: AccountDataFormData) => {
     if (!user) {
-      toast.error('Usuário não autenticado')
+      toast.error('Usuário não autenticado', {
+        description: 'Você precisa estar logado para atualizar seus dados. Faça login e tente novamente.'
+      })
       return
     }
 
@@ -325,13 +334,31 @@ export default function DadosDaContaPage() {
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
         
+        setIsUploadingAvatar(true)
+        setUploadProgress(0)
+        
+        // Simular progresso do upload
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 90) return prev
+            return prev + 10
+          })
+        }, 200)
+        
         const { error: uploadError } = await supabase.storage
           .from('avatars')
           .upload(fileName, file)
 
+        clearInterval(progressInterval)
+        setUploadProgress(100)
+
         if (uploadError) {
           console.error('Erro no upload:', uploadError)
-          toast.error('Erro ao fazer upload da imagem')
+          toast.error('Erro ao fazer upload da imagem', {
+            description: 'Não foi possível enviar a imagem. Verifique o tamanho do arquivo (máx. 5MB) e tente novamente.'
+          })
+          setIsUploadingAvatar(false)
+          setUploadProgress(0)
           setIsLoading(false)
           return
         }
@@ -341,6 +368,8 @@ export default function DadosDaContaPage() {
           .getPublicUrl(fileName)
         
         avatarUrl = publicUrl
+        setIsUploadingAvatar(false)
+        setUploadProgress(0)
       } else if (selectedAvatar?.type === 'dicebear') {
         avatarUrl = selectedAvatar.value as string
       }
@@ -359,7 +388,9 @@ export default function DadosDaContaPage() {
 
       if (profileError) {
         console.error('❌ Erro ao salvar perfil:', profileError)
-        toast.error('Erro ao salvar dados: ' + profileError.message)
+        toast.error('Erro ao salvar dados', {
+          description: profileError.message || 'Não foi possível salvar suas informações. Verifique os dados e tente novamente.'
+        })
         return
       }
 
@@ -392,7 +423,9 @@ export default function DadosDaContaPage() {
       
     } catch (error) {
       console.error('Erro ao atualizar dados:', error)
-      toast.error('Erro inesperado ao atualizar dados')
+      toast.error('Erro inesperado ao atualizar dados', {
+        description: 'Ocorreu um erro inesperado. Tente novamente em alguns instantes ou recarregue a página.'
+      })
     } finally {
       setIsLoading(false)
     }
@@ -465,16 +498,31 @@ export default function DadosDaContaPage() {
                       <label
                         htmlFor="avatar-upload"
                         className={cn(
-                          "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
-                          selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50"
+                          "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-smooth text-center",
+                          selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50",
+                          isUploadingAvatar && "opacity-75 cursor-wait"
                         )}
+                        aria-label="Upload de foto de perfil"
                       >
-                        <div className="font-medium text-gray-700">
-                          {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
-                        </div>
-                        <div className="text-sm text-gray-500 mt-1">
-                          JPG, PNG ou GIF
-                        </div>
+                        {isUploadingAvatar ? (
+                          <div className="space-y-2">
+                            <ProgressIndicator
+                              variant="bar"
+                              progress={uploadProgress}
+                              message="Enviando imagem..."
+                              size="sm"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <div className="font-medium text-gray-700">
+                              {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
+                            </div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              JPG, PNG ou GIF
+                            </div>
+                          </>
+                        )}
                       </label>
                     </div>
 
@@ -491,21 +539,35 @@ export default function DadosDaContaPage() {
                             onClick={handleDicebearSelect}
                             disabled={isGeneratingAvatar || !dicebearAvatar}
                             className={cn(
-                              "w-full p-4 border-2 border-dashed rounded-lg transition-all text-center hover:border-purple-500 hover:bg-purple-50/50",
+                              "w-full p-4 border-2 border-dashed rounded-lg transition-smooth text-center hover:border-purple-500 hover:bg-purple-50/50",
                               selectedAvatar?.type === 'dicebear' && "border-purple-500 bg-purple-50/50",
                               (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
                             )}
+                            aria-label="Selecionar avatar automático"
                           >
                             {isGeneratingAvatar ? (
-                              <div className="font-medium text-gray-700">🎨 Criando...</div>
+                              <div className="space-y-2">
+                                <ProgressIndicator
+                                  variant="dots"
+                                  message="Gerando avatar..."
+                                  size="sm"
+                                />
+                              </div>
                             ) : dicebearAvatar ? (
-                              <div className="font-medium text-gray-700">✅ Avatar Criado</div>
+                              <>
+                                <div className="font-medium text-gray-700">✅ Avatar Criado</div>
+                                <div className="text-sm text-gray-500 mt-1">
+                                  Baseado no seu nome
+                                </div>
+                              </>
                             ) : (
-                              <div className="font-medium text-gray-700">🎨 Criando...</div>
+                              <>
+                                <div className="font-medium text-gray-700">🎨 Criando...</div>
+                                <div className="text-sm text-gray-500 mt-1">
+                                  Baseado no seu nome
+                                </div>
+                              </>
                             )}
-                            <div className="text-sm text-gray-500 mt-1">
-                              Baseado no seu nome
-                            </div>
                           </button>
                           
                           {/* Botão para gerar novo avatar aleatório */}
@@ -514,7 +576,8 @@ export default function DadosDaContaPage() {
                               type="button"
                               onClick={generateRandomAvatar}
                               disabled={isGeneratingAvatar}
-                              className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              aria-label="Gerar novo avatar aleatório"
                             >
                               <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
                               {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}

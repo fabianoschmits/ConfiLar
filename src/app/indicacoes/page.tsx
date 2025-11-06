@@ -14,6 +14,7 @@ import { useWhoReferredMe } from '@/hooks/useWhoReferredMe'
 import { Card, CardContent } from '@/components/ui/card'
 import { Users, TrendingUp, Award, Sparkles, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export default function IndicacoesPage() {
   const { user, loading } = useAuthContext()
@@ -44,17 +45,16 @@ export default function IndicacoesPage() {
     return (
       <MainLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6">
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Users className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Faça login para acessar
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Você precisa estar logado para ver seu programa de indicações
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />}
+            title="Faça login para acessar"
+            description="Você precisa estar logado para ver seu programa de indicações"
+            variant="centered"
+            action={{
+              label: 'Fazer Login',
+              onClick: () => window.location.href = '/auth'
+            }}
+          />
         </div>
       </MainLayout>
     )

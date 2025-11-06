@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, User, Check, X, AlertCircle, MessageSquare } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -58,16 +59,20 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
   const handleAccept = async () => {
     if (!acceptMessage.trim()) {
-      toast.error('POR FAVOR, ADICIONE UMA MENSAGEM DE CONFIRMAÇÃO');
+      toast.error('Mensagem de confirmação obrigatória', {
+        description: 'Por favor, adicione uma mensagem de confirmação antes de aceitar o agendamento.'
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onAccept(appointmentRequest.id, acceptMessage);
-      toast.success('AGENDAMENTO ACEITO COM SUCESSO!');
-    } catch (error) {
-      toast.error('ERRO AO ACEITAR AGENDAMENTO');
+      toast.success('Agendamento aceito com sucesso!');
+    } catch (error: any) {
+      toast.error('Erro ao aceitar agendamento', {
+        description: error?.message || 'Não foi possível aceitar o agendamento. Tente novamente.'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,16 +80,20 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      toast.error('POR FAVOR, INFORME O MOTIVO DA RECUSA');
+      toast.error('Motivo da recusa obrigatório', {
+        description: 'Por favor, informe o motivo da recusa antes de continuar.'
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onReject(appointmentRequest.id, rejectReason);
-      toast.success('AGENDAMENTO RECUSADO');
-    } catch (error) {
-      toast.error('ERRO AO RECUSAR AGENDAMENTO');
+      toast.success('Agendamento recusado');
+    } catch (error: any) {
+      toast.error('Erro ao recusar agendamento', {
+        description: error?.message || 'Não foi possível recusar o agendamento. Tente novamente.'
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -97,9 +106,11 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
       await onSendMessage(quickMessage);
       setQuickMessage('');
       setShowQuickMessage(false);
-      toast.success('MENSAGEM ENVIADA!');
-    } catch (error) {
-      toast.error('ERRO AO ENVIAR MENSAGEM');
+      toast.success('Mensagem enviada!');
+    } catch (error: any) {
+      toast.error('Erro ao enviar mensagem', {
+        description: error?.message || 'Não foi possível enviar a mensagem. Verifique sua conexão e tente novamente.'
+      });
     }
   };
 
@@ -242,13 +253,14 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
                 className="resize-none"
               />
               <div className="flex justify-end">
-                <Button
+                <LoadingButton
                   size="sm"
                   onClick={handleQuickMessage}
                   disabled={!quickMessage.trim()}
+                  className="transition-smooth"
                 >
                   Enviar Mensagem
-                </Button>
+                </LoadingButton>
               </div>
             </div>
           )}
@@ -269,23 +281,16 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
               rows={3}
               className="resize-none border-green-200 focus:border-green-500"
             />
-            <Button
+            <LoadingButton
               onClick={handleAccept}
               disabled={!acceptMessage.trim() || isSubmitting}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-green-600 hover:bg-green-700 transition-smooth"
+              isLoading={isSubmitting}
+              loadingText="Confirmando..."
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Confirmando...
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Aceitar e Confirmar Agendamento
-                </>
-              )}
-            </Button>
+              <Check className="h-4 w-4 mr-2" />
+              Aceitar e Confirmar Agendamento
+            </LoadingButton>
           </div>
 
           {/* Recusar */}
@@ -301,24 +306,17 @@ export const AppointmentResponse: React.FC<AppointmentResponseProps> = ({
               rows={3}
               className="resize-none border-red-200 focus:border-red-500"
             />
-            <Button
+            <LoadingButton
               variant="outline"
               onClick={handleReject}
               disabled={!rejectReason.trim() || isSubmitting}
-              className="w-full border-red-500 text-red-600 hover:bg-red-50"
+              className="w-full border-red-500 text-red-600 hover:bg-red-50 transition-smooth"
+              isLoading={isSubmitting}
+              loadingText="Recusando..."
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2" />
-                  Recusando...
-                </>
-              ) : (
-                <>
-                  <X className="h-4 w-4 mr-2" />
-                  Recusar Agendamento
-                </>
-              )}
-            </Button>
+              <X className="h-4 w-4 mr-2" />
+              Recusar Agendamento
+            </LoadingButton>
           </div>
         </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -341,13 +342,15 @@ export function ReportButton({
             >
               Cancelar
             </Button>
-            <Button 
+            <LoadingButton 
               type="submit" 
               disabled={isSubmitting || !formData.description.trim()}
               className="flex-1 bg-red-600 hover:bg-red-700"
+              isLoading={isSubmitting}
+              loadingText="Enviando..."
             >
-              {isSubmitting ? 'Enviando...' : 'Enviar Denúncia'}
-            </Button>
+              Enviar Denúncia
+            </LoadingButton>
           </div>
         </form>
       </DialogContent>

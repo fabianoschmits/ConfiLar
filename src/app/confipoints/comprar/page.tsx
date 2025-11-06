@@ -22,6 +22,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { usePoints } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
+import { MicroInteraction } from '@/components/ui/MicroInteraction'
 
 export default function ComprarPontosPage() {
   const { user, profile } = useAuthContext()
@@ -277,14 +278,18 @@ export default function ComprarPontosPage() {
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {packages.map((pkg) => (
-                  <Card 
-                    key={pkg.id} 
-                    className={`relative hover:shadow-xl transition-all duration-300 ${
-                      pkg.popular 
-                        ? 'ring-2 ring-green-500 shadow-lg sm:scale-105' 
-                        : 'hover:scale-105'
-                    }`}
+                  <MicroInteraction
+                    key={pkg.id}
+                    type="scale"
+                    intensity={pkg.popular ? "strong" : "medium"}
                   >
+                    <Card 
+                      className={`relative hover:shadow-xl transition-all duration-300 ${
+                        pkg.popular 
+                          ? 'ring-2 ring-green-500 shadow-lg sm:scale-105' 
+                          : 'hover:scale-105'
+                      }`}
+                    >
                     {pkg.popular && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                         <Badge className="bg-green-500 text-white px-3 py-1 shadow-lg">
@@ -369,6 +374,7 @@ export default function ComprarPontosPage() {
                       </Button>
                     </CardContent>
                   </Card>
+                  </MicroInteraction>
                 ))}
               </div>
             </div>

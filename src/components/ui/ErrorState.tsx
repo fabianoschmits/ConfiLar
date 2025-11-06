@@ -83,7 +83,7 @@ export function ErrorState({
             {onRetry && (
               <Button
                 onClick={onRetry}
-                className="transition-all hover:scale-105 active:scale-95"
+                className="transition-smooth hover:scale-105 active:scale-95"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
@@ -93,7 +93,7 @@ export function ErrorState({
               <Link href="/">
                 <Button
                   variant="outline"
-                  className="transition-all hover:scale-105 active:scale-95"
+                  className="transition-smooth hover:scale-105 active:scale-95"
                 >
                   <Home className="h-4 w-4 mr-2" />
                   Ir para início
@@ -131,7 +131,7 @@ export function ErrorState({
         {onRetry && (
           <Button
             onClick={onRetry}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-smooth hover:scale-105 active:scale-95"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Tentar novamente
@@ -141,7 +141,7 @@ export function ErrorState({
           <Link href="/">
             <Button
               variant="outline"
-              className="transition-all hover:scale-105 active:scale-95"
+              className="transition-smooth hover:scale-105 active:scale-95"
             >
               <Home className="h-4 w-4 mr-2" />
               Ir para início

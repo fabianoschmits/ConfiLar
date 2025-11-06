@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/ui/LoadingButton'
+import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -542,8 +543,18 @@ export function BasicSignupForm() {
             </div>
             
             {/* Mensagens de validação */}
-            {errors.email && <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>}
-            
+            {isCheckingEmail && (
+              <FormFieldFeedback
+                state="validating"
+                message="Verificando disponibilidade..."
+              />
+            )}
+            {errors.email && (
+              <FormFieldFeedback
+                state="error"
+                message={errors.email.message}
+              />
+            )}
             {emailExists && (
               <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <p className="text-sm text-orange-800 font-medium mb-2">
@@ -568,9 +579,11 @@ export function BasicSignupForm() {
                 </div>
               </div>
             )}
-            
-            {watchedValues.email && !errors.email && !emailExists && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
-              <p className="text-sm text-green-600 font-medium">✓ Email disponível</p>
+            {watchedValues.email && !errors.email && !emailExists && !isCheckingEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(watchedValues.email) && (
+              <FormFieldFeedback
+                state="valid"
+                message="Email disponível"
+              />
             )}
           </div>
 
@@ -610,8 +623,18 @@ export function BasicSignupForm() {
               )}
             </div>
             
-            {errors.cpf_cnpj && <p className="text-sm text-red-500 font-medium">{errors.cpf_cnpj.message}</p>}
-            
+            {isCheckingCpf && (
+              <FormFieldFeedback
+                state="validating"
+                message="Verificando disponibilidade..."
+              />
+            )}
+            {errors.cpf_cnpj && (
+              <FormFieldFeedback
+                state="error"
+                message={errors.cpf_cnpj.message}
+              />
+            )}
             {cpfExists && (
               <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <p className="text-sm text-orange-800 font-medium mb-2">
@@ -636,9 +659,11 @@ export function BasicSignupForm() {
                 </div>
               </div>
             )}
-            
-            {watchedValues.cpf_cnpj && !errors.cpf_cnpj && !cpfExists && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && (
-              <p className="text-sm text-green-600 font-medium">✓ CPF disponível</p>
+            {watchedValues.cpf_cnpj && !errors.cpf_cnpj && !cpfExists && !isCheckingCpf && watchedValues.cpf_cnpj.replace(/\D/g, '').length === 11 && (
+              <FormFieldFeedback
+                state="valid"
+                message="CPF disponível"
+              />
             )}
           </div>
 

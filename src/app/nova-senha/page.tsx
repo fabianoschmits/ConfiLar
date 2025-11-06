@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
+import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -97,7 +99,9 @@ export default function NovaSenhaPage() {
           toast.info('Redirecionando para verificação de segurança...')
           // O redirecionamento já foi feito no hook
         } else {
-          toast.error('Erro ao atualizar senha: ' + error.message)
+          toast.error('Erro ao atualizar senha', {
+            description: error.message || 'Não foi possível atualizar sua senha. Verifique os requisitos e tente novamente.'
+          })
         }
         setIsLoading(false)
       } else {
@@ -111,7 +115,9 @@ export default function NovaSenhaPage() {
         }, 3000)
       }
     } catch {
-      toast.error('Erro inesperado ao atualizar senha')
+      toast.error('Erro inesperado ao atualizar senha', {
+        description: 'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.'
+      })
       setIsLoading(false)
     }
   }
@@ -250,7 +256,10 @@ export default function NovaSenhaPage() {
                     error={!!errors.password}
                   />
                   {errors.password && (
-                    <p className="text-sm text-red-500 font-medium">{errors.password.message}</p>
+                    <FormFieldFeedback
+                      state="error"
+                      message={errors.password.message}
+                    />
                   )}
                   
                   {/* Indicador de força da senha */}
@@ -309,17 +318,22 @@ export default function NovaSenhaPage() {
                     error={!!errors.confirmPassword}
                   />
                   {errors.confirmPassword && (
-                    <p className="text-sm text-red-500 font-medium">{errors.confirmPassword.message}</p>
+                    <FormFieldFeedback
+                      state="error"
+                      message={errors.confirmPassword.message}
+                    />
                   )}
                 </div>
 
-                <Button
+                <LoadingButton
                   type="submit"
                   disabled={isLoading || passwordStrength.strength === 'weak'}
                   className="w-full bg-red-600 hover:bg-red-700 text-white py-3"
+                  isLoading={isLoading}
+                  loadingText="Atualizando..."
                 >
-                  {isLoading ? 'Atualizando...' : 'Atualizar senha'}
-                </Button>
+                  Atualizar senha
+                </LoadingButton>
               </form>
             </CardContent>
           </Card>

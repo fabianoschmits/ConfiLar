@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import { LoadingButton } from '@/components/ui/LoadingButton'
+import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,7 +60,9 @@ export default function RecuperarSenhaPage() {
       const { error } = await resetPassword(data.email)
       
       if (error) {
-        toast.error('Erro ao enviar email de recuperação: ' + error.message)
+        toast.error('Erro ao enviar email de recuperação', {
+          description: error.message || 'Não foi possível enviar o email. Verifique o endereço e tente novamente.'
+        })
         setIsLoading(false)
       } else {
         toast.success('Email de recuperação enviado com sucesso!')
@@ -66,7 +70,9 @@ export default function RecuperarSenhaPage() {
         setIsLoading(false)
       }
     } catch {
-      toast.error('Erro inesperado ao enviar email de recuperação')
+      toast.error('Erro inesperado ao enviar email de recuperação', {
+        description: 'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.'
+      })
       setIsLoading(false)
     }
   }
@@ -188,17 +194,22 @@ export default function RecuperarSenhaPage() {
                   }`}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>
+                  <FormFieldFeedback
+                    state="error"
+                    message={errors.email.message}
+                  />
                 )}
               </div>
 
-              <Button
+              <LoadingButton
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                 disabled={isLoading}
+                isLoading={isLoading}
+                loadingText="Enviando..."
               >
-                {isLoading ? 'Enviando...' : 'Enviar email de recuperação'}
-              </Button>
+                Enviar email de recuperação
+              </LoadingButton>
 
               <div className="text-center">
                 <button

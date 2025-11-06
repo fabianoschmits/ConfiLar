@@ -30,6 +30,8 @@ import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 import { ErrorHandler } from '@/components/ErrorHandler'
 import { FeedSkeleton } from '@/components/ui/skeleton'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { FileText, TrendingUp } from 'lucide-react'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -638,180 +640,45 @@ export default function FeedPage() {
                 showHomeButton={false}
               />
             ) : filteredItems.length === 0 ? (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border border-blue-200 shadow-lg p-12 text-center">
-                {filters.search ? (
-                  <>
-                    <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <Search className="w-10 h-10 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhum resultado encontrado</h3>
-                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                      Não encontramos posts relacionados a <strong>&ldquo;{filters.search}&rdquo;</strong>. 
-                      Tente buscar por outros termos ou verifique a ortografia.
-                    </p>
-                    <div className="space-y-4">
-                      <p className="text-gray-600 text-sm">
-                        💡 <strong>Dicas de busca:</strong>
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 max-w-2xl mx-auto">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                          <span>Nome do usuário</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                          <span>Tipo de serviço</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                          <span>Categoria</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                          <span>Palavras-chave</span>
-                        </div>
-                      </div>
-                      <Button 
-                        onClick={() => setFilters({ ...filters, search: '' })}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
-                      >
-                        Ver Todos os Posts
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {activeTab === 'all' ? (
-                  <>
-                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Seja o primeiro a compartilhar!</h3>
-                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                      A comunidade ConfiLar está esperando para ver seus trabalhos incríveis! 
-                      Compartilhe fotos dos serviços que você realizou ou que foram feitos para você.
-                    </p>
-                  </>
+              filters.search ? (
+                <EmptyState
+                  icon={<Search className="h-16 w-16 text-orange-500" />}
+                  title="Nenhum resultado encontrado"
+                  description={`Não encontramos posts relacionados a "${filters.search}". Tente buscar por outros termos ou verifique a ortografia.`}
+                  action={{
+                    label: 'Ver Todos os Posts',
+                    onClick: () => setFilters({ ...filters, search: '' })
+                  }}
+                />
+              ) : (
+                activeTab === 'all' ? (
+                  <EmptyState
+                    icon={<FileText className="h-16 w-16 text-blue-500" />}
+                    title="Seja o primeiro a compartilhar!"
+                    description="A comunidade ConfiLar está esperando para ver seus trabalhos incríveis! Compartilhe fotos dos serviços que você realizou ou que foram feitos para você."
+                    action={{
+                      label: 'Criar Primeiro Post',
+                      onClick: () => setShowNewPostForm(true)
+                    }}
+                  />
                 ) : activeTab === 'posts' ? (
-                  <>
-                    <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m0 0V1a1 1 0 011-1h2a1 1 0 011 1v18a1 1 0 01-1 1H4a1 1 0 01-1-1V1a1 1 0 011-1h2a1 1 0 011 1v3m0 0H7m8 0v3" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhum post dos usuários</h3>
-                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                      Ainda não há posts criados pelos usuários. Seja o primeiro a compartilhar seus trabalhos e experiências!
-                    </p>
-                  </>
+                  <EmptyState
+                    icon={<FileText className="h-16 w-16 text-green-500" />}
+                    title="Nenhum post dos usuários"
+                    description="Ainda não há posts criados pelos usuários. Seja o primeiro a compartilhar seus trabalhos e experiências!"
+                    action={{
+                      label: 'Criar Post',
+                      onClick: () => setShowNewPostForm(true)
+                    }}
+                  />
                 ) : (
-                  <>
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-violet-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM4 19h6v-6H4v6z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Nenhuma notificação automática</h3>
-                    <p className="text-gray-700 text-lg mb-6 max-w-2xl mx-auto">
-                      Não há posts automáticos ou notificações do sistema no momento. Continue interagindo para ver atualizações!
-                    </p>
-                  </>
-                )}
-                
-                {activeTab === 'all' && (
-                  <>
-                    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 mb-6 border border-blue-200">
-                      <h4 className="font-semibold text-gray-900 mb-3">💡 O que você pode compartilhar:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                          <span>Reformas e construções</span>
-                        </div>
-                          <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                          <span>Limpeza e organização</span>
-                          </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                          <span>Jardinagem e paisagismo</span>
-                          </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full"></span>
-                          <span>Serviços domésticos</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                          <span>Reparos e manutenção</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                          <span>E muito mais!</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {profile?.user_type === 'professional' ? (
-                  <Button 
-                    onClick={() => setShowNewPostForm(true)}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Compartilhar Meu Trabalho
-                  </Button>
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-gray-600">
-                      Você pode compartilhar trabalhos que foram feitos para você ou recomendar profissionais!
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button 
-                        onClick={() => setShowNewPostForm(true)}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-2"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Compartilhar Experiência
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="border-blue-300 text-blue-700 hover:bg-blue-50 px-6 py-2"
-                        onClick={() => window.location.href = '/buscar'}
-                      >
-                        Encontrar Profissionais
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                  </>
-                )}
-
-                {activeTab === 'posts' && (
-                  <Button 
-                    onClick={() => setShowNewPostForm(true)}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Criar Primeiro Post
-                  </Button>
-                )}
-
-                {activeTab === 'notifications' && (
-                  <div className="space-y-4">
-                    <p className="text-gray-600 text-sm">
-                      Posts automáticos incluem: boas-vindas de novos usuários, favoritos, recomendações e avaliações.
-                    </p>
-                    <Button 
-                      onClick={() => setActiveTab('all')}
-                      className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3 text-lg font-semibold"
-                    >
-                      Ver Timeline Completa
-                    </Button>
-                  </div>
-                )}
-                  </>
-                )}
-              </div>
+                  <EmptyState
+                    icon={<TrendingUp className="h-16 w-16 text-purple-500" />}
+                    title="Nenhuma notificação automática"
+                    description="Não há posts automáticos ou notificações do sistema no momento. Continue interagindo para ver atualizações!"
+                  />
+                )
+              )
             ) : (
               <>
                 {filteredItems.map((item) => renderTimelineItem(item))}

@@ -61,9 +61,11 @@ export function PostOptionsMenu({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-transparent border-0 shadow-none"
+            className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-transparent border-0 shadow-none transition-smooth"
             disabled={isDeleting}
             onClick={(e) => e.stopPropagation()}
+            aria-label="Opções do post"
+            aria-haspopup="true"
           >
             <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
@@ -74,14 +76,16 @@ export function PostOptionsMenu({
             <>
               <DropdownMenuItem 
                 onClick={() => onEdit(postId)}
-                className="cursor-pointer"
+                className="cursor-pointer transition-smooth"
+                aria-label="Editar post"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Editar Post
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setShowDeleteDialog(true)}
-                className="cursor-pointer text-red-600 focus:text-red-600"
+                className="cursor-pointer text-red-600 focus:text-red-600 transition-smooth"
+                aria-label="Deletar post"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Deletar Post

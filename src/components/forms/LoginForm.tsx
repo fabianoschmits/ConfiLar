@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PasswordInput } from '@/components/ui/password-input'
+import { LoadingButton } from '@/components/ui/LoadingButton'
+import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
@@ -55,7 +57,9 @@ export function LoginForm() {
     
     // Validar dados antes de enviar
     if (!data.email || !data.password) {
-      toast.error('Email e senha são obrigatórios')
+      toast.error('Campos obrigatórios', {
+        description: 'Por favor, preencha o email e a senha para fazer login.'
+      })
       return
     }
     
@@ -66,7 +70,9 @@ export function LoginForm() {
       console.log('Resultado do signIn:', result)
       
       if (result.error) {
-        toast.error('Erro ao fazer login: ' + result.error.message)
+        toast.error('Erro ao fazer login', {
+          description: result.error.message || 'Verifique suas credenciais e tente novamente.'
+        })
         setIsLoading(false)
       } else {
         toast.success('Login realizado com sucesso!')
@@ -77,7 +83,9 @@ export function LoginForm() {
       }
     } catch (error) {
       console.error('Erro no login:', error)
-      toast.error('Erro inesperado ao fazer login')
+      toast.error('Erro inesperado ao fazer login', {
+        description: 'Ocorreu um erro inesperado. Verifique sua conexão e tente novamente.'
+      })
       setIsLoading(false)
     }
   }
@@ -129,7 +137,10 @@ export function LoginForm() {
               }`}
             />
             {errors.email && (
-              <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>
+              <FormFieldFeedback
+                state="error"
+                message={errors.email.message}
+              />
             )}
           </div>
 
@@ -144,17 +155,22 @@ export function LoginForm() {
               error={!!errors.password}
             />
             {errors.password && (
-              <p className="text-sm text-red-500 font-medium">{errors.password.message}</p>
+              <FormFieldFeedback
+                state="error"
+                message={errors.password.message}
+              />
             )}
           </div>
 
-          <Button
+          <LoadingButton
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
             disabled={!isMounted || isLoading || authLoading}
+            isLoading={isLoading || authLoading}
+            loadingText="Entrando..."
           >
-            {!isMounted ? 'Entrar' : (isLoading || authLoading ? 'Entrando...' : 'Entrar')}
-          </Button>
+            Entrar
+          </LoadingButton>
 
           <div className="text-center">
             <button

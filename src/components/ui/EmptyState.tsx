@@ -35,11 +35,13 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center',
+        'flex flex-col items-center justify-center animate-fade-in',
         isCentered && 'min-h-[400px]',
         isMinimal ? 'py-8' : 'py-12 px-4',
         className
       )}
+      role="status"
+      aria-live="polite"
     >
       {icon && (
         <div
@@ -76,7 +78,8 @@ export function EmptyState({
           {action && (
             <Button
               onClick={action.onClick}
-              className="transition-all hover:scale-105 active:scale-95"
+              className="transition-smooth hover:scale-105 active:scale-95"
+              aria-label={action.label}
             >
               {action.label}
             </Button>
@@ -85,7 +88,8 @@ export function EmptyState({
             <Button
               onClick={secondaryAction.onClick}
               variant="outline"
-              className="transition-all hover:scale-105 active:scale-95"
+              className="transition-smooth hover:scale-105 active:scale-95"
+              aria-label={secondaryAction.label}
             >
               {secondaryAction.label}
             </Button>

@@ -76,7 +76,9 @@ export default function DadosProfissionaisPage() {
 
         if (error) {
           console.error('Erro ao carregar perfil:', error)
-          toast.error('Erro ao carregar dados do perfil')
+          toast.error('Erro ao carregar dados do perfil', {
+            description: 'Não foi possível carregar suas informações profissionais. Tente recarregar a página.'
+          })
           return
         }
 
@@ -114,7 +116,9 @@ export default function DadosProfissionaisPage() {
 
   const onSubmit = async (data: ProfessionalDataFormData) => {
     if (!user) {
-      toast.error('Usuário não autenticado')
+      toast.error('Usuário não autenticado', {
+        description: 'Você precisa estar logado para atualizar seus dados profissionais. Faça login e tente novamente.'
+      })
       return
     }
 
@@ -131,7 +135,9 @@ export default function DadosProfissionaisPage() {
 
       if (profileError) {
         console.error('❌ Erro ao salvar dados profissionais:', profileError)
-        toast.error('Erro ao salvar dados profissionais: ' + profileError.message)
+        toast.error('Erro ao salvar dados profissionais', {
+          description: profileError.message || 'Não foi possível salvar suas informações profissionais. Verifique os dados e tente novamente.'
+        })
         return
       }
 
@@ -162,7 +168,9 @@ export default function DadosProfissionaisPage() {
       
     } catch (error) {
       console.error('Erro ao atualizar dados profissionais:', error)
-      toast.error('Erro inesperado ao atualizar dados profissionais')
+      toast.error('Erro inesperado ao atualizar dados profissionais', {
+        description: 'Ocorreu um erro inesperado. Tente novamente em alguns instantes ou recarregue a página.'
+      })
     } finally {
       setIsLoading(false)
     }

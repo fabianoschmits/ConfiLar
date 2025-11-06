@@ -44,7 +44,7 @@ export function CompactUserBadges({
         onMouseLeave={() => setShowUserTypeTooltip(false)}
       >
         <button
-          className={`p-0 m-0 transition-all duration-200 hover:scale-125 flex items-center justify-center ${
+          className={`p-0 m-0 transition-smooth hover:scale-125 flex items-center justify-center ${
             userType === 'professional'
               ? 'text-blue-600 hover:text-blue-700' 
               : 'text-purple-600 hover:text-purple-700'
@@ -82,7 +82,7 @@ export function CompactUserBadges({
           onMouseLeave={() => setShowAvailabilityTooltip(false)}
         >
           <button
-            className={`p-0 m-0 transition-all duration-200 hover:scale-125 flex items-center justify-center ${
+            className={`p-0 m-0 transition-smooth hover:scale-125 flex items-center justify-center ${
               isAvailable
                 ? 'text-green-600 hover:text-green-700' 
                 : 'text-red-600 hover:text-red-700'

@@ -262,20 +262,26 @@ export default function ClassificadosPage() {
     
     if (!user || !profile) {
       console.log('❌ Usuário ou perfil não encontrado')
-      toast.error('Você precisa estar logado para criar anúncios')
+      toast.error('Login necessário', {
+        description: 'Você precisa estar logado para criar anúncios. Faça login e tente novamente.'
+      })
       return
     }
 
     if (!formData.title || !formData.description || !formData.category || !formData.ad_type) {
       console.log('❌ Campos obrigatórios não preenchidos')
-      toast.error('Preencha todos os campos obrigatórios')
+      toast.error('Campos obrigatórios', {
+        description: 'Por favor, preencha todos os campos obrigatórios antes de criar o anúncio.'
+      })
       return
     }
 
     // Validar se a categoria escolhida é válida
     if (!isValidCategory(formData.category)) {
       console.log('❌ Categoria inválida:', formData.category)
-      toast.error('Categoria selecionada não é válida')
+      toast.error('Categoria inválida', {
+        description: 'A categoria selecionada não é válida. Por favor, selecione uma categoria válida.'
+      })
       return
     }
 
@@ -324,9 +330,11 @@ export default function ClassificadosPage() {
       
       // Recarregar anúncios
       await loadClassifiedAds()
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erro ao criar anúncio:', error)
-      toast.error(`Erro ao criar anúncio: ${error.message || 'Erro desconhecido'}`)
+      toast.error('Erro ao criar anúncio', {
+        description: error?.message || 'Não foi possível criar o anúncio. Verifique os dados e tente novamente.'
+      })
     } finally {
       setIsCreatingAd(false)
     }
