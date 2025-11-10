@@ -49,8 +49,24 @@ export default function RecuperarSenhaPage() {
     setMounted(true)
   }, [])
 
+  // Mostrar skeleton durante hidratação em vez de null para evitar problemas
   if (!mounted) {
-    return null
+    return (
+      <LightModeLayout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full bg-white/80 backdrop-blur-md border-0 shadow-xl">
+            <CardContent className="p-8">
+              <div className="animate-pulse space-y-4">
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </LightModeLayout>
+    )
   }
 
   const onSubmit = async (data: RecoveryFormData) => {

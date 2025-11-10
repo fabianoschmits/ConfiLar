@@ -35,7 +35,7 @@ import { FileText, TrendingUp } from 'lucide-react'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
-  const { profile } = useAuthContext()
+  const { profile, user, loading: authLoading } = useAuthContext()
   const searchParams = useSearchParams()
   const highlightPostId = searchParams.get('post')
   
@@ -66,6 +66,10 @@ export default function FeedPage() {
   // Estados para comentários
   const [postComments, setPostComments] = useState<Record<string, string[]>>({})
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Hook da timeline unificada - usando dados reais
   const {

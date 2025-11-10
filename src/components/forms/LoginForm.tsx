@@ -13,6 +13,7 @@ import { LoadingButton } from '@/components/ui/LoadingButton'
 import { FormFieldFeedback } from '@/components/ui/FormFieldFeedback'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { toast } from 'sonner'
 
 const loginSchema = z.object({
@@ -173,13 +174,12 @@ export function LoginForm() {
           </LoadingButton>
 
           <div className="text-center">
-            <button
-              type="button"
-              onClick={() => router.push('/recuperar-senha')}
+            <Link
+              href="/recuperar-senha"
               className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium"
             >
               Esqueci minha senha
-            </button>
+            </Link>
           </div>
 
           <div className="text-center text-sm text-gray-600 pt-2">

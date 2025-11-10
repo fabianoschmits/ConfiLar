@@ -1,0 +1,416 @@
+{
+  "meta": {
+    "project": "ConfiLar",
+    "date": "2025-11-04",
+    "prepared_by": "ConfiLar Team"
+  },
+  "product_overview": "ConfiLar is a professional trust platform connecting qualified professionals with clients through a comprehensive ecosystem based on ratings, recommendations, real-time social interactions, and an internal economy using points (ConfiPoints).",
+  "core_goals": [
+    "Facilitate connections between professionals and clients",
+    "Establish trust through a robust system of reviews and recommendations",
+    "Implement an internal economy with a points system (ConfiPoints)",
+    "Provide a rich social experience with real-time feed and chat interactions",
+    "Ensure full compliance with LGPD and data security standards"
+  ],
+  "key_features": [
+    "Comprehensive authentication system with email verification, password recovery, OTP reauthentication, and account security",
+    "Detailed user profiles featuring personal and professional info, smart avatars, badge systems, favorites, and activity history",
+    "Real-time social feed with automatic posts, likes, comments, shares, trending calculations, and mentions",
+    "Integrated floating chat system with real-time messaging, read status, notifications, and scheduling",
+    "ConfiPoints internal economy with earning, spending, dashboard, rankings, levels, and referral system",
+    "Advanced multi-filter search by location, service, price, rating, and text, including proximity search",
+    "Robust review and recommendation system with star ratings, automatic posts, and history",
+    "Intelligent notification system supporting real-time updates, custom sounds, push notifications, granular settings, and silent mode",
+    "Progressive Web App with offline capabilities, installability, service workers, push notifications, and smart caching",
+    "Admin dashboard for user management, bans, reports, analytics, logs, and points oversight",
+    "Complete LGPD compliance covering privacy policies, consent, data portability, deletion, and export"
+  ],
+  "user_flow_summary": [
+    "User registration requiring email verification and onboarding leading to feed access",
+    "Clients searching professionals applying filters, viewing profiles, and initiating contacts or favorites",
+    "Clients reviewing services post-completion, generating automatic posts and professional notifications",
+    "Users earning points for activities with daily caps and referral bonus, updated with notifications and dashboard changes"
+  ],
+  "validation_criteria": [
+    "Users can register and verify unique emails with prevention of duplicate accounts",
+    "Secure login with rate limiting and password recovery support",
+    "Profiles editable with automatic avatar generation and badge updates",
+    "Real-time feed operational with likes, comments, shares, trending, and notifications",
+    "Floating chat available on all pages with real-time messaging and read status",
+    "Points system accurately credits and debits points with transaction history and balance validation",
+    "Advanced search returns filtered and relevant results including proximity order",
+    "Review system permits posting and displaying ratings, automatic posts, and notifications",
+    "Notifications send real-time updates with customizable sounds and silent mode",
+    "PWA features functional with offline and installable app capabilities",
+    "Admins can manage users, bans, reports and view analytics effectively",
+    "LGPD compliance features fully implemented including user data export and deletion"
+  ],
+  "code_summary": {
+    "project_name": "ConfiLar",
+    "project_description": "Plataforma de confiança profissional que conecta profissionais qualificados com clientes, oferecendo um ecossistema completo de confiança baseado em avaliações, recomendações, interações sociais em tempo real e um sistema de economia interna com pontos.",
+    "tech_stack": {
+      "frontend": {
+        "framework": "Next.js 15.4.6",
+        "language": "TypeScript",
+        "styling": "Tailwind CSS",
+        "state_management": [
+          "React Query (@tanstack/react-query)",
+          "Zustand"
+        ],
+        "forms": "React Hook Form",
+        "validation": "Zod",
+        "ui_components": [
+          "@radix-ui/react-*",
+          "@headlessui/react",
+          "lucide-react",
+          "@tabler/icons-react"
+        ],
+        "animations": "framer-motion",
+        "charts": "chart.js, recharts"
+      },
+      "backend": {
+        "platform": "Supabase",
+        "database": "PostgreSQL",
+        "authentication": "Supabase Auth",
+        "realtime": "Supabase Realtime (WebSockets)",
+        "storage": "Supabase Storage",
+        "security": "Row Level Security (RLS)"
+      },
+      "pwa": {
+        "service_worker": "Custom Service Worker",
+        "manifest": "Web App Manifest",
+        "push_notifications": "Web Push API",
+        "offline_support": true
+      },
+      "testing": {
+        "unit_tests": "Jest",
+        "e2e_tests": "Playwright",
+        "testing_library": "@testing-library/react"
+      }
+    },
+    "main_features": {
+      "authentication": {
+        "description": "Sistema completo de autenticação",
+        "features": [
+          "Cadastro simplificado para clientes e profissionais",
+          "Verificação por email",
+          "Recuperação de senha",
+          "Onboarding inteligente",
+          "Reautenticação segura (OTP)",
+          "Troca de email com verificação"
+        ]
+      },
+      "user_profile": {
+        "description": "Perfil completo de usuário",
+        "features": [
+          "Informações pessoais e profissionais",
+          "Avatar inteligente gerado automaticamente",
+          "Sistema de favoritos",
+          "Histórico de atividades",
+          "Sistema de badges (Bronze, Silver, Gold)",
+          "Verificação de perfil"
+        ]
+      },
+      "social_feed": {
+        "description": "Feed social em tempo real",
+        "features": [
+          "Posts automáticos de boas-vindas",
+          "Sistema de curtidas e comentários",
+          "Posts de avaliação automáticos",
+          "Sistema de trending",
+          "Compartilhamento de conteúdo",
+          "Sistema de menções (@usuario)"
+        ]
+      },
+      "chat_system": {
+        "description": "Sistema de chat integrado",
+        "features": [
+          "Chat flutuante em todas as páginas",
+          "Mensagens em tempo real",
+          "Histórico de conversas",
+          "Status de leitura",
+          "Notificações de mensagens",
+          "Sistema de agendamentos"
+        ]
+      },
+      "points_system": {
+        "description": "Sistema de economia interna (ConfiPoints)",
+        "features": [
+          "Sistema de pontos por ações",
+          "Dashboard de pontos",
+          "Histórico de transações",
+          "Ranking global",
+          "Sistema de níveis (Bronze, Silver, Gold, Platinum, Diamond)",
+          "Loja de pontos",
+          "Compras e transferências",
+          "Sistema de referral"
+        ]
+      },
+      "notifications": {
+        "description": "Sistema de notificações inteligente",
+        "features": [
+          "Notificações em tempo real",
+          "Sons personalizados por tipo",
+          "Push notifications nativas",
+          "Configurações granulares",
+          "Modo silencioso",
+          "Notificações de curtidas, comentários, mensagens"
+        ]
+      },
+      "search": {
+        "description": "Sistema de busca avançada",
+        "features": [
+          "Filtros múltiplos (localização, serviços, preço, avaliação)",
+          "Busca por proximidade",
+          "Filtros de qualidade",
+          "Busca por texto livre"
+        ]
+      },
+      "reviews": {
+        "description": "Sistema de avaliações e recomendações",
+        "features": [
+          "Avaliações de profissionais",
+          "Sistema de recomendações",
+          "Histórico de avaliações",
+          "Posts automáticos de avaliações"
+        ]
+      },
+      "classifieds": {
+        "description": "Sistema de classificados premium",
+        "features": [
+          "Classificados premium",
+          "Posts automáticos",
+          "Sistema de expiração",
+          "Pagamento com pontos"
+        ]
+      },
+      "admin_dashboard": {
+        "description": "Dashboard administrativo",
+        "features": [
+          "Gerenciamento de usuários",
+          "Sistema de bans",
+          "Gerenciamento de denúncias",
+          "Analytics e estatísticas",
+          "Logs do sistema",
+          "Gerenciamento de pontos"
+        ]
+      },
+      "lgpd_compliance": {
+        "description": "Conformidade LGPD",
+        "features": [
+          "Política de privacidade",
+          "Termos de uso",
+          "Consentimento de cookies",
+          "Portabilidade de dados",
+          "Direito ao esquecimento",
+          "Exportação de dados"
+        ]
+      },
+      "pwa_features": {
+        "description": "Progressive Web App",
+        "features": [
+          "App instalável",
+          "Funcionalidades offline",
+          "Service Worker",
+          "Push notifications nativas",
+          "Cache inteligente"
+        ]
+      }
+    },
+    "api_routes": {
+      "authentication": [
+        "/api/auth/* (Supabase Auth)"
+      ],
+      "points": [
+        "/api/points/add",
+        "/api/points/balance",
+        "/api/points/history",
+        "/api/points/leaderboard",
+        "/api/points/premium-like"
+      ],
+      "economy": [
+        "/api/economy/packages",
+        "/api/economy/store/items",
+        "/api/economy/store/purchase",
+        "/api/economy/purchase/create",
+        "/api/economy/purchase/list",
+        "/api/economy/transfer/create",
+        "/api/economy/transfer/list",
+        "/api/economy/withdrawal/create",
+        "/api/economy/withdrawal/list"
+      ],
+      "referrals": [
+        "/api/referrals/create",
+        "/api/referrals/validate"
+      ],
+      "notifications": [
+        "/api/notifications/send",
+        "/api/notifications/subscribe",
+        "/api/notifications/unsubscribe"
+      ],
+      "lgpd": [
+        "/api/lgpd/export-data",
+        "/api/lgpd/delete-account"
+      ],
+      "admin": [
+        "/api/admin/bans",
+        "/api/admin/reports",
+        "/api/admin/reports/stats",
+        "/api/admin/investigations",
+        "/api/admin/tests/run",
+        "/api/admin/tests/status",
+        "/api/admin/tests/report",
+        "/api/admin/tests/logs",
+        "/api/admin/tests/history"
+      ],
+      "users": [
+        "/api/users/search"
+      ],
+      "posts": [
+        "/api/posts/share"
+      ],
+      "utilities": [
+        "/api/check-duplicates",
+        "/api/cron/expired-premium-classifieds"
+      ]
+    },
+    "main_pages": {
+      "public": [
+        "/",
+        "/home",
+        "/buscar",
+        "/sobre",
+        "/ajuda",
+        "/privacidade",
+        "/termos"
+      ],
+      "auth": [
+        "/auth",
+        "/recuperar-senha",
+        "/nova-senha",
+        "/verificacao",
+        "/onboarding"
+      ],
+      "user": [
+        "/perfil/[id]",
+        "/editar-perfil",
+        "/editarperfil/dados-da-conta",
+        "/editarperfil/dados-profissionais",
+        "/editarperfil/endereco",
+        "/editarperfil/seguranca",
+        "/editarperfil/tipo-conta",
+        "/favoritos",
+        "/portfolio",
+        "/avaliacoes",
+        "/reputacao",
+        "/indicacoes",
+        "/configuracoes-privacidade",
+        "/minhas-denuncias"
+      ],
+      "feed": [
+        "/feed"
+      ],
+      "confipoints": [
+        "/confipoints",
+        "/confipoints/dashboard",
+        "/confipoints/ranking",
+        "/confipoints/comprar",
+        "/confipoints/transferir",
+        "/confipoints/admin"
+      ],
+      "classifieds": [
+        "/classificados"
+      ],
+      "admin": [
+        "/admin/dashboard",
+        "/admin/dashboard/users",
+        "/admin/dashboard/stats",
+        "/admin/dashboard/analytics",
+        "/admin/dashboard/reports",
+        "/admin/dashboard/bans",
+        "/admin/dashboard/logs"
+      ]
+    },
+    "database_tables": {
+      "users": [
+        "profiles",
+        "user_settings",
+        "user_preferences"
+      ],
+      "social": [
+        "posts",
+        "post_likes",
+        "post_comments",
+        "post_shares",
+        "notifications"
+      ],
+      "messaging": [
+        "conversations",
+        "messages",
+        "message_reads"
+      ],
+      "points": [
+        "points_balance",
+        "points_history",
+        "points_config",
+        "points_store_items",
+        "points_packages",
+        "points_transactions"
+      ],
+      "referrals": [
+        "referrals",
+        "referral_history"
+      ],
+      "reviews": [
+        "reviews",
+        "recommendations"
+      ],
+      "classifieds": [
+        "classifieds",
+        "premium_classifieds"
+      ],
+      "admin": [
+        "admin_logs",
+        "user_bans",
+        "reports",
+        "investigations"
+      ]
+    },
+    "security_features": {
+      "authentication": [
+        "Supabase Auth",
+        "Email verification",
+        "OTP reauthentication",
+        "Rate limiting"
+      ],
+      "authorization": [
+        "Row Level Security (RLS)",
+        "Role-based access control",
+        "Admin guards"
+      ],
+      "data_protection": [
+        "LGPD compliance",
+        "Data encryption",
+        "Secure API routes",
+        "Input validation (Zod)"
+      ],
+      "anti_fraud": [
+        "Duplicate detection",
+        "Rate limiting",
+        "Anti-enumeration",
+        "CAPTCHA support"
+      ]
+    },
+    "testing_coverage": {
+      "unit_tests": "Jest",
+      "e2e_tests": "Playwright",
+      "test_location": "tests/e2e",
+      "coverage": "80%+"
+    },
+    "deployment": {
+      "platform": "Vercel",
+      "database": "Supabase",
+      "ci_cd": "GitHub Actions"
+    }
+  }
+}

@@ -450,7 +450,29 @@ export function SimpleRegistrationForm() {
 
       if (error) {
         console.error('❌ Erro detalhado:', error)
-        toast.error(`Erro ao criar conta: ${error.message}`)
+        
+        // Tratar erros específicos do Supabase
+        let errorMessage = error.message
+        let errorTitle = 'Erro ao criar conta'
+        
+        if (error.message?.toLowerCase().includes('rate limit') || 
+            error.message?.toLowerCase().includes('email rate limit exceeded')) {
+          errorTitle = 'Limite de emails excedido'
+          errorMessage = 'Muitos emails foram enviados recentemente. Por favor, aguarde algumas horas e tente novamente. Se o problema persistir, entre em contato com o suporte.'
+        } else if (error.message?.toLowerCase().includes('user already registered')) {
+          errorTitle = 'Email já cadastrado'
+          errorMessage = 'Este email já está cadastrado. Use a opção de recuperação de senha se você já possui uma conta.'
+        } else if (error.message?.toLowerCase().includes('invalid email')) {
+          errorTitle = 'Email inválido'
+          errorMessage = 'Por favor, verifique se o email está correto e tente novamente.'
+        } else if (error.message?.toLowerCase().includes('password')) {
+          errorTitle = 'Senha inválida'
+          errorMessage = 'A senha não atende aos requisitos de segurança. Por favor, verifique e tente novamente.'
+        }
+        
+        toast.error(`${errorTitle}: ${errorMessage}`, {
+          duration: 8000, // Mostrar por mais tempo para mensagens importantes
+        })
         setIsLoading(false)
         return
       }
