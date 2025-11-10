@@ -210,14 +210,16 @@ export const useAdvancedSearch = () => {
     // Filtro por anos de experiência
     if (currentFilters.experienceYears > 0) {
       filtered = filtered.filter(user => {
-        const years = parseInt(user.experience_years || '0')
+        const years = user.professional_experience_years || 0
         return years >= currentFilters.experienceYears
       })
     }
 
     // Filtro por usuários com portfólio
     if (currentFilters.hasPortfolio) {
-      filtered = filtered.filter(user => user.has_portfolio === true)
+      filtered = filtered.filter(user => {
+        return user.professional_portfolio_url !== null && user.professional_portfolio_url !== undefined
+      })
     }
 
     // Filtro por usuários com avaliações
