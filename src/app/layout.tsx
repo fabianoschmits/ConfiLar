@@ -21,7 +21,6 @@ import { Suspense } from "react"
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import FloatingChatWrapper from "@/components/chat/FloatingChatWrapper"
 import { BanNotification } from "@/components/BanNotification"
-import { DevTestButton } from "@/components/dev/DevTestButton"
 import { NewNotificationSystem } from "@/components/notifications/NewNotificationSystem"
 import { CookieConsentBanner } from "@/components/lgpd/CookieConsentBanner"
 import { PWAManager } from "@/components/pwa/PWAManager"
@@ -132,9 +131,7 @@ export default async function RootLayout({
                           <NewNotificationSystem />
                           <CookieConsentBanner />
                           <PWAManager />
-                          {/* <DevTestButton /> */}
                           <ToasterWithSounds position="top-right" richColors />
-                          {/* <AuthContextDebug /> */}
                         </FloatingChatProviderSimple>
                       </NotificationProviderSimple>
                     </AvailabilityProvider>

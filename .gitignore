@@ -1,6 +1,6 @@
 # =====================================================
 # CONFILAR - GITIGNORE OTIMIZADO
-# Apenas arquivos importantes serão enviados para o Git
+# Apenas código fonte será enviado para o Git
 # =====================================================
 
 # =====================================================
@@ -25,13 +25,39 @@ dist/
 .serverless/
 
 # =====================================================
-# TESTES E COVERAGE
+# TESTES E COVERAGE - TODOS IGNORADOS
 # =====================================================
 coverage/
 .nyc_output
 test-results/
 playwright-report/
+playwright/.cache/
 test-results.xml
+*.spec.ts
+*.test.ts
+*.test.js
+*.spec.js
+tests/
+testsprite_tests/
+__tests__/
+*.test.*
+*.spec.*
+*.py
+# Relatórios de testes
+*RELATORIO*.md
+*RESUMO*.md
+*DIAGNOSTICO*.md
+*PROBLEMAS*.md
+*CORRECOES*.md
+*COMO_*.md
+*SOLUCAO*.md
+*TESTE_*.md
+*ANALISE_*.md
+
+# Pastas de teste no código fonte
+src/**/__tests__/
+src/**/*.test.*
+src/**/*.spec.*
 
 # =====================================================
 # AMBIENTE E CONFIGURAÇÕES
@@ -43,6 +69,8 @@ test-results.xml
 .env.production.local
 .env.production
 .env.staging
+.env.example
+env.example
 
 # =====================================================
 # LOGS E DEBUG
@@ -54,6 +82,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+test-report-*.txt
+*.log.txt
+execution_log.txt
 
 # =====================================================
 # CACHE E TEMPORÁRIOS
@@ -120,81 +151,77 @@ temp/
 *.old
 
 # =====================================================
-# ARQUIVOS ESPECÍFICOS DO PROJETO
+# SCRIPTS E FERRAMENTAS DE DESENVOLVIMENTO
 # =====================================================
-# Relatórios de análise (gerados automaticamente)
-scripts/table-analysis-report.json
-scripts/database-dependencies-analysis.json
-scripts/cleanup-report.json
+# Ignorar TODOS os scripts exceto mcp-supabase-server.js e start-dev.js
+scripts/*
+!scripts/mcp-supabase-server.js
+!scripts/start-dev.js
+*.sh
+*.ps1
+*.sql
 
-# Arquivos de configuração local
-port.config.js
-mcp-config.json
-.cursorrules
-
-# Arquivos de backup do projeto
-backup-projeto-completo/
-backup-*/
-
-# Arquivos de teste temporários
+# Scripts na raiz
+check-*.js
 test-*.js
 debug-*.js
-check-*.js
 verify-*.js
+analyze-*.js
+cleanup-*.js
+execute-*.js
+setup-*.js
+create-*.js
+populate-*.js
+reset-*.js
+fix-*.js
+delete-*.js
+remove-*.js
+add-*.js
+alter-*.js
+force-*.js
+generate-*.js
+get-*.js
+list-*.js
+migrate-*.js
+monitor-*.js
 
 # =====================================================
-# DOCUMENTAÇÃO TEMPORÁRIA
+# ARQUIVOS ARQUIVADOS E BACKUP
 # =====================================================
-# Relatórios de limpeza (manter apenas os finais)
-docs/ANALISE_*.md
-docs/RELATORIO_*.md
-docs/DATABASE_*.md
-docs/MCP_*.md
-docs/SUPABASE_*.md
-docs/SISTEMA_*.md
+archive/
+*.backup
 
 # =====================================================
-# SCRIPTS DE DESENVOLVIMENTO
+# DOCUMENTAÇÃO E RELATÓRIOS - TODOS IGNORADOS
 # =====================================================
-# Scripts de teste e debug
-scripts/test-*.js
-scripts/debug-*.js
-scripts/check-*.js
-scripts/verify-*.js
-scripts/analyze-*.js
-scripts/cleanup-*.js
-scripts/execute-*.js
-scripts/setup-*.js
+docs/
+*.md
+!README.md
+RELATORIO_*.md
+ANALISE_*.md
+RESUMO_*.md
+CORRECOES_*.md
+IMPLEMENTACAO_*.md
+DIAGNOSTICO_*.md
+TEMA_*.md
+GUIA_*.md
+COMO_*.md
+SISTEMA_*.md
+TESTE_*.md
+TROUBLESHOOTING.md
+LICENSE
 
-# Scripts SQL temporários
-scripts/*-temp.sql
-scripts/*-backup.sql
-scripts/*-old.sql
-
-# =====================================================
-# ARQUIVOS DE CONFIGURAÇÃO DESNECESSÁRIOS
-# =====================================================
-# Templates de ambiente
-env.template
-.env.example
-.env.template
-
-# Arquivos de deploy temporários
-deploy-*.sh
-deploy-*.ps1
-deploy-*.js
+# Documentação de testes
+tests/**/*.md
+testsprite_tests/**/*.md
 
 # =====================================================
-# ARQUIVOS DE DOCUMENTAÇÃO TEMPORÁRIA
+# ARQUIVOS SQL - TODOS IGNORADOS
 # =====================================================
-# Documentação de deploy
-DEPLOY_*.md
-FUNCIONALIDADES_*.md
-OTIMIZACOES_*.md
-TIMELINE_*.md
+*.sql
 
 # =====================================================
-# ARQUIVOS DE EXEMPLO E TESTE
+# ARQUIVOS DE TESTE E DEBUG
 # =====================================================
 src/examples/
 src/lib/backup.ts
@@ -202,16 +229,95 @@ src/lib/supabase-mcp-simulator.ts
 src/lib/supabase-validator.ts
 src/types/database.ts.backup
 src/types/database-clean.ts
+src/app/teste-*/
+src/components/debug/
+src/components/dev/
+src/**/*.backup
+src/**/*.old
+src/**/*.temp
 
 # =====================================================
-# ARQUIVOS DE WORKFLOW TEMPORÁRIOS
+# ARQUIVOS DE CONFIGURAÇÃO DESNECESSÁRIOS
+# =====================================================
+port.config.js
+mcp-config.json
+*.config.js
+!next.config.mjs
+!tailwind.config.js
+!postcss.config.mjs
+!jest.config.js
+!playwright.config.ts
+!tsconfig.json
+
+# =====================================================
+# ARQUIVOS DE BACKUP E TEMPORÁRIOS
+# =====================================================
+backup-projeto-completo/
+backup-*/
+archive/
+temp_*.tsx
+*.backup
+*.old
+*.temp
+
+# =====================================================
+# EMAIL TEMPLATES E ASSETS TEMPORÁRIOS
+# =====================================================
+email-templates/
+
+# =====================================================
+# WORKFLOWS TEMPORÁRIOS
 # =====================================================
 .github/workflows/temp-*.yml
 .github/workflows/debug-*.yml
 
 # =====================================================
-# REGRAS ESPECÍFICAS DO CONFILAR
+# ARQUIVOS ESPECÍFICOS DO PROJETO
 # =====================================================
-# Manter apenas arquivos essenciais
-# Ignorar tudo que não seja código fonte ou configuração necessária
-# Focar apenas no que é importante para o funcionamento
+# Relatórios de análise (gerados automaticamente)
+scripts/table-analysis-report.json
+scripts/database-dependencies-analysis.json
+scripts/cleanup-report.json
+
+# Arquivos de deploy temporários
+deploy-*.sh
+deploy-*.ps1
+deploy-*.js
+
+# =====================================================
+# TESTSPRITE E TESTES EXTERNOS - TODOS IGNORADOS
+# =====================================================
+testsprite_tests/
+test-*.json
+test-*.xml
+test_results.json
+standard_prd.json
+
+# =====================================================
+# ARQUIVOS DE TEXT E JSON TEMPORÁRIOS
+# =====================================================
+*.txt
+!public/**/*.txt
+*.html
+!public/**/*.html
+
+# =====================================================
+# ARQUIVOS ESPECÍFICOS IGNORADOS
+# =====================================================
+IMPLEMENTACAO_*.md
+RESUMO_CORRECOES_*.md
+
+# =====================================================
+# MANTER APENAS NO GIT
+# =====================================================
+# - src/ (código fonte, exceto testes e debug)
+# - public/ (assets públicos)
+# - package.json, package-lock.json
+# - next.config.mjs, tailwind.config.js, tsconfig.json
+# - playwright.config.ts, jest.config.js (configurações)
+# - middleware.ts (middleware do Next.js)
+# - README.md (documentação principal)
+# - scripts/mcp-supabase-server.js (servidor MCP necessário)
+# - scripts/start-dev.js (script de desenvolvimento necessário)
+# - .cursorrules (regras do Cursor)
+# - .gitignore (este arquivo)

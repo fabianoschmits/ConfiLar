@@ -4,7 +4,6 @@
  */
 
 // ID do administrador principal
-// TODO: Considerar mover para variável de ambiente ou tabela de configuração
 export const ADMIN_USER_ID = 'f7444305-a3bd-4d71-874a-bb95fd27f96a'
 
 // Valores permitidos para ordenação de usuários

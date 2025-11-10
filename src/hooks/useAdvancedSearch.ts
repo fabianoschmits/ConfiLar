@@ -202,22 +202,22 @@ export const useAdvancedSearch = () => {
       filtered = filtered.filter(user => user.is_verified)
     }
 
-    // Filtro por usuários disponíveis (se implementado)
+    // Filtro por usuários disponíveis
     if (currentFilters.availableOnly) {
-      // TODO: Implementar lógica de disponibilidade
-      // Por enquanto, não filtra nada
+      filtered = filtered.filter(user => user.is_available !== false)
     }
 
-    // Filtro por anos de experiência (se implementado)
+    // Filtro por anos de experiência
     if (currentFilters.experienceYears > 0) {
-      // TODO: Implementar lógica de anos de experiência
-      // Por enquanto, não filtra nada
+      filtered = filtered.filter(user => {
+        const years = parseInt(user.experience_years || '0')
+        return years >= currentFilters.experienceYears
+      })
     }
 
     // Filtro por usuários com portfólio
     if (currentFilters.hasPortfolio) {
-      // TODO: Implementar verificação de portfólio
-      // Por enquanto, não filtra nada
+      filtered = filtered.filter(user => user.has_portfolio === true)
     }
 
     // Filtro por usuários com avaliações

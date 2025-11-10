@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageCircle, Send, Heart, Reply } from 'lucide-react'
 import { usePostCommentsWithNotifications } from '@/hooks/usePostCommentsWithNotifications'
-import { useCommentsDebug } from '@/hooks/useCommentsDebug'
+import { useComments } from '@/hooks/useComments'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -35,20 +35,11 @@ export function CommentSectionWithNotifications({
   })
 
   // Carregar comentários existentes
-  const { comments, isLoading: commentsLoading, error: commentsError } = useCommentsDebug({
-    post_id: postId
+  const { comments, isLoading: commentsLoading, error: commentsError } = useComments({
+    post_id: postId,
+    postOwnerId,
+    postOwnerName
   })
-
-  // Debug apenas uma vez quando os dados mudam
-  React.useEffect(() => {
-    if (commentsLoading) {
-      console.log('🔍 Carregando comentários para post:', postId)
-    } else if (commentsError) {
-      console.log('❌ Erro ao carregar comentários:', commentsError)
-    } else if (comments) {
-      console.log('✅ Comentários carregados:', comments.length, 'para post:', postId)
-    }
-  }, [commentsLoading, commentsError, comments, postId])
 
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,16 +108,16 @@ export function CommentSectionWithNotifications({
           comments.map((comment) => (
             <div key={comment.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
               <Avatar className="h-8 w-8 flex-shrink-0">
-                <AvatarImage src={comment.user?.avatar_url} alt={comment.user?.full_name} />
+                <AvatarImage src={comment.user?.avatar_url} alt={comment.user?.full_name || ''} />
                 <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
-                  {comment.user?.full_name?.charAt(0).toUpperCase()}
+                  {comment.user?.full_name?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-sm text-gray-900">
-                    {comment.user?.full_name}
+                    {comment.user?.full_name || 'Usuário'}
                   </span>
                   <span className="text-xs text-gray-500">
                     {formatDistanceToNow(new Date(comment.created_at), { 

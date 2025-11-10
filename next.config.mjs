@@ -34,20 +34,8 @@ const nextConfig = {
   // Removido output: 'standalone' que pode causar problemas no Vercel
   // output: 'standalone',
   
-  // Configuração Webpack personalizada
+  // Configuração Webpack personalizada (removida configuração de debug - componentes já foram removidos)
   webpack: (config, { dev, isServer }) => {
-    // Em produção, excluir componentes de debug do bundle
-    if (!dev) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Substituir imports de debug por módulo vazio
-        '@/components/debug/SimpleMentionTest': false,
-        '@/components/debug/MentionDebug': false,
-        '@/components/debug/AuthContextDebug': false,
-        '@/hooks/useCommentsDebug': false,
-      }
-    }
-    
     return config
   },
 }
