@@ -96,7 +96,7 @@ export function ReactionButton({ postId, postOwnerId, postOwnerName, className }
       size="sm"
       className={cn(
         'flex items-center space-x-1 md:space-x-2 hover:bg-gray-100 dark:hover:bg-gray-800 relative overflow-visible transition-all duration-200',
-        userReaction === 'like' ? 'bg-gray-100 dark:bg-gray-800' : '',
+        userReaction === 'like' ? 'bg-gray-100 dark:bg-gray-900' : '',
         isAnimating && 'scale-110',
         className
       )}

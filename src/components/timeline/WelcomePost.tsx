@@ -81,7 +81,7 @@ export function WelcomePost({
 
   return (
     <>
-      <Card className="hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <Card className="hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Post */}
           <div className="flex items-start justify-between mb-4">

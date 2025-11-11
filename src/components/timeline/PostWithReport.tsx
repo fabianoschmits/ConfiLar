@@ -21,7 +21,7 @@ interface PostWithReportProps {
 
 export function PostWithReport({ post }: PostWithReportProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3">
       {/* Header do post */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

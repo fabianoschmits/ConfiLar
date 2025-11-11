@@ -248,7 +248,7 @@ export default function FeedPage() {
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-900 flex items-center justify-center">
                           <span className="text-lg">{story.name.charAt(0)}</span>
                         </div>
                       )}

@@ -516,7 +516,7 @@ export function ConfiPointsAdminDashboard() {
       {/* Tabs Principais - Responsivo */}
       <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
         <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
-          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-4 gap-1 p-1 bg-gray-100 dark:bg-gray-800">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:grid-cols-4 gap-1 p-1 bg-gray-100 dark:bg-gray-900">
             <TabsTrigger 
               value="overview" 
               className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"

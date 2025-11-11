@@ -47,7 +47,7 @@ export function DesktopNotificationItem({
       className={`p-3 rounded-lg border cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 relative group ${
         !notification.is_read 
           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
-          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
       }`}
       onClick={() => onClick(notification)}
     >

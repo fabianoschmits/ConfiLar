@@ -66,7 +66,7 @@ export function ModernBottomNavigation() {
 
   return (
     <div 
-      className="lg:hidden bottom-nav-fixed bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg"
+      className="lg:hidden bottom-nav-fixed bg-white dark:bg-black border-t border-gray-200 dark:border-gray-900 shadow-lg"
     >
       <div className="max-w-md mx-auto px-4 py-2">
         <div className="flex items-center justify-around">
@@ -78,8 +78,8 @@ export function ModernBottomNavigation() {
               className={cn(
                 "flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 min-w-[60px]",
                 item.active
-                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
               )}
             >
               <item.icon className={cn(

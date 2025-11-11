@@ -289,7 +289,7 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
                     <Badge 
                       variant="outline" 
                       style={{ borderColor: option.color, color: option.color }}
-                      className="bg-white dark:bg-gray-800 text-[10px] sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1"
+                      className="bg-white dark:bg-gray-900 text-[10px] sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1"
                     >
                       {option.points.toLocaleString('pt-BR')} pts
                     </Badge>

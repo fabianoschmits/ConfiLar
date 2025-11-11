@@ -77,7 +77,7 @@ export function ReferralLinkCard({ userId, className }: ReferralLinkCardProps) {
             <Input
               value={referralLink || ''}
               readOnly
-              className="font-mono text-sm bg-white dark:bg-gray-800"
+              className="font-mono text-sm bg-white dark:bg-gray-900"
             />
             <Button
               onClick={handleCopy}

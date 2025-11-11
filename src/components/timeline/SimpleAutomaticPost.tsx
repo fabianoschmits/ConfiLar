@@ -142,7 +142,7 @@ export function SimpleAutomaticPost({ post, onDelete, isDeleting = false }: Simp
 
   return (
     <>
-      <Card className="mb-2 bg-gray-50 dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+      <Card className="mb-2 bg-gray-50 dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
         <CardContent className="py-2 px-3">
           {/* Linha principal com ação */}
           <div className="flex items-center justify-between">

@@ -158,7 +158,7 @@ export default function EnderecoPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
             {/* Page Header */}
@@ -194,7 +194,7 @@ export default function EnderecoPage() {
                           <button
                             type="button"
                             className={cn(
-                              "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
+                              "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
                               errors.location_state ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                             )}
                           >
@@ -206,7 +206,7 @@ export default function EnderecoPage() {
                             <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" align="start">
+                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" align="start">
                           <Command>
                             <CommandInput placeholder="Buscar estado..." />
                             <CommandList>
@@ -254,7 +254,7 @@ export default function EnderecoPage() {
                             type="button"
                             disabled={!watchedValues.location_state}
                             className={cn(
-                              "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
+                              "w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10",
                               errors.location_city ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600',
                               !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
                             )}
@@ -269,7 +269,7 @@ export default function EnderecoPage() {
                             <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700" align="start">
+                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" align="start">
                           <Command>
                             <CommandInput placeholder="Buscar cidade..." />
                             <CommandList>

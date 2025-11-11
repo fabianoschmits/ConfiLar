@@ -24,13 +24,13 @@ export default function ConfiPointsRankingPage() {
     if (position === 1) return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
     if (position === 2) return 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
     if (position === 3) return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
-    return 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+    return 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
   }
 
   if (loading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="min-h-screen bg-gray-50 dark:bg-black">
           <div className="container py-8">
             <div className="mx-auto max-w-4xl">
               <div className="mb-8">
@@ -60,7 +60,7 @@ export default function ConfiPointsRankingPage() {
   if (error) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
@@ -79,7 +79,7 @@ export default function ConfiPointsRankingPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
             {/* Header */}
@@ -164,7 +164,7 @@ export default function ConfiPointsRankingPage() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         {/* Posição */}
-                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-900">
                           {getRankIcon(index + 1)}
                         </div>
 

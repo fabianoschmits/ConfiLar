@@ -319,13 +319,13 @@ export function ModernSidebar() {
 
   const getCategoryColor = (color: string) => {
     const colors = {
-      blue: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      green: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      purple: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      orange: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      indigo: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      red: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800',
-      gray: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800'
+      blue: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      green: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      purple: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      orange: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      indigo: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      red: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900',
+      gray: 'text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-900'
     }
     return colors[color as keyof typeof colors] || colors.gray
   }
@@ -342,12 +342,12 @@ export function ModernSidebar() {
 
       {/* Sidebar Moderna */}
       <div className={`
-        fixed left-0 top-0 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-sm z-[60]
+        fixed left-0 top-0 h-full bg-gray-50 dark:bg-black border-r border-gray-200 dark:border-gray-900 shadow-sm z-[60]
         w-48 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-900 bg-gray-100 dark:bg-gray-900">
           <Link href="/home" className="flex flex-col items-center space-y-1 w-full">
             <div className="h-10 flex items-center justify-center">
               <BrandLogo width={120} height={28} />
@@ -472,7 +472,7 @@ export function ModernSidebar() {
 
         {/* Informações do Usuário */}
         {isLoggedIn && (
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-900 bg-gray-50 dark:bg-gray-900">
             <div className="space-y-2">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">

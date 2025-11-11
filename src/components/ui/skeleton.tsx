@@ -222,7 +222,7 @@ export function PackageSkeleton() {
 // Skeleton para card de anúncio classificado
 export function ClassifiedsCardSkeleton() {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-lg animate-fade-in bg-white dark:bg-gray-800">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-lg animate-fade-in bg-white dark:bg-gray-900">
       {/* Header com tipo de anúncio e localização */}
       <div className="flex items-center justify-between p-4 pb-2">
         <div className="flex items-center gap-2">
@@ -443,7 +443,7 @@ export function ProfilePageSkeleton() {
 // Skeleton para card de avaliação
 export function ReviewCardSkeleton() {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in bg-white dark:bg-gray-800">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-fade-in bg-white dark:bg-gray-900">
       <div className="flex items-start space-x-3">
         {/* Avatar do revisor */}
         <Skeleton variant="circle" width={48} height={48} />
@@ -498,7 +498,7 @@ export function ReviewListSkeleton({ count = 5 }: { count?: number }) {
 // Skeleton para card de favorito
 export function FavoriteCardSkeleton() {
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 animate-fade-in">
+    <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 animate-fade-in">
       <CardContent className="p-3 sm:p-4">
         {/* Header do Card com Avatar e Info do Usuário */}
         <div className="flex items-start space-x-3 mb-3">
@@ -590,7 +590,7 @@ export function AdminTableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden animate-fade-in">
       {/* Header */}
-      <div className="bg-gray-50 dark:bg-gray-800 p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div className="bg-gray-50 dark:bg-gray-900 p-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} width="80%" height={16} />
         ))}
@@ -617,7 +617,7 @@ export function RankingCardSkeleton() {
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Posição */}
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-900">
             <Skeleton width={24} height={24} />
           </div>
           

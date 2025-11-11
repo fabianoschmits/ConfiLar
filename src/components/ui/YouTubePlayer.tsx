@@ -38,7 +38,7 @@ export function YouTubePlayer({
     return (
       <div className={`relative w-full ${className}`}>
         {isLoading && (
-          <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center z-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
         )}
@@ -58,7 +58,7 @@ export function YouTubePlayer({
     <Card className={`overflow-hidden border border-gray-200 dark:border-gray-700 ${className}`}>
       <div className="relative group cursor-pointer" onClick={handlePlay}>
         {/* Thumbnail */}
-        <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-800">
+        <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-900">
           <img
             src={thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
             alt={title || 'YouTube Video Thumbnail'}

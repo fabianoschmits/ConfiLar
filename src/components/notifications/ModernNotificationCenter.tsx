@@ -71,7 +71,7 @@ const NOTIFICATION_COLORS = {
   message: 'bg-blue-500',
   review: 'bg-yellow-500',
   booking: 'bg-green-500',
-  system: 'bg-gray-50 dark:bg-gray-8000',
+  system: 'bg-gray-50 dark:bg-gray-9000',
   achievement: 'bg-purple-500',
   verification: 'bg-indigo-500',
   success: 'bg-emerald-500',
@@ -146,7 +146,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-l-2xl">
+      <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-white dark:bg-gray-900/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-xl rounded-l-2xl">
         <SheetHeader className="p-6 pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div>
@@ -189,7 +189,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
         <div className="flex-1 overflow-hidden flex flex-col">
           {/* Barra de Busca e Filtros */}
-          <div className="p-4 border-b bg-gray-50 dark:bg-gray-800/50">
+          <div className="p-4 border-b bg-gray-50 dark:bg-gray-900/50">
             <div className="space-y-3">
               {/* Busca */}
               <div className="relative">
@@ -319,7 +319,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
               <div className="space-y-1 p-2">
                 {filteredNotifications.map((notification) => {
                   const IconComponent = NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || Bell
-                  const iconColor = NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || 'bg-gray-50 dark:bg-gray-8000'
+                  const iconColor = NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || 'bg-gray-50 dark:bg-gray-9000'
                   const priorityColor = PRIORITY_COLORS[notification.priority as keyof typeof PRIORITY_COLORS] || 'bg-gray-100 text-gray-800'
                   const isExpanded = expandedNotifications.has(notification.id)
                   
@@ -327,7 +327,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                     <Card 
                       key={notification.id} 
                       className={`transition-all duration-200 hover:shadow-md ${
-                        !notification.is_read ? 'bg-blue-50/50 border-blue-200' : 'bg-white dark:bg-gray-800'
+                        !notification.is_read ? 'bg-blue-50/50 border-blue-200' : 'bg-white dark:bg-gray-900'
                       }`}
                     >
                       <CardContent className="p-4">
@@ -420,7 +420,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
 
           {/* Footer com estatísticas */}
           {notifications.length > 0 && (
-            <div className="p-4 border-t bg-gray-50 dark:bg-gray-800/50">
+            <div className="p-4 border-t bg-gray-50 dark:bg-gray-900/50">
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <span>
                   {unreadCount} não lidas de {notifications.length} total

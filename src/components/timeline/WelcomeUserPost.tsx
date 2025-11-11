@@ -86,7 +86,7 @@ export function WelcomeUserPost({
 
   return (
     <>
-      <Card className="mb-4 hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <Card className="mb-4 hover:shadow-md transition-shadow duration-200 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           {/* Header do Card - Estilo da página de busca */}
           <div className="flex items-start space-x-3 mb-4">

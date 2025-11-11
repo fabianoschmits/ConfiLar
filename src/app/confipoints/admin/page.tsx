@@ -22,7 +22,7 @@ export default function ConfiPointsAdminPage() {
   return (
     <MainLayout requireAuth={true}>
       <AdminGuard>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="min-h-screen bg-gray-50 dark:bg-black">
           <div className="container mx-auto py-8 px-4">
             <ConfiPointsAdminDashboard />
           </div>

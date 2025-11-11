@@ -234,7 +234,7 @@ export function PremiumAdCard({
                       variant="ghost"
                       size="sm"
                       onClick={() => setExpandedImage(null)}
-                      className="bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-lg"
+                      className="bg-white/90 dark:bg-gray-900/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-lg"
                     >
                       <span className="text-xl">×</span>
                     </Button>

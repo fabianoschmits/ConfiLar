@@ -149,7 +149,7 @@ export default function FavoritesPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header da Página */}
           <div className="mb-8">
@@ -217,7 +217,7 @@ export default function FavoritesPage() {
           {/* Abas de Filtro */}
           {!loading && !error && favorites.length > 0 && (
             <div className="mb-6">
-              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <div className="flex flex-wrap items-center gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg">
                 <button
                   onClick={() => setActiveTab('all')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-all duration-200 ${
@@ -284,7 +284,7 @@ export default function FavoritesPage() {
                   {getFilteredFavorites().map((favorite) => (
                     <Card 
                       key={favorite.id} 
-                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 ${
+                      className={`hover:shadow-lg transition-all duration-300 hover:scale-105 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 ${
                         favorite.professional?.user_type === 'professional' 
                           ? 'hover:shadow-blue-100 dark:hover:shadow-blue-900/20' 
                           : 'hover:shadow-gray-100 dark:hover:shadow-gray-900/20'

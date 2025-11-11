@@ -156,7 +156,7 @@ export default function TipoContaPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
             {/* Page Header */}

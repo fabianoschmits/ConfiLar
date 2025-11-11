@@ -52,7 +52,7 @@ export const ModernMainLayout: React.FC<ModernMainLayoutProps> = ({
       {/* Header Moderno */}
       <ModernHeader />
       
-      <main className="min-h-screen bg-gray-50 dark:bg-gray-950 lg:ml-48 pb-20 lg:pb-0 pt-16">
+      <main className="min-h-screen bg-gray-50 dark:bg-black lg:ml-48 pb-20 lg:pb-0 pt-16">
         {loading || !isReady ? (
           <PageLoadingOverlay isLoading={true} message={loading ? 'Verificando autenticação...' : 'Preparando interface...'} />
         ) : requireAuth && !isLoggedIn ? (
@@ -85,7 +85,7 @@ export const ModernMainLayout: React.FC<ModernMainLayoutProps> = ({
                       window.location.href = `/auth?redirect=${encodeURIComponent(pathname)}`
                     }
                   }}
-                  className="w-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="w-full bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Criar Conta
                 </button>

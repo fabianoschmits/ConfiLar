@@ -34,7 +34,7 @@ export default function AdminDashboardLayout({
   return (
     <MainLayout requireAuth={true}>
       <AdminGuard>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="min-h-screen bg-gray-50 dark:bg-black">
           <div className="flex">
             {/* Sidebar de Navegação */}
             <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen">

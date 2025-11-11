@@ -211,7 +211,7 @@ export function MinimalLoadingOverlay({
 
   return (
     <div className="fixed inset-0 z-[100] bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm flex items-center justify-center transition-all duration-150">
-      <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150">
+      <div className="bg-white dark:bg-gray-900 rounded-full p-4 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin" strokeWidth={2} />
       </div>
     </div>
@@ -242,7 +242,7 @@ export function PageLoadingOverlay({
 
   return (
     <div className="fixed inset-0 z-[100] bg-gradient-to-br from-gray-50/80 to-gray-100/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-md flex items-center justify-center transition-all duration-300">
-      <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-2xl p-6 flex flex-col items-center space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-2xl p-6 flex flex-col items-center space-y-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
         
         {/* Spinner com logo */}
         <div className="relative">

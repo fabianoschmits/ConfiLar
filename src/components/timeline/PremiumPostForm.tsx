@@ -191,7 +191,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus, isR
                       <Badge 
                         variant="outline" 
                         style={{ borderColor: option.color, color: option.color }}
-                        className="bg-white dark:bg-gray-800 text-base font-semibold px-3 py-1"
+                        className="bg-white dark:bg-gray-900 text-base font-semibold px-3 py-1"
                       >
                         {option.points.toLocaleString('pt-BR')} pts
                       </Badge>
@@ -219,7 +219,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus, isR
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Digite o título do seu post premium..."
-                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />
             </div>
@@ -233,7 +233,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus, isR
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Compartilhe sua experiência, dica ou conhecimento... Use @ para mencionar alguém"
                 rows={4}
-                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />
             </div>

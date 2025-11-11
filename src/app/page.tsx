@@ -282,7 +282,7 @@ function HomeContent() {
       </section>
 
       {/* Seção: Como Funciona - Didática */}
-      <section className="py-16 bg-white dark:bg-gray-800">
+      <section className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -505,7 +505,7 @@ function HomeContent() {
       </section>
 
       {/* Card do Programa de Referal */}
-      <section className="py-16 bg-white dark:bg-gray-800">
+      <section className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -580,7 +580,7 @@ function HomeContent() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-lg">
                   <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-4 text-center">
                     Estatísticas do Programa
                   </h4>

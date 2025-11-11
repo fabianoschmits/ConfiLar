@@ -108,7 +108,7 @@ export function LocationFilterSelector({
       <Button
         variant="outline"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
+        className="w-full justify-between bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
       >
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -125,7 +125,7 @@ export function LocationFilterSelector({
 
       {/* Dropdown de Filtros */}
       {isOpen && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
           <CardContent className="p-3">
             <div className="space-y-2">
               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -179,7 +179,7 @@ export function LocationFilterSelector({
 
       {/* Seletor Custom de Localização */}
       {showCustomSelector && (
-        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
+        <Card className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-700 shadow-lg">
           <CardContent className="p-4">
             <div className="space-y-4">
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">

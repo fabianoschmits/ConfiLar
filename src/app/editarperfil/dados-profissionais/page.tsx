@@ -178,7 +178,7 @@ export default function DadosProfissionaisPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
             {/* Page Header */}
@@ -231,7 +231,7 @@ export default function DadosProfissionaisPage() {
                         <PopoverTrigger asChild>
                           <button
                             type="button"
-                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-left hover:border-gray-400 dark:hover:border-gray-600 transition-colors flex items-center justify-between h-10"
                           >
                             <span className="text-gray-900 dark:text-white">
                               {selectedServices.length === 0
@@ -241,7 +241,7 @@ export default function DadosProfissionaisPage() {
                             <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400 dark:text-gray-500" />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        <PopoverContent className="w-full p-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                           <Command>
                             <CommandInput placeholder="Buscar serviços..." />
                             <CommandList>

@@ -26,7 +26,7 @@ export default function IndicacoesPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
+        <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
           <div className="max-w-7xl mx-auto">
             <ReferralDashboardSkeleton />
           </div>
@@ -38,7 +38,7 @@ export default function IndicacoesPage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center p-6">
           <EmptyState
             icon={<Users className="h-16 w-16 text-gray-400 dark:text-gray-600" />}
             title="Faça login para acessar"
@@ -56,7 +56,7 @@ export default function IndicacoesPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-4 md:p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-black p-4 md:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="text-center space-y-4">
@@ -122,7 +122,7 @@ export default function IndicacoesPage() {
                   {pointsTable.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                      className="flex items-center justify-between p-2 md:p-3 rounded-lg bg-gray-50 dark:bg-gray-900/50"
                     >
                       <div className="flex items-center gap-2 md:gap-3">
                         <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-600 dark:bg-green-400 rounded-full" />

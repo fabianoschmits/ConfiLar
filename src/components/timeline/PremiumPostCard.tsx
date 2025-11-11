@@ -195,7 +195,7 @@ export function PremiumPostCard({
                   />
                   
                   {/* Badge Destacado (mantém visível) */}
-                  <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
+                  <Badge variant="outline" className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1">
                     <Sparkles className="h-2 w-2 sm:h-3 sm:w-3" />
                     <span className="hidden sm:inline">Destacado</span>
                     <span className="sm:hidden">⭐</span>

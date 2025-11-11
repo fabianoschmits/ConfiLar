@@ -46,7 +46,7 @@ export default function ConfiguracoesPrivacidadePage() {
   if (!user) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-8 text-center">
               <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -126,7 +126,7 @@ export default function ConfiguracoesPrivacidadePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-black py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header */}

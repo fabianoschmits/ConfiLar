@@ -264,7 +264,7 @@ export function TrendingPostCard({ className = '' }: TrendingPostCardProps) {
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full text-xs bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800"
+              className="w-full text-xs bg-white/80 dark:bg-gray-900/80 hover:bg-white dark:hover:bg-gray-800"
             >
               Ver Post Completo
             </Button>

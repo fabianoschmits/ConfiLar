@@ -292,7 +292,7 @@ export function SmartSearchBar({
 
         {/* Sugestões */}
         {showSuggestions && suggestions.length > 0 && (
-          <Card ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 max-h-60 overflow-y-auto">
+          <Card ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 max-h-60 overflow-y-auto">
             <CardContent className="p-0">
               {suggestions.map((suggestion) => (
                 <button
@@ -343,7 +343,7 @@ export function SmartSearchBar({
 
       {/* Filtros avançados - Escondidos por padrão */}
       {showFilters && showAdvancedFilters && (
-        <Card className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <Card className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
               <Filter className="h-3 w-3" />

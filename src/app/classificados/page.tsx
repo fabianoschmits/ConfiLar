@@ -489,7 +489,7 @@ export default function ClassificadosPage() {
     return (
     <ClientOnly>
       <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
               
           {/* Estatísticas Compactas */}
@@ -549,7 +549,7 @@ export default function ClassificadosPage() {
                 
                 {/* Sugestões de serviços */}
                 {filters.searchTerm.length > 1 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {services
                       .filter(service => 
                         service.name.toLowerCase().includes(filters.searchTerm.toLowerCase())
@@ -596,7 +596,7 @@ export default function ClassificadosPage() {
 
                 {/* Dropdown de filtros de localização */}
                 {showFilters && (
-                  <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 w-80 p-3">
+                  <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 w-80 p-3">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
@@ -798,7 +798,7 @@ export default function ClassificadosPage() {
                         <span className="sm:hidden ml-0.5">Novo</span>
                       </Button>
                     </DialogTrigger>
-                  <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                  <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
                       <DialogTitle className="text-gray-900 dark:text-white">Criar Novo Anúncio</DialogTitle>
                     </DialogHeader>
@@ -924,7 +924,7 @@ export default function ClassificadosPage() {
                       <span className="sm:hidden ml-0.5">⭐</span>
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+                  <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 sm:p-6">
                     <DialogHeader className="mb-4 sm:mb-6">
                       <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
@@ -945,7 +945,7 @@ export default function ClassificadosPage() {
 
               {/* Dialog de Edição */}
               <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="max-w-2xl bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                   <DialogHeader>
                     <DialogTitle className="text-gray-900 dark:text-white">Editar Anúncio</DialogTitle>
                   </DialogHeader>
@@ -1047,7 +1047,7 @@ export default function ClassificadosPage() {
 
               {/* Modal de Visualização do Anúncio */}
               <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
-                <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                   <DialogHeader className="pb-3 sm:pb-4">
                     <DialogTitle className="text-base sm:text-lg md:text-xl font-bold leading-tight text-gray-900 dark:text-white">
                       {selectedAd?.title}
@@ -1057,7 +1057,7 @@ export default function ClassificadosPage() {
                   {selectedAd && (
                     <div className="space-y-3 sm:space-y-6">
                       {/* Header com Avatar e Info do Usuário */}
-                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="self-center sm:self-start">
                           <Link href={`/perfil/${selectedAd.user_id}`}>
                             <UserAvatar
@@ -1196,7 +1196,7 @@ export default function ClassificadosPage() {
 
                       {/* Faixa de Preço (se houver) */}
                       {selectedAd.price_range && (
-                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             <span className="font-semibold mr-2">💰 Faixa de Preço:</span>
                             <span>{selectedAd.price_range}</span>
@@ -1205,7 +1205,7 @@ export default function ClassificadosPage() {
                       )}
 
                       {/* Informações Adicionais */}
-                      <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                           <span>Publicado em {formatDate(selectedAd.created_at)}</span>
@@ -1361,8 +1361,8 @@ export default function ClassificadosPage() {
                     isActivePremium
                       ? 'bg-gradient-to-br from-amber-50/90 via-yellow-50/70 to-amber-100/50 dark:from-amber-900/20 dark:via-yellow-900/15 dark:to-amber-800/10 border-2 border-amber-300 dark:border-amber-700 shadow-amber-200/50 dark:shadow-amber-900/30'
                       : ad.ad_type === 'oferecer' 
-                        ? 'bg-white dark:bg-gray-800 hover:animate-glow-blue border border-gray-200 dark:border-gray-700' 
-                        : 'bg-white dark:bg-gray-800 hover:animate-glow-emerald border border-gray-200 dark:border-gray-700'
+                        ? 'bg-white dark:bg-gray-900 hover:animate-glow-blue border border-gray-200 dark:border-gray-700' 
+                        : 'bg-white dark:bg-gray-900 hover:animate-glow-emerald border border-gray-200 dark:border-gray-700'
                   }`}
                 >
                   {/* Badge Premium - aparece apenas se for premium */}

@@ -118,7 +118,7 @@ export default function TransferirConfiPointsPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-4xl">
             {/* Header */}
@@ -177,7 +177,7 @@ export default function TransferirConfiPointsPage() {
                           placeholder="email@exemplo.com"
                           value={searchEmail}
                           onChange={(e) => setSearchEmail(e.target.value)}
-                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                          className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                         />
                         <Button
                           type="button"
@@ -228,7 +228,7 @@ export default function TransferirConfiPointsPage() {
                         min={MIN_TRANSFER_POINTS}
                         step={10}
                         disabled={!searchedUser}
-                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                        className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         Mínimo: {MIN_TRANSFER_POINTS.toLocaleString()} pontos
@@ -245,13 +245,13 @@ export default function TransferirConfiPointsPage() {
                         onChange={(e) => setMessage(e.target.value)}
                         rows={3}
                         disabled={!searchedUser}
-                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                        className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                       />
                     </div>
 
                     {/* Resumo */}
                     {pointsValue > 0 && searchedUser && (
-                      <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
                             Você enviará:

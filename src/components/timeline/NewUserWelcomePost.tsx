@@ -122,7 +122,7 @@ export function NewUserWelcomePost({
 
   return (
     <>
-      <Card className="mb-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="mb-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-3 md:p-4">
           {/* Header - Responsivo */}
           <div className="flex items-start space-x-3 mb-3">

@@ -48,7 +48,7 @@ export function EmptyState({
           className={cn(
             'mb-4 flex items-center justify-center',
             isMinimal ? 'w-16 h-16' : 'w-24 h-24',
-            'rounded-full bg-gray-100 dark:bg-gray-800'
+            'rounded-full bg-gray-100 dark:bg-gray-900'
           )}
         >
           {icon}

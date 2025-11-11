@@ -32,7 +32,7 @@ export default function ComprarPontosPage() {
   if (pointsLoading) {
     return (
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6">
+        <div className="min-h-screen bg-gray-50 dark:bg-black p-6">
           <div className="max-w-7xl mx-auto">
             <PackageSkeleton />
           </div>
@@ -178,7 +178,7 @@ export default function ComprarPontosPage() {
 
   return (
     <MainLayout requireAuth={true}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="container py-8">
           <div className="mx-auto max-w-6xl">
             {/* Header */}
@@ -323,7 +323,7 @@ export default function ComprarPontosPage() {
                     </CardHeader>
                     
                     <CardContent className="text-center px-4 pb-6">
-                      <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                      <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                         <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                           {pkg.price}
                         </div>

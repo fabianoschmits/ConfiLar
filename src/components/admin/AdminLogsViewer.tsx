@@ -401,7 +401,7 @@ export function AdminLogsViewer() {
                           <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-xs space-y-2">
                             {log.endpoint && (
                               <div>
-                                <strong>Endpoint:</strong> <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">{log.endpoint}</code>
+                                <strong>Endpoint:</strong> <code className="bg-gray-200 dark:bg-gray-900 px-1 rounded">{log.endpoint}</code>
                               </div>
                             )}
                             {log.status_code && (
@@ -411,13 +411,13 @@ export function AdminLogsViewer() {
                             )}
                             {log.ip_address && (
                               <div>
-                                <strong>IP:</strong> <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">{log.ip_address}</code>
+                                <strong>IP:</strong> <code className="bg-gray-200 dark:bg-gray-900 px-1 rounded">{log.ip_address}</code>
                               </div>
                             )}
                             {Object.keys(log.details).length > 0 && (
                               <div>
                                 <strong>Informações adicionais:</strong>
-                                <pre className="mt-1 p-2 bg-gray-200 dark:bg-gray-800 rounded overflow-x-auto text-[10px]">
+                                <pre className="mt-1 p-2 bg-gray-200 dark:bg-gray-900 rounded overflow-x-auto text-[10px]">
                                   {JSON.stringify(log.details, null, 2)}
                                 </pre>
                               </div>

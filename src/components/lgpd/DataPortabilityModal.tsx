@@ -114,7 +114,7 @@ export function DataPortabilityModal({ isOpen, onClose }: DataPortabilityModalPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black border-gray-200 dark:border-gray-900">
         <CardHeader>
           <CardTitle className="flex items-center text-gray-900 dark:text-white">
             <Download className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />

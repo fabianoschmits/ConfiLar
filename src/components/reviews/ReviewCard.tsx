@@ -139,7 +139,7 @@ export function ReviewCard({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-lg transition-shadow">
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
         {/* Avatar - Mobile: topo, Desktop: lado */}
         <div className="flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2">
@@ -212,7 +212,7 @@ export function ReviewCard({
                     <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
                   {isOwner && onEdit && (
                     <DropdownMenuItem onClick={() => onEdit(review)} className="flex items-center gap-2">
                       <Edit className="h-4 w-4" />

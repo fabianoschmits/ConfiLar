@@ -198,7 +198,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
 
         {/* Lista de usuários encontrados */}
         {searchQuery && (
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-white dark:bg-gray-800">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto bg-white dark:bg-gray-900">
             {isSearching ? (
               <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
@@ -338,12 +338,12 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
             <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">ou compartilhe via link</span>
+            <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">ou compartilhe via link</span>
           </div>
         </div>
 
         {/* Compartilhar via Link */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 space-y-3 bg-gray-50 dark:bg-gray-800/50">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-4 space-y-3 bg-gray-50 dark:bg-gray-900/50">
           <h4 className="font-semibold text-sm text-gray-900 dark:text-white flex items-center">
             <Link2 className="h-4 w-4 mr-2 flex-shrink-0" />
             Compartilhar via Link
@@ -354,7 +354,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle }: SharePost
             <Input
               value={getPostUrl()}
               readOnly
-              className="flex-1 text-xs sm:text-sm bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-700 min-w-0"
+              className="flex-1 text-xs sm:text-sm bg-gray-50 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-900 min-w-0"
             />
             <Button
               onClick={handleCopyLink}

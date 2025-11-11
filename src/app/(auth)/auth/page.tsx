@@ -103,7 +103,7 @@ export default function AuthPage() {
       <div className="container py-12 md:py-24">
         <div className="mx-auto max-w-md">
           {/* Auth Forms Modernas */}
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-0 shadow-xl">
             <CardContent className="p-6">
               {/* Título de Boas-vindas */}
               <div className="text-center mb-6">

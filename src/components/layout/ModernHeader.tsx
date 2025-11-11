@@ -237,7 +237,7 @@ export function ModernHeader({
   return (
     <>
       {/* Header Moderno - Flutuante no Mobile */}
-      <div className="lg:sticky fixed lg:top-0 top-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-full lg:left-0 lg:translate-x-0 z-50 lg:shadow-sm bg-white dark:bg-[#1b1b1b] lg:bg-white lg:dark:bg-gray-900 border rounded-full lg:rounded-none lg:border-b border-gray-200 dark:border-gray-700 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-none">
+      <div className="lg:sticky fixed lg:top-0 top-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-full lg:left-0 lg:translate-x-0 z-50 lg:shadow-sm bg-white dark:bg-black lg:bg-white lg:dark:bg-black border rounded-full lg:rounded-none lg:border-b border-gray-200 dark:border-gray-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-none">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
             {/* Left side */}
@@ -323,7 +323,7 @@ export function ModernHeader({
 
                 {/* Menu Expandido */}
                 {isMenuExpanded && (
-                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden animate-slide-down">
+                  <div className="absolute top-full right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[75vh] overflow-hidden animate-slide-down">
                     <div className="p-3 sm:p-4 overflow-y-auto max-h-[75vh]">
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">

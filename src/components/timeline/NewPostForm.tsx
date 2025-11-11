@@ -175,7 +175,7 @@ export function NewPostForm({
           </div>
 
           {/* TOGGLE POST PREMIUM */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-900">
             <div className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-yellow-500" />
               <div>
@@ -222,8 +222,8 @@ export function NewPostForm({
                         isSelected
                           ? 'bg-yellow-500 text-white border-yellow-500'
                           : canAfford
-                          ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-yellow-500'
-                          : 'bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-800 cursor-not-allowed'
+                          ? 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-yellow-500'
+                          : 'bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 border-gray-200 dark:border-gray-900 cursor-not-allowed'
                       }`}
                     >
                       {option.label}

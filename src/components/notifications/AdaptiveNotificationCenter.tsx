@@ -219,7 +219,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     return (
       <div className="flex flex-col bg-white dark:bg-gray-900">
         {/* Header de Configurações */}
-        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
@@ -476,7 +476,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     return (
       <div className="flex flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
           <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
@@ -513,7 +513,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
             className={`px-3 py-1 text-xs rounded-full transition-colors ${
                 filter === 'all' 
                   ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
             Todas
@@ -523,7 +523,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
             className={`px-3 py-1 text-xs rounded-full transition-colors ${
                 filter === 'unread' 
                   ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' 
-                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                : 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             Não lidas
@@ -551,7 +551,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
 
       {/* Footer com ações */}
       {notifications.length > 0 && (
-        <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+        <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
           <div className="flex items-center justify-between">
                       <button
               onClick={handleDeleteAll}

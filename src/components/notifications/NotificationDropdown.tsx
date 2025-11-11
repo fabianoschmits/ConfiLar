@@ -413,7 +413,7 @@ export const NotificationDropdown: React.FC = () => {
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative p-1 h-6 w-6 bg-white dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 rounded-lg"
+          className="relative p-1 h-6 w-6 bg-white dark:bg-gray-900/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 rounded-lg"
         >
           <Bell size={14} className="text-gray-600 dark:text-gray-400" />
           
@@ -443,7 +443,7 @@ export const NotificationDropdown: React.FC = () => {
       <DropdownMenuContent 
         align="end" 
         side="bottom"
-        className="w-80 sm:w-96 bg-white dark:bg-gray-800/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0 animate-slide-down"
+        className="w-80 sm:w-96 bg-white dark:bg-gray-900/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0 animate-slide-down"
         style={{ 
           maxHeight: '80vh',
           height: '80vh',
@@ -461,7 +461,7 @@ export const NotificationDropdown: React.FC = () => {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 transition-all duration-200 rounded-lg"
+                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white dark:bg-gray-900 dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-all duration-200 rounded-lg"
                   >
                     <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5" />
                   </button>
@@ -488,7 +488,7 @@ export const NotificationDropdown: React.FC = () => {
               </div>
 
               {/* Conteúdo das Configurações Moderno */}
-              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
+              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white dark:bg-gray-900">
                 {/* Canais de Notificação */}
                 <div className="space-y-4">
                   <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
@@ -496,7 +496,7 @@ export const NotificationDropdown: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <label htmlFor="push_enabled" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Notificações Push</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
@@ -508,7 +508,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                               preferences.push_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -528,7 +528,7 @@ export const NotificationDropdown: React.FC = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <label htmlFor="message_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Mensagens</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
@@ -540,7 +540,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                               preferences.message_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -548,7 +548,7 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <label htmlFor="review_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Avaliações</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
@@ -560,7 +560,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                               preferences.review_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -568,7 +568,7 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <label htmlFor="system_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Sistema</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
@@ -580,7 +580,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                               preferences.system_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -588,7 +588,7 @@ export const NotificationDropdown: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <label htmlFor="info_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Informações</label>
                       <div className="flex items-center gap-2">
                         {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
@@ -600,7 +600,7 @@ export const NotificationDropdown: React.FC = () => {
                           }`}
                         >
                           <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform ${
+                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
                               preferences.info_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
                             }`}
                           />
@@ -670,7 +670,7 @@ export const NotificationDropdown: React.FC = () => {
                 
                 <button
                   onClick={() => setShowSettings(true)}
-                  className="p-1.5 sm:p-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
+                  className="p-1.5 sm:p-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
                   title="Configurações (S)"
                 >
                   <Settings size={12} className="sm:w-4 sm:h-4" />
@@ -679,31 +679,31 @@ export const NotificationDropdown: React.FC = () => {
             </div>
 
             {/* Instruções de Teclado - Fixo */}
-            <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
+            <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 dark:text-gray-400 gap-2 sm:gap-0">
                       <div className="flex items-center gap-2 sm:gap-4">
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">↑↓</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">↑↓</kbd>
                           <span className="hidden sm:inline">Navegar</span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">Enter</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">Enter</kbd>
                           <span className="hidden sm:inline">Selecionar</span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">S</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">S</kbd>
                           <span className="hidden sm:inline">Configurações</span>
                         </span>
                       </div>
                       <div className="flex items-center gap-2 sm:gap-4">
                         {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
                           <span className="flex items-center gap-1">
-                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">M</kbd>
+                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">M</kbd>
                             <span className="hidden sm:inline">Marcar todas</span>
                           </span>
                         )}
                         <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-xs">Esc</kbd>
+                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">Esc</kbd>
                           <span className="hidden sm:inline">Fechar</span>
                         </span>
                       </div>
@@ -711,7 +711,7 @@ export const NotificationDropdown: React.FC = () => {
             </div>
 
             {/* Lista de Notificações Moderna - Com scroll - OCUPA ESPAÇO DISPONÍVEL */}
-            <div className="overflow-y-auto bg-white dark:bg-gray-800 overscroll-contain" style={{ 
+            <div className="overflow-y-auto bg-white dark:bg-gray-900 overscroll-contain" style={{ 
               flex: '1 1 auto', 
               minHeight: 0,
               width: '100%',
@@ -722,12 +722,12 @@ export const NotificationDropdown: React.FC = () => {
               maxHeight: '100%'
             }}>
               {isLoading ? (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 m-4 rounded-lg">
+                <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 m-4 rounded-lg">
                   <Loader2 size={32} className="mx-auto mb-4 text-gray-400 animate-spin" />
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Carregando notificações...</p>
                 </div>
               ) : recentNotifications.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 m-4 rounded-lg">
+                <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 m-4 rounded-lg">
                   <Bell size={32} className="mx-auto mb-4 text-gray-400" />
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Nenhuma notificação</p>
                 </div>
@@ -738,7 +738,7 @@ export const NotificationDropdown: React.FC = () => {
                       <div
                         className={cn(
                           "flex items-start gap-3 p-3 cursor-pointer border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg",
-                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800",
+                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900",
                           selectedIndex === index && "ring-2 ring-blue-500 bg-blue-50"
                         )}
                         onClick={() => handleNotificationClick(notification)}
@@ -799,7 +799,7 @@ export const NotificationDropdown: React.FC = () => {
 
             {/* Footer Moderno - Apenas botão "Marcar todas como lidas" quando houver não lidas */}
             {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-              <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 bg-white dark:bg-gray-800 w-full" style={{ 
+              <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 bg-white dark:bg-gray-900 w-full" style={{ 
                 flexShrink: 0, 
                 flexGrow: 0,
                 width: '100%',

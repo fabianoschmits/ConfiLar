@@ -41,7 +41,7 @@ export default function AjudaPage() {
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="min-h-screen bg-gray-50 dark:bg-black">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header da Página */}
             <div className="mb-8">
@@ -230,7 +230,7 @@ export default function AjudaPage() {
                     Entre em contato conosco via email para suporte.
                   </p>
                   <div className="flex justify-center">
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                       <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">Suporte via Email</p>

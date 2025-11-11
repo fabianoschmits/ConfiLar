@@ -106,7 +106,7 @@ export function SimpleCaptcha({ onValidate, className }: SimpleCaptchaProps) {
 
   return (
     <div className={cn('', className)}>
-      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-1.5">
+      <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-1.5">
         <div className="flex items-center justify-center gap-1.5">
           <span className="text-xs text-gray-600 dark:text-gray-400 mr-1">Verificação:</span>
           <div className="text-sm font-bold text-blue-600 dark:text-blue-400 w-6 text-center bg-white dark:bg-gray-900 rounded px-1">

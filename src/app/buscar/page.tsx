@@ -297,7 +297,7 @@ export default function BuscarPage() {
 
     return (
       <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="min-h-screen bg-gray-50 dark:bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
 
           {/* Estatísticas - Card Compacto */}
@@ -395,7 +395,7 @@ export default function BuscarPage() {
 
           {/* Abas de Filtro por Tipo de Usuário */}
           <div className="mb-6">
-            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto">
+            <div className="flex items-center gap-1 sm:gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab('all')}
                 className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-md font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
