@@ -783,12 +783,13 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       )}
 
       {/* AÇÕES */}
-      <div className="px-4 py-3 space-y-2 border-t border-gray-100 dark:border-gray-800/50">
-        <div className="flex items-center gap-1">
+      <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
+        <div className="flex items-center gap-4">
+          {/* Botão de Like Normal */}
           <button
             onClick={handleLikeClick}
             disabled={isLiking || isReactionLoading}
-            className="transition-transform active:scale-125 disabled:opacity-50 flex items-center justify-center p-0.5"
+            className="transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5"
           >
             <Heart 
               className={`h-4 w-4 transition-all ${
@@ -797,18 +798,24 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             />
+            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              {likesCount > 0 ? likesCount.toLocaleString('pt-BR') : '0'}
+            </span>
           </button>
+          
           {/* Botão de Like Premium */}
           <PremiumLikeButton
             postId={post.id}
             postCreatorId={userId}
             size="sm"
             showStats={false}
-            className="h-4"
+            className="h-auto"
           />
+          
+          {/* Botão de Comentários */}
           <button
             onClick={() => setShowComments(!showComments)}
-            className="transition-transform active:scale-125 relative flex items-center justify-center p-0.5"
+            className="transition-transform active:scale-125 flex items-center gap-1.5"
           >
             <MessageCircle 
               className={`h-4 w-4 transition-all ${
@@ -817,26 +824,23 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             />
-            {(commentsCount > 0 || post.comments_count > 0) && (
-              <span className="absolute top-1.5 right-0 bg-blue-600 dark:bg-blue-500 text-white text-[9px] font-semibold rounded-full h-3.5 w-3.5 flex items-center justify-center border border-white dark:border-black transform -translate-x-1/4 -translate-y-1/2">
-                {(commentsCount || post.comments_count) > 99 ? '99+' : (commentsCount || post.comments_count)}
-              </span>
-            )}
+            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              {(commentsCount || post.comments_count || 0).toLocaleString('pt-BR')}
+            </span>
           </button>
+          
+          {/* Botão de Compartilhar */}
           <button 
             onClick={() => setShowShareModal(true)}
-            className="transition-transform active:scale-125 ml-1"
+            className="transition-transform active:scale-125 flex items-center gap-1.5"
           >
             <Share2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+              0
+            </span>
           </button>
         </div>
-
-        {/* LIKES */}
-        {likesCount > 0 && (
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">
-            {likesCount} {likesCount === 1 ? 'curtida' : 'curtidas'}
-          </p>
-        )}
+      </div>
 
         {/* TEXTO - Só mostra se tiver foto (se não tiver, já mostrou acima) */}
         {postImages[0] && (
@@ -861,9 +865,6 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             {/* Removido "Ver todos os comentários" - apenas ícone de comentários */}
           </div>
         )}
-        
-        {/* Removido "Ver todos os comentários" - apenas ícone de comentários */}
-      </div>
 
       {/* COMENTÁRIOS */}
       {showComments && (

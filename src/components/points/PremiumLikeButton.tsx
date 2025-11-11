@@ -141,7 +141,7 @@ export function PremiumLikeButton({
             onClick={handlePremiumLike}
             disabled={isOwnPost || isPremiumLiking}
             className={cn(
-              'transition-all duration-200 relative p-2 overflow-visible h-auto',
+              'transition-all duration-200 relative overflow-visible h-auto flex items-center gap-1.5',
               userPremiumLiked && 'bg-yellow-500 hover:bg-yellow-600 text-white',
               isOwnPost && 'opacity-50 cursor-not-allowed',
               isAnimating && 'animate-pulse scale-110',
@@ -161,6 +161,12 @@ export function PremiumLikeButton({
                 animation: isAnimating ? 'heartBeat 0.6s ease-in-out' : undefined
               }}
             />
+            <span className={cn(
+              'text-sm font-medium transition-colors',
+              userPremiumLiked ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+            )}>
+              {premiumLikesCount > 0 ? premiumLikesCount.toLocaleString('pt-BR') : '0'}
+            </span>
             
             {/* Efeito de partículas ao clicar */}
             {isAnimating && (
