@@ -28,6 +28,7 @@ export interface TimelinePost extends TimelineItem {
   comments_count: number
   is_liked?: boolean
   is_featured?: boolean
+  is_premium?: boolean
   tags?: string[]
   premium_points_spent?: number
   premium_expires_at?: string

@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Edit, Trash2, Loader2, Flag } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Loader2, Flag, Crown } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { ReportButton } from '@/components/ReportButton'
 
@@ -28,7 +28,10 @@ interface PostOptionsMenuProps {
   postTitle?: string
   onEdit: (postId: string) => void
   onDelete: (postId: string) => void
+  onRenewPremium?: (postId: string) => void
   isDeleting?: boolean
+  isPremium?: boolean
+  premiumExpired?: boolean
 }
 
 export function PostOptionsMenu({ 
@@ -36,8 +39,11 @@ export function PostOptionsMenu({
   postUserId, 
   postTitle,
   onEdit, 
-  onDelete, 
-  isDeleting = false 
+  onDelete,
+  onRenewPremium,
+  isDeleting = false,
+  isPremium = false,
+  premiumExpired = false
 }: PostOptionsMenuProps) {
   const { user } = useAuthContext()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -82,6 +88,16 @@ export function PostOptionsMenu({
                 <Edit className="h-4 w-4 mr-2" />
                 Editar Post
               </DropdownMenuItem>
+              {isPremium && premiumExpired && onRenewPremium && (
+                <DropdownMenuItem 
+                  onClick={() => onRenewPremium(postId)}
+                  className="cursor-pointer text-yellow-600 dark:text-yellow-500 focus:text-yellow-600 transition-smooth"
+                  aria-label="Renovar post premium"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Tornar Premium Novamente
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem 
                 onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer text-red-600 focus:text-red-600 transition-smooth"

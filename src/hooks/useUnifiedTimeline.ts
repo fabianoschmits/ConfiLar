@@ -45,6 +45,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           updated_at,
           metadata,
           is_featured,
+          is_premium,
+          premium_points_spent,
+          premium_expires_at,
+          premium_highlight_color,
           tags,
           professional:profiles!feed_posts_professional_id_fkey(
             id,
@@ -333,6 +337,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           is_liked: likedPosts.has(post.id),
           is_featured: post.is_featured || false,
           tags: post.tags || [],
+          is_premium: post.is_premium || false,
+          premium_points_spent: post.premium_points_spent,
+          premium_expires_at: post.premium_expires_at,
+          premium_highlight_color: post.premium_highlight_color,
           metadata: post.metadata
         }
 
@@ -433,331 +441,331 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     })
   }, [queryClient, queryKey, likedPosts])
 
-         const addPost = useCallback(async (newPost: any) => {
-           try {
-             console.log('📝 [addPost] Criando novo post para usuário:', newPost.user_id)
-             
-             // Validar dados obrigatórios
-             if (!newPost.user_id) {
-               throw new Error('ID do usuário é obrigatório')
-             }
-             if (!newPost.title?.trim()) {
-               throw new Error('Título é obrigatório')
-             }
-             if (!newPost.description?.trim()) {
-               throw new Error('Descrição é obrigatória')
-             }
-             
-             // Preparar dados para inserção
-             const postData = {
-               professional_id: newPost.user_id,
-               user_id: newPost.user_id,
-               title: newPost.title.trim(),
-               description: newPost.description.trim(),
-               content: newPost.description.trim(), // Usar description como content também
-               images: Array.isArray(newPost.images) ? newPost.images : [],
-               service_category_id: newPost.service_category_id || null,
-               location_state: newPost.location_state || null,
-               location_city: newPost.location_city || null,
-               likes_count: 0,
-               comments_count: 0,
-               is_active: true,
-               is_public: true,
-               is_featured: false,
-               tags: null,
-               metadata: null
-             }
-             
-             console.log('📝 [addPost] Dados do post:', postData)
-             
-             // Criação do post
-             const { data, error } = await supabase
-               .from('feed_posts')
-               .insert(postData)
-               .select()
-               .single()
+  const addPost = useCallback(async (newPost: any) => {
+    try {
+      console.log('📝 [addPost] Criando novo post para usuário:', newPost.user_id)
+      
+      // Validar dados obrigatórios
+      if (!newPost.user_id) {
+        throw new Error('ID do usuário é obrigatório')
+      }
+      if (!newPost.description?.trim()) {
+        throw new Error('Descrição é obrigatória')
+      }
+      
+      // Gerar título automaticamente a partir da descrição (primeiros 100 caracteres)
+      const title = newPost.description.trim().slice(0, 100)
+      
+      // Preparar dados para inserção
+      const postData = {
+        professional_id: newPost.user_id,
+        user_id: newPost.user_id,
+        title: title,
+        description: newPost.description.trim(),
+        content: newPost.description.trim(), // Usar description como content também
+        images: Array.isArray(newPost.images) ? newPost.images : [],
+        service_category_id: newPost.service_category_id || null,
+        location_state: newPost.location_state || null,
+        location_city: newPost.location_city || null,
+        likes_count: 0,
+        comments_count: 0,
+        is_active: true,
+        is_public: true,
+        is_featured: false,
+        tags: null,
+        metadata: null
+      }
+      
+      console.log('📝 [addPost] Dados do post:', postData)
+      
+      // Criação do post
+      const { data, error } = await supabase
+        .from('feed_posts')
+        .insert(postData)
+        .select()
+        .single()
 
-             if (error) {
-               console.error('❌ [addPost] Erro do Supabase:', error)
-               throw error
-             }
+      if (error) {
+        console.error('❌ [addPost] Erro do Supabase:', error)
+        throw error
+      }
 
-             console.log('✅ [addPost] Post criado com sucesso:', data.id)
+      console.log('✅ [addPost] Post criado com sucesso:', data.id)
 
-             // ✅ VERIFICAR SE É O PRIMEIRO POST DO USUÁRIO (para referral milestone)
-             try {
-               // Contar quantos posts o usuário tem (excluindo posts de sistema/boas-vindas)
-               const { count, error: countError } = await supabase
-                 .from('feed_posts')
-                 .select('*', { count: 'exact', head: true })
-                 .eq('professional_id', newPost.user_id)
-                 .is('tags', null)
-               
-               if (!countError && count === 1) {
-                 console.log('🎉 [addPost] Este é o PRIMEIRO post do usuário! Marcando milestone...')
-                 
-                 // Marcar milestone de primeiro post
-                 const { error: milestoneError } = await supabase
-                   .from('referrals')
-                   .update({ 
-                     first_post_made: true,
-                     last_activity_at: new Date().toISOString()
-                   })
-                   .eq('referred_id', newPost.user_id)
-                   .eq('first_post_made', false)
-                 
-                 if (milestoneError) {
-                   console.warn('⚠️ [addPost] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
-                 } else {
-                   console.log('✅ [addPost] Milestone first_post_made marcado! (+30 pontos para indicador)')
-                 }
-               } else {
-                 console.log('📝 [addPost] Post criado. Total de posts do usuário:', count)
-               }
-             } catch (milestoneError) {
-               console.warn('⚠️ [addPost] Erro ao processar milestone de primeiro post:', milestoneError)
-               // Não falhar a criação do post se houver erro no milestone
-             }
-
-             // Atualizar cache local
-             const timelinePost = {
-               id: data.id,
-               type: 'post' as const,
-               created_at: data.created_at,
-               user_id: data.professional_id,
-               user_name: newPost.user_name,
-               user_avatar: newPost.user_avatar,
-               user_type: newPost.user_type,
-               title: data.title,
-               description: data.description || '',
-               images: data.images || [],
-               service_category_id: data.service_category_id,
-               location_state: data.location_state,
-               location_city: data.location_city,
-               likes_count: data.likes_count || 0,
-               comments_count: data.comments_count || 0,
-               is_liked: false
-             } as UnifiedTimelineItem
-
-             queryClient.setQueryData(queryKey, (oldData: any) => {
-               if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
-               return {
-                 ...oldData,
-                 pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
-               }
-             })
-
-             return timelinePost
-           } catch (error) {
-             console.error('Erro ao criar post:', error)
-             throw error
-           }
-         }, [queryClient, queryKey])
-
-         const editPost = useCallback(async (postId: string, updatedPost: any) => {
-           try {
-             // Atualizar no banco de dados
-             const { data, error } = await supabase
-               .from('feed_posts')
-               .update({
-                 title: updatedPost.title,
-                 description: updatedPost.description,
-                 images: updatedPost.images || [],
-                 updated_at: new Date().toISOString()
-               })
-               .eq('id', postId)
-               .select()
-               .single()
-
-             if (error) throw error
-
-             // Atualizar cache local
-             queryClient.setQueryData(queryKey, (oldData: any) => {
-               if (!oldData) return oldData
-               return {
-                 ...oldData,
-                 pages: oldData.pages.map((page: any[]) =>
-                   page.map((item: any) =>
-                     item.id === postId && item.type === 'post'
-                       ? {
-                           ...item,
-                           title: data.title,
-                           description: data.description,
-                           images: data.images || []
-                         }
-                       : item
-                   )
-                 )
-               }
-             })
-
-             return data
-           } catch (error) {
-             console.error('Erro ao editar post:', error)
-             throw error
-           }
-         }, [queryClient, queryKey])
-
-         const deletePost = useCallback(async (postId: string) => {
-           try {
-             console.log('🗑️ Iniciando exclusão do post:', postId)
-             
-             // Verificar usuário atual
-             const { data: { user }, error: userError } = await supabase.auth.getUser()
-             if (userError || !user) {
-               console.error('❌ Erro ao obter usuário atual:', userError)
-               throw new Error('Usuário não autenticado')
-             }
-             
-             console.log('👤 Usuário atual:', user.id)
-             
-             // Buscar informações do post
-             const { data: postData, error: fetchError } = await supabase
-               .from('feed_posts')
-               .select('metadata, user_id, professional_id, title')
-               .eq('id', postId)
-               .single()
-
-             if (fetchError) {
-               console.error('❌ Erro ao buscar dados do post:', fetchError)
-               throw new Error('Post não encontrado')
-             }
-
-            console.log('📋 Dados do post encontrados:', {
-              id: postId,
-              title: postData?.title,
-              user_id: postData?.user_id,
-              professional_id: postData?.professional_id,
-              metadata: postData?.metadata
+      // ✅ VERIFICAR SE É O PRIMEIRO POST DO USUÁRIO (para referral milestone)
+      try {
+        // Contar quantos posts o usuário tem (excluindo posts de sistema/boas-vindas)
+        const { count, error: countError } = await supabase
+          .from('feed_posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('professional_id', newPost.user_id)
+          .is('tags', null)
+        
+        if (!countError && count === 1) {
+          console.log('🎉 [addPost] Este é o PRIMEIRO post do usuário! Marcando milestone...')
+          
+          // Marcar milestone de primeiro post
+          const { error: milestoneError } = await supabase
+            .from('referrals')
+            .update({ 
+              first_post_made: true,
+              last_activity_at: new Date().toISOString()
             })
-            
-            // Verificar se o usuário tem permissão para deletar este post
-            // O post pode ter user_id OU professional_id
-            const isOwner = postData?.user_id === user.id || postData?.professional_id === user.id
-            
-            if (!isOwner) {
-              console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
-              console.error('❌ Post user_id:', postData?.user_id, '| professional_id:', postData?.professional_id, '| Usuário atual:', user.id)
-              throw new Error('Você não tem permissão para deletar este post')
-            }
-            
-            console.log('✅ Permissão confirmada: usuário pode deletar este post')
-
-            // Deletar do banco de dados
-            console.log('🗄️ Executando DELETE no banco de dados...')
-            const { error, count } = await supabase
-              .from('feed_posts')
-              .delete()
-              .eq('id', postId)
-              .or(`user_id.eq.${user.id},professional_id.eq.${user.id}`) // Verificar ambos os campos
-
-             if (error) {
-               console.error('❌ Erro ao deletar post do banco:', error)
-               console.error('❌ Detalhes do erro:', {
-                 message: error.message,
-                 details: error.details,
-                 hint: error.hint,
-                 code: error.code
-               })
-               throw error
-             }
-
-             console.log('✅ Post deletado do banco com sucesso. Linhas afetadas:', count)
-
-             // Verificar se o post foi realmente deletado
-             if (count === 0) {
-               console.error('❌ PROBLEMA: Nenhuma linha foi afetada na exclusão!')
-               console.error('❌ Isso indica que o post não foi deletado ou não existe')
-               throw new Error('Post não foi deletado - nenhuma linha afetada')
-             }
-
-             // Verificar se o post foi realmente deletado
-             const { data: verifyData, error: verifyError } = await supabase
-               .from('feed_posts')
-               .select('id, title, user_id')
-               .eq('id', postId)
-               .single()
-
-             if (verifyError && verifyError.code === 'PGRST116') {
-               console.log('✅ Confirmação: Post foi deletado (não encontrado na verificação)')
-             } else if (verifyData) {
-               console.error('❌ PROBLEMA CRÍTICO: Post ainda existe no banco após exclusão:', verifyData)
-               throw new Error('Post não foi deletado do banco de dados')
-             }
-
-             // Se o post tem metadata indicando que é um post automático, deletar notificações relacionadas
-             if (postData?.metadata?.type) {
-               const postType = postData.metadata.type
-               const userId = postData.user_id
-               const professionalId = postData.professional_id
-
-               console.log('🔍 Post automático deletado, verificando notificações relacionadas:', {
-                 postType,
-                 userId,
-                 professionalId
-               })
-
-               // Deletar notificações relacionadas baseadas no tipo de post
-               if (postType === 'favorite' && professionalId) {
-                 // Deletar notificação de favorito para o usuário que foi favoritado
-                 const { error: notificationError } = await supabase
-                   .from('notifications')
-                   .delete()
-                   .eq('user_id', professionalId)
-                   .eq('type', 'favorite')
-                   .eq('metadata->>favoriter_id', userId)
-
-                 if (notificationError) {
-                   console.warn('⚠️ Erro ao deletar notificação de favorito:', notificationError.message)
-                 } else {
-                   console.log('✅ Notificação de favorito deletada')
-                 }
-               } else if (postType === 'recommendation' && professionalId) {
-                 // Deletar notificação de recomendação para o usuário que foi recomendado
-                 const { error: notificationError } = await supabase
-                   .from('notifications')
-                   .delete()
-                   .eq('user_id', professionalId)
-                   .eq('type', 'recommendation')
-                   .eq('metadata->>recommender_id', userId)
-
-                 if (notificationError) {
-                   console.warn('⚠️ Erro ao deletar notificação de recomendação:', notificationError.message)
-                 } else {
-                   console.log('✅ Notificação de recomendação deletada')
-                 }
-               }
-             }
-
-             // Atualizar cache local - remover o post
-             console.log('🔄 Atualizando cache local para remover post:', postId)
-             queryClient.setQueryData(queryKey, (oldData: any) => {
-               if (!oldData) {
-                 console.log('⚠️ Cache vazio, não há dados para atualizar')
-                 return oldData
-               }
-               
-               const updatedData = {
-                 ...oldData,
-                 pages: oldData.pages.map((page: any[]) => {
-                   const originalLength = page.length
-                   const filteredPage = page.filter((item: any) => !(item.id === postId && item.type === 'post'))
-                   console.log(`📄 Página atualizada: ${originalLength} → ${filteredPage.length} itens`)
-                   return filteredPage
-                 })
-               }
-               
-               console.log('✅ Cache atualizado com sucesso')
-               return updatedData
-             })
-
-             console.log('🎉 Exclusão do post concluída com sucesso:', postId)
-             return true
-          } catch (error) {
-            console.error('Erro ao deletar post:', error)
-            throw error
+            .eq('referred_id', newPost.user_id)
+            .eq('first_post_made', false)
+          
+          if (milestoneError) {
+            console.warn('⚠️ [addPost] Erro ao marcar milestone (usuário pode não ter sido indicado):', milestoneError.message)
+          } else {
+            console.log('✅ [addPost] Milestone first_post_made marcado! (+30 pontos para indicador)')
           }
-        }, [queryClient, queryKey])
+        } else {
+          console.log('📝 [addPost] Post criado. Total de posts do usuário:', count)
+        }
+      } catch (milestoneError) {
+        console.warn('⚠️ [addPost] Erro ao processar milestone de primeiro post:', milestoneError)
+        // Não falhar a criação do post se houver erro no milestone
+      }
+
+      // Atualizar cache local
+      const timelinePost = {
+        id: data.id,
+        type: 'post' as const,
+        created_at: data.created_at,
+        user_id: data.professional_id,
+        user_name: newPost.user_name,
+        user_avatar: newPost.user_avatar,
+        user_type: newPost.user_type,
+        title: data.title,
+        description: data.description || '',
+        images: data.images || [],
+        service_category_id: data.service_category_id,
+        location_state: data.location_state,
+        location_city: data.location_city,
+        likes_count: data.likes_count || 0,
+        comments_count: data.comments_count || 0,
+        is_liked: false
+      } as UnifiedTimelineItem
+
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
+        return {
+          ...oldData,
+          pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
+        }
+      })
+
+      return timelinePost
+    } catch (error) {
+      console.error('Erro ao criar post:', error)
+      throw error
+    }
+  }, [queryClient, queryKey])
+
+  const editPost = useCallback(async (postId: string, updatedPost: any) => {
+    try {
+      // Atualizar no banco de dados
+      const { data, error } = await supabase
+        .from('feed_posts')
+        .update({
+          title: updatedPost.title,
+          description: updatedPost.description,
+          images: updatedPost.images || [],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Atualizar cache local
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any[]) =>
+            page.map((item: any) =>
+              item.id === postId && item.type === 'post'
+                ? {
+                    ...item,
+                    title: data.title,
+                    description: data.description,
+                    images: data.images || []
+                  }
+                : item
+            )
+          )
+        }
+      })
+
+      return data
+    } catch (error) {
+      console.error('Erro ao editar post:', error)
+      throw error
+    }
+  }, [queryClient, queryKey])
+
+  const deletePost = useCallback(async (postId: string) => {
+    try {
+      console.log('🗑️ Iniciando exclusão do post:', postId)
+      
+      // Verificar usuário atual
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError || !user) {
+        console.error('❌ Erro ao obter usuário atual:', userError)
+        throw new Error('Usuário não autenticado')
+      }
+      
+      console.log('👤 Usuário atual:', user.id)
+      
+      // Buscar informações do post
+      const { data: postData, error: fetchError } = await supabase
+        .from('feed_posts')
+        .select('metadata, user_id, professional_id, title')
+        .eq('id', postId)
+        .single()
+
+      if (fetchError) {
+        console.error('❌ Erro ao buscar dados do post:', fetchError)
+        throw new Error('Post não encontrado')
+      }
+
+      console.log('📋 Dados do post encontrados:', {
+        id: postId,
+        title: postData?.title,
+        user_id: postData?.user_id,
+        professional_id: postData?.professional_id,
+        metadata: postData?.metadata
+      })
+      
+      // Verificar se o usuário tem permissão para deletar este post
+      // O post pode ter user_id OU professional_id
+      const isOwner = postData?.user_id === user.id || postData?.professional_id === user.id
+      
+      if (!isOwner) {
+        console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
+        console.error('❌ Post user_id:', postData?.user_id, '| professional_id:', postData?.professional_id, '| Usuário atual:', user.id)
+        throw new Error('Você não tem permissão para deletar este post')
+      }
+      
+      console.log('✅ Permissão confirmada: usuário pode deletar este post')
+
+      // Deletar do banco de dados
+      console.log('🗄️ Executando DELETE no banco de dados...')
+      const { error, count } = await supabase
+        .from('feed_posts')
+        .delete()
+        .eq('id', postId)
+        .or(`user_id.eq.${user.id},professional_id.eq.${user.id}`) // Verificar ambos os campos
+
+      if (error) {
+        console.error('❌ Erro ao deletar post do banco:', error)
+        console.error('❌ Detalhes do erro:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw error
+      }
+
+      console.log('✅ Post deletado do banco com sucesso. Linhas afetadas:', count)
+
+      // Verificar se o post foi realmente deletado
+      if (count === 0) {
+        console.error('❌ PROBLEMA: Nenhuma linha foi afetada na exclusão!')
+        console.error('❌ Isso indica que o post não foi deletado ou não existe')
+        throw new Error('Post não foi deletado - nenhuma linha afetada')
+      }
+
+      // Verificar se o post foi realmente deletado
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('feed_posts')
+        .select('id, title, user_id')
+        .eq('id', postId)
+        .single()
+
+      if (verifyError && verifyError.code === 'PGRST116') {
+        console.log('✅ Confirmação: Post foi deletado (não encontrado na verificação)')
+      } else if (verifyData) {
+        console.error('❌ PROBLEMA CRÍTICO: Post ainda existe no banco após exclusão:', verifyData)
+        throw new Error('Post não foi deletado do banco de dados')
+      }
+
+      // Se o post tem metadata indicando que é um post automático, deletar notificações relacionadas
+      if (postData?.metadata?.type) {
+        const postType = postData.metadata.type
+        const userId = postData.user_id
+        const professionalId = postData.professional_id
+
+        console.log('🔍 Post automático deletado, verificando notificações relacionadas:', {
+          postType,
+          userId,
+          professionalId
+        })
+
+        // Deletar notificações relacionadas baseadas no tipo de post
+        if (postType === 'favorite' && professionalId) {
+          // Deletar notificação de favorito para o usuário que foi favoritado
+          const { error: notificationError } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', professionalId)
+            .eq('type', 'favorite')
+            .eq('metadata->>favoriter_id', userId)
+
+          if (notificationError) {
+            console.warn('⚠️ Erro ao deletar notificação de favorito:', notificationError.message)
+          } else {
+            console.log('✅ Notificação de favorito deletada')
+          }
+        } else if (postType === 'recommendation' && professionalId) {
+          // Deletar notificação de recomendação para o usuário que foi recomendado
+          const { error: notificationError } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', professionalId)
+            .eq('type', 'recommendation')
+            .eq('metadata->>recommender_id', userId)
+
+          if (notificationError) {
+            console.warn('⚠️ Erro ao deletar notificação de recomendação:', notificationError.message)
+          } else {
+            console.log('✅ Notificação de recomendação deletada')
+          }
+        }
+      }
+
+      // Atualizar cache local - remover o post
+      console.log('🔄 Atualizando cache local para remover post:', postId)
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) {
+          console.log('⚠️ Cache vazio, não há dados para atualizar')
+          return oldData
+        }
+        
+        const updatedData = {
+          ...oldData,
+          pages: oldData.pages.map((page: any[]) => {
+            const originalLength = page.length
+            const filteredPage = page.filter((item: any) => !(item.id === postId && item.type === 'post'))
+            console.log(`📄 Página atualizada: ${originalLength} → ${filteredPage.length} itens`)
+            return filteredPage
+          })
+        }
+        
+        console.log('✅ Cache atualizado com sucesso')
+        return updatedData
+      })
+
+      console.log('🎉 Exclusão do post concluída com sucesso:', postId)
+      return true
+    } catch (error) {
+      console.error('Erro ao deletar post:', error)
+      throw error
+    }
+  }, [queryClient, queryKey])
 
   // Função para criar posts premium
   const addPremiumPost = useCallback(async (newPost: Omit<TimelinePost, 'id' | 'created_at' | 'likes_count' | 'comments_count' | 'is_liked'> & { pointsToSpend: number; durationDays: number }) => {
@@ -878,7 +886,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       const timelinePost = {
         id: data.id,
         type: 'post' as const,
-        created_at: new Date().toISOString(),
+        created_at: data.created_at || new Date().toISOString(),
         user_id: newPost.user_id,
         user_name: newPost.user_name,
         user_avatar: newPost.user_avatar,
@@ -902,6 +910,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }
       } as UnifiedTimelineItem
 
+      // Adicionar ao cache local (igual ao addPost)
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
+        return {
+          ...oldData,
+          pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
+        }
+      })
+
       // Invalidar queries relacionadas para atualizar a timeline
       queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
       queryClient.invalidateQueries({ queryKey: ['user-posts', newPost.user_id] })
@@ -918,9 +935,109 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
     } catch (error) {
       console.error('❌ [addPremiumPost] Erro ao criar post premium:', error)
+      // Re-throw para que o componente possa tratar o erro
       throw error
     }
-  }, [supabase, queryClient])
+  }, [queryClient, queryKey])
+
+  // Função para renovar post premium expirado
+  const renewPremiumPost = useCallback(async (postId: string, pointsToSpend: number, durationDays: number) => {
+    try {
+      console.log('👑 [renewPremiumPost] Renovando post premium:', postId)
+
+      // Buscar o post atual
+      const { data: currentPost, error: fetchError } = await supabase
+        .from('feed_posts')
+        .select('*')
+        .eq('id', postId)
+        .single()
+
+      if (fetchError || !currentPost) {
+        throw new Error('Post não encontrado')
+      }
+
+      // Verificar saldo do usuário
+      const { data: balanceData, error: balanceError } = await supabase
+        .from('user_points_balance')
+        .select('balance, total_spent')
+        .eq('user_id', currentPost.user_id)
+        .single()
+
+      if (balanceError || !balanceData) {
+        throw new Error('Erro ao verificar saldo do usuário')
+      }
+
+      if (balanceData.balance < pointsToSpend) {
+        throw new Error(`Saldo insuficiente para renovar post premium. Necessário: ${pointsToSpend} pontos`)
+      }
+
+      // Calcular nova data de expiração
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + durationDays)
+
+      // Atualizar post para premium novamente
+      const { data, error } = await supabase
+        .from('feed_posts')
+        .update({
+          is_premium: true,
+          is_featured: true,
+          premium_points_spent: pointsToSpend,
+          premium_expires_at: expiresAt.toISOString(),
+          premium_highlight_color: '#FFD700',
+          tags: ['premium'],
+          metadata: {
+            ...(currentPost.metadata || {}),
+            type: 'premium',
+            points_spent: pointsToSpend,
+            duration_days: durationDays,
+            expires_at: expiresAt.toISOString(),
+            renewed_at: new Date().toISOString()
+          },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ [renewPremiumPost] Erro do Supabase:', error)
+        throw error
+      }
+
+      console.log('✅ [renewPremiumPost] Post premium renovado com sucesso:', data.id)
+
+      // Debitar pontos
+      const { error: pointsError } = await supabase
+        .rpc('add_points', {
+          p_user_id: currentPost.user_id,
+          p_points: -pointsToSpend,
+          p_source: 'premium_post_renewal',
+          p_description: `Renovou post premium (${durationDays} dia${durationDays > 1 ? 's' : ''} - ${pointsToSpend} pontos)`,
+          p_metadata: {
+            post_id: postId,
+            duration_days: durationDays,
+            post_title: currentPost.title
+          }
+        })
+
+      if (pointsError) {
+        console.error('❌ [renewPremiumPost] Erro ao debitar pontos:', pointsError)
+        throw new Error('Erro ao debitar pontos. Renovação não foi concluída.')
+      }
+
+      // Invalidar queries para atualizar a timeline
+      queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
+      queryClient.invalidateQueries({ queryKey: ['user-posts', currentPost.user_id] })
+      queryClient.invalidateQueries({ queryKey: ['user-points', currentPost.user_id] })
+
+      console.log('✅ [renewPremiumPost] Post premium renovado com sucesso!')
+      return data
+
+    } catch (error) {
+      console.error('❌ [renewPremiumPost] Erro ao renovar post premium:', error)
+      throw error
+    }
+  }, [queryClient, supabase])
 
   return {
     items,
@@ -932,6 +1049,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     likePost,
     addPost,
     addPremiumPost,
+    renewPremiumPost,
     editPost,
     deletePost,
     refetch

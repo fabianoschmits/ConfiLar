@@ -16,19 +16,20 @@ import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 
 interface PremiumPostFormProps {
   onSubmit: (postData: {
-    title: string
-    description: string
-    images: string[]
-    service: string
+    title?: string
+    description?: string
+    images?: string[]
+    service?: string
     pointsToSpend: number
     durationDays: number
   }) => Promise<void>
   onCancel: () => void
   isLoading: boolean
   postStatus: 'idle' | 'sending' | 'sent'
+  isRenewal?: boolean
 }
 
-export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: PremiumPostFormProps) {
+export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus, isRenewal = false }: PremiumPostFormProps) {
   const { profile } = useAuthContext()
   const { balance } = usePoints(profile?.id)
   
@@ -50,9 +51,14 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.title.trim() || !formData.description.trim()) return
+    // Se for renovação, não precisa de título e descrição
+    if (!isRenewal && (!formData.title.trim() || !formData.description.trim())) return
     
-    await onSubmit(formData)
+    await onSubmit({
+      ...(isRenewal ? {} : { title: formData.title, description: formData.description, images: formData.images, service: formData.service }),
+      pointsToSpend: formData.pointsToSpend,
+      durationDays: formData.durationDays
+    })
   }
 
   const handleImagesUpload = (images: string[]) => {
@@ -125,6 +131,14 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
       </Card>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {isRenewal && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              💡 Seu post será renovado com destaque premium. Escolha a duração desejada.
+            </p>
+          </div>
+        )}
+        
         {/* Opções Premium */}
         <div className="space-y-3">
           <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Escolha a duração do destaque:</Label>
@@ -195,42 +209,46 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
           </div>
         </div>
 
-        {/* Título */}
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-gray-900 dark:text-gray-100">Título *</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-            placeholder="Digite o título do seu post premium..."
-            className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-            required
-          />
-        </div>
+        {!isRenewal && (
+          <>
+            {/* Título */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-gray-900 dark:text-gray-100">Título *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Digite o título do seu post premium..."
+                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                required
+              />
+            </div>
 
-        {/* Descrição */}
-        <div className="space-y-2">
-          <Label htmlFor="description" className="text-gray-900 dark:text-gray-100">Descrição *</Label>
-          <Textarea
-            id="description"
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            placeholder="Compartilhe sua experiência, dica ou conhecimento... Use @ para mencionar alguém"
-            rows={4}
-            className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
-            required
-          />
-        </div>
+            {/* Descrição */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-gray-900 dark:text-gray-100">Descrição *</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Compartilhe sua experiência, dica ou conhecimento... Use @ para mencionar alguém"
+                rows={4}
+                className="border-yellow-200 dark:border-yellow-600 focus:border-yellow-500 dark:focus:border-yellow-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                required
+              />
+            </div>
 
-        {/* Upload de Imagens */}
-        <div className="space-y-2">
-          <Label className="text-gray-900 dark:text-gray-100">Imagens</Label>
-          <ImageUploadFeed
-            currentImages={formData.images}
-            onImagesUpload={handleImagesUpload}
-            maxImages={5}
-          />
-        </div>
+            {/* Upload de Imagens */}
+            <div className="space-y-2">
+              <Label className="text-gray-900 dark:text-gray-100">Imagens</Label>
+              <ImageUploadFeed
+                currentImages={formData.images}
+                onImagesUpload={handleImagesUpload}
+                maxImages={5}
+              />
+            </div>
+          </>
+        )}
 
         {/* Resumo do Custo */}
         <Card className="border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20">
@@ -245,7 +263,7 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
               </Badge>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
-              Saldo após criação: {(balance?.balance || 0) - formData.pointsToSpend} pontos
+              Saldo após {isRenewal ? 'renovação' : 'criação'}: {(balance?.balance || 0) - formData.pointsToSpend} pontos
             </p>
           </CardContent>
         </Card>
@@ -264,12 +282,12 @@ export function PremiumPostForm({ onSubmit, onCancel, isLoading, postStatus }: P
           <LoadingButton
             type="submit"
             className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
-            disabled={isLoading || !canAfford || !formData.title.trim() || !formData.description.trim()}
+            disabled={isLoading || !canAfford || (!isRenewal && (!formData.title.trim() || !formData.description.trim()))}
             isLoading={isLoading}
-            loadingText={postStatus === 'sending' ? 'Criando...' : 'Enviado!'}
+            loadingText={postStatus === 'sending' ? (isRenewal ? 'Renovando...' : 'Criando...') : 'Enviado!'}
           >
             <Star className="h-4 w-4" />
-            Criar Post Premium
+            {isRenewal ? 'Renovar Post Premium' : 'Criar Post Premium'}
           </LoadingButton>
         </div>
       </form>

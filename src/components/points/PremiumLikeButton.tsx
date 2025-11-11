@@ -9,6 +9,7 @@ import { usePoints } from '@/hooks/usePoints'
 import { cn } from '@/lib/utils'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import { useHapticFeedback } from '@/hooks/useHapticFeedback'
+import { toast } from 'sonner'
 
 // CSS para animação de batida do coração
 if (typeof document !== 'undefined') {
@@ -93,6 +94,17 @@ export function PremiumLikeButton({
       return // Não pode curtir próprio post
     }
 
+    // Verificar se tem pontos suficientes
+    if (!hasEnoughPoints) {
+      toast.error(
+        `Saldo insuficiente! Você precisa de ${PREMIUM_PRICES.LIKE.POINTS} ConfiPoints para curtir premium. Você tem ${balance?.balance || 0} ConfiPoints.`,
+        {
+          duration: 4000,
+        }
+      )
+      return
+    }
+
     // Feedback háptico
     if (userPremiumLiked) {
       haptic.light() // Feedback leve ao descurtir
@@ -114,9 +126,9 @@ export function PremiumLikeButton({
   }
 
   const iconSizes = {
-    sm: 14,
-    default: 16,
-    lg: 18
+    sm: 16,
+    default: 18,
+    lg: 20
   }
 
   return (
@@ -124,49 +136,31 @@ export function PremiumLikeButton({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={userPremiumLiked ? 'default' : 'outline'}
+            variant={userPremiumLiked ? 'default' : 'ghost'}
             size={size}
             onClick={handlePremiumLike}
-            disabled={isOwnPost || isPremiumLiking || !hasEnoughPoints}
+            disabled={isOwnPost || isPremiumLiking}
             className={cn(
-              'transition-all duration-200 relative px-2 overflow-visible',
-              userPremiumLiked && 'bg-red-500 hover:bg-red-600 text-white',
+              'transition-all duration-200 relative p-2 overflow-visible h-auto',
+              userPremiumLiked && 'bg-yellow-500 hover:bg-yellow-600 text-white',
               isOwnPost && 'opacity-50 cursor-not-allowed',
-              !hasEnoughPoints && 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400',
               isAnimating && 'animate-pulse scale-110',
               className
             )}
           >
-            <Heart 
+            <Coins 
               size={iconSizes[size]} 
               className={cn(
                 'transition-all duration-300',
-                userPremiumLiked && 'fill-current',
-                isAnimating && 'animate-[heartBeat_0.6s_ease-in-out] scale-125'
+                userPremiumLiked && 'text-white',
+                !userPremiumLiked && 'text-gray-600 dark:text-gray-400',
+                isAnimating && 'animate-[heartBeat_0.6s_ease-in-out] scale-125',
+                !hasEnoughPoints && 'opacity-50'
               )}
               style={{
                 animation: isAnimating ? 'heartBeat 0.6s ease-in-out' : undefined
               }}
             />
-            <span className={cn(
-              "ml-1 text-xs transition-all duration-300 flex items-center gap-1",
-              isAnimating && "scale-110 font-bold"
-            )}>
-              <span className="hidden sm:inline font-semibold">Premium</span>
-              <span className={cn(
-                "font-medium",
-                userPremiumLiked && "text-white",
-                !userPremiumLiked && "text-gray-700 dark:text-gray-300"
-              )}>{premiumLikesCount}</span>
-            </span>
-            
-            {/* Ícone de moedas sobreposto no canto superior direito - mostrar se usuário deu like premium */}
-            {userPremiumLiked && (
-              <Coins 
-                size={iconSizes[size] + 4} 
-                className="absolute -top-1 -right-1 text-yellow-500 animate-bounce" 
-              />
-            )}
             
             {/* Efeito de partículas ao clicar */}
             {isAnimating && (
