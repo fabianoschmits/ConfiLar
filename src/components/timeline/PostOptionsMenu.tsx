@@ -67,7 +67,7 @@ export function PostOptionsMenu({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-transparent border-0 shadow-none transition-smooth"
+            className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-900 border-0 shadow-none transition-colors"
             disabled={isDeleting}
             onClick={(e) => e.stopPropagation()}
             aria-label="Opções do post"
@@ -76,13 +76,13 @@ export function PostOptionsMenu({
             <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
           {isOwner ? (
             // Opções para o dono do post
             <>
               <DropdownMenuItem 
                 onClick={() => onEdit(postId)}
-                className="cursor-pointer transition-smooth"
+                className="cursor-pointer transition-smooth text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
                 aria-label="Editar post"
               >
                 <Edit className="h-4 w-4 mr-2" />
@@ -91,7 +91,7 @@ export function PostOptionsMenu({
               {isPremium && premiumExpired && onRenewPremium && (
                 <DropdownMenuItem 
                   onClick={() => onRenewPremium(postId)}
-                  className="cursor-pointer text-yellow-600 dark:text-yellow-500 focus:text-yellow-600 transition-smooth"
+                  className="cursor-pointer text-yellow-600 dark:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
                   aria-label="Renovar post premium"
                 >
                   <Crown className="h-4 w-4 mr-2" />
@@ -100,7 +100,7 @@ export function PostOptionsMenu({
               )}
               <DropdownMenuItem 
                 onClick={() => setShowDeleteDialog(true)}
-                className="cursor-pointer text-red-600 focus:text-red-600 transition-smooth"
+                className="cursor-pointer text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
                 aria-label="Deletar post"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -115,7 +115,7 @@ export function PostOptionsMenu({
                 targetId={postId}
                 targetName={postTitle || 'Post'}
                 asDropdownItem={true}
-                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900"
               />
             </DropdownMenuItem>
           )}
@@ -123,21 +123,21 @@ export function PostOptionsMenu({
       </DropdownMenu>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
           <AlertDialogHeader>
-            <AlertDialogTitle>Deletar Post</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-gray-900 dark:text-white">Deletar Post</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
               Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.
               O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
+            <AlertDialogCancel disabled={isDeleting} className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white"
               disabled={isDeleting}
             >
               {isDeleting ? (

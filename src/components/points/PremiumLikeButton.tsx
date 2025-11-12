@@ -1,6 +1,5 @@
 import React from 'react'
-import { Heart, Zap, Coins, Users } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Zap, Coins } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { usePremiumLikes, usePremiumLikesStats } from '@/hooks/usePremiumLikes'
@@ -42,6 +41,7 @@ interface PremiumLikeButtonProps {
   className?: string
   size?: 'sm' | 'lg' | 'default'
   showStats?: boolean
+  onPremiumLikeClick?: () => void // Callback para notificar quando o like premium é clicado
 }
 
 export function PremiumLikeButton({ 
@@ -49,7 +49,8 @@ export function PremiumLikeButton({
   postCreatorId, 
   className,
   size = 'default',
-  showStats = true 
+  showStats = true,
+  onPremiumLikeClick
 }: PremiumLikeButtonProps) {
   const { user } = useAuthContext()
   const { balance } = usePoints(user?.id) // Passar o userId
@@ -112,73 +113,68 @@ export function PremiumLikeButton({
       haptic.medium() // Feedback médio ao curtir premium
     }
 
-    // Ativar animação
+    // Ativar animação no botão
     setIsAnimating(true)
     setTimeout(() => setIsAnimating(false), 600) // Duração da animação
 
+    // Chamar callback para mostrar animação no overlay do post (apenas se tiver pontos)
+    if (onPremiumLikeClick && hasEnoughPoints) {
+      onPremiumLikeClick()
+    }
+
     premiumLike()
-  }
-
-  const sizeClasses = {
-    sm: 'h-4 px-1 text-xs',
-    default: 'h-5 px-1.5 text-xs',
-    lg: 'h-6 px-2 text-sm'
-  }
-
-  const iconSizes = {
-    sm: 16,
-    default: 18,
-    lg: 20
   }
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={userPremiumLiked ? 'default' : 'ghost'}
-            size={size}
+          <button
             onClick={handlePremiumLike}
             disabled={isOwnPost || isPremiumLiking}
             className={cn(
-              'transition-all duration-200 relative overflow-visible h-auto flex items-center gap-1.5',
-              userPremiumLiked && 'bg-yellow-500 hover:bg-yellow-600 text-white',
-              isOwnPost && 'opacity-50 cursor-not-allowed',
-              isAnimating && 'animate-pulse scale-110',
+              'transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5',
+              isOwnPost && 'cursor-not-allowed',
               className
             )}
           >
-            <Coins 
-              size={iconSizes[size]} 
-              className={cn(
-                'transition-all duration-300',
-                userPremiumLiked && 'text-white',
-                !userPremiumLiked && 'text-gray-600 dark:text-gray-400',
-                isAnimating && 'animate-[heartBeat_0.6s_ease-in-out] scale-125',
-                !hasEnoughPoints && 'opacity-50'
+            <div className="relative h-[1.1rem] w-[1.1rem]">
+              {/* Ícone dourado preenchido - camada de fundo quando há like premium */}
+              {userPremiumLiked && (
+                <Coins 
+                  className={cn(
+                    'h-[1.1rem] w-[1.1rem] absolute inset-0 transition-all',
+                    'text-yellow-500',
+                    isAnimating && 'animate-[heartBeat_0.6s_ease-in-out]',
+                    !hasEnoughPoints && 'opacity-50'
+                  )}
+                  style={{
+                    fill: '#eab308',
+                    stroke: 'none',
+                    zIndex: 1
+                  }}
+                />
               )}
-              style={{
-                animation: isAnimating ? 'heartBeat 0.6s ease-in-out' : undefined
-              }}
-            />
-            <span className={cn(
-              'text-sm font-medium transition-colors',
-              userPremiumLiked ? 'text-white' : 'text-gray-700 dark:text-gray-300'
-            )}>
+              {/* Ícone cinza (contorno) - sempre por cima, formando a borda */}
+              <Coins 
+                className={cn(
+                  'h-[1.1rem] w-[1.1rem] absolute inset-0 transition-all',
+                  'text-gray-700 dark:text-gray-300',
+                  isAnimating && 'animate-[heartBeat_0.6s_ease-in-out]',
+                  !hasEnoughPoints && 'opacity-50'
+                )}
+                style={{
+                  fill: 'none',
+                  stroke: 'currentColor',
+                  strokeWidth: 2,
+                  zIndex: 2
+                }}
+              />
+            </div>
+            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
               {premiumLikesCount > 0 ? premiumLikesCount.toLocaleString('pt-BR') : '0'}
             </span>
-            
-            {/* Efeito de partículas ao clicar */}
-            {isAnimating && (
-              <>
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <span className="absolute animate-ping text-yellow-400 opacity-75">
-                    ✨
-                  </span>
-                </span>
-              </>
-            )}
-          </Button>
+          </button>
         </TooltipTrigger>
         <TooltipContent>
           <div className="text-center">

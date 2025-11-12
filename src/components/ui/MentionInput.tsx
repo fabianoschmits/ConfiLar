@@ -42,6 +42,18 @@ export function MentionInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
 
+  // Ajustar altura automaticamente conforme o conteúdo
+  const adjustTextareaHeight = useCallback(() => {
+    if (textareaRef.current) {
+      // Resetar altura para calcular o scrollHeight corretamente
+      textareaRef.current.style.height = 'auto'
+      // Definir altura baseada no conteúdo, mas respeitando minHeight
+      const scrollHeight = textareaRef.current.scrollHeight
+      const minHeightValue = minHeight === 'auto' ? 24 : parseInt(minHeight) || 48
+      textareaRef.current.style.height = `${Math.max(scrollHeight, minHeightValue)}px`
+    }
+  }, [minHeight])
+
   // Buscar usuários baseado na query
   const searchUsers = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -99,7 +111,15 @@ export function MentionInput({
     
     onChange(newValue)
     detectMention(newValue, cursorPosition)
+    
+    // Ajustar altura após mudança
+    setTimeout(() => adjustTextareaHeight(), 0)
   }
+
+  // Ajustar altura quando o valor mudar externamente
+  useEffect(() => {
+    adjustTextareaHeight()
+  }, [value, adjustTextareaHeight])
 
   // Lidar com seleção de usuário
   const handleUserSelect = (user: User) => {
@@ -202,12 +222,12 @@ export function MentionInput({
     return createPortal(
       <div
         ref={suggestionsRef}
-        className="fixed bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[99999]"
+        className="fixed bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[99999]"
         style={position}
       >
         {isLoading ? (
-          <div className="p-3 text-center text-gray-500">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
             <span className="text-xs ml-2">Buscando usuários...</span>
           </div>
         ) : suggestions.length > 0 ? (
@@ -215,8 +235,8 @@ export function MentionInput({
             <button
               key={user.id}
               onClick={() => handleUserSelect(user)}
-              className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 transition-colors ${
-                index === selectedIndex ? 'bg-blue-50' : ''
+              className={`w-full flex items-center space-x-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors ${
+                index === selectedIndex ? 'bg-blue-50 dark:bg-blue-900/30' : ''
               }`}
             >
               <Avatar className="w-8 h-8">
@@ -226,15 +246,15 @@ export function MentionInput({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 text-left">
-                <div className="font-medium text-sm">{user.full_name}</div>
-                <div className="text-xs text-gray-500">
+                <div className="font-medium text-sm text-gray-900 dark:text-white">{user.full_name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   {user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
                 </div>
               </div>
             </button>
           ))
         ) : mentionQuery ? (
-          <div className="p-3 text-center text-gray-500">
+          <div className="p-3 text-center text-gray-500 dark:text-gray-400">
             <span className="text-sm">Nenhum usuário encontrado para "{mentionQuery}"</span>
           </div>
         ) : null}
@@ -252,8 +272,12 @@ export function MentionInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${className}`}
-        style={{ minHeight }}
+        className={`w-full resize-none focus:outline-none transition-all duration-200 overflow-hidden ${className}`}
+        style={{ 
+          minHeight: minHeight === 'auto' ? '24px' : minHeight,
+          height: 'auto'
+        }}
+        rows={1}
       />
       
       {/* Sugestões de menções renderizadas via portal */}

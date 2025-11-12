@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { getEstadoBySigla } from '@/lib/ibge'
 
 export interface LocationFilter {
   type: 'local' | 'state' | 'country' | 'all' | 'custom'
@@ -16,7 +18,7 @@ export interface LocationFilterOptions {
 }
 
 export function useLocationFilters() {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
   const [currentFilter, setCurrentFilter] = useState<LocationFilter>({
     type: 'local',
     city: profile?.location_city,
@@ -31,17 +33,127 @@ export function useLocationFilters() {
     showAll: true
   })
 
-  // Atualizar filtro quando o perfil mudar
+  // Carregar preferências salvas do perfil
   useEffect(() => {
-    if (profile?.location_city && profile?.location_state) {
-      setCurrentFilter({
-        type: 'local',
-        city: profile.location_city,
-        state: profile.location_state,
-        country: 'Brasil'
-      })
+    const loadSavedPreferences = async () => {
+      if (!user?.id || !profile) return
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('feed_location_filter_type, feed_location_filter_city, feed_location_filter_state')
+          .eq('id', user.id)
+          .single()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao carregar preferências:', error)
+          return
+        }
+
+        if (data?.feed_location_filter_type) {
+          // Normalizar estado: converter sigla para nome completo se necessário
+          let normalizedState = data.feed_location_filter_state || profile.location_state
+          if (normalizedState && normalizedState.length === 2) {
+            // É uma sigla, converter para nome completo
+            try {
+              const estado = await getEstadoBySigla(normalizedState)
+              if (estado) {
+                normalizedState = estado.nome
+              }
+            } catch (error) {
+              console.error('Erro ao normalizar estado ao carregar:', error)
+            }
+          }
+          
+          setCurrentFilter({
+            type: data.feed_location_filter_type as LocationFilter['type'],
+            city: data.feed_location_filter_city || profile.location_city,
+            state: normalizedState,
+            country: 'Brasil'
+          })
+        } else if (profile?.location_city && profile?.location_state) {
+          // Normalizar estado do perfil: converter sigla para nome completo se necessário
+          let normalizedState = profile.location_state
+          if (normalizedState && normalizedState.length === 2) {
+            // É uma sigla, converter para nome completo
+            try {
+              const estado = await getEstadoBySigla(normalizedState)
+              if (estado) {
+                normalizedState = estado.nome
+              }
+            } catch (error) {
+              console.error('Erro ao normalizar estado do perfil:', error)
+            }
+          }
+          
+          // Se não houver preferência salva, usar cidade do perfil como padrão
+          setCurrentFilter({
+            type: 'local',
+            city: profile.location_city,
+            state: normalizedState,
+            country: 'Brasil'
+          })
+        }
+      } catch (error) {
+        console.error('Erro ao carregar preferências:', error)
+        // Fallback para cidade do perfil
+        if (profile?.location_city && profile?.location_state) {
+          // Normalizar estado: converter sigla para nome completo se necessário
+          let normalizedState = profile.location_state
+          if (normalizedState && normalizedState.length === 2) {
+            try {
+              const estado = await getEstadoBySigla(normalizedState)
+              if (estado) {
+                normalizedState = estado.nome
+              }
+            } catch (error) {
+              console.error('Erro ao normalizar estado no fallback:', error)
+            }
+          }
+          
+          setCurrentFilter({
+            type: 'local',
+            city: profile.location_city,
+            state: normalizedState,
+            country: 'Brasil'
+          })
+        }
+      }
     }
-  }, [profile?.location_city, profile?.location_state])
+
+    if (user?.id && profile) {
+      loadSavedPreferences()
+    }
+  }, [user?.id, profile])
+
+  // Atualizar filtro quando o perfil mudar (apenas se não houver preferência salva)
+  useEffect(() => {
+    if (profile?.location_city && profile?.location_state && currentFilter.type === 'local' && !currentFilter.city) {
+      // Normalizar estado: converter sigla para nome completo se necessário
+      const normalizeState = async () => {
+        let normalizedState = profile.location_state
+        if (normalizedState && normalizedState.length === 2) {
+          try {
+            const estado = await getEstadoBySigla(normalizedState)
+            if (estado) {
+              normalizedState = estado.nome
+            }
+          } catch (error) {
+            console.error('Erro ao normalizar estado:', error)
+          }
+        }
+        
+        setCurrentFilter({
+          type: 'local',
+          city: profile.location_city,
+          state: normalizedState,
+          country: 'Brasil'
+        })
+      }
+      
+      normalizeState()
+    }
+  }, [profile?.location_city, profile?.location_state, currentFilter.type, currentFilter.city])
 
   const setFilter = (filter: LocationFilter) => {
     setCurrentFilter(filter)

@@ -118,6 +118,43 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
 
     console.log('✅ API: Post compartilhado com sucesso:', data?.length, 'notificações criadas')
 
+    // Registrar compartilhamento na tabela post_shares (tipo 'user')
+    try {
+      // Verificar se o usuário já compartilhou este post com outros usuários antes
+      const { data: existingShare } = await adminSupabase
+        .from('post_shares')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', authenticatedUserId)
+        .eq('share_type', 'user')
+        .maybeSingle()
+
+      // Se não existe, registrar o compartilhamento
+      if (!existingShare) {
+        await adminSupabase
+          .from('post_shares')
+          .insert({
+            post_id: postId,
+            user_id: authenticatedUserId,
+            share_type: 'user',
+            shared_at: new Date().toISOString()
+          })
+        
+        console.log('✅ API: Compartilhamento registrado na tabela post_shares')
+      } else {
+        console.log('ℹ️ API: Usuário já havia compartilhado este post anteriormente')
+      }
+    } catch (shareError: any) {
+      // Se a tabela não existir ou houver erro de permissão, apenas logar e continuar
+      if (shareError.code === 'PGRST205' || shareError.code === '42501' || 
+          shareError.message?.includes('403') || shareError.message?.includes('permission denied') ||
+          shareError.message?.includes('post_shares')) {
+        console.log('⚠️ API: Não foi possível registrar compartilhamento (tabela pode não existir)')
+      } else {
+        console.error('❌ API: Erro ao registrar compartilhamento:', shareError)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: `Post compartilhado com ${userIds.length} usuário(s)`,

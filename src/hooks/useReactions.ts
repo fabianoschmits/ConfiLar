@@ -6,7 +6,10 @@ import { NotificationService } from '@/services/NotificationService'
 
 export interface ReactionUser {
   id: string
+  user_id: string
   name: string
+  full_name: string | null
+  avatar_url: string | null
   reaction_type: ReactionType
   created_at: string
 }
@@ -207,24 +210,33 @@ export function useReactionUsers(postId: string) {
         .from('post_reactions')
         .select(`
           id,
+          user_id,
           reaction_type,
           created_at,
           profiles!inner(
             id,
-            name
+            full_name,
+            avatar_url
           )
         `)
         .eq('post_id', postId)
+        .eq('reaction_type', 'like')
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return data?.map(reaction => ({
-        id: reaction.id,
-        name: (reaction.profiles as any).name,
-        reaction_type: reaction.reaction_type as ReactionType,
-        created_at: reaction.created_at
-      })) || []
+      return data?.map(reaction => {
+        const profile = reaction.profiles as any
+        return {
+          id: reaction.id,
+          user_id: reaction.user_id,
+          name: profile.full_name || 'Usuário',
+          full_name: profile.full_name || null,
+          avatar_url: profile.avatar_url || null,
+          reaction_type: reaction.reaction_type as ReactionType,
+          created_at: reaction.created_at
+        }
+      }) || []
     },
     staleTime: 1000 * 60 * 2, // Cache por 2 minutos
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos

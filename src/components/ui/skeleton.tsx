@@ -124,11 +124,77 @@ export function ProfileSkeleton() {
   )
 }
 
+// Skeleton para a seção de Stories
+export function StoriesSkeleton() {
+  return (
+    <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900">
+      <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-2 min-w-[70px] flex-shrink-0">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse border-2 border-gray-300 dark:border-gray-700" />
+              </div>
+              <div className="h-3 w-12 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Skeleton para um post do feed (estilo Instagram)
+export function InstagramPostSkeleton() {
+  return (
+    <article className="bg-white dark:bg-black shadow-sm rounded-lg mb-4 overflow-hidden">
+      {/* Header do post */}
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center space-x-3">
+          <Skeleton variant="avatar" width={40} height={40} />
+          <div className="space-y-2">
+            <Skeleton width={120} height={16} />
+            <Skeleton width={80} height={12} />
+          </div>
+        </div>
+        <Skeleton width={24} height={24} className="rounded-full" />
+      </div>
+
+      {/* Imagem/Media do post */}
+      <div className="w-full bg-gray-100 dark:bg-gray-900">
+        <Skeleton width="100%" height={400} className="rounded-none" />
+      </div>
+
+      {/* Botões de interação */}
+      <div className="flex items-center gap-1 px-4 py-2 border-t border-gray-100 dark:border-gray-800/50">
+        <Skeleton width={16} height={16} className="rounded" />
+        <Skeleton width={16} height={16} className="rounded" />
+        <Skeleton width={16} height={16} className="rounded" />
+        <Skeleton width={16} height={16} className="rounded ml-1" />
+      </div>
+
+      {/* Descrição e curtidas */}
+      <div className="px-4 py-2 space-y-2">
+        <Skeleton width={100} height={14} />
+        <div className="space-y-1">
+          <Skeleton width="100%" height={16} />
+          <Skeleton width="80%" height={16} />
+        </div>
+      </div>
+
+      {/* Separador */}
+      <div className="border-b-2 border-gray-300 dark:border-gray-700 my-2" />
+    </article>
+  )
+}
+
+// Skeleton completo para a página de feed (mantido para compatibilidade, mas não deve ser usado)
+// Use InstagramPostSkeleton diretamente para os posts
 export function FeedSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       {Array.from({ length: 3 }).map((_, i) => (
-        <PostSkeleton key={i} />
+        <InstagramPostSkeleton key={i} />
       ))}
     </div>
   )

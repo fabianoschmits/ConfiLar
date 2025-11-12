@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { X, Send, Image as ImageIcon, Loader2, Info, Crown } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { X, Send, Image as ImageIcon, Loader2, Info, Crown, AlertCircle } from 'lucide-react'
 import { LoadingButton } from '@/components/ui/LoadingButton'
 import { MentionInput } from '@/components/ui/MentionInput'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
@@ -10,6 +10,8 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { Switch } from '@/components/ui/switch'
 import { usePoints } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
+import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
+import { toast } from 'sonner'
 
 interface NewPostFormProps {
   onSubmit: (post: {
@@ -53,6 +55,50 @@ export function NewPostForm({
   const charCount = post.description.length
   const maxChars = 2200
 
+  // Detectar vídeos do YouTube na descrição
+  const youtubeVideos = detectYouTubeUrls(post.description)
+  const hasMultipleVideos = youtubeVideos.length > 1
+  const firstVideo = youtubeVideos.length > 0 ? youtubeVideos[0] : null
+  
+  // Ref para evitar múltiplos toasts
+  const hasProcessedMultipleVideos = useRef(false)
+
+  // Remover vídeos extras da descrição (manter apenas o primeiro)
+  useEffect(() => {
+    // Resetar flag se não houver múltiplos vídeos
+    if (!hasMultipleVideos) {
+      hasProcessedMultipleVideos.current = false
+      return
+    }
+
+    // Processar apenas uma vez quando múltiplos vídeos são detectados
+    if (hasMultipleVideos && youtubeVideos.length > 1 && !hasProcessedMultipleVideos.current) {
+      // Manter apenas o primeiro vídeo na descrição
+      const firstVideoUrl = youtubeVideos[0].url
+      const otherVideoUrls = youtubeVideos.slice(1).map(v => v.url)
+      
+      let cleanedDescription = post.description
+      // Remover URLs dos vídeos extras, mantendo apenas o primeiro
+      otherVideoUrls.forEach(videoUrl => {
+        // Escapar caracteres especiais da URL para usar em regex
+        const escapedUrl = videoUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        cleanedDescription = cleanedDescription.replace(new RegExp(escapedUrl, 'g'), '').trim()
+      })
+      // Limpar espaços múltiplos e quebras de linha
+      cleanedDescription = cleanedDescription.replace(/\s+/g, ' ').trim()
+      
+      // Atualizar descrição apenas se mudou e ainda não processamos
+      if (cleanedDescription !== post.description && cleanedDescription.length > 0) {
+        hasProcessedMultipleVideos.current = true
+        setPost(prev => ({ ...prev, description: cleanedDescription }))
+        toast.warning(
+          `Apenas o primeiro vídeo do YouTube será publicado. ${youtubeVideos.length - 1} vídeo(s) extra(s) foram removidos.`,
+          { duration: 4000 }
+        )
+      }
+    }
+  }, [post.description, hasMultipleVideos, youtubeVideos])
+
   const premiumOptions = [
     { 
       points: PREMIUM_PRICES.POST_1_DAY.POINTS, 
@@ -78,8 +124,10 @@ export function NewPostForm({
 
   const handleSubmit = () => {
     if (post.description.trim()) {
+      // NÃO remover URLs do YouTube aqui - deixar o hook fazer isso após detectar o vídeo
+      // Isso garante que o vídeo seja detectado e salvo no metadata antes de remover o link
       onSubmit({
-        description: post.description,
+        description: post.description.trim(), // Enviar descrição completa (com link se houver)
         images: post.images,
         service: post.service,
         isPremium: post.isPremium,
@@ -155,9 +203,43 @@ export function NewPostForm({
             <div className="flex items-center gap-1 mt-1">
               <Info className="h-3 w-3 text-green-500" />
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Use @ para mencionar • Detalhes geram confiança
+                Use @ para mencionar • Cole um link do YouTube para adicionar vídeo
               </p>
             </div>
+            
+            {/* Aviso sobre vídeos do YouTube */}
+            {firstVideo && (
+              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">
+                      Vídeo do YouTube detectado
+                    </p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                      O vídeo será exibido acima da descrição no post
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Aviso sobre múltiplos vídeos */}
+            {hasMultipleVideos && (
+              <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-yellow-800 dark:text-yellow-300 font-medium">
+                      Múltiplos vídeos detectados
+                    </p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
+                      Apenas o primeiro vídeo será publicado. Os demais serão removidos automaticamente.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* SERVIÇO */}

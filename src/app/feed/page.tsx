@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Plus, Search, MessageCircle, Heart, Share2, MoreHorizontal, Flame, X, Send, Camera, Loader2, RefreshCw, Crown } from 'lucide-react'
+import { Plus, Search, MessageCircle, Heart, Share2, MoreHorizontal, Flame, X, Send, Camera, Loader2, RefreshCw, Crown, Coins } from 'lucide-react'
 import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
 import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
 import { usePostRanking } from '@/hooks/usePostRanking'
@@ -15,11 +15,8 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh'
 import { NewPostForm } from '@/components/timeline/NewPostForm'
 import { PremiumPostForm } from '@/components/timeline/PremiumPostForm'
 import { Modal } from '@/components/ui/modal'
-import { LocationFilterSelector } from '@/components/timeline/LocationFilterSelector'
 import { useLocationFilters } from '@/hooks/useLocationFilters'
-import { getCategories } from '@/data/services'
-import { ErrorHandler } from '@/components/ErrorHandler'
-import { FeedSkeleton } from '@/components/ui/skeleton'
+import { InstagramPostSkeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -35,6 +32,20 @@ import { EditPostModal } from '@/components/timeline/EditPostModal'
 import { useCommentsCount } from '@/hooks/useCommentsCount'
 import { cn } from '@/lib/utils'
 import { PremiumLikeButton } from '@/components/points/PremiumLikeButton'
+import { usePostShares } from '@/hooks/usePostShares'
+import { useQueryClient } from '@tanstack/react-query'
+import { LikedBy } from '@/components/timeline/LikedBy'
+import { PostMedia } from '@/components/timeline/PostMedia'
+import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
+import { PremiumTimeRemaining } from '@/components/timeline/PremiumTimeRemaining'
+import { MentionText } from '@/components/ui/MentionText'
+import { MentionInput } from '@/components/ui/MentionInput'
+import { FeedSettingsModal } from '@/components/timeline/FeedSettingsModal'
+import { supabase } from '@/lib/supabase'
+import { LocationFilter } from '@/hooks/useLocationFilters'
+import { useStories } from '@/hooks/useStories'
+import { StoryViewer } from '@/components/stories/StoryViewer'
+import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -45,12 +56,39 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('posts')
   const [showNewPost, setShowNewPost] = useState(false)
   const [showPremiumPost, setShowPremiumPost] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFeedSettings, setShowFeedSettings] = useState(false)
   const [search, setSearch] = useState('')
   const [isPosting, setIsPosting] = useState(false)
   const [postStatus, setPostStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const feedSettingsRef = useRef<HTMLDivElement>(null)
+  const [showCreateStory, setShowCreateStory] = useState(false)
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0)
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
 
   const { currentFilter, setFilter } = useLocationFilters()
+  const { storyGroups, isLoading: storiesLoading, refetch: refetchStories } = useStories()
+
+  // Fechar dropdown quando clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (feedSettingsRef.current && !feedSettingsRef.current.contains(event.target as Node)) {
+        setShowFeedSettings(false)
+      }
+    }
+
+    if (showFeedSettings) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showFeedSettings])
+
+  // NÃO carregar preferências de pesquisa salvas
+  // A pesquisa (keywords, username, userid) é apenas temporária
+  // Se o usuário atualizar a página, a pesquisa volta vazia
 
   const {
     items,
@@ -80,7 +118,7 @@ export default function FeedPage() {
     }
   })
 
-  const { loadingRef } = useInfiniteScroll({ 
+  useInfiniteScroll({ 
     hasNextPage, 
     isFetchingNextPage, 
     fetchNextPage: loadMore, 
@@ -172,18 +210,60 @@ export default function FeedPage() {
     }
   }
 
-  // Stories mock (futuro)
-  const stories = [
-    { id: '1', name: 'Seu story', avatar: profile?.avatar_url, hasNew: true },
-    { id: '2', name: 'João Silva', avatar: null, hasNew: false },
-    { id: '3', name: 'Maria Santos', avatar: null, hasNew: true },
-    { id: '4', name: 'Pedro Costa', avatar: null, hasNew: false },
+  // Preparar lista de stories para exibição
+  // Verificar se o usuário tem stories próprios
+  const myStoryGroup = storyGroups.find(group => group.userId === profile?.id)
+  const displayStories = [
+    // "Seu story" sempre aparece primeiro
+    {
+      id: 'my-story',
+      userId: profile?.id || '',
+      userName: 'Seu story',
+      userAvatar: profile?.avatar_url || null,
+      hasNew: false,
+      isMyStory: true,
+      stories: myStoryGroup?.stories || []
+    },
+    // Stories de outros usuários
+    ...storyGroups
+      .filter(group => group.userId !== profile?.id)
+      .map(group => ({
+        id: group.userId,
+        userId: group.userId,
+        userName: group.userName,
+        userAvatar: group.userAvatar,
+        hasNew: group.hasNew,
+        isMyStory: false,
+        stories: group.stories
+      }))
   ]
 
   if (!mounted) return null
 
   return (
     <MainLayout requireAuth={true}>
+      {/* Story Viewer */}
+      {showStoryViewer && (
+        <StoryViewer
+          initialGroupIndex={selectedStoryGroupIndex}
+          initialStoryIndex={selectedStoryIndex}
+          onClose={() => setShowStoryViewer(false)}
+        />
+      )}
+
+      {/* Create Story Modal */}
+      {showCreateStory && (
+        <CreateStoryModal
+          isOpen={showCreateStory}
+          onClose={() => setShowCreateStory(false)}
+          onStoryCreated={async () => {
+            // Refetch stories após criar
+            console.log('🔄 Refazendo busca de stories após criar novo...')
+            await refetchStories()
+          }}
+        />
+      )}
+
       <div className="min-h-screen bg-white dark:bg-black">
         {/* HEADER FIXO */}
         <header className="sticky top-0 z-30 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900">
@@ -200,9 +280,74 @@ export default function FeedPage() {
                 >
                   <Plus className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                 </button>
-                <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors">
-                  <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                </button>
+                <div className="relative" ref={feedSettingsRef}>
+                  <button 
+                    onClick={() => setShowFeedSettings(!showFeedSettings)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
+                    title="Configurações do Feed"
+                  >
+                    <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  </button>
+                  
+                  {/* Dropdown de Configurações */}
+                  {showFeedSettings && (
+                    <FeedSettingsModal
+                      isOpen={showFeedSettings}
+                      onClose={() => setShowFeedSettings(false)}
+                      currentSearch={search}
+                      currentLocationFilter={currentFilter}
+                      onSearchChange={(newSearch) => {
+                        setSearch(newSearch)
+                      }}
+                      onLocationFilterChange={(newFilter) => {
+                        setFilter(newFilter)
+                      }}
+                      onReset={async () => {
+                        // Resetar para estado original (cidade do usuário)
+                        const resetFilter: LocationFilter = {
+                          type: 'local',
+                          city: profile?.location_city || '',
+                          state: profile?.location_state || '',
+                          country: 'Brasil'
+                        }
+                        
+                        // Normalizar estado se for sigla
+                        if (resetFilter.state && resetFilter.state.length === 2) {
+                          try {
+                            const { getEstadoBySigla } = await import('@/lib/ibge')
+                            const estado = await getEstadoBySigla(resetFilter.state)
+                            if (estado) {
+                              resetFilter.state = estado.nome
+                            }
+                          } catch (error) {
+                            console.error('Erro ao normalizar estado no reset:', error)
+                          }
+                        }
+                        
+                        setSearch('')
+                        setFilter(resetFilter)
+                        
+                        // Salvar APENAS localização resetada no perfil
+                        // NÃO salvar pesquisa (keywords, username, userid)
+                        if (profile?.id) {
+                          try {
+                            await supabase
+                              .from('profiles')
+                              .update({
+                                feed_location_filter_type: 'local',
+                                feed_location_filter_city: resetFilter.city || null,
+                                feed_location_filter_state: resetFilter.state || null,
+                                updated_at: new Date().toISOString()
+                              })
+                              .eq('id', profile.id)
+                          } catch (error) {
+                            console.error('Erro ao salvar reset:', error)
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                </div>
                 <button className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors">
                   <MessageCircle className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -229,37 +374,98 @@ export default function FeedPage() {
           </div>
         </header>
 
-        {/* STORIES (Futuro) */}
+        {/* STORIES */}
         <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900">
           <div className="max-w-2xl mx-auto px-4 py-3">
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide">
-              {stories.map((story, i) => (
-                <div key={story.id} className="flex flex-col items-center gap-2 min-w-[70px]">
-                  <div className={`relative w-16 h-16 rounded-full p-0.5 ${
-                    story.hasNew 
-                      ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
-                      : 'bg-gray-300 dark:bg-gray-700'
-                  }`}>
-                    <div className="w-full h-full rounded-full bg-white dark:bg-black p-0.5">
-                      {story.avatar ? (
-                        <img 
-                          src={story.avatar} 
-                          alt={story.name}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-900 flex items-center justify-center">
-                          <span className="text-lg">{story.name.charAt(0)}</span>
+            {storiesLoading ? (
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2 min-w-[70px] flex-shrink-0">
+                    <div className="relative">
+                      <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse border-2 border-gray-300 dark:border-gray-700" />
+                    </div>
+                    <div className="h-3 w-12 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide">
+                {displayStories.map((story, i) => (
+                  <div
+                    key={story.id}
+                    className="flex flex-col items-center gap-2 min-w-[70px] flex-shrink-0"
+                  >
+                    <div className="relative">
+                      {/* Avatar clicável - abre stories do usuário */}
+                      <button
+                        onClick={() => {
+                          if (story.isMyStory) {
+                            // Se for "Seu story", verificar se tem stories para ver
+                            if (myStoryGroup && myStoryGroup.stories.length > 0) {
+                              // Encontrar o índice do grupo do usuário
+                              const groupIndex = storyGroups.findIndex(g => g.userId === profile?.id)
+                              if (groupIndex !== -1) {
+                                setSelectedStoryGroupIndex(groupIndex)
+                                setSelectedStoryIndex(0)
+                                setShowStoryViewer(true)
+                              }
+                            } else {
+                              // Se não tem stories, abrir modal de criar
+                              setShowCreateStory(true)
+                            }
+                          } else {
+                            // Encontrar o índice do grupo na lista real
+                            const groupIndex = storyGroups.findIndex(g => g.userId === story.userId)
+                            if (groupIndex !== -1) {
+                              setSelectedStoryGroupIndex(groupIndex)
+                              setSelectedStoryIndex(0)
+                              setShowStoryViewer(true)
+                            }
+                          }
+                        }}
+                        className={`relative w-16 h-16 rounded-full p-0.5 block ${
+                          story.hasNew 
+                            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
+                            : 'bg-gray-300 dark:bg-gray-700'
+                        }`}
+                      >
+                        <div className="w-full h-full rounded-full bg-white dark:bg-black p-0.5">
+                          {story.userAvatar ? (
+                            <img 
+                              src={story.userAvatar} 
+                              alt={story.userName}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-900 flex items-center justify-center">
+                              <span className="text-lg text-gray-600 dark:text-gray-400">
+                                {story.userName.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                         </div>
+                      </button>
+                      {/* Botão + apenas para "Seu story" - abre modal de criar */}
+                      {story.isMyStory && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setShowCreateStory(true)
+                          }}
+                          className="absolute -bottom-3 -right-3 bg-transparent border-0 flex items-center justify-center hover:opacity-80 transition-opacity z-10 p-0"
+                          title="Criar novo story"
+                        >
+                          <Plus className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                        </button>
                       )}
                     </div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[70px]">
+                      {story.userName}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[70px]">
-                    {i === 0 ? 'Seu story' : story.name}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -279,10 +485,10 @@ export default function FeedPage() {
         {/* FEED */}
         <div ref={containerRef} className="max-w-2xl mx-auto pb-20">
           {isLoading ? (
-            <div className="space-y-4 p-4">
-              <FeedSkeleton />
-              <FeedSkeleton />
-              <FeedSkeleton />
+            <div className="space-y-0">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <InstagramPostSkeleton key={i} />
+              ))}
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
@@ -292,9 +498,24 @@ export default function FeedPage() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Nenhum post encontrado
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-center">
-                Seja o primeiro a compartilhar algo!
+              <p className="text-gray-500 dark:text-gray-400 text-center mb-4">
+                {search || currentFilter.type !== 'all' 
+                  ? 'Não encontramos posts com os filtros selecionados.'
+                  : 'Seja o primeiro a compartilhar algo!'}
               </p>
+              {(search || currentFilter.type !== 'all') && (
+                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 max-w-md">
+                  <p className="text-sm text-blue-900 dark:text-blue-200 font-medium mb-2">
+                    💡 Dicas para encontrar mais posts:
+                  </p>
+                  <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1 list-disc list-inside">
+                    <li>Limpe a pesquisa usando o botão "Resetar" nas configurações</li>
+                    <li>Mude o filtro de localização para outra cidade ou estado</li>
+                    <li>Selecione "Todos os Locais" para ver posts de qualquer lugar</li>
+                    <li>Verifique se os termos de pesquisa estão corretos</li>
+                  </ul>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-0">
@@ -473,10 +694,19 @@ export default function FeedPage() {
               setShowEditModal(false)
               setEditingPost(null)
             }}
-            post={editingPost}
-            onSave={async (updatedPost: any) => {
+            post={{
+              id: editingPost.id,
+              description: editingPost.description || '',
+              images: editingPost.images || [],
+              service: editingPost.service_category_id || ''
+            }}
+            onSave={async (postId: string, updatedPost: { description: string; images: string[] }) => {
               try {
-                await editPost(editingPost.id, updatedPost)
+                await editPost(postId, {
+                  title: updatedPost.description.slice(0, 100), // Gerar título automaticamente
+                  description: updatedPost.description,
+                  images: updatedPost.images
+                })
                 setShowEditModal(false)
                 setEditingPost(null)
                 await refetch()
@@ -531,6 +761,7 @@ export default function FeedPage() {
             />
           </Modal>
         )}
+
       </div>
     </MainLayout>
   )
@@ -538,15 +769,14 @@ export default function FeedPage() {
 
 // COMPONENTE DE POST (INSTAGRAM STYLE)
 function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium, isTrending, isDeleting = false }: any) {
-  const { profile } = useAuthContext()
+  const { profile, user } = useAuthContext()
+  const queryClient = useQueryClient()
   const [showFull, setShowFull] = useState(false)
   const [isLiking, setIsLiking] = useState(false)
+  const [isPremiumLiking, setIsPremiumLiking] = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   
-  const text = post.description || post.title || ''
-  const shouldTruncate = text.length > 120
-  const displayText = showFull ? text : text.slice(0, 120) + (shouldTruncate ? '...' : '')
 
   // Hook de reações (likes) - igual ao usado na página principal
   const { addReaction, userReaction, isLoading: isReactionLoading } = useReactions(
@@ -582,6 +812,9 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
 
   // Hook para contagem de comentários
   const { count: commentsCount } = useCommentsCount(post.id)
+  
+  // Hook para contagem de compartilhamentos
+  const { sharesCount } = usePostShares(post.id)
 
   const [newComment, setNewComment] = useState('')
   const [editingComment, setEditingComment] = useState<string | null>(null)
@@ -654,6 +887,13 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
   const postUser = post.professional || post.user || {}
   const postImages = post.images || []
   
+  // Detectar vídeos do YouTube: primeiro verificar metadata, depois descrição (para compatibilidade com posts antigos)
+  const youtubeVideoId = (post.metadata as any)?.youtube_video_id || null
+  const youtubeVideos = youtubeVideoId 
+    ? [{ id: youtubeVideoId, url: (post.metadata as any)?.youtube_video_url || '', thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg` }]
+    : detectYouTubeUrls(post.description || '')
+  const cleanDescription = removeYouTubeUrls(post.description || '')
+  
   // Garantir que temos todos os dados do usuário, tentando todas as fontes possíveis
   const userAvatar = 
     postUser?.avatar_url || 
@@ -680,19 +920,27 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
   
   // Garantir que sempre temos um nome válido
   const displayUserName = userName && userName !== '' ? userName : 'Usuário'
+  
+  // Texto para exibir (sem vídeos do YouTube)
+  const displayText = cleanDescription || post.title || ''
+  const shouldTruncate = displayText.length > 120
+  const finalDisplayText = showFull ? displayText : displayText.slice(0, 120) + (shouldTruncate ? '...' : '')
 
   // Verificar se é post premium
   const isPremium = post.is_premium || post.tags?.includes('premium') || post.metadata?.type === 'premium'
   const premiumExpired = post.premium_expires_at ? new Date(post.premium_expires_at) < new Date() : false
   const isActivePremium = isPremium && !premiumExpired
+  
+  // Verificar se o usuário atual é o dono do post
+  const isOwner = user?.id === userId
 
   return (
     <article 
       id={`post-${post.id}`}
-      className={`bg-white dark:bg-black border-b ${
+      className={`bg-white dark:bg-black ${
         isActivePremium 
           ? 'border-l-2 border-l-yellow-400 dark:border-l-yellow-500 bg-gradient-to-r from-yellow-50/30 to-transparent dark:from-yellow-900/10 dark:to-transparent' 
-          : 'border-gray-200 dark:border-gray-900'
+          : ''
       }`}
     >
       {/* HEADER */}
@@ -748,38 +996,79 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
         />
       </div>
 
-      {/* IMAGEM OU DESCRIÇÃO */}
-      {postImages[0] ? (
-        <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-900">
-          <Image
-            src={postImages[0]}
-            alt={post.title || 'Post'}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 640px"
+      {/* MÍDIA (FOTOS E/OU VÍDEO) - Sempre mostrar se houver */}
+      {(postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId) ? (
+        <>
+          <PostMedia
+            images={postImages}
+            youtubeVideoId={youtubeVideoId}
+            onDoubleClick={handleLikeClick}
+            isLiking={isLiking}
+            isPremiumLiking={isPremiumLiking}
           />
-          {/* Double tap to like overlay */}
-          {isLiking && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <Heart className="h-20 w-20 text-red-500 fill-red-500 animate-ping" />
+          {/* DESCRIÇÃO - Mostrar abaixo da mídia se houver texto */}
+          {finalDisplayText && (
+            <div className="px-4 py-3">
+              <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
+                <MentionText text={finalDisplayText} />
+                {shouldTruncate && !showFull && (
+                  <button
+                    onClick={() => setShowFull(true)}
+                    className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
+                  >
+                    mais
+                  </button>
+                )}
+              </p>
             </div>
           )}
-        </div>
+        </>
       ) : (
-        /* DESCRIÇÃO NO LUGAR DA FOTO */
-        <div className="px-4 py-4">
-          <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
-            {displayText}
-            {shouldTruncate && !showFull && (
-              <button
-                onClick={() => setShowFull(true)}
-                className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                mais
-              </button>
+        /* DESCRIÇÃO NO LUGAR DA MÍDIA - Se não houver mídia */
+        finalDisplayText && (
+          <div className="px-4 py-4 relative">
+            <p className="text-sm text-gray-900 dark:text-white whitespace-pre-wrap break-words leading-relaxed">
+              {finalDisplayText}
+              {shouldTruncate && !showFull && (
+                <button
+                  onClick={() => setShowFull(true)}
+                  className="text-gray-500 dark:text-gray-400 ml-1 font-medium hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  mais
+                </button>
+              )}
+            </p>
+            {/* Animações de like para posts sem mídia */}
+            {isLiking && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <Heart className="h-20 w-20 text-red-500 fill-red-500 animate-ping" />
+              </div>
             )}
-          </p>
-        </div>
+            {isPremiumLiking && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                <div className="relative h-20 w-20">
+                  <Coins 
+                    className="h-20 w-20 absolute inset-0 text-yellow-500 animate-ping"
+                    style={{
+                      fill: '#eab308',
+                      stroke: 'none',
+                      zIndex: 1
+                    }}
+                  />
+                  <Coins 
+                    className="h-20 w-20 absolute inset-0 text-gray-700 dark:text-gray-300 animate-ping"
+                    style={{
+                      fill: 'none',
+                      stroke: 'currentColor',
+                      strokeWidth: 3,
+                      zIndex: 2
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )
       )}
 
       {/* AÇÕES */}
@@ -809,7 +1098,10 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             postCreatorId={userId}
             size="sm"
             showStats={false}
-            className="h-auto"
+            onPremiumLikeClick={() => {
+              setIsPremiumLiking(true)
+              setTimeout(() => setIsPremiumLiking(false), 600) // Duração da animação
+            }}
           />
           
           {/* Botão de Comentários */}
@@ -836,35 +1128,14 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
           >
             <Share2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              0
+              {sharesCount > 0 ? sharesCount.toLocaleString('pt-BR') : '0'}
             </span>
           </button>
         </div>
+        
+        {/* Mostrar quem curtiu */}
+        <LikedBy postId={post.id} likesCount={likesCount} />
       </div>
-
-        {/* TEXTO - Só mostra se tiver foto (se não tiver, já mostrou acima) */}
-        {postImages[0] && (
-          <div className="space-y-1">
-            <p className="text-sm text-gray-900 dark:text-white">
-              <span className="font-semibold">{displayUserName}</span>
-              {displayText && (
-                <>
-                  {' '}
-                  <span>{displayText}</span>
-                  {shouldTruncate && !showFull && (
-                    <button
-                      onClick={() => setShowFull(true)}
-                      className="text-gray-500 dark:text-gray-400 ml-1"
-                    >
-                      mais
-                    </button>
-                  )}
-                </>
-              )}
-            </p>
-            {/* Removido "Ver todos os comentários" - apenas ícone de comentários */}
-          </div>
-        )}
 
       {/* COMENTÁRIOS */}
       {showComments && (
@@ -894,12 +1165,12 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                             {' '}
                             {editingComment === comment.id ? (
                               <div className="mt-2 space-y-2">
-                                <input
-                                  type="text"
+                                <MentionInput
                                   value={editCommentContent}
-                                  onChange={(e) => setEditCommentContent(e.target.value)}
+                                  onChange={(value) => setEditCommentContent(value)}
+                                  placeholder="Editar comentário..."
                                   className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 outline-none pb-1"
-                                  onKeyDown={(e) => {
+                                  onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                       e.preventDefault()
                                       handleSaveEditComment()
@@ -908,7 +1179,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                                       handleCancelEditComment()
                                     }
                                   }}
-                                  autoFocus
+                                  minHeight="40px"
                                 />
                                 <div className="flex gap-2">
                                   <button
@@ -928,7 +1199,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                               </div>
                             ) : (
                               <span className="text-gray-700 dark:text-gray-300">
-                                {comment.content}
+                                <MentionText text={comment.content} />
                               </span>
                             )}
                           </p>
@@ -942,7 +1213,10 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                               </p>
                               {/* Botão de Like */}
                               <button
-                                onClick={() => likeComment(comment.id)}
+                                onClick={() => {
+                                  console.log('👍 [Feed] Curtindo comentário:', comment.id, 'do usuário:', comment.user?.id)
+                                  likeComment(comment.id)
+                                }}
                                 disabled={isLikingComment}
                                 className={cn(
                                   "flex items-center gap-1 text-xs transition-all duration-200",
@@ -990,30 +1264,34 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             )}
 
             {/* Input de comentário */}
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-start">
               {profile?.avatar_url && (
-                <Avatar className="w-6 h-6">
+                <Avatar className="w-6 h-6 mt-1 flex-shrink-0">
                   <AvatarImage src={profile.avatar_url} />
                   <AvatarFallback>
                     {profile.full_name?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
               )}
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleAddComment()
-                  }
-                }}
-                placeholder="Adicione um comentário..."
-                disabled={isAddingComment}
-                className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 pb-1"
-              />
-              {newComment.trim() && (
+              <div className="flex-1">
+                <MentionInput
+                  value={newComment}
+                  onChange={(value) => setNewComment(value)}
+                  placeholder="Adicione um comentário..."
+                  disabled={isAddingComment}
+                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 pb-1"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleAddComment()
+                    }
+                  }}
+                  minHeight="48px"
+                />
+              </div>
+            </div>
+            {newComment.trim() && (
+              <div className="flex justify-end mt-2">
                 <button
                   onClick={handleAddComment}
                   disabled={isAddingComment}
@@ -1025,8 +1303,8 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                     'Publicar'
                   )}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
       )}
 
@@ -1036,19 +1314,37 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
         onClose={() => setShowShareModal(false)}
         postId={post.id}
         postTitle={post.title || post.description || 'Post'}
+        onShareRecorded={() => {
+          // Invalidar query para atualizar contador
+          queryClient.invalidateQueries({ queryKey: ['post-shares', post.id] })
+        }}
       />
 
       {/* TIMESTAMP */}
       <div className="px-4 pb-3">
-        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">
-          {new Date(post.created_at).toLocaleDateString('pt-BR', { 
-            day: 'numeric', 
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">
+            {new Date(post.created_at).toLocaleDateString('pt-BR', { 
+              day: 'numeric', 
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
+          {isPremium && isOwner && post.premium_expires_at && (
+            <>
+              <span className="text-xs text-gray-400 dark:text-gray-600">|</span>
+              <PremiumTimeRemaining 
+                expiresAt={post.premium_expires_at} 
+                isOwner={isOwner}
+              />
+            </>
+          )}
+        </div>
       </div>
+      
+      {/* LINHA SEPARADORA - Indica o fim do post */}
+      <div className="border-b-2 border-gray-300 dark:border-gray-700 my-2"></div>
     </article>
   )
 }

@@ -3,6 +3,8 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { UnifiedTimelineItem, TimelineFilters, TimelineStats, TimelinePost } from '@/types/timeline'
 import { LocationFilter } from '@/hooks/useLocationFilters'
+import { removeYouTubeUrls, detectYouTubeUrls } from '@/utils/youtube'
+import { getEstadoBySigla, getEstadoByNome } from '@/lib/ibge'
 
 const ITEMS_PER_PAGE = 20
 
@@ -72,19 +74,52 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.trim().toLowerCase()
+        const searchTerm = filters.search.trim()
         console.log('🔍 Aplicando filtro de busca:', searchTerm)
         
-        // Buscar em campos básicos do post
-        postsQuery = postsQuery.or(`
-          title.ilike.%${searchTerm}%,
-          description.ilike.%${searchTerm}%,
-          metadata->>category.ilike.%${searchTerm}%,
-          metadata->>service_type.ilike.%${searchTerm}%,
-          metadata->>tags.ilike.%${searchTerm}%,
-          metadata->>service_description.ilike.%${searchTerm}%,
-          metadata->>user.ilike.%${searchTerm}%
-        `.replace(/\s+/g, ''))
+        // Verificar se é busca por usuário (user:username) ou ID (id:userid)
+        if (searchTerm.startsWith('user:')) {
+          // Buscar por nome do usuário
+          const username = searchTerm.replace('user:', '').trim()
+          console.log('👤 Buscando por nome do usuário:', username)
+          
+          // Primeiro, buscar IDs dos usuários que correspondem ao nome
+          const { data: matchingProfiles } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('full_name', `%${username}%`)
+          
+          const matchingUserIds = matchingProfiles?.map(p => p.id) || []
+          
+          if (matchingUserIds.length > 0) {
+            // Filtrar posts por IDs dos usuários encontrados
+            // Usar .in() para user_id e professional_id
+            postsQuery = postsQuery.or(`user_id.in.(${matchingUserIds.join(',')}),professional_id.in.(${matchingUserIds.join(',')})`)
+          } else {
+            // Se não encontrar usuários, retornar query vazia usando um ID inválido
+            postsQuery = postsQuery.eq('id', '00000000-0000-0000-0000-000000000000') // ID inválido para retornar vazio
+          }
+        } else if (searchTerm.startsWith('id:')) {
+          // Buscar por ID do usuário
+          const userId = searchTerm.replace('id:', '').trim()
+          console.log('🆔 Buscando por ID do usuário:', userId)
+          postsQuery = postsQuery.or(`user_id.eq.${userId},professional_id.eq.${userId}`)
+        } else {
+          // Busca por palavras-chave (padrão)
+          const keywords = searchTerm.toLowerCase()
+          console.log('🔑 Buscando por palavras-chave:', keywords)
+          
+          // Buscar em campos básicos do post
+          postsQuery = postsQuery.or(`
+            title.ilike.%${keywords}%,
+            description.ilike.%${keywords}%,
+            metadata->>category.ilike.%${keywords}%,
+            metadata->>service_type.ilike.%${keywords}%,
+            metadata->>tags.ilike.%${keywords}%,
+            metadata->>service_description.ilike.%${keywords}%,
+            metadata->>user.ilike.%${keywords}%
+          `.replace(/\s+/g, ''))
+        }
       }
 
       // Aplicar filtros de localização
@@ -93,6 +128,35 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         
         console.log('🔍 Aplicando filtro de localização:', JSON.stringify(locationFilter, null, 2))
         
+        // Função auxiliar para normalizar estado (aceitar tanto sigla quanto nome completo)
+        const normalizeStateForQuery = async (state: string): Promise<string[]> => {
+          const states: string[] = [state] // Sempre incluir o valor original
+          
+          // Se for sigla (2 caracteres), buscar nome completo também
+          if (state && state.length === 2) {
+            try {
+              const estado = await getEstadoBySigla(state)
+              if (estado && estado.nome !== state) {
+                states.push(estado.nome)
+              }
+            } catch (error) {
+              console.error('Erro ao buscar nome do estado:', error)
+            }
+          } else {
+            // Se for nome completo, buscar sigla também
+            try {
+              const estado = await getEstadoByNome(state)
+              if (estado && estado.sigla !== state) {
+                states.push(estado.sigla)
+              }
+            } catch (error) {
+              console.error('Erro ao buscar sigla do estado:', error)
+            }
+          }
+          
+          return states
+        }
+        
         switch (locationFilter.type) {
           case 'local':
             if (locationFilter.city && locationFilter.state) {
@@ -100,15 +164,37 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 city: locationFilter.city,
                 state: locationFilter.state
               })
-              postsQuery = postsQuery
-                .ilike('location_city', locationFilter.city)
-                .ilike('location_state', locationFilter.state)
+              
+              // Normalizar estado para buscar tanto sigla quanto nome completo
+              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              
+              // Buscar posts que correspondam à cidade E ao estado (sigla ou nome completo)
+              if (normalizedStates.length > 1) {
+                // Se há múltiplas variações do estado, usar OR
+                const stateConditions = normalizedStates.map(s => `location_state.ilike.%${s}%`).join(',')
+                postsQuery = postsQuery
+                  .ilike('location_city', locationFilter.city)
+                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+              } else {
+                postsQuery = postsQuery
+                  .ilike('location_city', locationFilter.city)
+                  .ilike('location_state', locationFilter.state)
+              }
             }
             break
           case 'state':
             if (locationFilter.state) {
               console.log('🏙️ Filtro estado:', locationFilter.state)
-              postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+              
+              // Normalizar estado para buscar tanto sigla quanto nome completo
+              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              
+              if (normalizedStates.length > 1) {
+                // Se há múltiplas variações do estado, usar OR
+                postsQuery = postsQuery.or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+              } else {
+                postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+              }
             }
             break
           case 'country':
@@ -124,13 +210,33 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 city: locationFilter.city,
                 state: locationFilter.state
               })
-              postsQuery = postsQuery
-                .ilike('location_city', locationFilter.city)
-                .ilike('location_state', locationFilter.state)
+              
+              // Normalizar estado para buscar tanto sigla quanto nome completo
+              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              
+              if (normalizedStates.length > 1) {
+                // Se há múltiplas variações do estado, usar OR
+                postsQuery = postsQuery
+                  .ilike('location_city', locationFilter.city)
+                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+              } else {
+                postsQuery = postsQuery
+                  .ilike('location_city', locationFilter.city)
+                  .ilike('location_state', locationFilter.state)
+              }
             } else if (locationFilter.state && !locationFilter.city) {
               // Se apenas estado foi selecionado (sem cidade)
               console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state)
-              postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+              
+              // Normalizar estado para buscar tanto sigla quanto nome completo
+              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              
+              if (normalizedStates.length > 1) {
+                // Se há múltiplas variações do estado, usar OR
+                postsQuery = postsQuery.or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+              } else {
+                postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+              }
             } else {
               console.log('⚠️ Filtro custom sem dados completos:', {
                 city: locationFilter.city,
@@ -453,16 +559,29 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         throw new Error('Descrição é obrigatória')
       }
       
-      // Gerar título automaticamente a partir da descrição (primeiros 100 caracteres)
-      const title = newPost.description.trim().slice(0, 100)
+      // Detectar vídeos do YouTube ANTES de remover o link
+      const youtubeVideos = detectYouTubeUrls(newPost.description.trim())
+      const firstVideo = youtubeVideos.length > 0 ? youtubeVideos[0] : null
+      
+      // Remover URLs do YouTube da descrição antes de salvar
+      const cleanedDescription = removeYouTubeUrls(newPost.description.trim())
+      
+      // Gerar título automaticamente a partir da descrição limpa (primeiros 100 caracteres)
+      const title = cleanedDescription.slice(0, 100)
+      
+      // Preparar metadata com informações do vídeo (se houver)
+      const metadata = firstVideo ? {
+        youtube_video_id: firstVideo.id,
+        youtube_video_url: firstVideo.url
+      } : null
       
       // Preparar dados para inserção
       const postData = {
         professional_id: newPost.user_id,
         user_id: newPost.user_id,
         title: title,
-        description: newPost.description.trim(),
-        content: newPost.description.trim(), // Usar description como content também
+        description: cleanedDescription,
+        content: cleanedDescription, // Usar description limpa como content também
         images: Array.isArray(newPost.images) ? newPost.images : [],
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,
@@ -473,7 +592,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         is_public: true,
         is_featured: false,
         tags: null,
-        metadata: null
+        metadata: metadata
       }
       
       console.log('📝 [addPost] Dados do post:', postData)
@@ -527,7 +646,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Não falhar a criação do post se houver erro no milestone
       }
 
-      // Atualizar cache local
+      // Atualizar cache local - usar metadata do banco (que já inclui o vídeo se houver)
       const timelinePost = {
         id: data.id,
         type: 'post' as const,
@@ -537,14 +656,17 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         user_avatar: newPost.user_avatar,
         user_type: newPost.user_type,
         title: data.title,
-        description: data.description || '',
+        description: data.description || '', // Já está limpo (sem link)
         images: data.images || [],
         service_category_id: data.service_category_id,
         location_state: data.location_state,
         location_city: data.location_city,
         likes_count: data.likes_count || 0,
         comments_count: data.comments_count || 0,
-        is_liked: false
+        is_liked: false,
+        is_featured: data.is_featured || false,
+        tags: data.tags || [],
+        metadata: data.metadata // Metadata já inclui youtube_video_id se houver
       } as UnifiedTimelineItem
 
       queryClient.setQueryData(queryKey, (oldData: any) => {
@@ -564,37 +686,96 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
   const editPost = useCallback(async (postId: string, updatedPost: any) => {
     try {
-      // Atualizar no banco de dados
+      // Buscar post atual para manter metadata existente e dados premium
+      const { data: currentPost } = await supabase
+        .from('feed_posts')
+        .select('metadata, is_premium, premium_expires_at, premium_points_spent, premium_highlight_color')
+        .eq('id', postId)
+        .single()
+      
+      // Detectar vídeos do YouTube ANTES de remover o link
+      const youtubeVideos = detectYouTubeUrls(updatedPost.description?.trim() || '')
+      const firstVideo = youtubeVideos.length > 0 ? youtubeVideos[0] : null
+      
+      // Remover URLs do YouTube da descrição antes de salvar
+      const cleanedDescription = removeYouTubeUrls(updatedPost.description?.trim() || '')
+      
+      // Preparar metadata mantendo dados existentes e adicionando/atualizando vídeo
+      const existingMetadata = (currentPost?.metadata as any) || {}
+      const metadata: any = {
+        ...existingMetadata
+      }
+      
+      // Adicionar ou atualizar informações do vídeo do YouTube
+      if (firstVideo) {
+        metadata.youtube_video_id = firstVideo.id
+        metadata.youtube_video_url = firstVideo.url
+      } else {
+        // Se não há vídeo, remover do metadata
+        delete metadata.youtube_video_id
+        delete metadata.youtube_video_url
+      }
+      
+      // Preparar dados de atualização - NÃO atualizar campos premium se o post for premium
+      // Isso garante que o tempo de expiração não seja resetado
+      const updateData: any = {
+        title: updatedPost.title,
+        description: cleanedDescription,
+        content: cleanedDescription, // Também atualizar content com a descrição limpa
+        images: updatedPost.images || [],
+        metadata: metadata,
+        updated_at: new Date().toISOString()
+      }
+      
+      // Se o post é premium, preservar todos os dados premium (não resetar)
+      if (currentPost?.is_premium) {
+        // Manter todos os campos premium existentes (não atualizar)
+        // Isso garante que premium_expires_at não seja alterado
+        console.log('🛡️ [editPost] Post premium detectado - preservando dados premium:', {
+          is_premium: currentPost.is_premium,
+          premium_expires_at: currentPost.premium_expires_at,
+          premium_points_spent: currentPost.premium_points_spent
+        })
+      }
+      
+      // Atualizar no banco de dados (campos premium serão preservados automaticamente se não forem incluídos no update)
       const { data, error } = await supabase
         .from('feed_posts')
-        .update({
-          title: updatedPost.title,
-          description: updatedPost.description,
-          images: updatedPost.images || [],
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', postId)
-        .select()
+        .select('*, professional:profiles!feed_posts_professional_id_fkey(id, full_name, avatar_url, user_type, is_available), user:profiles!feed_posts_user_id_fkey(id, full_name, avatar_url, user_type, is_available)')
         .single()
 
       if (error) throw error
 
-      // Atualizar cache local
+      // Transformar dados do banco para o formato TimelinePost
+      const professionalData = (data.professional as any) || (data.user as any)
+      const userData = (data.user as any) || (data.professional as any)
+      
+      // Atualizar cache local - usar dados do banco (que preservam premium_expires_at)
       queryClient.setQueryData(queryKey, (oldData: any) => {
         if (!oldData) return oldData
         return {
           ...oldData,
           pages: oldData.pages.map((page: any[]) =>
-            page.map((item: any) =>
-              item.id === postId && item.type === 'post'
-                ? {
-                    ...item,
-                    title: data.title,
-                    description: data.description,
-                    images: data.images || []
-                  }
-                : item
-            )
+            page.map((item: any) => {
+              if (item.id === postId && item.type === 'post') {
+                return {
+                  ...item,
+                  title: data.title,
+                  description: cleanedDescription,
+                  images: data.images || [],
+                  metadata: metadata,
+                  // Preservar dados premium do banco (não são atualizados na edição)
+                  is_premium: data.is_premium ?? item.is_premium,
+                  premium_expires_at: data.premium_expires_at ?? item.premium_expires_at,
+                  premium_points_spent: data.premium_points_spent ?? item.premium_points_spent,
+                  premium_highlight_color: data.premium_highlight_color ?? item.premium_highlight_color,
+                  tags: data.tags || item.tags
+                }
+              }
+              return item
+            })
           )
         }
       })
@@ -770,6 +951,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
   // Função para criar posts premium
   const addPremiumPost = useCallback(async (newPost: Omit<TimelinePost, 'id' | 'created_at' | 'likes_count' | 'comments_count' | 'is_liked'> & { pointsToSpend: number; durationDays: number }) => {
     try {
+      // Detectar vídeos do YouTube ANTES de remover o link
+      const youtubeVideos = detectYouTubeUrls(newPost.description?.trim() || '')
+      const firstVideo = youtubeVideos.length > 0 ? youtubeVideos[0] : null
+      
+      // Remover URLs do YouTube da descrição antes de salvar
+      const cleanedDescription = removeYouTubeUrls(newPost.description?.trim() || '')
+      
+      // Gerar título automaticamente a partir da descrição limpa (primeiros 100 caracteres)
+      const title = cleanedDescription.slice(0, 100) || newPost.title || 'Post Premium'
 
       // Verificar saldo do usuário
       const { data: balanceData, error: balanceError } = await supabase
@@ -790,13 +980,28 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + newPost.durationDays)
 
+      // Preparar metadata com informações do vídeo (se houver) e dados premium
+      const metadata: any = {
+        type: 'premium',
+        points_spent: newPost.pointsToSpend,
+        duration_days: newPost.durationDays,
+        created_at: new Date().toISOString(),
+        expires_at: expiresAt.toISOString()
+      }
+      
+      // Adicionar informações do vídeo do YouTube ao metadata se houver
+      if (firstVideo) {
+        metadata.youtube_video_id = firstVideo.id
+        metadata.youtube_video_url = firstVideo.url
+      }
+
       // Criar post premium diretamente na tabela
       const postData = {
         professional_id: newPost.user_id,
         user_id: newPost.user_id,
-        title: newPost.title.trim(),
-        description: newPost.description?.trim() || '',
-        content: newPost.description?.trim() || '', // Usar description como content
+        title: title,
+        description: cleanedDescription,
+        content: cleanedDescription, // Usar description limpa como content
         images: Array.isArray(newPost.images) ? newPost.images : [],
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,
@@ -811,13 +1016,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         premium_expires_at: expiresAt.toISOString(),
         premium_highlight_color: '#FFD700',
         tags: ['premium'],
-        metadata: {
-          type: 'premium',
-          points_spent: newPost.pointsToSpend,
-          duration_days: newPost.durationDays,
-          created_at: new Date().toISOString(),
-          expires_at: expiresAt.toISOString()
-        }
+        metadata: metadata
       }
 
       const { data, error } = await supabase
@@ -891,8 +1090,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         user_name: newPost.user_name,
         user_avatar: newPost.user_avatar,
         user_type: newPost.user_type,
-        title: newPost.title,
-        description: newPost.description || '',
+        title: title,
+        description: cleanedDescription,
         images: newPost.images || [],
         service_category_id: newPost.service_category_id,
         location_state: newPost.location_state,
@@ -902,12 +1101,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         is_liked: false,
         is_featured: true, // Posts premium são destacados
         tags: ['premium'],
-        metadata: {
-          type: 'premium',
-          points_spent: newPost.pointsToSpend,
-          created_at: new Date().toISOString(),
-          expires_at: expiresAt.toISOString()
-        }
+        metadata: metadata // Usar o metadata que já inclui o vídeo (se houver)
       } as UnifiedTimelineItem
 
       // Adicionar ao cache local (igual ao addPost)

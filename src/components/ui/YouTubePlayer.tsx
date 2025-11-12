@@ -36,7 +36,7 @@ export function YouTubePlayer({
 
   if (isPlaying) {
     return (
-      <div className={`relative w-full ${className}`}>
+      <div className={`relative w-full h-full ${className}`}>
         {isLoading && (
           <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 rounded-lg flex items-center justify-center z-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -45,7 +45,7 @@ export function YouTubePlayer({
         <iframe
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&showinfo=0`}
           title={title || 'YouTube Video'}
-          className="w-full aspect-video rounded-lg"
+          className="w-full h-full rounded-lg"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           onLoad={handleIframeLoad}
@@ -55,10 +55,10 @@ export function YouTubePlayer({
   }
 
   return (
-    <Card className={`overflow-hidden border border-gray-200 dark:border-gray-700 ${className}`}>
-      <div className="relative group cursor-pointer" onClick={handlePlay}>
+    <div className={`relative w-full h-full ${className}`}>
+      <div className="relative group cursor-pointer h-full w-full" onClick={handlePlay}>
         {/* Thumbnail */}
-        <div className="relative w-full aspect-video bg-gray-100 dark:bg-gray-900">
+        <div className="relative w-full h-full bg-gray-100 dark:bg-gray-900">
           <img
             src={thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
             alt={title || 'YouTube Video Thumbnail'}
@@ -82,31 +82,7 @@ export function YouTubePlayer({
             YouTube
           </div>
         </div>
-
-        {/* Informações do vídeo */}
-        <div className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                {title || 'Vídeo do YouTube'}
-              </p>
-            </div>
-            
-            {/* Botão para abrir no YouTube */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                openInYouTube()
-              }}
-              className="ml-2 h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </div>
-    </Card>
+    </div>
   )
 }

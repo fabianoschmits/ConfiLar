@@ -56,7 +56,7 @@ export function MentionText({ text, className = "" }: MentionTextProps) {
             key={index}
             href="#"
             onClick={(e) => handleMentionClick(e, username)}
-            className="text-blue-600 font-bold hover:text-blue-800 transition-colors cursor-pointer inline-block"
+            className="text-blue-600 dark:text-blue-400 font-bold hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer inline-block"
             title={`Ver perfil de ${username}`}
           >
             {part}
