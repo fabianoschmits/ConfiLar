@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 
 // Forçar todas as páginas a serem dinâmicas
 export const dynamic = 'force-dynamic'
-import { Inter } from "next/font/google"
 import "./globals.css"
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -27,8 +26,6 @@ import { PWAManager } from "@/components/pwa/PWAManager"
 import { ThemeProvider } from "@/components/theme-provider"
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
@@ -93,15 +90,12 @@ export default async function RootLayout({
             `,
           }}
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/imagens/logo/Logo branco - fundo verde - Vertical.png" />
         <meta name="msapplication-TileImage" content="/imagens/logo/Logo branco - fundo verde - Vertical.png" />
         <meta name="msapplication-TileColor" content="#9CA3AF" />
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body className={inter.className}>
+      <body className="font-sans">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

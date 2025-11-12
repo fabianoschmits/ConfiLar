@@ -1,8 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fontes Gilroy locais */
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/Fonts/Gilroy-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/Fonts/gilroy-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/Fonts/Gilroy-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/Fonts/gilroy-black.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Animações customizadas para cards de classificados */
 @keyframes glow-blue {
@@ -276,15 +307,15 @@
 
   /* Modern Typography */
   .modern-heading-1 {
-    @apply text-3xl font-bold text-gray-900 tracking-tight;
+    @apply text-3xl font-black text-gray-900 tracking-tight;
   }
 
   .modern-heading-2 {
-    @apply text-2xl font-semibold text-gray-900 tracking-tight;
+    @apply text-2xl font-extrabold text-gray-900 tracking-tight;
   }
 
   .modern-heading-3 {
-    @apply text-xl font-semibold text-gray-900;
+    @apply text-xl font-extrabold text-gray-900;
   }
 
   .modern-body {
@@ -716,6 +747,54 @@ button, a, input, select, textarea {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+
+  /* Aplicar fonte Gilroy globalmente */
+  html {
+    font-family: 'Gilroy', system-ui, sans-serif;
+  }
+  
+  body {
+    font-family: 'Gilroy', system-ui, sans-serif;
+    font-weight: 400;
+  }
+  
+  /* Mapeamento de font-weight para os pesos disponíveis da Gilroy */
+  /* Light (300) */
+  .font-light,
+  .font-thin {
+    font-weight: 300;
+  }
+  
+  /* Regular (400) - padrão */
+  .font-normal,
+  .font-regular {
+    font-weight: 400;
+  }
+  
+  /* Medium (500) - usar Regular */
+  .font-medium {
+    font-weight: 400;
+  }
+  
+  /* SemiBold (600) - usar ExtraBold */
+  .font-semibold {
+    font-weight: 800;
+  }
+  
+  /* Bold (700) - usar ExtraBold */
+  .font-bold {
+    font-weight: 800;
+  }
+  
+  /* ExtraBold (800) */
+  .font-extrabold {
+    font-weight: 800;
+  }
+  
+  /* Black (900) */
+  .font-black {
+    font-weight: 900;
   }
 }
 
