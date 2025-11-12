@@ -11,7 +11,8 @@ import {
   FileText, 
   Shield, 
   AlertTriangle,
-  BarChart3
+  BarChart3,
+  Bell
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,7 @@ const navItems = [
   { href: '/admin/dashboard/users', label: 'Usuários', icon: Users },
   { href: '/admin/dashboard/reports', label: 'Denúncias', icon: AlertTriangle },
   { href: '/admin/dashboard/bans', label: 'Banimentos', icon: Shield },
+  { href: '/admin/dashboard/notifications', label: 'Notificações', icon: Bell },
   { href: '/admin/dashboard/logs', label: 'Logs', icon: FileText },
   { href: '/admin/dashboard/analytics', label: 'Gráficos', icon: BarChart3 },
 ]

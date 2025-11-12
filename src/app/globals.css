@@ -798,6 +798,30 @@ button, a, input, select, textarea {
   }
 }
 
+/* Garantir que os toasts do Sonner usem a fonte Gilroy */
+[data-sonner-toaster] {
+  font-family: 'Gilroy', system-ui, sans-serif !important;
+}
+
+[data-sonner-toast] {
+  font-family: 'Gilroy', system-ui, sans-serif !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-family: 'Gilroy', system-ui, sans-serif !important;
+}
+
+[data-sonner-toast] [data-description] {
+  font-family: 'Gilroy', system-ui, sans-serif !important;
+}
+
+/* Garantir que componentes de notificação usem a fonte Gilroy */
+.notification-item,
+.notification-dropdown,
+.notification-center {
+  font-family: 'Gilroy', system-ui, sans-serif;
+}
+
 /* Hide scrollbar utility */
 @layer utilities {
   .scrollbar-hide {

@@ -3,10 +3,15 @@
 const { createClient } = require('@supabase/supabase-js')
 
 // Configuração do Supabase
-const supabaseUrl = process.env.SUPABASE_URL || 'https://oolqodaehouaidxuowtw.supabase.co'
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbHFvZGFlaG91YWlkeHVvd3R3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5ODg1NCwiZXhwIjoyMDcxMjc0ODU0fQ.1FLdgPEei6Xbe1Bbp-M-3kMul4gGrI0baNFJDnIvr34'
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://oolqodaehouaidxuowtw.supabase.co'
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+if (!supabaseServiceKey) {
+  console.error('❌ SUPABASE_SERVICE_KEY ou SUPABASE_SERVICE_ROLE_KEY não encontrada')
+  console.error('⚠️ Configure a variável de ambiente ou forneça a key via interface')
+}
+
+const supabase = supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null
 
 // Função para listar tabelas
 async function listTables() {

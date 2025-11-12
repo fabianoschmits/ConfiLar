@@ -70,6 +70,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Pie, PieCh
 import { toast } from 'sonner'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { CronJobsSection } from '@/components/admin/CronJobsSection'
 
 // ========== INTERFACES ==========
 interface DashboardStats {
@@ -836,7 +837,7 @@ export default function AdminDashboardPage() {
 
       {/* Tabs de Seções */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-5 h-auto">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <BarChart3 className="h-4 w-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Visão Geral</span>
@@ -861,6 +862,11 @@ export default function AdminDashboardPage() {
             <Shield className="h-4 w-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Segurança</span>
             <span className="sm:hidden">Seg.</span>
+          </TabsTrigger>
+          <TabsTrigger value="cron" className="text-xs sm:text-sm">
+            <Timer className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Cron Jobs</span>
+            <span className="sm:hidden">Cron</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1207,6 +1213,11 @@ export default function AdminDashboardPage() {
               </Card>
             </div>
           )}
+        </TabsContent>
+
+        {/* SEÇÃO: CRON JOBS */}
+        <TabsContent value="cron" className="space-y-4 mt-4">
+          <CronJobsSection />
         </TabsContent>
       </Tabs>
     </div>
