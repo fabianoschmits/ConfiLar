@@ -14,9 +14,9 @@ import { Button } from '@/components/ui/button'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { 
-  MapPin, Star, Phone, Mail, User, Briefcase, MessageCircle, Calendar,
-  CheckCircle, Eye, GraduationCap, Heart, Users, Clock, Award, Building2,
-  Globe, Share2, ThumbsUp, Layout, Grid, List
+  MapPin, Star, User, Briefcase, MessageCircle, Calendar,
+  CheckCircle, GraduationCap, Heart, Users, Clock, Award, Building2,
+  Share2, ThumbsUp, BarChart3, PieChart, LineChart, TrendingUp, Eye
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -90,420 +90,459 @@ export default function PerfilTeste11Page() {
 
   return (
     <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-        {/* Header com Tabs Laterais */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex flex-col lg:flex-row gap-12">
-              {/* Sidebar com Foto e Dados */}
-              <div className="flex-shrink-0 lg:w-80">
-                <div className="sticky top-8">
-                  <div className="text-center lg:text-left mb-6">
-                    <UserAvatar
-                      src={profile.avatar_url || profile.profile_photo_url}
-                      alt={profile.full_name || 'Usuário'}
-                      fallback={profile.full_name?.charAt(0).toUpperCase() || 'U'}
-                      size="xl"
-                      userId={profile.id}
-                      showReferralBadge={true}
-                      className="mx-auto lg:mx-0 mb-4 ring-4 ring-gray-200 dark:ring-gray-800"
-                    />
-                    {profile.is_verified && (
-                      <div className="flex justify-center lg:justify-start mb-4">
-                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Verificado
-                        </Badge>
-                      </div>
-                    )}
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Dashboard Header */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border-b border-slate-700">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <UserAvatar
+                  src={profile.avatar_url || profile.profile_photo_url}
+                  alt={profile.full_name || 'Usuário'}
+                  fallback={profile.full_name?.charAt(0).toUpperCase() || 'U'}
+                  size="lg"
+                  userId={profile.id}
+                  showReferralBadge={true}
+                  className="ring-2 ring-slate-600"
+                />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-2xl font-bold text-white">
                       {profile.full_name || 'Usuário'}
                     </h1>
-                    {profile.bio && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                        {profile.bio}
-                      </p>
+                    {profile.is_verified && (
+                      <CheckCircle className="w-5 h-5 text-blue-400" />
                     )}
-                    <div className="flex flex-wrap justify-center lg:justify-start gap-2 mb-6">
-                      <Badge variant={isProfessional ? 'default' : 'secondary'}>
-                        {isProfessional ? 'Profissional' : 'Cliente'}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={isProfessional ? 'default' : 'secondary'} className="text-xs">
+                      {isProfessional ? 'Profissional' : 'Cliente'}
+                    </Badge>
+                    {isProfessional && (
+                      <Badge className={`text-xs ${profile.is_available ? 'bg-green-600' : 'bg-red-600'}`}>
+                        {profile.is_available ? 'Disponível' : 'Ocupado'}
                       </Badge>
-                      {isProfessional && (
-                        <Badge className={profile.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                          {profile.is_available ? 'Disponível' : 'Ocupado'}
-                        </Badge>
-                      )}
-                    </div>
-                    {!isOwnProfile && (
-                      <Button onClick={handleContact} className="w-full mb-4">
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Contatar
-                      </Button>
-                    )}
-                    <Button variant="outline" className="w-full">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Compartilhar
-                    </Button>
-                  </div>
-
-                  {/* Estatísticas na Sidebar */}
-                  <div className="space-y-4">
-                    <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-                      <div className="text-center lg:text-left">
-                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{profile.rating.toFixed(1)}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Avaliação</div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-                      <div className="text-center lg:text-left">
-                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{profile.total_reviews}</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Avaliações</div>
-                      </div>
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-                      <div className="text-center lg:text-left">
-                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Visualizações</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Informações Rápidas na Sidebar */}
-                  <div className="mt-6 space-y-3">
-                    {profile.location_city && profile.location_state && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <MapPin className="w-4 h-4" />
-                        <span>{profile.location_city}, {profile.location_state}</span>
-                      </div>
-                    )}
-                    {profile.idade && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Calendar className="w-4 h-4" />
-                        <span>{profile.idade} anos</span>
-                      </div>
-                    )}
-                    {profile.escolaridade && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <GraduationCap className="w-4 h-4" />
-                        <span className="truncate">{formatEscolaridade(profile.escolaridade)}</span>
-                      </div>
-                    )}
-                    {profile.estado_civil && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Heart className="w-4 h-4" />
-                        <span>{formatEstadoCivil(profile.estado_civil)}</span>
-                      </div>
-                    )}
-                    {profile.filhos !== null && profile.filhos !== undefined && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Users className="w-4 h-4" />
-                        <span>{profile.filhos} {profile.filhos === 1 ? 'filho' : 'filhos'}</span>
-                      </div>
-                    )}
-                    {isProfessional && profile.professional_experience_years && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Briefcase className="w-4 h-4" />
-                        <span>{profile.professional_experience_years} {profile.professional_experience_years === 1 ? 'ano' : 'anos'}</span>
-                      </div>
-                    )}
-                    {isProfessional && profile.turno_trabalho && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatTurnoTrabalho(profile.turno_trabalho)}</span>
-                      </div>
                     )}
                   </div>
                 </div>
               </div>
-
-              {/* Conteúdo Principal */}
-              <div className="flex-1 min-w-0">
-                <Tabs defaultValue="recommendations" className="space-y-6">
-                  <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                    <TabsTrigger value="recommendations">Recomend.</TabsTrigger>
-                    <TabsTrigger value="reviews">Avaliações</TabsTrigger>
-                    {isProfessional && <TabsTrigger value="services">Serviços</TabsTrigger>}
-                    {isProfessional && <TabsTrigger value="portfolio">Portfólio</TabsTrigger>}
-                    <TabsTrigger value="about">Sobre</TabsTrigger>
-                  </TabsList>
-
-                  {/* Aba de Recomendações */}
-                  <TabsContent value="recommendations" className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <ThumbsUp className="w-5 h-5" />
-                          Recomendações
-                          {recommendations.length > 0 && (
-                            <Badge variant="secondary" className="ml-2">
-                              {recommendations.length}
-                            </Badge>
-                          )}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {recommendationsLoading ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                              <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-pulse">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                  <div className="flex-1 space-y-2">
-                                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : recommendations.length === 0 ? (
-                          <EmptyState icon={<ThumbsUp className="h-12 w-12 text-gray-400" />} title="Nenhuma recomendação encontrada" description="Este usuário ainda não recebeu recomendações." />
-                        ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {recommendations.map((rec) => (
-                              <Link key={rec.id} href={`/perfil/${rec.recommender.id}`} className="block">
-                                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start gap-3">
-                                      <UserAvatar
-                                        src={rec.recommender.avatar_url}
-                                        alt={rec.recommender.full_name}
-                                        fallback={rec.recommender.full_name?.charAt(0) || 'U'}
-                                        size="md"
-                                      />
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                            {rec.recommender.full_name}
-                                          </h4>
-                                          {rec.recommender.is_verified && (
-                                            <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                          )}
-                                        </div>
-                                        {rec.recommender.location_city && rec.recommender.location_state && (
-                                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                                            <MapPin className="w-3 h-3" />
-                                            {rec.recommender.location_city}, {rec.recommender.location_state}
-                                          </p>
-                                        )}
-                                        <div className="flex items-center gap-2 mb-2">
-                                          {rec.recommender.rating > 0 && (
-                                            <div className="flex items-center gap-1">
-                                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                                {rec.recommender.rating.toFixed(1)}
-                                              </span>
-                                            </div>
-                                          )}
-                                          <Badge variant={rec.recommender.user_type === 'professional' ? 'default' : 'secondary'} className="text-xs">
-                                            {rec.recommender.user_type === 'professional' ? 'Profissional' : 'Cliente'}
-                                          </Badge>
-                                        </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                          <Clock className="w-3 h-3" />
-                                          {format(new Date(rec.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="about" className="space-y-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <User className="w-5 h-5" />
-                          Informações Pessoais
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {profile.gender && (
-                          <div className="flex justify-between py-3 border-b">
-                            <span className="text-gray-600 dark:text-gray-400">Gênero</span>
-                            <span className="font-medium">{formatGender(profile.gender)}</span>
-                          </div>
-                        )}
-                        {profile.idade && (
-                          <div className="flex justify-between py-3 border-b">
-                            <span className="text-gray-600 dark:text-gray-400">Idade</span>
-                            <span className="font-medium">{profile.idade} anos</span>
-                          </div>
-                        )}
-                        {profile.escolaridade && (
-                          <div className="flex justify-between py-3 border-b">
-                            <span className="text-gray-600 dark:text-gray-400">Escolaridade</span>
-                            <span className="font-medium text-right">{formatEscolaridade(profile.escolaridade)}</span>
-                          </div>
-                        )}
-                        {profile.estado_civil && (
-                          <div className="flex justify-between py-3 border-b">
-                            <span className="text-gray-600 dark:text-gray-400">Estado Civil</span>
-                            <span className="font-medium">{formatEstadoCivil(profile.estado_civil)}</span>
-                          </div>
-                        )}
-                        {profile.filhos !== null && profile.filhos !== undefined && (
-                          <div className="flex justify-between py-3">
-                            <span className="text-gray-600 dark:text-gray-400">Filhos</span>
-                            <span className="font-medium">{profile.filhos} {profile.filhos === 1 ? 'filho' : 'filhos'}</span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {isProfessional && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Briefcase className="w-5 h-5" />
-                            Informações Profissionais
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {profile.professional_experience_years && (
-                            <div className="flex justify-between py-3 border-b">
-                              <span className="text-gray-600 dark:text-gray-400">Experiência</span>
-                              <span className="font-medium">{profile.professional_experience_years} {profile.professional_experience_years === 1 ? 'ano' : 'anos'}</span>
-                            </div>
-                          )}
-                          {profile.turno_trabalho && (
-                            <div className="flex justify-between py-3 border-b">
-                              <span className="text-gray-600 dark:text-gray-400">Turno</span>
-                              <span className="font-medium">{formatTurnoTrabalho(profile.turno_trabalho)}</span>
-                            </div>
-                          )}
-                          {profile.referencia_profissional && (
-                            <div className="py-3">
-                              <span className="text-gray-600 dark:text-gray-400 block mb-2">Referência Profissional</span>
-                              <p className="text-sm text-gray-900 dark:text-white leading-relaxed">{profile.referencia_profissional}</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="services">
-                    {isProfessional ? (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Briefcase className="w-5 h-5" />
-                            Serviços Oferecidos
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {profile.professional_services && profile.professional_services.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {profile.professional_services.map((service, index) => (
-                                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                                  <CheckCircle className="w-5 h-5 text-green-600" />
-                                  <span className="text-gray-900 dark:text-white">{service}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <EmptyState icon={<Briefcase className="h-12 w-12 text-gray-400" />} title="Nenhum serviço informado" description="Este profissional ainda não cadastrou serviços." />
-                          )}
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <Card>
-                        <CardContent className="p-8 text-center">
-                          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cliente</h3>
-                          <p className="text-gray-600 dark:text-gray-400">Este usuário é um cliente e não oferece serviços.</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="reviews">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Star className="w-5 h-5" />
-                          Avaliações
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {reviewsLoading ? (
-                          <div className="space-y-4">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                              <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse">
-                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : reviews && reviews.length > 0 ? (
-                          <div className="space-y-4">
-                            {reviews.map((review) => (
-                              <ReviewCard key={review.id} review={review} currentUserId={user?.id} profileOwnerId={userId} />
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyState icon={<Star className="h-12 w-12 text-gray-400" />} title="Nenhuma avaliação encontrada" description="Este usuário ainda não recebeu avaliações." />
-                        )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="portfolio">
-                    {isProfessional ? (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Building2 className="w-5 h-5" />
-                            Portfólio
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {portfolioLoading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse">
-                                  <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : portfolioProjects && portfolioProjects.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {portfolioProjects.map((project) => (
-                                <div key={project.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">{project.title}</h4>
-                                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{project.description}</p>
-                                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                    <span>{format(new Date(project.created_at), 'dd/MM/yyyy')}</span>
-                                    <span>{project.views_count} visualizações</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <EmptyState icon={<Building2 className="h-12 w-12 text-gray-400" />} title="Nenhum projeto no portfólio" description="Este profissional ainda não adicionou projetos ao portfólio." />
-                          )}
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <Card>
-                        <CardContent className="p-8 text-center">
-                          <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Cliente</h3>
-                          <p className="text-gray-600 dark:text-gray-400">Este usuário é um cliente e não possui portfólio.</p>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-                </Tabs>
+              <div className="flex gap-2">
+                {!isOwnProfile && (
+                  <Button onClick={handleContact} className="bg-blue-600 hover:bg-blue-700">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Contatar
+                  </Button>
+                )}
+                <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Compartilhar
+                </Button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Grid Layout */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Sidebar - Dados Pessoais */}
+            <div className="lg:col-span-1 space-y-6">
+              <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <User className="w-5 h-5 text-blue-400" />
+                    Perfil
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {profile.bio && (
+                    <p className="text-sm text-slate-300 leading-relaxed">
+                      {profile.bio}
+                    </p>
+                  )}
+                  <div className="space-y-3 pt-4 border-t border-slate-700">
+                    {profile.location_city && profile.location_state && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <MapPin className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{profile.location_city}, {profile.location_state}</span>
+                      </div>
+                    )}
+                    {profile.idade && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{profile.idade} anos</span>
+                      </div>
+                    )}
+                    {profile.gender && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{formatGender(profile.gender)}</span>
+                      </div>
+                    )}
+                    {profile.escolaridade && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <GraduationCap className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{formatEscolaridade(profile.escolaridade)}</span>
+                      </div>
+                    )}
+                    {profile.estado_civil && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <Heart className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{formatEstadoCivil(profile.estado_civil)}</span>
+                      </div>
+                    )}
+                    {profile.filhos !== null && profile.filhos !== undefined && (
+                      <div className="flex items-center gap-3 text-slate-300">
+                        <Users className="w-4 h-4 text-slate-400" />
+                        <span className="text-sm">{profile.filhos} {profile.filhos === 1 ? 'filho' : 'filhos'}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {isProfessional && (
+                <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-purple-400" />
+                      Profissional
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {profile.professional_experience_years && (
+                      <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                        <span className="text-sm text-slate-400">Experiência</span>
+                        <span className="text-sm font-medium text-white">{profile.professional_experience_years} {profile.professional_experience_years === 1 ? 'ano' : 'anos'}</span>
+                      </div>
+                    )}
+                    {profile.turno_trabalho && (
+                      <div className="flex justify-between items-center py-2 border-b border-slate-700">
+                        <span className="text-sm text-slate-400">Turno</span>
+                        <span className="text-sm font-medium text-white">{formatTurnoTrabalho(profile.turno_trabalho)}</span>
+                      </div>
+                    )}
+                    {profile.referencia_profissional && (
+                      <div className="pt-2">
+                        <div className="text-xs text-slate-400 mb-2">Referência</div>
+                        <p className="text-sm text-slate-300">{profile.referencia_profissional}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Main Content Area */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Stats Dashboard Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-blue-600 to-blue-700 border-0">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Star className="w-5 h-5 text-white/80" />
+                      <BarChart3 className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div className="text-2xl font-bold text-white mb-1">{profile.rating.toFixed(1)}</div>
+                    <div className="text-xs text-white/80">Avaliação</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Users className="w-5 h-5 text-white/80" />
+                      <PieChart className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div className="text-2xl font-bold text-white mb-1">{profile.total_reviews}</div>
+                    <div className="text-xs text-white/80">Avaliações</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-pink-600 to-pink-700 border-0">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Award className="w-5 h-5 text-white/80" />
+                      <TrendingUp className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div className="text-2xl font-bold text-white mb-1 capitalize">{profile.badge}</div>
+                    <div className="text-xs text-white/80">Badge</div>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gradient-to-br from-emerald-600 to-emerald-700 border-0">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Eye className="w-5 h-5 text-white/80" />
+                      <LineChart className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div className="text-2xl font-bold text-white mb-1">0</div>
+                    <div className="text-xs text-white/80">Visualizações</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Tabs Section */}
+              <Tabs defaultValue="recommendations" className="w-full">
+                <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-5' : 'grid-cols-4'} bg-slate-800/50 border border-slate-700`}>
+                  <TabsTrigger value="recommendations" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
+                    <ThumbsUp className="w-4 h-4 mr-2" />
+                    Recomendações
+                  </TabsTrigger>
+                  {isProfessional && <TabsTrigger value="services" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    Serviços
+                  </TabsTrigger>}
+                  <TabsTrigger value="reviews" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
+                    <Star className="w-4 h-4 mr-2" />
+                    Avaliações
+                  </TabsTrigger>
+                  {isProfessional && <TabsTrigger value="portfolio" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Portfólio
+                  </TabsTrigger>}
+                  <TabsTrigger value="about" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
+                    <User className="w-4 h-4 mr-2" />
+                    Sobre
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="recommendations" className="space-y-4 mt-6">
+                  {recommendationsLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <Card key={i} className="bg-slate-800/50 border-slate-700 animate-pulse">
+                          <CardContent className="p-4">
+                            <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : recommendations.length === 0 ? (
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="p-12">
+                        <EmptyState icon={<ThumbsUp className="h-12 w-12 text-slate-500" />} title="Nenhuma recomendação encontrada" description="Este usuário ainda não recebeu recomendações." />
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {recommendations.map((rec) => (
+                        <Link key={rec.id} href={`/perfil/${rec.recommender.id}`} className="block">
+                          <Card className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition-colors cursor-pointer">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <UserAvatar
+                                  src={rec.recommender.avatar_url}
+                                  alt={rec.recommender.full_name}
+                                  fallback={rec.recommender.full_name?.charAt(0) || 'U'}
+                                  size="md"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-white truncate">
+                                      {rec.recommender.full_name}
+                                    </h4>
+                                    {rec.recommender.is_verified && (
+                                      <CheckCircle className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                    )}
+                                  </div>
+                                  {rec.recommender.location_city && rec.recommender.location_state && (
+                                    <p className="text-xs text-slate-400 flex items-center gap-1 mb-2">
+                                      <MapPin className="w-3 h-3" />
+                                      {rec.recommender.location_city}, {rec.recommender.location_state}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    {rec.recommender.rating > 0 && (
+                                      <div className="flex items-center gap-1">
+                                        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                        <span className="text-xs font-medium text-slate-300">{rec.recommender.rating.toFixed(1)}</span>
+                                      </div>
+                                    )}
+                                    <Badge variant={rec.recommender.user_type === 'professional' ? 'default' : 'secondary'} className="text-xs">
+                                      {rec.recommender.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="services" className="mt-6">
+                  {isProfessional ? (
+                    profile.professional_services && profile.professional_services.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {profile.professional_services.map((service, index) => (
+                          <Card key={index} className="bg-slate-800/50 border-slate-700 border-l-4 border-l-purple-500">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3">
+                                <CheckCircle className="w-5 h-5 text-green-400" />
+                                <span className="font-medium text-white">{service}</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="bg-slate-800/50 border-slate-700">
+                        <CardContent className="p-12">
+                          <EmptyState icon={<Briefcase className="h-12 w-12 text-slate-500" />} title="Nenhum serviço informado" description="Este profissional ainda não cadastrou serviços." />
+                        </CardContent>
+                      </Card>
+                    )
+                  ) : (
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="p-12 text-center">
+                        <User className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+                        <p className="text-slate-400">Este usuário é um cliente e não oferece serviços.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="reviews" className="mt-6 space-y-4">
+                  {reviewsLoading ? (
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i} className="bg-slate-800/50 border-slate-700 animate-pulse">
+                          <CardContent className="p-4">
+                            <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
+                            <div className="h-4 bg-slate-700 rounded w-1/2"></div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : reviews && reviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {reviews.map((review) => (
+                        <ReviewCard key={review.id} review={review} currentUserId={user?.id} profileOwnerId={userId} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="p-12">
+                        <EmptyState icon={<Star className="h-12 w-12 text-slate-500" />} title="Nenhuma avaliação encontrada" description="Este usuário ainda não recebeu avaliações." />
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="portfolio" className="mt-6">
+                  {isProfessional ? (
+                    portfolioLoading ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <Card key={i} className="bg-slate-800/50 border-slate-700 animate-pulse">
+                            <CardContent className="p-4">
+                              <div className="h-32 bg-slate-700 rounded mb-2"></div>
+                              <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : portfolioProjects && portfolioProjects.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {portfolioProjects.map((project) => (
+                          <Card key={project.id} className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition-colors">
+                            <CardContent className="p-4">
+                              <h4 className="font-medium text-white mb-2">{project.title}</h4>
+                              <p className="text-sm text-slate-300 mb-3 line-clamp-2">{project.description}</p>
+                              <div className="flex items-center justify-between text-xs text-slate-400">
+                                <span>{format(new Date(project.created_at), 'dd/MM/yyyy')}</span>
+                                <span>{project.views_count} visualizações</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="bg-slate-800/50 border-slate-700">
+                        <CardContent className="p-12">
+                          <EmptyState icon={<Building2 className="h-12 w-12 text-slate-500" />} title="Nenhum projeto no portfólio" description="Este profissional ainda não adicionou projetos ao portfólio." />
+                        </CardContent>
+                      </Card>
+                    )
+                  ) : (
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="p-12 text-center">
+                        <User className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+                        <p className="text-slate-400">Este usuário é um cliente e não possui portfólio.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="about" className="mt-6">
+                  <Card className="bg-slate-800/50 border-slate-700">
+                    <CardHeader>
+                      <CardTitle className="text-white">Informações Detalhadas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-white mb-4">Pessoais</h3>
+                          {profile.location_city && profile.location_state && (
+                            <div className="flex justify-between py-2 border-b border-slate-700">
+                              <span className="text-sm text-slate-400">Localização</span>
+                              <span className="text-sm font-medium text-white">{profile.location_city}, {profile.location_state}</span>
+                            </div>
+                          )}
+                          {profile.idade && (
+                            <div className="flex justify-between py-2 border-b border-slate-700">
+                              <span className="text-sm text-slate-400">Idade</span>
+                              <span className="text-sm font-medium text-white">{profile.idade} anos</span>
+                            </div>
+                          )}
+                          {profile.gender && (
+                            <div className="flex justify-between py-2 border-b border-slate-700">
+                              <span className="text-sm text-slate-400">Gênero</span>
+                              <span className="text-sm font-medium text-white">{formatGender(profile.gender)}</span>
+                            </div>
+                          )}
+                          {profile.escolaridade && (
+                            <div className="flex justify-between py-2 border-b border-slate-700">
+                              <span className="text-sm text-slate-400">Escolaridade</span>
+                              <span className="text-sm font-medium text-white">{formatEscolaridade(profile.escolaridade)}</span>
+                            </div>
+                          )}
+                          {profile.estado_civil && (
+                            <div className="flex justify-between py-2 border-b border-slate-700">
+                              <span className="text-sm text-slate-400">Estado Civil</span>
+                              <span className="text-sm font-medium text-white">{formatEstadoCivil(profile.estado_civil)}</span>
+                            </div>
+                          )}
+                          {profile.filhos !== null && profile.filhos !== undefined && (
+                            <div className="flex justify-between py-2">
+                              <span className="text-sm text-slate-400">Filhos</span>
+                              <span className="text-sm font-medium text-white">{profile.filhos} {profile.filhos === 1 ? 'filho' : 'filhos'}</span>
+                            </div>
+                          )}
+                        </div>
+                        {isProfessional && (
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-white mb-4">Profissionais</h3>
+                            {profile.professional_experience_years && (
+                              <div className="flex justify-between py-2 border-b border-slate-700">
+                                <span className="text-sm text-slate-400">Experiência</span>
+                                <span className="text-sm font-medium text-white">{profile.professional_experience_years} {profile.professional_experience_years === 1 ? 'ano' : 'anos'}</span>
+                              </div>
+                            )}
+                            {profile.turno_trabalho && (
+                              <div className="flex justify-between py-2">
+                                <span className="text-sm text-slate-400">Turno</span>
+                                <span className="text-sm font-medium text-white">{formatTurnoTrabalho(profile.turno_trabalho)}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
@@ -511,4 +550,3 @@ export default function PerfilTeste11Page() {
     </MainLayout>
   )
 }
-
