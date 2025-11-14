@@ -688,36 +688,6 @@ export function ModernHeader({
                         )}
                       </div>
 
-                      {/* Perfil Teste */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('perfil-teste')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <User className="h-3 w-3" />
-                            Perfil Teste
-                          </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('perfil-teste') ? 'rotate-180' : ''}`} />
-                        </button>
-                        {expandedSections.has('perfil-teste') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
-                            {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                              <Button
-                                key={num}
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleNavigation(`/perfilteste${num}/${profile?.id}`)}
-                                className="flex items-center gap-1 text-xs py-1 h-7"
-                              >
-                                <User className="h-3 w-3" />
-                                <span className="truncate">Teste {num}</span>
-                              </Button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
                       {/* Suporte */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
