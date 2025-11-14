@@ -46,6 +46,35 @@ const onboardingSchema = z.object({
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
+  // Novos campos
+  escolaridade: z.enum([
+    'ensino_fundamental_incompleto',
+    'ensino_fundamental_completo',
+    'ensino_medio_incompleto',
+    'ensino_medio_completo',
+    'ensino_superior_incompleto',
+    'ensino_superior_completo',
+    'pos_graduacao',
+    'mestrado',
+    'doutorado'
+  ]).optional(),
+  filhos: z.number().min(0).max(20).default(0).optional(),
+  estado_civil: z.enum([
+    'solteiro',
+    'casado',
+    'divorciado',
+    'viuvo',
+    'uniao_estavel',
+    'outro'
+  ]).optional(),
+  referencia_profissional: z.string().optional(),
+  turno_trabalho: z.enum([
+    'manha',
+    'tarde',
+    'noite',
+    'integral',
+    'flexivel'
+  ]).optional(),
   accept_terms: z.boolean().refine((value) => value === true, {
     message: 'Você deve aceitar os Termos de Uso para continuar'
   }),
@@ -88,6 +117,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       user_type: 'client' as const,
+      filhos: 0,
     },
   })
 
@@ -156,6 +186,14 @@ export default function OnboardingPage() {
     },
     { 
       id: 3, 
+      title: 'Informações Adicionais', 
+      shortTitle: 'Info',
+      icon: User, 
+      description: 'Mais sobre você',
+      fields: ['escolaridade', 'estado_civil', 'filhos']
+    },
+    { 
+      id: 4, 
       title: 'Sua Foto', 
       shortTitle: 'Foto',
       icon: Camera, 
@@ -163,7 +201,7 @@ export default function OnboardingPage() {
       fields: []
     },
     { 
-      id: 4, 
+      id: 5, 
       title: 'Onde Você Mora', 
       shortTitle: 'Local',
       icon: MapPin, 
@@ -171,7 +209,7 @@ export default function OnboardingPage() {
       fields: ['location_state', 'location_city', 'neighborhood', 'address']
     },
     { 
-      id: 5, 
+      id: 6, 
       title: 'Tipo de Usuário', 
       shortTitle: 'Tipo',
       icon: User, 
@@ -179,15 +217,15 @@ export default function OnboardingPage() {
       fields: ['user_type']
     },
     { 
-      id: 6, 
+      id: 7, 
       title: 'Dados Profissionais', 
       shortTitle: 'Trabalho',
       icon: Briefcase, 
       description: 'Seus serviços e experiência',
-      fields: ['bio', 'services_offered', 'experience_years']
+      fields: ['bio', 'services_offered', 'experience_years', 'referencia_profissional', 'turno_trabalho']
     },
     { 
-      id: 7, 
+      id: 8, 
       title: 'Resumo Final', 
       shortTitle: 'Resumo',
       icon: Eye, 
@@ -222,10 +260,13 @@ export default function OnboardingPage() {
           values.accept_terms // Aceite dos termos obrigatório
         )
       
-      case 3: // Avatar - sempre válido (opcional)
+      case 3: // Informações adicionais - sempre válido (opcional)
         return true
       
-      case 4: // Localização
+      case 4: // Avatar - sempre válido (opcional)
+        return true
+      
+      case 5: // Localização
         return !!(
           values.location_state &&
           values.location_city &&
@@ -233,14 +274,14 @@ export default function OnboardingPage() {
           values.address
         )
       
-      case 5: // Tipo de usuário
+      case 6: // Tipo de usuário
         return !!values.user_type
       
-      case 6: // Dados profissionais - só obrigatório se for profissional
+      case 7: // Dados profissionais - só obrigatório se for profissional
         if (values.user_type !== 'professional') return true
         return true // Bio e outros campos são opcionais
       
-      case 7: // Resumo - sempre válido
+      case 8: // Resumo - sempre válido
         return true
       
       default:
@@ -510,7 +551,14 @@ export default function OnboardingPage() {
         professional_services: selectedServices.length > 0 ? selectedServices : [],
         professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
         avatar_url: avatarUrl,
-        profile_completed: true
+        profile_completed: true,
+        // Novos campos
+        escolaridade: data.escolaridade || null,
+        filhos: data.filhos || 0,
+        estado_civil: data.estado_civil || null,
+        referencia_profissional: data.referencia_profissional || null,
+        turno_trabalho: data.turno_trabalho || null,
+        // A idade será calculada automaticamente pelo trigger no banco
       }
       
       console.log('🔍 [Onboarding] Dados do perfil que serão salvos:', profileData)
@@ -897,8 +945,90 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  {/* Etapa 3: Avatar/Foto */}
+                  {/* Etapa 3: Informações Adicionais */}
                   {currentStep === 3 && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="escolaridade" className="text-sm font-medium text-gray-700">
+                            Escolaridade
+                          </Label>
+                          <Select 
+                            value={watchedValues.escolaridade || ''} 
+                            onValueChange={(value) => setValue('escolaridade', value as any)}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Selecione sua escolaridade" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ensino_fundamental_incompleto">Ensino Fundamental Incompleto</SelectItem>
+                              <SelectItem value="ensino_fundamental_completo">Ensino Fundamental Completo</SelectItem>
+                              <SelectItem value="ensino_medio_incompleto">Ensino Médio Incompleto</SelectItem>
+                              <SelectItem value="ensino_medio_completo">Ensino Médio Completo</SelectItem>
+                              <SelectItem value="ensino_superior_incompleto">Ensino Superior Incompleto</SelectItem>
+                              <SelectItem value="ensino_superior_completo">Ensino Superior Completo</SelectItem>
+                              <SelectItem value="pos_graduacao">Pós-Graduação</SelectItem>
+                              <SelectItem value="mestrado">Mestrado</SelectItem>
+                              <SelectItem value="doutorado">Doutorado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="estado_civil" className="text-sm font-medium text-gray-700">
+                            Estado Civil
+                          </Label>
+                          <Select 
+                            value={watchedValues.estado_civil || ''} 
+                            onValueChange={(value) => setValue('estado_civil', value as any)}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Selecione seu estado civil" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                              <SelectItem value="casado">Casado(a)</SelectItem>
+                              <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                              <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                              <SelectItem value="uniao_estavel">União Estável</SelectItem>
+                              <SelectItem value="outro">Outro</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="filhos" className="text-sm font-medium text-gray-700">
+                            Número de Filhos
+                          </Label>
+                          <Input
+                            id="filhos"
+                            type="number"
+                            min="0"
+                            max="20"
+                            placeholder="0"
+                            value={watchedValues.filhos || 0}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0
+                              setValue('filhos', Math.max(0, Math.min(20, value)))
+                            }}
+                            className="h-10"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Informe quantos filhos você tem (0 se não tiver)
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-blue-700">
+                          💡 Estas informações são opcionais e nos ajudam a conhecer você melhor.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Etapa 4: Avatar/Foto */}
+                  {currentStep === 4 && (
                     <div className="space-y-6">
                       {/* Preview do Avatar Selecionado */}
                       {selectedAvatar && (
@@ -997,8 +1127,8 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  {/* Etapa 4: Localização */}
-                  {currentStep === 4 && (
+                  {/* Etapa 5: Localização */}
+                  {currentStep === 5 && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -1167,8 +1297,8 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  {/* Etapa 5: Tipo de Usuário */}
-                  {currentStep === 5 && (
+                  {/* Etapa 6: Tipo de Usuário */}
+                  {currentStep === 6 && (
                     <div className="space-y-6">
                       <div className="space-y-4">
                         <Label htmlFor="user_type" className="text-sm font-medium text-gray-700 flex items-center gap-1">
@@ -1219,8 +1349,8 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  {/* Etapa 6: Dados Profissionais */}
-                  {currentStep === 6 && isProfessional && (
+                  {/* Etapa 7: Dados Profissionais */}
+                  {currentStep === 7 && isProfessional && (
                     <div className="space-y-6">
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -1324,12 +1454,53 @@ export default function OnboardingPage() {
                           </div>
                         )}
 
+                        {/* Referência Profissional */}
+                        <div className="space-y-2">
+                          <Label htmlFor="referencia_profissional" className="text-sm font-medium text-gray-700">
+                            Referência Profissional
+                          </Label>
+                          <Textarea
+                            {...register('referencia_profissional')}
+                            placeholder="Conte sobre suas experiências profissionais, projetos importantes, certificações ou qualquer informação relevante sobre sua carreira..."
+                            rows={4}
+                            className="resize-none"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Compartilhe informações sobre sua experiência profissional, projetos realizados, certificações ou outras informações relevantes.
+                          </p>
+                        </div>
+
+                        {/* Turno de Trabalho */}
+                        <div className="space-y-2">
+                          <Label htmlFor="turno_trabalho" className="text-sm font-medium text-gray-700">
+                            Turno de Trabalho
+                          </Label>
+                          <Select 
+                            value={watchedValues.turno_trabalho || ''} 
+                            onValueChange={(value) => setValue('turno_trabalho', value as any)}
+                          >
+                            <SelectTrigger className="h-10">
+                              <SelectValue placeholder="Selecione seu turno de trabalho" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manha">Manhã</SelectItem>
+                              <SelectItem value="tarde">Tarde</SelectItem>
+                              <SelectItem value="noite">Noite</SelectItem>
+                              <SelectItem value="integral">Turno Integral</SelectItem>
+                              <SelectItem value="flexivel">Horário Flexível</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-gray-500">
+                            Informe em qual turno você prefere trabalhar ou está disponível.
+                          </p>
+                        </div>
+
                       </div>
                     </div>
                   )}
 
-                  {/* Etapa 6: Pular se for cliente */}
-                  {currentStep === 6 && !isProfessional && (
+                  {/* Etapa 7: Pular se for cliente */}
+                  {currentStep === 7 && !isProfessional && (
                     <div className="text-center space-y-4 py-8">
                       <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
                         <Check className="w-10 h-10 text-white" />
@@ -1345,8 +1516,8 @@ export default function OnboardingPage() {
                     </div>
                   )}
 
-                  {/* Etapa 7: Resumo Final */}
-                  {currentStep === 7 && (
+                  {/* Etapa 8: Resumo Final */}
+                  {currentStep === 8 && (
                     <div className="space-y-6">
                       {/* Toggle para mostrar/ocultar dados sensíveis */}
                       <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -1378,6 +1549,41 @@ export default function OnboardingPage() {
                             </div>
                           </div>
                           
+                          {/* Informações Adicionais */}
+                          {(watchedValues.escolaridade || watchedValues.estado_civil || (watchedValues.filhos !== undefined && watchedValues.filhos > 0)) && (
+                            <div className="border-t border-gray-300 pt-3 mt-3">
+                              <h5 className="font-semibold mb-2">Informações Adicionais:</h5>
+                              {watchedValues.escolaridade && (
+                                <p><strong>Escolaridade:</strong> {
+                                  watchedValues.escolaridade === 'ensino_fundamental_incompleto' ? 'Ensino Fundamental Incompleto' :
+                                  watchedValues.escolaridade === 'ensino_fundamental_completo' ? 'Ensino Fundamental Completo' :
+                                  watchedValues.escolaridade === 'ensino_medio_incompleto' ? 'Ensino Médio Incompleto' :
+                                  watchedValues.escolaridade === 'ensino_medio_completo' ? 'Ensino Médio Completo' :
+                                  watchedValues.escolaridade === 'ensino_superior_incompleto' ? 'Ensino Superior Incompleto' :
+                                  watchedValues.escolaridade === 'ensino_superior_completo' ? 'Ensino Superior Completo' :
+                                  watchedValues.escolaridade === 'pos_graduacao' ? 'Pós-Graduação' :
+                                  watchedValues.escolaridade === 'mestrado' ? 'Mestrado' :
+                                  watchedValues.escolaridade === 'doutorado' ? 'Doutorado' :
+                                  watchedValues.escolaridade
+                                }</p>
+                              )}
+                              {watchedValues.estado_civil && (
+                                <p><strong>Estado Civil:</strong> {
+                                  watchedValues.estado_civil === 'solteiro' ? 'Solteiro(a)' :
+                                  watchedValues.estado_civil === 'casado' ? 'Casado(a)' :
+                                  watchedValues.estado_civil === 'divorciado' ? 'Divorciado(a)' :
+                                  watchedValues.estado_civil === 'viuvo' ? 'Viúvo(a)' :
+                                  watchedValues.estado_civil === 'uniao_estavel' ? 'União Estável' :
+                                  watchedValues.estado_civil === 'outro' ? 'Outro' :
+                                  watchedValues.estado_civil
+                                }</p>
+                              )}
+                              {(watchedValues.filhos !== undefined && watchedValues.filhos > 0) && (
+                                <p><strong>Filhos:</strong> {watchedValues.filhos} {watchedValues.filhos === 1 ? 'filho' : 'filhos'}</p>
+                              )}
+                            </div>
+                          )}
+                          
                           <div className="border-t border-gray-300 pt-3 mt-3">
                             <p><strong>Estado:</strong> {watchedValues.location_state ? estadosBrasil.find(e => e.sigla === watchedValues.location_state)?.nome : 'Não informado'}</p>
                             <p><strong>Cidade:</strong> {watchedValues.location_city || 'Não informado'}</p>
@@ -1393,12 +1599,26 @@ export default function OnboardingPage() {
                           
                           {isProfessional && (
                             <div className="border-t border-gray-300 pt-3 mt-3">
+                              <h5 className="font-semibold mb-2">Dados Profissionais:</h5>
                               {watchedValues.experience_years && (
                                 <p><strong>Experiência:</strong> {watchedValues.experience_years}</p>
                               )}
-                               {selectedServices.length > 0 && (
-                                 <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
-                               )}
+                              {selectedServices.length > 0 && (
+                                <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
+                              )}
+                              {watchedValues.turno_trabalho && (
+                                <p><strong>Turno de Trabalho:</strong> {
+                                  watchedValues.turno_trabalho === 'manha' ? 'Manhã' :
+                                  watchedValues.turno_trabalho === 'tarde' ? 'Tarde' :
+                                  watchedValues.turno_trabalho === 'noite' ? 'Noite' :
+                                  watchedValues.turno_trabalho === 'integral' ? 'Turno Integral' :
+                                  watchedValues.turno_trabalho === 'flexivel' ? 'Horário Flexível' :
+                                  watchedValues.turno_trabalho
+                                }</p>
+                              )}
+                              {watchedValues.referencia_profissional && (
+                                <p><strong>Referência Profissional:</strong> {watchedValues.referencia_profissional.substring(0, 100)}{watchedValues.referencia_profissional.length > 100 ? '...' : ''}</p>
+                              )}
                             </div>
                           )}
                         </div>

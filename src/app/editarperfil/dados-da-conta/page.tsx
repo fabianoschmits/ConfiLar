@@ -10,6 +10,7 @@ import { LoadingButton } from '@/components/ui/LoadingButton'
 import { ProgressIndicator } from '@/components/ui/ProgressIndicator'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -75,6 +76,27 @@ const accountDataSchema = z.object({
     }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   bio: z.string().optional(),
+  // Novos campos
+  escolaridade: z.enum([
+    'ensino_fundamental_incompleto',
+    'ensino_fundamental_completo',
+    'ensino_medio_incompleto',
+    'ensino_medio_completo',
+    'ensino_superior_incompleto',
+    'ensino_superior_completo',
+    'pos_graduacao',
+    'mestrado',
+    'doutorado'
+  ]).optional(),
+  filhos: z.number().min(0).max(20).default(0).optional(),
+  estado_civil: z.enum([
+    'solteiro',
+    'casado',
+    'divorciado',
+    'viuvo',
+    'uniao_estavel',
+    'outro'
+  ]).optional(),
 })
 
 type AccountDataFormData = z.infer<typeof accountDataSchema>
@@ -106,6 +128,9 @@ export default function DadosDaContaPage() {
     formState: { errors },
   } = useForm<AccountDataFormData>({
     resolver: zodResolver(accountDataSchema),
+    defaultValues: {
+      filhos: 0,
+    },
   })
 
   const watchedValues = watch()
@@ -151,6 +176,10 @@ export default function DadosDaContaPage() {
           setValue('cpf_cnpj', profile.cpf_cnpj || '')
           setValue('birth_date', profile.birth_date || '')
           setValue('bio', profile.bio || '')
+          // Novos campos
+          setValue('escolaridade', profile.escolaridade || undefined)
+          setValue('filhos', profile.filhos || 0)
+          setValue('estado_civil', profile.estado_civil || undefined)
 
           if (profile.avatar_url) {
             setSelectedAvatar({
@@ -383,6 +412,10 @@ export default function DadosDaContaPage() {
           birth_date: data.birth_date,
           bio: data.bio || null,
           avatar_url: avatarUrl,
+          // Novos campos
+          escolaridade: data.escolaridade || null,
+          filhos: data.filhos || 0,
+          estado_civil: data.estado_civil || null,
         })
         .eq('id', user.id)
 
@@ -751,6 +784,75 @@ export default function DadosDaContaPage() {
                           Obrigatório
                         </p>
                       )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="escolaridade" className="text-sm font-medium text-gray-700">
+                        Escolaridade
+                      </Label>
+                      <Select 
+                        value={watchedValues.escolaridade || ''} 
+                        onValueChange={(value) => setValue('escolaridade', value as any)}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Selecione sua escolaridade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ensino_fundamental_incompleto">Ensino Fundamental Incompleto</SelectItem>
+                          <SelectItem value="ensino_fundamental_completo">Ensino Fundamental Completo</SelectItem>
+                          <SelectItem value="ensino_medio_incompleto">Ensino Médio Incompleto</SelectItem>
+                          <SelectItem value="ensino_medio_completo">Ensino Médio Completo</SelectItem>
+                          <SelectItem value="ensino_superior_incompleto">Ensino Superior Incompleto</SelectItem>
+                          <SelectItem value="ensino_superior_completo">Ensino Superior Completo</SelectItem>
+                          <SelectItem value="pos_graduacao">Pós-Graduação</SelectItem>
+                          <SelectItem value="mestrado">Mestrado</SelectItem>
+                          <SelectItem value="doutorado">Doutorado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="estado_civil" className="text-sm font-medium text-gray-700">
+                        Estado Civil
+                      </Label>
+                      <Select 
+                        value={watchedValues.estado_civil || ''} 
+                        onValueChange={(value) => setValue('estado_civil', value as any)}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Selecione seu estado civil" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                          <SelectItem value="casado">Casado(a)</SelectItem>
+                          <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                          <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                          <SelectItem value="uniao_estavel">União Estável</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="filhos" className="text-sm font-medium text-gray-700">
+                        Número de Filhos
+                      </Label>
+                      <Input
+                        id="filhos"
+                        type="number"
+                        min="0"
+                        max="20"
+                        placeholder="0"
+                        value={watchedValues.filhos || 0}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0
+                          setValue('filhos', Math.max(0, Math.min(20, value)))
+                        }}
+                        className="h-10"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Informe quantos filhos você tem (0 se não tiver)
+                      </p>
                     </div>
                   </div>
                 </CardContent>

@@ -49,6 +49,12 @@ export interface Database {
           professional_experience_years?: number | null
           professional_certifications?: string[] | null
           professional_portfolio_url?: string | null
+          idade?: number | null
+          escolaridade?: 'ensino_fundamental_incompleto' | 'ensino_fundamental_completo' | 'ensino_medio_incompleto' | 'ensino_medio_completo' | 'ensino_superior_incompleto' | 'ensino_superior_completo' | 'pos_graduacao' | 'mestrado' | 'doutorado' | null
+          filhos?: number | null
+          estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
+          referencia_profissional?: string | null
+          turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
         }
         Insert: {
           id: string
@@ -79,6 +85,12 @@ export interface Database {
           professional_experience_years?: number | null
           professional_certifications?: string[] | null
           professional_portfolio_url?: string | null
+          idade?: number | null
+          escolaridade?: 'ensino_fundamental_incompleto' | 'ensino_fundamental_completo' | 'ensino_medio_incompleto' | 'ensino_medio_completo' | 'ensino_superior_incompleto' | 'ensino_superior_completo' | 'pos_graduacao' | 'mestrado' | 'doutorado' | null
+          filhos?: number | null
+          estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
+          referencia_profissional?: string | null
+          turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
         }
         Update: {
           id?: string
@@ -109,6 +121,12 @@ export interface Database {
           professional_experience_years?: number | null
           professional_certifications?: string[] | null
           professional_portfolio_url?: string | null
+          idade?: number | null
+          escolaridade?: 'ensino_fundamental_incompleto' | 'ensino_fundamental_completo' | 'ensino_medio_incompleto' | 'ensino_medio_completo' | 'ensino_superior_incompleto' | 'ensino_superior_completo' | 'pos_graduacao' | 'mestrado' | 'doutorado' | null
+          filhos?: number | null
+          estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
+          referencia_profissional?: string | null
+          turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
         }
       }
 

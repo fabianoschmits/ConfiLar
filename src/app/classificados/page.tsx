@@ -1204,6 +1204,91 @@ export default function ClassificadosPage() {
                         </div>
                       )}
 
+                      {/* Informações do Anunciante */}
+                      {(selectedAd as any).user_profile && (
+                        <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <h4 className="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-200 mb-3">
+                            📋 Sobre o Anunciante
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                            {(selectedAd as any).user_profile.idade && (
+                              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                <span className="font-semibold">Idade:</span>
+                                <span>{(selectedAd as any).user_profile.idade} anos</span>
+                              </div>
+                            )}
+                            {(selectedAd as any).user_profile.escolaridade && (
+                              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                <span className="font-semibold">Escolaridade:</span>
+                                <span>{
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_fundamental_incompleto' ? 'Ensino Fundamental Incompleto' :
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_fundamental_completo' ? 'Ensino Fundamental Completo' :
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_medio_incompleto' ? 'Ensino Médio Incompleto' :
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_medio_completo' ? 'Ensino Médio Completo' :
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_superior_incompleto' ? 'Ensino Superior Incompleto' :
+                                  (selectedAd as any).user_profile.escolaridade === 'ensino_superior_completo' ? 'Ensino Superior Completo' :
+                                  (selectedAd as any).user_profile.escolaridade === 'pos_graduacao' ? 'Pós-Graduação' :
+                                  (selectedAd as any).user_profile.escolaridade === 'mestrado' ? 'Mestrado' :
+                                  (selectedAd as any).user_profile.escolaridade === 'doutorado' ? 'Doutorado' :
+                                  (selectedAd as any).user_profile.escolaridade
+                                }</span>
+                              </div>
+                            )}
+                            {(selectedAd as any).user_profile.estado_civil && (
+                              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                <span className="font-semibold">Estado Civil:</span>
+                                <span>{
+                                  (selectedAd as any).user_profile.estado_civil === 'solteiro' ? 'Solteiro(a)' :
+                                  (selectedAd as any).user_profile.estado_civil === 'casado' ? 'Casado(a)' :
+                                  (selectedAd as any).user_profile.estado_civil === 'divorciado' ? 'Divorciado(a)' :
+                                  (selectedAd as any).user_profile.estado_civil === 'viuvo' ? 'Viúvo(a)' :
+                                  (selectedAd as any).user_profile.estado_civil === 'uniao_estavel' ? 'União Estável' :
+                                  (selectedAd as any).user_profile.estado_civil === 'outro' ? 'Outro' :
+                                  (selectedAd as any).user_profile.estado_civil
+                                }</span>
+                              </div>
+                            )}
+                            {((selectedAd as any).user_profile.filhos !== undefined && (selectedAd as any).user_profile.filhos > 0) && (
+                              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                <span className="font-semibold">Filhos:</span>
+                                <span>{(selectedAd as any).user_profile.filhos} {(selectedAd as any).user_profile.filhos === 1 ? 'filho' : 'filhos'}</span>
+                              </div>
+                            )}
+                            {(selectedAd as any).user_profile.user_type === 'professional' && (
+                              <>
+                                {(selectedAd as any).user_profile.turno_trabalho && (
+                                  <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                    <span className="font-semibold">Turno de Trabalho:</span>
+                                    <span>{
+                                      (selectedAd as any).user_profile.turno_trabalho === 'manha' ? 'Manhã' :
+                                      (selectedAd as any).user_profile.turno_trabalho === 'tarde' ? 'Tarde' :
+                                      (selectedAd as any).user_profile.turno_trabalho === 'noite' ? 'Noite' :
+                                      (selectedAd as any).user_profile.turno_trabalho === 'integral' ? 'Turno Integral' :
+                                      (selectedAd as any).user_profile.turno_trabalho === 'flexivel' ? 'Horário Flexível' :
+                                      (selectedAd as any).user_profile.turno_trabalho
+                                    }</span>
+                                  </div>
+                                )}
+                                {(selectedAd as any).user_profile.professional_experience_years && (
+                                  <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                                    <span className="font-semibold">Experiência:</span>
+                                    <span>{(selectedAd as any).user_profile.professional_experience_years} {((selectedAd as any).user_profile.professional_experience_years === 1) ? 'ano' : 'anos'}</span>
+                                  </div>
+                                )}
+                                {(selectedAd as any).user_profile.referencia_profissional && (
+                                  <div className="sm:col-span-2 mt-2">
+                                    <p className="text-xs font-semibold text-blue-900 dark:text-blue-200 mb-1">Referência Profissional:</p>
+                                    <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                                      {(selectedAd as any).user_profile.referencia_profissional}
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Informações Adicionais */}
                       <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
@@ -1374,6 +1459,100 @@ export default function ClassificadosPage() {
                       </Badge>
                     </div>
                   )}
+                  
+                  {/* Ficha Técnica do Anunciante */}
+                  {(ad as any).user_profile && (
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                      <div className="flex items-start gap-4">
+                        {/* Foto do Usuário - Maior à Esquerda */}
+                        <Link href={`/perfil/${ad.user_id}`} className="flex-shrink-0">
+                          <UserAvatar
+                            src={ad.user_avatar_url}
+                            alt={ad.user_name}
+                            fallback={ad.user_name?.charAt(0).toUpperCase() || 'U'}
+                            size="lg"
+                            userId={ad.user_id}
+                            showReferralBadge={true}
+                            className="w-20 h-20 sm:w-24 sm:h-24 ring-2 ring-white dark:ring-gray-800 shadow-lg hover:ring-blue-500 transition-all duration-200 cursor-pointer"
+                          />
+                        </Link>
+                        
+                        {/* Dados do Anunciante - Lateral Direita */}
+                        <div className="flex-1 min-w-0">
+                          <Link href={`/perfil/${ad.user_id}`} className="block">
+                            <h4 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                              {ad.user_name}
+                            </h4>
+                          </Link>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                            {(ad as any).user_profile.idade && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Idade:</span>
+                                <span>{(ad as any).user_profile.idade} anos</span>
+                              </div>
+                            )}
+                            {(ad as any).user_profile.escolaridade && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Escolaridade:</span>
+                                <span className="truncate">{
+                                  (ad as any).user_profile.escolaridade === 'ensino_fundamental_incompleto' ? 'Fund. Incompleto' :
+                                  (ad as any).user_profile.escolaridade === 'ensino_fundamental_completo' ? 'Fund. Completo' :
+                                  (ad as any).user_profile.escolaridade === 'ensino_medio_incompleto' ? 'Médio Incompleto' :
+                                  (ad as any).user_profile.escolaridade === 'ensino_medio_completo' ? 'Médio Completo' :
+                                  (ad as any).user_profile.escolaridade === 'ensino_superior_incompleto' ? 'Superior Incompleto' :
+                                  (ad as any).user_profile.escolaridade === 'ensino_superior_completo' ? 'Superior Completo' :
+                                  (ad as any).user_profile.escolaridade === 'pos_graduacao' ? 'Pós-Graduação' :
+                                  (ad as any).user_profile.escolaridade === 'mestrado' ? 'Mestrado' :
+                                  (ad as any).user_profile.escolaridade === 'doutorado' ? 'Doutorado' :
+                                  (ad as any).user_profile.escolaridade
+                                }</span>
+                              </div>
+                            )}
+                            {(ad as any).user_profile.estado_civil && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Estado Civil:</span>
+                                <span>{
+                                  (ad as any).user_profile.estado_civil === 'solteiro' ? 'Solteiro(a)' :
+                                  (ad as any).user_profile.estado_civil === 'casado' ? 'Casado(a)' :
+                                  (ad as any).user_profile.estado_civil === 'divorciado' ? 'Divorciado(a)' :
+                                  (ad as any).user_profile.estado_civil === 'viuvo' ? 'Viúvo(a)' :
+                                  (ad as any).user_profile.estado_civil === 'uniao_estavel' ? 'União Estável' :
+                                  (ad as any).user_profile.estado_civil === 'outro' ? 'Outro' :
+                                  (ad as any).user_profile.estado_civil
+                                }</span>
+                              </div>
+                            )}
+                            {((ad as any).user_profile.filhos !== undefined && (ad as any).user_profile.filhos > 0) && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Filhos:</span>
+                                <span>{(ad as any).user_profile.filhos} {(ad as any).user_profile.filhos === 1 ? 'filho' : 'filhos'}</span>
+                              </div>
+                            )}
+                            {(ad as any).user_profile.user_type === 'professional' && (ad as any).user_profile.turno_trabalho && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Turno:</span>
+                                <span>{
+                                  (ad as any).user_profile.turno_trabalho === 'manha' ? 'Manhã' :
+                                  (ad as any).user_profile.turno_trabalho === 'tarde' ? 'Tarde' :
+                                  (ad as any).user_profile.turno_trabalho === 'noite' ? 'Noite' :
+                                  (ad as any).user_profile.turno_trabalho === 'integral' ? 'Integral' :
+                                  (ad as any).user_profile.turno_trabalho === 'flexivel' ? 'Flexível' :
+                                  (ad as any).user_profile.turno_trabalho
+                                }</span>
+                              </div>
+                            )}
+                            {(ad as any).user_profile.user_type === 'professional' && (ad as any).user_profile.professional_experience_years && (
+                              <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">Experiência:</span>
+                                <span>{(ad as any).user_profile.professional_experience_years} {((ad as any).user_profile.professional_experience_years === 1) ? 'ano' : 'anos'}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Header com tipo de anúncio e menu */}
                   <div className="flex items-center justify-between p-4 pb-2">
                     <div className="flex items-center gap-2">

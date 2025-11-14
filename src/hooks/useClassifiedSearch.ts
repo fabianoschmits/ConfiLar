@@ -115,11 +115,26 @@ export function useClassifiedSearch() {
       // Se chegou aqui, os dados reais foram carregados com sucesso
       console.log('✅ Dados reais carregados com sucesso:', data?.length || 0, 'anúncios')
       
-      // Buscar fotos dos usuários separadamente (otimizado)
+      // Buscar dados completos dos usuários (otimizado)
       const userIds = Array.from(new Set(data?.map(ad => ad.user_id) || []))    
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url, profile_photo_url')
+        .select(`
+          id, 
+          full_name, 
+          avatar_url, 
+          profile_photo_url,
+          user_type,
+          escolaridade,
+          filhos,
+          estado_civil,
+          referencia_profissional,
+          turno_trabalho,
+          idade,
+          professional_experience_years,
+          professional_services,
+          bio
+        `)
         .in('id', userIds)
         .limit(20)
 
@@ -136,6 +151,19 @@ export function useClassifiedSearch() {
           id: ad.id,
           user_id: ad.user_id,
           user_name: profile?.full_name || ad.user_name || 'Usuário',
+          // Dados completos do perfil do anunciante
+          user_profile: profile ? {
+            escolaridade: profile.escolaridade,
+            filhos: profile.filhos,
+            estado_civil: profile.estado_civil,
+            referencia_profissional: profile.referencia_profissional,
+            turno_trabalho: profile.turno_trabalho,
+            idade: profile.idade,
+            professional_experience_years: profile.professional_experience_years,
+            professional_services: profile.professional_services,
+            bio: profile.bio,
+            user_type: profile.user_type
+          } : null,
           user_type: ad.user_type || 'client',
           title: ad.title,
           description: ad.description,

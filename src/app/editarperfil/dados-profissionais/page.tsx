@@ -8,6 +8,7 @@ import { MainLayout } from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/button'
 import { LoadingButton } from '@/components/ui/LoadingButton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -25,6 +26,14 @@ import { useRouter } from 'next/navigation'
 const professionalDataSchema = z.object({
   experience_years: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
+  referencia_profissional: z.string().optional(),
+  turno_trabalho: z.enum([
+    'manha',
+    'tarde',
+    'noite',
+    'integral',
+    'flexivel'
+  ]).optional(),
 })
 
 type ProfessionalDataFormData = z.infer<typeof professionalDataSchema>
@@ -37,6 +46,7 @@ export default function DadosProfissionaisPage() {
   const [servicesOpen, setServicesOpen] = useState(false)
 
   const {
+    register,
     watch,
     setValue,
     handleSubmit,
@@ -89,6 +99,10 @@ export default function DadosProfissionaisPage() {
             setSelectedServices(profile.professional_services)
             setValue('services_offered', profile.professional_services)
           }
+          
+          // Novos campos
+          setValue('referencia_profissional', profile.referencia_profissional || '')
+          setValue('turno_trabalho', profile.turno_trabalho || undefined)
         }
       } catch (error) {
         console.error('Erro ao carregar perfil:', error)
@@ -130,6 +144,9 @@ export default function DadosProfissionaisPage() {
         .update({
           professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
           professional_services: selectedServices.length > 0 ? selectedServices : [],
+          // Novos campos
+          referencia_profissional: data.referencia_profissional || null,
+          turno_trabalho: data.turno_trabalho || null,
         })
         .eq('id', user.id)
 
@@ -292,6 +309,47 @@ export default function DadosProfissionaisPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Referência Profissional */}
+                  <div className="space-y-2">
+                    <Label htmlFor="referencia_profissional" className="text-sm font-medium text-gray-700">
+                      Referência Profissional
+                    </Label>
+                    <Textarea
+                      {...register('referencia_profissional')}
+                      placeholder="Conte sobre suas experiências profissionais, projetos importantes, certificações ou qualquer informação relevante sobre sua carreira..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Compartilhe informações sobre sua experiência profissional, projetos realizados, certificações ou outras informações relevantes.
+                    </p>
+                  </div>
+
+                  {/* Turno de Trabalho */}
+                  <div className="space-y-2">
+                    <Label htmlFor="turno_trabalho" className="text-sm font-medium text-gray-700">
+                      Turno de Trabalho
+                    </Label>
+                    <Select 
+                      value={watchedValues.turno_trabalho || ''} 
+                      onValueChange={(value) => setValue('turno_trabalho', value as any)}
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Selecione seu turno de trabalho" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manha">Manhã</SelectItem>
+                        <SelectItem value="tarde">Tarde</SelectItem>
+                        <SelectItem value="noite">Noite</SelectItem>
+                        <SelectItem value="integral">Turno Integral</SelectItem>
+                        <SelectItem value="flexivel">Horário Flexível</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      Informe em qual turno você prefere trabalhar ou está disponível.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
