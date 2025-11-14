@@ -23,6 +23,7 @@ import { useIBGE } from '@/hooks/useIBGE'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useClassifiedSearch } from '@/hooks/useClassifiedSearch'
+import { usePremiumNotifications } from '@/hooks/usePremiumNotifications'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { services } from '@/data/services'
@@ -58,6 +59,8 @@ import {
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
 import { PremiumAdForm } from '@/components/classifieds/PremiumAdForm'
+import { RenewPremiumAdForm } from '@/components/classifieds/RenewPremiumAdForm'
+import { PremiumTimeRemaining } from '@/components/classifieds/PremiumTimeRemaining'
 import { ReportButton } from '@/components/ReportButton'
 
 type AdType = 'all' | 'offers' | 'requests'
@@ -66,6 +69,8 @@ export default function ClassificadosPage() {
   const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showPremiumAdDialog, setShowPremiumAdDialog] = useState(false)
+  const [showRenewPremiumDialog, setShowRenewPremiumDialog] = useState(false)
+  const [renewingAdId, setRenewingAdId] = useState<string | null>(null)
   const [isCreatingAd, setIsCreatingAd] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isEditingAd, setIsEditingAd] = useState(false)
@@ -112,6 +117,9 @@ export default function ClassificadosPage() {
     executeSearch,
     loadClassifiedAds
   } = useClassifiedSearch()
+
+  // Verificar notificações premium automaticamente
+  usePremiumNotifications()
 
   // Opções de categorias para o Combobox
   const categoryOptions = services.map(service => ({
@@ -912,6 +920,35 @@ export default function ClassificadosPage() {
                   </DialogContent>
                 </Dialog>
 
+                {/* Dialog de Renovar Premium */}
+                <Dialog open={showRenewPremiumDialog} onOpenChange={setShowRenewPremiumDialog}>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black border-gray-200 dark:border-gray-800">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+                        Renovar Anúncio Premium
+                      </DialogTitle>
+                    </DialogHeader>
+                    {renewingAdId && (
+                      <RenewPremiumAdForm
+                        adId={renewingAdId}
+                        adTitle={selectedAd?.title || classifiedAds.find(ad => ad.id === renewingAdId)?.title || 'Anúncio'}
+                        onSubmit={() => {
+                          setShowRenewPremiumDialog(false)
+                          setRenewingAdId(null)
+                          setSelectedAd(null)
+                          // Recarregar anúncios
+                          loadClassifiedAds()
+                        }}
+                        onCancel={() => {
+                          setShowRenewPremiumDialog(false)
+                          setRenewingAdId(null)
+                        }}
+                      />
+                    )}
+                  </DialogContent>
+                </Dialog>
+
                 {/* Botão Premium */}
                 <Dialog open={showPremiumAdDialog} onOpenChange={setShowPremiumAdDialog}>
                   <DialogTrigger asChild>
@@ -1297,16 +1334,19 @@ export default function ClassificadosPage() {
                         </div>
                         {/* Duração do anúncio premium (apenas para o criador) */}
                         {user && selectedAd.user_id === user.id && selectedAd.is_premium && selectedAd.premium_expires_at && (
-                          <div className="flex items-center text-xs sm:text-sm text-blue-600 dark:text-blue-400 mt-2">
-                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                            <span>
-                              Duração: {(() => {
-                                const expiresAt = new Date(selectedAd.premium_expires_at)
-                                const now = new Date()
-                                const daysRemaining = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-                                return `${daysRemaining} dia${daysRemaining > 1 ? 's' : ''} restante${daysRemaining > 1 ? 's' : ''}`
-                              })()}
-                            </span>
+                          <div className="mt-2">
+                            {new Date(selectedAd.premium_expires_at) < new Date() ? (
+                              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium">
+                                  ⚠️ Seu anúncio premium expirou. Renove para continuar em destaque!
+                                </p>
+                              </div>
+                            ) : (
+                              <PremiumTimeRemaining 
+                                expiresAt={selectedAd.premium_expires_at}
+                                isOwner={true}
+                              />
+                            )}
                           </div>
                         )}
                       </div>
@@ -1353,6 +1393,21 @@ export default function ClassificadosPage() {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Editar anúncio
                                   </DropdownMenuItem>
+                                  
+                                  {/* Botão de renovar premium se o anúncio expirou */}
+                                  {selectedAd.is_premium && selectedAd.premium_expires_at && new Date(selectedAd.premium_expires_at) < new Date() && (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setShowAdModal(false)
+                                        setRenewingAdId(selectedAd.id)
+                                        setShowRenewPremiumDialog(true)
+                                      }}
+                                      className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
+                                    >
+                                      <Crown className="h-4 w-4 mr-2" />
+                                      Tornar Premium Novamente
+                                    </DropdownMenuItem>
+                                  )}
                                   
                                   <DropdownMenuItem
                                     onClick={() => {
@@ -1759,6 +1814,20 @@ export default function ClassificadosPage() {
                                   <Edit className="h-4 w-4 mr-2" />
                                   Editar anúncio
                                 </DropdownMenuItem>
+                                
+                                {/* Botão de renovar premium se o anúncio expirou */}
+                                {ad.is_premium && ad.premium_expires_at && new Date(ad.premium_expires_at) < new Date() && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setRenewingAdId(ad.id)
+                                      setShowRenewPremiumDialog(true)
+                                    }}
+                                    className="text-gray-700 hover:text-yellow-600 hover:bg-yellow-50"
+                                  >
+                                    <Crown className="h-4 w-4 mr-2" />
+                                    Tornar Premium Novamente
+                                  </DropdownMenuItem>
+                                )}
                                 
                                 <DropdownMenuItem 
                                   onClick={() => handleDeleteAd(ad.id)}

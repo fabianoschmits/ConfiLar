@@ -43,6 +43,7 @@ import { MentionInput } from '@/components/ui/MentionInput'
 import { FeedSettingsModal } from '@/components/timeline/FeedSettingsModal'
 import { supabase } from '@/lib/supabase'
 import { LocationFilter } from '@/hooks/useLocationFilters'
+import { usePremiumNotifications } from '@/hooks/usePremiumNotifications'
 import { useStories } from '@/hooks/useStories'
 import { StoryViewer } from '@/components/stories/StoryViewer'
 import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
@@ -126,6 +127,9 @@ export default function FeedPage() {
   })
 
   useTimelineRealtime()
+  
+  // Verificar notificações premium automaticamente
+  usePremiumNotifications()
   
   const { trendingPosts } = usePostRanking({ 
     location_city: profile?.location_city, 
