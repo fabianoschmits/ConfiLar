@@ -65,7 +65,8 @@ export function useTimeline(filters: TimelineFilters = {}) {
             is_available
           )
         `)
-        // .eq('is_active', true) // Coluna não existe
+        .eq('is_active', true)
+        .eq('is_public', true)
         .order('created_at', { ascending: false })
         .range(page * POSTS_PER_PAGE, (page + 1) * POSTS_PER_PAGE - 1)
 

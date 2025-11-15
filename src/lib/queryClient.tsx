@@ -1,25 +1,31 @@
 'use client'
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, dehydrate, hydrate } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { logger } from '@/lib/logger'
+import { getStorageData, setStorageData, removeStorageData } from '@/lib/storage/indexedDB'
 
 interface QueryProviderProps {
   children: ReactNode
 }
 
-// Configuração otimizada do QueryClient
+// Configuração otimizada do QueryClient com persistência
 function createQueryClient() {
-  return new QueryClient({
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         // Cache por 5 minutos por padrão
         staleTime: 5 * 60 * 1000,
-        // Manter no cache por 10 minutos
-        gcTime: 10 * 60 * 1000,
+        // Manter no cache por 10 minutos (aumentado para permitir persistência)
+        gcTime: 24 * 60 * 60 * 1000, // 24 horas (mantém no IndexedDB)
         // Retry apenas 2 vezes
         retry: (failureCount, error) => {
+          // Se estiver offline, não tentar novamente
+          if (!navigator.onLine) {
+            return false
+          }
+          
           logger.error('query-retry', error as Error, { 
             failureCount,
             willRetry: failureCount < 2 
@@ -28,12 +34,20 @@ function createQueryClient() {
         },
         // Não refetch automaticamente no focus (evita requests desnecessários)
         refetchOnWindowFocus: false,
-        // Não refetch automaticamente na reconexão
-        refetchOnReconnect: true
+        // Refetch na reconexão apenas se estiver online
+        refetchOnReconnect: true,
+        // Usar cache quando offline
+        networkMode: 'offlineFirst' // Tentar cache primeiro quando offline
       },
       mutations: {
         // Retry mutations apenas 1 vez
-        retry: 1,
+        retry: (failureCount, error) => {
+          // Se estiver offline, salvar para sincronização posterior
+          if (!navigator.onLine) {
+            return false
+          }
+          return failureCount < 1
+        },
         onError: (error) => {
           logger.error('react-query', error as Error, { 
             context: 'mutation-error' 
@@ -41,15 +55,124 @@ function createQueryClient() {
         },
         onSuccess: () => {
           logger.info('react-query', 'Mutation completed successfully')
-        }
+        },
+        // Modo de rede para mutations
+        networkMode: 'online' // Só executar quando online (ou usar queueOfflineAction)
       }
     }
   })
+
+  return queryClient
 }
 
 export function QueryProvider({ children }: QueryProviderProps) {
   // Criar QueryClient apenas uma vez
   const [queryClient] = useState(() => createQueryClient())
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Restaurar cache do IndexedDB na inicialização
+  useEffect(() => {
+    let isMounted = true
+
+    const restoreCache = async () => {
+      try {
+        const PERSIST_KEY = 'REACT_QUERY_OFFLINE_CACHE'
+        const cached = await getStorageData<any>('cache', PERSIST_KEY)
+        
+        if (cached && cached.clientState) {
+          const maxAge = 7 * 24 * 60 * 60 * 1000 // 7 dias
+          const now = Date.now()
+          
+          // Verificar se cache não expirou
+          if (cached.timestamp && (now - cached.timestamp) < maxAge) {
+            // Filtrar apenas queries importantes antes de hidratar
+            const persistableKeys = [
+              'profiles',
+              'user-points',
+              'user-points-balance',
+              'points-transfers',
+              'user-points-history',
+              'classifieds',
+              'stories'
+            ]
+            
+            // Filtrar queries para persistir apenas as importantes
+            if (cached.clientState.queries) {
+              cached.clientState.queries = cached.clientState.queries.filter((q: any) => {
+                const queryKey = q.queryKey?.[0] as string
+                return queryKey && persistableKeys.some(key => queryKey.includes(key))
+              })
+            }
+            
+            hydrate(queryClient, cached.clientState)
+            console.log('✅ React Query cache restaurado do IndexedDB')
+          } else {
+            // Cache expirado, remover
+            await removeStorageData('cache', PERSIST_KEY)
+          }
+        }
+      } catch (error) {
+        console.error('❌ Erro ao restaurar cache React Query:', error)
+      } finally {
+        if (isMounted) {
+          setIsHydrated(true)
+        }
+      }
+    }
+
+    restoreCache()
+  }, [queryClient])
+
+  // Salvar cache periodicamente
+  useEffect(() => {
+    if (!isHydrated) return
+
+    const saveCache = async () => {
+      try {
+        const PERSIST_KEY = 'REACT_QUERY_OFFLINE_CACHE'
+        const persistableKeys = [
+          'profiles',
+          'user-points',
+          'user-points-balance',
+          'points-transfers',
+          'user-points-history',
+          'classifieds',
+          'stories'
+        ]
+        
+        // Dehidratar apenas queries importantes
+        const dehydratedState = dehydrate(queryClient, {
+          shouldDehydrateQuery: (query) => {
+            const queryKey = query.queryKey[0] as string
+            return queryKey && persistableKeys.some(key => queryKey.includes(key))
+          }
+        })
+        
+        const cacheData = {
+          timestamp: Date.now(),
+          clientState: dehydratedState
+        }
+        
+        await setStorageData('cache', PERSIST_KEY, cacheData, 7 * 24 * 60 * 60 * 1000)
+      } catch (error) {
+        console.error('❌ Erro ao salvar cache React Query:', error)
+      }
+    }
+
+    // Salvar imediatamente
+    saveCache()
+
+    // Salvar periodicamente a cada 30 segundos
+    const saveInterval = setInterval(saveCache, 30000)
+
+    // Salvar quando queries mudarem (usando MutationObserver seria ideal, mas vamos usar intervalo)
+    
+    return () => {
+      clearInterval(saveInterval)
+      // Salvar antes de desmontar
+      saveCache()
+    }
+  }, [queryClient, isHydrated])
 
   return (
     <QueryClientProvider client={queryClient}>

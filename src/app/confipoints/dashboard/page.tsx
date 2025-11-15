@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { usePoints, usePointsHistory } from '@/hooks/usePoints'
+import { usePointsTransfers } from '@/hooks/useEconomy'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
@@ -38,7 +39,8 @@ import { TransactionSkeleton } from '@/components/ui/skeleton'
 export default function ConfiPointsDashboardPage() {
   const { user, profile } = useAuthContext()
   const { balance, loading: loadingPoints } = usePoints(user?.id)
-  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 100 })
+  const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 200 })
+  const { transfers, loading: loadingTransfers } = usePointsTransfers(user?.id)
   
   const [activeTab, setActiveTab] = useState('visao-geral')
   const [visibleTransactionsCount, setVisibleTransactionsCount] = useState(10)
@@ -66,8 +68,46 @@ export default function ConfiPointsDashboardPage() {
   const nextLevel = getNextLevel(balance?.balance || 0)
   const progress = nextLevel ? ((balance?.balance || 0) / nextLevel.target) * 100 : 100
 
+  // Mapear transferências para formato de transações
+  const transferTransactions = (transfers || []).map((transfer: any) => {
+    const isSent = transfer.from_user_id === user?.id
+    const otherUser = isSent ? transfer.to_user : transfer.from_user
+    
+    
+    return {
+      id: `transfer-${transfer.id}`,
+      type: isSent ? 'transfer_sent' : 'transfer_received',
+      amount: isSent ? -transfer.points_amount : transfer.points_amount,
+      description: isSent 
+        ? `Transferiu ${transfer.points_amount.toLocaleString()} pontos para ${otherUser?.full_name || 'Usuário'}`
+        : `Recebeu transferência de ${transfer.points_amount.toLocaleString()} pontos de ${otherUser?.full_name || 'Usuário'}`,
+      date: transfer.created_at,
+      status: 'completed',
+      source: 'transfer',
+      metadata: {
+        ...(transfer.metadata || {}),
+        transfer_id: transfer.id,
+        from_user_id: transfer.from_user_id,
+        to_user_id: transfer.to_user_id,
+        from_user: transfer.from_user,
+        to_user: transfer.to_user,
+        from_user_name: transfer.from_user?.full_name,
+        to_user_name: transfer.to_user?.full_name,
+        message: transfer.message
+      },
+      // Incluir dados de usuário diretamente também
+      from_user: transfer.from_user,
+      to_user: transfer.to_user,
+      from_user_id: transfer.from_user_id,
+      to_user_id: transfer.to_user_id
+    }
+  })
+
   // Mapear transações do histórico para formato da UI
-  const allTransactions = (transactions || []).map((t: any) => {
+  // Filtrar transferências daqui pois elas vêm da tabela points_transfers
+  const pointTransactions = (transactions || [])
+    .filter((t: any) => t.type !== 'transfer' || t.source !== 'transfer') // Remover transferências duplicadas
+    .map((t: any) => {
     const isPositive = t.amount > 0 || t.type === 'earn' || t.type === 'purchase' || t.type === 'refund'
     
     let typeLabel = ''
@@ -84,11 +124,23 @@ export default function ConfiPointsDashboardPage() {
         if (!description) description = `Gastou ${Math.abs(t.amount)} pontos`
         break
       case 'transfer':
+        // Se chegar aqui, é uma transferência antiga sem dados completos
+        // Vamos tentar buscar informações do metadata
         typeLabel = isPositive ? 'transfer_received' : 'transfer_sent'
         if (!description) {
-          description = isPositive 
-            ? `Recebeu transferência de ${Math.abs(t.amount)} pontos`
-            : `Transferiu ${Math.abs(t.amount)} pontos`
+          // Tentar pegar nome do usuário do metadata
+          const otherUserName = t.metadata?.to_user_name || t.metadata?.from_user_name || t.metadata?.user_name || 'Usuário'
+          const otherUserId = t.metadata?.to_user_id || t.metadata?.from_user_id
+          
+          if (isPositive && otherUserId) {
+            description = `Recebeu transferência de ${Math.abs(t.amount)} pontos de ${otherUserName}`
+          } else if (!isPositive && otherUserId) {
+            description = `Transferiu ${Math.abs(t.amount)} pontos para ${otherUserName}`
+          } else {
+            description = isPositive 
+              ? `Recebeu transferência de ${Math.abs(t.amount)} pontos`
+              : `Transferiu ${Math.abs(t.amount)} pontos`
+          }
         }
         break
       case 'purchase':
@@ -130,9 +182,31 @@ export default function ConfiPointsDashboardPage() {
       date: t.created_at,
       status: 'completed',
       source: t.source,
-      metadata: t.metadata
+      metadata: t.metadata,
+      // Preservar informações de usuário se disponível
+      from_user: t.metadata?.from_user,
+      to_user: t.metadata?.to_user,
+      from_user_id: t.metadata?.from_user_id,
+      to_user_id: t.metadata?.to_user_id
     }
   })
+
+  // Combinar transações de pontos com transferências
+  // Remover duplicatas baseado no ID ou metadata
+  const allTransactions = [...transferTransactions, ...pointTransactions]
+    .filter((t, index, self) => {
+      // Para transferências, verificar se já existe uma com mesmo transfer_id
+      if (t.id?.startsWith('transfer-')) {
+        const transferId = t.metadata?.transfer_id || t.id.replace('transfer-', '')
+        return index === self.findIndex(tr => 
+          tr.id?.startsWith('transfer-') && 
+          (tr.metadata?.transfer_id === transferId || tr.id === t.id)
+        )
+      }
+      // Para outras transações, verificar ID normal
+      return index === self.findIndex(tr => tr.id === t.id && !tr.id?.startsWith('transfer-'))
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
@@ -542,7 +616,7 @@ export default function ConfiPointsDashboardPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {loadingHistory ? (
+                    {(loadingHistory || loadingTransfers) ? (
                       <TransactionSkeleton />
                     ) : allTransactions.length === 0 ? (
                       <EmptyState
@@ -554,7 +628,7 @@ export default function ConfiPointsDashboardPage() {
                     ) : (
                       <>
                         <div className="space-y-3">
-                          {allTransactions.slice(0, visibleTransactionsCount).map((transaction) => (
+                          {allTransactions.map((transaction) => (
                             <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                               <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -568,7 +642,133 @@ export default function ConfiPointsDashboardPage() {
                                 </div>
                                 <div>
                                   <p className="font-medium text-gray-900 dark:text-white">
-                                    {transaction.description}
+                                    {(() => {
+                                      // Se for transferência, criar links para perfis
+                                      if ((transaction.source === 'transfer' || transaction.id?.startsWith('transfer-')) && transaction.metadata) {
+                                        const isSent = transaction.amount < 0
+                                        const otherUser = isSent 
+                                          ? transaction.metadata.to_user 
+                                          : transaction.metadata.from_user
+                                        const otherUserId = isSent 
+                                          ? transaction.metadata.to_user_id 
+                                          : transaction.metadata.from_user_id
+                                        
+                                        if (otherUser && otherUserId) {
+                                          const userName = otherUser.full_name || 'Usuário'
+                                          const transferText = isSent
+                                            ? `Transferiu ${Math.abs(transaction.amount).toLocaleString()} pontos para `
+                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `
+                                          
+                                          return (
+                                            <>
+                                              {transferText}
+                                              <Link 
+                                                href={`/perfil/${otherUserId}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {userName}
+                                              </Link>
+                                            </>
+                                          )
+                                        }
+                                        
+                                        // Fallback: tentar usar dados do metadata diretamente
+                                        if (otherUserId && !otherUser) {
+                                          const userName = transaction.metadata.to_user_name || transaction.metadata.from_user_name || 'Usuário'
+                                          const transferText = isSent
+                                            ? `Transferiu ${Math.abs(transaction.amount).toLocaleString()} pontos para `
+                                            : `Recebeu transferência de ${transaction.amount.toLocaleString()} pontos de `
+                                          
+                                          return (
+                                            <>
+                                              {transferText}
+                                              <Link 
+                                                href={`/perfil/${otherUserId}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {userName}
+                                              </Link>
+                                            </>
+                                          )
+                                        }
+                                      }
+                                      
+                                      // Para outras transações, mostrar descrição normal
+                                      // Mas verificar se há nome de usuário na descrição para adicionar link
+                                      const desc = transaction.description
+                                      
+                                      // Verificar se há informações de usuário no metadata ou diretamente na transação
+                                      if (transaction.from_user && transaction.from_user_id && desc.includes(transaction.from_user.full_name)) {
+                                        return desc.split(transaction.from_user.full_name).map((part: string, index: number, arr: string[]) => {
+                                          if (index === arr.length - 1) return part
+                                          return (
+                                            <span key={index}>
+                                              {part}
+                                              <Link 
+                                                href={`/perfil/${transaction.from_user_id}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {transaction.from_user.full_name}
+                                              </Link>
+                                            </span>
+                                          )
+                                        })
+                                      }
+                                      
+                                      if (transaction.to_user && transaction.to_user_id && desc.includes(transaction.to_user.full_name)) {
+                                        return desc.split(transaction.to_user.full_name).map((part: string, index: number, arr: string[]) => {
+                                          if (index === arr.length - 1) return part
+                                          return (
+                                            <span key={index}>
+                                              {part}
+                                              <Link 
+                                                href={`/perfil/${transaction.to_user_id}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {transaction.to_user.full_name}
+                                              </Link>
+                                            </span>
+                                          )
+                                        })
+                                      }
+                                      
+                                      // Verificar se há userId no metadata para criar link
+                                      if (transaction.metadata?.from_user_id && desc.includes(transaction.metadata?.from_user_name)) {
+                                        return desc.split(transaction.metadata.from_user_name).map((part: string, index: number, arr: string[]) => {
+                                          if (index === arr.length - 1) return part
+                                          return (
+                                            <span key={index}>
+                                              {part}
+                                              <Link 
+                                                href={`/perfil/${transaction.metadata.from_user_id}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {transaction.metadata.from_user_name}
+                                              </Link>
+                                            </span>
+                                          )
+                                        })
+                                      }
+                                      
+                                      if (transaction.metadata?.to_user_id && desc.includes(transaction.metadata?.to_user_name)) {
+                                        return desc.split(transaction.metadata.to_user_name).map((part: string, index: number, arr: string[]) => {
+                                          if (index === arr.length - 1) return part
+                                          return (
+                                            <span key={index}>
+                                              {part}
+                                              <Link 
+                                                href={`/perfil/${transaction.metadata.to_user_id}`}
+                                                className="text-purple-600 dark:text-purple-400 hover:underline"
+                                              >
+                                                {transaction.metadata.to_user_name}
+                                              </Link>
+                                            </span>
+                                          )
+                                        })
+                                      }
+                                      
+                                      return desc
+                                    })()}
                                   </p>
                                   <div className="flex items-center gap-2 mt-1">
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -600,22 +800,11 @@ export default function ConfiPointsDashboardPage() {
                             </div>
                           ))}
                         </div>
-                        {allTransactions.length > visibleTransactionsCount && (
-                          <div className="mt-6 flex justify-center">
-                            <Button
-                              variant="outline"
-                              onClick={() => setVisibleTransactionsCount(prev => Math.min(prev + 10, allTransactions.length))}
-                              className="w-full sm:w-auto"
-                            >
-                              Ver mais ({allTransactions.length - visibleTransactionsCount} restantes)
-                              <ChevronRight className="h-4 w-4 ml-2" />
-                            </Button>
-                          </div>
-                        )}
-                        {allTransactions.length > 0 && visibleTransactionsCount >= allTransactions.length && (
+                        {/* Sempre mostrar todas as transações - sem limite */}
+                        {allTransactions.length > 0 && (
                           <div className="mt-6 flex justify-center">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Todas as {allTransactions.length} transações foram exibidas
+                              Total de {allTransactions.length} transações exibidas
                             </p>
                           </div>
                         )}

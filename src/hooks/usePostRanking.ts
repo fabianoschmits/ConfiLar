@@ -53,7 +53,8 @@ export function usePostRanking(filters: {
             is_available
           )
         `)
-        // .eq('is_active', true) // Coluna não existe
+        .eq('is_active', true)
+        .eq('is_public', true)
         .order('created_at', { ascending: false })
 
       if (error) throw error

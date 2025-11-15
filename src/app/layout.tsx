@@ -24,6 +24,7 @@ import { NewNotificationSystem } from "@/components/notifications/NewNotificatio
 import { CookieConsentBanner } from "@/components/lgpd/CookieConsentBanner"
 import { PWAManager } from "@/components/pwa/PWAManager"
 import { ThemeProvider } from "@/components/theme-provider"
+import { OfflineProvider } from "@/components/offline/OfflineProvider"
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -109,8 +110,9 @@ export default async function RootLayout({
           <ServiceWorkerCleaner />
           <ErrorBoundary>
             <QueryProvider>
-              <LoadingProvider>
-                <AuthProvider initialSession={session}>
+              <OfflineProvider>
+                <LoadingProvider>
+                  <AuthProvider initialSession={session}>
                   {/* <AutoReauthentication> */}
                     <AvailabilityProvider>
                       <NotificationProviderSimple>
@@ -130,8 +132,9 @@ export default async function RootLayout({
                       </NotificationProviderSimple>
                     </AvailabilityProvider>
                   {/* </AutoReauthentication> */}
-                </AuthProvider>
-              </LoadingProvider>
+                  </AuthProvider>
+                </LoadingProvider>
+              </OfflineProvider>
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>

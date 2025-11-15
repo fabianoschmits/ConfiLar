@@ -67,17 +67,21 @@ export function useAdmin() {
         // PGRST116 = nenhuma linha retornada (usuário não é admin)
         // 406 = Not Acceptable (RLS ou formato)
         // 403 = Forbidden (sem permissão)
-        if (adminError.code === 'PGRST116' || 
+        // Não logar esses erros - são esperados quando a tabela não existe ou há RLS
+        const isExpectedError = adminError.code === 'PGRST116' || 
             adminError.code === 'PGRST301' ||
             adminError.message?.includes('406') ||
             adminError.message?.includes('403') ||
             adminError.message?.includes('Not Acceptable') ||
-            adminError.message?.includes('Forbidden')) {
-          // Usuário não é admin, não é erro - deixar adminData como null
-        } else {
-          // Outro tipo de erro, logar mas não falhar
-          console.warn('Erro ao verificar status de administrador:', adminError)
+            adminError.message?.includes('Forbidden') ||
+            adminError.message?.includes('relation') ||
+            adminError.message?.includes('does not exist')
+        
+        if (!isExpectedError) {
+          // Apenas logar erros inesperados
+          console.warn('Erro inesperado ao verificar status de administrador:', adminError)
         }
+        // Silenciar erros esperados - usuário não é admin, não é erro
       } else {
         adminData = data
       }

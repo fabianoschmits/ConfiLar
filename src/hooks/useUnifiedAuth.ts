@@ -466,10 +466,15 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
         })
         
         // ✅ SALVAR CPF DIRETO NA TABELA PROFILES (mesmo lugar que editar perfil salva)
+        // IMPORTANTE: Tentar salvar o CPF na tabela profiles, mas não falhar se não conseguir
+        // O CPF também está nos user_metadata e será recuperado no onboarding como fallback
         if (userData.cpf_cnpj) {
-          console.log('💾 [signUpBasic] Salvando CPF na tabela profiles...')
+          console.log('💾 [signUpBasic] Tentando salvar CPF na tabela profiles...')
           console.log('💾 [signUpBasic] User ID:', data.user.id)
           console.log('💾 [signUpBasic] CPF a ser salvo:', userData.cpf_cnpj)
+          
+          // Aguardar um pouco para garantir que o usuário está autenticado
+          await new Promise(resolve => setTimeout(resolve, 500))
           
           const { data: upsertData, error: profileError } = await supabase
             .from('profiles')
@@ -486,6 +491,7 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
 
           if (profileError) {
             console.error('❌ [signUpBasic] Erro ao salvar CPF na tabela profiles:', profileError)
+            console.warn('⚠️ [signUpBasic] CPF está salvo nos user_metadata e será recuperado no onboarding')
           } else {
             console.log('✅ [signUpBasic] CPF salvo com sucesso na tabela profiles')
             console.log('✅ [signUpBasic] Dados salvos:', upsertData)
@@ -495,12 +501,15 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
               .from('profiles')
               .select('cpf_cnpj')
               .eq('id', data.user.id)
-              .single()
+              .maybeSingle()
             
             if (checkError) {
               console.error('❌ [signUpBasic] Erro ao verificar CPF salvo:', checkError)
             } else {
               console.log('✅ [signUpBasic] Verificação: CPF na tabela profiles:', checkData?.cpf_cnpj)
+              if (!checkData?.cpf_cnpj) {
+                console.warn('⚠️ [signUpBasic] CPF não encontrado na verificação, mas está nos user_metadata')
+              }
             }
           }
         } else {

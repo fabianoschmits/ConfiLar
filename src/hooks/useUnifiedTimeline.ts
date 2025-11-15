@@ -67,7 +67,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             is_available
           )
         `)
-        // .eq('is_active', true) // Coluna não existe
+        .eq('is_active', true)
+        .eq('is_public', true)
         .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
@@ -504,8 +505,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       })
       return lastPage.length === ITEMS_PER_PAGE ? allPages.length : undefined
     },
-    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
-    gcTime: 1000 * 60 * 10, // Manter no cache por 10 minutos
+    staleTime: 1000 * 10, // Cache por 10 segundos (mais frequente)
+    gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
   })
 
   const items = data?.pages.flat() || []

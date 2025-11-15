@@ -531,15 +531,27 @@ export default function OnboardingPage() {
         .eq('id', user.id)
         .maybeSingle()
       
+      // Tentar buscar CPF de múltiplas fontes:
+      // 1. Da tabela profiles (se foi salvo no cadastro inicial)
+      // 2. Dos user_metadata do auth (fallback)
       const cpfFromProfile = existingProfile?.cpf_cnpj || null
+      const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null
+      const finalCpf = cpfFromProfile || cpfFromMetadata || null
+      
       console.log('🔍 [Onboarding] CPF encontrado na tabela profiles:', cpfFromProfile)
+      console.log('🔍 [Onboarding] CPF encontrado nos user_metadata:', cpfFromMetadata)
+      console.log('🔍 [Onboarding] CPF final que será usado:', finalCpf)
+      
+      if (!finalCpf) {
+        console.warn('⚠️ [Onboarding] ATENÇÃO: CPF não encontrado em nenhuma fonte!')
+      }
       
       const profileData = {
         id: user.id, // A tabela profiles usa 'id' como chave primária
         email: user.email, // Campo obrigatório na tabela
         full_name: data.full_name,
         phone: data.phone,
-        cpf_cnpj: cpfFromProfile, // CPF do cadastro inicial (já está na tabela profiles)
+        cpf_cnpj: finalCpf, // CPF do cadastro inicial (tabela profiles ou user_metadata como fallback)
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,

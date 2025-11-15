@@ -3,13 +3,16 @@
 // Cache estratégico, offline functionality, push notifications
 // =====================================================
 
-const CACHE_NAME = 'confilar-pwa-v1.3.1'
-const STATIC_CACHE = 'confilar-static-v1.3.1'
-const DYNAMIC_CACHE = 'confilar-dynamic-v1.3.1'
-const API_CACHE = 'confilar-api-v1.3.1'
-const IMAGE_CACHE = 'confilar-images-v1.3.1'
-const DATA_CACHE = 'confilar-data-v1.3.1'
-const SOUND_CACHE = 'confilar-sounds-v1.3.1'
+const CACHE_NAME = 'confilar-pwa-v1.4.0'
+const STATIC_CACHE = 'confilar-static-v1.4.0'
+const DYNAMIC_CACHE = 'confilar-dynamic-v1.4.0'
+const API_CACHE = 'confilar-api-v1.4.0'
+const IMAGE_CACHE = 'confilar-images-v1.4.0'
+const DATA_CACHE = 'confilar-data-v1.4.0'
+const SOUND_CACHE = 'confilar-sounds-v1.4.0'
+
+// Background Sync para ações offline
+const SYNC_TAG = 'confilar-offline-sync'
 
 // =====================================================
 // ESTRATÉGIAS DE CACHE
@@ -737,7 +740,44 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'CACHE_URLS') {
     event.waitUntil(cacheUrls(event.data.urls))
   }
+  
+  // Registrar sincronização de ações offline
+  if (event.data && event.data.type === 'SYNC_OFFLINE_ACTIONS') {
+    event.waitUntil(syncOfflineActions())
+  }
 })
+
+// =====================================================
+// BACKGROUND SYNC - Sincronização offline/online
+// =====================================================
+
+self.addEventListener('sync', (event) => {
+  console.log('🔄 Background Sync ativado:', event.tag)
+  
+  if (event.tag === SYNC_TAG) {
+    event.waitUntil(syncOfflineActions())
+  }
+})
+
+// Sincronizar ações offline quando voltar online
+async function syncOfflineActions() {
+  try {
+    console.log('🔄 Iniciando sincronização de ações offline...')
+    
+    // Enviar mensagem para cliente sincronizar ações
+    const clients = await self.clients.matchAll()
+    for (const client of clients) {
+      client.postMessage({ 
+        type: 'SYNC_PENDING_ACTIONS',
+        timestamp: Date.now()
+      })
+    }
+    
+    console.log('✅ Sincronização de ações offline iniciada')
+  } catch (error) {
+    console.error('❌ Erro ao sincronizar ações offline:', error)
+  }
+}
 
 async function cacheUrls(urls) {
   const cache = await caches.open(DYNAMIC_CACHE)

@@ -29,6 +29,7 @@ import { MIN_TRANSFER_POINTS } from '@/types/economy'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { TransferListSkeleton } from '@/components/ui/skeleton'
+import Link from 'next/link'
 
 export default function TransferirConfiPointsPage() {
   const { user } = useAuthContext()
@@ -362,7 +363,17 @@ export default function TransferirConfiPointsPage() {
                             </Avatar>
                             <div className="flex-1">
                               <p className="font-medium text-gray-900 dark:text-white">
-                                {isSent ? 'Enviado para' : 'Recebido de'} {otherUser?.full_name || 'Usuário'}
+                                {isSent ? 'Enviado para' : 'Recebido de'}{' '}
+                                {otherUser?.id ? (
+                                  <Link 
+                                    href={`/perfil/${otherUser.id}`}
+                                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                                  >
+                                    {otherUser.full_name || 'Usuário'}
+                                  </Link>
+                                ) : (
+                                  'Usuário'
+                                )}
                               </p>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {new Date(transfer.created_at).toLocaleDateString('pt-BR')} às {new Date(transfer.created_at).toLocaleTimeString('pt-BR')}

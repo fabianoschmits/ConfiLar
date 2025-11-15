@@ -59,16 +59,21 @@ export function useNotificationSound(): UseNotificationSoundReturn {
       // Se erro (colunas não existem, usuário não tem preferências, ou erro 406/403), usar padrões
       if (error) {
         // Tratar erros 406 e 403 como "não encontrado" - usar padrões
-        if (error.code === 'PGRST116' || 
+        // Não logar esses erros - são esperados quando a tabela/colunas não existem ou há RLS
+        const isExpectedError = error.code === 'PGRST116' || 
+            error.code === 'PGRST301' ||
             error.message?.includes('406') ||
             error.message?.includes('403') ||
             error.message?.includes('Not Acceptable') ||
-            error.message?.includes('Forbidden')) {
-          // Silenciar esses erros - são esperados para novos usuários
-        } else {
-          console.log('⚠️ Erro ao carregar preferências de som:', error)
+            error.message?.includes('Forbidden') ||
+            error.message?.includes('relation') ||
+            error.message?.includes('does not exist')
+        
+        if (!isExpectedError) {
+          // Apenas logar erros inesperados
+          console.log('⚠️ Erro inesperado ao carregar preferências de som:', error)
         }
-        console.log('⚠️ Preferências de som não encontradas no banco, usando padrões')
+        // Silenciar erros esperados - usar padrões silenciosamente
         const defaultPrefs: SoundPreferences = {
           enabled: true,
           volume: 0.7,

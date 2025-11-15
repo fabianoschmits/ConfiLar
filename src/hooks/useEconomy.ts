@@ -176,28 +176,61 @@ export function usePointsTransfers(userId?: string) {
       if (!userId) return []
       
       try {
-        const { data, error } = await supabase
+        // Buscar transferências primeiro (sem foreign keys pois não existem)
+        const { data: transfers, error: transfersError } = await supabase
           .from('points_transfers')
-          .select(`
-            *,
-            from_user:profiles!points_transfers_from_user_id_fkey(id, full_name, avatar_url),
-            to_user:profiles!points_transfers_to_user_id_fkey(id, full_name, avatar_url)
-          `)
+          .select('*')
           .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
           .order('created_at', { ascending: false })
-          .limit(50)
+          .limit(200)
         
         // Se a tabela não existir, retornar array vazio em vez de erro
-        if (error) {
-          if (error.code === 'PGRST204' || error.code === 'PGRST116' || error.code === '42P01' || 
-              error.message?.includes('relation') || error.message?.includes('does not exist')) {
+        if (transfersError) {
+          if (transfersError.code === 'PGRST204' || transfersError.code === 'PGRST116' || transfersError.code === '42P01' || 
+              transfersError.message?.includes('relation') || transfersError.message?.includes('does not exist')) {
             console.warn('⚠️ Tabela points_transfers não existe, retornando array vazio')
             return []
           }
-          throw error
+          console.error('❌ Erro ao buscar transferências:', transfersError)
+          throw transfersError
         }
         
-        return data || []
+        if (!transfers || transfers.length === 0) {
+          return []
+        }
+        
+        // Coletar IDs únicos de usuários
+        const userIds = new Set<string>()
+        transfers.forEach(transfer => {
+          if (transfer.from_user_id) userIds.add(transfer.from_user_id)
+          if (transfer.to_user_id) userIds.add(transfer.to_user_id)
+        })
+        
+        // Buscar perfis dos usuários
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', Array.from(userIds))
+        
+        if (profilesError) {
+          console.warn('⚠️ Erro ao buscar perfis para transferências:', profilesError)
+          // Continuar mesmo sem perfis
+        }
+        
+        // Criar mapa de perfis
+        const profilesMap = new Map<string, any>()
+        profiles?.forEach(profile => {
+          profilesMap.set(profile.id, profile)
+        })
+        
+        // Combinar transferências com perfis
+        const transfersWithUsers = transfers.map(transfer => ({
+          ...transfer,
+          from_user: profilesMap.get(transfer.from_user_id) || null,
+          to_user: profilesMap.get(transfer.to_user_id) || null
+        }))
+        
+        return transfersWithUsers
       } catch (err) {
         console.warn('⚠️ Erro ao buscar transferências:', err)
         return []

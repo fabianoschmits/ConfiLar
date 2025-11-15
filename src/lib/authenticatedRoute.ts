@@ -143,10 +143,20 @@ export function withAdminAuth(
         .eq('is_active', true)
         .single()
 
-      // Se não encontrou admin ou erro (exceto "não encontrado")
+      // Se não encontrou admin ou erro (exceto "não encontrado" ou erros 406/403 esperados)
       if (adminError) {
-        if (adminError.code === 'PGRST116') {
-          // Usuário não é admin
+        // Tratar erros 406/403 como "não é admin" - silenciar esses erros esperados
+        const isExpectedError = adminError.code === 'PGRST116' || 
+            adminError.code === 'PGRST301' ||
+            adminError.message?.includes('406') ||
+            adminError.message?.includes('403') ||
+            adminError.message?.includes('Not Acceptable') ||
+            adminError.message?.includes('Forbidden') ||
+            adminError.message?.includes('relation') ||
+            adminError.message?.includes('does not exist')
+        
+        if (isExpectedError) {
+          // Usuário não é admin - silenciar erro esperado
           return NextResponse.json(
             { error: 'Acesso negado. Apenas administradores podem acessar esta rota.' },
             { status: 403 }
