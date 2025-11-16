@@ -47,6 +47,52 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       console.error('Erro ao buscar compra:', fetchError)
     }
 
+    // Criar notificação para o usuário sobre a compra
+    if (purchase) {
+      const packageData = (purchase.package as any)
+      const pointsAmount = packageData?.points_amount || 0
+      const price = packageData?.price || 0
+
+      try {
+        await supabaseAuth
+          .from('notifications')
+          .insert({
+            user_id: user.id,
+            type: 'achievement',
+            title: '💰 Compra de ConfiPoints Realizada!',
+            message: `Você comprou ${pointsAmount.toLocaleString('pt-BR')} ConfiPoints por R$ ${price.toFixed(2).replace('.', ',')}`,
+            action_url: '/confipoints/dashboard',
+            priority: 'high',
+            metadata: {
+              purchase_id: data,
+              package_id: package_id,
+              points_amount: pointsAmount,
+              price: price,
+              payment_method: payment_method,
+              status: purchase.status,
+              type: 'points_purchase'
+            },
+            is_read: false
+          })
+
+        // Enviar push notification
+        try {
+          const { NotificationService } = await import('@/services/NotificationService')
+          await NotificationService.sendPushNotification(
+            user.id,
+            '💰 Compra Realizada!',
+            `Você comprou ${pointsAmount.toLocaleString('pt-BR')} ConfiPoints`
+          )
+        } catch (pushError) {
+          console.warn('⚠️ Erro ao enviar push notification:', pushError)
+        }
+
+        console.log('✅ Notificação criada para compra de pontos')
+      } catch (notifError) {
+        console.error('⚠️ Erro ao criar notificação de compra:', notifError)
+      }
+    }
+
     return NextResponse.json({ 
       success: true,
       purchase_id: data,

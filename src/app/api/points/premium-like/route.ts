@@ -193,6 +193,18 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
           },
           is_read: false
         })
+
+      // Enviar push notification
+      try {
+        const { NotificationService } = await import('@/services/NotificationService')
+        await NotificationService.sendPushNotification(
+          postCreatorId,
+          '💰 Curtida Premium Recebida!',
+          `${likerName} deu uma curtida premium no seu post (+${pointsCost} pontos)`
+        )
+      } catch (pushError) {
+        console.warn('⚠️ [Premium Like API] Erro ao enviar push notification:', pushError)
+      }
       
       console.log('✅ [Premium Like API] Notificação criada para criador do post')
     } catch (notifError) {

@@ -57,6 +57,79 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       console.error('Erro ao buscar transferência:', fetchError)
     }
 
+    // Criar notificações para ambos os usuários
+    if (transfer) {
+      const fromUserName = (transfer.from_user as any)?.full_name || 'Usuário'
+      const toUserName = (transfer.to_user as any)?.full_name || 'Usuário'
+
+      // Notificação para quem RECEBEU a transferência
+      try {
+        const { data: notification } = await supabaseAuth
+          .from('notifications')
+          .insert({
+            user_id: to_user_id,
+            type: 'achievement',
+            title: '💰 Transferência Recebida!',
+            message: `${fromUserName} transferiu ${points_amount.toLocaleString('pt-BR')} ConfiPoints para você${message ? `: "${message}"` : ''}`,
+            action_url: '/confipoints/dashboard',
+            priority: 'high',
+            metadata: {
+              transfer_id: data,
+              from_user_id: user.id,
+              from_user_name: fromUserName,
+              points_received: transfer.net_amount,
+              type: 'points_transfer_received'
+            },
+            is_read: false
+          })
+          .select()
+          .single()
+
+        // Enviar push notification
+        try {
+          const { NotificationService } = await import('@/services/NotificationService')
+          await NotificationService.sendPushNotification(
+            to_user_id,
+            '💰 Transferência Recebida!',
+            `${fromUserName} transferiu ${points_amount.toLocaleString('pt-BR')} ConfiPoints para você`
+          )
+        } catch (pushError) {
+          console.warn('⚠️ Erro ao enviar push notification:', pushError)
+        }
+
+        console.log('✅ Notificação criada para destinatário da transferência')
+      } catch (notifError) {
+        console.error('⚠️ Erro ao criar notificação para destinatário:', notifError)
+      }
+
+      // Notificação para quem ENVIOU a transferência (confirmação)
+      try {
+        await supabaseAuth
+          .from('notifications')
+          .insert({
+            user_id: user.id,
+            type: 'info',
+            title: '✅ Transferência Enviada!',
+            message: `Você transferiu ${points_amount.toLocaleString('pt-BR')} ConfiPoints para ${toUserName}`,
+            action_url: '/confipoints/dashboard',
+            priority: 'normal',
+            metadata: {
+              transfer_id: data,
+              to_user_id: to_user_id,
+              to_user_name: toUserName,
+              points_sent: points_amount,
+              net_amount: transfer.net_amount,
+              fee_amount: transfer.fee_amount,
+              type: 'points_transfer_sent'
+            },
+            is_read: false
+          })
+        console.log('✅ Notificação criada para remetente da transferência')
+      } catch (notifError) {
+        console.error('⚠️ Erro ao criar notificação para remetente:', notifError)
+      }
+    }
+
     return NextResponse.json({ 
       success: true,
       transfer_id: data,

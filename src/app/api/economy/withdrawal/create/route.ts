@@ -49,6 +49,45 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       console.error('Erro ao buscar saque:', fetchError)
     }
 
+    // Criar notificação para o usuário sobre o saque solicitado
+    if (withdrawal) {
+      try {
+        await supabaseAuth
+          .from('notifications')
+          .insert({
+            user_id: user.id,
+            type: 'info',
+            title: '💸 Saque Solicitado!',
+            message: `Sua solicitação de saque de ${points_amount.toLocaleString('pt-BR')} pontos foi enviada e está aguardando aprovação.`,
+            action_url: '/confipoints/dashboard',
+            priority: 'normal',
+            metadata: {
+              withdrawal_id: data,
+              points_amount: points_amount,
+              status: withdrawal.status,
+              type: 'withdrawal_requested'
+            },
+            is_read: false
+          })
+
+        // Enviar push notification
+        try {
+          const { NotificationService } = await import('@/services/NotificationService')
+          await NotificationService.sendPushNotification(
+            user.id,
+            '💸 Saque Solicitado!',
+            `Sua solicitação de saque está aguardando aprovação`
+          )
+        } catch (pushError) {
+          console.warn('⚠️ Erro ao enviar push notification:', pushError)
+        }
+
+        console.log('✅ Notificação criada para solicitação de saque')
+      } catch (notifError) {
+        console.error('⚠️ Erro ao criar notificação de saque:', notifError)
+      }
+    }
+
     return NextResponse.json({ 
       success: true,
       withdrawal_id: data,
