@@ -20,14 +20,23 @@ export function useCommentsCount(postId: string): CommentsCountResult {
   } = useQuery({
     queryKey: ['comments-count', postId],
     queryFn: async () => {
+      // Contar apenas comentários principais (não respostas) e não deletados
+      // Isso mantém a consistência com a lista de comentários exibida
       const { count, error } = await supabase
         .from('post_comments')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('post_id', postId)
         .eq('is_deleted', false)
+        .is('parent_comment_id', null) // Apenas comentários principais (não respostas)
 
-      if (error) throw error
-      return count || 0
+      if (error) {
+        console.error('❌ [useCommentsCount] Erro ao contar comentários:', error)
+        throw error
+      }
+      
+      const totalCount = count || 0
+      console.log('📊 [useCommentsCount] Contagem de comentários:', { postId, count: totalCount })
+      return totalCount
     },
     staleTime: 1000 * 60 * 2, // Cache por 2 minutos
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
@@ -57,11 +66,13 @@ export function useCommentsCount(postId: string): CommentsCountResult {
   // Função para sincronizar contador
   const syncCount = async () => {
     try {
+      // Contar apenas comentários principais (não respostas) e não deletados
       const { count, error } = await supabase
         .from('post_comments')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('post_id', postId)
         .eq('is_deleted', false)
+        .is('parent_comment_id', null) // Apenas comentários principais (não respostas)
 
       if (error) throw error
       

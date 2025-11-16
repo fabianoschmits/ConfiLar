@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { toast } from 'sonner'
 
 export interface SupabaseNotification {
@@ -19,6 +20,7 @@ export interface SupabaseNotification {
 
 export function useSupabaseNotifications() {
   const { profile } = useAuthContext()
+  const { openChat } = useFloatingChat()
   const [notifications, setNotifications] = useState<SupabaseNotification[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -237,16 +239,161 @@ export function useSupabaseNotifications() {
     }
   }
 
-  // Sincronização em tempo real DESABILITADA temporariamente
+  // Sincronização em tempo real para receber notificações instantaneamente
   useEffect(() => {
     if (!profile?.id) {
       console.log('🔔 useSupabaseNotifications: Profile não disponível para canal de tempo real')
       return
     }
 
-    console.log('🔔 Canal de notificações desabilitado temporariamente para evitar erros')
-    return
-  }, [profile?.id]) // Removido notifications e unreadCount das dependências para evitar loop
+    console.log('🔔 Configurando realtime para notificações do usuário:', profile.id)
+
+    const channel = supabase
+      .channel(`notifications-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`
+        },
+        (payload) => {
+          console.log('🔔 Nova notificação recebida via realtime:', payload.new)
+          const newNotification = payload.new as SupabaseNotification
+          
+          // Adicionar nova notificação ao estado (com prevenção de duplicação)
+          setNotifications(prev => {
+            // Verificar se já existe
+            const exists = prev.some(n => n.id === newNotification.id)
+            if (exists) {
+              console.log('⏭️ Notificação já existe no estado, ignorando:', newNotification.id)
+              return prev
+            }
+            console.log('✅ Adicionando nova notificação ao estado:', newNotification.id)
+            return [newNotification, ...prev]
+          })
+          
+          // Incrementar contador de não lidas
+          if (!newNotification.is_read) {
+            setUnreadCount(prev => prev + 1)
+          }
+          
+          // Mostrar toast para nova notificação
+          toast(newNotification.title, {
+            description: newNotification.message,
+            action: newNotification.action_url ? {
+              label: 'Ver',
+              onClick: () => {
+                if (newNotification.action_url?.startsWith('#')) {
+                  window.location.hash = newNotification.action_url
+                } else {
+                  window.open(newNotification.action_url, '_blank')
+                }
+              }
+            } : undefined
+          })
+          
+          // Se for notificação de mensagem, abrir chat flutuante automaticamente
+          if (newNotification.type === 'message' || newNotification.title?.toLowerCase().includes('mensagem')) {
+            try {
+              // Tentar extrair informações do metadata ou da mensagem
+              const metadata = (newNotification as any).metadata || {}
+              const senderId = metadata.sender_id
+              const senderName = metadata.sender_name
+              const conversationId = metadata.conversation_id
+              
+              console.log('💬 Notificação de mensagem recebida, abrindo chat:', { senderId, senderName, conversationId })
+              
+              // Se tiver conversation_id, abrir com o ID da conversa
+              if (conversationId) {
+                openChat(conversationId)
+              } 
+              // Se tiver sender_id, abrir chat com o usuário
+              else if (senderId && senderName) {
+                openChat(senderId, senderName)
+              }
+              // Caso contrário, apenas abrir a lista de conversas
+              else {
+                openChat()
+              }
+            } catch (error) {
+              console.error('❌ Erro ao abrir chat flutuante:', error)
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`
+        },
+        (payload) => {
+          console.log('🔔 Notificação atualizada via realtime:', payload.new)
+          const updatedNotification = payload.new as SupabaseNotification
+          
+          // Atualizar notificação no estado
+          setNotifications(prev => 
+            prev.map(notification => 
+              notification.id === updatedNotification.id ? updatedNotification : notification
+            )
+          )
+          
+          // Atualizar contador se o status de leitura mudou
+          const oldNotification = notifications.find(n => n.id === updatedNotification.id)
+          if (oldNotification && oldNotification.is_read !== updatedNotification.is_read) {
+            if (updatedNotification.is_read) {
+              setUnreadCount(prev => Math.max(0, prev - 1))
+            } else {
+              setUnreadCount(prev => prev + 1)
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`
+        },
+        (payload) => {
+          console.log('🔔 Notificação deletada via realtime:', payload.old)
+          const deletedNotification = payload.old as SupabaseNotification
+          
+          // Remover notificação do estado
+          setNotifications(prev => {
+            const removed = prev.find(n => n.id === deletedNotification.id)
+            if (removed && !removed.is_read) {
+              setUnreadCount(count => Math.max(0, count - 1))
+            }
+            return prev.filter(notification => notification.id !== deletedNotification.id)
+          })
+        }
+      )
+      .subscribe((status) => {
+        console.log('📡 Status da conexão realtime de notificações:', status)
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Realtime de notificações CONECTADO com sucesso!')
+          console.log('⚡ Sistema pronto para receber notificações instantâneas')
+        } else if (status === 'CLOSED') {
+          console.log('🔴 Conexão realtime FECHADA')
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Erro no canal realtime de notificações')
+        }
+      })
+
+    // Cleanup ao desmontar
+    return () => {
+      console.log('🔔 Desconectando canal de notificações realtime')
+      supabase.removeChannel(channel)
+    }
+  }, [profile?.id, openChat])
 
   // Carregar notificações iniciais
   useEffect(() => {

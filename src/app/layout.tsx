@@ -96,7 +96,7 @@ export default async function RootLayout({
         <meta name="msapplication-TileColor" content="#9CA3AF" />
         <meta name="color-scheme" content="light dark" />
       </head>
-      <body className="font-sans">
+      <body className="font-sans bg-white dark:bg-black">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

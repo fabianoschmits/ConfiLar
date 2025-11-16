@@ -72,24 +72,59 @@ export function useComments(options: UseCommentsOptions) {
       let userLikes: string[] = []
       
       if (user && data && data.length > 0) {
-        const commentIds = data.map(comment => comment.id)
-        const { data: likesData } = await supabase
-          .from('comment_likes')
-          .select('comment_id')
-          .eq('user_id', user.id)
-          .in('comment_id', commentIds)
+        // Buscar TODOS os comentários (incluindo respostas) para verificar likes
+        const allCommentIds: string[] = []
+        const extractCommentIds = (comments: any[]) => {
+          comments.forEach(comment => {
+            allCommentIds.push(comment.id)
+            if (comment.replies && comment.replies.length > 0) {
+              extractCommentIds(comment.replies)
+            }
+          })
+        }
+        extractCommentIds(data)
         
-        userLikes = likesData?.map(like => like.comment_id) || []
+        if (allCommentIds.length > 0) {
+          const { data: likesData, error: likesError } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', user.id)
+            .in('comment_id', allCommentIds)
+          
+          if (likesError) {
+            console.error('❌ [useComments] Erro ao buscar likes:', likesError)
+          } else {
+            userLikes = likesData?.map(like => like.comment_id) || []
+            console.log('✅ [useComments] Likes carregados:', userLikes.length, 'likes para', allCommentIds.length, 'comentários')
+          }
+        }
       }
 
-      // Organizar comentários em threads
-      const commentsWithLikes = (data || []).map(comment => ({
-        ...comment,
-        is_liked: userLikes.includes(comment.id),
-        user: comment.user as any // Cast para resolver tipo
-      }))
-      const organizedComments = organizeComments(commentsWithLikes as any)
-      return organizedComments
+      // Organizar comentários em threads primeiro
+      const organizedComments = organizeComments((data || []) as any)
+      
+      // Depois adicionar informação de likes recursivamente
+      const addLikesToComments = (comments: any[]): any[] => {
+        return comments.map(comment => {
+          const commentWithLikes = {
+            ...comment,
+            is_liked: userLikes.includes(comment.id),
+            user: comment.user as any
+          }
+          
+          // Se tiver respostas, processar recursivamente
+          if (comment.replies && comment.replies.length > 0) {
+            return {
+              ...commentWithLikes,
+              replies: addLikesToComments(comment.replies)
+            }
+          }
+          
+          return commentWithLikes
+        })
+      }
+      
+      return addLikesToComments(organizedComments)
     },
     enabled: !!filters.post_id,
     staleTime: 1000 * 60 * 2, // Cache por 2 minutos
@@ -263,50 +298,9 @@ export function useComments(options: UseCommentsOptions) {
           throw error
         }
         
-        // Atualizar contador no comentário (decrementar)
-        try {
-          const rpcResult = await supabase.rpc('decrement_comment_likes_count', { 
-            comment_id: commentId 
-          })
-          
-          if (rpcResult.error) {
-            console.warn('⚠️ [likeComment] RPC falhou, tentando atualização direta:', rpcResult.error)
-            throw rpcResult.error
-          }
-          
-          console.log('✅ [likeComment] Contador decrementado via RPC')
-        } catch (rpcError) {
-          console.log('🔄 [likeComment] Tentando atualização direta do contador (decrementar)')
-          // Se a função não existir, tentar atualizar diretamente
-          const { data: comment, error: fetchError } = await supabase
-            .from('post_comments')
-            .select('likes_count')
-            .eq('id', commentId)
-            .single()
-          
-          if (fetchError) {
-            console.error('❌ [likeComment] Erro ao buscar comentário para atualizar contador:', fetchError)
-          } else if (comment) {
-            const newCount = Math.max((comment.likes_count || 0) - 1, 0)
-            console.log('📊 [likeComment] Atualizando contador:', { 
-              oldCount: comment.likes_count, 
-              newCount 
-            })
-            
-            const { error: updateError } = await supabase
-              .from('post_comments')
-              .update({ 
-                likes_count: newCount
-              })
-              .eq('id', commentId)
-            
-            if (updateError) {
-              console.error('❌ [likeComment] Erro ao atualizar contador diretamente:', updateError)
-            } else {
-              console.log('✅ [likeComment] Contador decrementado diretamente com sucesso')
-            }
-          }
-        }
+        // O contador será atualizado automaticamente por trigger no banco ao deletar de comment_likes
+        // Não precisamos atualizar manualmente aqui para evitar duplicação
+        console.log('✅ [likeComment] Like removido - contador será atualizado automaticamente pelo trigger')
         
         console.log('✅ [likeComment] Like removido com sucesso')
         return { action: 'removed', commentId }
@@ -335,50 +329,9 @@ export function useComments(options: UseCommentsOptions) {
         
         console.log('✅ [likeComment] Like adicionado com sucesso:', insertedLike)
         
-        // Atualizar contador no comentário (incrementar)
-        try {
-          const rpcResult = await supabase.rpc('increment_comment_likes_count', { 
-            comment_id: commentId 
-          })
-          
-          if (rpcResult.error) {
-            console.warn('⚠️ [likeComment] RPC falhou, tentando atualização direta:', rpcResult.error)
-            throw rpcResult.error
-          }
-          
-          console.log('✅ [likeComment] Contador atualizado via RPC')
-        } catch (rpcError) {
-          console.log('🔄 [likeComment] Tentando atualização direta do contador')
-          // Se a função não existir, tentar atualizar diretamente
-          const { data: comment, error: fetchError } = await supabase
-            .from('post_comments')
-            .select('likes_count')
-            .eq('id', commentId)
-            .single()
-          
-          if (fetchError) {
-            console.error('❌ [likeComment] Erro ao buscar comentário para atualizar contador:', fetchError)
-          } else if (comment) {
-            const newCount = (comment.likes_count || 0) + 1
-            console.log('📊 [likeComment] Atualizando contador:', { 
-              oldCount: comment.likes_count, 
-              newCount 
-            })
-            
-            const { error: updateError } = await supabase
-              .from('post_comments')
-              .update({ 
-                likes_count: newCount
-              })
-              .eq('id', commentId)
-            
-            if (updateError) {
-              console.error('❌ [likeComment] Erro ao atualizar contador diretamente:', updateError)
-            } else {
-              console.log('✅ [likeComment] Contador atualizado diretamente com sucesso')
-            }
-          }
-        }
+        // O contador será atualizado automaticamente por trigger no banco ao inserir em comment_likes
+        // Não precisamos atualizar manualmente aqui para evitar duplicação
+        console.log('✅ [likeComment] Like inserido - contador será atualizado automaticamente pelo trigger')
         
         return { action: 'added', commentId }
       }
@@ -387,8 +340,12 @@ export function useComments(options: UseCommentsOptions) {
       console.log('✅ [likeComment] Mutation bem-sucedida:', result)
       
       // Buscar o comentário atualizado do banco para garantir que temos o contador correto
+      // Aguardar um pouco para garantir que o trigger atualizou o contador
       let updatedLikesCount: number | null = null
       try {
+        // Aguardar 200ms para garantir que o trigger processou
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
         const { data: updatedComment, error: fetchError } = await supabase
           .from('post_comments')
           .select('id, likes_count')
@@ -405,17 +362,16 @@ export function useComments(options: UseCommentsOptions) {
         console.warn('⚠️ [likeComment] Erro ao buscar contador do banco:', error)
       }
       
-      // Atualizar cache otimisticamente
+      // Atualizar cache otimisticamente usando APENAS o valor do banco (nunca calcular)
       queryClient.setQueryData(['comments', filters], (oldComments: Comment[] = []) => {
         const updateCommentLikes = (comments: Comment[]): Comment[] => {
           return comments.map(comment => {
             if (comment.id === result.commentId) {
-              // Usar o valor do banco se disponível, senão calcular otimisticamente
+              // SEMPRE usar o valor do banco se disponível
+              // Se não conseguir buscar, manter o valor atual e não calcular
               const newLikesCount = updatedLikesCount !== null
                 ? updatedLikesCount
-                : (result.action === 'added' 
-                  ? (comment.likes_count || 0) + 1 
-                  : Math.max((comment.likes_count || 0) - 1, 0))
+                : comment.likes_count // Manter o valor atual se não conseguir buscar
               
               console.log('🔄 [likeComment] Atualizando cache:', {
                 commentId: comment.id,
@@ -443,12 +399,10 @@ export function useComments(options: UseCommentsOptions) {
         return updateCommentLikes(oldComments)
       })
       
-      // Invalidar cache de comentários para garantir sincronização (após um pequeno delay)
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ['comments', filters]
-        })
-      }, 500)
+      // Invalidar cache de comentários para garantir sincronização (sem refetch para evitar duplicação)
+      queryClient.invalidateQueries({
+        queryKey: ['comments', filters]
+      })
       
       // Invalidar cache da timeline
       queryClient.invalidateQueries({

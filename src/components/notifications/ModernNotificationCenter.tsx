@@ -393,21 +393,37 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                             </div>
 
                             {/* Ação da notificação */}
-                            {notification.action_url && (
-                              <div className="mt-3 pt-3 border-t">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    window.open(notification.action_url, '_blank')
-                                    markAsRead(notification.id)
-                                  }}
-                                  className="w-full text-xs"
-                                >
-                                  Ver detalhes
-                                </Button>
-                              </div>
-                            )}
+                            <div className="mt-3 pt-3 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  // Usar a mesma lógica de redirecionamento
+                                  const metadata = notification.metadata || {};
+                                  const notificationType = notification.type || '';
+                                  const titleLower = (notification.title || '').toLowerCase();
+                                  
+                                  // Se for mensagem, já foi tratado no clique do card
+                                  // Para outros tipos, usar action_url ou metadata
+                                  if (notification.action_url) {
+                                    if (notification.action_url.startsWith('/')) {
+                                      window.location.href = notification.action_url;
+                                    } else if (notification.action_url.startsWith('#')) {
+                                      window.location.hash = notification.action_url;
+                                    } else {
+                                      window.open(notification.action_url, '_blank');
+                                    }
+                                  } else if (metadata.post_id) {
+                                    window.location.href = `/feed?post=${metadata.post_id}`;
+                                  }
+                                  
+                                  markAsRead(notification.id);
+                                }}
+                                className="w-full text-xs"
+                              >
+                                Ver detalhes
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CardContent>

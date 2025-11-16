@@ -1121,7 +1121,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
               }`}
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {(commentsCount || post.comments_count || 0).toLocaleString('pt-BR')}
+              {(commentsCount ?? 0).toLocaleString('pt-BR')}
             </span>
           </button>
           

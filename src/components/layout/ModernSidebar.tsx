@@ -340,14 +340,14 @@ export function ModernSidebar() {
         />
       )}
 
-      {/* Sidebar Moderna */}
+      {/* Sidebar Moderna - Flutuante no Desktop */}
       <div className={`
-        fixed left-0 top-0 h-full bg-gray-50 dark:bg-black border-r border-gray-200 dark:border-gray-900 shadow-sm z-[60]
-        w-48 transition-all duration-300 ease-in-out
+        fixed left-0 top-0 h-full lg:h-auto lg:top-6 lg:left-6 lg:bottom-6 bg-gray-50/95 dark:bg-black backdrop-blur-md lg:backdrop-blur-lg border-r lg:border border-gray-200 dark:border-gray-900 shadow-sm lg:shadow-xl lg:rounded-2xl z-[60]
+        w-48 lg:w-56 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full lg:translate-x-0'}
       `}>
         {/* Header da Sidebar */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-900 bg-gray-100 dark:bg-gray-900">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-900 bg-gray-100 dark:bg-black lg:rounded-t-2xl">
           <Link href="/home" className="flex flex-col items-center space-y-1 w-full">
             <div className="h-10 flex items-center justify-center">
               <BrandLogo width={120} height={28} />
@@ -357,7 +357,7 @@ export function ModernSidebar() {
         </div>
 
         {/* Conteúdo da Sidebar */}
-        <div className="flex-1 overflow-y-auto py-4">
+        <div className="flex-1 overflow-y-auto py-4 lg:overflow-y-auto lg:max-h-[calc(100vh-12rem)]">
           <nav className="px-3 space-y-2">
             {sidebarCategories.map((category) => (
               <div key={category.id} className="space-y-1">
@@ -472,7 +472,7 @@ export function ModernSidebar() {
 
         {/* Informações do Usuário */}
         {isLoggedIn && (
-          <div className="p-4 border-t border-gray-200 dark:border-gray-900 bg-gray-50 dark:bg-gray-900">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-900 bg-gray-50 dark:bg-black lg:rounded-b-2xl">
             <div className="space-y-2">
               {/* Status do Usuário */}
               <div className="flex items-center space-x-2">

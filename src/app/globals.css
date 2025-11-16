@@ -723,7 +723,7 @@ button, a, input, select, textarea {
   }
 
   .dark {
-    --background: 222.2 84% 4.9%; /* Quase preto */
+    --background: 0 0% 0%; /* Preto puro */
     --foreground: 0 0% 100%; /* Branco */
     --card: 222.2 47.4% 11.2%; /* Cinza escuro */
     --card-foreground: 0 0% 100%; /* Branco */
@@ -757,6 +757,15 @@ button, a, input, select, textarea {
   body {
     font-family: 'Gilroy', system-ui, sans-serif;
     font-weight: 400;
+    background-color: white;
+  }
+  
+  .dark body {
+    background-color: black;
+  }
+  
+  .dark html {
+    background-color: black;
   }
   
   /* Mapeamento de font-weight para os pesos disponíveis da Gilroy */

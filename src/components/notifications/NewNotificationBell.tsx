@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Bell, X, Check, Trash2 } from 'lucide-react'
 import { useNotifications } from './NotificationProviderSimple'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -14,6 +15,7 @@ import { MobileNotificationItem } from './MobileNotificationItem'
 export function NewNotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
   const { openChat } = useFloatingChat()
+  const { user } = useAuthContext()
   const [isOpen, setIsOpen] = useState(false)
 
   // Marcar todas como lidas ao fechar o menu
@@ -38,20 +40,119 @@ export function NewNotificationBell() {
     // Marcar como lida
     await markAsRead(notification.id)
 
-    // Se for mensagem, abrir chat
-    if (notification.type === 'message' && notification.metadata?.conversation_id) {
-      openChat(notification.metadata.conversation_id)
-    } else if (notification.type === 'message' && notification.metadata?.sender_id) {
-      const senderId = notification.metadata.sender_id
-      const senderName = notification.metadata.sender_name || 'Usuário'
-      openChat(senderId, senderName)
-    } else if (notification.action_url) {
-      // Para outros tipos, navegar para a URL
-      if (notification.action_url.startsWith('/')) {
-        window.location.href = notification.action_url
+    const metadata = notification.metadata || {};
+    const notificationType = notification.type || '';
+    const titleLower = (notification.title || '').toLowerCase();
+    
+    // 1. MENSAGEM - Abrir chat flutuante
+    if (notificationType === 'message' || titleLower.includes('mensagem')) {
+      const conversationId = metadata.conversation_id || metadata.chat_id;
+      const senderId = metadata.sender_id;
+      const senderName = metadata.sender_name;
+      
+      if (conversationId) {
+        openChat(conversationId);
+      } else if (senderId && senderName) {
+        openChat(senderId, senderName);
       } else {
-        window.open(notification.action_url, '_blank')
+        openChat();
       }
+      return;
+    }
+    
+    // 2. LIKE / CURTIDA - Ir para o post
+    if (notificationType === 'like' || titleLower.includes('curtida') || metadata.type === 'post_like') {
+      const postId = metadata.post_id;
+      if (postId) {
+        window.location.href = `/feed?post=${postId}`;
+        return;
+      }
+    }
+    
+    // 3. COMENTÁRIO - Ir para o post
+    if (notificationType === 'comment' || titleLower.includes('comentário') || metadata.type === 'post_comment') {
+      const postId = metadata.post_id;
+      if (postId) {
+        window.location.href = `/feed?post=${postId}`;
+        return;
+      }
+    }
+    
+    // 4. RESPOSTA A COMENTÁRIO - Ir para o post
+    if (notificationType === 'reply' || titleLower.includes('resposta') || metadata.type === 'comment_reply') {
+      const postId = metadata.post_id;
+      if (postId) {
+        window.location.href = `/feed?post=${postId}`;
+        return;
+      }
+    }
+    
+    // 5. MENÇÃO - Ir para o post
+    if (notificationType === 'mention' || titleLower.includes('mencionado') || metadata.type === 'mention') {
+      const postId = metadata.post_id;
+      if (postId) {
+        window.location.href = `/feed?post=${postId}`;
+        return;
+      }
+    }
+    
+    // 6. COMPARTILHAMENTO - Ir para o post compartilhado
+    if (notificationType === 'share' || titleLower.includes('compartilhou')) {
+      const postId = metadata.post_id;
+      if (postId) {
+        window.location.href = `/feed?post=${postId}`;
+        return;
+      }
+    }
+    
+    // 7. AVALIAÇÃO / REVIEW - Ir para página de avaliações
+    if (notificationType === 'review' || titleLower.includes('avaliação') || metadata.type === 'review') {
+      window.location.href = '/avaliacoes';
+      return;
+    }
+    
+    // 8. FAVORITO - Ir para o perfil do usuário
+    if (titleLower.includes('favorito') || metadata.type === 'favorite') {
+      // Favorito geralmente é sobre o próprio perfil
+      if (user?.id) {
+        window.location.href = `/perfil/${user.id}`;
+        return;
+      }
+    }
+    
+    // 9. RECOMENDAÇÃO - Ir para página de reputação
+    if (titleLower.includes('recomendação') || metadata.type === 'recommendation') {
+      window.location.href = '/reputacao';
+      return;
+    }
+    
+    // 10. VISUALIZAÇÃO DE PERFIL - Ir para o perfil
+    if (titleLower.includes('visualizou') || metadata.type === 'profile_view') {
+      if (user?.id) {
+        window.location.href = `/perfil/${user.id}`;
+        return;
+      }
+    }
+    
+    // 11. SEGUIR / FOLLOW - Ir para o perfil de quem seguiu
+    if (notificationType === 'follow' || titleLower.includes('seguir')) {
+      const followerId = metadata.follower_id || metadata.user_id;
+      if (followerId) {
+        window.location.href = `/perfil/${followerId}`;
+        return;
+      }
+    }
+    
+    // 12. FALLBACK - Usar action_url se disponível
+    if (notification.action_url) {
+      if (notification.action_url.startsWith('/')) {
+        window.location.href = notification.action_url;
+      } else if (notification.action_url.startsWith('#')) {
+        window.location.hash = notification.action_url;
+      } else {
+        window.open(notification.action_url, '_blank');
+      }
+      return;
     }
   }
 

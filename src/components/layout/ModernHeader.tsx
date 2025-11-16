@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { SimpleHeaderBell } from '@/components/notifications/SimpleHeaderBell'
 import { UserReportsModal } from '@/components/UserReportsModal'
-import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
+import { useMessages } from '@/hooks/useMessages'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 import { useAvailability } from '@/hooks/useAvailability'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -79,7 +79,7 @@ export function ModernHeader({
   const router = useRouter()
   const { user, profile, signOut } = useAuthContext()
   const { openChat } = useFloatingChat()
-  const { unreadCount } = useSupabaseNotifications()
+  const { getTotalUnreadCount } = useMessages()
   const { isAvailable } = useAvailability()
   const [isMenuExpanded, setIsMenuExpanded] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
@@ -236,9 +236,9 @@ export function ModernHeader({
 
   return (
     <>
-      {/* Header Moderno - Flutuante no Mobile */}
-      <div className="lg:sticky fixed lg:top-0 top-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-full lg:left-0 lg:translate-x-0 z-50 lg:shadow-sm bg-white dark:bg-black lg:bg-white lg:dark:bg-black border rounded-full lg:rounded-none lg:border-b border-gray-200 dark:border-gray-900 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-none">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      {/* Header Moderno - Flutuante no Mobile e Desktop */}
+      <div className="fixed top-5 left-1/2 -translate-x-1/2 w-[95%] lg:top-6 lg:left-80 lg:right-6 lg:translate-x-0 lg:w-auto lg:max-w-[calc(100vw-18rem)] z-50 bg-white dark:bg-black/95 border border-gray-200 dark:border-gray-900 rounded-full lg:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-lg">
+        <div className="px-3 sm:px-4 lg:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
             {/* Left side */}
             <div className="flex items-center space-x-4">
@@ -519,9 +519,9 @@ export function ModernHeader({
                             >
                               <MessageCircle className="h-3 w-3" />
                               <span className="truncate">Mensagens</span>
-                              {unreadCount > 0 && (
+                              {getTotalUnreadCount() > 0 && (
                                 <Badge variant="destructive" className="ml-auto text-xs px-1 py-0">
-                                  {unreadCount}
+                                  {getTotalUnreadCount()}
                                 </Badge>
                               )}
                             </Button>

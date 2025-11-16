@@ -503,21 +503,137 @@ export function NotificationSettingsModal({ isOpen, onClose }: NotificationSetti
                                       variant="outline"
                                       size="sm"
                                       onClick={() => {
-                                        // Se for notificação de mensagem, abrir chat
-                                        if (notification.type === 'message' && (notification as any).metadata?.conversation_id) {
-                                          // Para conversation_id, não passar userName para que seja tratado como conversationId
-                                          openChat((notification as any).metadata.conversation_id)
-                                          markAsRead(notification.id)
-                                        } else if (notification.type === 'message' && (notification as any).metadata?.sender_id) {
-                                          const senderId = (notification as any).metadata.sender_id as string
-                                          const senderName = ((notification as any).metadata.sender_name as string) || 'Usuário'
-                                          openChat(senderId, senderName)
-                                          markAsRead(notification.id)
-                                        } else {
-                                          // Para outros tipos de notificação, usar action_url
-                                          window.open(notification.action_url, '_blank')
-                                          markAsRead(notification.id)
+                                        const metadata = (notification as any).metadata || {};
+                                        const notificationType = (notification.type as string) || '';
+                                        const titleLower = (notification.title || '').toLowerCase();
+                                        
+                                        // 1. MENSAGEM - Abrir chat flutuante
+                                        if (notificationType === 'message' || titleLower.includes('mensagem')) {
+                                          const conversationId = metadata.conversation_id || metadata.chat_id;
+                                          const senderId = metadata.sender_id;
+                                          const senderName = metadata.sender_name;
+                                          
+                                          if (conversationId) {
+                                            openChat(conversationId);
+                                          } else if (senderId && senderName) {
+                                            openChat(senderId, senderName);
+                                          } else {
+                                            openChat();
+                                          }
+                                          markAsRead(notification.id);
+                                          return;
                                         }
+                                        
+                                        // 2. LIKE / CURTIDA - Ir para o post
+                                        if (notificationType === 'like' || titleLower.includes('curtida') || metadata.type === 'post_like') {
+                                          const postId = metadata.post_id;
+                                          if (postId) {
+                                            window.location.href = `/feed?post=${postId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 3. COMENTÁRIO - Ir para o post
+                                        if (notificationType === 'comment' || titleLower.includes('comentário') || metadata.type === 'post_comment') {
+                                          const postId = metadata.post_id;
+                                          if (postId) {
+                                            window.location.href = `/feed?post=${postId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 4. RESPOSTA A COMENTÁRIO - Ir para o post
+                                        if (notificationType === 'reply' || titleLower.includes('resposta') || metadata.type === 'comment_reply') {
+                                          const postId = metadata.post_id;
+                                          if (postId) {
+                                            window.location.href = `/feed?post=${postId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 5. MENÇÃO - Ir para o post
+                                        if (notificationType === 'mention' || titleLower.includes('mencionado') || metadata.type === 'mention') {
+                                          const postId = metadata.post_id;
+                                          if (postId) {
+                                            window.location.href = `/feed?post=${postId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 6. COMPARTILHAMENTO - Ir para o post compartilhado
+                                        if (notificationType === 'share' || titleLower.includes('compartilhou')) {
+                                          const postId = metadata.post_id;
+                                          if (postId) {
+                                            window.location.href = `/feed?post=${postId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 7. AVALIAÇÃO / REVIEW - Ir para página de avaliações
+                                        if (notificationType === 'review' || titleLower.includes('avaliação') || metadata.type === 'review') {
+                                          window.location.href = '/avaliacoes';
+                                          markAsRead(notification.id);
+                                          return;
+                                        }
+                                        
+                                        // 8. FAVORITO - Ir para o perfil do usuário
+                                        if (titleLower.includes('favorito') || metadata.type === 'favorite') {
+                                          // Usar user do contexto se disponível
+                                          const userId = metadata.user_id;
+                                          if (userId) {
+                                            window.location.href = `/perfil/${userId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 9. RECOMENDAÇÃO - Ir para página de reputação
+                                        if (titleLower.includes('recomendação') || metadata.type === 'recommendation') {
+                                          window.location.href = '/reputacao';
+                                          markAsRead(notification.id);
+                                          return;
+                                        }
+                                        
+                                        // 10. VISUALIZAÇÃO DE PERFIL - Ir para o perfil
+                                        if (titleLower.includes('visualizou') || metadata.type === 'profile_view') {
+                                          const userId = metadata.user_id;
+                                          if (userId) {
+                                            window.location.href = `/perfil/${userId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 11. SEGUIR / FOLLOW - Ir para o perfil de quem seguiu
+                                        if (notificationType === 'follow' || titleLower.includes('seguir')) {
+                                          const followerId = metadata.follower_id || metadata.user_id;
+                                          if (followerId) {
+                                            window.location.href = `/perfil/${followerId}`;
+                                            markAsRead(notification.id);
+                                            return;
+                                          }
+                                        }
+                                        
+                                        // 12. FALLBACK - Usar action_url se disponível
+                                        if (notification.action_url) {
+                                          if (notification.action_url.startsWith('/')) {
+                                            window.location.href = notification.action_url;
+                                          } else if (notification.action_url.startsWith('#')) {
+                                            window.location.hash = notification.action_url;
+                                          } else {
+                                            window.open(notification.action_url, '_blank');
+                                          }
+                                          markAsRead(notification.id);
+                                          return;
+                                        }
+                                        
+                                        // Se não houver ação, apenas marcar como lida
+                                        markAsRead(notification.id);
                                       }}
                                       className="w-full text-xs"
                                     >

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 import { NotificationSoundType } from '@/types/sound';
 
 export interface Notification {
@@ -53,6 +54,7 @@ interface NotificationProviderProps {
 export const NotificationProviderSimple: React.FC<NotificationProviderProps> = ({ children }) => {
   const { user } = useAuthContext();
   const { playSound, isEnabled: soundEnabled } = useNotificationSound();
+  const { openChat } = useFloatingChat();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasPermission, setHasPermission] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -312,6 +314,34 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
               }
             } : undefined
           })
+          
+          // Se for notificação de mensagem, abrir chat flutuante automaticamente
+          const titleLower = newNotification.title?.toLowerCase() || ''
+          if (newNotification.type === 'message' || titleLower.includes('mensagem')) {
+            try {
+              const metadata = newNotification.metadata || {}
+              const senderId = metadata.sender_id
+              const senderName = metadata.sender_name
+              const conversationId = metadata.conversation_id || metadata.chat_id
+              
+              console.log('💬 Notificação de mensagem recebida via realtime, abrindo chat:', { senderId, senderName, conversationId })
+              
+              // Se tiver conversation_id, abrir com o ID da conversa
+              if (conversationId) {
+                openChat(conversationId)
+              } 
+              // Se tiver sender_id, abrir chat com o usuário
+              else if (senderId && senderName) {
+                openChat(senderId, senderName)
+              }
+              // Caso contrário, apenas abrir a lista de conversas
+              else {
+                openChat()
+              }
+            } catch (error) {
+              console.error('❌ Erro ao abrir chat flutuante via realtime:', error)
+            }
+          }
         }
       )
       .on(
@@ -380,7 +410,7 @@ export const NotificationProviderSimple: React.FC<NotificationProviderProps> = (
       console.log('🛑 Desconectando realtime de notificações')
       channel.unsubscribe()
     }
-  }, [user])
+  }, [user, openChat])
 
   // Verificar permissão na inicialização
   useEffect(() => {
