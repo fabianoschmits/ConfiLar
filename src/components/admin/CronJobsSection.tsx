@@ -12,10 +12,21 @@ import { toast } from 'sonner'
 interface NotificationResult {
   success: boolean
   message: string
+  deactivated_count?: number
+  deactivated_ids?: string[]
   expiring_notifications: number
   expired_notifications: number
   expiring_post_ids: string[]
   expired_post_ids: string[]
+  timestamp: string
+}
+
+interface ClassifiedsResult {
+  success: boolean
+  message: string
+  deactivated: number
+  expiring_notifications: number
+  expired_notifications: number
   timestamp: string
 }
 
@@ -29,10 +40,13 @@ interface StoriesCleanupResult {
 
 export function CronJobsSection() {
   const [loadingNotifications, setLoadingNotifications] = useState(false)
+  const [loadingClassifieds, setLoadingClassifieds] = useState(false)
   const [loadingStories, setLoadingStories] = useState(false)
   const [notificationResult, setNotificationResult] = useState<NotificationResult | null>(null)
+  const [classifiedsResult, setClassifiedsResult] = useState<ClassifiedsResult | null>(null)
   const [storiesResult, setStoriesResult] = useState<StoriesCleanupResult | null>(null)
   const [notificationError, setNotificationError] = useState<string | null>(null)
+  const [classifiedsError, setClassifiedsError] = useState<string | null>(null)
   const [storiesError, setStoriesError] = useState<string | null>(null)
   const [serviceRoleKey, setServiceRoleKey] = useState<string>('')
   const [showServiceRoleKey, setShowServiceRoleKey] = useState(false)
@@ -65,8 +79,11 @@ export function CronJobsSection() {
       }
 
       setNotificationResult(data)
+      const deactivatedMsg = data.deactivated_count 
+        ? `, ${data.deactivated_count} posts convertidos para normais` 
+        : ''
       toast.success('Notificações executadas com sucesso!', {
-        description: `${data.expiring_notifications} expirando e ${data.expired_notifications} expiradas`,
+        description: `${data.expiring_notifications} expirando e ${data.expired_notifications} expiradas${deactivatedMsg}`,
       })
     } catch (err: any) {
       setNotificationError(err.message || 'Erro ao executar notificações')
@@ -75,6 +92,46 @@ export function CronJobsSection() {
       })
     } finally {
       setLoadingNotifications(false)
+    }
+  }
+
+  const executeClassifiedsMaintenance = async () => {
+    setLoadingClassifieds(true)
+    setClassifiedsError(null)
+    setClassifiedsResult(null)
+
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      // Se service role key for fornecida, usar ela
+      if (serviceRoleKey.trim()) {
+        headers['Authorization'] = `Bearer ${serviceRoleKey.trim()}`
+      }
+
+      const response = await fetch('/api/cron/expired-premium-classifieds', {
+        method: 'GET',
+        headers,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao executar manutenção de classificados')
+      }
+
+      setClassifiedsResult(data)
+      toast.success('Manutenção de classificados executada com sucesso!', {
+        description: `${data.deactivated || 0} classificados convertidos para normais`,
+      })
+    } catch (err: any) {
+      setClassifiedsError(err.message || 'Erro ao executar manutenção de classificados')
+      toast.error('Erro ao executar manutenção de classificados', {
+        description: err.message,
+      })
+    } finally {
+      setLoadingClassifieds(false)
     }
   }
 
@@ -192,7 +249,7 @@ export function CronJobsSection() {
               Notificações de Posts Premium
             </CardTitle>
             <CardDescription>
-              Cria notificações para posts premium expirando em 24h e posts premium expirados
+              Cria notificações e remove status premium de posts que expiraram (converte para posts normais)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -236,7 +293,20 @@ export function CronJobsSection() {
                     {notificationResult.message}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    {notificationResult.deactivated_count !== undefined && (
+                      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Convertidos
+                          </span>
+                        </div>
+                        <Badge variant="outline" className="text-lg">
+                          {notificationResult.deactivated_count}
+                        </Badge>
+                      </div>
+                    )}
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <Clock className="h-4 w-4 text-blue-500" />
@@ -273,6 +343,109 @@ export function CronJobsSection() {
           </CardContent>
         </Card>
 
+        {/* Manutenção de Classificados Premium */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              Manutenção de Classificados Premium
+            </CardTitle>
+            <CardDescription>
+              Remove status premium de classificados que expiraram (converte para classificados normais)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Button
+                onClick={executeClassifiedsMaintenance}
+                disabled={loadingClassifieds}
+                className="w-full"
+                size="lg"
+              >
+                {loadingClassifieds ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Executando...
+                  </>
+                ) : (
+                  <>
+                    <Bell className="mr-2 h-4 w-4" />
+                    Executar Manutenção
+                  </>
+                )}
+              </Button>
+
+              {classifiedsError && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <XCircle className="h-5 w-5" />
+                    <span className="font-medium">Erro</span>
+                  </div>
+                  <p className="mt-2 text-sm text-red-700 dark:text-red-300">{classifiedsError}</p>
+                </div>
+              )}
+
+              {classifiedsResult && (
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-medium">Sucesso!</span>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                    {classifiedsResult.message}
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Convertidos
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-lg">
+                        {classifiedsResult.deactivated || 0}
+                      </Badge>
+                    </div>
+
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Expirando (24h)
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-lg">
+                        {classifiedsResult.expiring_notifications}
+                      </Badge>
+                    </div>
+
+                    <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Expirados
+                        </span>
+                      </div>
+                      <Badge variant="outline" className="text-lg">
+                        {classifiedsResult.expired_notifications}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {classifiedsResult.timestamp && (
+                    <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                      Executado em: {new Date(classifiedsResult.timestamp).toLocaleString('pt-BR')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Limpeza de Stories */}
         <Card>
           <CardHeader>
@@ -398,32 +571,60 @@ export function CronJobsSection() {
                   2
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Executar Notificações de Posts Premium
+                  Executar Manutenção de Posts Premium
                 </h3>
               </div>
               <div className="ml-10 space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <p>
-                  <strong>O que faz:</strong> Cria notificações para usuários quando seus posts premium estão expirando (24h antes) ou já expiraram.
+                  <strong>O que faz:</strong> Cria notificações para usuários quando seus posts premium estão expirando (24h antes) ou já expiraram. Também remove o status premium e featured de posts que expiraram, convertendo-os para posts normais.
                 </p>
                 <p>
                   <strong>Como executar:</strong> Clique no botão <strong>"Executar Notificações"</strong> acima.
                 </p>
                 <p>
-                  <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para garantir que todas as notificações sejam criadas em tempo hábil.
+                  <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para garantir que posts expirados sejam convertidos para normais e todas as notificações sejam criadas em tempo hábil.
                 </p>
                 <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
                   <p className="text-xs text-green-700 dark:text-green-300">
-                    ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de notificações criadas (expirando e expiradas) e os IDs dos posts afetados.
+                    ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de posts convertidos para normais, notificações criadas (expirando e expiradas) e os IDs dos posts afetados.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Passo 3: Executar Limpeza */}
+            {/* Passo 3: Executar Manutenção de Classificados */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
                   3
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  Executar Manutenção de Classificados Premium
+                </h3>
+              </div>
+              <div className="ml-10 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <p>
+                  <strong>O que faz:</strong> Remove o status premium e featured de classificados que expiraram, convertendo-os para classificados normais. Também cria notificações para usuários.
+                </p>
+                <p>
+                  <strong>Como executar:</strong> Clique no botão <strong>"Executar Manutenção"</strong> acima.
+                </p>
+                <p>
+                  <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para garantir que classificados expirados sejam convertidos para normais.
+                </p>
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de classificados convertidos para normais e notificações criadas.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Passo 4: Executar Limpeza */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                  4
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
                   Executar Limpeza de Stories Antigos
@@ -447,11 +648,11 @@ export function CronJobsSection() {
               </div>
             </div>
 
-            {/* Passo 4: Monitoramento */}
+            {/* Passo 5: Monitoramento */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
-                  4
+                  5
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
                   Monitorar Resultados

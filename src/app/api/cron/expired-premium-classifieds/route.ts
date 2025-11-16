@@ -2,18 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase'
 
 /**
- * CRON Job para manter classificados premium: cria notificações (NÃO desativa mais)
+ * CRON Job para manter classificados premium: remove status premium quando expira
  * 
  * ⚠️ NOTA: Os cron jobs do pg_cron foram removidos do projeto.
  * Esta rota pode ser chamada manualmente ou por um serviço externo
  * (Vercel Cron, GitHub Actions, etc.) para executar a manutenção.
  * 
- * ⚠️ IMPORTANTE: As funções foram modificadas para NÃO desativar posts/anúncios.
- * 
  * Funções executadas:
  * - Cria notificações para anúncios expirando em breve (24h)
+ * - Remove status premium e featured de anúncios que expiraram
  * - Cria notificações para anúncios que acabaram de expirar
- * - NÃO desativa mais anúncios premium expirados
+ * - Converte anúncios premium expirados para anúncios normais
  * 
  * Segurança: Usa Service Role Key para bypassar RLS
  */
@@ -44,19 +43,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const deactivatedCount = 0 // Sempre 0 agora, pois não desativa mais
+    const deactivatedCount = result?.deactivated_count || 0
     const expiringNotifications = result?.expiring_notifications || 0
     const expiredNotifications = result?.expired_notifications || 0
 
-    console.log(`✅ Manutenção concluída (apenas notificações):`)
+    console.log(`✅ Manutenção concluída:`)
+    console.log(`   - ${deactivatedCount} classificados premium foram convertidos para normais`)
     console.log(`   - ${expiringNotifications} notificações de expiração criadas`)
     console.log(`   - ${expiredNotifications} notificações de expirados criadas`)
-    console.log(`   - ⚠️ Nenhum anúncio foi desativado`)
 
     return NextResponse.json({
       success: true,
-      message: 'Notificações de classificados premium criadas (nenhum anúncio foi desativado)',
-      deactivated: deactivatedCount, // Sempre 0
+      message: 'Classificados premium expirados foram convertidos para normais e notificações criadas',
+      deactivated: deactivatedCount,
       expiring_notifications: expiringNotifications,
       expired_notifications: expiredNotifications,
       timestamp: result?.timestamp

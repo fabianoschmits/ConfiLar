@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { usePortfolio } from '@/hooks/usePortfolio'
 import { useRecommendations } from '@/hooks/useRecommendations'
+import { useProfileViews } from '@/hooks/useProfileViews'
 import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ProfilePageSkeleton } from '@/components/ui/skeleton'
@@ -41,6 +42,8 @@ export default function ProfilePage() {
   const { reviews, loading: reviewsLoading, fetchUserReviews } = useSupabaseReviews()
   const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
   const { recommendations, loading: recommendationsLoading } = useRecommendations(userId)
+  const { recordView, getViewStats } = useProfileViews()
+  const [viewStats, setViewStats] = useState<{ total_views: number } | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -51,6 +54,45 @@ export default function ProfilePage() {
       fetchUserReviews(userId)
     }
   }, [userId, fetchUserReviews])
+
+  // Registrar visualização automaticamente quando o perfil é visualizado
+  useEffect(() => {
+    if (!userId || !mounted) return
+    
+    // Não registrar visualização do próprio perfil
+    if (user?.id === userId) return
+    
+    // Registrar visualização mesmo se o usuário não estiver autenticado
+    const timer = setTimeout(async () => {
+      try {
+        await recordView(userId)
+      } catch (error) {
+        console.error('Erro ao registrar visualização:', error)
+      }
+    }, 2000) // 2 segundos de delay
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [userId, mounted, user?.id, recordView])
+
+  // Buscar estatísticas de visualizações
+  useEffect(() => {
+    if (!userId || !mounted) return
+
+    const fetchViewStats = async () => {
+      try {
+        const stats = await getViewStats(userId)
+        if (stats) {
+          setViewStats(stats)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar estatísticas de visualizações:', error)
+      }
+    }
+
+    fetchViewStats()
+  }, [userId, mounted, getViewStats])
 
   const handleContact = () => {
     if (!user) {
@@ -161,7 +203,9 @@ export default function ProfilePage() {
                       </div>
                       <div className="bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Eye className="w-8 h-8 text-[#00b0b0] mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">0</div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white">
+                          {viewStats?.total_views?.toLocaleString('pt-BR') || '0'}
+                        </div>
                         <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Visualizações</div>
                       </div>
                       <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">

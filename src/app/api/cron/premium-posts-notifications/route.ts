@@ -3,14 +3,16 @@ import { createAdminSupabaseClient } from '@/lib/supabase'
 import { withAdminAuth } from '@/lib/authenticatedRoute'
 
 /**
- * API para notificações de posts premium
+ * API para notificações e manutenção de posts premium
  * 
  * ⚠️ NOTA: Esta rota pode ser chamada manualmente por administradores
  * ou por um serviço externo (Cron job, GitHub Actions, etc.)
  * 
  * Funções executadas:
  * - Cria notificações para posts premium expirando em 24h
+ * - Remove status premium e featured de posts que expiraram
  * - Cria notificações para posts premium que acabaram de expirar
+ * - Converte posts premium expirados para posts normais
  * 
  * Segurança: 
  * - Requer autenticação de administrador (se chamado do frontend)
@@ -67,16 +69,21 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      const deactivatedCount = result?.deactivated_count || 0
+      const deactivatedIds = result?.deactivated_ids || []
       const expiringNotifications = result?.expiring_notifications || 0
       const expiredNotifications = result?.expired_notifications || 0
 
-      console.log(`✅ Notificações de posts premium concluídas (via Service Role Key):`)
+      console.log(`✅ Manutenção de posts premium concluída (via Service Role Key):`)
+      console.log(`   - ${deactivatedCount} posts premium foram convertidos para posts normais`)
       console.log(`   - ${expiringNotifications} notificações de expiração criadas`)
       console.log(`   - ${expiredNotifications} notificações de expirados criadas`)
 
       return NextResponse.json({
         success: true,
-        message: 'Notificações de posts premium criadas com sucesso',
+        message: 'Posts premium expirados foram convertidos para posts normais e notificações criadas',
+        deactivated_count: deactivatedCount,
+        deactivated_ids: deactivatedIds,
         expiring_notifications: expiringNotifications,
         expired_notifications: expiredNotifications,
         expiring_post_ids: result?.expiring_post_ids || [],
@@ -102,16 +109,21 @@ export async function GET(request: NextRequest) {
         )
       }
 
+      const deactivatedCount = result?.deactivated_count || 0
+      const deactivatedIds = result?.deactivated_ids || []
       const expiringNotifications = result?.expiring_notifications || 0
       const expiredNotifications = result?.expired_notifications || 0
 
-      console.log(`✅ Notificações de posts premium executadas por admin ${user.id}:`)
+      console.log(`✅ Manutenção de posts premium executada por admin ${user.id}:`)
+      console.log(`   - ${deactivatedCount} posts premium foram convertidos para posts normais`)
       console.log(`   - ${expiringNotifications} notificações de expiração criadas`)
       console.log(`   - ${expiredNotifications} notificações de expirados criadas`)
 
       return NextResponse.json({
         success: true,
-        message: 'Notificações de posts premium criadas com sucesso',
+        message: 'Posts premium expirados foram convertidos para posts normais e notificações criadas',
+        deactivated_count: deactivatedCount,
+        deactivated_ids: deactivatedIds,
         expiring_notifications: expiringNotifications,
         expired_notifications: expiredNotifications,
         expiring_post_ids: result?.expiring_post_ids || [],

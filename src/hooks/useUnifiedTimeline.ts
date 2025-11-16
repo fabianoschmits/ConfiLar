@@ -29,6 +29,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       const page = pageParam as number
       
       // Buscar posts de trabalhos
+      // Nota: A ordenação por is_featured é feita no frontend após verificar se premium expirou
       let postsQuery = supabase
         .from('feed_posts')
         .select(`
@@ -69,7 +70,6 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         `)
         .eq('is_active', true)
         .eq('is_public', true)
-        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1)
 
@@ -425,6 +425,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           user_type: post.metadata.user_type || userData?.user_type
         } : userData
 
+        // Verificar se premium expirou
+        const premiumExpired = post.is_premium && post.premium_expires_at 
+          ? new Date(post.premium_expires_at) < new Date()
+          : false
+        
+        // Só considerar premium/featured se não tiver expirado
+        const isActivePremium = post.is_premium && !premiumExpired
+        const isActiveFeatured = post.is_featured && !premiumExpired
+
         const timelinePost = {
           id: post.id,
           type: 'post' as const,
@@ -442,9 +451,9 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           likes_count: post.likes_count || 0,
           comments_count: post.comments_count || 0,
           is_liked: likedPosts.has(post.id),
-          is_featured: post.is_featured || false,
+          is_featured: isActiveFeatured,
           tags: post.tags || [],
-          is_premium: post.is_premium || false,
+          is_premium: isActivePremium,
           premium_points_spent: post.premium_points_spent,
           premium_expires_at: post.premium_expires_at,
           premium_highlight_color: post.premium_highlight_color,
@@ -479,13 +488,26 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Notificações removidas do feed por solicitação
       const timelineNotifications: any[] = []
 
-      // Combinar e ordenar todos os itens (priorizando posts destacados)
+      // Combinar e ordenar todos os itens (priorizando posts destacados que não expiraram)
       const allItems = [...timelinePosts, ...timelineActivities, ...timelineNotifications]
         .sort((a, b) => {
-          // Priorizar posts destacados (is_featured)
-          const aIsFeatured = a.is_featured || false
-          const bIsFeatured = b.is_featured || false
+          // Verificar se são posts e se premium expirou
+          const aIsPost = a.type === 'post'
+          const bIsPost = b.type === 'post'
           
+          // Verificar se premium expirou para posts
+          const aPremiumExpired = aIsPost && a.premium_expires_at 
+            ? new Date(a.premium_expires_at) < new Date()
+            : false
+          const bPremiumExpired = bIsPost && b.premium_expires_at 
+            ? new Date(b.premium_expires_at) < new Date()
+            : false
+          
+          // Só considerar featured se não tiver expirado
+          const aIsFeatured = (a.is_featured || false) && !aPremiumExpired
+          const bIsFeatured = (b.is_featured || false) && !bPremiumExpired
+          
+          // Priorizar posts destacados (is_featured) que não expiraram
           if (aIsFeatured && !bIsFeatured) return -1
           if (!aIsFeatured && bIsFeatured) return 1
           
