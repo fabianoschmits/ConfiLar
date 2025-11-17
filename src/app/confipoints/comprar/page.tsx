@@ -24,6 +24,7 @@ import { usePoints } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import { MicroInteraction } from '@/components/ui/MicroInteraction'
 import { PackageSkeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 
 export default function ComprarPontosPage() {
   const { user, profile } = useAuthContext()
@@ -371,7 +372,7 @@ export default function ComprarPontosPage() {
                         }`}
                         onClick={() => {
                           // TODO: Implementar integração com gateway de pagamento
-                          alert(`Compra do ${pkg.name} será implementada em breve!`)
+                          toast.info(`Compra do ${pkg.name} será implementada em breve!`)
                         }}
                       >
                         <CreditCard className="w-4 h-4 mr-2" />

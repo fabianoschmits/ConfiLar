@@ -85,10 +85,29 @@ export function ReferralBadge({
   showCount = false,
   className
 }: ReferralBadgeProps) {
-  if (tier === 'none') return null
-
   const config = tierConfig[tier]
   const sizes = sizeConfig[size]
+  
+  // Badge inicial para quem não tem indicações
+  if (tier === 'none') {
+    return (
+      <div className={cn('relative inline-block', className)}>
+        <div
+          className={cn(
+            sizes.container,
+            sizes.border,
+            'bg-gradient-to-br from-gray-400 to-gray-500 border-gray-300',
+            'rounded-full flex items-center justify-center',
+            'shadow-lg'
+          )}
+          title="Nenhuma indicação ainda - Comece a indicar!"
+        >
+          <Shield className={cn(sizes.icon, 'text-white')} />
+        </div>
+      </div>
+    )
+  }
+
   const Icon = config.icon
 
   if (!Icon) return null
@@ -135,9 +154,26 @@ export function ReferralBadgeLarge({
   totalReferrals,
   className
 }: Omit<ReferralBadgeProps, 'size' | 'showCount'>) {
-  if (tier === 'none') return null
-
   const config = tierConfig[tier]
+  
+  // Badge inicial para quem não tem indicações
+  if (tier === 'none') {
+    return (
+      <div
+        className={cn(
+          'inline-flex items-center gap-2 px-3 py-1.5 rounded-full',
+          'bg-gradient-to-r from-gray-400 to-gray-500',
+          'text-white shadow-lg',
+          className
+        )}
+      >
+        <Shield className="w-4 h-4" />
+        <span className="text-sm font-semibold">Novato</span>
+        <span className="text-xs opacity-90">(0)</span>
+      </div>
+    )
+  }
+
   const Icon = config.icon
 
   if (!Icon) return null

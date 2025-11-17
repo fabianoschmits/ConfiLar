@@ -46,6 +46,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ALLOWED_USER_ORDER_BY, isValidOrderBy, type UserOrderBy } from '@/lib/admin-constants'
 import { useAdminRateLimit } from '@/hooks/useAdminRateLimit'
+import { toast } from 'sonner'
 
 interface AdminStats {
   total_users_with_points: number
@@ -495,7 +496,7 @@ export function ConfiPointsAdminDashboard() {
         <Button
           onClick={() => {
             if (!checkRateLimit()) {
-              alert('Muitas requisições. Aguarde um momento antes de atualizar novamente.')
+              toast.error('Muitas requisições. Aguarde um momento antes de atualizar novamente.')
               return
             }
             refetchStats()

@@ -231,20 +231,14 @@ export function useMessages() {
 
       const newMessages = (data || []).reverse() // Reverter para ordem cronológica (mais antiga -> mais recente)
       
-      console.log(`📥 Carregando ${newMessages.length} mensagens do banco para conversa ${conversationId}`)
-      console.log(`📋 IDs das mensagens do banco:`, newMessages.map(m => `${m.id.substring(0, 8)} (${new Date(m.created_at).toLocaleTimeString()})`).join(', '))
-      
       // SEMPRE fazer merge para preservar mensagens enviadas recentemente
       setMessages(prev => {
         // Se não há mensagens anteriores ou é uma conversa diferente, retornar as novas
         if (prev.length === 0 || (prev[0]?.conversation_id && prev[0].conversation_id !== conversationId)) {
-          console.log(`📥 Primeira carga para conversa ${conversationId}, retornando ${newMessages.length} mensagens do banco`)
           return newMessages
         }
         
         // Se é a mesma conversa, fazer merge inteligente preservando mensagens recentes
-        console.log(`🔄 Mesclando mensagens para conversa ${conversationId}: ${prev.length} existentes + ${newMessages.length} novas do banco`)
-        
         // Criar um mapa de IDs das mensagens novas do banco
         const newMessageIds = new Set(newMessages.map(m => m.id))
         
@@ -259,9 +253,6 @@ export function useMessages() {
           
           // Preservar mensagens muito recentes que podem ainda não estar no banco
           const isVeryRecent = new Date(m.created_at).toISOString() > sixtySecondsAgo
-          if (isVeryRecent) {
-            console.log(`💾 Preservando mensagem recente: ${m.id.substring(0, 8)} (${m.content.substring(0, 20)}...)`)
-          }
           return isVeryRecent
         })
         
@@ -290,13 +281,8 @@ export function useMessages() {
         // Isso garante que mesmo que haja muitas mensagens, mostramos as 50 mais recentes
         const limited = sorted.slice(-50)
         
-        console.log(`✅ Resultado do merge: ${limited.length} mensagens exibidas (${oldMessagesToKeep.length} preservadas + ${newMessages.length} do banco, ${sorted.length - limited.length} mensagens antigas removidas)`)
-        console.log(`📋 IDs das mensagens exibidas:`, limited.map(m => `${m.id.substring(0, 8)} (${new Date(m.created_at).toLocaleTimeString()})`).join(', '))
-        
         return limited
       })
-      
-      console.log(`✅ ${data?.length || 0} mensagens carregadas`)
     } catch (err) {
       console.error('❌ Erro ao buscar mensagens:', err)
       setError(err instanceof Error ? err.message : 'Erro desconhecido')
@@ -365,15 +351,6 @@ export function useMessages() {
         recipientId = agreement.proposed_by
       }
 
-      console.log('📤 Enviando notificação:', {
-        type,
-        recipientId,
-        proposedBy: agreement.proposed_by,
-        clientId: agreement.client_id,
-        professionalId: agreement.professional_id,
-        title,
-        message
-      })
 
       await addNotification({
         user_id: recipientId,
@@ -391,7 +368,6 @@ export function useMessages() {
   // Função para enviar notificação automática de nova conversa - DESABILITADA
   const sendNewConversationNotification = useCallback(async (conversation: Conversation) => {
     // NOTIFICAÇÃO DE CONVERSA INICIADA DESABILITADA
-    console.log('📨 Notificação de nova conversa desabilitada - não enviando notificação')
     return
     
     // Código original comentado para referência:
@@ -406,7 +382,6 @@ export function useMessages() {
 
       // Verificar se o destinatário é válido e diferente do remetente
       if (!recipientId || recipientId === user.id) {
-        console.log('⚠️ Não enviando notificação: destinatário inválido ou igual ao remetente')
         return
       }
 
@@ -427,7 +402,6 @@ export function useMessages() {
         priority: 'normal'
       })
 
-      console.log('📨 Notificação de nova conversa enviada para:', recipientName)
     } catch (error) {
       console.error('Erro ao enviar notificação de nova conversa:', error)
     }
@@ -439,7 +413,6 @@ export function useMessages() {
     if (!user?.id) return false
 
     try {
-      console.log('📤 Iniciando envio de mensagem:', { conversationId, content, userId: user.id })
 
       setSending(true)
       setError(null)
@@ -461,7 +434,6 @@ export function useMessages() {
         throw new Error('Conversa não encontrada')
       }
       
-      console.log('✅ Conversa encontrada:', conversationData)
 
       const conversation = conversationData
       const isClient = conversation.client_id === user.id
@@ -472,7 +444,6 @@ export function useMessages() {
                         (isProfessional && conversation.deleted_by_professional)
 
       if (wasDeleted) {
-        console.log('🔄 Conversa foi deletada, reativando antes de enviar mensagem...')
         
         const reactivateData: any = {
           last_message_at: new Date().toISOString(),
@@ -492,19 +463,12 @@ export function useMessages() {
           .update(reactivateData)
           .eq('id', conversationId)
 
-        console.log('✅ Conversa reativada!')
       }
 
       const receiverId = conversation.client_id === user.id 
         ? conversation.professional_id 
         : conversation.client_id
 
-      console.log('📤 Preparando inserção de mensagem:', {
-        conversationId,
-        senderId: user.id,
-        receiverId,
-        content: content.trim()
-      })
 
       const { data, error } = await supabase
         .from('messages')
@@ -535,7 +499,6 @@ export function useMessages() {
         throw new Error(`Erro ao inserir mensagem: ${error.message}`)
       }
       
-      console.log('✅ Mensagem inserida com sucesso:', data)
 
       // Atualizar last_message_at na conversa (se não foi atualizado ao reativar)
       if (!wasDeleted) {
@@ -620,7 +583,6 @@ export function useMessages() {
     if (!user?.id) return null
 
     try {
-      console.log('🔍 Buscando ou criando conversa entre:', { clientId, professionalId })
 
       // Verificar se já existe conversa (incluindo campos de soft delete)
       const { data: existingConversation } = await supabase
@@ -630,7 +592,6 @@ export function useMessages() {
         .maybeSingle()
 
       if (existingConversation) {
-        console.log('✅ Conversa existente encontrada:', existingConversation.id)
         
         const isClient = existingConversation.client_id === user.id
         const isProfessional = existingConversation.professional_id === user.id
@@ -639,7 +600,6 @@ export function useMessages() {
 
         // Se foi deletada pelo usuário atual, REATIVAR para que apareça na lista
         if (wasDeleted) {
-          console.log('🔄 Conversa foi deletada, reativando para aparecer na lista...')
           
           const reactivateData: any = {
             updated_at: new Date().toISOString(),
@@ -662,7 +622,6 @@ export function useMessages() {
           if (updateError) {
             console.error('❌ Erro ao reativar conversa:', updateError)
           } else {
-            console.log('✅ Conversa reativada! Aparecerá na lista.')
             // Recarregar conversas para atualizar a lista
             await loadConversations()
           }
@@ -671,7 +630,6 @@ export function useMessages() {
         return existingConversation.id
       }
 
-      console.log('➕ Nenhuma conversa encontrada, criando nova...')
 
       // Criar nova conversa
       const { data, error } = await supabase
@@ -688,7 +646,6 @@ export function useMessages() {
 
       if (error) throw error
 
-      console.log('✅ Nova conversa criada:', data.id)
       
       // Recarregar conversas para incluir a nova
       await loadConversations()
@@ -712,7 +669,6 @@ export function useMessages() {
       setLoading(true)
       setError(null)
 
-      console.log('🗑️ Iniciando soft delete da conversa:', conversationId)
 
       // Verificar se o usuário tem permissão para deletar a conversa
       const { data: conversation, error: fetchError } = await supabase
@@ -740,7 +696,6 @@ export function useMessages() {
         throw new Error('Você não tem permissão para deletar esta conversa')
       }
 
-      console.log('✅ Permissão verificada, marcando conversa como deletada para o usuário...')
 
       // Marcar como deletada apenas para o usuário atual (soft delete)
       const deletedAt = new Date().toISOString()
@@ -766,14 +721,12 @@ export function useMessages() {
         throw new Error(`Erro ao remover conversa: ${updateError.message}`)
       }
 
-      console.log('✅ Conversa marcada como deletada para o usuário!')
 
       // Verificar se ambos os usuários deletaram - nesse caso, deletar completamente
       const bothDeleted = (isClient && conversation.deleted_by_professional) || 
                          (isProfessional && conversation.deleted_by_client)
 
       if (bothDeleted) {
-        console.log('🗑️ Ambos os usuários deletaram, removendo conversa permanentemente...')
         
         // Deletar mensagens
         await supabase
@@ -793,7 +746,6 @@ export function useMessages() {
           .delete()
           .eq('id', conversationId)
 
-        console.log('✅ Conversa deletada permanentemente do banco de dados')
       }
 
       // Recarregar lista de conversas
@@ -934,7 +886,6 @@ export function useMessages() {
           .limit(1)
 
         if (testError) {
-          console.log('⚠️ Tabela messages não encontrada, pulando verificação de mensagens não lidas')
           return
         }
 
@@ -955,16 +906,11 @@ export function useMessages() {
           .limit(5)
 
         if (error) {
-          console.log('⚠️ Erro ao verificar mensagens não lidas:', error.message)
           return
         }
 
-        // Log apenas se houver mensagens não lidas
-        if (unreadMessages && unreadMessages.length > 0) {
-          console.log(`📨 ${unreadMessages.length} mensagens não lidas encontradas`)
-        }
       } catch (error) {
-        console.log('⚠️ Erro ao verificar mensagens não lidas:', error.message)
+        // Erro ao verificar mensagens não lidas - silencioso
       }
     }
 
@@ -972,7 +918,6 @@ export function useMessages() {
     const setupRealtime = () => {
       if (!user?.id) return
 
-      console.log('💬 Configurando realtime para mensagens do usuário:', user.id)
 
       const channel = supabase
         .channel('messages-realtime')

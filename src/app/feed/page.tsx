@@ -47,6 +47,7 @@ import { usePremiumNotifications } from '@/hooks/usePremiumNotifications'
 import { useStories } from '@/hooks/useStories'
 import { StoryViewer } from '@/components/stories/StoryViewer'
 import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
+import { toast } from 'sonner'
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false)
@@ -193,7 +194,7 @@ export default function FeedPage() {
       await refetch()
     } catch (error) {
       console.error('Erro ao deletar post:', error)
-      alert('Erro ao deletar post')
+      toast.error('Erro ao deletar post. Tente novamente.')
     } finally {
       setDeletingPostId(null)
     }
@@ -261,8 +262,6 @@ export default function FeedPage() {
           isOpen={showCreateStory}
           onClose={() => setShowCreateStory(false)}
           onStoryCreated={async () => {
-            // Refetch stories após criar
-            console.log('🔄 Refazendo busca de stories após criar novo...')
             await refetchStories()
           }}
         />
@@ -575,7 +574,7 @@ export default function FeedPage() {
               <NewPostForm
                 onSubmit={async (data) => {
                   if (!profile?.id) {
-                    alert('Erro: Usuário não autenticado')
+                    toast.error('Erro: Usuário não autenticado')
                     return
                   }
                   
@@ -583,17 +582,9 @@ export default function FeedPage() {
                   setPostStatus('sending')
                   
                   try {
-                    console.log('📝 [Test Feed] Criando post:', {
-                      isPremium: data.isPremium,
-                      pointsToSpend: data.pointsToSpend,
-                      durationDays: data.durationDays,
-                      description: data.description.substring(0, 50) + '...'
-                    })
-
                     // Se for post premium, usar addPremiumPost
                     if (data.isPremium && data.pointsToSpend && data.durationDays) {
-                      console.log('👑 [Test Feed] Criando POST PREMIUM')
-                      const premiumPost = await addPremiumPost({
+                      await addPremiumPost({
                         type: 'post',
                         user_id: profile.id,
                         user_name: profile.full_name || 'Usuário',
@@ -611,11 +602,9 @@ export default function FeedPage() {
                         comments_count: 0,
                         is_liked: false
                       } as any)
-                      console.log('✅ [Test Feed] Post premium criado:', premiumPost.id)
                     } else {
                       // Post normal
-                      console.log('📄 [Test Feed] Criando POST NORMAL')
-                      const normalPost = await addPost({
+                      await addPost({
                         type: 'post',
                         user_id: profile.id,
                         user_name: profile.full_name || 'Usuário',
@@ -631,7 +620,6 @@ export default function FeedPage() {
                         comments_count: 0,
                         is_liked: false
                       })
-                      console.log('✅ [Test Feed] Post normal criado:', normalPost.id)
                     }
                     
                     // Mostrar "Enviado!" por 1 segundo antes de fechar
@@ -642,9 +630,9 @@ export default function FeedPage() {
                       refetch()
                     }, 1000)
                   } catch (error: any) {
-                    console.error('❌ [Test Feed] Erro ao criar post:', error)
+                    console.error('Erro ao criar post:', error)
                     const errorMessage = error?.message || 'Erro ao criar post'
-                    alert(`Erro ao criar post: ${errorMessage}`)
+                    toast.error(`Erro ao criar post: ${errorMessage}`)
                     setPostStatus('idle')
                   } finally {
                     setIsPosting(false)
@@ -716,7 +704,7 @@ export default function FeedPage() {
                 await refetch()
               } catch (error) {
                 console.error('Erro ao editar post:', error)
-                alert('Erro ao editar post')
+                toast.error('Erro ao editar post. Tente novamente.')
               }
             }}
           />
@@ -750,7 +738,7 @@ export default function FeedPage() {
                   }, 1000)
                 } catch (error: any) {
                   console.error('Erro ao renovar post premium:', error)
-                  alert(`Erro ao renovar post premium: ${error?.message || 'Erro desconhecido'}`)
+                  toast.error(`Erro ao renovar post premium: ${error?.message || 'Erro desconhecido'}`)
                   setPostStatus('idle')
                 } finally {
                   setIsPosting(false)
@@ -842,7 +830,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       setNewComment('')
     } catch (error) {
       console.error('Erro ao adicionar comentário:', error)
-      alert('Erro ao adicionar comentário')
+      toast.error('Erro ao adicionar comentário. Tente novamente.')
     }
   }
 
@@ -862,7 +850,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       setEditCommentContent('')
     } catch (error) {
       console.error('Erro ao editar comentário:', error)
-      alert('Erro ao editar comentário')
+      toast.error('Erro ao editar comentário. Tente novamente.')
     }
   }
 
@@ -881,7 +869,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
         await deleteComment(commentId)
       } catch (error) {
         console.error('Erro ao deletar comentário:', error)
-        alert('Erro ao deletar comentário')
+        toast.error('Erro ao deletar comentário. Tente novamente.')
       }
     }
   }
@@ -1218,7 +1206,6 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                               {/* Botão de Like */}
                               <button
                                 onClick={() => {
-                                  console.log('👍 [Feed] Curtindo comentário:', comment.id, 'do usuário:', comment.user?.id)
                                   likeComment(comment.id)
                                 }}
                                 disabled={isLikingComment}

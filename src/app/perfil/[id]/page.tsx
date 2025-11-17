@@ -29,6 +29,8 @@ import { ReviewCard } from '@/components/reviews/ReviewCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ProfilePageSkeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
+import { useReferralStats } from '@/hooks/useReferralStats'
+import { ReferralBadgeLarge } from '@/components/referral/ReferralBadge'
 
 export default function ProfilePage() {
   const params = useParams()
@@ -44,6 +46,7 @@ export default function ProfilePage() {
   const { recommendations, loading: recommendationsLoading } = useRecommendations(userId)
   const { recordView, getViewStats } = useProfileViews()
   const [viewStats, setViewStats] = useState<{ total_views: number } | null>(null)
+  const { stats: referralStats, loading: referralLoading } = useReferralStats(userId)
 
   useEffect(() => {
     setMounted(true)
@@ -105,6 +108,17 @@ export default function ProfilePage() {
     }
     openChat(userId, profile?.full_name || 'Usuário')
     toast.success('Iniciando conversa...')
+  }
+
+  const handleShare = async () => {
+    try {
+      const profileUrl = `${window.location.origin}/perfil/${userId}`
+      await navigator.clipboard.writeText(profileUrl)
+      toast.success('Link do perfil copiado para a área de transferência!')
+    } catch (error) {
+      console.error('Erro ao copiar link:', error)
+      toast.error('Erro ao copiar link. Tente novamente.')
+    }
   }
 
   if (!mounted || loading) {
@@ -210,8 +224,17 @@ export default function ProfilePage() {
                       </div>
                       <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Award className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white capitalize">{profile.badge}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Badge</div>
+                        <div className="flex justify-center items-center mb-2">
+                          {referralLoading ? (
+                            <div className="text-2xl font-black text-gray-400">...</div>
+                          ) : (
+                            <ReferralBadgeLarge
+                              tier={referralStats?.tier || 'none'}
+                              totalReferrals={referralStats?.totalReferrals || 0}
+                            />
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Badge de Indicações</div>
                       </div>
                     </div>
 
@@ -263,7 +286,11 @@ export default function ProfilePage() {
                           Contatar
                         </Button>
                       )}
-                      <Button variant="outline" className="px-8 py-6 text-lg font-bold border-2">
+                      <Button 
+                        variant="outline" 
+                        className="px-8 py-6 text-lg font-bold border-2"
+                        onClick={handleShare}
+                      >
                         <Share2 className="w-5 h-5 mr-2" />
                         Compartilhar
                       </Button>

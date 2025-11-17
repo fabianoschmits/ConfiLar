@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { supabase } from '@/lib/supabase'
 import { Search, Send, Loader2, X, Users, Link2, Check, Copy } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
 interface User {
   id: string
@@ -54,7 +55,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
       await recordShare('link')
     } catch (error) {
       console.error('Erro ao copiar link:', error)
-      alert('Erro ao copiar link')
+      toast.error('Erro ao copiar link')
     }
   }
 
@@ -93,10 +94,7 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
         })
       })
 
-      const data = await response.json()
       if (response.ok) {
-        console.log(`✅ Compartilhamento ${shareType} registrado`, data)
-        // Chamar callback para atualizar contador (mesmo que não seja novo, pode ter sido atualizado)
         if (onShareRecorded) {
           onShareRecorded()
         }
@@ -123,7 +121,6 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
         .limit(10)
 
       if (error) {
-        console.error('Erro ao buscar usuários:', error)
         setUsers([])
       } else {
         setUsers(data || [])
@@ -148,20 +145,18 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
   // Compartilhar post
   const handleShare = async () => {
     if (selectedUsers.length === 0) {
-      alert('Selecione pelo menos um usuário para compartilhar')
+      toast.error('Selecione pelo menos um usuário para compartilhar')
       return
     }
 
     if (!profile?.id || !profile?.full_name) {
-      alert('Erro: Usuário não autenticado')
+      toast.error('Erro: Usuário não autenticado')
       return
     }
 
     setIsSharing(true)
     setShareStatus('sharing')
     try {
-      console.log('📤 Compartilhando post:', { postId, userIds: selectedUsers.map(u => u.id) })
-
       const response = await fetch('/api/posts/share', {
         method: 'POST',
         headers: {
@@ -179,21 +174,16 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
       const data = await response.json()
 
       if (!response.ok) {
-        console.error('❌ Erro ao compartilhar:', data)
-        alert(data.error || 'Erro ao compartilhar o post')
+        console.error('Erro ao compartilhar:', data)
+        toast.error(data.error || 'Erro ao compartilhar o post')
         setShareStatus('idle')
         return
       }
-
-      console.log('✅ Post compartilhado:', data)
       
-      // O compartilhamento com usuários já é registrado na API /api/posts/share
-      // Chamar callback para atualizar contador
       if (onShareRecorded) {
         onShareRecorded()
       }
       
-      // Mostrar "Enviado!" por 2 segundos antes de fechar
       setShareStatus('shared')
       setTimeout(() => {
         onClose()
@@ -204,8 +194,8 @@ export function SharePostModal({ isOpen, onClose, postId, postTitle, onShareReco
         setShareStatus('idle')
       }, 2000)
     } catch (error) {
-      console.error('❌ Erro ao compartilhar:', error)
-      alert('Erro ao compartilhar o post')
+      console.error('Erro ao compartilhar:', error)
+      toast.error('Erro ao compartilhar o post')
       setShareStatus('idle')
     } finally {
       setIsSharing(false)

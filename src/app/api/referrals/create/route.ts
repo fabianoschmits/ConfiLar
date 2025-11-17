@@ -29,11 +29,11 @@ const handler = async (request: NextRequest) => {
     // Normalizar código
     const normalizedCode = referralCode.toUpperCase().trim()
     
-    // Validar formato do código
+    // Validar formato do código: 6-12 caracteres, apenas letras (A-Z) e/ou números (0-9)
     const codeRegex = /^[A-Z0-9]{6,12}$/
     if (!codeRegex.test(normalizedCode)) {
       return NextResponse.json(
-        { error: 'Código de referral inválido' },
+        { error: 'Código de referral inválido. Deve ter entre 6 e 12 caracteres (apenas letras e/ou números)' },
         { status: 400 }
       )
     }

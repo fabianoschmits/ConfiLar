@@ -90,6 +90,66 @@ export function useReferralCode(userId?: string) {
     window.location.href = `mailto:?subject=${subject}&body=${body}`
   }
 
+  const updateReferralCode = async (newCode: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Normalizar código (maiúsculas, sem espaços)
+      const normalizedCode = newCode.toUpperCase().trim()
+
+      // Validar formato: 6-12 caracteres, apenas letras (A-Z) e/ou números (0-9)
+      const codeRegex = /^[A-Z0-9]{6,12}$/
+      if (!codeRegex.test(normalizedCode)) {
+        setError('Código inválido. Deve ter entre 6 e 12 caracteres (apenas letras e/ou números)')
+        return { success: false, error: 'Código inválido. Deve ter entre 6 e 12 caracteres (apenas letras e/ou números)' }
+      }
+
+      // Verificar disponibilidade (opcional - pode fazer no backend também)
+      const { data: existingCode } = await supabase
+        .from('user_referral_stats')
+        .select('user_id, referral_code')
+        .ilike('referral_code', normalizedCode)
+        .single()
+
+      if (existingCode && existingCode.user_id !== userId) {
+        setError('Este código já está em uso. Tente outro.')
+        return { success: false, error: 'Este código já está em uso. Tente outro.' }
+      }
+
+      // Chamar API para atualizar
+      const response = await fetch('/api/referrals/update-code', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newCode: normalizedCode })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setError(result.error || 'Erro ao atualizar código')
+        return { success: false, error: result.error || 'Erro ao atualizar código' }
+      }
+
+      // Atualizar estado local
+      setReferralCode(result.referralCode)
+      
+      // Atualizar link
+      const baseUrl = typeof window !== 'undefined' 
+        ? window.location.origin 
+        : 'https://appconfilar.com.br'
+      setReferralLink(`${baseUrl}/auth?ref=${result.referralCode}`)
+
+      return { success: true }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Erro ao atualizar código'
+      setError(errorMessage)
+      return { success: false, error: errorMessage }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return {
     referralCode,
     referralLink,
@@ -99,6 +159,7 @@ export function useReferralCode(userId?: string) {
     shareViaWhatsApp,
     shareViaTelegram,
     shareViaEmail,
+    updateReferralCode,
     refresh: loadReferralCode
   }
 }

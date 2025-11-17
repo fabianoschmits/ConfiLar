@@ -6,6 +6,7 @@ import { Button } from './button'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useImageCompression } from '@/hooks/useImageCompression'
+import { toast } from 'sonner'
 
 interface ImageUploadFeedProps {
   onImagesUpload: (imageUrls: string[]) => void
@@ -27,21 +28,16 @@ export function ImageUploadFeed({
   const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
   const handleFileUpload = async (files: FileList) => {
-    console.log('Iniciando upload de', files.length, 'arquivos')
-    
-    if (files.length === 0) {
-      console.log('Nenhum arquivo selecionado')
-      return
-    }
+    if (files.length === 0) return
 
     if (!user) {
-      alert('Você precisa estar logado para fazer upload de imagens')
+      toast.error('Você precisa estar logado para fazer upload de imagens')
       return
     }
 
     // Verificar limite de imagens
     if (currentImages.length + files.length > maxImages) {
-      alert(`Você pode adicionar no máximo ${maxImages} imagens.`)
+      toast.error(`Você pode adicionar no máximo ${maxImages} imagens.`)
       return
     }
 
@@ -51,36 +47,25 @@ export function ImageUploadFeed({
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        console.log(`Processando arquivo ${i + 1}:`, file.name, file.type, file.size)
 
         // Validar tipo de arquivo
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
         if (!allowedTypes.includes(file.type)) {
-          console.log('Tipo de arquivo não permitido:', file.type)
-          alert('Por favor, selecione apenas imagens (JPG, PNG ou WebP)')
+          toast.error('Por favor, selecione apenas imagens (JPG, PNG ou WebP)')
           continue
         }
 
         // Comprimir imagem antes do upload
-        console.log('Comprimindo imagem...')
         const compressedFile = await compressImage(file, {
           maxSizeMB: 1, // 1MB máximo após compressão
           maxWidthOrHeight: 1080 // 1080px máximo
-        })
-        
-        console.log('Imagem comprimida:', {
-          original: file.size,
-          compressed: compressedFile.size,
-          reduction: Math.round((1 - compressedFile.size / file.size) * 100) + '%'
         })
 
         // Gerar nome único para o arquivo
         const fileExt = file.name.split('.').pop()
         const fileName = `feed/${Date.now()}-${Math.random().toString(36).substring(2)}-${i}.${fileExt}`
-        console.log('Nome do arquivo gerado:', fileName)
 
         // Upload para o bucket de imagens do feed
-        console.log('Iniciando upload para Supabase...')
         const { data, error } = await supabase.storage
           .from('feed-images')
           .upload(fileName, compressedFile, {
@@ -93,27 +78,21 @@ export function ImageUploadFeed({
           throw error
         }
 
-        console.log('Upload bem-sucedido:', data)
-
         // Obter URL pública da imagem
         const { data: { publicUrl } } = supabase.storage
           .from('feed-images')
           .getPublicUrl(fileName)
 
-        console.log('URL pública gerada:', publicUrl)
         uploadedUrls.push(publicUrl)
       }
 
-      console.log('Todas as imagens foram processadas:', uploadedUrls)
-
       // Adicionar novas imagens às existentes
       const allImages = [...currentImages, ...uploadedUrls]
-      console.log('Imagens finais:', allImages)
       onImagesUpload(allImages)
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro no upload:', error)
-      alert(`Erro ao fazer upload das imagens: ${error.message || 'Tente novamente.'}`)
+      toast.error(`Erro ao fazer upload das imagens: ${error?.message || 'Tente novamente.'}`)
     } finally {
       setIsUploading(false)
     }
@@ -155,7 +134,6 @@ export function ImageUploadFeed({
   }
 
   const openFileDialog = () => {
-    console.log('Abrindo diálogo de arquivo')
     if (fileInputRef.current) {
       fileInputRef.current.click()
     }

@@ -76,13 +76,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Aplicar filtro de busca se especificado
       if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.trim()
-        console.log('🔍 Aplicando filtro de busca:', searchTerm)
         
         // Verificar se é busca por usuário (user:username) ou ID (id:userid)
         if (searchTerm.startsWith('user:')) {
           // Buscar por nome do usuário
           const username = searchTerm.replace('user:', '').trim()
-          console.log('👤 Buscando por nome do usuário:', username)
           
           // Primeiro, buscar IDs dos usuários que correspondem ao nome
           const { data: matchingProfiles } = await supabase
@@ -103,12 +101,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         } else if (searchTerm.startsWith('id:')) {
           // Buscar por ID do usuário
           const userId = searchTerm.replace('id:', '').trim()
-          console.log('🆔 Buscando por ID do usuário:', userId)
           postsQuery = postsQuery.or(`user_id.eq.${userId},professional_id.eq.${userId}`)
         } else {
           // Busca por palavras-chave (padrão)
           const keywords = searchTerm.toLowerCase()
-          console.log('🔑 Buscando por palavras-chave:', keywords)
           
           // Buscar em campos básicos do post
           postsQuery = postsQuery.or(`
@@ -259,46 +255,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         throw postsError
       }
       
-      console.log('📊 Posts retornados:', {
-        total: posts?.length || 0,
-        filter: filters.location_filter?.type,
-        city: filters.location_filter?.city,
-        state: filters.location_filter?.state,
-        todosOsPosts: posts?.map(p => ({
-          id: p.id,
-          title: p.title?.substring(0, 30),
-          location_city: p.location_city,
-          location_state: p.location_state,
-          // Comparação direta
-          cityMatch: p.location_city === filters.location_filter?.city,
-          stateMatch: p.location_state === filters.location_filter?.state,
-          // Comparação lower case
-          cityMatchLower: p.location_city?.toLowerCase() === filters.location_filter?.city?.toLowerCase(),
-          stateMatchLower: p.location_state?.toLowerCase() === filters.location_filter?.state?.toLowerCase()
-        }))
-      })
-      
-      // Log detalhado para debug
-      if (posts && posts.length > 0) {
-        console.log('🔍 DEBUG DETALHADO - Primeiro post:', {
-          'Filtro city': `"${filters.location_filter?.city}"`,
-          'Filtro state': `"${filters.location_filter?.state}"`,
-          'Post city': `"${posts[0].location_city}"`,
-          'Post state': `"${posts[0].location_state}"`,
-          'City match exato': posts[0].location_city === filters.location_filter?.city,
-          'State match exato': posts[0].location_state === filters.location_filter?.state,
-          'City length filtro': filters.location_filter?.city?.length,
-          'State length filtro': filters.location_filter?.state?.length,
-          'City length post': posts[0].location_city?.length,
-          'State length post': posts[0].location_state?.length
-        })
-      }
 
       // Se há busca ativa, fazer uma busca adicional por nome de usuário nos posts
       let relatedPosts: any[] = []
       if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.trim().toLowerCase()
-        console.log('🔍 Buscando posts relacionados por nome de usuário:', searchTerm)
         
         try {
           // Buscar posts onde o nome do usuário aparece nos metadados ou dados relacionados
