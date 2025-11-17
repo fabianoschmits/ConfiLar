@@ -123,6 +123,52 @@ export function QueryProvider({ children }: QueryProviderProps) {
     restoreCache()
   }, [queryClient])
 
+  // Função para remover Promises e estruturas não serializáveis
+  const removeNonSerializable = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+      return obj
+    }
+    
+    // Se for uma Promise, retornar null
+    if (obj instanceof Promise) {
+      return null
+    }
+    
+    // Se for uma função, retornar null
+    if (typeof obj === 'function') {
+      return null
+    }
+    
+    // Se for um Date, converter para string ISO
+    if (obj instanceof Date) {
+      return obj.toISOString()
+    }
+    
+    // Se for um array, processar cada item
+    if (Array.isArray(obj)) {
+      return obj.map(item => removeNonSerializable(item))
+    }
+    
+    // Se for um objeto, processar cada propriedade
+    if (typeof obj === 'object') {
+      const cleaned: any = {}
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          try {
+            cleaned[key] = removeNonSerializable(obj[key])
+          } catch (e) {
+            // Se não puder serializar, ignorar a propriedade
+            continue
+          }
+        }
+      }
+      return cleaned
+    }
+    
+    // Valores primitivos são seguros
+    return obj
+  }
+
   // Salvar cache periodicamente
   useEffect(() => {
     if (!isHydrated) return
@@ -148,9 +194,12 @@ export function QueryProvider({ children }: QueryProviderProps) {
           }
         })
         
+        // Remover Promises e estruturas não serializáveis antes de salvar
+        const cleanedState = removeNonSerializable(dehydratedState)
+        
         const cacheData = {
           timestamp: Date.now(),
-          clientState: dehydratedState
+          clientState: cleanedState
         }
         
         await setStorageData('cache', PERSIST_KEY, cacheData, 7 * 24 * 60 * 60 * 1000)

@@ -142,6 +142,7 @@ export function useMessages() {
             .from('messages')
             .select('content, created_at, sender_id')
             .eq('conversation_id', conversation.id)
+            .or('is_deleted.is.null,is_deleted.eq.false') // Filtrar apenas mensagens não deletadas
           
           // Se foi deletada, buscar apenas mensagens depois da deleção
           if (deletedAt) {
@@ -206,6 +207,7 @@ export function useMessages() {
       if (convError) throw convError
 
       // Consulta de mensagens com campos específicos
+      // Filtrar apenas mensagens não deletadas (is_deleted pode ser false ou null)
       const { data, error } = await supabase
         .from('messages')
         .select(`
@@ -221,12 +223,79 @@ export function useMessages() {
           is_read
         `)
         .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true })
-        .limit(50)
+        .or('is_deleted.is.null,is_deleted.eq.false') // Filtrar apenas mensagens não deletadas
+        .order('created_at', { ascending: false }) // Buscar as mais recentes primeiro
+        .limit(100) // Buscar mais mensagens para garantir que pegamos as mais recentes
 
       if (error) throw error
 
-      setMessages(data || [])
+      const newMessages = (data || []).reverse() // Reverter para ordem cronológica (mais antiga -> mais recente)
+      
+      console.log(`📥 Carregando ${newMessages.length} mensagens do banco para conversa ${conversationId}`)
+      console.log(`📋 IDs das mensagens do banco:`, newMessages.map(m => `${m.id.substring(0, 8)} (${new Date(m.created_at).toLocaleTimeString()})`).join(', '))
+      
+      // SEMPRE fazer merge para preservar mensagens enviadas recentemente
+      setMessages(prev => {
+        // Se não há mensagens anteriores ou é uma conversa diferente, retornar as novas
+        if (prev.length === 0 || (prev[0]?.conversation_id && prev[0].conversation_id !== conversationId)) {
+          console.log(`📥 Primeira carga para conversa ${conversationId}, retornando ${newMessages.length} mensagens do banco`)
+          return newMessages
+        }
+        
+        // Se é a mesma conversa, fazer merge inteligente preservando mensagens recentes
+        console.log(`🔄 Mesclando mensagens para conversa ${conversationId}: ${prev.length} existentes + ${newMessages.length} novas do banco`)
+        
+        // Criar um mapa de IDs das mensagens novas do banco
+        const newMessageIds = new Set(newMessages.map(m => m.id))
+        
+        // Preservar mensagens recentes (últimos 60 segundos) que podem ainda não estar no banco
+        // Aumentado para 60 segundos para garantir que mensagens enviadas não sejam perdidas
+        const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString()
+        const oldMessagesToKeep = prev.filter(m => {
+          // Se a mensagem já está no banco (está nas novas), não precisa preservar
+          if (newMessageIds.has(m.id)) {
+            return false
+          }
+          
+          // Preservar mensagens muito recentes que podem ainda não estar no banco
+          const isVeryRecent = new Date(m.created_at).toISOString() > sixtySecondsAgo
+          if (isVeryRecent) {
+            console.log(`💾 Preservando mensagem recente: ${m.id.substring(0, 8)} (${m.content.substring(0, 20)}...)`)
+          }
+          return isVeryRecent
+        })
+        
+        // Combinar mensagens antigas preservadas com as novas do banco
+        // Remover duplicatas por ID (priorizando as novas do banco)
+        const uniqueMap = new Map<string, Message>()
+        
+        // Primeiro adicionar mensagens antigas preservadas
+        oldMessagesToKeep.forEach(msg => {
+          uniqueMap.set(msg.id, msg)
+        })
+        
+        // Depois adicionar/sobrescrever com as novas do banco (que são a fonte da verdade)
+        newMessages.forEach(msg => {
+          uniqueMap.set(msg.id, msg)
+        })
+        
+        const unique = Array.from(uniqueMap.values())
+        
+        // Ordenar por created_at (ascendente para exibir do mais antigo ao mais recente)
+        const sorted = unique.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+        
+        // Pegar apenas as últimas 50 mensagens (as mais recentes) para exibição
+        // Isso garante que mesmo que haja muitas mensagens, mostramos as 50 mais recentes
+        const limited = sorted.slice(-50)
+        
+        console.log(`✅ Resultado do merge: ${limited.length} mensagens exibidas (${oldMessagesToKeep.length} preservadas + ${newMessages.length} do banco, ${sorted.length - limited.length} mensagens antigas removidas)`)
+        console.log(`📋 IDs das mensagens exibidas:`, limited.map(m => `${m.id.substring(0, 8)} (${new Date(m.created_at).toLocaleTimeString()})`).join(', '))
+        
+        return limited
+      })
+      
       console.log(`✅ ${data?.length || 0} mensagens carregadas`)
     } catch (err) {
       console.error('❌ Erro ao buscar mensagens:', err)
@@ -444,7 +513,8 @@ export function useMessages() {
           sender_id: user.id,
           receiver_id: receiverId,
           content: content.trim(),
-          is_read: false
+          is_read: false,
+          is_deleted: false // Garantir explicitamente que não está deletada
         })
         .select(`
           id,
@@ -475,11 +545,25 @@ export function useMessages() {
           .eq('id', conversationId)
       }
 
-      // Recarregar conversas E mensagens para atualizar a lista
-      await Promise.all([
-        loadConversations(),
-        loadMessages(conversationId)
-      ])
+      // Adicionar mensagem ao estado local imediatamente (optimistic update)
+      setMessages(prev => {
+        // Verificar se a mensagem já existe para evitar duplicação
+        const exists = prev.some(m => m.id === data.id)
+        if (exists) {
+          return prev
+        }
+        // Ordenar mensagens por created_at após adicionar
+        const updated = [...prev, data]
+        return updated.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+      })
+      
+      // Recarregar conversas para atualizar a lista
+      await loadConversations()
+      
+      // NÃO recarregar mensagens automaticamente - a mensagem já foi adicionada
+      // O realtime vai sincronizar quando a mensagem for inserida no banco
       
       return true
     } catch (err) {
@@ -902,8 +986,84 @@ export function useMessages() {
           },
           (payload) => {
             console.log('💬 Nova mensagem recebida via realtime:', payload.new)
+            const newMessage = payload.new as Message
+            
+            // Verificar se a mensagem não foi deletada
+            if ((newMessage as any).is_deleted === true) {
+              console.log('⏭️ Mensagem deletada, ignorando:', newMessage.id)
+              return
+            }
+            
+            // Adicionar mensagem ao estado local se for da conversa atual
+            setMessages(prev => {
+              // Verificar se a mensagem já existe para evitar duplicação
+              const exists = prev.some(m => m.id === newMessage.id)
+              if (exists) {
+                console.log('⏭️ Mensagem já existe no estado (realtime sender), ignorando:', newMessage.id)
+                return prev
+              }
+              
+              // Se não há mensagens no estado, adicionar diretamente
+              if (prev.length === 0) {
+                console.log('📥 Adicionando primeira mensagem via realtime (sender):', newMessage.id, 'conversation:', newMessage.conversation_id)
+                return [newMessage]
+              }
+              
+              // Adicionar apenas se for da mesma conversa que está sendo visualizada
+              const currentConversationId = prev[0]?.conversation_id
+              if (currentConversationId === newMessage.conversation_id) {
+                console.log('📥 Adicionando mensagem via realtime (sender):', newMessage.id, 'conversation:', newMessage.conversation_id)
+                // Ordenar mensagens por created_at após adicionar
+                const updated = [...prev, newMessage]
+                return updated.sort((a, b) => 
+                  new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                )
+              } else {
+                console.log('⏭️ Mensagem de conversa diferente (realtime sender), ignorando:', newMessage.id, 'current:', currentConversationId, 'new:', newMessage.conversation_id)
+              }
+              return prev
+            })
+            
             // Recarregar conversas para atualizar contadores
             loadConversations()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `sender_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('💬 Nova mensagem enviada via realtime:', payload.new)
+            const newMessage = payload.new as Message
+            
+            // Verificar se a mensagem não foi deletada
+            if ((newMessage as any).is_deleted === true) {
+              console.log('⏭️ Mensagem deletada, ignorando:', newMessage.id)
+              return
+            }
+            
+            // Adicionar mensagem ao estado local se for da conversa atual
+            setMessages(prev => {
+              // Verificar se a mensagem já existe para evitar duplicação
+              const exists = prev.some(m => m.id === newMessage.id)
+              if (exists) {
+                return prev
+              }
+              // Adicionar apenas se for da mesma conversa que está sendo visualizada
+              const currentConversationId = prev.length > 0 ? prev[0]?.conversation_id : null
+              if (currentConversationId === newMessage.conversation_id) {
+                // Ordenar mensagens por created_at após adicionar
+                const updated = [...prev, newMessage]
+                return updated.sort((a, b) => 
+                  new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                )
+              }
+              return prev
+            })
           }
         )
         .on(

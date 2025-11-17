@@ -21,6 +21,7 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useMessages } from '@/hooks/useMessages'
 import { useFavorites } from '@/hooks/useFavorites'
+import { useNotifications } from '@/components/notifications/NotificationProviderSimple'
 import { UserAvatar } from '@/components/ui/UserAvatar'
 import { ConversationMenu } from './ConversationMenu'
 import { MessageMenu } from './MessageMenu'
@@ -28,7 +29,7 @@ import { RequestEvaluationButton } from './RequestEvaluationButton'
 
 export function FloatingChat() {
   const { user, profile } = useAuthContext()
-  const { isOpen, closeChat, selectedConversationId, selectConversation, openChat } = useFloatingChat()
+  const { isOpen, closeChat, selectedConversationId, selectConversation, openChat, targetUserId } = useFloatingChat()
   const { 
     conversations, 
     messages, 
@@ -44,6 +45,22 @@ export function FloatingChat() {
   } = useMessages()
   
   const { favorites, isFavorite } = useFavorites()
+  const { notifications } = useNotifications()
+
+  // Verificar se há notificações de mensagem não lidas
+  const hasUnreadMessageNotifications = notifications.some(
+    notification => 
+      !notification.is_read && 
+      (notification.type === 'message' || notification.title?.toLowerCase().includes('mensagem'))
+  )
+  
+  // Contar notificações de mensagem não lidas
+  const unreadMessageNotifications = notifications.filter(
+    notification => 
+      !notification.is_read && 
+      (notification.type === 'message' || notification.title?.toLowerCase().includes('mensagem'))
+  )
+  const unreadMessageCount = unreadMessageNotifications.length
   
   // Estados do componente
   const [selectedConversation, setSelectedConversation] = useState<any>(null)
@@ -53,8 +70,25 @@ export function FloatingChat() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showFavoritesSearch, setShowFavoritesSearch] = useState(false)
   const [lastConversationId, setLastConversationId] = useState<string | null>(null)
+  const [lastUnreadMessageCount, setLastUnreadMessageCount] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messageInputRef = useRef<HTMLInputElement>(null)
+  
+  // Abrir chat automaticamente quando houver nova notificação de mensagem
+  useEffect(() => {
+    if (unreadMessageCount > lastUnreadMessageCount) {
+      // Nova notificação de mensagem detectada
+      setLastUnreadMessageCount(unreadMessageCount)
+      
+      // Abrir chat automaticamente se houver nova notificação
+      if (!isOpen) {
+        console.log('💬 Nova notificação de mensagem detectada, abrindo chat automaticamente')
+        openChat()
+      }
+    } else {
+      setLastUnreadMessageCount(unreadMessageCount)
+    }
+  }, [unreadMessageCount, lastUnreadMessageCount, isOpen, openChat])
   
   // Função para fazer scroll automático para o final
   const scrollToBottom = () => {
@@ -132,21 +166,35 @@ export function FloatingChat() {
   }, [isOpen])
 
   // Sincronizar com contexto quando selectedConversationId muda
+  // Usar ref para evitar recarregar mensagens quando apenas conversations atualizar
+  const lastSelectedIdRef = useRef<string | null>(null)
+  
   useEffect(() => {
     if (selectedConversationId) {
-      const conversation = conversations.find(c => c.id === selectedConversationId)
-      if (conversation) {
-        console.log('💬 Conversa encontrada na lista, carregando mensagens:', conversation.id)
-        setSelectedConversation(conversation)
-        loadMessages(conversation.id)
-        markMessagesAsRead(conversation.id)
+      // Só recarregar mensagens se a conversa selecionada mudou
+      if (lastSelectedIdRef.current !== selectedConversationId) {
+        lastSelectedIdRef.current = selectedConversationId
+        const conversation = conversations.find(c => c.id === selectedConversationId)
+        if (conversation) {
+          console.log('💬 Conversa encontrada na lista, carregando mensagens:', conversation.id)
+          setSelectedConversation(conversation)
+          loadMessages(conversation.id)
+          markMessagesAsRead(conversation.id)
+        } else {
+          // Se a conversa não está na lista ainda, carregar mensagens diretamente
+          console.log('💬 Conversa não encontrada na lista, carregando mensagens diretamente:', selectedConversationId)
+          loadMessages(selectedConversationId)
+          markMessagesAsRead(selectedConversationId)
+        }
       } else {
-        // Se a conversa não está na lista ainda, carregar mensagens diretamente
-        console.log('💬 Conversa não encontrada na lista, carregando mensagens diretamente:', selectedConversationId)
-        loadMessages(selectedConversationId)
-        markMessagesAsRead(selectedConversationId)
+        // Se apenas conversations mudou mas a conversa selecionada é a mesma, apenas atualizar o objeto
+        const conversation = conversations.find(c => c.id === selectedConversationId)
+        if (conversation) {
+          setSelectedConversation(conversation)
+        }
       }
     } else {
+      lastSelectedIdRef.current = null
       setSelectedConversation(null)
     }
   }, [selectedConversationId, conversations])
@@ -759,17 +807,19 @@ export function FloatingChat() {
           </Card>
           </div>
         ) : (
-          /* Botão Minimizado (mostrar somente quando houver notificações) */
+          /* Botão Minimizado (mostrar quando houver notificações de mensagem ou mensagens não lidas) */
           <>
-            {totalUnread > 0 ? (
+            {hasUnreadMessageNotifications || totalUnread > 0 ? (
               <Button
                 onClick={() => setIsExpanded(true)}
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl transition-all duration-200 p-4 rounded-full relative"
               >
                 <MessageCircle className="h-6 w-6" />
-                <Badge className="absolute -top-2 -right-2 bg-red-500 text-white font-medium text-xs min-w-5 h-5 flex items-center justify-center rounded-full">
-                  {totalUnread}
-                </Badge>
+                {(totalUnread > 0 || hasUnreadMessageNotifications) && (
+                  <Badge className="absolute -top-2 -right-2 bg-red-500 text-white font-medium text-xs min-w-5 h-5 flex items-center justify-center rounded-full">
+                    {totalUnread > 0 ? totalUnread : '!'}
+                  </Badge>
+                )}
               </Button>
             ) : null}
           </>

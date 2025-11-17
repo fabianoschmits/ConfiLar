@@ -131,12 +131,22 @@ export async function setStorageData<T>(
     const db = await getDB()
     const now = Date.now()
     
-    await db.put(store, {
-      id: key,
-      data,
-      timestamp: now,
-      expiresAt: now + ttl
-    } as any)
+    // O cache store usa 'key' como keyPath, os outros usam 'id'
+    if (store === 'cache') {
+      await db.put(store, {
+        key: key,
+        data,
+        timestamp: now,
+        expiresAt: now + ttl
+      } as any)
+    } else {
+      await db.put(store, {
+        id: key,
+        data,
+        timestamp: now,
+        expiresAt: now + ttl
+      } as any)
+    }
   } catch (error) {
     console.error(`❌ Erro ao salvar em ${store}:`, error)
   }

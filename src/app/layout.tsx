@@ -115,8 +115,8 @@ export default async function RootLayout({
                   <AuthProvider initialSession={session}>
                   {/* <AutoReauthentication> */}
                     <AvailabilityProvider>
-                      <NotificationProviderSimple>
-                        <FloatingChatProviderSimple>
+                      <FloatingChatProviderSimple>
+                        <NotificationProviderSimple>
                           <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
                             <BanNotification>
                               {children}
@@ -128,8 +128,8 @@ export default async function RootLayout({
                           <CookieConsentBanner />
                           <PWAManager />
                           <ToasterWithSounds position="top-right" richColors />
-                        </FloatingChatProviderSimple>
-                      </NotificationProviderSimple>
+                        </NotificationProviderSimple>
+                      </FloatingChatProviderSimple>
                     </AvailabilityProvider>
                   {/* </AutoReauthentication> */}
                   </AuthProvider>
