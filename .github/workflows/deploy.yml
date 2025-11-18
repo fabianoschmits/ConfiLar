@@ -30,13 +30,23 @@ jobs:
           curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd/ZkM7PCKa6k"
       
       - name: Deploy with Vercel CLI
+        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' }}
         uses: amondnet/vercel-action@v25
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN || '' }}
-          vercel-org-id: ${{ secrets.ORG_ID || '' }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd
           working-directory: ./
           vercel-args: '--prod'
+      
+      - name: Skip Vercel Deploy (Missing Secrets)
+        if: ${{ secrets.VERCEL_TOKEN == '' || secrets.VERCEL_ORG_ID == '' }}
+        run: |
+          echo "⚠️ VERCEL_TOKEN ou VERCEL_ORG_ID não configurados. Pulando deploy."
+          echo "Para configurar, vá em: Settings > Secrets and variables > Actions"
+          echo "Adicione os seguintes secrets:"
+          echo "  - VERCEL_TOKEN: Token do Vercel"
+          echo "  - VERCEL_ORG_ID: ID da organização do Vercel"
 
 
 
