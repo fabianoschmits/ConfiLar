@@ -138,7 +138,7 @@ export function QuickActionMenu() {
                 <div className={cn(
                   'transition-colors duration-200',
                   isActive 
-                    ? 'text-orange-500 dark:text-orange-500' 
+                    ? 'text-[#00b0b0] dark:text-[#00b0b0]' 
                     : 'text-gray-600 dark:text-white'
                 )}>
                   <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -148,7 +148,7 @@ export function QuickActionMenu() {
                 <span className={cn(
                   'text-[8px] sm:text-[9px] font-medium transition-colors duration-200 whitespace-nowrap',
                   isActive 
-                    ? 'text-orange-500 dark:text-orange-500' 
+                    ? 'text-[#00b0b0] dark:text-[#00b0b0]' 
                     : 'text-gray-600 dark:text-white'
                 )}>
                   {action.label}

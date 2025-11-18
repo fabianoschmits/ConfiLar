@@ -13,7 +13,8 @@ import {
   FileText, 
   Info, 
   Mail,
-  LogIn
+  LogIn,
+  Instagram
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -126,6 +127,18 @@ export function MobileFloatingMenu() {
                   >
                     <Mail className="h-4 w-4 mr-2" />
                     Contato
+                  </Button>
+                </a>
+
+                {/* Instagram */}
+                <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" onClick={handleClose}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-gray-700 hover:bg-gray-100"
+                    size="lg"
+                  >
+                    <Instagram className="h-4 w-4 mr-2" />
+                    Instagram
                   </Button>
                 </a>
               </div>

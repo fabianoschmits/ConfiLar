@@ -74,6 +74,30 @@ export function ModernSidebar() {
   // Sempre renderizar o componente para navegação
   const isLoggedIn = user && profile
 
+  // Carregar estado das categorias expandidas do localStorage ao montar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar-expanded-categories')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          if (Array.isArray(parsed)) {
+            setExpandedCategories(parsed)
+          }
+        } catch (error) {
+          console.error('Erro ao carregar categorias expandidas:', error)
+        }
+      }
+    }
+  }, [])
+
+  // Salvar estado das categorias expandidas no localStorage sempre que mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar-expanded-categories', JSON.stringify(expandedCategories))
+    }
+  }, [expandedCategories])
+
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => 
       prev.includes(categoryId) 
@@ -81,11 +105,6 @@ export function ModernSidebar() {
         : [...prev, categoryId]
     )
   }
-
-  // Recolher todos os menus a cada atualização da página
-  useEffect(() => {
-    setExpandedCategories([])
-  }, [pathname])
 
   // Categorias principais da sidebar
   const sidebarCategories: SidebarCategory[] = [
@@ -391,13 +410,13 @@ export function ModernSidebar() {
                           className={`
                             group flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors w-full text-left
                             ${isActive(item.href)
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium'
+                              ? 'bg-[#00b0b0]/20 dark:bg-[#00b0b0]/30 text-[#00b0b0] dark:text-[#00b0b0] font-medium'
                               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                             }
                           `}
                         >
                           <div className="flex items-center space-x-2">
-                            <div className={`${isActive(item.href) ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}>
+                            <div className={`${isActive(item.href) ? 'text-[#00b0b0] dark:text-[#00b0b0]' : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}>
                               {item.icon}
                             </div>
                             <div>
@@ -428,7 +447,7 @@ export function ModernSidebar() {
                                 ? 'bg-green-200 dark:bg-green-900/30 text-green-800 dark:text-green-200 font-medium'
                                 : 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
                               : isActive(item.href)
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-medium'
+                              ? 'bg-[#00b0b0]/20 dark:bg-[#00b0b0]/30 text-[#00b0b0] dark:text-[#00b0b0] font-medium'
                               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }
                           `}
@@ -440,7 +459,7 @@ export function ModernSidebar() {
                                   ? 'text-green-700 dark:text-green-300'
                                   : 'text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300'
                                 : isActive(item.href)
-                                ? 'text-gray-700 dark:text-gray-300'
+                                ? 'text-[#00b0b0] dark:text-[#00b0b0]'
                                 : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
                               }
                             `}>

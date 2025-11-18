@@ -33,7 +33,8 @@ import {
   Bold, 
   Italic, 
   Underline, 
-  LogOut 
+  LogOut,
+  Instagram
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
 
@@ -227,16 +228,23 @@ export default function AjudaPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 mb-6">
-                    Entre em contato conosco via email para suporte.
+                    Entre em contato conosco via email ou siga-nos no Instagram.
                   </p>
-                  <div className="flex justify-center">
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:suporte@appconfilar.com.br" className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                       <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">Suporte via Email</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">suporte@appconfilar.com.br</p>
                       </div>
-                    </div>
+                    </a>
+                    <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                      <Instagram className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">Instagram</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">@appconfilar</p>
+                      </div>
+                    </a>
                   </div>
                 </CardContent>
               </Card>

@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Shield, Edit3, Lock
-} from 'lucide-react'
+import { Edit3 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { DeleteAccountForm } from '@/components/forms/DeleteAccountForm'
+import { ChangePasswordForm } from '@/components/forms/ChangePasswordForm'
 
 export default function SegurancaPage() {
   const { user } = useAuthContext()
@@ -39,25 +36,7 @@ export default function SegurancaPage() {
 
             <div className="space-y-8">
               {/* Alterar Senha */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-600" />
-                    Alterar Senha
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Para alterar sua senha, use a opção de recuperação de senha na página de login.
-                  </p>
-                  <a 
-                    href="/recuperar-senha" 
-                    className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                  >
-                    Recuperar/Alterar Senha →
-                  </a>
-                </CardContent>
-              </Card>
+              <ChangePasswordForm />
 
               {/* Deletar Conta */}
               <div className="pt-4">

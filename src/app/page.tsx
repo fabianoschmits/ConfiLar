@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { 
   Search, Users, Star, Shield, ArrowRight, MessageCircle,
-  Briefcase, Eye, ThumbsUp, Gift, CheckCircle2, Menu, X, Mail,
+  Briefcase, Eye, ThumbsUp, Gift, CheckCircle2, Menu, X, Mail, Instagram,
   TrendingUp, Award, Sparkles, Zap
 } from 'lucide-react'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
@@ -649,6 +649,12 @@ function HomeContent() {
                     <Mail className="h-4 w-4 mr-2 text-[#00b0b0]" />
                     <a href="mailto:contato@appconfilar.com.br" className="hover:text-[#00b0b0] transition-colors">
                       contato@appconfilar.com.br
+                    </a>
+                  </li>
+                  <li className="flex items-center text-gray-400">
+                    <Instagram className="h-4 w-4 mr-2 text-[#00b0b0]" />
+                    <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" className="hover:text-[#00b0b0] transition-colors">
+                      @appconfilar
                     </a>
                   </li>
                 </ul>

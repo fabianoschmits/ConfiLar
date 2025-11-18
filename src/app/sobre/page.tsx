@@ -1,6 +1,6 @@
 'use client'
 
-import { Shield, Users, Zap, MapPin, Phone, Mail, CheckCircle } from 'lucide-react'
+import { Shield, Users, Zap, MapPin, Phone, Mail, CheckCircle, Instagram } from 'lucide-react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
@@ -129,6 +129,12 @@ export default function SobrePage() {
                     <Users className="h-5 w-5 mr-2" />
                     Buscar Profissionais
                   </Link>
+                </Button>
+                <Button asChild variant="outline" className="px-6 py-3">
+                  <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer">
+                    <Instagram className="h-5 w-5 mr-2" />
+                    @appconfilar
+                  </a>
                 </Button>
               </div>
             </div>
@@ -265,6 +271,10 @@ export default function SobrePage() {
             <Users className="h-5 w-5 mr-2" />
             Buscar Profissionais
           </Link>
+          <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center">
+            <Instagram className="h-5 w-5 mr-2" />
+            @appconfilar
+          </a>
         </div>
       </div>
     </div>
