@@ -43,16 +43,19 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
         return { error }
       }
 
-      // Enviar OTP para reautenticação usando signInWithOtp
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: user.email,
-        options: {
-          shouldCreateUser: false, // Não criar novo usuário, apenas enviar OTP
-          emailRedirectTo: undefined // Não redirecionar, apenas enviar OTP
+      // Enviar código OTP numérico para reautenticação usando nossa API
+      // Isso garante que um código OTP numérico seja enviado, não um magic link
+      const response = await fetch('/api/auth/resend-reauth-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         }
       })
-      
-      if (error) {
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        const error = { message: result.error || 'Erro ao enviar código de verificação' }
         console.error('❌ Erro na reautenticação:', error)
         setError(error.message)
         setIsLoading(false)
@@ -99,12 +102,12 @@ export function useReauthentication(): ReauthenticationState & ReauthenticationA
         return { error }
       }
 
-      // Verificar OTP usando a API oficial do Supabase
-      // Quando usamos signInWithOtp, o tipo é 'magiclink' ou 'email'
+      // Verificar código OTP usando a API oficial do Supabase
+      // Quando usamos signInWithOtp, o tipo para verifyOtp é 'email'
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: user.email,
         token: otp,
-        type: 'magiclink' // Tipo correto para signInWithOtp
+        type: 'email' // Tipo correto para signInWithOtp
       })
 
       if (verifyError) {

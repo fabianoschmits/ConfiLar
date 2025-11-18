@@ -58,11 +58,17 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
       }
     }
 
-    navigator.serviceWorker.addEventListener('message', handleMessage)
+    // Adicionar event listener apenas se Service Worker estiver disponível
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleMessage)
+    }
 
     return () => {
       clearInterval(cleanupInterval)
-      navigator.serviceWorker.removeEventListener('message', handleMessage)
+      // Remover event listener apenas se Service Worker estiver disponível
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleMessage)
+      }
     }
   }, [])
 

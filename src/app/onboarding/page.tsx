@@ -31,10 +31,17 @@ import { useAutoNotifications } from '@/hooks/useAutoNotifications'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { updateReferralMilestone, createReferral } from '@/hooks/useReferralTracking'
 import { BrandLogo } from '@/components/common/BrandLogo'
+import { ValidationUtils } from '@/lib/validation'
 
 
 const onboardingSchema = z.object({
   full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
+  cpf_cnpj: z.string().min(1, 'CPF é obrigatório').refine((value) => {
+    if (!value) return false
+    return ValidationUtils.isValidCPF(value)
+  }, {
+    message: 'CPF inválido'
+  }),
   phone: z.string().min(10, 'Telefone inválido'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   gender: z.enum(['male', 'female', 'other']),
@@ -154,6 +161,8 @@ export default function OnboardingPage() {
           console.log('✅ [Onboarding] CPF encontrado na tabela profiles:', profileData.cpf_cnpj)
           console.log('✅ [Onboarding] Email do perfil:', profileData.email)
           setUserCpf(profileData.cpf_cnpj)
+          // Preencher o campo do formulário com o CPF encontrado
+          setValue('cpf_cnpj', profileData.cpf_cnpj)
         } else {
           console.log('⚠️ [Onboarding] CPF não encontrado na tabela profiles')
           console.log('⚠️ [Onboarding] Profile data completo:', profileData)
@@ -182,7 +191,7 @@ export default function OnboardingPage() {
       shortTitle: 'Dados',
       icon: User, 
       description: 'Informações pessoais básicas',
-      fields: ['full_name', 'phone', 'birth_date', 'gender']
+      fields: ['full_name', 'cpf_cnpj', 'phone', 'birth_date', 'gender']
     },
     { 
       id: 3, 
@@ -253,6 +262,8 @@ export default function OnboardingPage() {
         return !!(
           values.full_name &&
           values.full_name.length >= 2 &&
+          values.cpf_cnpj &&
+          ValidationUtils.isValidCPF(values.cpf_cnpj) &&
           values.phone && 
           values.phone.length >= 10 &&
           values.birth_date &&
@@ -345,6 +356,20 @@ export default function OnboardingPage() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhone(e.target.value)
     setValue('phone', formatted)
+  }
+
+  // Formatação automática para CPF
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 3) return numbers
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
+  }
+
+  const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCPF(e.target.value)
+    setValue('cpf_cnpj', formatted)
   }
 
 
@@ -523,27 +548,45 @@ export default function OnboardingPage() {
         }
       )
 
-      // Buscar CPF direto da tabela profiles (mesmo lugar onde foi salvo no cadastro)
-      console.log('🔍 [Onboarding] Buscando CPF da tabela profiles...')
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('cpf_cnpj')
-        .eq('id', user.id)
-        .maybeSingle()
+      // Usar o CPF digitado no formulário (tem prioridade sobre o CPF do banco)
+      // Se não foi digitado, tentar buscar do banco como fallback
+      let finalCpf = data.cpf_cnpj || null
       
-      // Tentar buscar CPF de múltiplas fontes:
-      // 1. Da tabela profiles (se foi salvo no cadastro inicial)
-      // 2. Dos user_metadata do auth (fallback)
-      const cpfFromProfile = existingProfile?.cpf_cnpj || null
-      const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null
-      const finalCpf = cpfFromProfile || cpfFromMetadata || null
-      
-      console.log('🔍 [Onboarding] CPF encontrado na tabela profiles:', cpfFromProfile)
-      console.log('🔍 [Onboarding] CPF encontrado nos user_metadata:', cpfFromMetadata)
-      console.log('🔍 [Onboarding] CPF final que será usado:', finalCpf)
+      if (!finalCpf) {
+        console.log('🔍 [Onboarding] CPF não foi digitado, buscando do banco...')
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('cpf_cnpj')
+          .eq('id', user.id)
+          .maybeSingle()
+        
+        // Tentar buscar CPF de múltiplas fontes:
+        // 1. Da tabela profiles (se foi salvo no cadastro inicial)
+        // 2. Dos user_metadata do auth (fallback)
+        const cpfFromProfile = existingProfile?.cpf_cnpj || null
+        const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null
+        finalCpf = cpfFromProfile || cpfFromMetadata || null
+        
+        console.log('🔍 [Onboarding] CPF encontrado na tabela profiles:', cpfFromProfile)
+        console.log('🔍 [Onboarding] CPF encontrado nos user_metadata:', cpfFromMetadata)
+        console.log('🔍 [Onboarding] CPF final que será usado:', finalCpf)
+      } else {
+        console.log('✅ [Onboarding] CPF digitado no formulário:', finalCpf)
+      }
       
       if (!finalCpf) {
         console.warn('⚠️ [Onboarding] ATENÇÃO: CPF não encontrado em nenhuma fonte!')
+        toast.error('CPF é obrigatório. Por favor, preencha o campo CPF.')
+        setIsLoading(false)
+        return
+      }
+      
+      // Validar CPF antes de salvar
+      if (!ValidationUtils.isValidCPF(finalCpf)) {
+        console.error('❌ [Onboarding] CPF inválido:', finalCpf)
+        toast.error('CPF inválido. Por favor, verifique o CPF digitado.')
+        setIsLoading(false)
+        return
       }
       
       const profileData = {
@@ -551,7 +594,7 @@ export default function OnboardingPage() {
         email: user.email, // Campo obrigatório na tabela
         full_name: data.full_name,
         phone: data.phone,
-        cpf_cnpj: finalCpf, // CPF do cadastro inicial (tabela profiles ou user_metadata como fallback)
+        cpf_cnpj: finalCpf, // CPF digitado no formulário (tem prioridade) ou do banco como fallback
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,
@@ -603,7 +646,7 @@ export default function OnboardingPage() {
           
           // Dados pessoais completos
           bio: autoBio,
-          cpf_cnpj: (user as any)?.user_metadata?.cpf_cnpj || null,
+          cpf_cnpj: finalCpf, // CPF digitado no formulário (tem prioridade) ou do banco como fallback
           birth_date: data.birth_date,
           gender: data.gender,
           
@@ -829,6 +872,35 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-2">
+                          <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            CPF <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="cpf_cnpj"
+                            placeholder="000.000.000-00"
+                            {...register('cpf_cnpj')}
+                            onChange={handleCPFChange}
+                            maxLength={14}
+                            className={cn(
+                              "h-10",
+                              errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.cpf_cnpj && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.cpf_cnpj.message}
+                            </p>
+                          )}
+                          {watchedValues.cpf_cnpj && !errors.cpf_cnpj && ValidationUtils.isValidCPF(watchedValues.cpf_cnpj) && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              CPF válido
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
                           <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-1">
                             Telefone <span className="text-red-500">*</span>
                           </Label>
@@ -849,7 +921,6 @@ export default function OnboardingPage() {
                             </p>
                           )}
                         </div>
-
 
                         <div className="space-y-2">
                           <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700 flex items-center gap-1">
@@ -1552,7 +1623,7 @@ export default function OnboardingPage() {
                             <div>
                               <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
                               <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '(***) ***-****'}</p>
-                              <p><strong>CPF:</strong> {showDataSummary ? (userCpf ? userCpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado') : '***.***.***-**'}</p>
+                              <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || userCpf ? (watchedValues.cpf_cnpj || userCpf || '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado') : '***.***.***-**'}</p>
                             </div>
                             <div>
                               <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>

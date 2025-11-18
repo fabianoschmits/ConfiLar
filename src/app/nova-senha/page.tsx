@@ -3,7 +3,7 @@
 // Desabilitar SSG para esta página
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { ReauthenticationGuard } from '@/components/auth/ReauthenticationGuard'
 import { Check, X, ArrowLeft, Shield, Key } from 'lucide-react'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
+import { supabase } from '@/lib/supabase'
 
 const newPasswordSchema = z.object({
   password: z.string()
@@ -62,14 +63,123 @@ export default function NovaSenhaPage() {
   })
 
   const password = watch('password', '')
+  
+  // Flag para rastrear se já processamos o hash (evita loops infinitos)
+  const hasProcessedHash = useRef(false)
+  const hasInitialized = useRef(false)
+  const hasRedirected = useRef(false)
+  const authCheckTimeout = useRef<NodeJS.Timeout | null>(null)
 
-  // Verificar se o usuário está autenticado (veio do link do email)
+  // Processar hash da URL quando o usuário vem do link de reset de senha (apenas uma vez)
   useEffect(() => {
+    // Se já inicializamos, não fazer nada
+    if (hasInitialized.current) return
+    
+    const initialize = async () => {
+      hasInitialized.current = true
+      
+      // Verificar se há um hash na URL (token de reset de senha)
+      if (typeof window !== 'undefined' && window.location.hash) {
+        hasProcessedHash.current = true
+        
+        try {
+          const hash = window.location.hash.substring(1) // Remover o #
+          const params = new URLSearchParams(hash)
+          const accessToken = params.get('access_token')
+          const refreshToken = params.get('refresh_token')
+          const type = params.get('type')
+
+          // Se é um token de recovery, fazer o exchange para criar a sessão
+          if (type === 'recovery' && accessToken && refreshToken) {
+            console.log('🔄 Processando token de reset de senha...')
+            
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            })
+
+            if (error) {
+              console.error('❌ Erro ao processar token:', error)
+              toast.error('Link inválido ou expirado', {
+                description: 'O link de reset de senha é inválido ou já expirou. Por favor, solicite um novo link.'
+              })
+              router.push('/recuperar-senha')
+              return
+            }
+
+            if (data.session) {
+              console.log('✅ Sessão criada com sucesso')
+              // Limpar o hash da URL
+              window.history.replaceState(null, '', '/nova-senha')
+              setIsAuthenticated(true)
+              return
+            }
+          }
+        } catch (error) {
+          console.error('❌ Erro ao processar hash:', error)
+          toast.error('Erro ao processar link de reset de senha')
+          router.push('/recuperar-senha')
+          return
+        }
+      } else {
+        // Se não há hash, aguardar um pouco para permitir que o contexto carregue a sessão
+        // e então verificar se o usuário está autenticado
+        setTimeout(() => {
+          // Verificar se o usuário foi carregado enquanto esperávamos
+          // Usar uma verificação final através do contexto
+          const checkUserAuth = () => {
+            // Esta função será executada novamente pelo useEffect abaixo se necessário
+          }
+          checkUserAuth()
+        }, 500)
+      }
+    }
+
+    initialize()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]) // Executar apenas uma vez na montagem (router é estável)
+
+  // Verificar autenticação quando o usuário mudar (apenas se não processamos hash)
+  useEffect(() => {
+    // Se já processamos o hash, não fazer nada (já definimos isAuthenticated)
+    if (hasProcessedHash.current) return
+    
+    // Se ainda não inicializamos, aguardar
+    if (!hasInitialized.current) return
+    
+    // Se já redirecionamos, não fazer nada
+    if (hasRedirected.current) return
+    
+    // Limpar timeout anterior se existir
+    if (authCheckTimeout.current) {
+      clearTimeout(authCheckTimeout.current)
+      authCheckTimeout.current = null
+    }
+    
+    // Se o usuário está autenticado, permitir acesso
     if (user) {
       setIsAuthenticated(true)
-    } else {
-      // Se não está autenticado, redirecionar para login
-      router.push('/auth')
+      return
+    }
+    
+    // Se não há usuário e não há hash, aguardar um pouco antes de redirecionar
+    // Isso dá tempo para o contexto carregar a sessão
+    if (!window.location.hash) {
+      authCheckTimeout.current = setTimeout(() => {
+        // Verificar novamente antes de redirecionar
+        if (!hasRedirected.current && !window.location.hash && !user) {
+          hasRedirected.current = true
+          router.push('/auth')
+        }
+        authCheckTimeout.current = null
+      }, 2000)
+    }
+    
+    return () => {
+      if (authCheckTimeout.current) {
+        clearTimeout(authCheckTimeout.current)
+        authCheckTimeout.current = null
+      }
     }
   }, [user, router])
 

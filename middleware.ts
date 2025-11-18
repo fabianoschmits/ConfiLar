@@ -74,7 +74,8 @@ export async function middleware(request: NextRequest) {
   // Removido: Rotas de teste não são mais necessárias
 
   // Rotas de autenticação (redirecionar se já logado)
-  const authRoutes = ['/auth', '/login', '/register', '/recuperar-senha', '/nova-senha']
+  // NOTA: /nova-senha não deve ser redirecionada automaticamente pois pode ter tokens no hash
+  const authRoutes = ['/auth', '/login', '/register', '/recuperar-senha']
   
   // Rotas que não devem ser redirecionadas automaticamente
   const specialRoutes = ['/onboarding', '/teste-onboarding-modal', '/verificacao', '/reautenticacao']
@@ -120,7 +121,8 @@ export async function middleware(request: NextRequest) {
 
   // Se há usuário e tentando acessar rota de auth, redirecionar para feed social
   // Mas apenas se não for um redirecionamento interno
-  if (user && isAuthRoute && !request.headers.get('x-middleware-redirect')) {
+  // Exceção: /nova-senha pode ter tokens no hash, então não redirecionar automaticamente
+  if (user && isAuthRoute && !request.headers.get('x-middleware-redirect') && pathname !== '/nova-senha') {
     return NextResponse.redirect(new URL('/feed', request.url))
   }
 
