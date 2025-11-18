@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { HomePageLayout } from '@/components/layout/HomePageLayout'
@@ -78,7 +79,15 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex justify-between items-center bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/20">
               <Link href="/" className="flex items-center">
-                <BrandLogo width={120} height={32} />
+                <Image
+                  src="/imagens/logo/Logo branco - sem fundo - horizontal.png"
+                  alt="ConfiLar"
+                  width={360}
+                  height={96}
+                  quality={95}
+                  priority
+                  className="h-10 sm:h-12 w-auto object-contain"
+                />
               </Link>
               
               <nav className="hidden md:flex items-center space-x-6">
@@ -147,9 +156,23 @@ function HomeContent() {
               Plataforma de Confiança
             </Badge>
             
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              O que é o <span className="text-[#00b0b0]">ConfiLar</span>?
-            </h1>
+            <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+                O que é o
+              </h1>
+              <Image
+                src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
+                alt="ConfiLar"
+                width={300}
+                height={80}
+                quality={95}
+                priority
+                className="h-10 sm:h-14 md:h-20 lg:h-24 w-auto object-contain mt-5 sm:mt-6 md:mt-7 lg:mt-8"
+              />
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+                ?
+              </h1>
+            </div>
             
             <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto font-medium leading-relaxed">
               Uma plataforma <strong className="text-white">transparente e confiável</strong> que conecta pessoas 

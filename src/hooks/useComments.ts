@@ -163,89 +163,154 @@ export function useComments(options: UseCommentsOptions) {
         throw error
       }
       
-      // Criar notificações
-      try {
-        const userName = user.user_metadata?.full_name || 'Usuário'
-        
+      // Criar notificações em background (não bloquear)
+      // Executar assincronamente sem bloquear a resposta
+      Promise.all([
         // Se for uma resposta a um comentário
-        if (commentData.parent_comment_id) {
-          // Buscar o autor do comentário original
-          const { data: parentComment } = await supabase
-            .from('post_comments')
-            .select('user_id, user:profiles!post_comments_user_id_fkey(id, full_name)')
-            .eq('id', commentData.parent_comment_id)
-            .single()
-          
-          if (parentComment && parentComment.user_id !== user.id) {
-            await NotificationService.createReplyNotification(
-              filters.post_id,
-              commentData.parent_comment_id,
-              parentComment.user_id,
-              user.id,
-              userName,
-              commentData.content
-            )
-            
-            await NotificationService.sendPushNotification(
-              parentComment.user_id,
-              'Nova resposta!',
-              `${userName} respondeu seu comentário`
-            )
-          }
-        } 
+        commentData.parent_comment_id 
+          ? (async () => {
+              try {
+                const { data: parentComment } = await supabase
+                  .from('post_comments')
+                  .select('user_id')
+                  .eq('id', commentData.parent_comment_id)
+                  .single()
+                
+                if (parentComment && parentComment.user_id !== user.id) {
+                  const userName = user.user_metadata?.full_name || 'Usuário'
+                  NotificationService.createReplyNotification(
+                    filters.post_id,
+                    commentData.parent_comment_id,
+                    parentComment.user_id,
+                    user.id,
+                    userName,
+                    commentData.content
+                  ).catch(err => console.warn('Erro ao criar notificação de resposta:', err))
+                  
+                  NotificationService.sendPushNotification(
+                    parentComment.user_id,
+                    'Nova resposta!',
+                    `${userName} respondeu seu comentário`
+                  ).catch(err => console.warn('Erro ao enviar push de resposta:', err))
+                }
+              } catch (err) {
+                console.warn('Erro ao processar notificação de resposta:', err)
+              }
+            })()
+          : Promise.resolve(),
+        
         // Se for um comentário normal no post
-        else if (postOwnerId && postOwnerName && postOwnerId !== user.id) {
-          await NotificationService.createCommentNotification(
-            filters.post_id,
-            postOwnerId,
-            user.id,
-            userName,
-            commentData.content
-          )
-          
-          await NotificationService.sendPushNotification(
-            postOwnerId,
-            'Novo comentário!',
-            `${userName} comentou em seu post`
-          )
-        }
+        !commentData.parent_comment_id && postOwnerId && postOwnerId !== user.id
+          ? (async () => {
+              try {
+                const userName = user.user_metadata?.full_name || 'Usuário'
+                NotificationService.createCommentNotification(
+                  filters.post_id,
+                  postOwnerId,
+                  user.id,
+                  userName,
+                  commentData.content
+                ).catch(err => console.warn('Erro ao criar notificação de comentário:', err))
+                
+                NotificationService.sendPushNotification(
+                  postOwnerId,
+                  'Novo comentário!',
+                  `${userName} comentou em seu post`
+                ).catch(err => console.warn('Erro ao enviar push de comentário:', err))
+              } catch (err) {
+                console.warn('Erro ao processar notificação de comentário:', err)
+              }
+            })()
+          : Promise.resolve(),
         
         // Notificar usuários mencionados
-        if (mentions.length > 0) {
-          for (const mentionUsername of mentions) {
-            // Buscar usuário mencionado pelo username
-            const { data: mentionedUser } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('full_name', mentionUsername)
-              .single()
-            
-            if (mentionedUser && mentionedUser.id !== user.id) {
-              await NotificationService.createMentionNotification(
-                filters.post_id,
-                mentionedUser.id,
-                user.id,
-                userName,
-                commentData.content
-              )
-              
-              await NotificationService.sendPushNotification(
-                mentionedUser.id,
-                'Você foi mencionado!',
-                `${userName} te mencionou em um comentário`
-              )
-            }
-          }
-        }
-      } catch (notificationError) {
-        console.warn('Erro ao criar notificações:', notificationError)
-        // Não falhar a operação por causa das notificações
-      }
+        mentions.length > 0
+          ? Promise.all(mentions.map(async (mentionUsername) => {
+              try {
+                const { data: mentionedUser } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('full_name', mentionUsername)
+                  .single()
+                
+                if (mentionedUser && mentionedUser.id !== user.id) {
+                  const userName = user.user_metadata?.full_name || 'Usuário'
+                  NotificationService.createMentionNotification(
+                    filters.post_id,
+                    mentionedUser.id,
+                    user.id,
+                    userName,
+                    commentData.content
+                  ).catch(err => console.warn('Erro ao criar notificação de menção:', err))
+                  
+                  NotificationService.sendPushNotification(
+                    mentionedUser.id,
+                    'Você foi mencionado!',
+                    `${userName} te mencionou em um comentário`
+                  ).catch(err => console.warn('Erro ao enviar push de menção:', err))
+                }
+              } catch (err) {
+                console.warn('Erro ao processar notificação de menção:', err)
+              }
+            }))
+          : Promise.resolve()
+      ]).catch(err => console.warn('Erro ao processar notificações:', err))
       
       return data
     },
+    onMutate: async (commentData) => {
+      // Cancelar queries em andamento
+      await queryClient.cancelQueries({ queryKey: ['comments', filters] })
+
+      // Snapshot do valor anterior
+      const previousComments = queryClient.getQueryData(['comments', filters])
+
+      // Buscar dados do usuário para otimistic update
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return { previousComments }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .eq('id', user.id)
+        .single()
+
+      // Criar comentário otimisticamente
+      const optimisticComment: any = {
+        id: `temp-${Date.now()}`,
+        post_id: filters.post_id,
+        user_id: user.id,
+        parent_comment_id: commentData.parent_comment_id || null,
+        content: commentData.content,
+        likes_count: 0,
+        is_liked: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: profile ? {
+          id: profile.id,
+          full_name: profile.full_name
+        } : {
+          id: user.id,
+          full_name: user.user_metadata?.full_name || 'Usuário'
+        }
+      }
+
+      // Atualizar cache otimisticamente
+      queryClient.setQueryData(['comments', filters], (oldComments: Comment[] = []) => {
+        const newComments = [...oldComments, optimisticComment]
+        return organizeComments(newComments)
+      })
+
+      return { previousComments }
+    },
+    onError: (err, variables, context) => {
+      // Reverter em caso de erro
+      if (context?.previousComments) {
+        queryClient.setQueryData(['comments', filters], context.previousComments)
+      }
+    },
     onSuccess: () => {
-      // Invalidar cache de comentários
+      // Invalidar cache de comentários para garantir sincronização
       queryClient.invalidateQueries({
         queryKey: ['comments', filters]
       })

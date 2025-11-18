@@ -120,11 +120,11 @@ export default function FeedPage() {
     }
   })
 
-  useInfiniteScroll({ 
+  const { loadingRef } = useInfiniteScroll({ 
     hasNextPage, 
     isFetchingNextPage, 
     fetchNextPage: loadMore, 
-    threshold: 800 
+    threshold: 400 
   })
 
   useTimelineRealtime()
@@ -540,17 +540,9 @@ export default function FeedPage() {
               ))}
 
               {hasNextPage && (
-                <div className="flex justify-center py-8">
-                  {isFetchingNextPage ? (
+                <div ref={loadingRef} className="flex justify-center py-8">
+                  {isFetchingNextPage && (
                     <Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" />
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={() => loadMore()}
-                      className="rounded-full"
-                    >
-                      Carregar mais
-                    </Button>
                   )}
                 </div>
               )}

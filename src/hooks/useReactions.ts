@@ -89,49 +89,79 @@ export function useReactions(postId: string, postOwnerId?: string, postOwnerName
         if (error) throw error
         
         // Criar notificação para o dono do post (se não for o próprio usuário e se tivermos as informações)
-        if (postOwnerId && postOwnerName && postOwnerId !== user.id && reactionType === 'like') {
-          try {
-            const userName = user.user_metadata?.full_name || 'Usuário'
-            
-            await NotificationService.createLikeNotification(
-              postId,
-              postOwnerId,
-              user.id,
-              userName
-            )
-
-            // Enviar push notification
-            await NotificationService.sendPushNotification(
-              postOwnerId,
-              'Nova curtida!',
-              `${userName} curtiu seu post`
-            )
-          } catch (notificationError) {
-            console.warn('Erro ao criar notificação de curtida:', notificationError)
-            // Não falhar a operação por causa da notificação
-          }
+        // Executar em background sem bloquear
+        if (postOwnerId && postOwnerId !== user.id && reactionType === 'like') {
+          NotificationService.createLikeNotification(
+            postId,
+            postOwnerId,
+            user.id,
+            user.user_metadata?.full_name || 'Usuário'
+          ).catch(err => console.warn('Erro ao criar notificação:', err))
+          
+          NotificationService.sendPushNotification(
+            postOwnerId,
+            'Nova curtida!',
+            `${user.user_metadata?.full_name || 'Usuário'} curtiu seu post`
+          ).catch(err => console.warn('Erro ao enviar push:', err))
         }
         
         return { action: 'added', reactionType }
       }
     },
+    onMutate: async ({ reactionType, postId }) => {
+      // Cancelar queries em andamento
+      await queryClient.cancelQueries({ queryKey: ['user-reaction', postId] })
+      await queryClient.cancelQueries({ queryKey: ['reaction-counts', postId] })
+
+      // Snapshot do valor anterior
+      const previousUserReaction = queryClient.getQueryData(['user-reaction', postId])
+      const previousCounts = queryClient.getQueryData(['reaction-counts', postId])
+
+      // Atualizar otimisticamente
+      queryClient.setQueryData(['user-reaction', postId], reactionType === userReaction ? null : reactionType)
+      
+      // Atualizar contagens otimisticamente
+      if (previousCounts) {
+        const currentCounts = previousCounts as any
+        const isRemoving = reactionType === userReaction
+        const previousType = userReaction as ReactionType | null
+
+        queryClient.setQueryData(['reaction-counts', postId], {
+          ...currentCounts,
+          [reactionType]: isRemoving 
+            ? Math.max(0, (currentCounts[reactionType] || 0) - 1)
+            : (currentCounts[reactionType] || 0) + 1,
+          [previousType || reactionType]: previousType && previousType !== reactionType
+            ? Math.max(0, (currentCounts[previousType] || 0) - 1)
+            : (currentCounts[previousType || reactionType] || 0),
+          total: isRemoving 
+            ? Math.max(0, (currentCounts.total || 0) - 1)
+            : (currentCounts.total || 0) + 1
+        })
+      }
+
+      return { previousUserReaction, previousCounts }
+    },
+    onError: (err, variables, context) => {
+      // Reverter em caso de erro
+      if (context?.previousUserReaction !== undefined) {
+        queryClient.setQueryData(['user-reaction', variables.postId], context.previousUserReaction)
+      }
+      if (context?.previousCounts) {
+        queryClient.setQueryData(['reaction-counts', variables.postId], context.previousCounts)
+      }
+    },
     onSuccess: (result, variables) => {
-      // Invalidar cache da reação do usuário
+      // Invalidar cache para garantir sincronização
       queryClient.invalidateQueries({
         queryKey: ['user-reaction', variables.postId]
       })
-
-      // Invalidar cache das contagens de reações
       queryClient.invalidateQueries({
         queryKey: ['reaction-counts', variables.postId]
       })
-
-      // Invalidar cache dos usuários que reagiram
       queryClient.invalidateQueries({
         queryKey: ['reaction-users', variables.postId]
       })
-
-      // Invalidar cache da timeline
       queryClient.invalidateQueries({
         queryKey: ['unified-timeline']
       })

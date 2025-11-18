@@ -77,7 +77,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
       : lastUser
 
         return (
-          <div className="-ml-2 pr-4 pb-2 flex items-center gap-1.5 min-w-0">
+          <div className="-ml-2 -mr-4 pr-4 pb-2 flex items-center gap-1.5 w-full">
             <div className="flex relative flex-shrink-0">
               {avatarsToShow.slice(0, 5).map((u, index) => {
                 // Alternar posição vertical para criar efeito de empilhamento
@@ -100,7 +100,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
                 )
               })}
             </div>
-            <p className="text-sm text-gray-900 dark:text-white truncate min-w-0 flex-1" style={{ fontSize: 'clamp(0.7rem, 2vw, 0.875rem)' }}>
+            <p className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden" style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.7rem)' }}>
               <span className="font-semibold whitespace-nowrap">
                 Curtido por{' '}
                 {reactionUsers.map((u, index) => (
@@ -130,7 +130,8 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
 
   return (
     <>
-      <div className="-ml-2 pr-4 pb-2 flex items-center gap-1.5 min-w-0">
+      {/* Versão Mobile: mostrar apenas 2 nomes + "e outras X pessoas" */}
+      <div className="-ml-2 -mr-4 pr-4 pb-2 flex items-center gap-1.5 w-full md:hidden">
         <div className="flex relative flex-shrink-0">
           {avatarsToShow.slice(0, 5).map((u, index) => {
             // Alternar posição vertical para criar efeito de empilhamento
@@ -153,12 +154,12 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
             )
           })}
         </div>
-        <p className="text-sm text-gray-900 dark:text-white truncate min-w-0 flex-1" style={{ fontSize: 'clamp(0.7rem, 2vw, 0.875rem)' }}>
+        <p className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden" style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.7rem)' }}>
           <span className="font-semibold whitespace-nowrap">
             Curtido por{' '}
             {usersToShow.map((u, index) => (
               <span key={u.id} className="inline">
-                {index > 0 && ' e '}
+                {index > 0 && ', '}
                 <Link 
                   href={`/perfil/${u.user_id}`}
                   className="text-inherit no-underline hover:opacity-80 transition-opacity"
@@ -178,6 +179,49 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
                 </button>
               </>
             )}
+          </span>
+        </p>
+      </div>
+
+      {/* Versão Desktop: mostrar todos os nomes */}
+      <div className="-ml-2 -mr-4 pr-4 pb-2 flex items-center gap-1.5 w-full hidden md:flex">
+        <div className="flex relative flex-shrink-0">
+          {avatarsToShow.slice(0, 5).map((u, index) => {
+            // Alternar posição vertical para criar efeito de empilhamento
+            const verticalOffset = index % 2 === 0 ? '-1.5px' : '1.5px'
+            return (
+              <Avatar 
+                key={u.id} 
+                className="w-5 h-5 border-2 border-white dark:border-black flex-shrink-0"
+                style={{ 
+                  zIndex: avatarsToShow.length - index,
+                  transform: `translateY(${verticalOffset})`,
+                  marginLeft: index === 0 ? '0' : '-7px'
+                }}
+              >
+                <AvatarImage src={u.avatar_url || undefined} alt={u.name} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white text-xs">
+                  {(u.full_name || u.name).charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            )
+          })}
+        </div>
+        <p className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden" style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.7rem)' }}>
+          <span className="font-semibold whitespace-nowrap">
+            Curtido por{' '}
+            {reactionUsers.map((u, index) => (
+              <span key={u.id} className="inline">
+                {index > 0 && index < reactionUsers.length - 1 && ', '}
+                {index === reactionUsers.length - 1 && index > 0 && ' e '}
+                <Link 
+                  href={`/perfil/${u.user_id}`}
+                  className="text-inherit no-underline hover:opacity-80 transition-opacity"
+                >
+                  {u.full_name || u.name}
+                </Link>
+              </span>
+            ))}
           </span>
         </p>
       </div>
