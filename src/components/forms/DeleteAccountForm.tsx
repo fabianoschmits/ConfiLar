@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useReauthentication } from '@/hooks/useReauthentication'
 import { useRouter } from 'next/navigation'
+import { useAuthContext } from '@/contexts/AuthContext'
 
 interface DeleteAccountFormProps {
   userEmail: string
@@ -31,6 +32,7 @@ export function DeleteAccountForm({
   className 
 }: DeleteAccountFormProps) {
   const router = useRouter()
+  const { signOut } = useAuthContext()
   const [step, setStep] = useState<'warning' | 'reauth' | 'confirmation' | 'processing' | 'success'>('warning')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -150,12 +152,31 @@ export function DeleteAccountForm({
       setStep('success')
       toast.success('Conta deletada com sucesso!')
       
-      // Redirecionar para página inicial após 2 segundos
-      setTimeout(() => {
-        router.push('/')
-        // Forçar reload para limpar sessão
-        window.location.href = '/'
-      }, 2000)
+      // Deslogar o usuário e limpar sessão
+      try {
+        // Fazer signOut do Supabase
+        await supabase.auth.signOut()
+        
+        // Fazer signOut do contexto de autenticação
+        if (signOut) {
+          await signOut()
+        }
+        
+        // Limpar localStorage e sessionStorage
+        localStorage.clear()
+        sessionStorage.clear()
+        
+        // Redirecionar para página inicial após 1 segundo
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 1000)
+      } catch (logoutError) {
+        console.error('Erro ao fazer logout:', logoutError)
+        // Mesmo com erro, redirecionar
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 1000)
+      }
 
     } catch (err: any) {
       console.error('Erro ao deletar conta:', err)
