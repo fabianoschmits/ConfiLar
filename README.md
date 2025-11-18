@@ -354,3 +354,20 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ---
 
 **ConfiLar** - Conectando profissionais e clientes através da confiança! 🏠✨
+
+---
+
+## 🚀 Deploy Automático
+
+O projeto está configurado com CI/CD usando GitHub Actions e Vercel para deploy automático em produção.
+
+### Workflow de Deploy
+
+- **Build automático** em cada push para `master`
+- **Deploy automático** para Vercel Production
+- **Testes automatizados** antes do deploy
+- **Comentários em PR** com preview URLs
+
+---
+
+_Última atualização: 2025-01-18_
