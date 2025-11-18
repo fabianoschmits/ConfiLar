@@ -370,4 +370,4 @@ O projeto está configurado com CI/CD usando GitHub Actions e Vercel para deploy
 
 ---
 
-_Última atualização: 2025-01-18_
+_Última atualização: 2025-01-18 (Correção de email para Vercel)_
