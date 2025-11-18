@@ -99,12 +99,19 @@ export function ChangeEmailForm({
   }
 
   const initiateEmailChange = async (email: string) => {
-    const { error: updateError } = await supabase.auth.updateUser({
-      email: email
+    // Usar nossa API que garante envio de OTP em vez de magic link
+    const response = await fetch('/api/auth/change-email-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ newEmail: email })
     })
 
-    if (updateError) {
-      throw new Error(updateError.message)
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro ao enviar código de verificação')
     }
 
     setStep('verification')
@@ -195,13 +202,19 @@ export function ChangeEmailForm({
       setIsLoading(true)
       setError(null)
 
-      const { error } = await supabase.auth.resend({
-        type: 'email_change',
-        email: newEmail
+      // Usar nossa API para reenviar o código OTP
+      const response = await fetch('/api/auth/change-email-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newEmail: newEmail })
       })
 
-      if (error) {
-        throw new Error(error.message)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao reenviar código')
       }
 
       toast.success('Código reenviado!', {

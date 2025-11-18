@@ -22,7 +22,7 @@ import {
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { DataPortabilityModal } from '@/components/lgpd/DataPortabilityModal'
-import { RightToBeForgottenModal } from '@/components/lgpd/RightToBeForgottenModal'
+import { DeleteAccountForm } from '@/components/forms/DeleteAccountForm'
 import { ProfileVisibilitySettings } from '@/components/lgpd/ProfileVisibilitySettings'
 import { NotificationPreferences } from '@/components/lgpd/NotificationPreferences'
 import { LocationDataSettings } from '@/components/lgpd/LocationDataSettings'
@@ -299,10 +299,28 @@ export default function ConfiguracoesPrivacidadePage() {
         onClose={() => setShowDataPortability(false)}
       />
       
-      <RightToBeForgottenModal 
-        isOpen={showRightToBeForgotten}
-        onClose={() => setShowRightToBeForgotten(false)}
-      />
+      {showRightToBeForgotten && user?.email && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Deletar Conta</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowRightToBeForgotten(false)}
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="p-6">
+              <DeleteAccountForm 
+                userEmail={user.email}
+                className="border-0"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </MainLayout>
   )
 }

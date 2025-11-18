@@ -929,6 +929,10 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
     }
   }, [fetchUserProfile])
 
+  /**
+   * @deprecated Use /api/auth/reset-password-otp instead for OTP-based password reset
+   * This method sends a magic link, which is being phased out in favor of OTP codes
+   */
   const resetPassword = useCallback(async (email: string) => {
     try {
       logger.info('auth', `Password reset requested for ${email}`)

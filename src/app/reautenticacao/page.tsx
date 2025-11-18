@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-// import { useReauthentication } from '@/hooks/useReauthentication'
+import { useReauthentication } from '@/hooks/useReauthentication'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,25 +35,16 @@ export default function ReauthenticationPage() {
   if (!mounted) {
     return null
   }
-  // const { 
-  //   isLoading, 
-  //   isReauthenticated, 
-  //   error, 
-  //   otpSent, 
-  //   otpVerified,
-  //   requestReauthentication, 
-  //   verifyOTP, 
-  //   resetReauthentication 
-  // } = useReauthentication()
-  
-  const isLoading = false
-  const isReauthenticated = false
-  const error = null
-  const otpSent = false
-  const otpVerified = false
-  const requestReauthentication = async () => ({ error: null })
-  const verifyOTP = async (otp: string) => ({ error: null })
-  const resetReauthentication = () => {}
+  const { 
+    isLoading, 
+    isReauthenticated, 
+    error, 
+    otpSent, 
+    otpVerified,
+    requestReauthentication, 
+    verifyOTP, 
+    resetReauthentication 
+  } = useReauthentication()
 
   const [otp, setOtp] = useState('')
   const [showOtp, setShowOtp] = useState(false)
