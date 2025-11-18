@@ -38,6 +38,7 @@ jobs:
           vercel-project-id: prj_wwrl6rRVZr1U49EwADwkrbLgc8Wd
           working-directory: ./
           vercel-args: '--prod'
+          github-comment: true
       
       - name: Skip Vercel Deploy (Missing Secrets)
         if: ${{ secrets.VERCEL_TOKEN == '' || secrets.VERCEL_ORG_ID == '' }}
@@ -46,7 +47,7 @@ jobs:
           echo "Para configurar, vá em: Settings > Secrets and variables > Actions"
           echo "Adicione os seguintes secrets:"
           echo "  - VERCEL_TOKEN: Token do Vercel"
-          echo "  - VERCEL_ORG_ID: ID da organização do Vercel"
+          echo "  - VERCEL_ORG_ID: ID da organização do Vercel (ex: fabianoschmits-9996s-projects)"
 
 
 
