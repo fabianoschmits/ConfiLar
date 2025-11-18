@@ -43,15 +43,15 @@ export default function NovaSenhaPage() {
   const [passwordUpdated, setPasswordUpdated] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const { updatePassword, user } = useAuthContext()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  if (!mounted) {
-    return null
-  }
   const router = useRouter()
+
+  // Flags para rastrear se já processamos o hash (evita loops infinitos)
+  // IMPORTANTE: Todos os hooks devem ser declarados antes de qualquer early return
+  const hasProcessedHash = useRef(false)
+  const hasInitialized = useRef(false)
+  const hasRedirected = useRef(false)
+  const hasSetAuthenticated = useRef(false) // Flag para evitar chamar setIsAuthenticated múltiplas vezes
+  const authCheckTimeout = useRef<NodeJS.Timeout | null>(null)
 
   const {
     register,
@@ -63,12 +63,14 @@ export default function NovaSenhaPage() {
   })
 
   const password = watch('password', '')
-  
-  // Flag para rastrear se já processamos o hash (evita loops infinitos)
-  const hasProcessedHash = useRef(false)
-  const hasInitialized = useRef(false)
-  const hasRedirected = useRef(false)
-  const authCheckTimeout = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   // Processar hash da URL quando o usuário vem do link de reset de senha (apenas uma vez)
   useEffect(() => {
@@ -111,7 +113,10 @@ export default function NovaSenhaPage() {
               console.log('✅ Sessão criada com sucesso')
               // Limpar o hash da URL
               window.history.replaceState(null, '', '/nova-senha')
-              setIsAuthenticated(true)
+              if (!hasSetAuthenticated.current) {
+                hasSetAuthenticated.current = true
+                setIsAuthenticated(true)
+              }
               return
             }
           }
@@ -150,15 +155,21 @@ export default function NovaSenhaPage() {
     // Se já redirecionamos, não fazer nada
     if (hasRedirected.current) return
     
+    // Se já setamos autenticação, não fazer nada (evita loops)
+    if (hasSetAuthenticated.current) return
+    
     // Limpar timeout anterior se existir
     if (authCheckTimeout.current) {
       clearTimeout(authCheckTimeout.current)
       authCheckTimeout.current = null
     }
     
-    // Se o usuário está autenticado, permitir acesso
+    // Se o usuário está autenticado, permitir acesso (apenas uma vez)
     if (user) {
-      setIsAuthenticated(true)
+      if (!hasSetAuthenticated.current) {
+        hasSetAuthenticated.current = true
+        setIsAuthenticated(true)
+      }
       return
     }
     
@@ -167,7 +178,8 @@ export default function NovaSenhaPage() {
     if (!window.location.hash) {
       authCheckTimeout.current = setTimeout(() => {
         // Verificar novamente antes de redirecionar
-        if (!hasRedirected.current && !window.location.hash && !user) {
+        // Não usar user diretamente dentro do timeout pois pode estar stale
+        if (!hasRedirected.current && !window.location.hash) {
           hasRedirected.current = true
           router.push('/auth')
         }
@@ -181,7 +193,7 @@ export default function NovaSenhaPage() {
         authCheckTimeout.current = null
       }
     }
-  }, [user, router])
+  }, [user, router]) // Não incluir isAuthenticated para evitar loops
 
   const getPasswordStrength = (password: string) => {
     const checks = {
