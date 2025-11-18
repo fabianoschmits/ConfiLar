@@ -88,6 +88,9 @@ export function DeleteAccountForm({
         throw new Error(error.message)
       }
 
+      // Código enviado com sucesso
+      setIsLoading(false)
+
     } catch (err: any) {
       console.error('Erro na reautenticação:', err)
       setError(err.message || 'Erro na reautenticação')
