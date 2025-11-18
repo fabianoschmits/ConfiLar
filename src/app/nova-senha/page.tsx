@@ -17,7 +17,6 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { ReauthenticationGuard } from '@/components/auth/ReauthenticationGuard'
 import { Check, X, ArrowLeft, Shield, Key } from 'lucide-react'
 import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { supabase } from '@/lib/supabase'
@@ -52,6 +51,7 @@ export default function NovaSenhaPage() {
   const hasRedirected = useRef(false)
   const hasSetAuthenticated = useRef(false) // Flag para evitar chamar setIsAuthenticated múltiplas vezes
   const authCheckTimeout = useRef<NodeJS.Timeout | null>(null)
+  const userRef = useRef(user) // Ref para ter acesso ao user mais recente dentro de closures
 
   const {
     register,
@@ -64,6 +64,11 @@ export default function NovaSenhaPage() {
 
   const password = watch('password', '')
 
+  // Atualizar ref quando user mudar
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -72,14 +77,14 @@ export default function NovaSenhaPage() {
     return null
   }
 
-  // Processar hash da URL quando o usuário vem do link de reset de senha (apenas uma vez)
+  // Processar hash da URL e verificar autenticação (apenas uma vez na montagem)
   useEffect(() => {
-    // Se já inicializamos, não fazer nada
+    // Se já inicializamos, não fazer nada (evita loops)
     if (hasInitialized.current) return
     
+    hasInitialized.current = true
+    
     const initialize = async () => {
-      hasInitialized.current = true
-      
       // Verificar se há um hash na URL (token de reset de senha)
       if (typeof window !== 'undefined' && window.location.hash) {
         hasProcessedHash.current = true
@@ -105,6 +110,7 @@ export default function NovaSenhaPage() {
               toast.error('Link inválido ou expirado', {
                 description: 'O link de reset de senha é inválido ou já expirou. Por favor, solicite um novo link.'
               })
+              hasRedirected.current = true
               router.push('/recuperar-senha')
               return
             }
@@ -123,27 +129,49 @@ export default function NovaSenhaPage() {
         } catch (error) {
           console.error('❌ Erro ao processar hash:', error)
           toast.error('Erro ao processar link de reset de senha')
+          hasRedirected.current = true
           router.push('/recuperar-senha')
           return
         }
-      } else {
-        // Se não há hash, aguardar um pouco para permitir que o contexto carregue a sessão
-        // e então verificar se o usuário está autenticado
-        setTimeout(() => {
-          // Verificar se o usuário foi carregado enquanto esperávamos
-          // Usar uma verificação final através do contexto
-          const checkUserAuth = () => {
-            // Esta função será executada novamente pelo useEffect abaixo se necessário
+      }
+      
+      // Se não há hash, verificar se o usuário já está autenticado
+      // Aguardar um pouco para permitir que o contexto carregue a sessão
+      if (!window.location.hash) {
+        // Limpar timeout anterior se existir
+        if (authCheckTimeout.current) {
+          clearTimeout(authCheckTimeout.current)
+        }
+        
+        authCheckTimeout.current = setTimeout(() => {
+          // Usar ref para obter o valor mais recente do user
+          const currentUser = userRef.current
+          
+          // Verificar novamente se há usuário autenticado
+          if (currentUser && !hasSetAuthenticated.current) {
+            hasSetAuthenticated.current = true
+            setIsAuthenticated(true)
+          } else if (!currentUser && !hasRedirected.current) {
+            // Se não há usuário após o timeout, redirecionar
+            hasRedirected.current = true
+            router.push('/auth')
           }
-          checkUserAuth()
-        }, 500)
+          authCheckTimeout.current = null
+        }, 2000)
       }
     }
 
     initialize()
+    
+    return () => {
+      if (authCheckTimeout.current) {
+        clearTimeout(authCheckTimeout.current)
+        authCheckTimeout.current = null
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]) // Executar apenas uma vez na montagem (router é estável)
-
+  }, []) // Executar apenas uma vez na montagem
+  
   // Verificar autenticação quando o usuário mudar (apenas se não processamos hash)
   useEffect(() => {
     // Se já processamos o hash, não fazer nada (já definimos isAuthenticated)
@@ -158,42 +186,12 @@ export default function NovaSenhaPage() {
     // Se já setamos autenticação, não fazer nada (evita loops)
     if (hasSetAuthenticated.current) return
     
-    // Limpar timeout anterior se existir
-    if (authCheckTimeout.current) {
-      clearTimeout(authCheckTimeout.current)
-      authCheckTimeout.current = null
-    }
-    
     // Se o usuário está autenticado, permitir acesso (apenas uma vez)
     if (user) {
-      if (!hasSetAuthenticated.current) {
-        hasSetAuthenticated.current = true
-        setIsAuthenticated(true)
-      }
-      return
+      hasSetAuthenticated.current = true
+      setIsAuthenticated(true)
     }
-    
-    // Se não há usuário e não há hash, aguardar um pouco antes de redirecionar
-    // Isso dá tempo para o contexto carregar a sessão
-    if (!window.location.hash) {
-      authCheckTimeout.current = setTimeout(() => {
-        // Verificar novamente antes de redirecionar
-        // Não usar user diretamente dentro do timeout pois pode estar stale
-        if (!hasRedirected.current && !window.location.hash) {
-          hasRedirected.current = true
-          router.push('/auth')
-        }
-        authCheckTimeout.current = null
-      }, 2000)
-    }
-    
-    return () => {
-      if (authCheckTimeout.current) {
-        clearTimeout(authCheckTimeout.current)
-        authCheckTimeout.current = null
-      }
-    }
-  }, [user, router]) // Não incluir isAuthenticated para evitar loops
+  }, [user]) // Apenas verificar quando user mudar (não incluir router para evitar loops)
 
   const getPasswordStrength = (password: string) => {
     const checks = {
@@ -310,8 +308,7 @@ export default function NovaSenhaPage() {
   }
 
   return (
-    <ReauthenticationGuard requiredAction="password">
-      <LightModeLayout>
+    <LightModeLayout>
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header moderno */}
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -462,6 +459,5 @@ export default function NovaSenhaPage() {
         </div>
         </div>
       </LightModeLayout>
-    </ReauthenticationGuard>
   )
 }
