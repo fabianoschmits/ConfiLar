@@ -61,13 +61,16 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
     }
 
     // Criar registro de compra no banco primeiro
+    // Estrutura da tabela: id, user_id, package_id, amount_brl, points_received, payment_method, status, created_at
+    const totalPoints = points + (bonus || 0)
+    
     const { data: purchase, error: purchaseError } = await supabaseAuth
       .from('points_purchases')
       .insert({
         user_id: user.id,
-        package_id: package_id,
-        points_amount: points + (bonus || 0),
-        price: amount,
+        package_id: null, // Pacotes hardcoded não têm ID no banco
+        amount_brl: amount, // Valor em BRL
+        points_received: totalPoints, // Total de pontos (incluindo bônus)
         payment_method: 'pix',
         status: 'pending',
         customer_data: {
@@ -83,8 +86,9 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
 
     if (purchaseError) {
       console.error('❌ Erro ao criar compra:', purchaseError)
+      console.error('❌ Detalhes do erro:', JSON.stringify(purchaseError, null, 2))
       return NextResponse.json(
-        { error: 'Erro ao criar registro de compra' },
+        { error: `Erro ao criar registro de compra: ${purchaseError.message || 'Erro desconhecido'}` },
         { status: 500 }
       )
     }

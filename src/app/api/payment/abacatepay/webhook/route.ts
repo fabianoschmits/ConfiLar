@@ -110,9 +110,8 @@ export async function POST(request: NextRequest) {
               .single()
           : null
 
-        const pointsToAdd = packageData?.data 
-          ? (packageData.data.points_amount || 0) + (packageData.data.bonus_points || 0)
-          : purchase.points_amount || 0
+        // Usar points_received da compra (já inclui bônus)
+        const pointsToAdd = purchase.points_received || 0
 
         // Adicionar pontos ao usuário
         const { error: pointsError } = await supabase.rpc('add_points', {
