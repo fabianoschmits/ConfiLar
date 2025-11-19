@@ -493,6 +493,10 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
                     src={paymentData.qrCodeImage} 
                     alt="QR Code PIX" 
                     className="w-64 h-64"
+                    onError={(e) => {
+                      // Se a imagem falhar, tentar gerar QR Code do código PIX
+                      console.warn('Erro ao carregar imagem do QR Code')
+                    }}
                   />
                 </div>
               )}

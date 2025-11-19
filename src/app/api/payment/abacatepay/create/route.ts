@@ -93,52 +93,56 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
     // Valor em centavos
     const amountInCents = Math.round(amount * 100)
     
+    // Tempo de expiração: 30 minutos (1800 segundos)
+    const expiresIn = 30 * 60
+    
+    // Formatar telefone para o formato esperado: (11) 4002-8922
+    const formatPhone = (phone: string) => {
+      const numbers = phone.replace(/\D/g, '')
+      if (numbers.length === 11) {
+        return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 7)}-${numbers.substring(7)}`
+      } else if (numbers.length === 10) {
+        return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 6)}-${numbers.substring(6)}`
+      }
+      return phone
+    }
+    
+    // Formatar CPF: 123.456.789-01
+    const formatCPF = (cpf: string) => {
+      const numbers = cpf.replace(/\D/g, '')
+      if (numbers.length === 11) {
+        return `${numbers.substring(0, 3)}.${numbers.substring(3, 6)}.${numbers.substring(6, 9)}-${numbers.substring(9)}`
+      }
+      return cpf
+    }
+    
     const paymentData = {
-      frequency: "ONE_TIME",
-      methods: ["PIX"],
-      products: [
-        {
-          externalId: `confipoints-${package_id}-${purchase.id}`,
-          name: `Compra de ${points} ConfiPoints - ${package_id}`,
-          quantity: 1,
-          price: amountInCents // Valor em centavos
-        }
-      ],
-      returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://appconfilar.com.br'}/confipoints/comprar`,
-      completionUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://appconfilar.com.br'}/confipoints/comprar?success=true&purchase=${purchase.id}`,
+      amount: amountInCents,
+      expiresIn: expiresIn,
+      description: `Compra de ${points} ConfiPoints - Pacote ${package_id}`.substring(0, 140),
       customer: {
         name: customer.name,
+        cellphone: formatPhone(customer.phone),
         email: customer.email,
-        phone: customer.phone.replace(/\D/g, ''),
-        document: customer.cpf.replace(/\D/g, ''),
-        address: {
-          street: customer.address.street,
-          number: customer.address.number,
-          complement: customer.address.complement || '',
-          neighborhood: customer.address.neighborhood,
-          city: customer.address.city,
-          state: customer.address.state,
-          zipCode: customer.address.zipCode.replace(/\D/g, '')
-        }
+        taxId: formatCPF(customer.cpf)
       },
       metadata: {
         purchase_id: purchase.id,
         user_id: user.id,
         package_id: package_id,
         points: points,
-        bonus: bonus || 0
-      },
-      webhookUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://appconfilar.com.br'}/api/payment/abacatepay/webhook`
+        bonus: bonus || 0,
+        externalId: `confipoints-${package_id}-${purchase.id}`
+      }
     }
 
-    // Chamar API do AbacatePay para criar cobrança PIX
-    // Baseado na documentação: https://docs.abacatepay.com
-    const abacateResponse = await fetch(`${ABACATEPAY_API_URL}/billing`, {
+    // Chamar API do AbacatePay para criar QR Code PIX
+    // Endpoint: POST /pixQrCode/create
+    const abacateResponse = await fetch(`${ABACATEPAY_API_URL}/pixQrCode/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ABACATEPAY_API_KEY}`,
-        'X-API-Key': ABACATEPAY_API_KEY
+        'Authorization': `Bearer ${ABACATEPAY_API_KEY}`
       },
       body: JSON.stringify(paymentData)
     })
@@ -163,30 +167,51 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       )
     }
 
-    // Estrutura da resposta do AbacatePay pode variar
-    // Tentar diferentes formatos possíveis
-    const billingId = abacateData.id || abacateData.data?.id || abacateData.billingId
-    const qrCodeUrl = abacateData.data?.url || abacateData.url || abacateData.qrCodeUrl || abacateData.pixUrl
-    const qrCode = abacateData.data?.pixCode || abacateData.pixCode || abacateData.qrCode || abacateData.code
-    const qrCodeImage = abacateData.data?.qrCodeImage || abacateData.qrCodeImage || abacateData.pixQrCodeImage
+    // Estrutura da resposta do AbacatePay conforme documentação
+    // Response: { data: { id, brCode, brCodeBase64, expiresAt, status, ... }, error: null }
+    if (abacateData.error) {
+      console.error('❌ Erro na resposta AbacatePay:', abacateData.error)
+      return NextResponse.json(
+        { error: abacateData.error || 'Erro ao processar pagamento' },
+        { status: 400 }
+      )
+    }
+
+    const responseData = abacateData.data
+    
+    if (!responseData) {
+      console.error('❌ Resposta sem data:', abacateData)
+      return NextResponse.json(
+        { error: 'Resposta inválida da API' },
+        { status: 500 }
+      )
+    }
+    
+    // Extrair dados do QR Code PIX conforme documentação
+    const qrCodeId = responseData.id // pix_char_123456
+    const brCode = responseData.brCode // Código PIX copia e cola
+    const brCodeBase64 = responseData.brCodeBase64 // Imagem do QR Code em base64
+    const expiresAt = responseData.expiresAt // Data de expiração
+    const status = responseData.status // Status do pagamento
 
     // Atualizar compra com dados do pagamento
     await supabaseAuth
       .from('points_purchases')
       .update({
-        payment_id: billingId,
-        payment_url: qrCodeUrl,
+        payment_id: qrCodeId,
+        payment_url: brCodeBase64 || brCode,
         payment_data: abacateData
       })
       .eq('id', purchase.id)
 
     return NextResponse.json({
       success: true,
-      paymentId: billingId,
-      qrCode: qrCode,
-      qrCodeImage: qrCodeImage,
-      paymentUrl: qrCodeUrl,
-      expiresAt: abacateData.data?.expiresAt || abacateData.expiresAt,
+      paymentId: qrCodeId,
+      qrCode: brCode, // Código PIX copia e cola
+      qrCodeImage: brCodeBase64, // Imagem do QR Code em base64
+      paymentUrl: brCodeBase64 || brCode,
+      expiresAt: expiresAt,
+      status: status,
       purchaseId: purchase.id
     })
 

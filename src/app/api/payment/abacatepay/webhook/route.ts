@@ -19,16 +19,18 @@ export async function POST(request: NextRequest) {
     console.log('📥 Webhook AbacatePay recebido:', JSON.stringify(body, null, 2))
 
     // Validar dados do webhook
+    // Estrutura pode variar, tentar diferentes formatos
+    const webhookData = body.data || body
     const { 
       id, 
       paymentId,
       status, 
       purchase_id,
       metadata 
-    } = body
+    } = webhookData || body
 
-    const paymentIdToUse = id || paymentId
-    const purchaseId = purchase_id || metadata?.purchase_id
+    const paymentIdToUse = id || paymentId || webhookData?.id
+    const purchaseId = purchase_id || metadata?.purchase_id || body.metadata?.purchase_id
 
     if (!paymentIdToUse) {
       console.error('❌ Webhook sem payment ID')
