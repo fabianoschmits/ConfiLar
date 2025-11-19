@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthContext } from '@/contexts/AuthContext'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface Package {
   id: string
@@ -27,16 +28,31 @@ interface Package {
   bonus: number
 }
 
+interface ExistingPurchase {
+  id: string
+  status: string
+  payment_id?: string
+  payment_url?: string
+  payment_data?: any
+  points_received: number
+  amount_brl: number
+  customer_data?: any
+  created_at: string
+}
+
 interface CheckoutModalProps {
   isOpen: boolean
   onClose: () => void
   packageData: Package | null
+  existingPurchase?: ExistingPurchase | null // Compra existente para visualizar QR Code
 }
 
-export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalProps) {
+export function CheckoutModal({ isOpen, onClose, packageData, existingPurchase }: CheckoutModalProps) {
   const { user, profile } = useAuthContext()
+  const queryClient = useQueryClient()
   const [step, setStep] = useState<'form' | 'qrcode' | 'success'>('form')
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
   // Dados do formulário
@@ -63,6 +79,7 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
     paymentId?: string
     paymentUrl?: string
     expiresAt?: string
+    purchaseId?: string
   } | null>(null)
 
   // Preencher dados do usuário se estiver logado
@@ -77,9 +94,11 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
         address: {
           ...prev.address,
           street: profile.address || prev.address.street,
+          number: profile.address_number || prev.address.number,
           neighborhood: profile.neighborhood || prev.address.neighborhood,
           city: profile.location_city || prev.address.city,
-          state: profile.location_state || prev.address.state
+          state: profile.location_state || prev.address.state,
+          zipCode: profile.zip_code || prev.address.zipCode
         }
       }))
     }
@@ -94,6 +113,165 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
       setIsLoading(false)
     }
   }, [isOpen])
+
+  // Carregar dados da compra existente quando o modal abrir
+  React.useEffect(() => {
+    if (isOpen && existingPurchase) {
+      console.log('📦 Carregando dados da compra existente:', existingPurchase.id)
+      console.log('📦 Status da compra:', existingPurchase.status)
+      console.log('📦 Payment data:', existingPurchase.payment_data)
+      
+      // Se a compra já foi aprovada, mostrar tela de sucesso
+      if (existingPurchase.status === 'approved') {
+        console.log('✅ Compra aprovada, mostrando tela de sucesso')
+        setStep('success')
+      } else if (existingPurchase.payment_id || existingPurchase.payment_url || existingPurchase.payment_data) {
+        // Se tem QR Code, mostrar tela do QR Code
+        console.log('📱 Compra tem QR Code, mostrando tela do QR Code')
+        setStep('qrcode')
+        
+        // Extrair dados do QR Code do payment_data
+        // payment_data pode estar em diferentes formatos:
+        // 1. { data: { brCode, brCodeBase64, ... } }
+        // 2. { brCode, brCodeBase64, ... }
+        // 3. Diretamente no payment_url
+        
+        let qrCode = null
+        let qrCodeImage = null
+        let expiresAt = null
+        
+        if (existingPurchase.payment_data) {
+          const paymentData = existingPurchase.payment_data
+          
+          // Tentar extrair do formato { data: { ... } }
+          if (paymentData.data) {
+            qrCode = paymentData.data.brCode
+            qrCodeImage = paymentData.data.brCodeBase64
+            expiresAt = paymentData.data.expiresAt
+          } 
+          // Tentar extrair diretamente
+          else if (paymentData.brCode) {
+            qrCode = paymentData.brCode
+            qrCodeImage = paymentData.brCodeBase64
+            expiresAt = paymentData.expiresAt
+          }
+        }
+        
+        // Se não encontrou no payment_data, tentar payment_url
+        if (!qrCode && existingPurchase.payment_url) {
+          // Se payment_url é uma imagem base64
+          if (existingPurchase.payment_url.startsWith('data:image')) {
+            qrCodeImage = existingPurchase.payment_url
+            // Tentar extrair código PIX do payment_data se existir
+            if (existingPurchase.payment_data?.data?.brCode) {
+              qrCode = existingPurchase.payment_data.data.brCode
+            } else if (existingPurchase.payment_data?.brCode) {
+              qrCode = existingPurchase.payment_data.brCode
+            }
+          } else {
+            // Se payment_url é o código PIX
+            qrCode = existingPurchase.payment_url
+          }
+        }
+
+        console.log('📱 QR Code extraído:', {
+          qrCode: qrCode ? `${qrCode.substring(0, 50)}...` : 'não encontrado',
+          qrCodeImage: qrCodeImage ? 'encontrado' : 'não encontrado',
+          expiresAt,
+          paymentId: existingPurchase.payment_id
+        })
+
+        setPaymentData({
+          qrCode: qrCode || existingPurchase.payment_url || '',
+          qrCodeImage: qrCodeImage,
+          paymentId: existingPurchase.payment_id,
+          paymentUrl: existingPurchase.payment_url || qrCode || '',
+          expiresAt: expiresAt,
+          purchaseId: existingPurchase.id
+        })
+      } else {
+        // Se não tem QR Code ainda, mostrar formulário
+        console.log('📝 Compra sem QR Code, mostrando formulário')
+        setStep('form')
+      }
+    } else if (isOpen && !existingPurchase && packageData) {
+      // Se não tem compra existente mas tem packageData, começar do formulário
+      console.log('🆕 Nova compra, mostrando formulário')
+      setStep('form')
+    }
+  }, [isOpen, existingPurchase, packageData])
+
+  // Verificação automática do pagamento enquanto estiver no step 'qrcode'
+  React.useEffect(() => {
+    // Só verificar se estiver no step 'qrcode' e tiver dados do pagamento
+    if (step !== 'qrcode' || !paymentData?.paymentId || !paymentData?.purchaseId || !isOpen) {
+      return
+    }
+
+    // Intervalo de verificação: a cada 5 segundos
+    const checkInterval = setInterval(async () => {
+      try {
+        console.log(`🔄 Verificando status do pagamento ${paymentData.paymentId}...`)
+        
+        const response = await fetch(
+          `/api/payment/abacatepay/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+
+        const data = await response.json()
+
+        if (response.ok) {
+          console.log(`📊 Status do pagamento: ${data.status} (paymentStatus: ${data.paymentStatus})`)
+          
+          // Se pagamento aprovado, ir automaticamente para o modal de sucesso
+          if (data.status === 'approved' || data.paymentStatus === 'PAID' || data.paymentStatus === 'paid') {
+            console.log('✅ Pagamento aprovado! Parando verificação e mostrando tela de sucesso.')
+            clearInterval(checkInterval)
+            setStep('success')
+            toast.success('Pagamento confirmado! Seus pontos foram creditados.')
+            
+            // Invalidar e refetch cache para atualizar a lista de compras
+            if (user?.id) {
+              // Aguardar um pouco para garantir que a atualização no banco foi concluída
+              setTimeout(async () => {
+                queryClient.invalidateQueries({ queryKey: ['points-purchases', user.id] })
+                queryClient.invalidateQueries({ queryKey: ['user-points-balance', user.id] })
+                await queryClient.refetchQueries({ 
+                  queryKey: ['points-purchases', user.id],
+                  type: 'active'
+                }, { cancelRefetch: false })
+              }, 500)
+            }
+          } else if (data.status === 'cancelled' || data.paymentStatus === 'EXPIRED' || data.paymentStatus === 'CANCELLED' || data.paymentStatus === 'expired') {
+            // Se expirado ou cancelado, parar verificação
+            console.log('❌ Pagamento expirado ou cancelado.')
+            clearInterval(checkInterval)
+            toast.error('Pagamento expirado ou cancelado. Gere um novo QR Code.')
+            setStep('form')
+            setPaymentData(null)
+          } else {
+            // Se ainda estiver pendente, continuar verificando
+            console.log(`⏳ Pagamento ainda pendente (status: ${data.status}), continuando verificação...`)
+          }
+        } else {
+          console.error('❌ Erro na resposta da verificação:', data)
+        }
+      } catch (err) {
+        // Em caso de erro, apenas logar (não mostrar toast para não poluir a tela)
+        console.error('❌ Erro na verificação automática do pagamento:', err)
+      }
+    }, 5000) // Verificar a cada 5 segundos
+
+    // Limpar intervalo quando o componente desmontar ou mudar de step
+    return () => {
+      clearInterval(checkInterval)
+    }
+  }, [step, paymentData, isOpen, user?.id, queryClient])
 
   const handleInputChange = (field: string, value: string) => {
     if (field.includes('.')) {
@@ -234,7 +412,8 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
         qrCodeImage: data.qrCodeImage,
         paymentId: data.paymentId,
         paymentUrl: data.paymentUrl,
-        expiresAt: data.expiresAt
+        expiresAt: data.expiresAt,
+        purchaseId: data.purchaseId // Salvar o ID da compra para verificação
       })
 
       setStep('qrcode')
@@ -265,18 +444,130 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
     }
   }
 
-  if (!packageData) return null
+  const checkPaymentStatus = async () => {
+    if (!paymentData?.paymentId || !paymentData?.purchaseId) {
+      toast.error('Dados do pagamento não encontrados')
+      return
+    }
+
+    setIsCheckingPayment(true)
+    setError(null)
+
+    try {
+      const response = await fetch(
+        `/api/payment/abacatepay/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao verificar pagamento')
+      }
+
+      // Se pagamento aprovado, mostrar modal de sucesso e creditar pontos
+      if (data.status === 'approved' || data.paymentStatus === 'PAID') {
+        setStep('success')
+        toast.success('Pagamento confirmado! Seus pontos foram creditados.')
+        
+        // Invalidar e refetch cache para atualizar a lista de compras
+        if (user?.id) {
+          // Aguardar um pouco para garantir que a atualização no banco foi concluída
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          // Invalidar cache
+          queryClient.invalidateQueries({ queryKey: ['points-purchases', user.id] })
+          queryClient.invalidateQueries({ queryKey: ['user-points-balance', user.id] })
+          
+          // Forçar refetch imediato
+          await queryClient.refetchQueries({ 
+            queryKey: ['points-purchases', user.id],
+            type: 'active'
+          }, { cancelRefetch: false })
+        }
+      } else if (data.status === 'pending' || data.paymentStatus === 'PENDING') {
+        toast.info('Pagamento ainda pendente. Aguarde alguns instantes e tente novamente.')
+        
+        // Mesmo assim, atualizar o cache para refletir qualquer mudança de status
+        if (user?.id) {
+          queryClient.invalidateQueries({ queryKey: ['points-purchases', user.id] })
+          await queryClient.refetchQueries({ 
+            queryKey: ['points-purchases', user.id],
+            type: 'active'
+          }, { cancelRefetch: false })
+        }
+      } else if (data.status === 'cancelled' || data.paymentStatus === 'EXPIRED' || data.paymentStatus === 'CANCELLED') {
+        toast.error('Pagamento expirado ou cancelado. Gere um novo QR Code.')
+        setStep('form')
+        setPaymentData(null)
+      } else {
+        toast.info(`Status do pagamento: ${data.paymentStatus || data.status}`)
+      }
+
+    } catch (err: any) {
+      console.error('Erro ao verificar pagamento:', err)
+      setError(err.message || 'Erro ao verificar pagamento')
+      toast.error('Erro ao verificar pagamento', {
+        description: err.message
+      })
+    } finally {
+      setIsCheckingPayment(false)
+    }
+  }
+
+  // Se não tem packageData nem existingPurchase, não mostrar modal
+  if (!packageData && !existingPurchase) return null
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        // Só permitir fechar manualmente se não estiver no step de sucesso
+        // ou se o usuário clicar explicitamente no botão de fechar
+        if (!open && step === 'success') {
+          // Não fechar automaticamente no step de sucesso
+          return
+        }
+        onClose()
+      }}
+    >
+      <DialogContent 
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          // Prevenir fechamento ao clicar fora quando estiver no step de sucesso
+          if (step === 'success') {
+            e.preventDefault()
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevenir fechamento com ESC quando estiver no step de sucesso
+          if (step === 'success') {
+            e.preventDefault()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
-            Finalizar Compra - {packageData.name}
+            {existingPurchase 
+              ? existingPurchase.status === 'approved' 
+                ? 'Compra Aprovada' 
+                : 'QR Code de Pagamento'
+              : `Finalizar Compra - ${packageData?.name || ''}`
+            }
           </DialogTitle>
           <DialogDescription>
-            Complete seus dados para gerar o QR Code de pagamento
+            {existingPurchase
+              ? existingPurchase.status === 'approved'
+                ? 'Seus ConfiPoints foram creditados com sucesso'
+                : 'Escaneie o QR Code ou copie o código PIX para pagar'
+              : 'Complete seus dados para gerar o QR Code de pagamento'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -483,6 +774,10 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
               <AlertDescription>
                 Escaneie o QR Code com o app do seu banco ou copie o código PIX para pagar.
                 O pagamento expira em {paymentData.expiresAt ? new Date(paymentData.expiresAt).toLocaleString('pt-BR') : 'alguns minutos'}.
+                <br />
+                <span className="text-xs text-gray-600 dark:text-gray-400 mt-2 block">
+                  🔄 Verificando pagamento automaticamente...
+                </span>
               </AlertDescription>
             </Alert>
 
@@ -548,40 +843,128 @@ export function CheckoutModal({ isOpen, onClose, packageData }: CheckoutModalPro
                 </div>
               )}
 
-              <div className="flex gap-3 w-full">
+              <div className="flex flex-col gap-3 w-full">
                 <Button
-                  variant="outline"
-                  onClick={() => setStep('form')}
-                  className="flex-1"
+                  onClick={checkPaymentStatus}
+                  disabled={isCheckingPayment}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
-                  Voltar
+                  {isCheckingPayment ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Verificando pagamento...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Verificar Pagamento
+                    </>
+                  )}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1"
-                >
-                  Fechar
-                </Button>
+                
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep('form')}
+                    className="flex-1"
+                    disabled={isCheckingPayment}
+                  >
+                    Voltar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={onClose}
+                    className="flex-1"
+                    disabled={isCheckingPayment}
+                  >
+                    Fechar
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {step === 'success' && (
-          <div className="text-center space-y-4 py-8">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+        {step === 'success' && (packageData || existingPurchase) && (
+          <div className="text-center space-y-6 py-8">
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Pagamento Confirmado!
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Seus ConfiPoints foram creditados com sucesso.
-            </p>
-            <Button onClick={onClose}>
-              Fechar
-            </Button>
+            
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Pagamento Confirmado! 🎉
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Seus ConfiPoints foram creditados com sucesso.
+              </p>
+            </div>
+
+            {/* Resumo da Compra */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-4">
+                Resumo da Compra
+              </h4>
+              <div className="space-y-3 text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Pacote:</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{packageData.name}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Valor Pago:</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{packageData.price}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 dark:text-gray-300">Pontos Base:</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {packageData.points.toLocaleString('pt-BR')} ConfiPoints
+                  </span>
+                </div>
+                {packageData.bonus > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-green-700 dark:text-green-300">Bônus:</span>
+                    <span className="font-semibold text-green-900 dark:text-green-100">
+                      +{packageData.bonus.toLocaleString('pt-BR')} pontos
+                    </span>
+                  </div>
+                )}
+                <div className="pt-3 border-t border-green-200 dark:border-green-800 flex justify-between items-center">
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">Total Creditado:</span>
+                  <span className="text-xl font-bold text-green-900 dark:text-green-100">
+                    {(packageData.points + packageData.bonus).toLocaleString('pt-BR')} ConfiPoints
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                onClick={() => {
+                  onClose()
+                  window.location.href = '/confipoints/compras'
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                Ver Minhas Compras
+              </Button>
+              <Button 
+                onClick={() => {
+                  onClose()
+                  window.location.href = '/confipoints/dashboard'
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Ver Meus Pontos
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={onClose}
+                className="flex-1 sm:hidden"
+              >
+                Fechar
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>

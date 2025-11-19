@@ -50,6 +50,8 @@ const onboardingSchema = z.object({
   location_city: z.string().min(1, 'Cidade é obrigatória'),
   neighborhood: z.string().min(1, 'Bairro é obrigatório'),
   address: z.string().min(1, 'Endereço é obrigatório'),
+  address_number: z.string().min(1, 'Número é obrigatório'),
+  zip_code: z.string().min(8, 'CEP inválido').max(9, 'CEP inválido'),
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
@@ -282,7 +284,9 @@ export default function OnboardingPage() {
           values.location_state &&
           values.location_city &&
           values.neighborhood &&
-          values.address
+          values.address &&
+          values.address_number &&
+          values.zip_code
         )
       
       case 6: // Tipo de usuário
@@ -602,6 +606,8 @@ export default function OnboardingPage() {
         location_city: data.location_city,
         neighborhood: data.neighborhood,
         address: data.address,
+        address_number: data.address_number,
+        zip_code: data.zip_code?.replace(/\D/g, ''),
         bio: autoBio,
         professional_services: selectedServices.length > 0 ? selectedServices : [],
         professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
@@ -1362,7 +1368,7 @@ export default function OnboardingPage() {
                           </Label>
                           <Input
                             id="address"
-                            placeholder="Ex: Rua das Flores, 123"
+                            placeholder="Ex: Rua das Flores"
                             {...register('address')}
                             className={cn(
                               "h-10",
@@ -1373,6 +1379,55 @@ export default function OnboardingPage() {
                             <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                               <X className="w-3 h-3" />
                               {errors.address.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="address_number" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            Número <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="address_number"
+                            placeholder="Ex: 123"
+                            {...register('address_number')}
+                            className={cn(
+                              "h-10",
+                              errors.address_number ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.address_number && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.address_number.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="zip_code" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            CEP <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="zip_code"
+                            placeholder="00000-000"
+                            {...register('zip_code')}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '')
+                              const formatted = value.replace(/(\d{5})(\d{3})/, '$1-$2')
+                              e.target.value = formatted
+                              setValue('zip_code', formatted)
+                            }}
+                            maxLength={9}
+                            className={cn(
+                              "h-10",
+                              errors.zip_code ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            )}
+                          />
+                          {errors.zip_code && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.zip_code.message}
                             </p>
                           )}
                         </div>
@@ -1672,6 +1727,8 @@ export default function OnboardingPage() {
                             <p><strong>Cidade:</strong> {watchedValues.location_city || 'Não informado'}</p>
                             <p><strong>Bairro:</strong> {watchedValues.neighborhood || 'Não informado'}</p>
                             <p><strong>Endereço:</strong> {showDataSummary ? (watchedValues.address || 'Não informado') : 'Oculto'}</p>
+                            <p><strong>Número:</strong> {showDataSummary ? (watchedValues.address_number || 'Não informado') : 'Oculto'}</p>
+                            <p><strong>CEP:</strong> {showDataSummary ? (watchedValues.zip_code || 'Não informado') : 'Oculto'}</p>
                           </div>
                           
                           {selectedAvatar && (

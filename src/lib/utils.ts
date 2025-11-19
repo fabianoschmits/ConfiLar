@@ -26,3 +26,10 @@ export function formatRelativeTime(date: string | Date): string {
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d atrás`;
   return `${Math.floor(diffInSeconds / 2592000)}mês atrás`;
 }
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value);
+}

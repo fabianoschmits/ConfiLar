@@ -57,27 +57,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Se já foi processado, não processar novamente
-    if (purchase.status === 'approved' && status === 'approved') {
-      console.log('✅ Pagamento já foi processado anteriormente')
-      return NextResponse.json({ success: true, message: 'Já processado' })
-    }
-
     // Mapear status do AbacatePay para nosso sistema
+    // Verificar diferentes formatos de status que podem vir do webhook
+    const statusFromWebhook = status || webhookData?.status || body?.status || 'pending'
+    
     let newStatus: 'pending' | 'processing' | 'approved' | 'rejected' | 'cancelled' | 'refunded' = 'pending'
     
-    if (status === 'paid' || status === 'approved' || status === 'completed') {
+    const statusLower = String(statusFromWebhook).toLowerCase()
+    
+    if (statusLower === 'paid' || statusLower === 'approved' || statusLower === 'completed' || statusLower === 'success') {
       newStatus = 'approved'
-    } else if (status === 'pending' || status === 'waiting_payment') {
+    } else if (statusLower === 'pending' || statusLower === 'waiting_payment' || statusLower === 'waiting') {
       newStatus = 'pending'
-    } else if (status === 'processing' || status === 'in_progress') {
+    } else if (statusLower === 'processing' || statusLower === 'in_progress' || statusLower === 'processing') {
       newStatus = 'processing'
-    } else if (status === 'cancelled' || status === 'canceled') {
+    } else if (statusLower === 'cancelled' || statusLower === 'canceled' || statusLower === 'expired') {
       newStatus = 'cancelled'
-    } else if (status === 'refunded' || status === 'refund') {
+    } else if (statusLower === 'refunded' || statusLower === 'refund') {
       newStatus = 'refunded'
-    } else if (status === 'rejected' || status === 'failed' || status === 'error') {
+    } else if (statusLower === 'rejected' || statusLower === 'failed' || statusLower === 'error') {
       newStatus = 'rejected'
+    }
+
+    // Verificar status anterior antes de atualizar
+    const previousStatus = purchase.status
+    const shouldCreditPoints = newStatus === 'approved' && previousStatus !== 'approved'
+
+    // Se já foi processado e está aprovado, não processar novamente
+    if (previousStatus === 'approved' && newStatus === 'approved') {
+      console.log('✅ Pagamento já foi processado anteriormente')
+      return NextResponse.json({ success: true, message: 'Já processado' })
     }
 
     // Atualizar status da compra
@@ -98,33 +107,89 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Se pagamento aprovado, creditar pontos
-    if (newStatus === 'approved' && purchase.status !== 'approved') {
-      try {
-        // Buscar dados do pacote para obter pontos e bônus
-        const packageData = purchase.package_id 
-          ? await supabase
-              .from('points_packages')
-              .select('points_amount, bonus_points')
-              .eq('id', purchase.package_id)
-              .single()
-          : null
+    console.log(`✅ Status da compra ${purchase.id} atualizado de '${previousStatus}' para '${newStatus}' via webhook`)
 
+    // Se pagamento aprovado e não estava aprovado antes, creditar pontos
+    if (shouldCreditPoints) {
+      try {
         // Usar points_received da compra (já inclui bônus)
         const pointsToAdd = purchase.points_received || 0
+        const purchaseDescription = `Compra de pacote - ${purchase.id}`
 
-        // Adicionar pontos ao usuário
-        const { error: pointsError } = await supabase.rpc('add_points', {
-          p_user_id: purchase.user_id,
-          p_points: pointsToAdd,
-          p_source: 'purchase',
-          p_description: `Compra de pacote - ${purchase.id}`
-        })
+        console.log(`💰 Processando crédito de pontos via webhook para compra ${purchase.id}:`)
+        console.log(`   - Pontos a creditar: ${pointsToAdd}`)
+        console.log(`   - Usuário: ${purchase.user_id}`)
 
-        if (pointsError) {
-          console.error('❌ Erro ao creditar pontos:', pointsError)
+        if (pointsToAdd > 0) {
+          // VERIFICAR SE JÁ FOI CREDITADO - Buscar transações existentes com a mesma descrição
+          const { data: existingTransactions, error: checkError } = await supabase
+            .from('point_transactions')
+            .select('id, amount, description, created_at')
+            .eq('user_id', purchase.user_id)
+            .eq('source', 'purchase')
+            .eq('description', purchaseDescription)
+            .limit(1)
+
+          if (checkError) {
+            console.error('❌ Erro ao verificar transações existentes:', checkError)
+          }
+
+          if (existingTransactions && existingTransactions.length > 0) {
+            console.log(`⚠️ Pontos já foram creditados anteriormente para esta compra!`)
+            console.log(`   - Transação existente: ${existingTransactions[0].id}`)
+            console.log(`   - Data: ${existingTransactions[0].created_at}`)
+            console.log(`   - Pontos creditados: ${existingTransactions[0].amount}`)
+            console.log(`   - Descrição: ${existingTransactions[0].description}`)
+            
+            // O trigger automático no banco já deve ter aprovado a compra quando os pontos foram creditados
+            // Mas vamos forçar aprovação como fallback caso o trigger não tenha funcionado
+            if (previousStatus !== 'approved') {
+              console.log(`🔄 Pontos já creditados mas status não está como aprovado. Forçando aprovação (fallback)...`)
+              
+              const { error: approveError } = await supabase
+                .from('points_purchases')
+                .update({
+                  status: 'approved',
+                  approved_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', purchase.id)
+                .eq('user_id', purchase.user_id)
+
+              if (approveError) {
+                console.error('❌ Erro ao marcar compra como aprovada (fallback):', approveError)
+              } else {
+                console.log(`✅ Compra ${purchase.id} marcada como aprovada (fallback)`)
+              }
+            }
+            newStatus = 'approved'
+            
+            // Não creditar novamente, mas retornar sucesso
+            return NextResponse.json({ 
+              success: true,
+              message: 'Webhook processado. Pontos já foram creditados anteriormente para esta compra.',
+              status: newStatus
+            })
+          }
+
+          // Se não encontrou transação existente, creditar pontos
+          const { error: pointsError } = await supabase.rpc('add_points', {
+            p_user_id: purchase.user_id,
+            p_points: pointsToAdd,
+            p_source: 'purchase',
+            p_description: purchaseDescription
+          })
+
+          if (pointsError) {
+            console.error('❌ Erro ao creditar pontos:', pointsError)
+          } else {
+            console.log(`✅ ${pointsToAdd} pontos creditados para o usuário ${purchase.user_id} (compra ${purchase.id})`)
+            // O trigger automático no banco aprovará a compra automaticamente
+            console.log(`✅ O trigger automático aprovará a compra automaticamente.`)
+            newStatus = 'approved'
+          }
         } else {
-          console.log(`✅ ${pointsToAdd} pontos creditados para o usuário ${purchase.user_id}`)
+          console.warn(`⚠️ Compra ${purchase.id} aprovada mas sem pontos para creditar (points_received: ${pointsToAdd})`)
         }
 
         // Criar notificação para o usuário

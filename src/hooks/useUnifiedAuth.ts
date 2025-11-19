@@ -197,6 +197,8 @@ export function useAuth(initialSession?: Session | null): AuthState & AuthAction
       location_city: 'São Paulo',
       neighborhood: '',
       address: '',
+      address_number: null,
+      zip_code: null,
       bio: '',
       professional_services: [],
       professional_experience_years: 0,

@@ -64,6 +64,16 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
     // Estrutura da tabela: id, user_id, package_id, amount_brl, points_received, payment_method, status, created_at
     const totalPoints = points + (bonus || 0)
     
+    // Salvar dados do pacote no metadata para poder verificar depois
+    const packageMetadata = {
+      package_id: package_id,
+      package_name: `Pacote ${package_id}`,
+      points: points,
+      bonus: bonus || 0,
+      total_points: totalPoints,
+      amount: amount
+    }
+    
     const { data: purchase, error: purchaseError } = await supabaseAuth
       .from('points_purchases')
       .insert({
@@ -73,6 +83,7 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
         points_received: totalPoints, // Total de pontos (incluindo bônus)
         payment_method: 'pix',
         status: 'pending',
+        metadata: packageMetadata, // Salvar dados do pacote no metadata
         customer_data: {
           name: customer.name,
           email: customer.email,

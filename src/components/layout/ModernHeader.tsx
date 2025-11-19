@@ -564,6 +564,15 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => handleNavigation('/confipoints/compras')}
+                              className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
+                            >
+                              <ShoppingBag className="h-3 w-3 text-green-600 dark:text-green-400" />
+                              <span className="truncate text-green-700 dark:text-green-300">Minhas Compras</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleNavigation('/confipoints/transferir')}
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                             >

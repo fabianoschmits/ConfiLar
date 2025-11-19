@@ -51,7 +51,7 @@ export function usePointsPackages() {
 export function usePointsPurchases(userId?: string) {
   const queryClient = useQueryClient()
 
-  const { data: purchases, isLoading, error } = useQuery({
+  const { data: purchases, isLoading, error, refetch } = useQuery({
     queryKey: ['points-purchases', userId],
     queryFn: async () => {
       if (!userId) return []
@@ -70,7 +70,9 @@ export function usePointsPurchases(userId?: string) {
       return data
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 0, // Sempre considerar stale para permitir atualizações imediatas
+    refetchOnWindowFocus: true, // Refetch quando a janela ganha foco
+    refetchOnMount: true, // Refetch quando o componente monta
   })
 
   const createPurchaseMutation = useMutation({
@@ -95,7 +97,11 @@ export function usePointsPurchases(userId?: string) {
     loading: isLoading,
     error,
     createPurchase: createPurchaseMutation.mutateAsync,
-    isCreating: createPurchaseMutation.isPending
+    isCreating: createPurchaseMutation.isPending,
+    refetch: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['points-purchases', userId] })
+      return refetch()
+    }
   }
 }
 

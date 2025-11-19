@@ -40,7 +40,8 @@ import {
   BarChart3,
   BookOpen,
   Award,
-  Crown
+  Crown,
+  ShoppingBag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -295,6 +296,13 @@ export function Sidebar() {
           href: '/confipoints/comprar',
           icon: <Crown size={16} strokeWidth={2} />,
           description: 'Comprar pontos'
+        },
+        {
+          id: 'purchases',
+          title: 'MINHAS COMPRAS',
+          href: '/confipoints/compras',
+          icon: <ShoppingBag size={16} strokeWidth={2} />,
+          description: 'Histórico de compras'
         },
         {
           id: 'transfer',

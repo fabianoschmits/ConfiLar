@@ -27,6 +27,8 @@ const addressSchema = z.object({
   location_city: z.string().min(1, 'Cidade é obrigatória'),
   neighborhood: z.string().min(1, 'Bairro é obrigatório'),
   address: z.string().min(1, 'Endereço é obrigatório'),
+  address_number: z.string().min(1, 'Número é obrigatório'),
+  zip_code: z.string().min(8, 'CEP inválido').max(9, 'CEP inválido'),
 })
 
 type AddressFormData = z.infer<typeof addressSchema>
@@ -87,6 +89,8 @@ export default function EnderecoPage() {
           setValue('location_city', profile.location_city || '')
           setValue('neighborhood', profile.neighborhood || '')
           setValue('address', profile.address || '')
+          setValue('address_number', profile.address_number || '')
+          setValue('zip_code', profile.zip_code || '')
         }
       } catch (error) {
         console.error('Erro ao carregar perfil:', error)
@@ -113,6 +117,8 @@ export default function EnderecoPage() {
           location_city: data.location_city,
           neighborhood: data.neighborhood,
           address: data.address,
+          address_number: data.address_number,
+          zip_code: data.zip_code?.replace(/\D/g, ''),
         })
         .eq('id', user.id)
 
@@ -128,6 +134,8 @@ export default function EnderecoPage() {
           location_city: data.location_city,
           neighborhood: data.neighborhood,
           address: data.address,
+          address_number: data.address_number,
+          zip_code: data.zip_code?.replace(/\D/g, ''),
         }
       })
 
@@ -333,7 +341,7 @@ export default function EnderecoPage() {
                       </Label>
                       <Input
                         id="address"
-                        placeholder="Ex: Rua das Flores, 123"
+                        placeholder="Ex: Rua das Flores"
                         {...register('address')}
                         className={cn(
                           "h-10",
@@ -344,6 +352,55 @@ export default function EnderecoPage() {
                         <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                           <X className="w-3 h-3" />
                           {errors.address.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="address_number" className="text-sm font-medium text-gray-700">
+                        Número <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="address_number"
+                        placeholder="Ex: 123"
+                        {...register('address_number')}
+                        className={cn(
+                          "h-10",
+                          errors.address_number ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                        )}
+                      />
+                      {errors.address_number && (
+                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                          <X className="w-3 h-3" />
+                          {errors.address_number.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="zip_code" className="text-sm font-medium text-gray-700">
+                        CEP <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="zip_code"
+                        placeholder="00000-000"
+                        {...register('zip_code')}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '')
+                          const formatted = value.replace(/(\d{5})(\d{3})/, '$1-$2')
+                          e.target.value = formatted
+                          setValue('zip_code', formatted)
+                        }}
+                        maxLength={9}
+                        className={cn(
+                          "h-10",
+                          errors.zip_code ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                        )}
+                      />
+                      {errors.zip_code && (
+                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                          <X className="w-3 h-3" />
+                          {errors.zip_code.message}
                         </p>
                       )}
                     </div>

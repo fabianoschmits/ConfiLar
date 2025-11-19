@@ -33,6 +33,8 @@ export interface Database {
           location_state: string | null
           location_city: string | null
           address: string | null
+          address_number: string | null
+          zip_code: string | null
           cpf_cnpj: string | null
           is_verified: boolean
           badge: 'bronze' | 'silver' | 'gold'
@@ -69,6 +71,8 @@ export interface Database {
           location_state?: string | null
           location_city?: string | null
           address?: string | null
+          address_number?: string | null
+          zip_code?: string | null
           cpf_cnpj?: string | null
           is_verified?: boolean
           badge?: 'bronze' | 'silver' | 'gold'
@@ -105,6 +109,8 @@ export interface Database {
           location_state?: string | null
           location_city?: string | null
           address?: string | null
+          address_number?: string | null
+          zip_code?: string | null
           cpf_cnpj?: string | null
           is_verified?: boolean
           badge?: 'bronze' | 'silver' | 'gold'
@@ -765,6 +771,8 @@ export interface Profile {
   location_state: string
   location_city: string
   address: string
+  address_number: string | null
+  zip_code: string | null
   cpf_cnpj: string
   is_verified: boolean
   badge: BadgeType

@@ -38,7 +38,8 @@ import {
   Zap,
   Crown,
   Send,
-  ShoppingCart
+  ShoppingCart,
+  ShoppingBag
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
@@ -202,6 +203,13 @@ export function ModernSidebar() {
           href: '/confipoints/comprar',
           icon: <Crown className="h-4 w-4" />,
           description: 'Adquirir ConfiPoints'
+        },
+        {
+          id: 'confipoints-purchases',
+          title: 'Minhas Compras',
+          href: '/confipoints/compras',
+          icon: <ShoppingBag className="h-4 w-4" />,
+          description: 'Histórico de compras'
         },
         {
           id: 'confipoints-transfer',
