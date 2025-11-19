@@ -25,10 +25,21 @@ import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import { MicroInteraction } from '@/components/ui/MicroInteraction'
 import { PackageSkeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
+import { CheckoutModal } from '@/components/checkout/CheckoutModal'
+import { useState } from 'react'
 
 export default function ComprarPontosPage() {
   const { user, profile } = useAuthContext()
   const { balance: pointsData, loading: pointsLoading } = usePoints(user?.id)
+  const [selectedPackage, setSelectedPackage] = useState<{
+    id: string
+    name: string
+    points: number
+    price: string
+    priceValue: number
+    bonus: number
+  } | null>(null)
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
 
   if (pointsLoading) {
     return (
@@ -371,8 +382,15 @@ export default function ComprarPontosPage() {
                             : 'bg-blue-600 hover:bg-blue-700'
                         }`}
                         onClick={() => {
-                          // TODO: Implementar integração com gateway de pagamento
-                          toast.info(`Compra do ${pkg.name} será implementada em breve!`)
+                          setSelectedPackage({
+                            id: pkg.id,
+                            name: pkg.name,
+                            points: pkg.points,
+                            price: pkg.price,
+                            priceValue: pkg.priceValue,
+                            bonus: pkg.bonus
+                          })
+                          setIsCheckoutOpen(true)
                         }}
                       >
                         <CreditCard className="w-4 h-4 mr-2" />
@@ -455,6 +473,16 @@ export default function ComprarPontosPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Checkout */}
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => {
+          setIsCheckoutOpen(false)
+          setSelectedPackage(null)
+        }}
+        packageData={selectedPackage}
+      />
     </MainLayout>
   )
 }
