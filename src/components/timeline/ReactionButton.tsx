@@ -4,7 +4,6 @@ import { ReactionType, REACTION_EMOJIS, REACTION_COLORS } from '@/types/reaction
 import { useReactions, useReactionCounts, useReactionUsers } from '@/hooks/useReactions'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { useHapticFeedback } from '@/hooks/useHapticFeedback'
 
 // CSS para animação de batida do coração
 if (typeof document !== 'undefined') {
@@ -53,14 +52,14 @@ export function ReactionButton({ postId, postOwnerId, postOwnerName, className }
   const { reactionCounts, isLoading: countsLoading } = useReactionCounts(postId)
   const { reactionUsers, isLoading: usersLoading } = useReactionUsers(postId)
   const [isAnimating, setIsAnimating] = useState(false)
-  const haptic = useHapticFeedback()
+  // Haptic feedback removido para simplificar
 
   const handleReaction = () => {
     // Feedback háptico
     if (userReaction === 'like') {
-      haptic.light() // Feedback leve ao descurtir
+      // Haptic feedback removido
     } else {
-      haptic.success() // Feedback de sucesso ao curtir
+      // Haptic feedback removido
     }
     
     // Ativar animação

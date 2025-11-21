@@ -7,7 +7,6 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { usePoints } from '@/hooks/usePoints'
 import { cn } from '@/lib/utils'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
-import { useHapticFeedback } from '@/hooks/useHapticFeedback'
 import { toast } from 'sonner'
 
 // CSS para animação de batida do coração
@@ -68,7 +67,7 @@ export function PremiumLikeButton({
   } = usePremiumLikes(postId)
 
   const [isAnimating, setIsAnimating] = React.useState(false)
-  const haptic = useHapticFeedback()
+  // Haptic feedback removido para simplificar
 
   const isOwnPost = user?.id === postCreatorId
   const hasLiked = likes.some(like => like.user_id === user?.id)
@@ -108,9 +107,9 @@ export function PremiumLikeButton({
 
     // Feedback háptico
     if (userPremiumLiked) {
-      haptic.light() // Feedback leve ao descurtir
+      // Haptic feedback removido
     } else {
-      haptic.medium() // Feedback médio ao curtir premium
+      // Haptic feedback removido
     }
 
     // Ativar animação no botão

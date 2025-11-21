@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { ModernSidebar } from './ModernSidebar'
 import { ModernHeader } from './ModernHeader'
-// import { ModernBottomNavigation } from './ModernBottomNavigation' // COMENTADO PARA TESTAR NOVO MENU
 import { QuickActionMenu } from '@/components/navigation/QuickActionMenu'
 import { LoginPrompt } from './LoginPrompt';
 import { ReferralTicker } from '@/components/referral/ReferralTicker'

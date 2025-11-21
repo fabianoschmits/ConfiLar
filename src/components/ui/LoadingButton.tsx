@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ComponentProps, useEffect, useRef } from 'react'
-import { useHapticFeedback } from '@/hooks/useHapticFeedback'
 
 interface LoadingButtonProps extends ComponentProps<typeof Button> {
   isLoading?: boolean
@@ -20,17 +19,17 @@ export function LoadingButton({
   disabled,
   ...props
 }: LoadingButtonProps) {
-  const haptic = useHapticFeedback()
+  // Haptic feedback removido para simplificar
   const prevLoadingRef = useRef(isLoading)
 
   // Feedback háptico quando o loading termina com sucesso
   useEffect(() => {
     if (prevLoadingRef.current && !isLoading) {
       // Loading acabou, dar feedback de sucesso
-      haptic.success()
+      // Haptic feedback removido
     }
     prevLoadingRef.current = isLoading
-  }, [isLoading, haptic])
+  }, [isLoading])
 
   return (
     <Button

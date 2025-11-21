@@ -8,14 +8,12 @@
 import { useEffect } from 'react'
 import { initOfflineSync } from '@/lib/storage/offlineSync'
 import { cleanupExpiredData, cleanupCompletedActions } from '@/lib/storage/indexedDB'
-import { useOfflineActions } from '@/hooks/useOfflineActions'
-
 interface OfflineProviderProps {
   children: React.ReactNode
 }
 
 export function OfflineProvider({ children }: OfflineProviderProps) {
-  const { isOnline, pendingCount, isSyncing } = useOfflineActions()
+  // Funcionalidade offline simplificada - removido useOfflineActions complexo
 
   useEffect(() => {
     // Inicializar sincronizador offline
@@ -54,7 +52,7 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type === 'SYNC_PENDING_ACTIONS') {
         console.log('🔄 Service Worker solicitou sincronização de ações')
-        // A sincronização será feita automaticamente pelo useOfflineActions
+        // A sincronização será feita automaticamente pelo sistema offline
       }
     }
 
@@ -72,12 +70,7 @@ export function OfflineProvider({ children }: OfflineProviderProps) {
     }
   }, [])
 
-  // Mostrar indicador de sincronização se houver ações pendentes
-  useEffect(() => {
-    if (!isOnline && pendingCount > 0) {
-      console.log(`📴 Modo offline - ${pendingCount} ações pendentes`)
-    }
-  }, [isOnline, pendingCount, isSyncing])
+  // Funcionalidade offline simplificada - indicadores removidos com useOfflineActions
 
   return <>{children}</>
 }
