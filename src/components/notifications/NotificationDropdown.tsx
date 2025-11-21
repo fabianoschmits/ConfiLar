@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// Lucide React Icons - Tema Moderno
 import {
   Bell,
   Check,
@@ -19,16 +18,15 @@ import {
   Loader2,
   MoreHorizontal,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCheck
 } from 'lucide-react'
 import { useSupabaseNotifications } from '@/hooks/useSupabaseNotifications';
 import { useMessages } from '@/hooks/useMessages';
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple';
 import { useRealtimeConnection } from '@/hooks/useRealtimeConnection';
-// import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'; // Desabilitado temporariamente
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -52,23 +50,24 @@ interface NotificationPreferences {
 }
 
 const getNotificationIcon = (type: string) => {
+  const iconClass = "h-5 w-5 flex-shrink-0";
   switch (type) {
     case 'message':
-      return <MessageCircle className="h-4 w-4 text-blue-600" />;
+      return <MessageCircle className={cn(iconClass, "text-blue-500 dark:text-blue-400")} />;
     case 'review':
-      return <Star className="h-4 w-4 text-yellow-600" />;
+      return <Star className={cn(iconClass, "text-yellow-500 dark:text-yellow-400")} />;
     case 'booking':
-      return <Calendar className="h-4 w-4 text-green-600" />;
+      return <Calendar className={cn(iconClass, "text-green-500 dark:text-green-400")} />;
     case 'verification':
-      return <Shield className="h-4 w-4 text-purple-600" />;
+      return <Shield className={cn(iconClass, "text-purple-500 dark:text-purple-400")} />;
     case 'achievement':
-      return <Trophy className="h-4 w-4 text-orange-600" />;
+      return <Trophy className={cn(iconClass, "text-orange-500 dark:text-orange-400")} />;
     case 'info':
-      return <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+      return <Info className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />;
     case 'warning':
-      return <AlertTriangle className="h-4 w-4 text-red-600" />;
+      return <AlertTriangle className={cn(iconClass, "text-red-500 dark:text-red-400")} />;
     default:
-      return <Bell className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+      return <Bell className={cn(iconClass, "text-gray-500 dark:text-gray-400")} />;
   }
 };
 
@@ -78,10 +77,12 @@ const formatTimestamp = (timestamp: string) => {
   const diff = now.getTime() - date.getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
 
   if (minutes < 1) return 'Agora';
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
+  if (days < 7) return `${days}d`;
   
   return date.toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -92,7 +93,6 @@ const formatTimestamp = (timestamp: string) => {
 export const NotificationDropdown: React.FC = () => {
   const { user } = useAuthContext();
   
-  // Usar o novo hook de tempo real
   const { 
     notifications, 
     unreadCount, 
@@ -103,24 +103,13 @@ export const NotificationDropdown: React.FC = () => {
     isLoading
   } = useSupabaseNotifications();
   
-  // Desabilitado temporariamente para evitar conflitos
-  const isConnected = false;
-  const addTestNotification = (title: string, message: string, type: string) => {
-    console.log('Teste de notificação desabilitado:', { title, message, type });
-  };
-  
-  // Hook para monitorar conexão em tempo real (manter para indicadores visuais)
-  const { isConnected: isRealtimeConnected, isConnecting, lastActivity, connectionError } = useRealtimeConnection();
-  
-  // Usar o mesmo sistema do chat flutuante para mensagens
+  const { isConnected: isRealtimeConnected, isConnecting } = useRealtimeConnection();
   const { conversations, getTotalUnreadCount } = useMessages();
   const { openChat } = useFloatingChat();
+  
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [visualUnreadCount, setVisualUnreadCount] = useState(0);
-  
-  // O novo hook já gerencia tudo, incluindo mensagens
-  const displayUnreadCount = unreadCount;
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     push_enabled: true,
     message_notifications: true,
@@ -130,16 +119,15 @@ export const NotificationDropdown: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
   const [tableExists, setTableExists] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
 
+  const displayUnreadCount = unreadCount;
   const recentNotifications = notifications
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 8);
+    .slice(0, 10);
 
-  // Carregar preferências do usuário
+  // Carregar preferências
   const loadPreferences = async () => {
     if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from('notification_preferences')
@@ -148,13 +136,10 @@ export const NotificationDropdown: React.FC = () => {
         .single();
 
       if (error) {
-        // Se a tabela não existe ou há erro de permissão, usar preferências padrão
-        if (error.code === 'PGRST116' || error.code === '42P01' || error.message?.includes('relation "notification_preferences" does not exist')) {
-          console.log('Tabela notification_preferences não encontrada, usando preferências padrão');
+        if (error.code === 'PGRST116' || error.code === '42P01') {
           setTableExists(false);
           return;
         }
-        console.error('Erro ao carregar preferências:', error);
         return;
       }
 
@@ -172,10 +157,8 @@ export const NotificationDropdown: React.FC = () => {
     }
   };
 
-  // Salvar preferências
   const savePreferences = async () => {
     if (!user) return;
-
     setSaving(true);
     try {
       const { error } = await supabase
@@ -187,19 +170,17 @@ export const NotificationDropdown: React.FC = () => {
         });
 
       if (error) {
-        // Se a tabela não existe, mostrar mensagem específica
-        if (error.code === '42P01' || error.message?.includes('relation "notification_preferences" does not exist')) {
+        if (error.code === '42P01') {
           setTableExists(false);
-          toast.error('Tabela de preferências não encontrada. Execute o script SQL fornecido.');
-          console.error('Tabela notification_preferences não existe. Execute o script fix-notification-preferences.sql');
+          toast.error('Tabela de preferências não encontrada.');
           return;
         }
-        console.error('Erro ao salvar preferências:', error);
         toast.error('Erro ao salvar configurações');
         return;
       }
 
-      toast.success('Configurações salvas com sucesso!');
+      toast.success('Configurações salvas!');
+      setShowSettings(false);
     } catch (error) {
       console.error('Erro ao salvar preferências:', error);
       toast.error('Erro ao salvar configurações');
@@ -214,339 +195,126 @@ export const NotificationDropdown: React.FC = () => {
     }
   }, [user]);
 
-  // Gerenciar contador visual
   useEffect(() => {
     if (!isOpen) {
       setVisualUnreadCount(displayUnreadCount);
     }
   }, [displayUnreadCount, isOpen]);
 
-
-  const handleMarkAsRead = async (id: string) => {
-    await markAsRead(id);
-  };
-
-  const handleMarkAllAsRead = async () => {
-    await markAllAsRead();
-  };
-
-  const handleDeleteNotification = async (id: string) => {
-    await removeNotification(id);
-  };
-
-  const handleClearAll = async () => {
-    await clearAll();
-  };
-
-  // Gerenciar abertura/fechamento do dropdown
   const handleOpenChange = async (open: boolean) => {
     setIsOpen(open);
-    setSelectedIndex(-1); // Resetar seleção
-    
     if (open) {
-      // Quando abrir o menu, resetar o contador visualmente
-      // Não marcar como lidas automaticamente - só quando usuário clicar explicitamente
       setVisualUnreadCount(0);
-      console.log('🔔 Menu de notificações aberto - contador resetado visualmente');
     } else {
-      // Quando fechar, restaurar o contador real
       setVisualUnreadCount(displayUnreadCount);
-    }
-    
-    // Resetar configurações quando fechar
-    if (!open) {
       setShowSettings(false);
     }
   };
 
-  // Lidar com clique em notificação
   const handleNotificationClick = async (notification: any) => {
-    // Marcar como lida se não estiver lida
     if (!notification.is_read) {
-      await handleMarkAsRead(notification.id);
+      await markAsRead(notification.id);
     }
-
-    // Fechar dropdown
     setIsOpen(false);
 
     const metadata = notification.metadata || {};
     const notificationType = notification.type || '';
     const titleLower = (notification.title || '').toLowerCase();
     
-    console.log('🔔 Notificação clicada (Dropdown):', { 
-      type: notificationType, 
-      title: notification.title,
-      metadata 
-    });
-    
-    // 1. MENSAGEM - Abrir chat flutuante
+    // Mensagem - Abrir chat
     if (notificationType === 'message' || titleLower.includes('mensagem')) {
-      try {
-        const senderId = metadata.sender_id;
-        const senderName = metadata.sender_name;
-        const conversationId = metadata.conversation_id || metadata.chat_id;
-        
-        console.log('💬 Abrindo chat:', { senderId, senderName, conversationId });
-        
-        if (conversationId) {
-          openChat(conversationId);
-        } else if (senderId && senderName) {
-          openChat(senderId, senderName);
-        } else {
-          openChat();
-        }
-        return;
-      } catch (error) {
-        console.error('❌ Erro ao abrir chat:', error);
+      const senderId = metadata.sender_id;
+      const senderName = metadata.sender_name;
+      const conversationId = metadata.conversation_id || metadata.chat_id;
+      
+      if (conversationId) {
+        openChat(conversationId);
+      } else if (senderId && senderName) {
+        openChat(senderId, senderName);
+      } else {
+        openChat();
       }
+      return;
     }
     
-    // 2. LIKE / CURTIDA - Ir para o post
-    if (notificationType === 'like' || titleLower.includes('curtida') || metadata.type === 'post_like') {
-      const postId = metadata.post_id;
-      if (postId) {
-        window.location.href = `/feed?post=${postId}`;
-        return;
-      }
+    // Post relacionado
+    if (metadata.post_id) {
+      window.location.href = `/feed?post=${metadata.post_id}`;
+      return;
     }
     
-    // 3. COMENTÁRIO - Ir para o post
-    if (notificationType === 'comment' || titleLower.includes('comentário') || metadata.type === 'post_comment') {
-      const postId = metadata.post_id;
-      if (postId) {
-        window.location.href = `/feed?post=${postId}`;
-        return;
-      }
-    }
-    
-    // 4. RESPOSTA A COMENTÁRIO - Ir para o post
-    if (notificationType === 'reply' || titleLower.includes('resposta') || metadata.type === 'comment_reply') {
-      const postId = metadata.post_id;
-      if (postId) {
-        window.location.href = `/feed?post=${postId}`;
-        return;
-      }
-    }
-    
-    // 5. MENÇÃO - Ir para o post
-    if (notificationType === 'mention' || titleLower.includes('mencionado') || metadata.type === 'mention') {
-      const postId = metadata.post_id;
-      if (postId) {
-        window.location.href = `/feed?post=${postId}`;
-        return;
-      }
-    }
-    
-    // 6. COMPARTILHAMENTO - Ir para o post compartilhado
-    if (notificationType === 'share' || titleLower.includes('compartilhou')) {
-      const postId = metadata.post_id;
-      if (postId) {
-        window.location.href = `/feed?post=${postId}`;
-        return;
-      }
-    }
-    
-    // 7. AVALIAÇÃO / REVIEW - Ir para página de avaliações
-    if (notificationType === 'review' || titleLower.includes('avaliação') || metadata.type === 'review') {
+    // Avaliação
+    if (notificationType === 'review' || titleLower.includes('avaliação')) {
       window.location.href = '/avaliacoes';
       return;
     }
     
-    // 8. FAVORITO - Ir para o perfil do usuário
-    if (titleLower.includes('favorito') || metadata.type === 'favorite') {
-      if (user?.id) {
-        window.location.href = `/perfil/${user.id}`;
-        return;
-      }
-    }
-    
-    // 9. RECOMENDAÇÃO - Ir para página de reputação
+    // Recomendação
     if (titleLower.includes('recomendação') || metadata.type === 'recommendation') {
       window.location.href = '/reputacao';
       return;
     }
     
-    // 10. VISUALIZAÇÃO DE PERFIL - Ir para o perfil
-    if (titleLower.includes('visualizou') || metadata.type === 'profile_view') {
-      if (user?.id) {
-        window.location.href = `/perfil/${user.id}`;
-        return;
-      }
-    }
-    
-    // 11. SEGUIR / FOLLOW - Ir para o perfil de quem seguiu
-    if (notificationType === 'follow' || titleLower.includes('seguir')) {
-      const followerId = metadata.follower_id || metadata.user_id;
-      if (followerId) {
-        window.location.href = `/perfil/${followerId}`;
-        return;
-      }
-    }
-    
-    // 12. FALLBACK - Usar action_url se disponível
+    // Action URL
     if (notification.action_url) {
       if (notification.action_url.startsWith('/')) {
         window.location.href = notification.action_url;
-      } else if (notification.action_url.startsWith('#')) {
-        window.location.hash = notification.action_url;
       } else {
         window.open(notification.action_url, '_blank');
       }
       return;
     }
-    
-    // 13. Se não houver ação específica, apenas fechar
-    console.log('⚠️ Notificação sem ação definida:', notification);
   };
 
   const handleToggle = async (key: keyof NotificationPreferences) => {
     const newValue = !preferences[key];
-    
-    // Atualizar estado local imediatamente
-    setPreferences(prev => ({
-      ...prev,
-      [key]: newValue
-    }));
+    setPreferences(prev => ({ ...prev, [key]: newValue }));
 
-    // Salvar automaticamente no banco sem notificação
     if (user && tableExists) {
       try {
-        setSaving(true);
-        
-        const { error } = await supabase
+        await supabase
           .from('notification_preferences')
           .upsert({
             user_id: user.id,
             [key]: newValue,
             updated_at: new Date().toISOString()
           });
-
-        if (error) {
-          console.error('Erro ao salvar preferência:', error);
-          // Reverter estado local em caso de erro
-          setPreferences(prev => ({
-            ...prev,
-            [key]: !newValue
-          }));
-        }
       } catch (error) {
         console.error('Erro ao salvar preferência:', error);
-        // Reverter estado local em caso de erro
-        setPreferences(prev => ({
-          ...prev,
-          [key]: !newValue
-        }));
-      } finally {
-        setSaving(false);
+        setPreferences(prev => ({ ...prev, [key]: !newValue }));
       }
     }
   };
 
-  // Hook para gerenciar teclas de seleção
-  useEffect(() => {
-    if (!isOpen) return;
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
+  };
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          if (showSettings) {
-            // Navegar pelas configurações
-            const settingsItems = ['push_enabled', 'message_notifications', 'review_notifications', 'system_notifications', 'info_notifications'];
-            setSelectedIndex(prev => Math.min(prev + 1, settingsItems.length - 1));
-          } else {
-            // Navegar pelas notificações
-            setSelectedIndex(prev => Math.min(prev + 1, recentNotifications.length - 1));
-          }
-          break;
-        
-        case 'ArrowUp':
-          event.preventDefault();
-          setSelectedIndex(prev => Math.max(prev - 1, -1));
-          break;
-        
-        case 'Enter':
-          event.preventDefault();
-          if (showSettings) {
-            // Alternar configuração selecionada
-            const settingsKeys: (keyof NotificationPreferences)[] = ['push_enabled', 'message_notifications', 'review_notifications', 'system_notifications', 'info_notifications'];
-            if (selectedIndex >= 0 && selectedIndex < settingsKeys.length) {
-              handleToggle(settingsKeys[selectedIndex]);
-            }
-          } else if (selectedIndex >= 0 && selectedIndex < recentNotifications.length) {
-            // Abrir notificação selecionada
-            handleNotificationClick(recentNotifications[selectedIndex]);
-          }
-          break;
-        
-        case 'Escape':
-          event.preventDefault();
-          if (showSettings) {
-            setShowSettings(false);
-            setSelectedIndex(-1);
-          } else {
-            setIsOpen(false);
-            setSelectedIndex(-1);
-          }
-          break;
-        
-        case 's':
-        case 'S':
-          if (!showSettings) {
-            event.preventDefault();
-            setShowSettings(true);
-            setSelectedIndex(0);
-          }
-          break;
-        
-        case 'c':
-        case 'C':
-          if (!showSettings && recentNotifications.length > 0) {
-            event.preventDefault();
-            handleClearAll();
-          }
-          break;
-        
-        case 'm':
-        case 'M':
-          if (!showSettings && displayUnreadCount > 0) {
-            event.preventDefault();
-            handleMarkAllAsRead();
-          }
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, showSettings, selectedIndex, recentNotifications, displayUnreadCount, handleToggle, handleNotificationClick, handleClearAll, handleMarkAllAsRead]);
+  const handleClearAll = async () => {
+    await clearAll();
+  };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative p-1 h-6 w-6 bg-white dark:bg-gray-900/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl hover:bg-white dark:hover:bg-gray-800 transition-all duration-200 rounded-lg"
+          className="relative p-2 h-9 w-9 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Notificações"
         >
-          <Bell size={14} className="text-gray-600 dark:text-gray-400" />
+          <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
           
-          {/* Indicador de conexão em tempo real */}
+          {/* Indicador de conexão */}
           {isConnecting && (
-            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-yellow-500 rounded-full border border-white shadow-sm animate-pulse" 
-                 title="Conectando..." />
+            <div className="absolute bottom-0 right-0 h-2 w-2 bg-yellow-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse" />
           )}
-          {isConnected && !isConnecting && (
-            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full border border-white shadow-sm animate-pulse" 
-                 title="Notificações em tempo real ativas" />
-          )}
-          {!isConnected && !isConnecting && (
-            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-red-500 rounded-full border border-white shadow-sm" 
-                 title="Conexão perdida" />
+          {isRealtimeConnected && !isConnecting && (
+            <div className="absolute bottom-0 right-0 h-2 w-2 bg-green-500 rounded-full border-2 border-white dark:border-gray-800" />
           )}
           
-          {/* Contador de notificações não lidas */}
-          {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-            <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-semibold shadow-md animate-pulse">
-              {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount)}
+          {/* Contador de não lidas */}
+          {displayUnreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-lg">
+              {displayUnreadCount > 99 ? '99+' : displayUnreadCount}
             </div>
           )}
         </button>
@@ -555,170 +323,108 @@ export const NotificationDropdown: React.FC = () => {
       <DropdownMenuContent 
         align="end" 
         side="bottom"
-        className="w-80 sm:w-96 bg-white dark:bg-gray-900/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-xl rounded-xl mx-2 sm:mx-0 p-0 animate-slide-down"
-        style={{ 
-          maxHeight: '80vh',
-          height: '80vh',
-          display: 'flex', 
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
+        className={cn(
+          "w-[calc(100vw-2rem)] sm:w-96 p-0",
+          "bg-white dark:bg-gray-900",
+          "border border-gray-200 dark:border-gray-700",
+          "shadow-2xl rounded-xl",
+          "max-h-[85vh] flex flex-col",
+          "overflow-hidden"
+        )}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {showSettings ? (
           tableExists ? (
-            <div className="w-full">
-              {/* Header das Configurações Moderno */}
-              <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex flex-col h-full">
+              {/* Header Configurações */}
+              <div className={cn(
+                "flex items-center justify-between p-4",
+                "border-b border-gray-200 dark:border-gray-700",
+                "bg-gray-50 dark:bg-gray-800"
+              )}>
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowSettings(false)}
-                    className="p-1.5 sm:p-2 h-7 w-7 sm:h-8 sm:w-8 bg-white dark:bg-gray-900 dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 transition-all duration-200 rounded-lg"
+                    className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <ArrowLeft size={12} className="sm:w-3.5 sm:h-3.5" />
+                    <ArrowLeft className="h-4 w-4 text-gray-700 dark:text-gray-300" />
                   </button>
-                  <Settings size={14} className="text-gray-600 dark:text-gray-400 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Configurações</span>
+                  <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    Configurações
+                  </h3>
                 </div>
-                <button
+                <Button
                   onClick={savePreferences}
                   disabled={saving}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 rounded-lg"
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   {saving ? (
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Loader2 size={10} className="animate-spin sm:w-3 sm:h-3" />
-                      <span>Salvando</span>
-                    </div>
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Check size={10} className="sm:w-3 sm:h-3" />
-                      <span>Salvar</span>
-                    </div>
+                    'Salvar'
                   )}
-                </button>
+                </Button>
               </div>
 
-              {/* Conteúdo das Configurações Moderno */}
-              <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 max-h-80 overflow-y-auto bg-white dark:bg-gray-900">
-                {/* Canais de Notificação */}
-                <div className="space-y-4">
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
-                    <h4 className="text-xs sm:text-sm font-semibold text-blue-900">Canais de Notificação</h4>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <label htmlFor="push_enabled" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Notificações Push</label>
-                      <div className="flex items-center gap-2">
-                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
-                      <button
-                        onClick={() => handleToggle('push_enabled')}
-                          disabled={saving}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            preferences.push_enabled ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
-                              preferences.push_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                      </button>
-                      </div>
+              {/* Conteúdo Configurações */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-900 dark:text-white">
+                    Canais de Notificação
+                  </Label>
+                  <div className="space-y-2">
+                    <div className={cn(
+                      "flex items-center justify-between p-3 rounded-lg",
+                      "bg-gray-50 dark:bg-gray-800",
+                      "border border-gray-200 dark:border-gray-700"
+                    )}>
+                      <Label htmlFor="push_enabled" className="text-sm text-gray-900 dark:text-white">
+                        Notificações Push
+                      </Label>
+                      <Switch
+                        id="push_enabled"
+                        checked={preferences.push_enabled}
+                        onCheckedChange={() => handleToggle('push_enabled')}
+                        disabled={saving}
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* Separador Moderno */}
-                <div className="h-px bg-gray-200"></div>
+                <Separator className="my-4" />
 
-                {/* Tipos de Notificação */}
-                <div className="space-y-4">
-                  <div className="px-2 sm:px-3 py-1.5 sm:py-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
-                    <h4 className="text-xs sm:text-sm font-semibold text-green-900">Tipos de Notificação</h4>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <label htmlFor="message_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Mensagens</label>
-                      <div className="flex items-center gap-2">
-                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
-                      <button
-                        onClick={() => handleToggle('message_notifications')}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-900 dark:text-white">
+                    Tipos de Notificação
+                  </Label>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'message_notifications' as const, label: 'Mensagens' },
+                      { key: 'review_notifications' as const, label: 'Avaliações' },
+                      { key: 'system_notifications' as const, label: 'Sistema' },
+                      { key: 'info_notifications' as const, label: 'Informações' },
+                    ].map(({ key, label }) => (
+                      <div
+                        key={key}
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-lg",
+                          "bg-gray-50 dark:bg-gray-800",
+                          "border border-gray-200 dark:border-gray-700"
+                        )}
+                      >
+                        <Label htmlFor={key} className="text-sm text-gray-900 dark:text-white">
+                          {label}
+                        </Label>
+                        <Switch
+                          id={key}
+                          checked={preferences[key]}
+                          onCheckedChange={() => handleToggle(key)}
                           disabled={saving}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            preferences.message_notifications ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
-                              preferences.message_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                      </button>
+                        />
                       </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <label htmlFor="review_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Avaliações</label>
-                      <div className="flex items-center gap-2">
-                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
-                      <button
-                        onClick={() => handleToggle('review_notifications')}
-                          disabled={saving}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            preferences.review_notifications ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
-                              preferences.review_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                      </button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <label htmlFor="system_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Sistema</label>
-                      <div className="flex items-center gap-2">
-                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
-                        <button
-                          onClick={() => handleToggle('system_notifications')}
-                          disabled={saving}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            preferences.system_notifications ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
-                              preferences.system_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <label htmlFor="info_notifications" className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">Informações</label>
-                      <div className="flex items-center gap-2">
-                        {saving && <Loader2 size={12} className="text-gray-400 animate-spin sm:w-3.5 sm:h-3.5" />}
-                        <button
-                          onClick={() => handleToggle('info_notifications')}
-                          disabled={saving}
-                          className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            preferences.info_notifications ? 'bg-blue-600' : 'bg-gray-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 sm:h-4 sm:w-4 transform rounded-full bg-white dark:bg-gray-900 transition-transform ${
-                              preferences.info_notifications ? 'translate-x-5 sm:translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -727,206 +433,184 @@ export const NotificationDropdown: React.FC = () => {
             <NotificationPreferencesFallback onBack={() => setShowSettings(false)} />
           )
         ) : (
-          <div className="flex flex-col h-full w-full" style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-            {/* Header das Notificações Moderno - Fixo */}
-            <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
-              <div className="flex items-center gap-2 sm:gap-3 flex-1">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Bell size={14} className="text-blue-600 dark:text-blue-400 sm:w-4 sm:h-4" />
-                  {/* Indicador de conexão em tempo real */}
+          <div className="flex flex-col h-full">
+            {/* Header Notificações */}
+            <div className={cn(
+              "flex items-center justify-between p-4",
+              "border-b border-gray-200 dark:border-gray-700",
+              "bg-gray-50 dark:bg-gray-800"
+            )}>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Bell className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                   {isConnecting && (
-                    <div className="h-1.5 w-1.5 bg-yellow-500 rounded-full animate-pulse" 
-                         title="Conectando..." />
+                    <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-yellow-500 rounded-full animate-pulse" />
                   )}
-                  {isConnected && !isConnecting && (
-                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" 
-                         title="Notificações em tempo real ativas" />
-                  )}
-                  {!isConnected && !isConnecting && (
-                    <div className="h-1.5 w-1.5 bg-red-500 rounded-full" 
-                         title="Conexão perdida" />
+                  {isRealtimeConnected && !isConnecting && (
+                    <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 bg-green-500 rounded-full" />
                   )}
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">Notificações</span>
-                
-                {/* Contador de não lidas - SEMPRE VISÍVEL */}
-                <Badge variant={(isOpen ? visualUnreadCount : displayUnreadCount) > 0 ? "destructive" : "secondary"} className="text-xs px-2 py-0.5 h-5 sm:h-6">
-                  {(isOpen ? visualUnreadCount : displayUnreadCount) > 99 ? '99+' : (isOpen ? visualUnreadCount : displayUnreadCount) || 0} não lidas
-                </Badge>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                    Notificações
+                  </h3>
+                  {displayUnreadCount > 0 && (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {displayUnreadCount} não {displayUnreadCount === 1 ? 'lida' : 'lidas'}
+                    </p>
+                  )}
+                </div>
               </div>
               
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* Botão Limpar todas - SEMPRE VISÍVEL */}
-                <button
-                  onClick={handleClearAll}
-                  disabled={notifications.length === 0}
-                  className="px-2 sm:px-3 py-1 sm:py-1.5 bg-red-500 text-white border border-red-600 shadow-sm hover:shadow-md hover:bg-red-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                  title="Limpar todas (C)"
-                >
-                  <Trash2 size={12} className="sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Limpar todas</span>
-                </button>
-                
-                {/* Botão de teste para notificações em tempo real */}
-                <button
-                  onClick={() => addTestNotification(
-                    'Teste de Notificação',
-                    'Esta é uma notificação de teste para verificar o sistema em tempo real.',
-                    'info'
-                  )}
-                  className="p-1.5 sm:p-2 bg-blue-500 text-white border border-blue-600 shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-200 rounded"
-                  title="Testar notificação em tempo real"
-                >
-                  <Bell size={12} className="sm:w-4 sm:h-4" />
-                </button>
-                
-                <button
+              <div className="flex items-center gap-2">
+                {displayUnreadCount > 0 && (
+                  <Button
+                    onClick={handleMarkAllAsRead}
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                    title="Marcar todas como lidas"
+                  >
+                    <CheckCheck className="h-4 w-4" />
+                  </Button>
+                )}
+                <Button
                   onClick={() => setShowSettings(true)}
-                  className="p-1.5 sm:p-2 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded"
-                  title="Configurações (S)"
+                  size="sm"
+                  variant="ghost"
+                  className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                  title="Configurações"
                 >
-                  <Settings size={12} className="sm:w-4 sm:h-4" />
-                </button>
+                  <Settings className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
-            {/* Instruções de Teclado - Fixo */}
-            <div className="px-3 sm:px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700" style={{ flexShrink: 0, flexGrow: 0, width: '100%' }}>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-gray-600 dark:text-gray-400 gap-2 sm:gap-0">
-                      <div className="flex items-center gap-2 sm:gap-4">
-                        <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">↑↓</kbd>
-                          <span className="hidden sm:inline">Navegar</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">Enter</kbd>
-                          <span className="hidden sm:inline">Selecionar</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">S</kbd>
-                          <span className="hidden sm:inline">Configurações</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 sm:gap-4">
-                        {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-                          <span className="flex items-center gap-1">
-                            <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">M</kbd>
-                            <span className="hidden sm:inline">Marcar todas</span>
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <kbd className="px-1 sm:px-1.5 py-0.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded text-xs">Esc</kbd>
-                          <span className="hidden sm:inline">Fechar</span>
-                        </span>
-                      </div>
-                    </div>
-            </div>
-
-            {/* Lista de Notificações Moderna - Com scroll - OCUPA ESPAÇO DISPONÍVEL */}
-            <div className="overflow-y-auto bg-white dark:bg-gray-900 overscroll-contain" style={{ 
-              flex: '1 1 auto', 
-              minHeight: 0,
-              width: '100%',
-              overflowY: 'auto', 
-              overflowX: 'hidden',
-              WebkitOverflowScrolling: 'touch',
-              position: 'relative',
-              maxHeight: '100%'
-            }}>
+            {/* Lista de Notificações */}
+            <div className="flex-1 overflow-y-auto">
               {isLoading ? (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 m-4 rounded-lg">
-                  <Loader2 size={32} className="mx-auto mb-4 text-gray-400 animate-spin" />
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Carregando notificações...</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 text-gray-400 dark:text-gray-500 animate-spin mb-4" />
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Carregando notificações...
+                  </p>
                 </div>
               ) : recentNotifications.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 m-4 rounded-lg">
-                  <Bell size={32} className="mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Nenhuma notificação</p>
+                <div className="flex flex-col items-center justify-center py-12 px-4">
+                  <Bell className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" />
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 text-center">
+                    Nenhuma notificação
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 text-center mt-1">
+                    Você está em dia!
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-1 p-2">
-                  {recentNotifications.map((notification, index) => (
-                    <div key={notification.id}>
-                      <div
-                        className={cn(
-                          "flex items-start gap-3 p-3 cursor-pointer border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg",
-                          !notification.is_read ? "bg-blue-50 border-blue-200" : "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900",
-                          selectedIndex === index && "ring-2 ring-blue-500 bg-blue-50"
-                        )}
-                        onClick={() => handleNotificationClick(notification)}
-                      >
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {recentNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={cn(
+                        "relative p-4 cursor-pointer transition-colors",
+                        "hover:bg-gray-50 dark:hover:bg-gray-800",
+                        !notification.is_read && "bg-blue-50/50 dark:bg-blue-900/10"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        {/* Ícone */}
+                        <div className={cn(
+                          "p-2 rounded-lg flex-shrink-0",
+                          !notification.is_read 
+                            ? "bg-blue-100 dark:bg-blue-900/30" 
+                            : "bg-gray-100 dark:bg-gray-800"
+                        )}>
                           {getNotificationIcon(notification.type)}
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <h4 className={cn(
-                                "text-sm font-semibold line-clamp-2",
-                                !notification.is_read && "text-blue-900"
-                              )}>
-                                {notification.title}
-                              </h4>
-                              <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-                                {formatTimestamp(notification.created_at)}
-                              </span>
-                            </div>
-                            
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                              {notification.message}
-                            </p>
-                          </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
+                        {/* Conteúdo */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <h4 className={cn(
+                              "text-sm font-semibold line-clamp-2",
+                              !notification.is_read 
+                                ? "text-gray-900 dark:text-white" 
+                                : "text-gray-700 dark:text-gray-300"
+                            )}>
+                              {notification.title}
+                            </h4>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">
+                              {formatTimestamp(notification.created_at)}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {notification.message}
+                          </p>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex flex-col gap-1 flex-shrink-0">
                           {!notification.is_read && (
                             <button
-                              className="p-0 h-3 w-3 bg-green-500 text-white rounded-sm hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleMarkAsRead(notification.id);
+                                markAsRead(notification.id);
                               }}
+                              className={cn(
+                                "p-1.5 rounded-md transition-colors",
+                                "bg-green-100 dark:bg-green-900/30",
+                                "hover:bg-green-200 dark:hover:bg-green-900/50",
+                                "text-green-700 dark:text-green-400"
+                              )}
                               title="Marcar como lida"
                             >
-                              <Check size={8} />
+                              <Check className="h-4 w-4" />
                             </button>
                           )}
-                          
                           <button
-                            className="p-0 h-3 w-3 bg-red-500 text-white rounded-sm hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteNotification(notification.id);
+                              removeNotification(notification.id);
                             }}
-                            title="Remover notificação"
+                            className={cn(
+                              "p-1.5 rounded-md transition-colors",
+                              "bg-red-100 dark:bg-red-900/30",
+                              "hover:bg-red-200 dark:hover:bg-red-900/50",
+                              "text-red-700 dark:text-red-400"
+                            )}
+                            title="Remover"
                           >
-                            <Trash2 size={8} />
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
+
+                      {/* Indicador de não lida */}
+                      {!notification.is_read && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />
+                      )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Footer Moderno - Apenas botão "Marcar todas como lidas" quando houver não lidas */}
-            {(isOpen ? visualUnreadCount : displayUnreadCount) > 0 && (
-              <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 bg-white dark:bg-gray-900 w-full" style={{ 
-                flexShrink: 0, 
-                flexGrow: 0,
-                width: '100%',
-                position: 'relative',
-                zIndex: 20
-              }}>
-                <button
-                  onClick={handleMarkAllAsRead}
-                  className="w-full px-3 sm:px-4 py-2 bg-green-500 text-white border border-green-600 shadow-sm hover:shadow-md hover:bg-green-600 transition-all duration-200 rounded-lg text-xs sm:text-sm font-medium"
+            {/* Footer */}
+            {recentNotifications.length > 0 && (
+              <div className={cn(
+                "p-3 border-t border-gray-200 dark:border-gray-700",
+                "bg-gray-50 dark:bg-gray-800"
+              )}>
+                <Button
+                  onClick={handleClearAll}
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <Check size={12} className="sm:w-4 sm:h-4" />
-                    <span>Marcar todas como lidas</span>
-                  </div>
-                </button>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Limpar todas as notificações
+                </Button>
               </div>
             )}
           </div>
