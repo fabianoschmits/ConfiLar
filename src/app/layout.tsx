@@ -31,6 +31,10 @@ import "@/utils/errorInterceptor" // Interceptor de erros
 export const metadata: Metadata = {
   title: "ConfiLar - Marketplace de Serviços",
   description: "Encontre os melhores profissionais para seus serviços ou ofereça seus serviços profissionais",
+  icons: {
+    icon: '/imagens/logo/Logo azul - sem fundo - Vertical.png',
+    shortcut: '/imagens/logo/Logo azul - sem fundo - Vertical.png'
+  },
   formatDetection: {
     telephone: false,
     email: false,
