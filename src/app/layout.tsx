@@ -27,7 +27,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { OfflineProvider } from "@/components/offline/OfflineProvider"
 import { LocaleProvider } from "@/contexts/LocaleContext"
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
+import { getMessages, getLocale } from 'next-intl/server'
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -65,7 +65,8 @@ export default async function RootLayout({
   )
   const { data: { session } } = await supabase.auth.getSession()
   
-  // Carregar mensagens de tradução (padrão pt-BR por enquanto)
+  // Carregar mensagens de tradução
+  const locale = await getLocale()
   const messages = await getMessages()
 
   return (
