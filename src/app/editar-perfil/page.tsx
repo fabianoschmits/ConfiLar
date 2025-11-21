@@ -26,6 +26,9 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { getBioOrDefault } from '@/utils/autoBioGenerator'
 import Image from 'next/image'
+import { useLocale } from '@/contexts/LocaleContext'
+import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
+import { useTranslations } from 'next-intl'
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
@@ -79,6 +82,8 @@ const profileSchema = z.object({
     }, 'CPF/CNPJ inválido ou bloqueado'),
   birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
   user_type: z.enum(['client', 'professional']),
+  country: z.enum(['BR', 'US']),
+  locale: z.enum(['pt-BR', 'en']),
   location_state: z.string().min(1, 'Estado é obrigatório'),
   location_city: z.string().min(1, 'Cidade é obrigatória'),
   neighborhood: z.string().min(1, 'Bairro é obrigatório'),
@@ -99,7 +104,9 @@ type AvatarSelection = {
 
 export default function EditarPerfilPage() {
   const { user } = useAuthContext()
+  const { country: contextCountry, locale: contextLocale, setCountry, setLocale } = useLocale()
   const router = useRouter()
+  const t = useTranslations('location')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [stateOpen, setStateOpen] = useState(false)
@@ -119,8 +126,24 @@ export default function EditarPerfilPage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       user_type: 'client' as const,
+      country: (contextCountry || 'BR') as 'BR' | 'US',
+      locale: (contextLocale || 'pt-BR') as 'pt-BR' | 'en',
+      location_state: '',
+      location_city: '',
+      neighborhood: '',
+      address: '',
+      full_name: '',
+      phone: '',
+      cpf_cnpj: '',
+      birth_date: '',
     },
   })
+
+  // Sincronizar país e locale do contexto com o formulário
+  useEffect(() => {
+    setValue('country', (contextCountry || 'BR') as 'BR' | 'US')
+    setValue('locale', (contextLocale || 'pt-BR') as 'pt-BR' | 'en')
+  }, [contextCountry, contextLocale, setValue])
 
   const watchedValues = watch()
   const isProfessional = watchedValues.user_type === 'professional'
@@ -154,12 +177,22 @@ export default function EditarPerfilPage() {
           setValue('cpf_cnpj', profile.cpf_cnpj || '')
           setValue('birth_date', profile.birth_date || '')
           setValue('user_type', profile.user_type || 'client')
+          setValue('country', ((profile as any).country || contextCountry || 'BR') as 'BR' | 'US')
+          setValue('locale', ((profile as any).locale || contextLocale || 'pt-BR') as 'pt-BR' | 'en')
           setValue('location_state', profile.location_state || '')
           setValue('location_city', profile.location_city || '')
           setValue('neighborhood', profile.neighborhood || '')
           setValue('address', profile.address || '')
           setValue('bio', profile.bio || '')
           setValue('experience_years', profile.professional_experience_years ? `${profile.professional_experience_years}-${profile.professional_experience_years + 2}` : '')
+          
+          // Atualizar contexto com dados do perfil
+          if ((profile as any).country) {
+            setCountry((profile as any).country)
+          }
+          if ((profile as any).locale) {
+            setLocale((profile as any).locale)
+          }
           
           if (profile.professional_services) {
             setSelectedServices(profile.professional_services)
@@ -393,6 +426,8 @@ export default function EditarPerfilPage() {
         cpf_cnpj: data.cpf_cnpj,
         birth_date: data.birth_date,
         user_type: data.user_type,
+        country: data.country || 'BR',
+        locale: data.locale || 'pt-BR',
         location_state: data.location_state,
         location_city: data.location_city,
         neighborhood: data.neighborhood,
@@ -402,6 +437,14 @@ export default function EditarPerfilPage() {
         professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
         avatar_url: avatarUrl,
         profile_completed: true
+      }
+      
+      // Atualizar contexto com novo país e locale
+      if (data.country) {
+        setCountry(data.country)
+      }
+      if (data.locale) {
+        setLocale(data.locale)
       }
 
       const { error: profileError } = await supabase
@@ -431,6 +474,8 @@ export default function EditarPerfilPage() {
           birth_date: data.birth_date,
           
           // Dados de localização
+          country: data.country || 'BR',
+          locale: data.locale || 'pt-BR',
           location_state: data.location_state,
           location_city: data.location_city,
           neighborhood: data.neighborhood,
@@ -729,6 +774,36 @@ export default function EditarPerfilPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Seleção de País */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                    {t('country')} <span className="text-red-500">*</span>
+                  </Label>
+                  <LocationComboboxesMultiCountry
+                    country={watchedValues.country}
+                    stateCode={watchedValues.location_state}
+                    city={watchedValues.location_city}
+                    onCountryChange={(newCountry) => {
+                      setValue('country', newCountry as 'BR' | 'US')
+                      // Atualizar locale baseado no país
+                      const newLocale = newCountry === 'US' ? 'en' : 'pt-BR'
+                      setValue('locale', newLocale)
+                      setCountry(newCountry as 'BR' | 'US')
+                      setLocale(newLocale)
+                      // Limpar estado e cidade quando país muda
+                      setValue('location_state', '')
+                      setValue('location_city', '')
+                    }}
+                    onStateChange={(stateCode) => {
+                      setValue('location_state', stateCode)
+                      setValue('location_city', '')
+                    }}
+                    onCityChange={(city) => {
+                      setValue('location_city', city)
+                    }}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">

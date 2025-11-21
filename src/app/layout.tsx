@@ -25,6 +25,9 @@ import { CookieConsentBanner } from "@/components/lgpd/CookieConsentBanner"
 import { PWAManager } from "@/components/pwa/PWAManager"
 import { ThemeProvider } from "@/components/theme-provider"
 import { OfflineProvider } from "@/components/offline/OfflineProvider"
+import { LocaleProvider } from "@/contexts/LocaleContext"
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
 import "@/utils/errorInterceptor" // Interceptor de erros
 // import { AuthContextDebug } from "@/components/debug/AuthContextDebug"
 
@@ -61,6 +64,9 @@ export default async function RootLayout({
     }
   )
   const { data: { session } } = await supabase.auth.getSession()
+  
+  // Carregar mensagens de tradução (padrão pt-BR por enquanto)
+  const messages = await getMessages()
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
@@ -114,31 +120,35 @@ export default async function RootLayout({
           <ServiceWorkerCleaner />
           <ErrorBoundary>
             <QueryProvider>
-              <OfflineProvider>
-                <LoadingProvider>
-                  <AuthProvider initialSession={session}>
-                  {/* <AutoReauthentication> */}
-                    <AvailabilityProvider>
-                      <FloatingChatProviderSimple>
-                        <NotificationProviderSimple>
-                          <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
-                            <BanNotification>
-                              {children}
-                            </BanNotification>
-                          </Suspense>
-                          <FloatingChatWrapper />
-                          <LoadingOverlayProvider />
-                          <NewNotificationSystem />
-                          <CookieConsentBanner />
-                          <PWAManager />
-                          <ToasterWithSounds position="top-right" richColors />
-                        </NotificationProviderSimple>
-                      </FloatingChatProviderSimple>
-                    </AvailabilityProvider>
-                  {/* </AutoReauthentication> */}
-                  </AuthProvider>
-                </LoadingProvider>
-              </OfflineProvider>
+              <NextIntlClientProvider messages={messages}>
+                <LocaleProvider>
+                  <OfflineProvider>
+                    <LoadingProvider>
+                      <AuthProvider initialSession={session}>
+                      {/* <AutoReauthentication> */}
+                        <AvailabilityProvider>
+                          <FloatingChatProviderSimple>
+                            <NotificationProviderSimple>
+                              <Suspense fallback={<LoadingOverlay isLoading={true} message="Carregando aplicação..." />}>
+                                <BanNotification>
+                                  {children}
+                                </BanNotification>
+                              </Suspense>
+                              <FloatingChatWrapper />
+                              <LoadingOverlayProvider />
+                              <NewNotificationSystem />
+                              <CookieConsentBanner />
+                              <PWAManager />
+                              <ToasterWithSounds position="top-right" richColors />
+                            </NotificationProviderSimple>
+                          </FloatingChatProviderSimple>
+                        </AvailabilityProvider>
+                      {/* </AutoReauthentication> */}
+                      </AuthProvider>
+                    </LoadingProvider>
+                  </OfflineProvider>
+                </LocaleProvider>
+              </NextIntlClientProvider>
             </QueryProvider>
           </ErrorBoundary>
         </ThemeProvider>

@@ -1,0 +1,100 @@
+{
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "clear": "Limpar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "yes": "Sim",
+    "no": "Não"
+  },
+  "navigation": {
+    "home": "Home",
+    "feed": "Feed Social",
+    "search": "Buscar",
+    "classifieds": "Classificados",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "login": "Entrar",
+    "register": "Cadastrar"
+  },
+  "landing": {
+    "title": "O que é o",
+    "subtitle": "Plataforma de Confiança",
+    "description": "Uma plataforma transparente e confiável que conecta pessoas que precisam de serviços com profissionais qualificados através de indicações, recomendações e anúncios.",
+    "description2": "Aqui você encontra profissionais verificados, pode ver quem já contratou, ler recomendações reais e publicar seus próprios anúncios de serviços de forma segura.",
+    "ctaStart": "Começar Agora Grátis",
+    "ctaSearch": "Buscar Profissionais"
+  },
+  "auth": {
+    "login": "Entrar",
+    "register": "Cadastrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "forgotPassword": "Esqueceu a senha?",
+    "rememberMe": "Lembrar-me",
+    "alreadyHaveAccount": "Já tem uma conta?",
+    "dontHaveAccount": "Não tem uma conta?",
+    "createAccount": "Criar conta",
+    "name": "Nome",
+    "confirmPassword": "Confirmar senha"
+  },
+  "location": {
+    "country": "País",
+    "state": "Estado",
+    "city": "Cidade",
+    "neighborhood": "Bairro",
+    "address": "Endereço",
+    "addressNumber": "Número",
+    "zipCode": "CEP",
+    "selectState": "Selecione o estado",
+    "selectCity": "Selecione a cidade",
+    "selectCountry": "Selecione o país",
+    "invalidZipCode": "CEP inválido",
+    "invalidZipCodeUS": "ZIP Code inválido"
+  },
+  "profile": {
+    "editProfile": "Editar Perfil",
+    "viewProfile": "Ver Perfil",
+    "reputation": "Reputação",
+    "recommendations": "Recomendações",
+    "reviews": "Avaliações",
+    "services": "Serviços"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "noNotifications": "Nenhuma notificação",
+    "markAsRead": "Marcar como lida",
+    "markAllAsRead": "Marcar todas como lidas",
+    "settings": "Configurações de Notificação"
+  },
+  "dates": {
+    "now": "Agora",
+    "minutesAgo": "{count} min atrás",
+    "hoursAgo": "{count}h atrás",
+    "daysAgo": "{count}d atrás",
+    "weeksAgo": "{count} semanas atrás",
+    "monthsAgo": "{count} meses atrás",
+    "yearsAgo": "{count} anos atrás"
+  },
+  "errors": {
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "E-mail inválido",
+    "passwordTooShort": "Senha deve ter pelo menos 6 caracteres",
+    "passwordsDontMatch": "As senhas não coincidem",
+    "generic": "Ocorreu um erro. Tente novamente."
+  }
+}
+

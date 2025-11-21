@@ -42,30 +42,43 @@ export const PersonalDataSchema = z.object({
     .or(z.literal('')),
 })
 
-// Schema para localização
-export const LocationSchema = z.object({
-  location_state: z
-    .string()
-    .length(2, 'Estado deve ter 2 caracteres')
-    .toUpperCase(),
-  
-  location_city: z
-    .string()
-    .min(2, 'Cidade deve ter pelo menos 2 caracteres')
-    .max(100, 'Cidade deve ter no máximo 100 caracteres'),
-  
-  neighborhood: z
-    .string()
-    .max(100, 'Bairro deve ter no máximo 100 caracteres')
-    .optional()
-    .or(z.literal('')),
-  
-  address: z
-    .string()
-    .max(200, 'Endereço deve ter no máximo 200 caracteres')
-    .optional()
-    .or(z.literal(''))
-})
+// Função para criar schema de localização baseado no país
+export const createLocationSchema = (country: 'BR' | 'US' = 'BR') => {
+  // Validação de código postal baseada no país
+  const postalCodeValidation = country === 'US' 
+    ? z.string().regex(/^\d{5}(-\d{4})?$/, 'ZIP Code deve estar no formato 12345 ou 12345-6789')
+    : z.string().regex(/^\d{5}-?\d{3}$/, 'CEP deve estar no formato 12345-678')
+
+  return z.object({
+    country: z.string().default(country),
+    location_state: z
+      .string()
+      .length(2, country === 'US' ? 'State must have 2 characters' : 'Estado deve ter 2 caracteres')
+      .toUpperCase(),
+    
+    location_city: z
+      .string()
+      .min(2, country === 'US' ? 'City must have at least 2 characters' : 'Cidade deve ter pelo menos 2 caracteres')
+      .max(100, country === 'US' ? 'City must have at most 100 characters' : 'Cidade deve ter no máximo 100 caracteres'),
+    
+    neighborhood: z
+      .string()
+      .max(100, country === 'US' ? 'Neighborhood must have at most 100 characters' : 'Bairro deve ter no máximo 100 caracteres')
+      .optional()
+      .or(z.literal('')),
+    
+    address: z
+      .string()
+      .max(200, country === 'US' ? 'Address must have at most 200 characters' : 'Endereço deve ter no máximo 200 caracteres')
+      .optional()
+      .or(z.literal('')),
+    
+    zip_code: postalCodeValidation.optional().or(z.literal(''))
+  })
+}
+
+// Schema para localização (padrão Brasil - mantido para compatibilidade)
+export const LocationSchema = createLocationSchema('BR')
 
 // Schema para dados profissionais
 export const ProfessionalDataSchema = z.object({

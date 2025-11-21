@@ -32,6 +32,9 @@ import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { updateReferralMilestone, createReferral } from '@/hooks/useReferralTracking'
 import { BrandLogo } from '@/components/common/BrandLogo'
 import { ValidationUtils } from '@/lib/validation'
+import { useLocale } from '@/contexts/LocaleContext'
+import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
+import { useTranslations } from 'next-intl'
 
 
 const onboardingSchema = z.object({
@@ -84,6 +87,8 @@ const onboardingSchema = z.object({
     'integral',
     'flexivel'
   ]).optional(),
+  country: z.enum(['BR', 'US']),
+  locale: z.enum(['pt-BR', 'en']),
   accept_terms: z.boolean().refine((value) => value === true, {
     message: 'Você deve aceitar os Termos de Uso para continuar'
   }),
@@ -100,7 +105,9 @@ type AvatarSelection = {
 
 export default function OnboardingPage() {
   const { user, refreshAuth } = useAuthContext()
+  const { country: contextCountry, locale: contextLocale, setCountry, setLocale } = useLocale()
   const router = useRouter()
+  const t = useTranslations('location')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [stateOpen, setStateOpen] = useState(false)
@@ -127,8 +134,16 @@ export default function OnboardingPage() {
     defaultValues: {
       user_type: 'client' as const,
       filhos: 0,
+      country: (contextCountry || 'BR') as 'BR' | 'US',
+      locale: (contextLocale || 'pt-BR') as 'pt-BR' | 'en',
     },
   })
+
+  // Sincronizar país e locale do contexto com o formulário
+  useEffect(() => {
+    setValue('country', (contextCountry || 'BR') as 'BR' | 'US')
+    setValue('locale', (contextLocale || 'pt-BR') as 'pt-BR' | 'en')
+  }, [contextCountry, contextLocale, setValue])
 
   const watchedValues = watch()
   const isProfessional = watchedValues.user_type === 'professional'
@@ -217,7 +232,7 @@ export default function OnboardingPage() {
       shortTitle: 'Local',
       icon: MapPin, 
       description: 'Sua localização',
-      fields: ['location_state', 'location_city', 'neighborhood', 'address']
+      fields: ['country', 'location_state', 'location_city', 'neighborhood', 'address']
     },
     { 
       id: 6, 
@@ -281,6 +296,7 @@ export default function OnboardingPage() {
       
       case 5: // Localização
         return !!(
+          values.country &&
           values.location_state &&
           values.location_city &&
           values.neighborhood &&
@@ -602,6 +618,8 @@ export default function OnboardingPage() {
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,
+        country: data.country || 'BR',
+        locale: data.locale || 'pt-BR',
         location_state: data.location_state,
         location_city: data.location_city,
         neighborhood: data.neighborhood,
@@ -657,6 +675,8 @@ export default function OnboardingPage() {
           gender: data.gender,
           
           // Dados de localização
+          country: data.country || 'BR',
+          locale: data.locale || 'pt-BR',
           location_state: data.location_state,
           location_city: data.location_city,
           neighborhood: data.neighborhood,
@@ -1219,127 +1239,37 @@ export default function OnboardingPage() {
                   {/* Etapa 5: Localização */}
                   {currentStep === 5 && (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="location_state" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Estado <span className="text-red-500">*</span>
-                          </Label>
-                          <Popover open={stateOpen} onOpenChange={setStateOpen}>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                className={cn(
-                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                                  errors.location_state ? 'border-red-400' : 'border-gray-300'
-                                )}
-                              >
-                                <span className="text-gray-900 dark:text-white">
-                                  {watchedValues.location_state
-                                    ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                                    : "Selecione o estado"}
-                                </span>
-                                <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Buscar estado..." />
-                                <CommandList>
-                                  <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
-                                  <CommandGroup>
-                                    {estadosBrasil.map((estado) => (
-                                      <CommandItem
-                                        key={estado.sigla}
-                                        value={estado.nome}
-                                        onSelect={() => {
-                                          setValue('location_state', estado.sigla)
-                                          setValue('location_city', '')
-                                          setStateOpen(false)
-                                        }}
-                                      >
-                                        <Check
-                                          size={16} className={cn(
-                                            "mr-2",
-                                            watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        {estado.nome} ({estado.sigla})
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          {errors.location_state && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              Obrigatório
-                            </p>
-                          )}
-                        </div>
+                      {/* Seleção de País */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                          {t('country')} <span className="text-red-500">*</span>
+                        </Label>
+                        <LocationComboboxesMultiCountry
+                          country={watchedValues.country}
+                          stateCode={watchedValues.location_state}
+                          city={watchedValues.location_city}
+                          onCountryChange={(newCountry) => {
+                            setValue('country', newCountry as 'BR' | 'US')
+                            // Atualizar locale baseado no país
+                            const newLocale = newCountry === 'US' ? 'en' : 'pt-BR'
+                            setValue('locale', newLocale)
+                            setCountry(newCountry as 'BR' | 'US')
+                            setLocale(newLocale)
+                            // Limpar estado e cidade quando país muda
+                            setValue('location_state', '')
+                            setValue('location_city', '')
+                          }}
+                          onStateChange={(stateCode) => {
+                            setValue('location_state', stateCode)
+                            setValue('location_city', '')
+                          }}
+                          onCityChange={(city) => {
+                            setValue('location_city', city)
+                          }}
+                        />
+                      </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="location_city" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Cidade <span className="text-red-500">*</span>
-                          </Label>
-                          <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                disabled={!watchedValues.location_state}
-                                className={cn(
-                                  "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                                  errors.location_city ? 'border-red-400' : 'border-gray-300',
-                                  !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
-                                )}
-                              >
-                                <span className="text-gray-900 dark:text-white">
-                                  {watchedValues.location_city
-                                    ? watchedValues.location_city
-                                    : watchedValues.location_state
-                                    ? "Selecione a cidade"
-                                    : "Selecione o estado primeiro"}
-                                </span>
-                                <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0" align="start">
-                              <Command>
-                                <CommandInput placeholder="Buscar cidade..." />
-                                <CommandList>
-                                  <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
-                                  <CommandGroup>
-                                    {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
-                                      <CommandItem
-                                        key={cidade}
-                                        value={cidade}
-                                        onSelect={() => {
-                                          setValue('location_city', cidade)
-                                          setCityOpen(false)
-                                        }}
-                                      >
-                                        <Check
-                                          size={16} className={cn(
-                                            "mr-2",
-                                            watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        {cidade}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          {errors.location_city && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              Obrigatório
-                            </p>
-                          )}
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <div className="space-y-2">
                           <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700 flex items-center gap-1">
@@ -1723,7 +1653,9 @@ export default function OnboardingPage() {
                           )}
                           
                           <div className="border-t border-gray-300 pt-3 mt-3">
-                            <p><strong>Estado:</strong> {watchedValues.location_state ? estadosBrasil.find(e => e.sigla === watchedValues.location_state)?.nome : 'Não informado'}</p>
+                            <p><strong>País:</strong> {watchedValues.country === 'US' ? '🇺🇸 Estados Unidos' : watchedValues.country === 'BR' ? '🇧🇷 Brasil' : 'Não informado'}</p>
+                            <p><strong>Idioma:</strong> {watchedValues.locale === 'en' ? '🇺🇸 English' : watchedValues.locale === 'pt-BR' ? '🇧🇷 Português' : 'Não informado'}</p>
+                            <p><strong>Estado:</strong> {watchedValues.location_state || 'Não informado'}</p>
                             <p><strong>Cidade:</strong> {watchedValues.location_city || 'Não informado'}</p>
                             <p><strong>Bairro:</strong> {watchedValues.neighborhood || 'Não informado'}</p>
                             <p><strong>Endereço:</strong> {showDataSummary ? (watchedValues.address || 'Não informado') : 'Oculto'}</p>

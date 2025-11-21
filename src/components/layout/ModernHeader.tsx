@@ -18,6 +18,7 @@ import { useMessages } from '@/hooks/useMessages'
 import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
 import { useAvailability } from '@/hooks/useAvailability'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { LanguageSelector } from '@/components/ui/LanguageSelector'
 import { soundManager } from '@/lib/soundManager'
 import { 
   Search,
@@ -290,6 +291,11 @@ export function ModernHeader({
 
             {/* Right side - Actions */}
             <div className="flex items-center">
+              {/* Seletor de Idioma */}
+              <div className="relative -ml-1">
+                <LanguageSelector />
+              </div>
+              
               {/* Toggle de Tema */}
               <div className="relative -ml-1">
                 <ThemeToggle />

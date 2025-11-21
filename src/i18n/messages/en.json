@@ -1,0 +1,100 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "clear": "Clear",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigation": {
+    "home": "Home",
+    "feed": "Social Feed",
+    "search": "Search",
+    "classifieds": "Classifieds",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "landing": {
+    "title": "What is",
+    "subtitle": "Trust Platform",
+    "description": "A transparent and reliable platform that connects people who need services with qualified professionals through referrals, recommendations and ads.",
+    "description2": "Here you can find verified professionals, see who has already hired, read real recommendations and publish your own service ads safely.",
+    "ctaStart": "Start Now Free",
+    "ctaSearch": "Search Professionals"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "name": "Name",
+    "confirmPassword": "Confirm password"
+  },
+  "location": {
+    "country": "Country",
+    "state": "State",
+    "city": "City",
+    "neighborhood": "Neighborhood",
+    "address": "Address",
+    "addressNumber": "Number",
+    "zipCode": "ZIP Code",
+    "selectState": "Select state",
+    "selectCity": "Select city",
+    "selectCountry": "Select country",
+    "invalidZipCode": "Invalid ZIP Code",
+    "invalidZipCodeUS": "Invalid ZIP Code"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "viewProfile": "View Profile",
+    "reputation": "Reputation",
+    "recommendations": "Recommendations",
+    "reviews": "Reviews",
+    "services": "Services"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "markAsRead": "Mark as read",
+    "markAllAsRead": "Mark all as read",
+    "settings": "Notification Settings"
+  },
+  "dates": {
+    "now": "Now",
+    "minutesAgo": "{count} min ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago",
+    "weeksAgo": "{count} weeks ago",
+    "monthsAgo": "{count} months ago",
+    "yearsAgo": "{count} years ago"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordsDontMatch": "Passwords don't match",
+    "generic": "An error occurred. Please try again."
+  }
+}
+

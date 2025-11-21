@@ -1,8 +1,48 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import createMiddleware from 'next-intl/middleware'
+import { routing } from './src/i18n/routing'
+
+// Middleware do next-intl
+const intlMiddleware = createMiddleware(routing)
 
 export async function middleware(request: NextRequest) {
+  // Primeiro, aplicar middleware do next-intl
+  const intlResponse = intlMiddleware(request)
+  
+  // Se o next-intl redirecionou, usar essa resposta
+  if (intlResponse) {
+    // Ainda precisamos configurar o Supabase para cookies
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            intlResponse.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          },
+          remove(name: string, options: CookieOptions) {
+            intlResponse.cookies.set({
+              name,
+              value: '',
+              ...options,
+            })
+          },
+        },
+      }
+    )
+    await supabase.auth.getUser()
+    return intlResponse
+  }
+  
   let response = NextResponse.next({
     request: {
       headers: request.headers,
