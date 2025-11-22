@@ -20,7 +20,7 @@ import {
 import { useAuthContext } from '@/contexts/AuthContext'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
-import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
+// Removido: estadosBrasil e getCidadesByEstado - agora usando LocationComboboxesMultiCountry
 import { services } from '@/data/services'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -114,8 +114,6 @@ export default function EditarPerfilPage() {
   const tValidation = useTranslations('editProfile.validation')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
-  const [stateOpen, setStateOpen] = useState(false)
-  const [cityOpen, setCityOpen] = useState(false)
   const [servicesOpen, setServicesOpen] = useState(false)
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
@@ -782,7 +780,7 @@ export default function EditarPerfilPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Seleção de País */}
+                {/* Seleção de País - PRIMEIRO, pois define as APIs de estados e cidades */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
                     {tEdit('country')} <span className="text-red-500">{tEdit('required')}</span>
@@ -812,128 +810,31 @@ export default function EditarPerfilPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
-                      {tEdit('state')} <span className="text-red-500">{tEdit('required')}</span>
-                    </Label>
-                    <Popover open={stateOpen} onOpenChange={setStateOpen}>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className={cn(
-                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                            errors.location_state ? 'border-red-400' : 'border-gray-300'
-                          )}
-                        >
-                          <span className="text-gray-900 dark:text-white">
-                            {watchedValues.location_state
-                              ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                              : tEdit('selectState')}
-                          </span>
-                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder={tEdit('searchState')} />
-                          <CommandList>
-                            <CommandEmpty>{tEdit('noStateFound')}</CommandEmpty>
-                            <CommandGroup>
-                              {estadosBrasil.map((estado) => (
-                                <CommandItem
-                                  key={estado.sigla}
-                                  value={estado.nome}
-                                  onSelect={() => {
-                                    setValue('location_state', estado.sigla)
-                                    setValue('location_city', '')
-                                    setStateOpen(false)
-                                  }}
-                                >
-                                  <Check
-                                    size={16} className={cn(
-                                      "mr-2",
-                                      watchedValues.location_state === estado.sigla ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  {estado.nome} ({estado.sigla})
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                {/* Estado e Cidade são selecionados dentro do LocationComboboxesMultiCountry acima */}
+                {/* Mostrar erros de validação se houver */}
+                {(errors.location_state || errors.location_city) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {errors.location_state && (
-                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                        <X className="w-3 h-3" />
-                        {tEdit('obligatory')}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                          <X className="w-3 h-3" />
+                          {errors.location_state.message || tEdit('obligatory')}
+                        </p>
+                      </div>
                     )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
-                      {tEdit('city')} <span className="text-red-500">{tEdit('required')}</span>
-                    </Label>
-                    <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          disabled={!watchedValues.location_state}
-                          className={cn(
-                            "w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10",
-                            errors.location_city ? 'border-red-400' : 'border-gray-300',
-                            !watchedValues.location_state ? 'opacity-50 cursor-not-allowed' : ''
-                          )}
-                        >
-                          <span className="text-gray-900 dark:text-white">
-                            {watchedValues.location_city
-                              ? watchedValues.location_city
-                              : watchedValues.location_state
-                              ? tEdit('selectCity')
-                              : tEdit('selectStateFirst')}
-                          </span>
-                          <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder={tEdit('searchCity')} />
-                          <CommandList>
-                            <CommandEmpty>{tEdit('noCityFound')}</CommandEmpty>
-                            <CommandGroup>
-                              {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
-                                <CommandItem
-                                  key={cidade}
-                                  value={cidade}
-                                  onSelect={() => {
-                                    setValue('location_city', cidade)
-                                    setCityOpen(false)
-                                  }}
-                                >
-                                  <Check
-                                    size={16} className={cn(
-                                      "mr-2",
-                                      watchedValues.location_city === cidade ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
-                                  {cidade}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
                     {errors.location_city && (
-                      <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                        <X className="w-3 h-3" />
-                        {tEdit('obligatory')}
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                          <X className="w-3 h-3" />
+                          {errors.location_city.message || tEdit('obligatory')}
+                        </p>
+                      </div>
                     )}
                   </div>
+                )}
 
+                {/* Campos de Endereço */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
                       {tEdit('neighborhood')} <span className="text-red-500">{tEdit('required')}</span>

@@ -175,21 +175,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 countryCode = 'US'
               }
               
-              // Buscar posts que correspondam à cidade, estado E país
-              // Incluir posts sem país definido (NULL) para compatibilidade com posts antigos
+              // Buscar posts que correspondam à cidade e estado
+              // Não filtrar por país aqui para não ser muito restritivo
+              // O país será usado apenas como informação adicional
               if (normalizedStates.length > 1) {
                 // Se há múltiplas variações do estado, usar OR
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
-                // Filtrar por país ou NULL (posts antigos)
-                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               } else {
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .ilike('location_state', locationFilter.state)
-                // Filtrar por país ou NULL (posts antigos)
-                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               }
             }
             break
@@ -230,8 +227,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
                 countryCode = 'US'
               }
-              // Filtrar posts por país, incluindo posts sem país definido (NULL) para compatibilidade
-              // Para filtro de país, mostrar todos os posts do país OU posts sem país (antigos)
+              // Filtrar posts por país
+              // Usar filtro mais flexível: país específico OU NULL (posts antigos)
               postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
             }
             break

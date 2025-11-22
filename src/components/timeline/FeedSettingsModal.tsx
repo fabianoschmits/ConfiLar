@@ -12,6 +12,8 @@ import { EstadoCombobox } from '@/components/search/EstadoCombobox'
 import { CidadeCombobox } from '@/components/search/CidadeCombobox'
 import { useIBGE } from '@/hooks/useIBGE'
 import { getEstadoByNome, getEstadoBySigla } from '@/lib/ibge'
+import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface FeedSettingsModalProps {
   isOpen: boolean
@@ -40,16 +42,46 @@ export function FeedSettingsModal({
   onReset
 }: FeedSettingsModalProps) {
   const { profile, user } = useAuthContext()
+  const { country: contextCountry } = useLocale()
   const { estados, loadCidades } = useIBGE()
   const [searchBy, setSearchBy] = useState<'keywords' | 'username' | 'userid'>('keywords')
   const [keywords, setKeywords] = useState('')
   const [username, setUsername] = useState('')
   const [userid, setUserid] = useState('')
   const [selectedLocationType, setSelectedLocationType] = useState<LocationFilter['type']>(currentLocationFilter.type)
+  const [selectedCountry, setSelectedCountry] = useState<string>((profile as any)?.country || contextCountry || 'BR')
   const [selectedCity, setSelectedCity] = useState(currentLocationFilter.city || '')
   const [selectedState, setSelectedState] = useState(currentLocationFilter.state || '')
   const [selectedStateSigla, setSelectedStateSigla] = useState<string>('') // Sigla do estado para o combobox
   const [isSaving, setIsSaving] = useState(false)
+  
+  // Função para mapear código de país para nome
+  const getCountryName = (code: string): string => {
+    const countryMap: Record<string, string> = {
+      'BR': 'Brasil',
+      'US': 'United States',
+      'CA': 'Canada',
+      'MX': 'Mexico',
+      'GB': 'United Kingdom',
+      'AU': 'Australia'
+    }
+    return countryMap[code] || 'Brasil'
+  }
+  
+  // Função para mapear nome de país para código
+  const getCountryCode = (name: string): string => {
+    const countryMap: Record<string, string> = {
+      'Brasil': 'BR',
+      'Brazil': 'BR',
+      'United States': 'US',
+      'Estados Unidos': 'US',
+      'Canada': 'CA',
+      'Mexico': 'MX',
+      'United Kingdom': 'GB',
+      'Australia': 'AU'
+    }
+    return countryMap[name] || 'BR'
+  }
 
   useEffect(() => {
     if (isOpen) {
