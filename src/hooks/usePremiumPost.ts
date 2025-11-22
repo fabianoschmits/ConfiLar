@@ -47,6 +47,22 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + postData.durationDays)
 
+      // Buscar país do perfil do usuário
+      let location_country = 'BR' // Default
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('country')
+          .eq('id', user.id)
+          .single()
+        
+        if (profileData?.country) {
+          location_country = profileData.country
+        }
+      } catch (error) {
+        console.warn('Erro ao buscar país do perfil:', error)
+      }
+      
       // Criar post premium
       const { data, error } = await supabase
         .from('feed_posts')
@@ -60,6 +76,7 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
           service_category_id: null,
           location_city: postData.location_city,
           location_state: postData.location_state,
+          location_country: location_country,
           likes_count: 0,
           comments_count: 0,
           is_active: true,

@@ -3,6 +3,20 @@ import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { getEstadoBySigla } from '@/lib/ibge'
 
+// Função para mapear código de país para nome
+function getCountryName(countryCode: string | null | undefined): string {
+  if (!countryCode) return 'Brasil' // Default
+  const countryMap: Record<string, string> = {
+    'BR': 'Brasil',
+    'US': 'United States',
+    'CA': 'Canada',
+    'MX': 'Mexico',
+    'GB': 'United Kingdom',
+    'AU': 'Australia'
+  }
+  return countryMap[countryCode] || 'Brasil'
+}
+
 export interface LocationFilter {
   type: 'local' | 'state' | 'country' | 'all' | 'custom'
   city?: string
@@ -23,7 +37,7 @@ export function useLocationFilters() {
     type: 'local',
     city: profile?.location_city,
     state: profile?.location_state,
-    country: 'Brasil'
+    country: getCountryName(profile?.country)
   })
   
   const [filterOptions, setFilterOptions] = useState<LocationFilterOptions>({
@@ -69,7 +83,7 @@ export function useLocationFilters() {
             type: data.feed_location_filter_type as LocationFilter['type'],
             city: data.feed_location_filter_city || profile.location_city,
             state: normalizedState,
-            country: 'Brasil'
+            country: getCountryName((profile as any)?.country)
           })
         } else if (profile?.location_city && profile?.location_state) {
           // Normalizar estado do perfil: converter sigla para nome completo se necessário
@@ -91,7 +105,7 @@ export function useLocationFilters() {
             type: 'local',
             city: profile.location_city,
             state: normalizedState,
-            country: 'Brasil'
+            country: getCountryName((profile as any)?.country)
           })
         }
       } catch (error) {
@@ -115,7 +129,7 @@ export function useLocationFilters() {
             type: 'local',
             city: profile.location_city,
             state: normalizedState,
-            country: 'Brasil'
+            country: getCountryName((profile as any)?.country)
           })
         }
       }
@@ -147,7 +161,7 @@ export function useLocationFilters() {
           type: 'local',
           city: profile.location_city,
           state: normalizedState,
-          country: 'Brasil'
+          country: getCountryName(profile.country)
         })
       }
       
@@ -218,7 +232,7 @@ export function useLocationFilters() {
         type: 'local',
         city: profile.location_city,
         state: profile.location_state,
-        country: 'Brasil'
+        country: getCountryName(profile.country)
       })
     }
     
@@ -226,13 +240,13 @@ export function useLocationFilters() {
       filters.push({
         type: 'state',
         state: profile.location_state,
-        country: 'Brasil'
+        country: getCountryName(profile.country)
       })
     }
     
     filters.push({
       type: 'country',
-      country: 'Brasil'
+      country: getCountryName((profile as any)?.country)
     })
     
     filters.push({

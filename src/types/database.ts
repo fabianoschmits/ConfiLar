@@ -57,6 +57,8 @@ export interface Database {
           estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
           referencia_profissional?: string | null
           turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
+          country?: string | null
+          locale?: string | null
         }
         Insert: {
           id: string
@@ -95,6 +97,8 @@ export interface Database {
           estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
           referencia_profissional?: string | null
           turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
+          country?: string | null
+          locale?: string | null
         }
         Update: {
           id?: string
@@ -133,6 +137,8 @@ export interface Database {
           estado_civil?: 'solteiro' | 'casado' | 'divorciado' | 'viuvo' | 'uniao_estavel' | 'outro' | null
           referencia_profissional?: string | null
           turno_trabalho?: 'manha' | 'tarde' | 'noite' | 'integral' | 'flexivel' | null
+          country?: string | null
+          locale?: string | null
         }
       }
 
@@ -793,6 +799,9 @@ export interface Profile {
   professional_experience_years?: number
   professional_certifications?: string[]
   professional_portfolio_url?: string | null
+  // Campos de internacionalização
+  country?: string | null
+  locale?: string | null
 }
 
 export type ProfileInsert = Database['public']['Tables']['profiles']['Insert']

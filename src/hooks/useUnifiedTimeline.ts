@@ -42,6 +42,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           service_category_id,
           location_state,
           location_city,
+          location_country,
           likes_count,
           comments_count,
           created_at,
@@ -159,54 +160,96 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             if (locationFilter.city && locationFilter.state) {
               console.log('🏠 Filtro local:', {
                 city: locationFilter.city,
-                state: locationFilter.state
+                state: locationFilter.state,
+                country: locationFilter.country
               })
               
               // Normalizar estado para buscar tanto sigla quanto nome completo
               const normalizedStates = await normalizeStateForQuery(locationFilter.state)
               
-              // Buscar posts que correspondam à cidade E ao estado (sigla ou nome completo)
+              // Mapear país para código
+              let countryCode = locationFilter.country
+              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+                countryCode = 'BR'
+              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+                countryCode = 'US'
+              }
+              
+              // Buscar posts que correspondam à cidade, estado E país
+              // Incluir posts sem país definido (NULL) para compatibilidade com posts antigos
               if (normalizedStates.length > 1) {
                 // Se há múltiplas variações do estado, usar OR
-                const stateConditions = normalizedStates.map(s => `location_state.ilike.%${s}%`).join(',')
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+                // Filtrar por país ou NULL (posts antigos)
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               } else {
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .ilike('location_state', locationFilter.state)
+                // Filtrar por país ou NULL (posts antigos)
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               }
             }
             break
           case 'state':
             if (locationFilter.state) {
-              console.log('🏙️ Filtro estado:', locationFilter.state)
+              console.log('🏙️ Filtro estado:', locationFilter.state, 'país:', locationFilter.country)
+              
+              // Mapear país para código
+              let countryCode = locationFilter.country
+              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+                countryCode = 'BR'
+              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+                countryCode = 'US'
+              }
               
               // Normalizar estado para buscar tanto sigla quanto nome completo
               const normalizedStates = await normalizeStateForQuery(locationFilter.state)
               
               if (normalizedStates.length > 1) {
                 // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery.or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+                postsQuery = postsQuery
+                  .eq('location_country', countryCode)
+                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
               } else {
-                postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+                postsQuery = postsQuery
+                  .ilike('location_state', locationFilter.state)
+                  .eq('location_country', countryCode)
               }
             }
             break
           case 'country':
             if (locationFilter.country) {
               console.log('🌎 Filtro país:', locationFilter.country)
-              // Para país (Brasil), não aplicar filtro pois todos são do Brasil
-              // Remover este filtro para mostrar todos os posts
+              // Mapear nome do país para código (BR, US, etc)
+              let countryCode = locationFilter.country
+              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+                countryCode = 'BR'
+              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+                countryCode = 'US'
+              }
+              // Filtrar posts por país, incluindo posts sem país definido (NULL) para compatibilidade
+              // Para filtro de país, mostrar todos os posts do país OU posts sem país (antigos)
+              postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
             }
             break
           case 'custom':
             if (locationFilter.city && locationFilter.state) {
               console.log('🎯 Aplicando filtro custom:', {
                 city: locationFilter.city,
-                state: locationFilter.state
+                state: locationFilter.state,
+                country: locationFilter.country
               })
+              
+              // Mapear país para código
+              let countryCode = locationFilter.country
+              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+                countryCode = 'BR'
+              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+                countryCode = 'US'
+              }
               
               // Normalizar estado para buscar tanto sigla quanto nome completo
               const normalizedStates = await normalizeStateForQuery(locationFilter.state)
@@ -216,28 +259,45 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+                // Filtrar por país ou NULL (posts antigos)
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               } else {
                 postsQuery = postsQuery
                   .ilike('location_city', locationFilter.city)
                   .ilike('location_state', locationFilter.state)
+                // Filtrar por país ou NULL (posts antigos)
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
               }
             } else if (locationFilter.state && !locationFilter.city) {
               // Se apenas estado foi selecionado (sem cidade)
-              console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state)
+              console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state, 'país:', locationFilter.country)
+              
+              // Mapear país para código
+              let countryCode = locationFilter.country
+              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+                countryCode = 'BR'
+              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+                countryCode = 'US'
+              }
               
               // Normalizar estado para buscar tanto sigla quanto nome completo
               const normalizedStates = await normalizeStateForQuery(locationFilter.state)
               
               if (normalizedStates.length > 1) {
                 // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery.or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
+                postsQuery = postsQuery
+                  .eq('location_country', countryCode)
+                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
               } else {
-                postsQuery = postsQuery.ilike('location_state', locationFilter.state)
+                postsQuery = postsQuery
+                  .ilike('location_state', locationFilter.state)
+                  .eq('location_country', countryCode)
               }
             } else {
               console.log('⚠️ Filtro custom sem dados completos:', {
                 city: locationFilter.city,
-                state: locationFilter.state
+                state: locationFilter.state,
+                country: locationFilter.country
               })
             }
             break
@@ -559,6 +619,24 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         youtube_video_url: firstVideo.url
       } : null
       
+      // Buscar país do perfil do usuário se não foi fornecido
+      let location_country = newPost.location_country || null
+      if (!location_country && newPost.user_id) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('country')
+            .eq('id', newPost.user_id)
+            .single()
+          
+          if (profileData?.country) {
+            location_country = profileData.country
+          }
+        } catch (error) {
+          console.warn('Erro ao buscar país do perfil:', error)
+        }
+      }
+      
       // Preparar dados para inserção
       const postData = {
         professional_id: newPost.user_id,
@@ -570,6 +648,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,
         location_city: newPost.location_city || null,
+        location_country: location_country || 'BR', // Default para BR se não encontrar
         likes_count: 0,
         comments_count: 0,
         is_active: true,
