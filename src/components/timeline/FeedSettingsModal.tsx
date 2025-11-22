@@ -190,11 +190,14 @@ export function FeedSettingsModal({
         }
       }
       
+      // Mapear código de país para nome
+      const countryName = getCountryName(selectedCountry)
+      
       const locationFilter: LocationFilter = {
         type: selectedLocationType,
         city: selectedLocationType === 'local' || selectedLocationType === 'custom' ? selectedCity : undefined,
         state: selectedLocationType === 'local' || selectedLocationType === 'state' || selectedLocationType === 'custom' ? finalState : undefined,
-        country: 'Brasil'
+        country: countryName
       }
 
       // Determinar o valor de pesquisa baseado no tipo selecionado
@@ -344,6 +347,42 @@ export function FeedSettingsModal({
             </label>
             
             <div className="space-y-1.5">
+              {/* Seleção de País - PRIMEIRO */}
+              <div className="mb-3">
+                <label className="text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                  País
+                </label>
+                <LocationComboboxesMultiCountry
+                  country={selectedCountry}
+                  stateCode={selectedStateSigla}
+                  city={selectedCity}
+                  onCountryChange={(newCountry) => {
+                    setSelectedCountry(newCountry)
+                    // Limpar estado e cidade quando país muda
+                    setSelectedState('')
+                    setSelectedStateSigla('')
+                    setSelectedCity('')
+                  }}
+                  onStateChange={(stateCode) => {
+                    setSelectedStateSigla(stateCode)
+                    // Buscar nome do estado baseado no país
+                    if (selectedCountry === 'BR') {
+                      const estado = estados.find(e => e.sigla === stateCode)
+                      if (estado) {
+                        setSelectedState(estado.nome)
+                      }
+                    } else {
+                      // Para EUA, usar o código do estado diretamente
+                      setSelectedState(stateCode)
+                    }
+                    setSelectedCity('')
+                  }}
+                  onCityChange={(city) => {
+                    setSelectedCity(city)
+                  }}
+                />
+              </div>
+
               {/* Opção: Minha Cidade */}
               <div>
                 <button
@@ -352,13 +391,21 @@ export function FeedSettingsModal({
                     // Se não houver cidade/estado selecionados, usar do perfil
                     if (!selectedCity && !selectedState) {
                       setSelectedCity(profile?.location_city || '')
-                      setSelectedState(profile?.location_state || '')
-                      // Buscar sigla do estado
+                      setSelectedCountry((profile as any)?.country || contextCountry || 'BR')
+                      // Buscar sigla do estado baseado no país
                       if (profile?.location_state) {
-                        const estado = estados.find(e => e.nome === profile.location_state)
-                        if (estado) {
-                          setSelectedStateSigla(estado.sigla)
-                          loadCidades(estado.sigla)
+                        const country = (profile as any)?.country || contextCountry || 'BR'
+                        if (country === 'BR') {
+                          const estado = estados.find(e => e.nome === profile.location_state || e.sigla === profile.location_state)
+                          if (estado) {
+                            setSelectedState(estado.nome)
+                            setSelectedStateSigla(estado.sigla)
+                            loadCidades(estado.sigla)
+                          }
+                        } else {
+                          // Para EUA, usar o código diretamente
+                          setSelectedState(profile.location_state)
+                          setSelectedStateSigla(profile.location_state)
                         }
                       }
                     }
@@ -375,47 +422,9 @@ export function FeedSettingsModal({
                       ? `${selectedCity}, ${selectedState}`
                       : profile?.location_city && profile?.location_state 
                         ? `${profile.location_city}, ${profile.location_state}`
-                        : 'Selecione estado e cidade'}
+                        : 'Selecione país, estado e cidade'}
                   </div>
                 </button>
-                
-                {/* Mostrar comboboxes quando "local" estiver selecionado */}
-                {selectedLocationType === 'local' && (
-                  <div className="mt-2 space-y-1.5 px-0.5">
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-0.5 block">
-                        Estado
-                      </label>
-                      <EstadoCombobox
-                        value={selectedStateSigla}
-                        onValueChange={(sigla) => {
-                          setSelectedStateSigla(sigla)
-                          const estado = estados.find(e => e.sigla === sigla)
-                          if (estado) {
-                            setSelectedState(estado.nome)
-                            loadCidades(sigla)
-                          }
-                        }}
-                        placeholder="Selecione o estado"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-0.5 block">
-                        Cidade
-                      </label>
-                      <CidadeCombobox
-                        value={selectedCity}
-                        onValueChange={(cidade) => {
-                          setSelectedCity(cidade)
-                        }}
-                        estadoSelecionado={selectedStateSigla}
-                        placeholder="Selecione a cidade"
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Opção: Meu Estado */}

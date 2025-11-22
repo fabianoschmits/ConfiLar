@@ -127,32 +127,24 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         console.log('🔍 Aplicando filtro de localização:', JSON.stringify(locationFilter, null, 2))
         
         // Função auxiliar para normalizar estado (aceitar tanto sigla quanto nome completo)
-        const normalizeStateForQuery = async (state: string): Promise<string[]> => {
-          const states: string[] = [state] // Sempre incluir o valor original
+        // SEMPRE retornar nome completo para evitar conflitos
+        const normalizeStateForQuery = async (state: string): Promise<string> => {
+          if (!state) return state
           
-          // Se for sigla (2 caracteres), buscar nome completo também
-          if (state && state.length === 2) {
+          // Se for sigla (2 caracteres), buscar nome completo
+          if (state.length === 2) {
             try {
               const estado = await getEstadoBySigla(state)
-              if (estado && estado.nome !== state) {
-                states.push(estado.nome)
+              if (estado && estado.nome) {
+                return estado.nome // Retornar nome completo
               }
             } catch (error) {
               console.error('Erro ao buscar nome do estado:', error)
             }
-          } else {
-            // Se for nome completo, buscar sigla também
-            try {
-              const estado = await getEstadoByNome(state)
-              if (estado && estado.sigla !== state) {
-                states.push(estado.sigla)
-              }
-            } catch (error) {
-              console.error('Erro ao buscar sigla do estado:', error)
-            }
           }
           
-          return states
+          // Se já for nome completo ou não encontrou sigla, retornar como está
+          return state
         }
         
         switch (locationFilter.type) {
@@ -164,8 +156,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 country: locationFilter.country
               })
               
-              // Normalizar estado para buscar tanto sigla quanto nome completo
-              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              // Normalizar estado para nome completo (evitar conflito sigla/nome)
+              const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
               // Mapear país para código
               let countryCode = locationFilter.country
@@ -175,19 +167,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 countryCode = 'US'
               }
               
-              // Buscar posts que correspondam à cidade e estado
-              // Não filtrar por país aqui para não ser muito restritivo
-              // O país será usado apenas como informação adicional
-              if (normalizedStates.length > 1) {
-                // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery
-                  .ilike('location_city', locationFilter.city)
-                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
-              } else {
-                postsQuery = postsQuery
-                  .ilike('location_city', locationFilter.city)
-                  .ilike('location_state', locationFilter.state)
-              }
+              // Buscar posts que correspondam à cidade e estado (usando nome completo normalizado)
+              // Aceitar tanto sigla quanto nome completo na busca usando ilike
+              postsQuery = postsQuery
+                .ilike('location_city', locationFilter.city)
+                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
             }
             break
           case 'state':
@@ -202,19 +186,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 countryCode = 'US'
               }
               
-              // Normalizar estado para buscar tanto sigla quanto nome completo
-              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              // Normalizar estado para nome completo (evitar conflito sigla/nome)
+              const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
-              if (normalizedStates.length > 1) {
-                // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery
-                  .eq('location_country', countryCode)
-                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
-              } else {
-                postsQuery = postsQuery
-                  .ilike('location_state', locationFilter.state)
-                  .eq('location_country', countryCode)
-              }
+              // Buscar por estado normalizado OU estado original (aceita sigla e nome)
+              postsQuery = postsQuery
+                .eq('location_country', countryCode)
+                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
             }
             break
           case 'country':
@@ -248,23 +226,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 countryCode = 'US'
               }
               
-              // Normalizar estado para buscar tanto sigla quanto nome completo
-              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              // Normalizar estado para nome completo (evitar conflito sigla/nome)
+              const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
-              if (normalizedStates.length > 1) {
-                // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery
-                  .ilike('location_city', locationFilter.city)
-                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
-                // Filtrar por país ou NULL (posts antigos)
-                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
-              } else {
-                postsQuery = postsQuery
-                  .ilike('location_city', locationFilter.city)
-                  .ilike('location_state', locationFilter.state)
-                // Filtrar por país ou NULL (posts antigos)
-                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
-              }
+              // Buscar posts por cidade e estado (aceita sigla e nome completo)
+              postsQuery = postsQuery
+                .ilike('location_city', locationFilter.city)
+                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
+              // Filtrar por país ou NULL (posts antigos)
+              postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
             } else if (locationFilter.state && !locationFilter.city) {
               // Se apenas estado foi selecionado (sem cidade)
               console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state, 'país:', locationFilter.country)
@@ -277,19 +247,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
                 countryCode = 'US'
               }
               
-              // Normalizar estado para buscar tanto sigla quanto nome completo
-              const normalizedStates = await normalizeStateForQuery(locationFilter.state)
+              // Normalizar estado para nome completo (evitar conflito sigla/nome)
+              const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
-              if (normalizedStates.length > 1) {
-                // Se há múltiplas variações do estado, usar OR
-                postsQuery = postsQuery
-                  .eq('location_country', countryCode)
-                  .or(`location_state.ilike.%${normalizedStates[0]}%,location_state.ilike.%${normalizedStates[1]}%`)
-              } else {
-                postsQuery = postsQuery
-                  .ilike('location_state', locationFilter.state)
-                  .eq('location_country', countryCode)
-              }
+              // Buscar por estado normalizado OU estado original (aceita sigla e nome)
+              postsQuery = postsQuery
+                .eq('location_country', countryCode)
+                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
             } else {
               console.log('⚠️ Filtro custom sem dados completos:', {
                 city: locationFilter.city,

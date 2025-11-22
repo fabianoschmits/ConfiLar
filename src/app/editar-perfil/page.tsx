@@ -29,6 +29,8 @@ import Image from 'next/image'
 import { useLocale } from '@/contexts/LocaleContext'
 import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
 import { useTranslations } from 'next-intl'
+import { getEstadoByNome } from '@/lib/ibge'
+import { LocationService } from '@/lib/location/LocationService'
 
 // Helper para criar schema de validação com mensagens traduzidas
 const createProfileSchema = (t: (key: string) => string) => z.object({
@@ -118,6 +120,7 @@ export default function EditarPerfilPage() {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
+  const [stateCode, setStateCode] = useState<string>('') // Código do estado para o componente LocationComboboxesMultiCountry
 
   // Criar schema com mensagens traduzidas
   const profileSchema = createProfileSchema((key: string) => tValidation(key))
@@ -183,14 +186,47 @@ export default function EditarPerfilPage() {
           setValue('cpf_cnpj', profile.cpf_cnpj || '')
           setValue('birth_date', profile.birth_date || '')
           setValue('user_type', profile.user_type || 'client')
-          setValue('country', ((profile as any).country || contextCountry || 'BR') as 'BR' | 'US')
+          const profileCountry = ((profile as any).country || contextCountry || 'BR') as 'BR' | 'US'
+          setValue('country', profileCountry)
           setValue('locale', ((profile as any).locale || contextLocale || 'pt-BR') as 'pt-BR' | 'en')
-          setValue('location_state', profile.location_state || '')
           setValue('location_city', profile.location_city || '')
           setValue('neighborhood', profile.neighborhood || '')
           setValue('address', profile.address || '')
           setValue('bio', profile.bio || '')
           setValue('experience_years', profile.professional_experience_years ? `${profile.professional_experience_years}-${profile.professional_experience_years + 2}` : '')
+          
+          // Converter estado (nome completo) para código se necessário
+          if (profile.location_state) {
+            const stateValue = profile.location_state
+            // Se for sigla (2 caracteres), usar diretamente
+            if (stateValue.length === 2) {
+              setStateCode(stateValue)
+              setValue('location_state', stateValue)
+            } else if (profileCountry === 'BR') {
+              // Se for nome completo, buscar código
+              try {
+                const estado = await getEstadoByNome(stateValue)
+                if (estado) {
+                  setStateCode(estado.sigla)
+                  setValue('location_state', estado.nome) // Manter nome completo no formulário
+                } else {
+                  setStateCode('')
+                  setValue('location_state', stateValue)
+                }
+              } catch (error) {
+                console.error('Erro ao buscar código do estado:', error)
+                setStateCode('')
+                setValue('location_state', stateValue)
+              }
+            } else {
+              // Para EUA, usar o código diretamente
+              setStateCode(stateValue)
+              setValue('location_state', stateValue)
+            }
+          } else {
+            setStateCode('')
+            setValue('location_state', '')
+          }
           
           // Atualizar contexto com dados do perfil
           if ((profile as any).country) {
@@ -787,7 +823,7 @@ export default function EditarPerfilPage() {
                   </Label>
                   <LocationComboboxesMultiCountry
                     country={watchedValues.country}
-                    stateCode={watchedValues.location_state}
+                    stateCode={stateCode}
                     city={watchedValues.location_city}
                     onCountryChange={(newCountry) => {
                       setValue('country', newCountry as 'BR' | 'US')
@@ -797,11 +833,31 @@ export default function EditarPerfilPage() {
                       setCountry(newCountry as 'BR' | 'US')
                       setLocale(newLocale)
                       // Limpar estado e cidade quando país muda
+                      setStateCode('')
                       setValue('location_state', '')
                       setValue('location_city', '')
                     }}
-                    onStateChange={(stateCode) => {
-                      setValue('location_state', stateCode)
+                    onStateChange={async (newStateCode) => {
+                      setStateCode(newStateCode)
+                      // Buscar nome completo do estado se for Brasil
+                      if (watchedValues.country === 'BR') {
+                        try {
+                          const service = new LocationService('BR')
+                          const states = await service.getStates()
+                          const state = states.find(s => s.code === newStateCode)
+                          if (state) {
+                            setValue('location_state', state.name) // Salvar nome completo
+                          } else {
+                            setValue('location_state', newStateCode) // Fallback
+                          }
+                        } catch (error) {
+                          console.error('Erro ao buscar nome do estado:', error)
+                          setValue('location_state', newStateCode) // Fallback
+                        }
+                      } else {
+                        // Para EUA, usar o código diretamente
+                        setValue('location_state', newStateCode)
+                      }
                       setValue('location_city', '')
                     }}
                     onCityChange={(city) => {
