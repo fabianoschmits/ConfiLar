@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname } from '@/i18n/routing'
 import { Locale, localeToCountry } from '@/i18n/config'
 import type { Country } from '@/i18n/config'
 import { createLocationService, LocationService } from '@/lib/location/LocationService'
@@ -205,9 +205,9 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
     }
     
-    // Recarregar página para aplicar mudanças
-    router.refresh()
-  }, [locale, country, router, user, locationService])
+    // Não fazer redirecionamento aqui - deixar o componente que chamou fazer
+    // Isso evita conflitos quando múltiplos componentes tentam redirecionar
+  }, [locale, country, user, locationService])
 
   // Função para mudar país
   const setCountry = useCallback(async (newCountry: Country) => {
@@ -223,39 +223,52 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       ([_, c]) => c === country
     )?.[0]) {
       setLocaleState(newLocale)
-    }
-    
-    // Salvar no banco de dados se usuário estiver logado
-    if (user) {
-      try {
-        const updateData: { country: Country; locale?: Locale } = { country: newCountry }
-        if (newLocale) {
-          updateData.locale = newLocale
+      
+      // Salvar no banco de dados se usuário estiver logado
+      if (user) {
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ country: newCountry, locale: newLocale })
+            .eq('id', user.id)
+          
+          if (error) {
+            console.error('Erro ao atualizar país no banco:', error)
+          }
+        } catch (error) {
+          console.error('Erro ao salvar país no banco:', error)
         }
-        
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', user.id)
-        
-        if (error) {
-          console.error('Erro ao atualizar país no banco:', error)
-        }
-      } catch (error) {
-        console.error('Erro ao salvar país no banco:', error)
       }
-    }
-    
-    // Salvar no localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
-      if (newLocale) {
+      
+      // Salvar no localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
         localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
       }
+    } else {
+      // Apenas atualizar país sem mudar locale
+      if (user) {
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ country: newCountry })
+            .eq('id', user.id)
+          
+          if (error) {
+            console.error('Erro ao atualizar país no banco:', error)
+          }
+        } catch (error) {
+          console.error('Erro ao salvar país no banco:', error)
+        }
+      }
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
+      }
     }
     
-    router.refresh()
-  }, [country, locale, locationService, router, user])
+    // Não fazer redirecionamento aqui - deixar o componente que chamou fazer
+  }, [country, locale, locationService, user])
 
   // Função de tradução simples (placeholder - use useTranslations do next-intl nos componentes)
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {

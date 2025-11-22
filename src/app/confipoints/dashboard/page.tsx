@@ -109,22 +109,22 @@ export default function ConfiPointsDashboardPage() {
   // Mapear transações do histórico para formato da UI
   // Filtrar transferências daqui pois elas vêm da tabela points_transfers
   const pointTransactions = (transactions || [])
-    .filter((t: any) => t.type !== 'transfer' || t.source !== 'transfer') // Remover transferências duplicadas
-    .map((t: any) => {
-    const isPositive = t.amount > 0 || t.type === 'earn' || t.type === 'purchase' || t.type === 'refund'
+    .filter((tx: any) => tx.type !== 'transfer' || tx.source !== 'transfer') // Remover transferências duplicadas
+    .map((tx: any) => {
+    const isPositive = tx.amount > 0 || tx.type === 'earn' || tx.type === 'purchase' || tx.type === 'refund'
     
     let typeLabel = ''
-    let description = t.description || ''
+    let description = tx.description || ''
     
     // Determinar tipo e descrição baseado na transação
-    switch (t.type) {
+    switch (tx.type) {
       case 'earn':
         typeLabel = 'received'
-        if (!description) description = t('earnedPoints', { amount: Math.abs(t.amount) })
+        if (!description) description = t('earnedPoints', { amount: Math.abs(tx.amount) })
         break
       case 'spend':
         typeLabel = 'spent'
-        if (!description) description = t('spentPoints', { amount: Math.abs(t.amount) })
+        if (!description) description = t('spentPoints', { amount: Math.abs(tx.amount) })
         break
       case 'transfer':
         // Se chegar aqui, é uma transferência antiga sem dados completos
@@ -132,35 +132,35 @@ export default function ConfiPointsDashboardPage() {
         typeLabel = isPositive ? 'transfer_received' : 'transfer_sent'
         if (!description) {
           // Tentar pegar nome do usuário do metadata
-          const otherUserName = t.metadata?.to_user_name || t.metadata?.from_user_name || t.metadata?.user_name || tCommon('user')
-          const otherUserId = t.metadata?.to_user_id || t.metadata?.from_user_id
+          const otherUserName = tx.metadata?.to_user_name || tx.metadata?.from_user_name || tx.metadata?.user_name || tCommon('user')
+          const otherUserId = tx.metadata?.to_user_id || tx.metadata?.from_user_id
           
           if (isPositive && otherUserId) {
-            description = t('receivedTransfer', { amount: Math.abs(t.amount), user: otherUserName })
+            description = t('receivedTransfer', { amount: Math.abs(tx.amount), user: otherUserName })
           } else if (!isPositive && otherUserId) {
-            description = t('transferredPoints', { amount: Math.abs(t.amount), user: otherUserName })
+            description = t('transferredPoints', { amount: Math.abs(tx.amount), user: otherUserName })
           } else {
             description = isPositive 
-              ? t('receivedTransferNoUser', { amount: Math.abs(t.amount) })
-              : t('transferredPointsNoUser', { amount: Math.abs(t.amount) })
+              ? t('receivedTransferNoUser', { amount: Math.abs(tx.amount) })
+              : t('transferredPointsNoUser', { amount: Math.abs(tx.amount) })
           }
         }
         break
       case 'purchase':
         typeLabel = 'purchase'
-        if (!description) description = t('purchasedPoints', { amount: Math.abs(t.amount) })
+        if (!description) description = t('purchasedPoints', { amount: Math.abs(tx.amount) })
         break
       case 'refund':
         typeLabel = 'refund'
-        if (!description) description = t('refundPoints', { amount: Math.abs(t.amount) })
+        if (!description) description = t('refundPoints', { amount: Math.abs(tx.amount) })
         break
       default:
-        typeLabel = t.type || 'other'
-        if (!description) description = t('transactionPoints', { amount: Math.abs(t.amount) })
+        typeLabel = tx.type || 'other'
+        if (!description) description = t('transactionPoints', { amount: Math.abs(tx.amount) })
     }
 
     // Adicionar informações sobre a fonte se disponível
-    if (t.source) {
+    if (tx.source) {
       const sourceLabels: Record<string, string> = {
         'referral': `(${t('sourceReferral')})`,
         'post': `(${t('sourcePost')})`,
@@ -172,42 +172,42 @@ export default function ConfiPointsDashboardPage() {
         'store': `(${t('sourceStore')})`,
         'bonus': `(${t('sourceBonus')})`
       }
-      if (sourceLabels[t.source]) {
-        description += ` ${sourceLabels[t.source]}`
+      if (sourceLabels[tx.source]) {
+        description += ` ${sourceLabels[tx.source]}`
       }
     }
 
     return {
-      id: t.id,
+      id: tx.id,
       type: typeLabel,
-      amount: t.amount,
+      amount: tx.amount,
       description,
-      date: t.created_at,
+      date: tx.created_at,
       status: 'completed',
-      source: t.source,
-      metadata: t.metadata,
+      source: tx.source,
+      metadata: tx.metadata,
       // Preservar informações de usuário se disponível
-      from_user: t.metadata?.from_user,
-      to_user: t.metadata?.to_user,
-      from_user_id: t.metadata?.from_user_id,
-      to_user_id: t.metadata?.to_user_id
+      from_user: tx.metadata?.from_user,
+      to_user: tx.metadata?.to_user,
+      from_user_id: tx.metadata?.from_user_id,
+      to_user_id: tx.metadata?.to_user_id
     }
   })
 
   // Combinar transações de pontos com transferências
   // Remover duplicatas baseado no ID ou metadata
   const allTransactions = [...transferTransactions, ...pointTransactions]
-    .filter((t, index, self) => {
+    .filter((tx, index, self) => {
       // Para transferências, verificar se já existe uma com mesmo transfer_id
-      if (t.id?.startsWith('transfer-')) {
-        const transferId = t.metadata?.transfer_id || t.id.replace('transfer-', '')
+      if (tx.id?.startsWith('transfer-')) {
+        const transferId = tx.metadata?.transfer_id || tx.id.replace('transfer-', '')
         return index === self.findIndex(tr => 
           tr.id?.startsWith('transfer-') && 
-          (tr.metadata?.transfer_id === transferId || tr.id === t.id)
+          (tr.metadata?.transfer_id === transferId || tr.id === tx.id)
         )
       }
       // Para outras transações, verificar ID normal
-      return index === self.findIndex(tr => tr.id === t.id && !tr.id?.startsWith('transfer-'))
+      return index === self.findIndex(tr => tr.id === tx.id && !tr.id?.startsWith('transfer-'))
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 

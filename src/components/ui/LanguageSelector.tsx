@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useLocale } from '@/contexts/LocaleContext'
 import { useTranslations } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -24,19 +25,48 @@ const countries: { code: Country; name: string; flag: string; locale: Locale }[]
 export function LanguageSelector() {
   const { locale, country, setLocale, setCountry } = useLocale()
   const t = useTranslations('common')
+  const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
   const currentCountry = countries.find(c => c.code === country) || countries[0]
 
   const handleCountryChange = async (newCountry: Country, newLocale: Locale) => {
     setIsOpen(false)
-    // Atualizar país e idioma (ambos salvam no banco automaticamente)
+    
+    // Salvar preferências no localStorage primeiro
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('confilar-locale', newLocale)
+      localStorage.setItem('confilar-country', newCountry)
+    }
+    
+    // Salvar no banco de dados (via setLocale e setCountry)
     await Promise.all([
       setCountry(newCountry),
       setLocale(newLocale)
     ])
-    // Recarregar página para aplicar mudanças
-    window.location.reload()
+    
+    // Construir a nova URL com o locale
+    // Se o locale não for o padrão, adicionar o prefixo
+    const currentPath = pathname || window.location.pathname
+    let newPath = currentPath
+    
+    // Remover qualquer prefixo de locale existente
+    const pathWithoutLocale = currentPath.replace(/^\/(pt-BR|en)/, '') || '/'
+    
+    // Se o novo locale não for o padrão, adicionar o prefixo
+    if (newLocale !== 'pt-BR') {
+      newPath = `/${newLocale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`
+    } else {
+      newPath = pathWithoutLocale
+    }
+    
+    // Preservar query params se existirem
+    const searchParams = window.location.search
+    const newUrl = newPath + searchParams
+    
+    // Redirecionar usando window.location para garantir que o middleware detecte
+    window.location.href = newUrl
   }
 
   return (
