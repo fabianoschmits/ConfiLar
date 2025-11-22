@@ -27,8 +27,11 @@ import { PackageSkeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import { CheckoutModal } from '@/components/checkout/CheckoutModal'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export default function ComprarPontosPage() {
+  const t = useTranslations('confipoints')
+  const tCommon = useTranslations('common')
   const { user, profile } = useAuthContext()
   const { balance: pointsData, loading: pointsLoading } = usePoints(user?.id)
   const [selectedPackage, setSelectedPackage] = useState<{
@@ -56,135 +59,135 @@ export default function ComprarPontosPage() {
   const packages = [
     {
       id: 'starter',
-      name: 'Pacote Iniciante',
+      name: t('packageStarter'),
       points: 1000,
       price: 'R$ 10,00',
       priceValue: 10,
       bonus: 0,
       popular: false,
-      description: 'Perfeito para começar',
+      description: t('packageStarterDesc'),
       icon: <Zap className="w-8 h-8" />,
       color: 'blue',
       features: [
-        '1.000 ConfiPoints',
-        `${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(1000 / PREMIUM_PRICES.POST.POINTS)} post premium`,
-        `${Math.floor(1000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncio premium`
+        `1.000 ${t('title')}`,
+        `${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`,
+        `${Math.floor(1000 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPost')}`,
+        `${Math.floor(1000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAd')}`
       ],
-      uses: `1 post premium ou ${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas`
+      uses: `1 ${t('premiumPost')} ${t('or')} ${Math.floor(1000 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`
     },
     {
       id: 'popular',
-      name: 'Pacote Popular',
+      name: t('packagePopular'),
       points: 5000,
       price: 'R$ 50,00',
       priceValue: 50,
       bonus: 500,
       popular: true,
-      description: 'Mais vendido',
+      description: t('packagePopularDesc'),
       icon: <Star className="w-8 h-8" />,
       color: 'green',
       features: [
-        '5.000 ConfiPoints',
-        '+500 pontos bônus',
-        `${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
-        `${Math.floor(5500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
-        'Suporte via Email'
+        `5.000 ${t('title')}`,
+        `+500 ${t('bonusPoints')}`,
+        `${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`,
+        `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')}`,
+        `${Math.floor(5500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`,
+        t('emailSupport')
       ],
-      uses: `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas`
+      uses: `${Math.floor(5500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')} ${t('or')} ${Math.floor(5500 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`
     },
     {
       id: 'professional',
-      name: 'Pacote Profissional',
+      name: t('packageProfessional'),
       points: 10000,
       price: 'R$ 100,00',
       priceValue: 100,
       bonus: 1500,
       popular: false,
-      description: 'Para profissionais',
+      description: t('packageProfessionalDesc'),
       icon: <Crown className="w-8 h-8" />,
       color: 'purple',
       features: [
-        '10.000 ConfiPoints',
-        '+1.500 pontos bônus (15%)',
-        `${Math.floor(11500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
-        `${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
-        'Suporte via Email',
-        'Badge exclusivo'
+        `10.000 ${t('title')}`,
+        `+1.500 ${t('bonusPoints')} (15%)`,
+        `${Math.floor(11500 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`,
+        `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')}`,
+        `${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`,
+        t('emailSupport'),
+        t('exclusiveBadge')
       ],
-      uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
+      uses: `${Math.floor(11500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')} ${t('or')} ${Math.floor(11500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`
     },
     {
       id: 'enterprise',
-      name: 'Pacote Empresarial',
+      name: t('packageEnterprise'),
       points: 25000,
       price: 'R$ 250,00',
       priceValue: 250,
       bonus: 5000,
       popular: false,
-      description: 'Para empresas',
+      description: t('packageEnterpriseDesc'),
       icon: <Gift className="w-8 h-8" />,
       color: 'amber',
       features: [
-        '25.000 ConfiPoints',
-        '+5.000 pontos bônus (20%)',
-        `${Math.floor(30000 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
-        `${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
-        'Suporte via Email',
-        'Relatórios avançados',
-        'Consultoria premium'
+        `25.000 ${t('title')}`,
+        `+5.000 ${t('bonusPoints')} (20%)`,
+        `${Math.floor(30000 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`,
+        `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')}`,
+        `${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`,
+        t('emailSupport'),
+        t('advancedReports'),
+        t('premiumConsulting')
       ],
-      uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
+      uses: `${Math.floor(30000 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')} ${t('or')} ${Math.floor(30000 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`
     },
     {
       id: 'mega',
-      name: 'Pacote Mega',
+      name: t('packageMega'),
       points: 50000,
       price: 'R$ 500,00',
       priceValue: 500,
       bonus: 12500,
       popular: false,
-      description: 'Máximo valor',
+      description: t('packageMegaDesc'),
       icon: <TrendingUp className="w-8 h-8" />,
       color: 'red',
       features: [
-        '50.000 ConfiPoints',
-        '+12.500 pontos bônus (25%)',
-        `${Math.floor(62500 / PREMIUM_PRICES.LIKE.POINTS)} curtidas premium`,
-        `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} posts premium`,
-        `${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`,
-        'Suporte via Email',
-        'Prioridade máxima',
-        'Acesso antecipado a recursos',
-        'Badge VIP exclusivo'
+        `50.000 ${t('title')}`,
+        `+12.500 ${t('bonusPoints')} (25%)`,
+        `${Math.floor(62500 / PREMIUM_PRICES.LIKE.POINTS)} ${t('premiumLikes')}`,
+        `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')}`,
+        `${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`,
+        t('emailSupport'),
+        t('maximumPriority'),
+        t('earlyAccess'),
+        t('vipBadge')
       ],
-      uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} posts premium ou ${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncios premium`
+      uses: `${Math.floor(62500 / PREMIUM_PRICES.POST.POINTS)} ${t('premiumPosts')} ${t('or')} ${Math.floor(62500 / PREMIUM_PRICES.AD_1_DAY.POINTS)} ${t('premiumAds')}`
     }
   ]
 
   const benefits = [
     {
       icon: <Crown className="w-6 h-6 text-purple-500" />,
-      title: 'Posts Premium',
-      description: 'Destaque seus posts com visual diferenciado e maior alcance'
+      title: t('benefit1.title'),
+      description: t('benefit1.description')
     },
     {
       icon: <Heart className="w-6 h-6 text-pink-500" />,
-      title: 'Curtidas Premium',
-      description: 'Curta posts com pontos e transfira para o autor'
+      title: t('benefit2.title'),
+      description: t('benefit2.description')
     },
     {
       icon: <TrendingUp className="w-6 h-6 text-green-500" />,
-      title: 'Maior Engajamento',
-      description: 'Aumente o engajamento da sua comunidade'
+      title: t('benefit3.title'),
+      description: t('benefit3.description')
     },
     {
       icon: <Gift className="w-6 h-6 text-blue-500" />,
-      title: 'Recompensas',
-      description: 'Recompense usuários por conteúdo criativo'
+      title: t('benefit4.title'),
+      description: t('benefit4.description')
     }
   ]
 
@@ -201,10 +204,10 @@ export default function ComprarPontosPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Comprar ConfiPoints
+                    {t('buyPoints')}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Adquira pontos para usar no ConfiLar
+                    {t('acquirePoints')}
                   </p>
                 </div>
               </div>
@@ -220,9 +223,9 @@ export default function ComprarPontosPage() {
                         <Coins className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Saldo Atual</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('balance')}</p>
                         <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
-                          {pointsData?.balance || 0} ConfiPoints
+                          {pointsData?.balance || 0} {t('title')}
                         </p>
                       </div>
                     </div>
@@ -237,7 +240,7 @@ export default function ComprarPontosPage() {
             {/* Benefícios */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                O que você pode fazer com ConfiPoints?
+                {t('whatCanYouDo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {benefits.map((benefit, index) => (
@@ -247,10 +250,10 @@ export default function ComprarPontosPage() {
                         {benefit.icon}
                       </div>
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                        {benefit.title}
+                        {t(`benefit${index + 1}.title`)}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {benefit.description}
+                        {t(`benefit${index + 1}.description`)}
                       </p>
                     </CardContent>
                   </Card>
@@ -267,20 +270,20 @@ export default function ComprarPontosPage() {
                       <Coins className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Taxa de Conversão</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{t('conversionRate')}</p>
                       <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                        R$ 1,00 = 100 pontos
+                        {t('conversionExample')}
                       </p>
                     </div>
                   </div>
                   <div className="text-center sm:text-right">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Exemplo de uso:</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('usageExample')}:</p>
                     <div className="flex items-center gap-2 text-sm flex-wrap">
                       <Badge variant="outline" className="text-purple-600 border-purple-600">
-                        1 Post = {PREMIUM_PRICES.POST.POINTS} pts
+                        {t('postPrice', { points: PREMIUM_PRICES.POST.POINTS })}
                       </Badge>
                       <Badge variant="outline" className="text-pink-600 border-pink-600">
-                        1 Curtida = {PREMIUM_PRICES.LIKE.POINTS} pts
+                        {t('likePrice', { points: PREMIUM_PRICES.LIKE.POINTS })}
                       </Badge>
                     </div>
                   </div>
@@ -291,7 +294,7 @@ export default function ComprarPontosPage() {
             {/* Pacotes */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                Escolha seu pacote
+                {t('choosePackage')}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                 {packages.map((pkg) => (
@@ -311,7 +314,7 @@ export default function ComprarPontosPage() {
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                         <Badge className="bg-green-500 text-white px-3 py-1 shadow-lg">
                           <Star className="w-3 h-3 mr-1" />
-                          Mais Popular
+                          {t('mostPopular')}
                         </Badge>
                       </div>
                     )}
@@ -347,19 +350,19 @@ export default function ComprarPontosPage() {
                         </div>
                         {pkg.bonus > 0 && (
                           <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 text-xs">
-                            +{pkg.bonus.toLocaleString('pt-BR')} bônus
+                            +{pkg.bonus.toLocaleString('pt-BR')} {t('bonus')}
                           </Badge>
                         )}
                         {pkg.bonus > 0 && (
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold">
-                            Total: {(pkg.points + pkg.bonus).toLocaleString('pt-BR')} pts
+                            {t('total')}: {(pkg.points + pkg.bonus).toLocaleString('pt-BR')} {t('points')}
                           </p>
                         )}
                       </div>
                       
                       <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">
-                          Equivale a:
+                          {t('equivalentTo')}:
                         </p>
                         <p className="text-xs text-blue-700 dark:text-blue-400">
                           {pkg.uses}
@@ -394,7 +397,7 @@ export default function ComprarPontosPage() {
                         }}
                       >
                         <CreditCard className="w-4 h-4 mr-2" />
-                        Comprar
+                        {t('purchase')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -408,7 +411,7 @@ export default function ComprarPontosPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-yellow-600" />
-                  Tabela de Custos das Ações Premium
+                  {t('premiumActionsCostTable')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -416,31 +419,31 @@ export default function ComprarPontosPage() {
                   <div className="p-4 bg-pink-50 dark:bg-pink-950/20 rounded-lg border border-pink-200 dark:border-pink-800">
                     <div className="flex items-center gap-2 mb-2">
                       <Heart className="w-5 h-5 text-pink-600" />
-                      <h4 className="font-semibold text-pink-900 dark:text-pink-100">Curtida Premium</h4>
+                      <h4 className="font-semibold text-pink-900 dark:text-pink-100">{t('premiumLike')}</h4>
                     </div>
-                    <p className="text-2xl font-bold text-pink-700 dark:text-pink-300">{PREMIUM_PRICES.LIKE.POINTS} pts</p>
+                    <p className="text-2xl font-bold text-pink-700 dark:text-pink-300">{PREMIUM_PRICES.LIKE.POINTS} {t('points')}</p>
                     <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">R$ {PREMIUM_PRICES.LIKE.BRL.toFixed(2)}</p>
                   </div>
                   
                   <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
                     <div className="flex items-center gap-2 mb-2">
                       <Crown className="w-5 h-5 text-purple-600" />
-                      <h4 className="font-semibold text-purple-900 dark:text-purple-100">Post Premium</h4>
+                      <h4 className="font-semibold text-purple-900 dark:text-purple-100">{t('premiumPost')}</h4>
                     </div>
-                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{PREMIUM_PRICES.POST.POINTS} pts</p>
+                    <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{PREMIUM_PRICES.POST.POINTS} {t('points')}</p>
                     <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">R$ {PREMIUM_PRICES.POST.BRL.toFixed(2)} / {PREMIUM_PRICES.POST.DURATION}</p>
                   </div>
                   
                   <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     <div className="flex items-center gap-2 mb-2">
                       <Star className="w-5 h-5 text-amber-600" />
-                      <h4 className="font-semibold text-amber-900 dark:text-amber-100">Anúncio Premium</h4>
+                      <h4 className="font-semibold text-amber-900 dark:text-amber-100">{t('premiumAd')}</h4>
                     </div>
-                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{PREMIUM_PRICES.AD_1_DAY.POINTS} pts</p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">A partir de R$ {PREMIUM_PRICES.AD_1_DAY.BRL.toFixed(2)} / {PREMIUM_PRICES.AD_1_DAY.DURATION}</p>
+                    <p className="text-2xl font-bold text-amber-700 dark:text-amber-300">{PREMIUM_PRICES.AD_1_DAY.POINTS} {t('points')}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{t('startingFrom')} R$ {PREMIUM_PRICES.AD_1_DAY.BRL.toFixed(2)} / {PREMIUM_PRICES.AD_1_DAY.DURATION}</p>
                     {pointsData?.balance && pointsData.balance >= PREMIUM_PRICES.AD_1_DAY.POINTS && (
                       <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-semibold">
-                        Você pode fazer {Math.floor(pointsData.balance / PREMIUM_PRICES.AD_1_DAY.POINTS)} anúncio(s)
+                        {t('youCanMake', { count: Math.floor(pointsData.balance / PREMIUM_PRICES.AD_1_DAY.POINTS) })}
                       </p>
                     )}
                   </div>

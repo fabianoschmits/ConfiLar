@@ -62,10 +62,14 @@ import { PremiumAdForm } from '@/components/classifieds/PremiumAdForm'
 import { RenewPremiumAdForm } from '@/components/classifieds/RenewPremiumAdForm'
 import { PremiumTimeRemaining } from '@/components/classifieds/PremiumTimeRemaining'
 import { ReportButton } from '@/components/ReportButton'
+import { useTranslations } from 'next-intl'
 
 type AdType = 'all' | 'offers' | 'requests'
 
 export default function ClassificadosPage() {
+  const t = useTranslations('classifieds')
+  const tCommon = useTranslations('common')
+  const tLocation = useTranslations('location')
   const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showPremiumAdDialog, setShowPremiumAdDialog] = useState(false)
@@ -508,28 +512,28 @@ export default function ClassificadosPage() {
                 {/* Total de Anúncios */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{tCommon('search')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.total}</p>
                 </div>
                 
                 {/* Ofertas */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <HandHeart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Ofertas</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('offers')}</p>
                   <p className="text-sm sm:text-base font-bold text-blue-700 dark:text-blue-400">{stats.offers}</p>
                 </div>
                 
                 {/* Solicitações */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 dark:text-green-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Solicitações</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('requests')}</p>
                   <p className="text-sm sm:text-base font-bold text-green-700 dark:text-green-400">{stats.requests}</p>
                 </div>
                 
                 {/* Categorias */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Categorias</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('category')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.categories}</p>
                 </div>
               </div>
@@ -550,7 +554,7 @@ export default function ClassificadosPage() {
                       setFilters(newFilters)
                       executeSearch(newFilters)
                     }}
-                    placeholder="Buscar anúncios por palavra-chave (ex: pedreiro, eletricista, diarista...)"
+                    placeholder={t('searchPlaceholder')}
                     className="pl-8 pr-4 h-10 text-sm border border-gray-300 focus:border-blue-500 rounded-lg"
                   />
                 </div>
@@ -597,7 +601,7 @@ export default function ClassificadosPage() {
                 >
                   <MapPin className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {filters.city ? filters.city : filters.state ? filters.state : 'Localização'}
+                    {filters.city ? filters.city : filters.state ? filters.state : t('location')}
                   </span>
                   <ChevronDown className="h-3 w-3" />
                 </Button>
@@ -608,7 +612,7 @@ export default function ClassificadosPage() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
-                        Localização
+                        {t('location')}
                       </h3>
                       <Button
                         variant="ghost"
@@ -623,7 +627,7 @@ export default function ClassificadosPage() {
                     <div className="space-y-2">
                       {/* Estado */}
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Estado</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">{tLocation('state')}</label>
                         <EstadoCombobox
                           value={filters.state}
                           onValueChange={(newState) => {
@@ -636,14 +640,14 @@ export default function ClassificadosPage() {
                               loadCidades(newState)
                             }
                           }}
-                          placeholder="Selecione o estado"
+                          placeholder={tLocation('selectState')}
                           className="w-full"
                         />
                       </div>
 
                       {/* Cidade */}
                       <div>
-                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">Cidade</label>
+                        <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">{tLocation('city')}</label>
                         <CidadeCombobox
                           value={filters.city}
                           onValueChange={(newCity) => {
@@ -653,7 +657,7 @@ export default function ClassificadosPage() {
                             executeSearch(newFilters)
                           }}
                           estadoSigla={filters.state}
-                          placeholder="Selecione a cidade"
+                          placeholder={tLocation('selectCity')}
                           className="w-full"
                         />
                       </div>
@@ -671,14 +675,14 @@ export default function ClassificadosPage() {
                         }}
                         className="text-gray-600 dark:text-gray-400 text-xs h-6 px-2"
                       >
-                        Limpar
+                        {t('clearFilters')}
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => setShowFilters(false)}
                         className="bg-blue-600 hover:bg-blue-700 text-xs h-6 px-3"
                       >
-                        Aplicar
+                        {t('applyFilters')}
                       </Button>
                     </div>
                   </div>
@@ -691,8 +695,8 @@ export default function ClassificadosPage() {
           <div className="mb-6">
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-medium">Ofertas:</span> Profissionais oferecendo serviços • 
-                <span className="font-medium"> Solicitações:</span> Clientes procurando serviços
+                <span className="font-medium">{t('offers')}:</span> Profissionais oferecendo serviços • 
+                <span className="font-medium"> {t('requests')}:</span> Clientes procurando serviços
               </p>
             </div>
             <div className="border-b border-gray-200 dark:border-gray-700">
@@ -720,7 +724,7 @@ export default function ClassificadosPage() {
                   >
                     <div className="flex items-center gap-2">
                       <HandHeart className="h-4 w-4" />
-                      Ofertas ({stats.offers})
+                      {t('offers')} ({stats.offers})
                     </div>
                   </button>
                   <button
@@ -733,7 +737,7 @@ export default function ClassificadosPage() {
                   >
                     <div className="flex items-center gap-2">
                       <ShoppingCart className="h-4 w-4" />
-                      Solicitações ({stats.requests})
+                      {t('requests')} ({stats.requests})
                     </div>
                   </button>
               </nav>
@@ -744,14 +748,14 @@ export default function ClassificadosPage() {
           <div className="flex justify-between items-center mb-6 gap-1 sm:gap-4">
             <div className="flex items-center gap-1 sm:gap-4">
               <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                {filteredAds.length} {filteredAds.length !== 1 ? 'resultados' : 'resultado'}
+                {filteredAds.length} {filteredAds.length !== 1 ? t('resultadosPlural') : t('resultados')}
               </span>
               
               {/* Seletor de itens por página - Mobile e Desktop */}
               {!loading && filteredAds.length > 0 && (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <label htmlFor="itemsPerPage" className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                    Por página:
+                    {t('porPagina')}
                   </label>
                   <Select
                     value={itemsPerPage.toString()}
@@ -913,7 +917,7 @@ export default function ClassificadosPage() {
                           Cancelar
                         </Button>
                         <Button onClick={handleCreateAd} disabled={isCreatingAd}>
-                          {isCreatingAd ? 'Criando...' : 'Criar Anúncio'}
+                          {isCreatingAd ? t('creating') : t('createAd')}
                         </Button>
                       </div>
                     </div>
@@ -965,7 +969,7 @@ export default function ClassificadosPage() {
                     <DialogHeader className="mb-4 sm:mb-6">
                       <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                        <span>Criar Anúncio Premium</span>
+                        <span>{t('premiumAd')}</span>
                       </DialogTitle>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-1">
@@ -984,7 +988,7 @@ export default function ClassificadosPage() {
               <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
                 <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                   <DialogHeader>
-                    <DialogTitle className="text-gray-900 dark:text-white">Editar Anúncio</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-white">{t('editAd')}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
@@ -1391,7 +1395,7 @@ export default function ClassificadosPage() {
                                     className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                                   >
                                     <Edit className="h-4 w-4 mr-2" />
-                                    Editar anúncio
+                                    {t('editAd')}
                                   </DropdownMenuItem>
                                   
                                   {/* Botão de renovar premium se o anúncio expirou */}
@@ -1405,7 +1409,7 @@ export default function ClassificadosPage() {
                                       className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
                                     >
                                       <Crown className="h-4 w-4 mr-2" />
-                                      Tornar Premium Novamente
+                                      {t('renewPremium')}
                                     </DropdownMenuItem>
                                   )}
                                   
@@ -1417,7 +1421,7 @@ export default function ClassificadosPage() {
                                     className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    Deletar anúncio
+                                    {t('deleteAd')}
                                   </DropdownMenuItem>
                                 </>
                               )}
@@ -1449,8 +1453,8 @@ export default function ClassificadosPage() {
                             } text-white`}
                           >
                             <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                            <span className="hidden sm:inline">Entrar em Contato</span>
-                            <span className="sm:hidden">Contatar</span>
+                            <span className="hidden sm:inline">{t('contact')}</span>
+                            <span className="sm:hidden">{t('contact')}</span>
                           </Button>
                         </div>
                       </div>
@@ -1468,16 +1472,16 @@ export default function ClassificadosPage() {
           ) : paginatedAds.length === 0 ? (
             <EmptyState
               icon={<Search className="h-12 w-12 text-gray-400" />}
-              title="Nenhum anúncio encontrado"
+              title={t('noResults')}
               description={
                 filters.searchTerm || filters.state || filters.city || filters.category !== 'all'
-                  ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
-                  : 'Não há anúncios cadastrados no sistema ainda.'
+                  ? t('noResultsDescription')
+                  : t('noAdsDescription')
               }
               action={
                 filters.searchTerm || filters.state || filters.city || filters.category !== 'all'
                   ? {
-                      label: 'Limpar Filtros',
+                      label: t('clearFilters'),
                       onClick: clearFilters
                     }
                   : undefined
@@ -1834,7 +1838,7 @@ export default function ClassificadosPage() {
                                   className="text-gray-700 hover:text-red-600 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
-                                  Deletar anúncio
+                                  {t('deleteAd')}
                                 </DropdownMenuItem>
                               </>
                             )}
@@ -1954,7 +1958,7 @@ export default function ClassificadosPage() {
           {/* Info da paginação */}
           {!loading && filteredAds.length > 0 && (
             <div className="text-center mt-4 text-sm text-gray-600">
-              Mostrando {startIndex + 1} a {Math.min(endIndex, filteredAds.length)} de {filteredAds.length} resultados
+              {t('mostrando')} {startIndex + 1} a {Math.min(endIndex, filteredAds.length)} {t('de')} {filteredAds.length} {t('resultadosPlural')}
             </div>
           )}
         </div>

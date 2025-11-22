@@ -30,6 +30,35 @@ import { useLocale } from '@/contexts/LocaleContext'
 import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
 import { useTranslations } from 'next-intl'
 
+// Helper para criar schema de validação com mensagens traduzidas
+const createProfileSchema = (t: (key: string) => string) => z.object({
+  full_name: z.string().min(2, t('validation.fullNameMin')),
+  phone: z.string().min(10, t('validation.phoneInvalid')),
+  cpf_cnpj: z.string()
+    .min(11, t('validation.cpfMin'))
+    .refine((value) => {
+      const cleanValue = value.replace(/\D/g, '')
+      if (cleanValue.length === 11) {
+        return validateCPF(value)
+      }
+      if (cleanValue.length === 14) {
+        return true
+      }
+      return false
+    }, t('validation.cpfInvalid')),
+  birth_date: z.string().min(1, t('validation.birthDateRequired')),
+  user_type: z.enum(['client', 'professional']),
+  country: z.enum(['BR', 'US']),
+  locale: z.enum(['pt-BR', 'en']),
+  location_state: z.string().min(1, t('validation.stateRequired')),
+  location_city: z.string().min(1, t('validation.cityRequired')),
+  neighborhood: z.string().min(1, t('validation.neighborhoodRequired')),
+  address: z.string().min(1, t('validation.addressRequired')),
+  bio: z.string().optional(),
+  services_offered: z.array(z.string()).optional(),
+  experience_years: z.string().optional(),
+})
+
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
   cpf = cpf.replace(/[^\d]+/g, '');
@@ -65,35 +94,7 @@ const validateCPF = (cpf: string): boolean => {
   return true;
 }
 
-const profileSchema = z.object({
-  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  phone: z.string().min(10, 'Telefone inválido'),
-  cpf_cnpj: z.string()
-    .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
-    .refine((value) => {
-      const cleanValue = value.replace(/\D/g, '')
-      if (cleanValue.length === 11) {
-        return validateCPF(value)
-      }
-      if (cleanValue.length === 14) {
-        return true
-      }
-      return false
-    }, 'CPF/CNPJ inválido ou bloqueado'),
-  birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
-  user_type: z.enum(['client', 'professional']),
-  country: z.enum(['BR', 'US']),
-  locale: z.enum(['pt-BR', 'en']),
-  location_state: z.string().min(1, 'Estado é obrigatório'),
-  location_city: z.string().min(1, 'Cidade é obrigatória'),
-  neighborhood: z.string().min(1, 'Bairro é obrigatório'),
-  address: z.string().min(1, 'Endereço é obrigatório'),
-  bio: z.string().optional(),
-  services_offered: z.array(z.string()).optional(),
-  experience_years: z.string().optional(),
-})
-
-type ProfileFormData = z.infer<typeof profileSchema>
+type ProfileFormData = z.infer<ReturnType<typeof createProfileSchema>>
 
 type AvatarType = 'upload' | 'dicebear'
 type AvatarSelection = {
@@ -106,7 +107,11 @@ export default function EditarPerfilPage() {
   const { user } = useAuthContext()
   const { country: contextCountry, locale: contextLocale, setCountry, setLocale } = useLocale()
   const router = useRouter()
-  const t = useTranslations('location')
+  const t = useTranslations('profile')
+  const tLocation = useTranslations('location')
+  const tCommon = useTranslations('common')
+  const tEdit = useTranslations('editProfile')
+  const tValidation = useTranslations('editProfile.validation')
   const [isLoading, setIsLoading] = useState(false)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [stateOpen, setStateOpen] = useState(false)
@@ -115,6 +120,9 @@ export default function EditarPerfilPage() {
   const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
   const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
+
+  // Criar schema com mensagens traduzidas
+  const profileSchema = createProfileSchema((key: string) => tValidation(key))
 
   const {
     register,
@@ -166,7 +174,7 @@ export default function EditarPerfilPage() {
 
         if (error) {
           console.error('Erro ao carregar perfil:', error)
-          toast.error('Erro ao carregar dados do perfil')
+          toast.error(tEdit('errorLoading'))
           return
         }
 
@@ -209,7 +217,7 @@ export default function EditarPerfilPage() {
         }
       } catch (error) {
         console.error('Erro ao carregar perfil:', error)
-        toast.error('Erro ao carregar dados do perfil')
+        toast.error(tEdit('errorLoading'))
       }
     }
 
@@ -304,7 +312,7 @@ export default function EditarPerfilPage() {
       
     } catch (error) {
       console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      toast.error('Erro ao gerar avatar automático')
+      toast.error(tEdit('errorGeneratingAvatar'))
     } finally {
       setIsGeneratingAvatar(false)
     }
@@ -394,7 +402,7 @@ export default function EditarPerfilPage() {
 
         if (uploadError) {
           console.error('Erro no upload:', uploadError)
-          toast.error('Erro ao fazer upload da imagem')
+          toast.error(tEdit('errorUpload'))
           return
         }
 
@@ -455,7 +463,7 @@ export default function EditarPerfilPage() {
 
       if (profileError) {
         console.error('❌ Erro ao salvar perfil:', profileError)
-        toast.error('Erro ao salvar perfil: ' + profileError.message)
+        toast.error(tEdit('errorSaving') + ': ' + profileError.message)
         return
       }
 
@@ -497,13 +505,13 @@ export default function EditarPerfilPage() {
       }
 
       console.log('✅ Perfil salvo com sucesso!')
-      toast.success('🎉 Perfil atualizado com sucesso!')
+      toast.success(tEdit('profileUpdated'))
       
       router.push('/feed')
       
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error)
-      toast.error('Erro inesperado ao atualizar perfil')
+      toast.error(tEdit('errorUpdating'))
     } finally {
       setIsLoading(false)
     }
@@ -528,7 +536,7 @@ export default function EditarPerfilPage() {
             className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
           >
             <Home size={16} />
-            <span>Dashboard</span>
+            <span>{tCommon('dashboard')}</span>
           </Button>
         </div>
       </header>
@@ -543,8 +551,8 @@ export default function EditarPerfilPage() {
                 <Edit3 className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Perfil</h1>
-                <p className="text-gray-600">Atualize suas informações pessoais</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('editProfile')}</h1>
+                <p className="text-gray-600">{tEdit('description')}</p>
               </div>
             </div>
           </div>
@@ -557,7 +565,7 @@ export default function EditarPerfilPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Camera className="h-5 w-5 text-purple-600" />
-                  Foto de Perfil
+                  {tEdit('profilePhoto')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -567,7 +575,7 @@ export default function EditarPerfilPage() {
                     <div className="w-20 h-20 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
                       <Image
                         src={selectedAvatar.preview}
-                        alt="Avatar selecionado"
+                        alt={tEdit('selectedAvatar')}
                         width={80}
                         height={80}
                         className="w-full h-full object-cover"
@@ -582,7 +590,7 @@ export default function EditarPerfilPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Upload size={16} className="text-blue-600" />
-                      <span className="font-medium text-gray-700">Upload de Foto</span>
+                      <span className="font-medium text-gray-700">{tEdit('uploadPhoto')}</span>
                     </div>
                     <input
                       type="file"
@@ -599,10 +607,10 @@ export default function EditarPerfilPage() {
                       )}
                     >
                       <div className="font-medium text-gray-700">
-                        {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
+                        {selectedAvatar?.type === 'upload' ? tEdit('photoSelected') : tEdit('chooseFile')}
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
-                        JPG, PNG ou GIF
+                        {tEdit('imageFormats')}
                       </div>
                     </label>
                   </div>
@@ -611,7 +619,7 @@ export default function EditarPerfilPage() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
-                      <span className="font-medium text-gray-700">Avatar Automático</span>
+                      <span className="font-medium text-gray-700">{tEdit('automaticAvatar')}</span>
                     </div>
                     {fullName && fullName.length >= 2 ? (
                       <div className="space-y-3">
@@ -626,14 +634,14 @@ export default function EditarPerfilPage() {
                           )}
                         >
                           {isGeneratingAvatar ? (
-                            <div className="font-medium text-gray-700">🎨 Criando...</div>
+                            <div className="font-medium text-gray-700">{tEdit('creating')}</div>
                           ) : dicebearAvatar ? (
-                            <div className="font-medium text-gray-700">✅ Avatar Criado</div>
+                            <div className="font-medium text-gray-700">{tEdit('avatarCreated')}</div>
                           ) : (
-                            <div className="font-medium text-gray-700">🎨 Criando...</div>
+                            <div className="font-medium text-gray-700">{tEdit('creating')}</div>
                           )}
                           <div className="text-sm text-gray-500 mt-1">
-                            Baseado no seu nome
+                            {tEdit('basedOnName')}
                           </div>
                         </button>
                         
@@ -646,13 +654,13 @@ export default function EditarPerfilPage() {
                             className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
-                            {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}
+                            {isGeneratingAvatar ? tEdit('generating') : tEdit('generateAnotherAvatar')}
                           </button>
                         )}
                       </div>
                     ) : (
                       <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                        <div className="font-medium text-gray-500">Digite seu nome primeiro</div>
+                        <div className="font-medium text-gray-500">{tEdit('enterNameFirst')}</div>
                       </div>
                     )}
                   </div>
@@ -665,18 +673,18 @@ export default function EditarPerfilPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-blue-600" />
-                  Dados Pessoais
+                  {tEdit('personalData')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
-                      Nome completo <span className="text-red-500">*</span>
+                      {tEdit('fullName')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Input
                       id="full_name"
-                      placeholder="Digite seu nome completo"
+                      placeholder={tEdit('fullNamePlaceholder')}
                       {...register('full_name')}
                       className={cn(
                         "h-10",
@@ -693,13 +701,13 @@ export default function EditarPerfilPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                      Telefone <span className="text-red-500">*</span>
+                      {tEdit('phone')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="phone"
-                        placeholder="(11) 99999-9999"
+                        placeholder={tEdit('phonePlaceholder')}
                         {...register('phone')}
                         onChange={handlePhoneChange}
                         className={cn(
@@ -718,11 +726,11 @@ export default function EditarPerfilPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
-                      CPF <span className="text-red-500">*</span>
+                      {tEdit('cpf')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Input
                       id="cpf_cnpj"
-                      placeholder="000.000.000-00"
+                      placeholder={tEdit('cpfPlaceholder')}
                       {...register('cpf_cnpj')}
                       onChange={handleCPFChange}
                       className={cn(
@@ -740,7 +748,7 @@ export default function EditarPerfilPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
-                      Nascimento <span className="text-red-500">*</span>
+                      {tEdit('birth')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -757,7 +765,7 @@ export default function EditarPerfilPage() {
                     {errors.birth_date && (
                       <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                         <X className="w-3 h-3" />
-                        Obrigatório
+                        {tEdit('obligatory')}
                       </p>
                     )}
                   </div>
@@ -770,14 +778,14 @@ export default function EditarPerfilPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-green-600" />
-                  Localização
+                  {tEdit('location')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Seleção de País */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                    {t('country')} <span className="text-red-500">*</span>
+                    {tEdit('country')} <span className="text-red-500">{tEdit('required')}</span>
                   </Label>
                   <LocationComboboxesMultiCountry
                     country={watchedValues.country}
@@ -807,7 +815,7 @@ export default function EditarPerfilPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="location_state" className="text-sm font-medium text-gray-700">
-                      Estado <span className="text-red-500">*</span>
+                      {tEdit('state')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Popover open={stateOpen} onOpenChange={setStateOpen}>
                       <PopoverTrigger asChild>
@@ -821,16 +829,16 @@ export default function EditarPerfilPage() {
                           <span className="text-gray-900 dark:text-white">
                             {watchedValues.location_state
                               ? estadosBrasil.find((estado) => estado.sigla === watchedValues.location_state)?.nome
-                              : "Selecione o estado"}
+                              : tEdit('selectState')}
                           </span>
                           <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Buscar estado..." />
+                          <CommandInput placeholder={tEdit('searchState')} />
                           <CommandList>
-                            <CommandEmpty>Nenhum estado encontrado.</CommandEmpty>
+                            <CommandEmpty>{tEdit('noStateFound')}</CommandEmpty>
                             <CommandGroup>
                               {estadosBrasil.map((estado) => (
                                 <CommandItem
@@ -859,14 +867,14 @@ export default function EditarPerfilPage() {
                     {errors.location_state && (
                       <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                         <X className="w-3 h-3" />
-                        Obrigatório
+                        {tEdit('obligatory')}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="location_city" className="text-sm font-medium text-gray-700">
-                      Cidade <span className="text-red-500">*</span>
+                      {tEdit('city')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Popover open={cityOpen} onOpenChange={setCityOpen}>
                       <PopoverTrigger asChild>
@@ -883,17 +891,17 @@ export default function EditarPerfilPage() {
                             {watchedValues.location_city
                               ? watchedValues.location_city
                               : watchedValues.location_state
-                              ? "Selecione a cidade"
-                              : "Selecione o estado primeiro"}
+                              ? tEdit('selectCity')
+                              : tEdit('selectStateFirst')}
                           </span>
                           <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-full p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Buscar cidade..." />
+                          <CommandInput placeholder={tEdit('searchCity')} />
                           <CommandList>
-                            <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                            <CommandEmpty>{tEdit('noCityFound')}</CommandEmpty>
                             <CommandGroup>
                               {watchedValues.location_state && getCidadesByEstado(watchedValues.location_state).map((cidade) => (
                                 <CommandItem
@@ -921,18 +929,18 @@ export default function EditarPerfilPage() {
                     {errors.location_city && (
                       <p className="text-xs text-red-600 font-medium flex items-center gap-1">
                         <X className="w-3 h-3" />
-                        Obrigatório
+                        {tEdit('obligatory')}
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700">
-                      Bairro <span className="text-red-500">*</span>
+                      {tEdit('neighborhood')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Input
                       id="neighborhood"
-                      placeholder="Digite o bairro"
+                      placeholder={tEdit('neighborhoodPlaceholder')}
                       {...register('neighborhood')}
                       className={cn(
                         "h-10",
@@ -949,11 +957,11 @@ export default function EditarPerfilPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                      Endereço <span className="text-red-500">*</span>
+                      {tEdit('address')} <span className="text-red-500">{tEdit('required')}</span>
                     </Label>
                     <Input
                       id="address"
-                      placeholder="Ex: Rua das Flores, 123"
+                      placeholder={tEdit('addressPlaceholder')}
                       {...register('address')}
                       className={cn(
                         "h-10",
@@ -976,24 +984,24 @@ export default function EditarPerfilPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-orange-600" />
-                  Tipo de Usuário
+                  {tEdit('userType')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <Label htmlFor="user_type" className="text-sm font-medium text-gray-700">
-                    Como você pretende usar o ConfiLar? <span className="text-red-500">*</span>
+                    {tEdit('howToUse')} <span className="text-red-500">{tEdit('required')}</span>
                   </Label>
                   <Select value={watchedValues.user_type} onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}>
                     <SelectTrigger className={cn(
                       "h-12",
                       errors.user_type ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
                     )}>
-                      <SelectValue placeholder="Selecione uma opção" />
+                      <SelectValue placeholder={tEdit('selectOption')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="client">🙋‍♂️ Cliente - Procuro profissionais</SelectItem>
-                      <SelectItem value="professional">👨‍💼 Profissional - Ofereço serviços</SelectItem>
+                      <SelectItem value="client">{tEdit('clientOption')}</SelectItem>
+                      <SelectItem value="professional">{tEdit('professionalOption')}</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.user_type && (
@@ -1008,20 +1016,20 @@ export default function EditarPerfilPage() {
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-2xl">🙋‍♂️</span>
-                        <span className="font-semibold text-blue-900">Cliente</span>
+                        <span className="font-semibold text-blue-900">{tEdit('client')}</span>
                       </div>
                       <p className="text-sm text-blue-700">
-                        Você busca profissionais para resolver suas necessidades.
+                        {tEdit('clientDescription')}
                       </p>
                     </div>
 
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-2xl">👨‍💼</span>
-                        <span className="font-semibold text-green-900">Profissional</span>
+                        <span className="font-semibold text-green-900">{tEdit('professional')}</span>
                       </div>
                       <p className="text-sm text-green-700">
-                        Você oferece serviços e quer ser encontrado por clientes.
+                        {tEdit('professionalDescription')}
                       </p>
                     </div>
                   </div>
@@ -1034,25 +1042,25 @@ export default function EditarPerfilPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-blue-600" />
-                  Biografia
+                  {tEdit('bio')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                    Conte um pouco sobre você (Opcional)
+                    {tEdit('bioOptional')}
                   </Label>
                   <div className="relative">
                     <FileText className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
                     <Textarea
                       {...register('bio')}
-                      placeholder="Conte um pouco sobre você, seus interesses, experiência ou o que você busca na plataforma..."
+                      placeholder={tEdit('bioPlaceholder')}
                       rows={4}
                       className="resize-none pl-10"
                     />
                   </div>
                   <p className="text-xs text-gray-500">
-                    Esta biografia aparecerá no seu perfil e ajudará outros usuários a conhecer você melhor.
+                    {tEdit('bioHelp')}
                   </p>
                 </div>
               </CardContent>
@@ -1064,7 +1072,7 @@ export default function EditarPerfilPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Briefcase className="h-5 w-5 text-indigo-600" />
-                    Dados Profissionais
+                    {tEdit('professionalData')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -1072,25 +1080,25 @@ export default function EditarPerfilPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">
-                        Anos de experiência
+                        {tEdit('experience')}
                       </Label>
                       <Select value={watchedValues.experience_years || ''} onValueChange={(value) => setValue('experience_years', value)}>
                         <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Selecione" />
+                          <SelectValue placeholder={tEdit('select')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="0-1">🌱 0-1 ano</SelectItem>
-                          <SelectItem value="1-3">📈 1-3 anos</SelectItem>
-                          <SelectItem value="3-5">🎯 3-5 anos</SelectItem>
-                          <SelectItem value="5-10">🏆 5-10 anos</SelectItem>
-                          <SelectItem value="10+">👑 Mais de 10 anos</SelectItem>
+                          <SelectItem value="0-1">🌱 {tEdit('experience0to1')}</SelectItem>
+                          <SelectItem value="1-3">📈 {tEdit('experience1to3')}</SelectItem>
+                          <SelectItem value="3-5">🎯 {tEdit('experience3to5')}</SelectItem>
+                          <SelectItem value="5-10">🏆 {tEdit('experience5to10')}</SelectItem>
+                          <SelectItem value="10+">👑 {tEdit('experience10plus')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">
-                        Serviços oferecidos (Opcional)
+                        {tEdit('servicesOptional')}
                       </Label>
                       <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
                         <PopoverTrigger asChild>
@@ -1100,17 +1108,17 @@ export default function EditarPerfilPage() {
                           >
                             <span className="text-gray-900 dark:text-white">
                               {selectedServices.length === 0
-                                ? "Selecione os serviços..."
-                                : `${selectedServices.length} serviço(s)`}
+                                ? tEdit('selectServicesDescription')
+                                : `${selectedServices.length} ${selectedServices.length === 1 ? tEdit('service') : tEdit('services')}`}
                             </span>
                             <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0">
                           <Command>
-                            <CommandInput placeholder="Buscar serviços..." />
+                            <CommandInput placeholder={tEdit('searchServices')} />
                             <CommandList>
-                              <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
+                              <CommandEmpty>{tEdit('noServicesFound')}</CommandEmpty>
                               <CommandGroup>
                                 {serviceCategoryNames.map((service) => (
                                   <CommandItem
@@ -1138,7 +1146,7 @@ export default function EditarPerfilPage() {
                   {/* Serviços selecionados */}
                   {selectedServices.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-700">Serviços selecionados:</p>
+                      <p className="text-sm font-medium text-gray-700">{tEdit('selectedServices')}:</p>
                       <div className="text-sm text-gray-600 leading-tight">
                         {selectedServices.map((service, index) => (
                           <span key={service} className="inline">
@@ -1147,7 +1155,7 @@ export default function EditarPerfilPage() {
                               type="button"
                               onClick={() => removeService(service)}
                               className="ml-1 text-red-500 hover:text-red-700 font-bold"
-                              title="Remover serviço"
+                              title={tEdit('removeService')}
                             >
                               ×
                             </button>
@@ -1171,12 +1179,12 @@ export default function EditarPerfilPage() {
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-5 h-5 animate-spin" />
-                    Salvando...
+                    {tEdit('saving')}
                   </>
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    Salvar Alterações
+                    {tEdit('save')}
                   </>
                 )}
               </Button>

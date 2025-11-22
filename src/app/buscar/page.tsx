@@ -53,9 +53,12 @@ import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
 import { SmartSearchBar } from '@/components/search/SmartSearchBar'
+import { useTranslations } from 'next-intl'
 
 export default function BuscarPage() {
   const router = useRouter()
+  const t = useTranslations('search')
+  const tCommon = useTranslations('common')
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [profileViews, setProfileViews] = useState<Record<string, number>>({})
@@ -307,21 +310,21 @@ export default function BuscarPage() {
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.total')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.totalUsers || 0}</p>
                 </div>
                 
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.professionals')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.professionalsCount || 0}</p>
                 </div>
                 
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.clients')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white dark:text-white">{stats?.clientsCount || 0}</p>
                 </div>
                 
@@ -360,7 +363,7 @@ export default function BuscarPage() {
                 })
               }}
               initialFilters={filters}
-              placeholder="Buscar profissionais, serviços..."
+              placeholder={t('searchPlaceholder')}
               className="w-full"
             />
           </div>
@@ -369,7 +372,7 @@ export default function BuscarPage() {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                {allFilteredProfiles.length} resultado{allFilteredProfiles.length !== 1 ? 's' : ''}
+                {allFilteredProfiles.length} {allFilteredProfiles.length !== 1 ? t('resultadosPlural') : t('resultados')}
               </span>
             </div>
             
@@ -405,7 +408,7 @@ export default function BuscarPage() {
                 }`}
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">Usuários</span>
+                <span className="text-xs sm:text-sm">{t('all')}</span>
                 <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {allFilteredProfiles.length}
                 </Badge>
@@ -420,7 +423,7 @@ export default function BuscarPage() {
                 }`}
               >
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">Clientes</span>
+                <span className="text-xs sm:text-sm">{t('clients')}</span>
                 <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {filteredUsers.filter(p => p.user_type === 'client').length}
                 </Badge>
@@ -435,7 +438,7 @@ export default function BuscarPage() {
                 }`}
               >
                 <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm">Profissionais</span>
+                <span className="text-xs sm:text-sm">{t('professionals')}</span>
                 <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-2 py-0">
                   {filteredUsers.filter(p => p.user_type === 'professional').length}
                 </Badge>
@@ -447,9 +450,9 @@ export default function BuscarPage() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {activeTab === 'all' ? 'Todos os Usuários' : 
-                 activeTab === 'clients' ? 'Clientes' : 
-                 'Profissionais'} ({displayProfiles.length})
+                {activeTab === 'all' ? t('all') : 
+                 activeTab === 'clients' ? t('clients') : 
+                 t('professionals')} ({displayProfiles.length})
               </h2>
             </div>
 
@@ -458,16 +461,16 @@ export default function BuscarPage() {
             ) : displayProfiles.length === 0 ? (
               <EmptyState
                 icon={<Search className="h-12 w-12 text-gray-400" />}
-                title="Nenhum resultado encontrado"
+                title={t('noResults')}
                 description={
                   filters.searchTerm || filters.state || filters.city || filters.service !== 'all'
-                    ? 'Tente ajustar os filtros de busca ou usar termos diferentes.'
-                    : 'Não há usuários cadastrados no sistema ainda.'
+                    ? t('noResultsDescription')
+                    : t('noUsersDescription')
                 }
                 action={
                   filters.searchTerm || filters.state || filters.city || filters.service !== 'all'
                     ? {
-                        label: 'Limpar Filtros',
+                        label: t('clearFilters'),
                         onClick: clearFilters
                       }
                     : undefined
@@ -588,7 +591,7 @@ export default function BuscarPage() {
                                   <div className={`w-2 h-2 rounded-full animate-pulse ${
                                     isAvailable ? 'bg-green-500' : 'bg-red-500'
                                   }`}></div>
-                                  {isAvailable ? 'Disponível' : 'Ocupado'}
+                                  {isAvailable ? t('available') : t('unavailable')}
                                 </Badge>
                               )
                             })()}
@@ -637,7 +640,7 @@ export default function BuscarPage() {
                             <Eye className="h-3 w-3 mr-1" />
                             <span className="font-medium">{profileViews[profile.id] || 0}</span>
                           </div>
-                          <span className="text-xs">visualizações</span>
+                          <span className="text-xs">{t('views')}</span>
                         </div>
                         
                         <div className="flex gap-2">
@@ -661,13 +664,13 @@ export default function BuscarPage() {
                             className="text-xs"
                             onClick={() => handleProfileClick(profile.id)}
                           >
-                            Ver Perfil
+                            {t('viewProfile')}
                           </Button>
                           <Button 
                             size="sm"
                             onClick={() => openChat(profile.id, profile.full_name || 'Usuário')}
                             className="bg-blue-600 hover:bg-blue-700"
-                            title="Contatar"
+                            title={t('contact')}
                           >
                             <MessageCircle className="h-4 w-4" />
                           </Button>

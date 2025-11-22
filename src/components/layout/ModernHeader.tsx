@@ -20,6 +20,7 @@ import { useAvailability } from '@/hooks/useAvailability'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageSelector } from '@/components/ui/LanguageSelector'
 import { soundManager } from '@/lib/soundManager'
+import { useTranslations } from 'next-intl'
 import { 
   Search,
   Bell,
@@ -82,6 +83,7 @@ export function ModernHeader({
   const { openChat } = useFloatingChat()
   const { getTotalUnreadCount } = useMessages()
   const { isAvailable } = useAvailability()
+  const t = useTranslations('header')
   const [isMenuExpanded, setIsMenuExpanded] = useState(false)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   
@@ -190,17 +192,17 @@ export function ModernHeader({
     if (title) return title
     
     const pathTitles: Record<string, string> = {
-      '/home': 'Dashboard',
-      '/buscar': 'Buscar Profissionais',
-      '/classificados': 'Classificados',
-      '/feed': 'Feed Social',
-      '/perfil': 'Meu Perfil',
-      '/favoritos': 'Favoritos',
-      '/portfolio': 'Meu Portfólio',
-      '/reputacao': 'Reputação',
-      '/ajuda': 'Central de Ajuda',
-      '/contato': 'Contato',
-      '/sobre': 'Sobre Nós'
+      '/home': t('dashboard'),
+      '/buscar': t('searchProfessionals'),
+      '/classificados': t('classifieds'),
+      '/feed': t('socialFeed'),
+      '/perfil': t('myProfile'),
+      '/favoritos': t('favorites'),
+      '/portfolio': t('myPortfolio'),
+      '/reputacao': t('reputation'),
+      '/ajuda': t('helpCenter'),
+      '/contato': t('contact'),
+      '/sobre': t('aboutUs')
     }
     
     return pathTitles[pathname] || 'ConfiLar'
@@ -223,9 +225,9 @@ export function ModernHeader({
 
   const getVerificationBadge = () => {
     if (accountStats.verificationStatus === 'verified') {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Verificado</Badge>
+      return <Badge variant="default" className="bg-green-100 text-green-800">{t('verified')}</Badge>
     }
-    return <Badge variant="secondary">Básico</Badge>
+    return <Badge variant="secondary">{t('basic')}</Badge>
   }
 
   const getPremiumBadge = () => {
@@ -353,7 +355,7 @@ export function ModernHeader({
                               {profile?.full_name || 'Usuário'}
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                              {profile?.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                              {profile?.user_type === 'professional' ? t('professional') : t('client')}
                             </p>
                             <div className="flex gap-1 mt-1">
                               <div className="text-xs">
@@ -371,7 +373,7 @@ export function ModernHeader({
 
                       {/* Estatísticas de Reputação */}
                       <div className="py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">Minha Reputação</h4>
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">{t('myReputation')}</h4>
                         <div className="flex justify-between gap-1">
                           <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/30 rounded-md">
                             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 dark:text-blue-400 mb-0.5" />
@@ -403,17 +405,17 @@ export function ModernHeader({
                         {/* Labels */}
                         <div className="flex justify-between gap-1 mt-1">
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Views</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('views')}</div>
                           </div>
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Recom.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('recommendations')}</div>
                           </div>
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Aval.</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('reviews')}</div>
                           </div>
                           {profile?.user_type === 'professional' && reputationStats.averageRating > 0 && (
                             <div className="w-10 sm:w-12 text-center">
-                              <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Nota</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('rating')}</div>
                             </div>
                           )}
                         </div>
@@ -427,7 +429,7 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
-                            Principal
+                            {t('principal')}
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('principal') ? 'rotate-180' : ''}`} />
                         </button>
@@ -449,7 +451,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Briefcase className="h-3 w-3" />
-                              <span className="truncate">Classificados</span>
+                              <span className="truncate">{t('classifieds')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -458,7 +460,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Users className="h-3 w-3" />
-                              <span className="truncate">Feed Social</span>
+                              <span className="truncate">{t('socialFeed')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -467,7 +469,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Search className="h-3 w-3" />
-                              <span className="truncate">Buscar</span>
+                              <span className="truncate">{t('searchProfessionals')}</span>
                             </Button>
                           </div>
                         )}
@@ -481,7 +483,7 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
-                            Gestão
+                            {t('management')}
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('gestao') ? 'rotate-180' : ''}`} />
                         </button>
@@ -494,7 +496,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Heart className="h-3 w-3" />
-                              <span className="truncate">Favoritos</span>
+                              <span className="truncate">{t('favorites')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -503,7 +505,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Star className="h-3 w-3" />
-                              <span className="truncate">Avaliações</span>
+                              <span className="truncate">{t('reviews')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -543,7 +545,7 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                            ConfiPoints
+                            {t('confipoints')}
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('confipoints') ? 'rotate-180' : ''}`} />
                         </button>
@@ -603,14 +605,14 @@ export function ModernHeader({
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
-                          <button
-                            onClick={() => toggleSection('profissional')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="h-3 w-3" />
-                              Profissional
-                            </div>
+                        <button
+                          onClick={() => toggleSection('profissional')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-3 w-3" />
+                            {t('professional')}
+                          </div>
                             <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('profissional') ? 'rotate-180' : ''}`} />
                           </button>
                           {expandedSections.has('profissional') && (
@@ -622,7 +624,7 @@ export function ModernHeader({
                                 className="flex items-center gap-1 text-xs py-1 h-7"
                               >
                                 <FileText className="h-3 w-3" />
-                                <span className="truncate">Portfólio</span>
+                                <span className="truncate">{t('myPortfolio')}</span>
                               </Button>
                               <Button
                                 variant="ghost"
@@ -631,7 +633,7 @@ export function ModernHeader({
                                 className="flex items-center gap-1 text-xs py-1 h-7"
                               >
                                 <Award className="h-3 w-3" />
-                                <span className="truncate">Reputação</span>
+                                <span className="truncate">{t('reputation')}</span>
                               </Button>
                             </div>
                           )}
@@ -646,7 +648,7 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <User className="h-3 w-3" />
-                            Meu Perfil
+                            {t('myProfileMenu')}
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('meu-perfil') ? 'rotate-180' : ''}`} />
                         </button>
@@ -659,7 +661,7 @@ export function ModernHeader({
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <User className="h-3 w-3" />
-                              <span>Dados da Conta</span>
+                              <span>{t('accountData')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -668,7 +670,7 @@ export function ModernHeader({
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Shield className="h-3 w-3" />
-                              <span>Segurança</span>
+                              <span>{t('security')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -677,7 +679,7 @@ export function ModernHeader({
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <MapPin className="h-3 w-3" />
-                              <span>Endereço</span>
+                              <span>{t('address')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -686,7 +688,7 @@ export function ModernHeader({
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Briefcase className="h-3 w-3" />
-                              <span>Tipo de Conta</span>
+                              <span>{t('accountType')}</span>
                             </Button>
                             {profile?.user_type === 'professional' && (
                               <Button
@@ -696,7 +698,7 @@ export function ModernHeader({
                                 className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                               >
                                 <Briefcase className="h-3 w-3" />
-                                <span>Dados Profissionais</span>
+                                <span>{t('professionalData')}</span>
                               </Button>
                             )}
                           </div>
@@ -711,7 +713,7 @@ export function ModernHeader({
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
-                            Suporte
+                            {t('support')}
                           </div>
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('suporte') ? 'rotate-180' : ''}`} />
                         </button>
@@ -724,7 +726,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <HelpCircle className="h-3 w-3" />
-                              <span className="truncate">Central de Ajuda</span>
+                              <span className="truncate">{t('helpCenter')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -733,7 +735,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">Contato</span>
+                              <span className="truncate">{t('contact')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -742,7 +744,7 @@ export function ModernHeader({
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <Users className="h-3 w-3" />
-                              <span className="truncate">Sobre Nós</span>
+                              <span className="truncate">{t('aboutUs')}</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -769,7 +771,7 @@ export function ModernHeader({
                                 className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
                               >
                                 <Flag className="h-3 w-3" />
-                                <span className="truncate">Minhas Denúncias</span>
+                                <span className="truncate">{t('myReports')}</span>
                               </Button>
                             </UserReportsModal>
                           </div>
@@ -779,14 +781,14 @@ export function ModernHeader({
                       {/* Administração - Apenas para Admin */}
                       {isAdmin && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
-                          <button
-                            onClick={() => toggleSection('administracao')}
-                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <ShieldCheck className="h-3 w-3" />
-                              Administração
-                            </div>
+                        <button
+                          onClick={() => toggleSection('administracao')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-3 w-3" />
+                            {t('administration')}
+                          </div>
                             <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('administracao') ? 'rotate-180' : ''}`} />
                           </button>
                           {expandedSections.has('administracao') && (
@@ -798,7 +800,7 @@ export function ModernHeader({
                                 className="flex items-center gap-1 text-xs py-1 h-7 bg-gray-100 hover:bg-gray-200"
                               >
                                 <ShieldCheck className="h-3 w-3" />
-                                <span className="truncate">Painel Admin</span>
+                                <span className="truncate">{t('adminPanel')}</span>
                               </Button>
                             </div>
                           )}
@@ -814,7 +816,7 @@ export function ModernHeader({
                           className="w-full text-xs sm:text-sm py-1.5 sm:py-2"
                         >
                           <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                          Sair da Conta
+                          {t('logout')}
                         </Button>
                       </div>
 
@@ -823,11 +825,11 @@ export function ModernHeader({
                         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
                           <div className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
                           <span className="text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">
-                            {profile?.user_type === 'professional' ? 'Profissional Ativo' : 'Cliente Ativo'}
+                            {profile?.user_type === 'professional' ? t('professionalActive') : t('clientActive')}
                             {profile?.location_city && profile?.location_state && (
                               <> - {profile.location_city}, {profile.location_state}</>
                             )}
-                            {' - Membro desde '}
+                            {' - '}{t('memberSince')}{' '}
                             {profile?.created_at 
                               ? new Date(profile.created_at).getFullYear() 
                               : '2024'

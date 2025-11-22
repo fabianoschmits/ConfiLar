@@ -11,10 +11,15 @@ import { LightModeLayout } from '@/components/layout/LightModeLayout'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useReferralTracking } from '@/hooks/useReferralTracking'
 import { BrandLogo } from '@/components/common/BrandLogo'
+import { LanguageSelector } from '@/components/ui/LanguageSelector'
+import { useTranslations } from 'next-intl'
 
 export default function AuthPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('auth')
+  const tNav = useTranslations('navigation')
+  const tCommon = useTranslations('common')
   const [activeTab, setActiveTab] = useState('login')
   const [registrationComplete, setRegistrationComplete] = useState(false)
   const [referralInfo, setReferralInfo] = useState<{ code: string; userName?: string } | null>(null)
@@ -87,15 +92,18 @@ export default function AuthPage() {
             <BrandLogo width={160} height={40} className="object-contain" />
           </div>
           
-          <Button 
-            onClick={handleBackToHome}
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors flex items-center gap-2"
-          >
-            <ArrowLeft size={16} />
-            <span>Voltar</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <Button 
+              onClick={handleBackToHome}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 transition-colors flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              <span>{tNav('backToHome')}</span>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -108,7 +116,7 @@ export default function AuthPage() {
               {/* Título de Boas-vindas */}
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                  Bem-vindo ao ConfiLar
+                  {t('welcome')}
                 </h1>
               </div>
 
@@ -118,13 +126,13 @@ export default function AuthPage() {
                     value="login"
                     className="text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm"
                   >
-                    Entrar
+                    {t('login')}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="register"
                     className="text-sm font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-gray-600 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm"
                   >
-                    Criar Conta
+                    {tNav('createAccountTab')}
                   </TabsTrigger>
                 </TabsList>
 
@@ -132,7 +140,7 @@ export default function AuthPage() {
                   <Suspense fallback={
                     <div className="text-center py-8">
                       <div className="w-8 h-8 bg-blue-600 rounded-lg mx-auto animate-pulse"></div>
-                      <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">Carregando...</p>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">{tCommon('loading')}</p>
                     </div>
                   }>
                     <LoginForm />
@@ -143,7 +151,7 @@ export default function AuthPage() {
                   <Suspense fallback={
                     <div className="text-center py-8">
                       <div className="w-8 h-8 bg-blue-600 rounded-lg mx-auto animate-pulse"></div>
-                      <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">Carregando...</p>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium mt-2">{tCommon('loading')}</p>
                     </div>
                   }>
                     <BasicSignupForm />
@@ -154,13 +162,13 @@ export default function AuthPage() {
               <div className="mt-6">
                 <div className="h-px bg-gray-200 my-4"></div>
                 <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-                  Ao continuar, você concorda com nossos{' '}
+                  {tNav('termsAgreement')}{' '}
                   <a href="/termos" className="text-blue-600 underline hover:text-blue-700 font-medium">
-                    Termos de Uso
+                    {tNav('termsOfUse')}
                   </a>{' '}
-                  e{' '}
+                  {tNav('and')}{' '}
                   <a href="/privacidade" className="text-blue-600 underline hover:text-blue-700 font-medium">
-                    Política de Privacidade
+                    {tNav('privacyPolicy')}
                   </a>
                 </div>
               </div>

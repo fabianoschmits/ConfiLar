@@ -9,8 +9,11 @@ import { usePointsLeaderboard } from '@/hooks/usePoints'
 import { formatPoints, USER_LEVELS } from '@/types/points'
 import { cn } from '@/lib/utils'
 import { RankingListSkeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 export default function ConfiPointsRankingPage() {
+  const t = useTranslations('confipoints')
+  const tCommon = useTranslations('common')
   const { leaderboard, loading, error } = usePointsLeaderboard(50)
 
   const getRankIcon = (position: number) => {
@@ -40,10 +43,10 @@ export default function ConfiPointsRankingPage() {
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                      Ranking ConfiPoints
+                      {t('ranking')} {t('title')}
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Top usuários do sistema de pontos
+                      {t('topUsers')}
                     </p>
                   </div>
                 </div>
@@ -65,10 +68,10 @@ export default function ConfiPointsRankingPage() {
             <CardContent className="p-8 text-center">
               <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Erro ao carregar ranking
+                {t('errorLoadingRanking')}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Não foi possível carregar o ranking de pontos.
+                {t('errorLoadingRankingDescription')}
               </p>
             </CardContent>
           </Card>
@@ -108,7 +111,7 @@ export default function ConfiPointsRankingPage() {
                     {leaderboard.length}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Usuários no ranking
+                    {t('usersInRanking')}
                   </p>
                 </CardContent>
               </Card>
@@ -120,7 +123,7 @@ export default function ConfiPointsRankingPage() {
                     {leaderboard.length > 0 ? formatPoints(leaderboard[0].total_points_earned) : '0'}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Maior pontuação
+                    {t('highestScore')}
                   </p>
                 </CardContent>
               </Card>
@@ -132,7 +135,7 @@ export default function ConfiPointsRankingPage() {
                     {leaderboard.filter(u => u.user_level === 'diamond').length}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Usuários Diamond
+                    {t('diamondUsers')}
                   </p>
                 </CardContent>
               </Card>
@@ -144,10 +147,10 @@ export default function ConfiPointsRankingPage() {
                 <CardContent className="p-8 text-center">
                   <Trophy className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Nenhum usuário no ranking ainda
+                    {t('noUsersInRanking')}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Seja o primeiro a ganhar pontos e aparecer no ranking!
+                    {t('beFirstInRanking')}
                   </p>
                 </CardContent>
               </Card>

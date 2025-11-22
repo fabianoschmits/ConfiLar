@@ -7,6 +7,7 @@ import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BrandLogo } from '@/components/common/BrandLogo'
+import { useTranslations } from 'next-intl'
 
 // Desabilitar SSG para esta página
 export const dynamic = 'force-dynamic'
@@ -16,6 +17,7 @@ import { useState, useEffect } from 'react'
 export default function SobrePage() {
   const [mounted, setMounted] = useState(false)
   const { user } = useAuthContext()
+  const t = useTranslations('about')
 
   useEffect(() => {
     setMounted(true)
@@ -34,17 +36,17 @@ export default function SobrePage() {
             {/* Header da Página */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-                Sobre o ConfiLar
+                {t('title')}
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                A plataforma que conecta profissionais e clientes de forma segura e confiável
+                {t('subtitle')}
               </p>
             </div>
 
             {/* Benefícios */}
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-                Por que escolher o ConfiLar?
+                {t('whyChoose')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card className="p-8 text-center hover:shadow-lg transition-shadow">
@@ -52,9 +54,9 @@ export default function SobrePage() {
                     <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Shield size={32} className="text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Segurança garantida</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('security.title')}</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Todos os profissionais são verificados e as transações são protegidas para sua tranquilidade
+                      {t('security.description')}
                     </p>
                   </CardContent>
                 </Card>
@@ -64,9 +66,9 @@ export default function SobrePage() {
                     <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Users size={32} className="text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Profissionais qualificados</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('qualified.title')}</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Acesso a uma rede de profissionais experientes e bem avaliados pelos clientes
+                      {t('qualified.description')}
                     </p>
                   </CardContent>
                 </Card>
@@ -76,9 +78,9 @@ export default function SobrePage() {
                     <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Zap size={32} className="text-purple-600 dark:text-purple-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Processo rápido</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('fast.title')}</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Cadastro simples e navegação intuitiva para encontrar o que você precisa rapidamente
+                      {t('fast.description')}
                     </p>
                   </CardContent>
                 </Card>
@@ -88,7 +90,7 @@ export default function SobrePage() {
             {/* Serviços */}
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-                Serviços disponíveis
+                {t('services')}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[

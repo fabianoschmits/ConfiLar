@@ -36,11 +36,13 @@ import {
   Gift,
   Zap
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { user, profile } = useAuthContext()
+  const t = useTranslations('home')
 
   // Hook para busca avançada para obter estatísticas reais
   const {
@@ -132,14 +134,13 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
               <Shield className="h-4 w-4 mr-2" />
-              Plataforma ConfiLar
+              {t('platform')}
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              Bem-vindo ao ConfiLar
+              {t('welcome')}
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              A plataforma que conecta clientes e profissionais de forma segura e confiável. 
-              Encontre os melhores profissionais ou ofereça seus serviços com total transparência e segurança.
+              {t('description')}
             </p>
           </div>
 
@@ -150,28 +151,28 @@ export default function HomePage() {
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.total')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.totalUsers || 0}</p>
                 </div>
                 
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.professionals')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.professionalsCount || 0}</p>
                 </div>
                 
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.clients')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.clientsCount || 0}</p>
                 </div>
                 
                 {/* Verificados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Verificados</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.verified')}</p>
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.verifiedCount || 0}</p>
                 </div>
               </div>
@@ -194,14 +195,14 @@ export default function HomePage() {
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex items-center gap-3 justify-center lg:justify-start mb-3">
                       <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                        Programa de Indicações
+                        {t('referralProgram.title')}
                       </h2>
                       <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                        Novidade! 🎉
+                        {t('referralProgram.new')}
                       </Badge>
                     </div>
                     <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                      Indique amigos para o ConfiLar e ganhe <strong>recompensas incríveis</strong>! 
+                      {t('referralProgram.description')} 
                       Quanto mais pessoas você indicar, mais badges e benefícios você desbloqueia.
                     </p>
 

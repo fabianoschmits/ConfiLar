@@ -41,6 +41,7 @@ import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { ClientOnly } from '@/components/ClientOnly'
+import { useTranslations } from 'next-intl'
 
 interface UserReview {
   id: string
@@ -86,6 +87,8 @@ interface UserRecommendation {
 
 
 export default function ReputacaoPage() {
+  const t = useTranslations('reputation')
+  const tCommon = useTranslations('common')
   const [mounted, setMounted] = useState(false)
   const [reviews, setReviews] = useState<UserReview[]>([])
   const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
@@ -265,7 +268,7 @@ export default function ReputacaoPage() {
 
       if (error) throw error
 
-      toast.success('Avaliação adicionada com sucesso!')
+      toast.success(t('reviewAddedSuccess'))
       setShowAddReviewDialog(false)
       setReviewForm({
         reviewed_id: '',
@@ -276,7 +279,7 @@ export default function ReputacaoPage() {
       loadUserReputation()
     } catch (error) {
       console.error('Erro ao adicionar avaliação:', error)
-      toast.error('Erro ao adicionar avaliação')
+      toast.error(t('errorAddingReview'))
     } finally {
       setIsSubmitting(false)
     }
@@ -285,7 +288,7 @@ export default function ReputacaoPage() {
   // Adicionar recomendação
   const handleAddRecommendation = async () => {
     if (!user || !recommendationForm.recommended_id) {
-      toast.error('Selecione um usuário para recomendar')
+      toast.error(t('selectUserToRecommend'))
       return
     }
 
@@ -302,7 +305,7 @@ export default function ReputacaoPage() {
 
       if (error) throw error
 
-      toast.success('Recomendação adicionada com sucesso!')
+      toast.success(t('recommendationAddedSuccess'))
       setShowAddRecommendationDialog(false)
       setRecommendationForm({
         recommended_id: '',
@@ -311,7 +314,7 @@ export default function ReputacaoPage() {
       loadUserReputation()
     } catch (error) {
       console.error('Erro ao adicionar recomendação:', error)
-      toast.error('Erro ao adicionar recomendação')
+      toast.error(t('errorAddingRecommendation'))
     } finally {
       setIsSubmitting(false)
     }
@@ -449,10 +452,10 @@ export default function ReputacaoPage() {
                 </div>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Minha Reputação
+                {t('title')}
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Gerencie sua reputação na plataforma. Sistema transparente onde você vê exatamente quem te avaliou.
+                {t('manageReputation')}
               </p>
             </div>
 
@@ -470,8 +473,8 @@ export default function ReputacaoPage() {
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Visão Geral</span>
-                      <span className="sm:hidden">Geral</span>
+                      <span className="hidden sm:inline">{t('overview')}</span>
+                      <span className="sm:hidden">{t('general')}</span>
                     </div>
                   </button>
                   <button
@@ -484,7 +487,7 @@ export default function ReputacaoPage() {
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <Star className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Avaliações ({stats.totalReviews})</span>
+                      <span className="hidden sm:inline">{t('reviews')} ({stats.totalReviews})</span>
                       <span className="sm:hidden">Aval. ({stats.totalReviews})</span>
                     </div>
                   </button>
@@ -498,7 +501,7 @@ export default function ReputacaoPage() {
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Recomendações ({stats.totalRecommendations})</span>
+                      <span className="hidden sm:inline">{t('recommendations')} ({stats.totalRecommendations})</span>
                       <span className="sm:hidden">Rec. ({stats.totalRecommendations})</span>
                     </div>
                   </button>
@@ -512,8 +515,8 @@ export default function ReputacaoPage() {
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">Análises</span>
-                      <span className="sm:hidden">Análise</span>
+                      <span className="hidden sm:inline">{t('analytics')}</span>
+                      <span className="sm:hidden">{t('analytics')}</span>
                     </div>
                   </button>
                 </nav>
@@ -530,21 +533,21 @@ export default function ReputacaoPage() {
                       {/* Visualizações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">Visualizações</p>
+                        <p className="text-xs text-gray-500 text-center">{t('views')}</p>
                         <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalViews}</p>
                       </div>
                       
                       {/* Recomendações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">Recomendações</p>
+                        <p className="text-xs text-gray-500 text-center">{t('recommendations')}</p>
                         <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalRecommendations}</p>
                       </div>
                       
                       {/* Avaliações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">Avaliações</p>
+                        <p className="text-xs text-gray-500 text-center">{t('reviews')}</p>
                         <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalReviews}</p>
                       </div>
                       
@@ -552,7 +555,7 @@ export default function ReputacaoPage() {
                       {isProfessional && stats.averageRating > 0 && (
                         <div className="flex flex-col items-center min-w-0 flex-1">
                           <Target className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                          <p className="text-xs text-gray-500 text-center">Nota Média</p>
+                          <p className="text-xs text-gray-500 text-center">{t('averageRating')}</p>
                           <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.averageRating.toFixed(1)}</p>
                         </div>
                       )}
@@ -565,7 +568,7 @@ export default function ReputacaoPage() {
                   <CardHeader>
                     <CardTitle>Como Funciona Nosso Sistema de Reputação</CardTitle>
                     <CardDescription>
-                      Sistema simples e transparente de reputação
+                      {t('description')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -573,25 +576,25 @@ export default function ReputacaoPage() {
                       <div>
                         <h4 className="font-semibold mb-3 flex items-center">
                           <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                          Transparência Total
+                          {t('transparency')}
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-600">
-                          <li>• Nome completo de quem te avaliou</li>
-                          <li>• Foto do perfil visível</li>
-                          <li>• Data da avaliação clara</li>
-                          <li>• Histórico completo acessível</li>
+                          <li>• {t('fullName')}</li>
+                          <li>• {t('profilePhoto')}</li>
+                          <li>• {t('clearDate')}</li>
+                          <li>• {t('fullHistory')}</li>
                         </ul>
                       </div>
                       <div>
                         <h4 className="font-semibold mb-3 flex items-center">
                           <Star className="h-5 w-5 text-yellow-600 mr-2" />
-                          Sistema Simples
+                          {t('simpleSystem')}
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-600">
-                          <li>• Avaliação 1-5 estrelas</li>
-                          <li>• Comentário opcional</li>
-                          <li>• Sistema de recomendações</li>
-                          <li>• Sem complexidades desnecessárias</li>
+                          <li>• {t('starRating')}</li>
+                          <li>• {t('optionalComment')}</li>
+                          <li>• {t('recommendationSystem')}</li>
+                          <li>• {t('noComplexity')}</li>
                         </ul>
                       </div>
                     </div>
@@ -606,12 +609,12 @@ export default function ReputacaoPage() {
                   <div>
                     <CardTitle className="flex items-center">
                       <Star className="h-5 w-5 mr-2" />
-                      Avaliações
+                      {t('reviews')}
                     </CardTitle>
                     <CardDescription>
                       {reviewsSubTab === 'received' 
-                        ? `Avaliações que você recebeu (${stats.totalReviews})`
-                        : `Avaliações que você fez (${stats.givenReviews})`
+                        ? `${t('reviewsReceived')} (${stats.totalReviews})`
+                        : `${t('reviewsGiven')} (${stats.givenReviews})`
                       }
                     </CardDescription>
                   </div>
@@ -631,8 +634,8 @@ export default function ReputacaoPage() {
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <Star className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Recebidas ({stats.totalReviews})</span>
-                            <span className="sm:hidden">Rec. ({stats.totalReviews})</span>
+                            <span className="hidden sm:inline">{t('received')} ({stats.totalReviews})</span>
+                            <span className="sm:hidden">{t('receivedShort')} ({stats.totalReviews})</span>
                           </div>
                         </button>
                         <button
@@ -645,8 +648,8 @@ export default function ReputacaoPage() {
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Feitas ({stats.givenReviews})</span>
-                            <span className="sm:hidden">Feitas ({stats.givenReviews})</span>
+                            <span className="hidden sm:inline">{t('given')} ({stats.givenReviews})</span>
+                            <span className="sm:hidden">{t('given')} ({stats.givenReviews})</span>
                           </div>
                         </button>
                       </nav>
@@ -698,7 +701,7 @@ export default function ReputacaoPage() {
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
                                     <Badge variant="outline" className="text-xs">
-                                      {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
+                                      {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed.user_type) === 'professional' ? t('professional') : t('client')}
                                     </Badge>
                                     <span className="text-xs text-gray-500">
                                       {formatDate(review.created_at)}
@@ -738,7 +741,7 @@ export default function ReputacaoPage() {
                   ) : (
                     <EmptyState
                       icon={<Star className="h-16 w-16 text-gray-400" />}
-                      title={searchTerm || filterType !== 'all' ? 'Nenhuma avaliação encontrada' : 'Nenhuma avaliação ainda'}
+                      title={searchTerm || filterType !== 'all' ? t('noReviewsFound') : t('noReviews')}
                       description={
                         searchTerm || filterType !== 'all'
                           ? 'Tente ajustar os filtros de busca.'
@@ -883,7 +886,7 @@ export default function ReputacaoPage() {
                     <div className="text-center py-8">
                       <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        {searchTerm || filterType !== 'all' ? 'Nenhuma recomendação encontrada' : 'Nenhuma recomendação ainda'}
+                        {searchTerm || filterType !== 'all' ? t('noRecommendationsFound') : t('noRecommendations')}
                       </h3>
                       <p className="text-gray-600">
                         {searchTerm || filterType !== 'all' 

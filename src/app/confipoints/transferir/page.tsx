@@ -30,8 +30,11 @@ import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { TransferListSkeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function TransferirConfiPointsPage() {
+  const t = useTranslations('confipoints')
+  const tCommon = useTranslations('common')
   const { user } = useAuthContext()
   const { balance } = usePoints(user?.id)
   const { transfers, loading, createTransfer, isCreating } = usePointsTransfers(user?.id)
@@ -46,7 +49,7 @@ export default function TransferirConfiPointsPage() {
 
   const handleSearchUser = async () => {
     if (!searchEmail) {
-      toast.error('Digite um e-mail para buscar')
+      toast.error(t('enterEmail'))
       return
     }
 
@@ -59,22 +62,22 @@ export default function TransferirConfiPointsPage() {
         .single()
 
       if (error || !data) {
-        toast.error('Usuário não encontrado')
+        toast.error(t('userNotFound'))
         setSearchedUser(null)
         return
       }
 
       if (data.id === user?.id) {
-        toast.error('Você não pode transferir para si mesmo')
+        toast.error(t('cannotTransferToSelf'))
         setSearchedUser(null)
         return
       }
 
       setSearchedUser(data)
-      toast.success('Usuário encontrado!')
+      toast.success(t('userFound'))
     } catch (error) {
       console.error('Erro ao buscar usuário:', error)
-      toast.error('Erro ao buscar usuário')
+      toast.error(t('errorSearchingUser'))
       setSearchedUser(null)
     } finally {
       setSearching(false)
@@ -85,17 +88,17 @@ export default function TransferirConfiPointsPage() {
     e.preventDefault()
 
     if (!pointsAmount || pointsValue < MIN_TRANSFER_POINTS) {
-      toast.error(`Valor mínimo de transferência: ${MIN_TRANSFER_POINTS.toLocaleString()} pontos`)
+      toast.error(t('minTransferAmount', { amount: MIN_TRANSFER_POINTS.toLocaleString() }))
       return
     }
 
     if (!balance || balance.balance < pointsValue) {
-      toast.error('Saldo insuficiente')
+      toast.error(t('insufficientBalance'))
       return
     }
 
     if (!searchedUser) {
-      toast.error('Selecione um destinatário')
+      toast.error(t('selectRecipient'))
       return
     }
 
@@ -106,14 +109,14 @@ export default function TransferirConfiPointsPage() {
         message: message || undefined
       })
 
-      toast.success('Transferência realizada com sucesso!')
+      toast.success(t('transferSuccess'))
       setPointsAmount('')
       setMessage('')
       setSearchEmail('')
       setSearchedUser(null)
     } catch (error: any) {
       console.error('Erro ao criar transferência:', error)
-      toast.error(error.message || 'Erro ao processar transferência')
+      toast.error(error.message || t('errorProcessingTransfer'))
     }
   }
 
@@ -130,10 +133,10 @@ export default function TransferirConfiPointsPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Transferir ConfiPoints
+                    {t('transferPoints')}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Envie pontos para outros usuários
+                    {t('sendPointsToUsers')}
                   </p>
                 </div>
               </div>
@@ -148,10 +151,10 @@ export default function TransferirConfiPointsPage() {
                       <Coins className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Saldo disponível
+                          {t('availableBalance')}
                         </p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                          {balance.balance.toLocaleString()} pontos
+                          {balance.balance.toLocaleString()} {t('points')}
                         </p>
                       </div>
                     </div>
@@ -164,18 +167,18 @@ export default function TransferirConfiPointsPage() {
               {/* Formulário de Transferência */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Enviar Pontos</CardTitle>
+                  <CardTitle>{t('sendPoints')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Buscar Usuário */}
                     <div className="space-y-2">
-                      <Label htmlFor="searchEmail">Buscar Destinatário</Label>
+                      <Label htmlFor="searchEmail">{t('searchRecipient')}</Label>
                       <div className="flex gap-2">
                         <Input
                           id="searchEmail"
                           type="email"
-                          placeholder="email@exemplo.com"
+                          placeholder={t('emailPlaceholder')}
                           value={searchEmail}
                           onChange={(e) => setSearchEmail(e.target.value)}
                           className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
@@ -219,11 +222,11 @@ export default function TransferirConfiPointsPage() {
 
                     {/* Quantidade de Pontos */}
                     <div className="space-y-2">
-                      <Label htmlFor="points">Quantidade de Pontos</Label>
+                      <Label htmlFor="points">{t('pointsAmount')}</Label>
                       <Input
                         id="points"
                         type="number"
-                        placeholder="Ex: 1000"
+                        placeholder={t('pointsPlaceholder')}
                         value={pointsAmount}
                         onChange={(e) => setPointsAmount(e.target.value)}
                         min={MIN_TRANSFER_POINTS}
@@ -232,16 +235,16 @@ export default function TransferirConfiPointsPage() {
                         className="dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Mínimo: {MIN_TRANSFER_POINTS.toLocaleString()} pontos
+                        {t('minimum')}: {MIN_TRANSFER_POINTS.toLocaleString()} {t('points')}
                       </p>
                     </div>
 
                     {/* Mensagem */}
                     <div className="space-y-2">
-                      <Label htmlFor="message">Mensagem (Opcional)</Label>
+                      <Label htmlFor="message">{t('messageOptional')}</Label>
                       <Textarea
                         id="message"
-                        placeholder="Deixe uma mensagem para o destinatário..."
+                        placeholder={t('messagePlaceholder')}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         rows={3}
@@ -255,15 +258,15 @@ export default function TransferirConfiPointsPage() {
                       <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Você enviará:
+                            {t('youWillSend')}:
                           </span>
                           <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">
-                            {pointsValue.toLocaleString()} pontos
+                            {pointsValue.toLocaleString()} {t('points')}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Para:
+                            {t('to')}:
                           </span>
                           <span className="font-medium text-gray-900 dark:text-white">
                             {searchedUser.full_name}
@@ -280,12 +283,12 @@ export default function TransferirConfiPointsPage() {
                       {isCreating ? (
                         <>
                           <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                          Processando...
+                          {tCommon('processing')}
                         </>
                       ) : (
                         <>
                           <Send className="w-4 h-4 mr-2" />
-                          Enviar Pontos
+                          {t('sendPoints')}
                         </>
                       )}
                     </Button>
@@ -301,8 +304,8 @@ export default function TransferirConfiPointsPage() {
                     <strong className="block mb-2">Como funciona:</strong>
                     <ul className="list-disc list-inside space-y-1 text-sm">
                       <li>Transferências são instantâneas</li>
-                      <li>Mínimo: {MIN_TRANSFER_POINTS.toLocaleString()} pontos</li>
-                      <li>Sem taxas para transferências</li>
+                      <li>{t('minimum')}: {MIN_TRANSFER_POINTS.toLocaleString()} {t('points')}</li>
+                      <li>{t('noFeesForTransfers')}</li>
                       <li>Não é possível cancelar após enviar</li>
                     </ul>
                   </AlertDescription>
@@ -332,7 +335,7 @@ export default function TransferirConfiPointsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ArrowLeftRight className="w-5 h-5 text-purple-600" />
-                  Histórico de Transferências
+                  {t('transferHistory')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -363,20 +366,20 @@ export default function TransferirConfiPointsPage() {
                             </Avatar>
                             <div className="flex-1">
                               <p className="font-medium text-gray-900 dark:text-white">
-                                {isSent ? 'Enviado para' : 'Recebido de'}{' '}
+                                {isSent ? t('sentTo') : t('receivedFrom')}{' '}
                                 {otherUser?.id ? (
                                   <Link 
                                     href={`/perfil/${otherUser.id}`}
                                     className="text-purple-600 dark:text-purple-400 hover:underline"
                                   >
-                                    {otherUser.full_name || 'Usuário'}
+                                    {otherUser.full_name || tCommon('user')}
                                   </Link>
                                 ) : (
-                                  'Usuário'
+                                  tCommon('user')
                                 )}
                               </p>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {new Date(transfer.created_at).toLocaleDateString('pt-BR')} às {new Date(transfer.created_at).toLocaleTimeString('pt-BR')}
+                                {new Date(transfer.created_at).toLocaleDateString('pt-BR')} {t('at')} {new Date(transfer.created_at).toLocaleTimeString('pt-BR')}
                               </p>
                               {transfer.message && (
                                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">
@@ -390,7 +393,7 @@ export default function TransferirConfiPointsPage() {
                               {isSent ? '-' : '+'}{transfer.points_amount.toLocaleString()}
                             </p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              pontos
+                              {t('points')}
                             </p>
                           </div>
                         </div>
@@ -400,8 +403,8 @@ export default function TransferirConfiPointsPage() {
                 ) : (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <ArrowLeftRight className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhuma transferência ainda</p>
-                    <p className="text-sm mt-1">Suas transferências aparecerão aqui</p>
+                    <p>{t('noTransfersYet')}</p>
+                    <p className="text-sm mt-1">{t('transfersWillAppearHere')}</p>
                   </div>
                 )}
               </CardContent>

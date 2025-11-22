@@ -21,10 +21,12 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function PrivacidadePage() {
   const { user } = useAuthContext()
   const [mounted, setMounted] = useState(false)
+  const t = useTranslations('privacy')
 
   useEffect(() => {
     setMounted(true)
@@ -47,19 +49,19 @@ export default function PrivacidadePage() {
                 <Shield className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Política de Privacidade</h1>
-                <p className="text-gray-600">ConfiLar - Proteção de Dados Pessoais</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">{t('title')}</h1>
+                <p className="text-gray-600">{t('subtitle')}</p>
               </div>
             </div>
             
             <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
               <div className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1" />
-                Última atualização: 15 de Janeiro de 2025
+                {t('lastUpdate')}
               </div>
               <div className="flex items-center">
                 <Shield className="h-4 w-4 mr-1" />
-                Conforme LGPD
+                {t('lgpdCompliance')}
               </div>
             </div>
           </div>
@@ -70,10 +72,9 @@ export default function PrivacidadePage() {
               <div className="flex items-start">
                 <CheckCircle className="h-6 w-6 text-green-600 mr-3 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-green-800 mb-2">Conformidade com LGPD</h3>
+                  <h3 className="font-semibold text-green-800 mb-2">{t('lgpdNotice')}</h3>
                   <p className="text-green-700 text-sm">
-                    Esta política está em conformidade com a Lei Geral de Proteção de Dados (LGPD) 
-                    e garante seus direitos fundamentais de privacidade e proteção de dados pessoais.
+                    {t('lgpdNoticeText')}
                   </p>
                 </div>
               </div>
@@ -87,21 +88,16 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">1</span>
-                  Introdução
+                  {t('section1.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">
-                  O ConfiLar valoriza sua privacidade e está comprometido em proteger seus dados pessoais. 
-                  Esta política explica como coletamos, usamos, armazenamos e protegemos suas informações.
+                  {t('section1.description')}
                 </p>
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Controlador de Dados:</h4>
-                  <p className="text-blue-700 text-sm">
-                    ConfiLar - Plataforma de Confiança Profissional<br/>
-                    CNPJ: 00.000.000/0001-00<br/>
-                    Email: privacidade@appconfilar.com.br
-                  </p>
+                  <h4 className="font-semibold text-blue-800 mb-2">{t('section1.dataController')}</h4>
+                  <p className="text-blue-700 text-sm" dangerouslySetInnerHTML={{ __html: t('section1.dataControllerInfo') }} />
                 </div>
               </CardContent>
             </Card>
@@ -111,50 +107,50 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">2</span>
-                  Dados Pessoais Coletados
+                  {t('section2.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Identificação:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section2.identificationTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Nome completo</li>
-                      <li>• Email</li>
-                      <li>• Telefone</li>
-                      <li>• CPF/CNPJ</li>
-                      <li>• Data de nascimento</li>
+                      <li>• {t('section2.identificationItem1')}</li>
+                      <li>• {t('section2.identificationItem2')}</li>
+                      <li>• {t('section2.identificationItem3')}</li>
+                      <li>• {t('section2.identificationItem4')}</li>
+                      <li>• {t('section2.identificationItem5')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Localização:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section2.locationTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Estado</li>
-                      <li>• Cidade</li>
-                      <li>• Bairro</li>
-                      <li>• Endereço</li>
+                      <li>• {t('section2.locationItem1')}</li>
+                      <li>• {t('section2.locationItem2')}</li>
+                      <li>• {t('section2.locationItem3')}</li>
+                      <li>• {t('section2.locationItem4')}</li>
                     </ul>
                   </div>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados Profissionais:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section2.professionalTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Tipo de usuário</li>
-                      <li>• Serviços oferecidos</li>
-                      <li>• Experiência profissional</li>
-                      <li>• Certificações</li>
-                      <li>• Portfólio</li>
+                      <li>• {t('section2.professionalItem1')}</li>
+                      <li>• {t('section2.professionalItem2')}</li>
+                      <li>• {t('section2.professionalItem3')}</li>
+                      <li>• {t('section2.professionalItem4')}</li>
+                      <li>• {t('section2.professionalItem5')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Dados de Uso:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section2.usageTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Histórico de navegação</li>
-                      <li>• Interações na plataforma</li>
-                      <li>• Mensagens trocadas</li>
-                      <li>• Avaliações realizadas</li>
+                      <li>• {t('section2.usageItem1')}</li>
+                      <li>• {t('section2.usageItem2')}</li>
+                      <li>• {t('section2.usageItem3')}</li>
+                      <li>• {t('section2.usageItem4')}</li>
                     </ul>
                   </div>
                 </div>
@@ -166,27 +162,27 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">3</span>
-                  Finalidades do Tratamento
+                  {t('section3.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Base Legal: Consentimento</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section3.consentTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Cadastro na plataforma</li>
-                      <li>• Comunicação entre usuários</li>
-                      <li>• Envio de notificações</li>
-                      <li>• Marketing direcionado</li>
+                      <li>• {t('section3.consentItem1')}</li>
+                      <li>• {t('section3.consentItem2')}</li>
+                      <li>• {t('section3.consentItem3')}</li>
+                      <li>• {t('section3.consentItem4')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Base Legal: Legítimo Interesse</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section3.legitimateInterestTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Melhoria dos serviços</li>
-                      <li>• Análise de uso</li>
-                      <li>• Prevenção de fraudes</li>
-                      <li>• Segurança da plataforma</li>
+                      <li>• {t('section3.legitimateInterestItem1')}</li>
+                      <li>• {t('section3.legitimateInterestItem2')}</li>
+                      <li>• {t('section3.legitimateInterestItem3')}</li>
+                      <li>• {t('section3.legitimateInterestItem4')}</li>
                     </ul>
                   </div>
                 </div>
@@ -198,7 +194,7 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">4</span>
-                  Seus Direitos (LGPD)
+                  {t('section4.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -207,22 +203,22 @@ export default function PrivacidadePage() {
                     <div className="flex items-start">
                       <Eye className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Acesso</h4>
-                        <p className="text-gray-700 text-sm">Visualizar seus dados pessoais</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.accessTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.accessDescription')}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Correção</h4>
-                        <p className="text-gray-700 text-sm">Corrigir dados incorretos</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.correctionTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.correctionDescription')}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Download className="h-5 w-5 text-purple-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Portabilidade</h4>
-                        <p className="text-gray-700 text-sm">Exportar seus dados</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.portabilityTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.portabilityDescription')}</p>
                       </div>
                     </div>
                   </div>
@@ -230,32 +226,31 @@ export default function PrivacidadePage() {
                     <div className="flex items-start">
                       <Trash2 className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Exclusão</h4>
-                        <p className="text-gray-700 text-sm">Direito ao esquecimento</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.deletionTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.deletionDescription')}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <AlertTriangle className="h-5 w-5 text-orange-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Oposição</h4>
-                        <p className="text-gray-700 text-sm">Opor-se ao tratamento</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.oppositionTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.oppositionDescription')}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Shield className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">Revogação</h4>
-                        <p className="text-gray-700 text-sm">Revogar consentimento</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{t('section4.revocationTitle')}</h4>
+                        <p className="text-gray-700 text-sm">{t('section4.revocationDescription')}</p>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 mb-2">Como Exercer Seus Direitos:</h4>
+                  <h4 className="font-semibold text-blue-800 mb-2">{t('section4.howToExerciseTitle')}</h4>
                   <p className="text-blue-700 text-sm">
-                    Entre em contato através do email privacidade@appconfilar.com.br ou 
-                    acesse as configurações da sua conta na plataforma.
+                    {t('section4.howToExerciseDescription')}
                   </p>
                 </div>
               </CardContent>
@@ -266,18 +261,18 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">5</span>
-                  Compartilhamento de Dados
+                  {t('section5.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">
-                  Seus dados pessoais podem ser compartilhados apenas nas seguintes situações:
+                  {t('section5.description')}
                 </p>
                 <ul className="space-y-2 text-gray-700">
-                  <li>• <strong>Com outros usuários:</strong> Informações do perfil para conexão</li>
-                  <li>• <strong>Prestadores de serviço:</strong> Empresas que nos auxiliam (hosting, email)</li>
-                  <li>• <strong>Autoridades:</strong> Quando exigido por lei ou ordem judicial</li>
-                  <li>• <strong>Proteção de direitos:</strong> Para proteger nossos direitos legais</li>
+                  <li>• {t('section5.item1')}</li>
+                  <li>• {t('section5.item2')}</li>
+                  <li>• {t('section5.item3')}</li>
+                  <li>• {t('section5.item4')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -287,27 +282,27 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">6</span>
-                  Segurança dos Dados
+                  {t('section6.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Medidas Técnicas:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section6.technicalTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Criptografia de dados</li>
-                      <li>• Conexões seguras (HTTPS)</li>
-                      <li>• Backup regular</li>
-                      <li>• Monitoramento de acesso</li>
+                      <li>• {t('section6.technicalItem1')}</li>
+                      <li>• {t('section6.technicalItem2')}</li>
+                      <li>• {t('section6.technicalItem3')}</li>
+                      <li>• {t('section6.technicalItem4')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Medidas Organizacionais:</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section6.organizationalTitle')}</h4>
                     <ul className="space-y-1 text-gray-700 text-sm">
-                      <li>• Treinamento da equipe</li>
-                      <li>• Políticas de acesso</li>
-                      <li>• Auditorias regulares</li>
-                      <li>• Plano de resposta a incidentes</li>
+                      <li>• {t('section6.organizationalItem1')}</li>
+                      <li>• {t('section6.organizationalItem2')}</li>
+                      <li>• {t('section6.organizationalItem3')}</li>
+                      <li>• {t('section6.organizationalItem4')}</li>
                     </ul>
                   </div>
                 </div>
@@ -319,19 +314,18 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">7</span>
-                  Retenção de Dados
+                  {t('section7.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">
-                  Mantemos seus dados pessoais apenas pelo tempo necessário para cumprir as finalidades 
-                  descritas nesta política:
+                  {t('section7.description')}
                 </p>
                 <ul className="space-y-2 text-gray-700">
-                  <li>• <strong>Dados da conta:</strong> Enquanto a conta estiver ativa</li>
-                  <li>• <strong>Dados de uso:</strong> 2 anos após a última atividade</li>
-                  <li>• <strong>Dados de marketing:</strong> Até revogação do consentimento</li>
-                  <li>• <strong>Dados legais:</strong> Conforme exigido por lei</li>
+                  <li>• {t('section7.accountData')}</li>
+                  <li>• {t('section7.usageData')}</li>
+                  <li>• {t('section7.marketingData')}</li>
+                  <li>• {t('section7.legalData')}</li>
                 </ul>
               </CardContent>
             </Card>
@@ -341,25 +335,25 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">8</span>
-                  Cookies e Tecnologias Similares
+                  {t('section8.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">
-                  Utilizamos cookies para melhorar sua experiência na plataforma:
+                  {t('section8.description')}
                 </p>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-3 rounded-lg">
-                    <h4 className="font-semibold text-blue-800 text-sm">Essenciais</h4>
-                    <p className="text-blue-700 text-xs">Necessários para funcionamento</p>
+                    <h4 className="font-semibold text-blue-800 text-sm">{t('section8.essentialTitle')}</h4>
+                    <p className="text-blue-700 text-xs">{t('section8.essentialDescription')}</p>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <h4 className="font-semibold text-green-800 text-sm">Funcionais</h4>
-                    <p className="text-green-700 text-xs">Melhoram a experiência</p>
+                    <h4 className="font-semibold text-green-800 text-sm">{t('section8.functionalTitle')}</h4>
+                    <p className="text-green-700 text-xs">{t('section8.functionalDescription')}</p>
                   </div>
                   <div className="bg-orange-50 p-3 rounded-lg">
-                    <h4 className="font-semibold text-orange-800 text-sm">Analíticos</h4>
-                    <p className="text-orange-700 text-xs">Coletam estatísticas</p>
+                    <h4 className="font-semibold text-orange-800 text-sm">{t('section8.analyticalTitle')}</h4>
+                    <p className="text-orange-700 text-xs">{t('section8.analyticalDescription')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -370,20 +364,16 @@ export default function PrivacidadePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded mr-3">9</span>
-                  Contato e DPO
+                  {t('section9.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-700">
-                  Para questões relacionadas à proteção de dados pessoais:
+                  {t('section9.description')}
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">Encarregado de Proteção de Dados (DPO):</h4>
-                  <p className="text-gray-700 text-sm">
-                    Email: privacidade@appconfilar.com.br<br/>
-                    Telefone: (11) 99999-9999<br/>
-                    Endereço: São Paulo, SP - Brasil
-                  </p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white dark:text-white mb-2">{t('section9.dpoTitle')}</h4>
+                  <p className="text-gray-700 text-sm" dangerouslySetInnerHTML={{ __html: t('section9.dpoInfo') }} />
                 </div>
               </CardContent>
             </Card>
@@ -394,21 +384,21 @@ export default function PrivacidadePage() {
           <div className="mt-8 pt-6 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm text-gray-500 mb-4 md:mb-0">
-                <p>© 2025 ConfiLar. Todos os direitos reservados.</p>
-                <p>Política válida a partir de 15 de Janeiro de 2025</p>
+                <p>{t('footer.copyright')}</p>
+                <p>{t('footer.validFrom')}</p>
               </div>
               
               <div className="flex space-x-4">
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/termos">
                     <FileText className="h-4 w-4 mr-2" />
-                    Termos de Uso
+                    {t('footer.termsOfUse')}
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/ajuda">
                     <Users className="h-4 w-4 mr-2" />
-                    Central de Ajuda
+                    {t('footer.helpCenter')}
                   </Link>
                 </Button>
               </div>

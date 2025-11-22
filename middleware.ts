@@ -99,8 +99,8 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Rotas que requerem autenticação
+  // Nota: /perfil/[id] é pública, mas /perfil (sem ID) requer autenticação
   const protectedRoutes = [
-    '/perfil',
     '/mensagens',
     '/feed',
     '/buscar',
@@ -109,6 +109,11 @@ export async function middleware(request: NextRequest) {
     '/reputacao',
     '/portfolio',
     '/configuracoes'
+  ]
+  
+  // Rotas de perfil que requerem autenticação (perfil próprio)
+  const protectedProfileRoutes = [
+    '/perfil' // Apenas /perfil sem ID (próprio perfil)
   ]
 
   // Removido: Rotas de teste não são mais necessárias
@@ -143,20 +148,31 @@ export async function middleware(request: NextRequest) {
   }
 
   // Verificar se é uma rota protegida
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = protectedRoutes.some(route =>
     pathname.startsWith(route)
   )
+  
+  // Verificar se é rota de perfil próprio (requer autenticação)
+  // /perfil sem ID = próprio perfil (protegido)
+  // /perfil/[id] = perfil de outro usuário (público)
+  const isOwnProfileRoute = pathname === '/perfil' || pathname === '/perfil/'
+  const isPublicProfileRoute = pathname.match(/^\/perfil\/[^/]+$/) // /perfil/[id] é público
 
   // Verificar se é uma rota de auth
-  const isAuthRoute = authRoutes.some(route => 
+  const isAuthRoute = authRoutes.some(route =>
     pathname.startsWith(route)
   )
 
-  // Se não há usuário e tentando acessar rota protegida
-  if (!user && isProtectedRoute) {
+  // Se não há usuário e tentando acessar rota protegida ou próprio perfil
+  if (!user && (isProtectedRoute || isOwnProfileRoute)) {
     const redirectUrl = new URL('/auth', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(redirectUrl)
+  }
+  
+  // Permitir acesso público a /perfil/[id]
+  if (isPublicProfileRoute) {
+    return response
   }
 
   // Se há usuário e tentando acessar rota de auth, redirecionar para feed social

@@ -48,8 +48,11 @@ import { useStories } from '@/hooks/useStories'
 import { StoryViewer } from '@/components/stories/StoryViewer'
 import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 export default function FeedPage() {
+  const t = useTranslations('feed')
+  const tCommon = useTranslations('common')
   const [mounted, setMounted] = useState(false)
   const { profile } = useAuthContext()
   const searchParams = useSearchParams()
@@ -279,7 +282,7 @@ export default function FeedPage() {
                 <button 
                   onClick={() => setShowNewPost(true)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                  title="Criar novo post"
+                  title={t('createPost')}
                 >
                   <Plus className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                 </button>
@@ -287,7 +290,7 @@ export default function FeedPage() {
                   <button 
                     onClick={() => setShowFeedSettings(!showFeedSettings)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                    title="Configurações do Feed"
+                    title={t('title')}
                   >
                     <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                   </button>
@@ -370,7 +373,7 @@ export default function FeedPage() {
                       : 'border-transparent text-gray-500 dark:text-gray-400'
                   }`}
                 >
-                  {tab === 'all' ? 'Todos' : tab === 'posts' ? 'Posts' : 'Notificações'}
+                  {tab === 'all' ? t('all') : tab === 'posts' ? t('posts') : t('notifications')}
                 </button>
               ))}
             </div>
@@ -456,7 +459,7 @@ export default function FeedPage() {
                             setShowCreateStory(true)
                           }}
                           className="absolute -bottom-3 -right-3 bg-transparent border-0 flex items-center justify-center hover:opacity-80 transition-opacity z-10 p-0"
-                          title="Criar novo story"
+                          title={t('createStory')}
                         >
                           <Plus className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                         </button>
@@ -642,7 +645,7 @@ export default function FeedPage() {
           isOpen={showPremiumPost}
           onClose={() => setShowPremiumPost(false)}
           size="lg"
-          title="Post Premium"
+          title={t('premiumPost')}
         >
           <PremiumPostForm
             onSubmit={async (data) => {
@@ -711,7 +714,7 @@ export default function FeedPage() {
               setRenewingPostId(null)
             }}
             size="lg"
-            title="Renovar Post Premium"
+            title={t('renewPremium')}
           >
             <PremiumPostForm
               isRenewal={true}
@@ -753,6 +756,7 @@ export default function FeedPage() {
 
 // COMPONENTE DE POST (INSTAGRAM STYLE)
 function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium, isTrending, isDeleting = false }: any) {
+  const t = useTranslations('feed')
   const { profile, user } = useAuthContext()
   const queryClient = useQueryClient()
   const [showFull, setShowFull] = useState(false)
@@ -1152,7 +1156,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                                 <MentionInput
                                   value={editCommentContent}
                                   onChange={(value) => setEditCommentContent(value)}
-                                  placeholder="Editar comentário..."
+                                  placeholder={t('editComment')}
                                   className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 outline-none pb-1"
                                   onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1260,7 +1264,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                 <MentionInput
                   value={newComment}
                   onChange={(value) => setNewComment(value)}
-                  placeholder="Adicione um comentário..."
+                  placeholder={t('addComment')}
                   disabled={isAddingComment}
                   className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 pb-1"
                   onKeyPress={(e) => {

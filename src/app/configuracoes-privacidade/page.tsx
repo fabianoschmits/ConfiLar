@@ -27,10 +27,13 @@ import { ProfileVisibilitySettings } from '@/components/lgpd/ProfileVisibilitySe
 import { NotificationPreferences } from '@/components/lgpd/NotificationPreferences'
 import { LocationDataSettings } from '@/components/lgpd/LocationDataSettings'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 export default function ConfiguracoesPrivacidadePage() {
   const { user } = useAuthContext()
   const [mounted, setMounted] = useState(false)
+  const t = useTranslations('settings')
+  const tCommon = useTranslations('common')
   const [showDataPortability, setShowDataPortability] = useState(false)
   const [showRightToBeForgotten, setShowRightToBeForgotten] = useState(false)
   const [activeSection, setActiveSection] = useState<string | null>(null)
@@ -51,13 +54,13 @@ export default function ConfiguracoesPrivacidadePage() {
             <CardContent className="p-8 text-center">
               <Lock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white mb-2">
-                Acesso Restrito
+                {t('restrictedAccess')}
               </h2>
               <p className="text-gray-600 mb-4">
-                Você precisa estar logado para acessar as configurações de privacidade.
+                {t('loginRequired')}
               </p>
               <Button asChild>
-                <a href="/auth">Fazer Login</a>
+                <a href="/auth">{t('login')}</a>
               </Button>
             </CardContent>
           </Card>
@@ -69,57 +72,57 @@ export default function ConfiguracoesPrivacidadePage() {
   const privacySettings = [
     {
       id: 'visibility',
-      title: 'Disponibilidade',
-      description: 'Controlar se você está disponível para receber propostas',
+      title: t('availability'),
+      description: t('availabilityDescription'),
       icon: <Eye className="h-5 w-5" />,
-      status: 'Ativo',
-      action: 'Configurar'
+      status: t('active'),
+      action: t('configure')
     },
     {
       id: 'notifications',
-      title: 'Notificações',
-      description: 'Sistema de notificações em desenvolvimento',
+      title: t('notifications'),
+      description: t('notificationsDescription'),
       icon: <Bell className="h-5 w-5" />,
-      status: 'Em Desenvolvimento',
-      action: 'Em Breve'
+      status: t('inDevelopment'),
+      action: t('comingSoon')
     },
     {
       id: 'location',
-      title: 'Dados de Localização',
-      description: 'Sistema de localização em desenvolvimento',
+      title: t('locationData'),
+      description: t('locationDataDescription'),
       icon: <Database className="h-5 w-5" />,
-      status: 'Em Desenvolvimento',
-      action: 'Em Breve'
+      status: t('inDevelopment'),
+      action: t('comingSoon')
     }
   ]
 
   const lgpdRights = [
     {
-      title: 'Acesso aos Dados',
-      description: 'Visualizar todos os seus dados pessoais',
+      title: t('dataAccess'),
+      description: t('dataAccessDescription'),
       icon: <Eye className="h-5 w-5" />,
-      action: 'Visualizar',
+      action: t('view'),
       color: 'blue'
     },
     {
-      title: 'Correção de Dados',
-      description: 'Corrigir informações incorretas',
+      title: t('dataCorrection'),
+      description: t('dataCorrectionDescription'),
       icon: <CheckCircle className="h-5 w-5" />,
-      action: 'Corrigir',
+      action: t('correct'),
       color: 'green'
     },
     {
-      title: 'Portabilidade',
-      description: 'Exportar seus dados em formato legível',
+      title: t('portability'),
+      description: t('portabilityDescription'),
       icon: <Download className="h-5 w-5" />,
-      action: 'Exportar',
+      action: t('export'),
       color: 'purple'
     },
     {
-      title: 'Direito ao Esquecimento',
-      description: 'Excluir permanentemente sua conta e dados',
+      title: t('rightToBeForgotten'),
+      description: t('rightToBeForgottenDescription'),
       icon: <Trash2 className="h-5 w-5" />,
-      action: 'Excluir',
+      action: t('delete'),
       color: 'red'
     }
   ]
@@ -136,8 +139,8 @@ export default function ConfiguracoesPrivacidadePage() {
                 <Shield className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">Configurações de Privacidade</h1>
-                <p className="text-gray-600">Gerencie seus dados pessoais conforme a LGPD</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white dark:text-white">{t('title')}</h1>
+                <p className="text-gray-600">{t('description')}</p>
               </div>
             </div>
           </div>
@@ -148,10 +151,9 @@ export default function ConfiguracoesPrivacidadePage() {
               <div className="flex items-center">
                 <CheckCircle className="h-6 w-6 text-green-600 mr-3" />
                 <div>
-                  <h3 className="font-semibold text-green-800">Conformidade com LGPD</h3>
+                  <h3 className="font-semibold text-green-800">{t('lgpdCompliance')}</h3>
                   <p className="text-green-700 text-sm">
-                    Sua conta está em conformidade com a Lei Geral de Proteção de Dados. 
-                    Você tem controle total sobre seus dados pessoais.
+                    {t('lgpdComplianceDescription')}
                   </p>
                 </div>
               </div>
@@ -164,7 +166,7 @@ export default function ConfiguracoesPrivacidadePage() {
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
                 <Settings className="h-5 w-5 mr-2" />
-                Configurações de Privacidade
+                {t('privacySettings')}
               </h2>
               
               {privacySettings.map((setting, index) => (
@@ -189,7 +191,7 @@ export default function ConfiguracoesPrivacidadePage() {
                           size="sm"
                           onClick={() => setActiveSection(activeSection === setting.id ? null : setting.id)}
                         >
-                          {activeSection === setting.id ? 'Fechar' : setting.action}
+                          {activeSection === setting.id ? tCommon('close') : setting.action}
                         </Button>
                       </div>
                     </div>
@@ -215,7 +217,7 @@ export default function ConfiguracoesPrivacidadePage() {
             <div className="space-y-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white dark:text-white flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
-                Seus Direitos (LGPD)
+                {t('yourRights')}
               </h2>
               
               {lgpdRights.map((right, index) => (
@@ -235,12 +237,12 @@ export default function ConfiguracoesPrivacidadePage() {
                         variant={right.color === 'red' ? 'destructive' : 'outline'}
                         size="sm"
                         onClick={() => {
-                          if (right.title === 'Portabilidade') {
+                          if (right.title === t('portability')) {
                             setShowDataPortability(true)
-                          } else if (right.title === 'Direito ao Esquecimento') {
+                          } else if (right.title === t('rightToBeForgotten')) {
                             setShowRightToBeForgotten(true)
                           } else {
-                            toast.info(`Funcionalidade "${right.action}" em desenvolvimento`)
+                            toast.info(t('featureInDevelopment', { action: right.action }))
                           }
                         }}
                       >
@@ -258,25 +260,25 @@ export default function ConfiguracoesPrivacidadePage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" />
-                Informações Importantes
+                {t('importantInformation')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Contato para Privacidade:</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('privacyContact')}</h4>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• Email: privacidade@appconfilar.com.br</li>
-                    <li>• DPO: privacidade@appconfilar.com.br</li>
-                    <li>• Telefone: (11) 99999-9999</li>
+                    <li>• {t('email')}: privacidade@appconfilar.com.br</li>
+                    <li>• {t('dpo')}: privacidade@appconfilar.com.br</li>
+                    <li>• {t('phone')}: (11) 99999-9999</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Documentos Legais:</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('legalDocuments')}</h4>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>• <a href="/privacidade" className="text-blue-600 hover:underline">Política de Privacidade</a></li>
-                    <li>• <a href="/termos" className="text-blue-600 hover:underline">Termos de Uso</a></li>
-                    <li>• <a href="/ajuda" className="text-blue-600 hover:underline">Central de Ajuda</a></li>
+                    <li>• <a href="/privacidade" className="text-blue-600 hover:underline">{t('privacyPolicy')}</a></li>
+                    <li>• <a href="/termos" className="text-blue-600 hover:underline">{t('termsOfUse')}</a></li>
+                    <li>• <a href="/ajuda" className="text-blue-600 hover:underline">{t('helpCenter')}</a></li>
                   </ul>
                 </div>
               </div>
@@ -286,8 +288,8 @@ export default function ConfiguracoesPrivacidadePage() {
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-500">
             <p>
-              Última atualização: 15 de Janeiro de 2025 | 
-              Conforme Lei Geral de Proteção de Dados (LGPD)
+              {t('lastUpdate')}: 15 de Janeiro de 2025 | 
+              {t('lgpdCompliant')}
             </p>
           </div>
         </div>
@@ -303,7 +305,7 @@ export default function ConfiguracoesPrivacidadePage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Deletar Conta</h2>
+              <h2 className="text-xl font-semibold">{t('deleteAccount')}</h2>
               <Button
                 variant="ghost"
                 size="sm"

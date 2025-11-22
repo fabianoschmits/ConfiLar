@@ -20,11 +20,15 @@ import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
 import { DashboardSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
 import { BrandLogo } from '@/components/common/BrandLogo'
+import { LanguageSelector } from '@/components/ui/LanguageSelector'
+import { useTranslations } from 'next-intl'
 
 // Página Inicial Principal - Hero com Imagem de Fundo Full + Overlay
 function HomeContent() {
   const router = useRouter()
   const { user, loading, isReady } = useAuthContext()
+  const t = useTranslations('landing')
+  const tNav = useTranslations('navigation')
   const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -92,19 +96,20 @@ function HomeContent() {
               
               <nav className="hidden md:flex items-center space-x-6">
                 <Link href="/sobre" className="text-white hover:text-[#00b0b0] transition-colors font-medium">
-                  Sobre
+                  {tNav('about')}
                 </Link>
                 <Link href="/ajuda" className="text-white hover:text-[#00b0b0] transition-colors font-medium">
-                  Ajuda
+                  {tNav('help')}
                 </Link>
               </nav>
 
               <div className="hidden md:flex items-center gap-3">
+                <LanguageSelector />
                 <Button variant="ghost" asChild className="text-white hover:text-[#00b0b0] hover:bg-white/10">
-                  <Link href="/auth">Entrar</Link>
+                  <Link href="/auth">{tNav('login')}</Link>
                 </Button>
                 <Button asChild className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white shadow-lg shadow-[#00b0b0]/50">
-                  <Link href="/auth?tab=register">Criar Conta Grátis</Link>
+                  <Link href="/auth?tab=register">{tNav('createAccount')}</Link>
                 </Button>
               </div>
 
@@ -119,14 +124,19 @@ function HomeContent() {
             {mobileMenuOpen && (
               <div className="md:hidden mt-4 bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
                 <nav className="flex flex-col space-y-4">
-                  <Link href="/sobre" className="text-white hover:text-[#00b0b0] transition-colors">Sobre</Link>
-                  <Link href="/ajuda" className="text-white hover:text-[#00b0b0] transition-colors">Ajuda</Link>
+                  <Link href="/sobre" className="text-white hover:text-[#00b0b0] transition-colors">{tNav('about')}</Link>
+                  <Link href="/ajuda" className="text-white hover:text-[#00b0b0] transition-colors">{tNav('help')}</Link>
+                  <div className="pt-4 border-t border-white/20">
+                    <div className="mb-4">
+                      <LanguageSelector />
+                    </div>
+                  </div>
                   <div className="flex flex-col space-y-2 pt-4 border-t border-white/20">
                     <Button variant="ghost" asChild className="justify-start text-white hover:bg-white/10">
-                      <Link href="/auth">Entrar</Link>
+                      <Link href="/auth">{tNav('login')}</Link>
                     </Button>
                     <Button asChild className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white justify-start">
-                      <Link href="/auth?tab=register">Criar Conta Grátis</Link>
+                      <Link href="/auth?tab=register">{tNav('createAccount')}</Link>
                     </Button>
                   </div>
                 </nav>
@@ -153,12 +163,12 @@ function HomeContent() {
           <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-32 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
             <Badge className="mb-6 bg-[#00b0b0]/20 text-[#00b0b0] border-[#00b0b0]/50 px-4 py-2 text-sm font-medium backdrop-blur-sm">
               <Sparkles className="w-4 h-4 mr-2 inline" />
-              Plataforma de Confiança
+              {t('subtitle')}
             </Badge>
             
             <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-                O que é o
+                {t('title')}
               </h1>
               <Image
                 src="/imagens/logo/Logo azul - sem fundo - horizontal.png"
@@ -175,27 +185,24 @@ function HomeContent() {
             </div>
             
             <p className="text-xl sm:text-2xl text-gray-300 mb-4 max-w-4xl mx-auto font-medium leading-relaxed">
-              Uma plataforma <strong className="text-white">transparente e confiável</strong> que conecta pessoas 
-              que precisam de serviços com profissionais qualificados através de{' '}
-              <strong className="text-white">indicações, recomendações e anúncios</strong>.
+              {t('description')}
             </p>
             
             <p className="text-base sm:text-lg text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Aqui você encontra profissionais verificados, pode ver quem já contratou, ler recomendações reais 
-              e publicar seus próprios anúncios de serviços de forma segura.
+              {t('description2')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               <Button size="lg" asChild className="bg-[#00b0b0] hover:bg-[#00a0a0] text-white text-lg px-8 py-6 shadow-2xl shadow-[#00b0b0]/50 hover:shadow-[#00b0b0]/70 transition-all">
                 <Link href="/auth?tab=register">
-                  Começar Agora Grátis
+                  {t('ctaStart')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild className="text-white border-2 border-white/60 bg-white/10 hover:bg-white/20 text-lg px-8 py-6 backdrop-blur-sm">
                 <Link href="/buscar">
                   <Search className="mr-2 h-5 w-5" />
-                  Buscar Profissionais
+                  {t('ctaSearch')}
                 </Link>
               </Button>
             </div>
@@ -206,32 +213,32 @@ function HomeContent() {
                 <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
                   {statsLoading ? '...' : formatStatNumber(professionalsCount)}
                 </div>
-                <div className="text-sm text-gray-300 font-medium">Profissionais</div>
-                <div className="text-xs text-gray-400 mt-1">Verificados</div>
+                <div className="text-sm text-gray-300 font-medium">{t('stats.professionals')}</div>
+                <div className="text-xs text-gray-400 mt-1">{t('stats.verified')}</div>
               </div>
 
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
                 <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
                   {statsLoading ? '...' : formatStatNumber(reviewsCount)}
                 </div>
-                <div className="text-sm text-gray-300 font-medium">Avaliações</div>
-                <div className="text-xs text-gray-400 mt-1">Reais</div>
+                <div className="text-sm text-gray-300 font-medium">{t('stats.reviews')}</div>
+                <div className="text-xs text-gray-400 mt-1">{t('stats.real')}</div>
               </div>
 
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
                 <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
                   {statsLoading ? '...' : formatStatNumber(citiesCount)}
                 </div>
-                <div className="text-sm text-gray-300 font-medium">Cidades</div>
-                <div className="text-xs text-gray-400 mt-1">Atendidas</div>
+                <div className="text-sm text-gray-300 font-medium">{t('stats.cities')}</div>
+                <div className="text-xs text-gray-400 mt-1">{t('stats.attended')}</div>
               </div>
 
               <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all">
                 <div className="text-4xl sm:text-5xl font-bold text-[#00b0b0] mb-2">
                   {statsLoading ? '...' : formatStatNumber(servicesCount)}
                 </div>
-                <div className="text-sm text-gray-300 font-medium">Serviços</div>
-                <div className="text-xs text-gray-400 mt-1">Categorias</div>
+                <div className="text-sm text-gray-300 font-medium">{t('stats.services')}</div>
+                <div className="text-xs text-gray-400 mt-1">{t('stats.categories')}</div>
               </div>
             </div>
           </div>
@@ -249,13 +256,13 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                Como Funciona
+                {t('howItWorks.title')}
               </Badge>
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Simples, Transparente e Eficaz
+                {t('howItWorks.subtitle')}
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                Quatro pilares que fazem do ConfiLar a plataforma ideal para conectar pessoas e profissionais
+                {t('howItWorks.description')}
               </p>
             </div>
 
@@ -272,13 +279,12 @@ function HomeContent() {
                     <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                       <Eye className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">🔍 Transparência Total</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t('features.transparency.title')}</h3>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Veja <strong>quem já contratou</strong> cada profissional, <strong>quem recomendou</strong> e 
-                    todas as <strong>avaliações reais</strong>. Nada fica escondido - você decide com todas as informações.
+                    {t('features.transparency.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -295,13 +301,12 @@ function HomeContent() {
                     <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                       <Users className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">🤝 Sistema de Indicações</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t('features.referrals.title')}</h3>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    <strong>Indique amigos</strong> e ganhe pontos, badges e benefícios! Quanto mais pessoas você indicar, 
-                    mais você ganha. É um programa de recompensas baseado em confiança.
+                    {t('features.referrals.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -318,13 +323,12 @@ function HomeContent() {
                     <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                       <ThumbsUp className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">👍 Recomendações Públicas</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t('features.recommendations.title')}</h3>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Depois de contratar um profissional, você pode <strong>recomendá-lo publicamente</strong>. 
-                    Sua recomendação aparece no perfil dele para todos verem, criando um histórico de confiança.
+                    {t('features.recommendations.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -341,13 +345,12 @@ function HomeContent() {
                     <div className="w-14 h-14 bg-[#00b0b0] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                       <Briefcase className="h-7 w-7 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">📢 Anúncios de Serviços</h3>
+                    <h3 className="text-2xl font-bold text-white mb-2">{t('features.ads.title')}</h3>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    <strong>Publique anúncios</strong> oferecendo seus serviços ou <strong>busque anúncios</strong> de quem 
-                    precisa. Anúncios premium aparecem destacados e têm maior visibilidade.
+                    {t('features.ads.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -360,13 +363,13 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                Funcionalidades
+                {t('features.title')}
               </Badge>
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Tudo que Você Precisa
+                {t('features.subtitle')}
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-                Ferramentas poderosas para encontrar ou oferecer serviços com segurança
+                {t('features.description')}
               </p>
             </div>
 
@@ -385,27 +388,27 @@ function HomeContent() {
                     <Eye className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Transparência e Confiança
+                    {t('features.transparencyDetail.title')}
                   </h3>
                   <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    No ConfiLar, <strong>tudo é transparente</strong>. Você pode ver:
+                    {t('features.transparencyDetail.description')}
                   </p>
                   <ul className="space-y-4">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Quem já contratou</strong> cada profissional - você vê nomes, fotos e datas</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.transparencyDetail.points.whoHired')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Todas as avaliações e comentários</strong> de quem já usou o serviço</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.transparencyDetail.points.allReviews')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Histórico completo</strong> de trabalhos realizados e recomendações</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.transparencyDetail.points.completeHistory')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Verificação de identidade</strong> para garantir autenticidade</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.transparencyDetail.points.identityVerification')}</span>
                     </li>
                   </ul>
                 </div>
@@ -418,25 +421,25 @@ function HomeContent() {
                     <Users className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Indicações e Recomendações
+                    {t('features.referralsDetail.title')}
                   </h3>
                   <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    Duas formas poderosas de construir confiança na plataforma:
+                    {t('features.referralsDetail.description')}
                   </p>
                   
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
                       <Gift className="h-8 w-8 text-[#00b0b0] mb-3" />
-                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">Programa de Indicações</h4>
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">{t('features.referralsDetail.referralProgram.title')}</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Ganhe pontos, badges e benefícios indicando amigos
+                        {t('features.referralsDetail.referralProgram.description')}
                       </p>
                     </div>
                     <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
                       <ThumbsUp className="h-8 w-8 text-[#00b0b0] mb-3" />
-                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">Recomendações Públicas</h4>
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-2">{t('features.referralsDetail.publicRecommendations.title')}</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Ajude outros a escolher melhor recomendando profissionais
+                        {t('features.referralsDetail.publicRecommendations.description')}
                       </p>
                     </div>
                   </div>
@@ -464,23 +467,23 @@ function HomeContent() {
                     <Briefcase className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Anúncios de Serviços
+                    {t('features.adsDetail.title')}
                   </h3>
                   <p className="text-lg text-gray-700 dark:text-gray-300 mb-6">
-                    Publique ou encontre serviços de forma simples e organizada:
+                    {t('features.adsDetail.description')}
                   </p>
                   <ul className="space-y-4">
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Ofereça seus serviços:</strong> Anúncios com fotos e descrições</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.adsDetail.offerServices')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Solicite serviços:</strong> Receba propostas de profissionais</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.adsDetail.requestServices')}</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <CheckCircle2 className="h-6 w-6 flex-shrink-0 mt-0.5 text-[#00b0b0]" />
-                      <span className="text-gray-600 dark:text-gray-400"><strong>Anúncios Premium:</strong> Destaque para maior visibilidade</span>
+                      <span className="text-gray-600 dark:text-gray-400">{t('features.adsDetail.premiumAds')}</span>
                     </li>
                   </ul>
                 </div>
@@ -494,10 +497,10 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-                🎁 Programa de Indicações
+                {t('referralProgram.title')}
               </h2>
               <p className="text-xl text-white/90 max-w-3xl mx-auto">
-                Indique amigos e ganhe recompensas incríveis! Quanto mais você indica, mais benefícios você recebe.
+                {t('referralProgram.description')}
               </p>
             </div>
 
@@ -509,15 +512,15 @@ function HomeContent() {
                       <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
                         <Gift className="h-7 w-7 text-[#00b0b0]" />
                       </div>
-                      <h3 className="text-3xl font-bold text-white">Como Funciona?</h3>
+                      <h3 className="text-3xl font-bold text-white">{t('referralProgram.howItWorks')}</h3>
                     </div>
                     
                     <div className="space-y-6">
                       {[
-                        { num: 1, title: 'Cadastre-se', desc: 'Crie sua conta e receba seu código único' },
-                        { num: 2, title: 'Indique Amigos', desc: 'Compartilhe seu código e ganhe pontos' },
-                        { num: 3, title: 'Ganhe Recompensas', desc: 'Badges e níveis (Bronze → Diamante)' },
-                        { num: 4, title: 'Benefícios Exclusivos', desc: 'Anúncios premium grátis e mais' }
+                        { num: 1, title: t('referralProgram.steps.step1.title'), desc: t('referralProgram.steps.step1.description') },
+                        { num: 2, title: t('referralProgram.steps.step2.title'), desc: t('referralProgram.steps.step2.description') },
+                        { num: 3, title: t('referralProgram.steps.step3.title'), desc: t('referralProgram.steps.step3.description') },
+                        { num: 4, title: t('referralProgram.steps.step4.title'), desc: t('referralProgram.steps.step4.description') }
                       ].map((step) => (
                         <div key={step.num} className="flex items-start gap-4">
                           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[#00b0b0] shadow-lg">
@@ -534,26 +537,26 @@ function HomeContent() {
 
                   <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 shadow-2xl">
                     <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-6 text-center">
-                      Estatísticas do Programa
+                      {t('referralProgram.stats.title')}
                     </h4>
                     <div className="grid grid-cols-2 gap-6">
                       <div className="text-center p-6 bg-gradient-to-br from-[#00b0b0]/10 to-[#00b0b0]/5 rounded-2xl">
                         <div className="text-4xl font-bold text-[#00b0b0] mb-2">
                           {referralStats.loading ? '...' : formatStatNumber(referralStats.totalReferrals)}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Total de Indicações</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{t('referralProgram.stats.totalReferrals')}</div>
                       </div>
                       <div className="text-center p-6 bg-gradient-to-br from-[#00b0b0]/10 to-[#00b0b0]/5 rounded-2xl">
                         <div className="text-4xl font-bold text-[#00b0b0] mb-2">
                           {referralStats.loading ? '...' : formatStatNumber(referralStats.totalUsersParticipating)}
                         </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Usuários Participando</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{t('referralProgram.stats.usersParticipating')}</div>
                       </div>
                     </div>
                     <div className="mt-8">
                       <Button asChild className="w-full bg-[#00b0b0] hover:bg-[#00a0a0] text-white py-6 text-lg shadow-xl">
                         <Link href="/auth?tab=register">
-                          Começar a Indicar
+                          {t('referralProgram.cta')}
                           <ArrowRight className="ml-2 h-5 w-5" />
                         </Link>
                       </Button>
@@ -570,10 +573,10 @@ function HomeContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <Badge className="mb-4 bg-[#00b0b0]/10 text-[#00b0b0] border-[#00b0b0]/50">
-                Diferenciais
+                {t('whyChoose.badge')}
               </Badge>
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                Por que escolher o ConfiLar?
+                {t('whyChoose.title')}
               </h2>
             </div>
 
@@ -583,10 +586,9 @@ function HomeContent() {
                   <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                     <Shield className="h-10 w-10 text-[#00b0b0]" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">100% Transparente</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('whyChoose.transparency.title')}</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Veja tudo: quem contratou, quem recomendou, todas as avaliações. 
-                    Nada fica escondido - você decide com todas as informações.
+                    {t('whyChoose.transparency.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -596,10 +598,9 @@ function HomeContent() {
                   <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                     <CheckCircle2 className="h-10 w-10 text-[#00b0b0]" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Profissionais Verificados</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('whyChoose.verified.title')}</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Sistema de verificação de identidade garante que você está lidando 
-                    com pessoas reais e confiáveis.
+                    {t('whyChoose.verified.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -609,10 +610,9 @@ function HomeContent() {
                   <div className="w-20 h-20 bg-[#00b0b0]/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                     <MessageCircle className="h-10 w-10 text-[#00b0b0]" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Comunicação Direta</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('whyChoose.communication.title')}</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Sistema de mensagens integrado para você negociar e fechar acordos 
-                    diretamente com os profissionais.
+                    {t('whyChoose.communication.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -627,23 +627,22 @@ function HomeContent() {
               <div className="col-span-1 md:col-span-2">
                 <BrandLogo width={140} height={38} className="mb-6" />
                 <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                  Plataforma transparente que conecta clientes e profissionais através de 
-                  indicações, recomendações e anúncios de serviços. Confiança e transparência em primeiro lugar.
+                  {t('footer.description')}
                 </p>
               </div>
 
               <div>
-                <h3 className="text-lg font-bold mb-4">Links Rápidos</h3>
+                <h3 className="text-lg font-bold mb-4">{t('footer.quickLinks')}</h3>
                 <ul className="space-y-3 text-sm">
-                  <li><Link href="/sobre" className="text-gray-400 hover:text-[#00b0b0] transition-colors">Sobre Nós</Link></li>
-                  <li><Link href="/ajuda" className="text-gray-400 hover:text-[#00b0b0] transition-colors">Central de Ajuda</Link></li>
-                  <li><Link href="/termos" className="text-gray-400 hover:text-[#00b0b0] transition-colors">Termos de Uso</Link></li>
-                  <li><Link href="/buscar" className="text-gray-400 hover:text-[#00b0b0] transition-colors">Buscar</Link></li>
+                  <li><Link href="/sobre" className="text-gray-400 hover:text-[#00b0b0] transition-colors">{t('footer.aboutUs')}</Link></li>
+                  <li><Link href="/ajuda" className="text-gray-400 hover:text-[#00b0b0] transition-colors">{t('footer.helpCenter')}</Link></li>
+                  <li><Link href="/termos" className="text-gray-400 hover:text-[#00b0b0] transition-colors">{t('footer.termsOfUse')}</Link></li>
+                  <li><Link href="/buscar" className="text-gray-400 hover:text-[#00b0b0] transition-colors">{t('footer.search')}</Link></li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="text-lg font-bold mb-4">Contato</h3>
+                <h3 className="text-lg font-bold mb-4">{t('footer.contact')}</h3>
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-center text-gray-400">
                     <Mail className="h-4 w-4 mr-2 text-[#00b0b0]" />
@@ -664,7 +663,7 @@ function HomeContent() {
             <Separator className="my-12 bg-gray-800" />
 
             <div className="text-center">
-              <p className="text-gray-400 text-sm">&copy; 2024 ConfiLar. Todos os direitos reservados.</p>
+              <p className="text-gray-400 text-sm">{t('footer.copyright')}</p>
             </div>
           </div>
         </footer>

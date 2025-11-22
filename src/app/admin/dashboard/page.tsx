@@ -71,6 +71,7 @@ import { toast } from 'sonner'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CronJobsSection } from '@/components/admin/CronJobsSection'
+import { useTranslations } from 'next-intl'
 
 // ========== INTERFACES ==========
 interface DashboardStats {
@@ -255,6 +256,8 @@ function ErrorListSkeleton() {
 
 // ========== COMPONENTE PRINCIPAL ==========
 export default function AdminDashboardPage() {
+  const t = useTranslations('admin')
+  const tCommon = useTranslations('common')
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     newUsersToday: 0,
@@ -387,7 +390,7 @@ export default function AdminDashboardPage() {
 
             return {
               id: user.id,
-              full_name: user.full_name || 'Sem nome',
+              full_name: user.full_name || t('noName'),
               email: user.email,
               user_type: user.user_type,
               is_verified: user.is_verified,
@@ -434,7 +437,7 @@ export default function AdminDashboardPage() {
             postsByUser.reduce((acc: any, post: any) => {
               const userId = post.user_id
               if (!acc[userId]) {
-                acc[userId] = { id: userId, name: post.profiles?.full_name || 'Sem nome', count: 0 }
+                acc[userId] = { id: userId, name: post.profiles?.full_name || t('noName'), count: 0 }
               }
               acc[userId].count++
               return acc
@@ -527,7 +530,7 @@ export default function AdminDashboardPage() {
             reviewsData.reduce((acc: any, review: any) => {
               const id = review.reviewed_id
               if (!acc[id]) {
-                acc[id] = { id, name: review.profiles?.full_name || 'Sem nome', ratings: [], avg: 0 }
+                acc[id] = { id, name: review.profiles?.full_name || t('noName'), ratings: [], avg: 0 }
               }
               if (review.rating_person) acc[id].ratings.push(review.rating_person)
               return acc
@@ -798,11 +801,11 @@ export default function AdminDashboardPage() {
           <CardContent className="p-6">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao carregar dados</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{t('errorLoading')}</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
               <Button onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Tentar novamente
+                {t('tryAgain')}
               </Button>
             </div>
           </CardContent>
@@ -817,10 +820,10 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 gap-4">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Dashboard Administrativo
+            {t('dashboard')}
           </h2>
           <p className="text-muted-foreground text-sm md:text-base">
-            {lastUpdate && `Última atualização: ${lastUpdate.toLocaleTimeString('pt-BR')}`}
+            {lastUpdate && `${t('lastUpdate')}: ${lastUpdate.toLocaleTimeString('pt-BR')}`}
           </p>
         </div>
         <Button 
@@ -831,7 +834,7 @@ export default function AdminDashboardPage() {
           className="w-full sm:w-auto"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading || refreshing ? 'animate-spin' : ''}`} />
-          Atualizar
+          {t('refresh')}
         </Button>
       </div>
 
@@ -840,33 +843,33 @@ export default function AdminDashboardPage() {
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto">
           <TabsTrigger value="overview" className="text-xs sm:text-sm">
             <BarChart3 className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Visão Geral</span>
-            <span className="sm:hidden">Geral</span>
+            <span className="hidden sm:inline">{t('overview')}</span>
+            <span className="sm:hidden">{t('overviewShort')}</span>
           </TabsTrigger>
           <TabsTrigger value="users" className="text-xs sm:text-sm">
             <Users className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Usuários</span>
-            <span className="sm:hidden">Users</span>
+            <span className="hidden sm:inline">{t('users')}</span>
+            <span className="sm:hidden">{t('usersShort')}</span>
           </TabsTrigger>
           <TabsTrigger value="engagement" className="text-xs sm:text-sm">
             <Activity className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Engajamento</span>
-            <span className="sm:hidden">Eng.</span>
+            <span className="hidden sm:inline">{t('engagement')}</span>
+            <span className="sm:hidden">{t('engagementShort')}</span>
           </TabsTrigger>
           <TabsTrigger value="system" className="text-xs sm:text-sm">
             <Server className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Sistema</span>
-            <span className="sm:hidden">Sist.</span>
+            <span className="hidden sm:inline">{t('system')}</span>
+            <span className="sm:hidden">{t('systemShort')}</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="text-xs sm:text-sm">
             <Shield className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Segurança</span>
-            <span className="sm:hidden">Seg.</span>
+            <span className="hidden sm:inline">{t('security')}</span>
+            <span className="sm:hidden">{t('securityShort')}</span>
           </TabsTrigger>
           <TabsTrigger value="cron" className="text-xs sm:text-sm">
             <Timer className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Cron Jobs</span>
-            <span className="sm:hidden">Cron</span>
+            <span className="hidden sm:inline">{t('cronJobs')}</span>
+            <span className="sm:hidden">{t('cronJobsShort')}</span>
           </TabsTrigger>
         </TabsList>
 
@@ -881,7 +884,7 @@ export default function AdminDashboardPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="dark:bg-card dark:border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-foreground">Total de Usuários</CardTitle>
+                    <CardTitle className="text-sm font-medium text-foreground">{t('totalUsers')}</CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -892,41 +895,41 @@ export default function AdminDashboardPage() {
                       ) : (
                         <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
                       )}
-                      {Math.abs(stats.usersGrowth)}% este mês
+                      {Math.abs(stats.usersGrowth)}% {t('thisMonth')}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="dark:bg-card dark:border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-foreground">Usuários Ativos</CardTitle>
+                    <CardTitle className="text-sm font-medium text-foreground">{t('activeUsers')}</CardTitle>
                     <Activity className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-foreground">{stats.activeUsers24h}</div>
-                    <p className="text-xs text-muted-foreground">Últimas 24 horas</p>
+                    <p className="text-xs text-muted-foreground">{t('last24Hours')}</p>
                   </CardContent>
                 </Card>
 
                 <Card className="dark:bg-card dark:border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-foreground">Total de Posts</CardTitle>
+                    <CardTitle className="text-sm font-medium text-foreground">{t('totalPosts')}</CardTitle>
                     <FileText className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-foreground">{stats.totalPosts}</div>
-                    <p className="text-xs text-muted-foreground">{stats.postsToday} hoje</p>
+                    <p className="text-xs text-muted-foreground">{stats.postsToday} {t('today')}</p>
                   </CardContent>
                 </Card>
 
                 <Card className="dark:bg-card dark:border-border">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-foreground">Denúncias Pendentes</CardTitle>
+                    <CardTitle className="text-sm font-medium text-foreground">{t('pendingReports')}</CardTitle>
                     <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-foreground">{stats.pendingReports}</div>
-                    <p className="text-xs text-muted-foreground">de {stats.totalReports} total</p>
+                    <p className="text-xs text-muted-foreground">{t('of')} {stats.totalReports} {t('total')}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -934,9 +937,9 @@ export default function AdminDashboardPage() {
               {/* Gráfico Principal */}
               <Card className="dark:bg-card dark:border-border">
                 <CardHeader>
-                  <CardTitle className="text-foreground">Atividade dos Últimos 30 Dias</CardTitle>
+                  <CardTitle className="text-foreground">{t('activityLast30Days')}</CardTitle>
                   <CardDescription className="text-muted-foreground">
-                    Novos usuários, posts, mensagens e denúncias
+                    {t('activityDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -982,14 +985,14 @@ export default function AdminDashboardPage() {
           {loading ? <UserListSkeleton /> : (
             <Card className="dark:bg-card dark:border-border">
               <CardHeader>
-                <CardTitle className="text-foreground">Usuários Online</CardTitle>
+                <CardTitle className="text-foreground">{t('onlineUsers')}</CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Usuários ativos nas últimas 2 horas ({onlineUsers.length})
+                  {t('onlineUsersDescription')} ({onlineUsers.length})
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {onlineUsers.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">Nenhum usuário online no momento</p>
+                  <p className="text-muted-foreground text-center py-8">{t('noUsersOnline')}</p>
                 ) : (
                   <div className="space-y-2 max-h-[600px] overflow-y-auto">
                     {onlineUsers.map((user) => (

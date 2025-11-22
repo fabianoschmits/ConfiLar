@@ -13,8 +13,12 @@ import { useState, useEffect } from 'react'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { ClientOnly } from '@/components/ClientOnly'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 export default function PortfolioPage() {
+  const t = useTranslations('portfolio')
+  const tCommon = useTranslations('common')
+  const tNav = useTranslations('navigation')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -37,41 +41,41 @@ export default function PortfolioPage() {
                     <Briefcase className="h-12 w-12 text-orange-600" />
                   </div>
                   <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                    Portfólio
+                    {t('title')}
                   </h1>
                   <div className="inline-flex items-center px-4 py-2 bg-orange-100 text-orange-800 rounded-full text-sm font-medium mb-6">
                     <div className="w-2 h-2 bg-orange-500 rounded-full mr-2 animate-pulse"></div>
-                    Em Construção
+                    {t('underConstruction')}
                   </div>
                 </div>
                 
                 <div className="space-y-4 text-gray-600">
                   <p className="text-lg">
-                    Estamos trabalhando em uma nova versão do portfólio
+                    {t('workingOnNewVersion')}
                   </p>
                   <p className="text-sm">
-                    Em breve você poderá adicionar e gerenciar seus trabalhos de forma mais intuitiva
+                    {t('comingSoon')}
                   </p>
                 </div>
 
                 <div className="mt-8 p-6 bg-gray-50 rounded-lg">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Funcionalidades planejadas:</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{t('plannedFeatures')}:</h3>
                   <ul className="text-sm text-gray-600 space-y-2 text-left">
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Upload de imagens dos trabalhos
+                      {t('feature1')}
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Categorização por tipo de trabalho
+                      {t('feature2')}
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Sistema de avaliações
+                      {t('feature3')}
                     </li>
                     <li className="flex items-center">
                       <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      Compartilhamento público
+                      {t('feature4')}
                     </li>
                   </ul>
                 </div>
@@ -79,7 +83,7 @@ export default function PortfolioPage() {
                 <div className="mt-8">
                   <Button asChild className="bg-blue-600 hover:bg-blue-700">
                     <Link href="/feed">
-                      Voltar ao Feed
+                      {t('backToFeed')}
                     </Link>
                   </Button>
                 </div>

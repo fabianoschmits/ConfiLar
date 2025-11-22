@@ -11,8 +11,8 @@ interface LocaleContextType {
   locale: Locale
   country: Country
   locationService: LocationService
-  setLocale: (locale: Locale) => void
-  setCountry: (country: Country) => void
+  setLocale: (locale: Locale) => Promise<void>
+  setCountry: (country: Country) => Promise<void>
   t: (key: string, params?: Record<string, string | number>) => string
 }
 
@@ -24,7 +24,30 @@ const COUNTRY_STORAGE_KEY = 'confilar-country'
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
+  const [user, setUser] = useState<any>(null)
   const [isInitialized, setIsInitialized] = useState(false)
+  
+  // Buscar usuário do Supabase diretamente (sem depender do AuthContext)
+  useEffect(() => {
+    const getUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error)
+      }
+    }
+    getUser()
+    
+    // Escutar mudanças de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
   
   // Detectar idioma inicial
   const getInitialLocale = async (): Promise<Locale> => {
@@ -151,21 +174,46 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, [country])
 
   // Função para mudar locale
-  const setLocale = useCallback((newLocale: Locale) => {
+  const setLocale = useCallback(async (newLocale: Locale) => {
     setLocaleState(newLocale)
     // Atualizar país baseado no locale se não foi definido manualmente
     const newCountry = localeToCountry[newLocale]
     if (country === localeToCountry[locale]) {
       setCountryState(newCountry)
+      locationService.setCountry(newCountry)
     }
+    
+    // Salvar no banco de dados se usuário estiver logado
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ locale: newLocale, country: newCountry })
+          .eq('id', user.id)
+        
+        if (error) {
+          console.error('Erro ao atualizar locale no banco:', error)
+        }
+      } catch (error) {
+        console.error('Erro ao salvar locale no banco:', error)
+      }
+    }
+    
+    // Salvar no localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
+      localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
+    }
+    
     // Recarregar página para aplicar mudanças
     router.refresh()
-  }, [locale, country, router])
+  }, [locale, country, router, user, locationService])
 
   // Função para mudar país
-  const setCountry = useCallback((newCountry: Country) => {
+  const setCountry = useCallback(async (newCountry: Country) => {
     setCountryState(newCountry)
     locationService.setCountry(newCountry)
+    
     // Atualizar locale baseado no país se não foi definido manualmente
     const newLocale = Object.entries(localeToCountry).find(
       ([_, c]) => c === newCountry
@@ -176,8 +224,38 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     )?.[0]) {
       setLocaleState(newLocale)
     }
+    
+    // Salvar no banco de dados se usuário estiver logado
+    if (user) {
+      try {
+        const updateData: { country: Country; locale?: Locale } = { country: newCountry }
+        if (newLocale) {
+          updateData.locale = newLocale
+        }
+        
+        const { error } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', user.id)
+        
+        if (error) {
+          console.error('Erro ao atualizar país no banco:', error)
+        }
+      } catch (error) {
+        console.error('Erro ao salvar país no banco:', error)
+      }
+    }
+    
+    // Salvar no localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(COUNTRY_STORAGE_KEY, newCountry)
+      if (newLocale) {
+        localStorage.setItem(LOCALE_STORAGE_KEY, newLocale)
+      }
+    }
+    
     router.refresh()
-  }, [country, locale, locationService, router])
+  }, [country, locale, locationService, router, user])
 
   // Função de tradução simples (placeholder - use useTranslations do next-intl nos componentes)
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {

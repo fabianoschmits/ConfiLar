@@ -35,8 +35,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { TransactionSkeleton } from '@/components/ui/skeleton'
+import { useTranslations } from 'next-intl'
 
 export default function ConfiPointsDashboardPage() {
+  const t = useTranslations('confipoints')
+  const tCommon = useTranslations('common')
   const { user, profile } = useAuthContext()
   const { balance, loading: loadingPoints } = usePoints(user?.id)
   const { transactions, loading: loadingHistory } = usePointsHistory(user?.id, { limit: 200 })
@@ -79,8 +82,8 @@ export default function ConfiPointsDashboardPage() {
       type: isSent ? 'transfer_sent' : 'transfer_received',
       amount: isSent ? -transfer.points_amount : transfer.points_amount,
       description: isSent 
-        ? `Transferiu ${transfer.points_amount.toLocaleString()} pontos para ${otherUser?.full_name || 'Usuário'}`
-        : `Recebeu transferência de ${transfer.points_amount.toLocaleString()} pontos de ${otherUser?.full_name || 'Usuário'}`,
+        ? t('transferredPoints', { amount: transfer.points_amount.toLocaleString(), user: otherUser?.full_name || tCommon('user') })
+        : t('receivedTransfer', { amount: transfer.points_amount.toLocaleString(), user: otherUser?.full_name || tCommon('user') }),
       date: transfer.created_at,
       status: 'completed',
       source: 'transfer',
@@ -117,11 +120,11 @@ export default function ConfiPointsDashboardPage() {
     switch (t.type) {
       case 'earn':
         typeLabel = 'received'
-        if (!description) description = `Ganhou ${Math.abs(t.amount)} pontos`
+        if (!description) description = t('earnedPoints', { amount: Math.abs(t.amount) })
         break
       case 'spend':
         typeLabel = 'spent'
-        if (!description) description = `Gastou ${Math.abs(t.amount)} pontos`
+        if (!description) description = t('spentPoints', { amount: Math.abs(t.amount) })
         break
       case 'transfer':
         // Se chegar aqui, é uma transferência antiga sem dados completos
@@ -129,45 +132,45 @@ export default function ConfiPointsDashboardPage() {
         typeLabel = isPositive ? 'transfer_received' : 'transfer_sent'
         if (!description) {
           // Tentar pegar nome do usuário do metadata
-          const otherUserName = t.metadata?.to_user_name || t.metadata?.from_user_name || t.metadata?.user_name || 'Usuário'
+          const otherUserName = t.metadata?.to_user_name || t.metadata?.from_user_name || t.metadata?.user_name || tCommon('user')
           const otherUserId = t.metadata?.to_user_id || t.metadata?.from_user_id
           
           if (isPositive && otherUserId) {
-            description = `Recebeu transferência de ${Math.abs(t.amount)} pontos de ${otherUserName}`
+            description = t('receivedTransfer', { amount: Math.abs(t.amount), user: otherUserName })
           } else if (!isPositive && otherUserId) {
-            description = `Transferiu ${Math.abs(t.amount)} pontos para ${otherUserName}`
+            description = t('transferredPoints', { amount: Math.abs(t.amount), user: otherUserName })
           } else {
             description = isPositive 
-              ? `Recebeu transferência de ${Math.abs(t.amount)} pontos`
-              : `Transferiu ${Math.abs(t.amount)} pontos`
+              ? t('receivedTransferNoUser', { amount: Math.abs(t.amount) })
+              : t('transferredPointsNoUser', { amount: Math.abs(t.amount) })
           }
         }
         break
       case 'purchase':
         typeLabel = 'purchase'
-        if (!description) description = `Comprou ${Math.abs(t.amount)} pontos`
+        if (!description) description = t('purchasedPoints', { amount: Math.abs(t.amount) })
         break
       case 'refund':
         typeLabel = 'refund'
-        if (!description) description = `Reembolso de ${Math.abs(t.amount)} pontos`
+        if (!description) description = t('refundPoints', { amount: Math.abs(t.amount) })
         break
       default:
         typeLabel = t.type || 'other'
-        if (!description) description = `Transação de ${Math.abs(t.amount)} pontos`
+        if (!description) description = t('transactionPoints', { amount: Math.abs(t.amount) })
     }
 
     // Adicionar informações sobre a fonte se disponível
     if (t.source) {
       const sourceLabels: Record<string, string> = {
-        'referral': '(Indicação)',
-        'post': '(Post)',
-        'like': '(Curtida)',
-        'daily': '(Bônus Diário)',
-        'purchase': '(Compra)',
-        'transfer': '(Transferência)',
-        'premium_post': '(Post Premium)',
-        'store': '(Loja)',
-        'bonus': '(Bônus)'
+        'referral': `(${t('sourceReferral')})`,
+        'post': `(${t('sourcePost')})`,
+        'like': `(${t('sourceLike')})`,
+        'daily': `(${t('sourceDaily')})`,
+        'purchase': `(${t('sourcePurchase')})`,
+        'transfer': `(${t('sourceTransfer')})`,
+        'premium_post': `(${t('sourcePremiumPost')})`,
+        'store': `(${t('sourceStore')})`,
+        'bonus': `(${t('sourceBonus')})`
       }
       if (sourceLabels[t.source]) {
         description += ` ${sourceLabels[t.source]}`
@@ -242,10 +245,10 @@ export default function ConfiPointsDashboardPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Meus ConfiPoints
+                    {t('myConfiPoints')}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
-                      Gerencie seus pontos e transações
+                      {t('managePoints')}
                   </p>
                   </div>
                 </div>
@@ -259,7 +262,7 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Saldo Atual
+                      {t('balance')}
                     </div>
                     <Coins className="h-5 w-5 text-yellow-600" />
                   </div>
@@ -279,7 +282,7 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Total Ganho
+                      {t('totalEarned')}
                     </div>
                     <ArrowUpRight className="h-5 w-5 text-green-600" />
                   </div>
@@ -287,7 +290,7 @@ export default function ConfiPointsDashboardPage() {
                     {loadingPoints ? '...' : (balance?.total_earned || 0).toLocaleString('pt-BR')}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Pontos recebidos
+                    {t('pointsReceived')}
                   </p>
                 </CardContent>
               </Card>
@@ -297,7 +300,7 @@ export default function ConfiPointsDashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Total Gasto
+                      {t('totalSpent')}
                     </div>
                     <ArrowDownRight className="h-5 w-5 text-red-600" />
                   </div>
@@ -305,7 +308,7 @@ export default function ConfiPointsDashboardPage() {
                     {loadingPoints ? '...' : (balance?.total_spent || 0).toLocaleString('pt-BR')}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Pontos utilizados
+                    {t('pointsUsed')}
                   </p>
                 </CardContent>
               </Card>
@@ -318,10 +321,10 @@ export default function ConfiPointsDashboardPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white">
-                        Progresso para {nextLevel.name}
+                        {t('progressTo')} {nextLevel.name}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Faltam {(nextLevel.target - (balance?.balance || 0)).toLocaleString('pt-BR')} pontos
+                        {t('pointsRemaining')} {(nextLevel.target - (balance?.balance || 0)).toLocaleString('pt-BR')} {t('points')}
                       </p>
                     </div>
                     <Badge variant="outline">
@@ -336,10 +339,10 @@ export default function ConfiPointsDashboardPage() {
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="visao-geral">Visão Geral</TabsTrigger>
-                <TabsTrigger value="ganhar">Como Ganhar</TabsTrigger>
-                <TabsTrigger value="usar">Como Usar</TabsTrigger>
-                <TabsTrigger value="historico">Histórico</TabsTrigger>
+                <TabsTrigger value="visao-geral">{t('overview')}</TabsTrigger>
+                <TabsTrigger value="ganhar">{t('howToEarn')}</TabsTrigger>
+                <TabsTrigger value="usar">{t('howToUse')}</TabsTrigger>
+                <TabsTrigger value="historico">{t('history')}</TabsTrigger>
               </TabsList>
 
               {/* Visão Geral */}
@@ -358,7 +361,7 @@ export default function ConfiPointsDashboardPage() {
                         <Button className="w-full justify-between" variant="outline">
                           <span className="flex items-center gap-2">
                             <Crown className="h-4 w-4" />
-                            Loja Premium
+                            {t('premiumStore')}
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -367,7 +370,7 @@ export default function ConfiPointsDashboardPage() {
                         <Button className="w-full justify-between" variant="outline">
                           <span className="flex items-center gap-2">
                             <Send className="h-4 w-4" />
-                            Transferir Pontos
+                            {t('transferPoints')}
                           </span>
                           <ChevronRight className="h-4 w-4" />
                         </Button>
@@ -380,13 +383,13 @@ export default function ConfiPointsDashboardPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <History className="h-5 w-5 text-blue-600" />
-                        Últimas Transações
+                        {t('latestTransactions')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {allTransactions.length === 0 ? (
                         <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-                          Nenhuma transação ainda
+                          {t('noTransactions')}
                         </p>
                       ) : (
                         <div className="space-y-3">
@@ -429,11 +432,10 @@ export default function ConfiPointsDashboardPage() {
                       <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                       <div>
                         <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                          Sistema de Ganho de Pontos
+                          {t('pointsSystem')}
                         </h3>
                         <p className="text-sm text-blue-800 dark:text-blue-200">
-                          Atualmente, a ÚNICA forma de ganhar ConfiPoints GRATUITAMENTE é através do{' '}
-                          <strong>Sistema de Indicações</strong>. Você também pode comprar pontos diretamente.
+                          {t('onlyWayToEarn')} <strong>{t('referralProgram')}</strong>. {t('canAlsoBuy')}
                         </p>
                       </div>
                     </div>
@@ -444,20 +446,20 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-green-600" />
-                      Sistema de Indicações (Referral)
+                      {t('referralSystem')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      Indique amigos e ganhe pontos quando eles atingirem marcos na plataforma:
+                      {t('referralDescription')}
                     </p>
                     <div className="space-y-3">
                       {[
-                        { action: 'Amigo se cadastrou', points: 200, icon: '👋' },
-                        { action: 'Amigo completou perfil', points: 150, icon: '📋' },
-                        { action: 'Amigo fez primeiro post', points: 100, icon: '📝' },
-                        { action: 'Amigo fez primeira avaliação', points: 100, icon: '⭐' },
-                        { action: 'Amigo ativo por 30 dias', points: 300, icon: '🔥' }
+                        { action: t('friendRegistered'), points: 200, icon: '👋' },
+                        { action: t('friendCompletedProfile'), points: 150, icon: '📋' },
+                        { action: t('friendFirstPost'), points: 100, icon: '📝' },
+                        { action: t('friendFirstReview'), points: 100, icon: '⭐' },
+                        { action: t('friendActive30Days'), points: 300, icon: '🔥' }
                       ].map((item, index) => (
                         <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                           <div className="flex items-center gap-3">
@@ -490,7 +492,7 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <ShoppingBag className="h-5 w-5 text-blue-600" />
-                      Comprar Pontos
+                      {t('buyPoints')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -552,7 +554,7 @@ export default function ConfiPointsDashboardPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Crown className="h-5 w-5 text-yellow-600" />
-                        Loja Premium
+                        {t('premiumStore')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -561,7 +563,7 @@ export default function ConfiPointsDashboardPage() {
                       </p>
                       <Link href="/confipoints/comprar">
                         <Button className="w-full" variant="outline">
-                          Loja Premium
+                          {t('premiumStore')}
                         </Button>
                       </Link>
                     </CardContent>
@@ -580,7 +582,7 @@ export default function ConfiPointsDashboardPage() {
                       </p>
                       <Link href="/confipoints/transferir">
                         <Button className="w-full" variant="outline">
-                          Transferir
+                          {t('transfer')}
                         </Button>
                       </Link>
                     </CardContent>
@@ -612,7 +614,7 @@ export default function ConfiPointsDashboardPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <History className="h-5 w-5 text-gray-600" />
-                      Todas as Transações
+                      {t('allTransactions')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

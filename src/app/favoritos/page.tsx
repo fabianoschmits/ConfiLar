@@ -29,8 +29,12 @@ import { useRouter } from 'next/navigation'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { useTranslations } from 'next-intl'
 
 export default function FavoritesPage() {
+  const t = useTranslations('favorites')
+  const tCommon = useTranslations('common')
+  const tProfile = useTranslations('profile')
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'all' | 'professionals' | 'clients'>('all')
   const { user, profile } = useAuthContext()
@@ -132,13 +136,13 @@ export default function FavoritesPage() {
             <CardContent className="p-8 text-center">
               <Heart className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Faça Login para Ver Seus Favoritos
+                {t('loginRequired')}
               </h2>
               <p className="text-gray-600 mb-6">
-                Você precisa estar logado para acessar sua lista de favoritos.
+                {t('loginDescription')}
               </p>
               <Button asChild>
-                <a href="/auth">Fazer Login</a>
+                <a href="/auth">{tCommon('login')}</a>
               </Button>
             </CardContent>
           </Card>
@@ -156,10 +160,10 @@ export default function FavoritesPage() {
             <div className="text-center mb-4">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Heart className="h-8 w-8 text-red-500" />
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Meus Favoritos</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
               </div>
               <p className="text-gray-600 dark:text-gray-400">
-                Pessoas que você adicionou aos seus favoritos
+                {t('description')}
               </p>
             </div>
 
@@ -170,21 +174,21 @@ export default function FavoritesPage() {
                   {/* Total de Favoritos */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Total</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{tCommon('total')}</p>
                     <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalFavorites}</p>
                   </div>
                   
                   {/* Profissionais */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Profissionais</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('professionals')}</p>
                     <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.professionalFavorites}</p>
                   </div>
                   
                   {/* Clientes */}
                   <div className="flex flex-col items-center min-w-0 flex-1">
                     <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">Clientes</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('clients')}</p>
                     <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.clientFavorites}</p>
                   </div>
                   
@@ -227,7 +231,7 @@ export default function FavoritesPage() {
                   }`}
                 >
                   <Users className="h-4 w-4" />
-                  <span>Todos</span>
+                  <span>{tCommon('all')}</span>
                   <Badge variant="secondary" className="ml-1 text-xs">
                     {stats.totalFavorites}
                   </Badge>
@@ -242,7 +246,7 @@ export default function FavoritesPage() {
                   }`}
                 >
                   <Briefcase className="h-4 w-4" />
-                  <span>Profissionais</span>
+                  <span>{t('professionals')}</span>
                   <Badge variant="secondary" className="ml-1 text-xs">
                     {stats.professionalFavorites}
                   </Badge>
@@ -257,7 +261,7 @@ export default function FavoritesPage() {
                   }`}
                 >
                   <User className="h-4 w-4" />
-                  <span>Clientes</span>
+                  <span>{t('clients')}</span>
                   <Badge variant="secondary" className="ml-1 text-xs">
                     {stats.clientFavorites}
                   </Badge>
@@ -272,10 +276,10 @@ export default function FavoritesPage() {
               {favorites.length === 0 ? (
                 <EmptyState
                   icon={<Heart className="h-16 w-16 text-gray-400" />}
-                  title="Nenhum favorito ainda"
-                  description="Comece adicionando pessoas aos seus favoritos para encontrá-las facilmente depois."
+                  title={t('noFavorites')}
+                  description={t('noFavoritesDescription')}
                   action={{
-                    label: 'Buscar Profissionais',
+                    label: t('searchProfessionals'),
                     onClick: () => router.push('/buscar')
                   }}
                 />
@@ -353,7 +357,7 @@ export default function FavoritesPage() {
 
                             <div className="flex items-center text-xs text-gray-500">
                               <Calendar className="h-3 w-3 mr-1" />
-                              Favoritado em {formatDate(favorite.created_at)}
+                              {t('favoritedOn')} {formatDate(favorite.created_at)}
                             </div>
 
                             {favorite.professional?.user_type === 'professional' && (
@@ -378,7 +382,7 @@ export default function FavoritesPage() {
                             className="bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-300"
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            Ver Perfil
+                            {tProfile('viewProfile')}
                           </Button>
                           <Button
                             size="sm"
@@ -388,6 +392,7 @@ export default function FavoritesPage() {
                                 ? 'bg-gray-700 hover:bg-gray-800' 
                                 : 'bg-gray-500 hover:bg-gray-600'
                             } text-white`}
+                            title={tProfile('contact')}
                           >
                             <MessageCircle className="h-4 w-4" />
                           </Button>
