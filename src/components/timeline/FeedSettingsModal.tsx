@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Search, MapPin, Save, User, Hash, Key, RotateCcw } from 'lucide-react'
+import { X, Search, MapPin, Save, RotateCcw } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
@@ -44,10 +44,7 @@ export function FeedSettingsModal({
   const { profile, user } = useAuthContext()
   const { country: contextCountry } = useLocale()
   const { estados, loadCidades } = useIBGE()
-  const [searchBy, setSearchBy] = useState<'keywords' | 'username' | 'userid'>('keywords')
-  const [keywords, setKeywords] = useState('')
-  const [username, setUsername] = useState('')
-  const [userid, setUserid] = useState('')
+  const [searchValue, setSearchValue] = useState('')
   const [selectedLocationType, setSelectedLocationType] = useState<LocationFilter['type']>(currentLocationFilter.type)
   const [selectedCountry, setSelectedCountry] = useState<string>((profile as any)?.country || contextCountry || 'BR')
   const [selectedCity, setSelectedCity] = useState(currentLocationFilter.city || '')
@@ -88,19 +85,18 @@ export function FeedSettingsModal({
       // Carregar preferências salvas do perfil
       // NÃO carregar preferências de pesquisa do banco (keywords, username, userid)
       // A pesquisa é apenas temporária e não é salva
-      // Apenas usar o currentSearch atual (se houver) para preencher os campos
+      // Apenas usar o currentSearch atual (se houver) para preencher o campo
       if (currentSearch) {
-        // Detectar tipo de pesquisa do currentSearch
+        // Remover prefixos se houver
+        let cleanSearch = currentSearch
         if (currentSearch.startsWith('user:')) {
-          setSearchBy('username')
-          setUsername(currentSearch.replace('user:', ''))
+          cleanSearch = currentSearch.replace('user:', '')
         } else if (currentSearch.startsWith('id:')) {
-          setSearchBy('userid')
-          setUserid(currentSearch.replace('id:', ''))
-        } else {
-          setSearchBy('keywords')
-          setKeywords(currentSearch)
+          cleanSearch = currentSearch.replace('id:', '')
         }
+        setSearchValue(cleanSearch)
+      } else {
+        setSearchValue('')
       }
       setSelectedLocationType(currentLocationFilter.type)
       setSelectedCity(currentLocationFilter.city || profile?.location_city || '')
@@ -200,18 +196,34 @@ export function FeedSettingsModal({
         country: countryName
       }
 
-      // Determinar o valor de pesquisa baseado no tipo selecionado
-      let searchValue = ''
-      if (searchBy === 'keywords') {
-        searchValue = keywords
-      } else if (searchBy === 'username') {
-        searchValue = `user:${username}`
-      } else if (searchBy === 'userid') {
-        searchValue = `id:${userid}`
+      // Determinar o valor de pesquisa - detectar automaticamente o tipo
+      let finalSearchValue = ''
+      if (searchValue.trim()) {
+        // Se começar com "user:" ou "id:", usar como está
+        if (searchValue.trim().startsWith('user:')) {
+          finalSearchValue = searchValue.trim()
+        } else if (searchValue.trim().startsWith('id:')) {
+          finalSearchValue = searchValue.trim()
+        } else {
+          // Tentar detectar se é UUID (ID de usuário)
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+          if (uuidRegex.test(searchValue.trim())) {
+            finalSearchValue = `id:${searchValue.trim()}`
+          } else {
+            // Caso contrário, tratar como palavras-chave ou nome de usuário
+            // Se tiver espaço, é palavras-chave; se não, pode ser nome de usuário
+            if (searchValue.trim().includes(' ')) {
+              finalSearchValue = searchValue.trim()
+            } else {
+              // Tentar como nome de usuário primeiro
+              finalSearchValue = `user:${searchValue.trim()}`
+            }
+          }
+        }
       }
 
       // Atualizar filtro local (pesquisa é temporária, não salva)
-      onSearchChange(searchValue)
+      onSearchChange(finalSearchValue)
       onLocationFilterChange(locationFilter)
 
       // Salvar APENAS localização no banco de dados (cidade, estado, tipo)
@@ -245,8 +257,10 @@ export function FeedSettingsModal({
 
   return (
     <div 
+      data-feed-settings-modal
       className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[85vh] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between">
@@ -270,73 +284,18 @@ export function FeedSettingsModal({
               Pesquisa no Feed
             </label>
             
-            {/* Tipo de Pesquisa */}
-            <div className="flex gap-1.5 mb-2">
-              <button
-                onClick={() => setSearchBy('keywords')}
-                className={`flex-1 px-2 py-1.5 rounded-md border transition-all text-xs font-medium ${
-                  searchBy === 'keywords'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <Key className="h-3 w-3 inline mr-0.5" />
-                <span className="hidden sm:inline">Palavras</span>
-                <span className="sm:hidden">KW</span>
-              </button>
-              <button
-                onClick={() => setSearchBy('username')}
-                className={`flex-1 px-2 py-1.5 rounded-md border transition-all text-xs font-medium ${
-                  searchBy === 'username'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <User className="h-3 w-3 inline mr-0.5" />
-                <span className="hidden sm:inline">Usuário</span>
-                <span className="sm:hidden">User</span>
-              </button>
-              <button
-                onClick={() => setSearchBy('userid')}
-                className={`flex-1 px-2 py-1.5 rounded-md border transition-all text-xs font-medium ${
-                  searchBy === 'userid'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
-              >
-                <Hash className="h-3 w-3 inline mr-0.5" />
-                ID
-              </button>
+            <div className="space-y-1.5">
+              <Input
+                type="text"
+                placeholder="Palavras-chave, user:nome ou id:uuid..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                Digite palavras-chave, <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded">user:nome</code> ou <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded">id:uuid</code>
+              </p>
             </div>
-
-            {/* Campo de Pesquisa baseado no tipo */}
-            {searchBy === 'keywords' && (
-              <Input
-                type="text"
-                placeholder="Palavras-chave..."
-                value={keywords}
-                onChange={(e) => setKeywords(e.target.value)}
-                className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              />
-            )}
-            {searchBy === 'username' && (
-              <Input
-                type="text"
-                placeholder="Nome do usuário..."
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              />
-            )}
-            {searchBy === 'userid' && (
-              <Input
-                type="text"
-                placeholder="ID do usuário..."
-                value={userid}
-                onChange={(e) => setUserid(e.target.value)}
-                className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono"
-              />
-            )}
           </div>
 
           {/* Localização */}
@@ -370,12 +329,14 @@ export function FeedSettingsModal({
                       const estado = estados.find(e => e.sigla === stateCode)
                       if (estado) {
                         setSelectedState(estado.nome)
+                        loadCidades(estado.sigla)
                       }
                     } else {
                       // Para EUA, usar o código do estado diretamente
                       setSelectedState(stateCode)
                     }
                     setSelectedCity('')
+                    // NÃO fechar o modal ao selecionar estado
                   }}
                   onCityChange={(city) => {
                     setSelectedCity(city)
@@ -470,7 +431,9 @@ export function FeedSettingsModal({
                         const estado = estados.find(e => e.sigla === sigla)
                         if (estado) {
                           setSelectedState(estado.nome)
+                          loadCidades(estado.sigla)
                         }
+                        // NÃO fechar o modal ao selecionar estado
                       }}
                       placeholder="Selecione o estado"
                       className="w-full"

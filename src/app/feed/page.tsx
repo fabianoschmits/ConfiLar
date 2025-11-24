@@ -74,16 +74,23 @@ export default function FeedPage() {
   const { currentFilter, setFilter } = useLocationFilters()
   const { storyGroups, isLoading: storiesLoading, refetch: refetchStories } = useStories()
 
-  // Fechar dropdown quando clicar fora
+  // Fechar dropdown quando clicar fora (mas não quando clicar dentro do modal)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (feedSettingsRef.current && !feedSettingsRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      // Verificar se o clique foi fora do modal e do botão que abre o modal
+      if (feedSettingsRef.current && 
+          !feedSettingsRef.current.contains(target) &&
+          !(target instanceof Element && target.closest('[data-feed-settings-modal]'))) {
         setShowFeedSettings(false)
       }
     }
 
     if (showFeedSettings) {
-      document.addEventListener('mousedown', handleClickOutside)
+      // Usar um pequeno delay para evitar fechar imediatamente ao abrir
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside)
+      }, 100)
     }
 
     return () => {

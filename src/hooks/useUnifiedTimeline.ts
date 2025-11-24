@@ -196,26 +196,42 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           )
         `
         
-        let query1 = supabase
-          .from('feed_posts')
-          .select(selectFields)
-          .eq('is_active', true)
-          .eq('is_public', true)
-          .ilike('location_city', `%${locationFilter.city}%`)
-          .eq('location_state', locationFilter.state)
-          .order('created_at', { ascending: false })
-          .limit(ITEMS_PER_PAGE * 2) // Buscar mais para combinar depois
+        // IMPORTANTE: Precisamos buscar posts que tenham:
+        // - Cidade correspondente (ilike)
+        // - Estado correspondente (pode ser sigla OU nome completo)
+        // - País correspondente (ou NULL)
         
-        if (countryCode) {
-          query1 = query1.or(`location_country.eq.${countryCode},location_country.is.null`)
+        // Fazer queries separadas para evitar problemas com .or() que substitui filtros anteriores
+        const allResults: any[] = []
+        
+        // Query 1: estado como sigla (sempre buscar se o filtro é sigla)
+        if (locationFilter.state.length === 2) {
+          // Buscar posts com estado exatamente igual à sigla
+          const baseQuery1 = supabase
+            .from('feed_posts')
+            .select(selectFields)
+            .eq('is_active', true)
+            .eq('is_public', true)
+            .ilike('location_city', `%${locationFilter.city}%`)
+            .eq('location_state', locationFilter.state)
+            .order('created_at', { ascending: false })
+            .limit(ITEMS_PER_PAGE * 2)
+          
+          if (countryCode) {
+            const { data: dataWithCountry } = await baseQuery1.eq('location_country', countryCode)
+            const { data: dataWithoutCountry } = await baseQuery1.is('location_country', null)
+            if (dataWithCountry) allResults.push(...dataWithCountry)
+            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+          } else {
+            const { data } = await baseQuery1
+            if (data) allResults.push(...data)
+          }
         }
         
-        const { data: data1 } = await query1
-        
-        // Query 2: estado como nome completo (se diferente)
-        let data2: any[] = []
-        if (normalizedState !== locationFilter.state) {
-          let query2 = supabase
+        // Query 2: estado como nome completo (sempre buscar, pois pode haver posts com nome completo)
+        // Se normalizamos e temos um nome diferente, buscar por esse nome também
+        if (normalizedState && normalizedState !== locationFilter.state) {
+          const baseQuery2 = supabase
             .from('feed_posts')
             .select(selectFields)
             .eq('is_active', true)
@@ -226,18 +242,49 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             .limit(ITEMS_PER_PAGE * 2)
           
           if (countryCode) {
-            query2 = query2.or(`location_country.eq.${countryCode},location_country.is.null`)
+            const { data: dataWithCountry } = await baseQuery2.eq('location_country', countryCode)
+            const { data: dataWithoutCountry } = await baseQuery2.is('location_country', null)
+            if (dataWithCountry) allResults.push(...dataWithCountry)
+            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+          } else {
+            const { data } = await baseQuery2
+            if (data) allResults.push(...data)
           }
-          
-          const { data } = await query2
-          data2 = data || []
         }
         
-        // Combinar e remover duplicatas
-        const allPosts = [...(data1 || []), ...data2]
-        postsFromLocationFilter = allPosts.filter((post, index, self) => 
+        // Query 3: Se o filtro é nome completo (não sigla), buscar também por ilike do nome original
+        if (locationFilter.state.length > 2) {
+          const baseQuery3 = supabase
+            .from('feed_posts')
+            .select(selectFields)
+            .eq('is_active', true)
+            .eq('is_public', true)
+            .ilike('location_city', `%${locationFilter.city}%`)
+            .ilike('location_state', `%${locationFilter.state}%`)
+            .order('created_at', { ascending: false })
+            .limit(ITEMS_PER_PAGE * 2)
+          
+          if (countryCode) {
+            const { data: dataWithCountry } = await baseQuery3.eq('location_country', countryCode)
+            const { data: dataWithoutCountry } = await baseQuery3.is('location_country', null)
+            if (dataWithCountry) allResults.push(...dataWithCountry)
+            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+          } else {
+            const { data } = await baseQuery3
+            if (data) allResults.push(...data)
+          }
+        }
+        
+        // Remover duplicatas e ordenar
+        const uniquePosts = allResults.filter((post, index, self) => 
           index === self.findIndex(p => p.id === post.id)
         )
+        
+        const data1 = uniquePosts
+        const data2: any[] = [] // Não precisamos mais de data2 separado
+        
+        // Já combinamos e removemos duplicatas acima
+        postsFromLocationFilter = data1
       }
       
       // Aplicar filtros de localização normais (para outros tipos)
