@@ -586,6 +586,11 @@ export default function FeedPage() {
                   try {
                     // Se for post premium, usar addPremiumPost
                     if (data.isPremium && data.pointsToSpend && data.durationDays) {
+                      // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
+                      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
+                      const finalCityPremium = data.location_city !== undefined ? data.location_city : profile.location_city
+                      const finalStatePremium = data.location_state !== undefined ? data.location_state : profile.location_state
+                      
                       await addPremiumPost({
                         type: 'post',
                         user_id: profile.id,
@@ -596,8 +601,9 @@ export default function FeedPage() {
                         description: data.description,
                         images: data.images,
                         service_category_id: data.service,
-                        location_state: profile.location_state,
-                        location_city: profile.location_city,
+                        location_state: finalStatePremium,
+                        location_city: finalCityPremium,
+                        location_country: data.location_country || (profile as any)?.country || 'BR',
                         pointsToSpend: data.pointsToSpend,
                         durationDays: data.durationDays,
                         likes_count: 0,
@@ -606,6 +612,11 @@ export default function FeedPage() {
                       } as any)
                     } else {
                       // Post normal
+                      // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
+                      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
+                      const finalCity = data.location_city !== undefined ? data.location_city : profile.location_city
+                      const finalState = data.location_state !== undefined ? data.location_state : profile.location_state
+                      
                       await addPost({
                         type: 'post',
                         user_id: profile.id,
@@ -616,8 +627,8 @@ export default function FeedPage() {
                         description: data.description,
                         images: data.images,
                         service_category_id: data.service,
-                        location_state: data.location_state || profile.location_state,
-                        location_city: data.location_city || profile.location_city,
+                        location_state: finalState,
+                        location_city: finalCity,
                         location_country: data.location_country || (profile as any)?.country || 'BR',
                         likes_count: 0,
                         comments_count: 0,

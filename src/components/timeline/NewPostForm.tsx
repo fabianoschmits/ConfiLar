@@ -200,6 +200,11 @@ export function NewPostForm({
       
       // NÃO remover URLs do YouTube aqui - deixar o hook fazer isso após detectar o vídeo
       // Isso garante que o vídeo seja detectado e salvo no metadata antes de remover o link
+      // IMPORTANTE: Se showLocation está true, usar os valores selecionados mesmo se vazios
+      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva corretamente
+      const finalCity = showLocation ? (selectedCity || '') : (selectedCity || profile?.location_city || '')
+      const finalStateValue = showLocation ? (finalState || '') : (finalState || profile?.location_state || '')
+      
       onSubmit({
         description: post.description.trim(), // Enviar descrição completa (com link se houver)
         images: post.images,
@@ -208,8 +213,8 @@ export function NewPostForm({
         pointsToSpend: post.isPremium ? post.pointsToSpend : undefined,
         durationDays: post.isPremium ? post.durationDays : undefined,
         location_country: selectedCountry || (profile as any)?.country || 'BR',
-        location_state: finalState || profile?.location_state || '',
-        location_city: selectedCity || profile?.location_city || ''
+        location_state: finalStateValue,
+        location_city: finalCity
       })
     }
   }
