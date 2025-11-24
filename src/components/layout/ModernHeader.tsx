@@ -360,19 +360,11 @@ export function ModernHeader({
                             </div>
                           </div>
                         </Link>
-                        {/* Toggle de Disponibilidade - separado do link */}
-                        <div className="flex-shrink-0 ml-2">
+                        {/* Toggle de Disponibilidade e Idioma - juntos */}
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0 ml-2">
                           <AvailabilityToggleCompact />
-                        </div>
-                      </div>
-
-                      {/* Seletor de Idioma - dentro do dropdown */}
-                      <div className="py-2 border-b border-gray-200 dark:border-gray-700 px-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {t('language') || 'Idioma'}
-                          </span>
-                          <LanguageSelector />
+                          {/* Seletor de Idioma - apenas ícone */}
+                          <LanguageSelector iconOnly={true} compact={true} />
                         </div>
                       </div>
 

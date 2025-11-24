@@ -22,7 +22,12 @@ const countries: { code: Country; name: string; flag: string; locale: Locale }[]
   { code: 'US', name: 'United States', flag: '/imagens/flags/us.svg', locale: 'en' },
 ]
 
-export function LanguageSelector() {
+interface LanguageSelectorProps {
+  iconOnly?: boolean
+  compact?: boolean
+}
+
+export function LanguageSelector({ iconOnly = false, compact = false }: LanguageSelectorProps = {}) {
   const { locale, country, setLocale, setCountry } = useLocale()
   const t = useTranslations('common')
   const router = useRouter()
@@ -74,18 +79,20 @@ export function LanguageSelector() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="sm"
-          className="flex items-center gap-2 h-9 px-2"
+          size={compact ? "sm" : "sm"}
+          className={`flex items-center ${iconOnly ? 'gap-0 h-7 w-7 p-0' : 'gap-2 h-9 px-2'}`}
           aria-label="Selecionar país e idioma"
         >
           <Image
             src={currentCountry.flag}
             alt={`${currentCountry.name} flag`}
-            width={20}
-            height={14}
+            width={iconOnly ? 16 : 20}
+            height={iconOnly ? 12 : 14}
             className="rounded-sm object-cover"
           />
-          <span className="hidden md:inline text-sm">{currentCountry.name}</span>
+          {!iconOnly && (
+            <span className="hidden md:inline text-sm">{currentCountry.name}</span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
