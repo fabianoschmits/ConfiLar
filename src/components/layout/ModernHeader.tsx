@@ -293,11 +293,6 @@ export function ModernHeader({
 
             {/* Right side - Actions */}
             <div className="flex items-center">
-              {/* Seletor de Idioma */}
-              <div className="relative -ml-1">
-                <LanguageSelector />
-              </div>
-              
               {/* Toggle de Tema */}
               <div className="relative -ml-1">
                 <ThemeToggle />
@@ -368,6 +363,16 @@ export function ModernHeader({
                         {/* Toggle de Disponibilidade - separado do link */}
                         <div className="flex-shrink-0 ml-2">
                           <AvailabilityToggleCompact />
+                        </div>
+                      </div>
+
+                      {/* Seletor de Idioma - dentro do dropdown */}
+                      <div className="py-2 border-b border-gray-200 dark:border-gray-700 px-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {t('language') || 'Idioma'}
+                          </span>
+                          <LanguageSelector />
                         </div>
                       </div>
 
@@ -602,111 +607,6 @@ export function ModernHeader({
                         )}
                       </div>
 
-                      {/* Teste Classificados */}
-                      <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('teste-classificados')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                            <span className="text-purple-700 dark:text-purple-300">Teste Classificados</span>
-                          </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('teste-classificados') ? 'rotate-180' : ''}`} />
-                        </button>
-                        {expandedSections.has('teste-classificados') && (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 px-2 pb-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v1')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V1</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v2')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V2</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v3')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V3</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v4')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V4</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v5')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V5</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v6')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V6</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v7')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V7</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v8')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V8</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v9')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V9</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v10')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V10</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleNavigation('/classificados-v11')}
-                              className="flex items-center gap-1 text-xs py-1 h-7"
-                            >
-                              <span className="truncate">V11</span>
-                            </Button>
-                          </div>
-                        )}
-                      </div>
 
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
