@@ -602,6 +602,64 @@ export function ModernHeader({
                         )}
                       </div>
 
+                      {/* Teste Classificados */}
+                      <div className="border-b border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={() => toggleSection('teste-classificados')}
+                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                            <span className="text-purple-700 dark:text-purple-300">Teste Classificados</span>
+                          </div>
+                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('teste-classificados') ? 'rotate-180' : ''}`} />
+                        </button>
+                        {expandedSections.has('teste-classificados') && (
+                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v1')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">Versão 1</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v2')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">Versão 2</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v3')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">Versão 3</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v4')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">Versão 4</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v5')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">Versão 5</span>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Profissional */}
                       {profile?.user_type === 'professional' && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
