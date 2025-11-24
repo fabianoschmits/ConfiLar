@@ -215,17 +215,17 @@ export function NewPostForm({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
       {/* HEADER FIXO */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between p-4">
+      <div className="flex-shrink-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-3 sm:p-4">
           <button
             onClick={onCancel}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
             {isProfessional ? 'Novo Trabalho' : 'Compartilhar Experiência'}
           </h3>
           <LoadingButton
@@ -233,7 +233,7 @@ export function NewPostForm({
             disabled={!post.description.trim() || isLoading}
             isLoading={isLoading}
             size="sm"
-            className="text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+            className="text-xs sm:text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4"
           >
             {isLoading ? 'Publicando...' : 'Publicar'}
           </LoadingButton>
@@ -241,8 +241,8 @@ export function NewPostForm({
       </div>
 
       {/* SCROLL CONTENT */}
-      <div className="flex-1 overflow-y-auto px-4 pb-6 bg-white dark:bg-black">
-        <div className="space-y-5 pt-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pb-4 sm:pb-6 bg-white dark:bg-black">
+        <div className="space-y-4 sm:space-y-5 pt-3 sm:pt-4">
 
           {/* IMAGENS - CARROSSEL GRANDE */}
           <div>
@@ -337,15 +337,24 @@ export function NewPostForm({
           <div>
             <button
               type="button"
-              onClick={() => setShowLocation(!showLocation)}
-              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              onClick={() => {
+                setShowLocation(!showLocation)
+                // Scroll suave para os campos de localização quando abrir
+                if (!showLocation) {
+                  setTimeout(() => {
+                    const locationElement = document.querySelector('[data-location-fields]')
+                    locationElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                  }, 100)
+                }
+              }}
+              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors w-full"
             >
-              <MapPin className={`h-4 w-4 ${showLocation ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+              <MapPin className={`h-4 w-4 flex-shrink-0 ${showLocation ? 'text-blue-600 dark:text-blue-400' : ''}`} />
               <span className="font-medium">
                 {showLocation ? 'Ocultar' : 'Alterar'} localização
               </span>
               {!showLocation && (
-                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto truncate">
                   {selectedCity && selectedState ? `${selectedCity}, ${selectedState}` : 'Usar localização do perfil'}
                 </span>
               )}
@@ -353,7 +362,10 @@ export function NewPostForm({
 
             {/* Campos de localização (mostrar apenas quando showLocation for true) */}
             {showLocation && (
-              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div 
+                data-location-fields
+                className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+              >
                 <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                   Localização do Post
                 </label>
