@@ -121,59 +121,148 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
 
       // Aplicar filtros de localização
-      if (filters.location_filter) {
+      // IMPORTANTE: Para filtro 'local' com cidade e estado, precisamos fazer queries separadas
+      // porque o .or() no Supabase substitui todos os filtros anteriores
+      // Então vamos fazer isso ANTES da query principal e depois usar os resultados
+      let postsFromLocationFilter: any[] | null = null
+      
+      if (filters.location_filter && filters.location_filter.type === 'local' && 
+          filters.location_filter.city && filters.location_filter.state) {
+        const locationFilter = filters.location_filter
+        
+        console.log('🏠 Filtro local (query separada):', {
+          city: locationFilter.city,
+          state: locationFilter.state,
+          country: locationFilter.country
+        })
+        
+        // Normalizar estado
+        let normalizedState = locationFilter.state
+        if (locationFilter.state.length === 2) {
+          try {
+            const estado = await getEstadoBySigla(locationFilter.state)
+            if (estado && estado.nome) {
+              normalizedState = estado.nome
+            }
+          } catch (error) {
+            console.error('Erro ao buscar nome do estado:', error)
+          }
+        }
+        
+        // Mapear país para código
+        let countryCode = locationFilter.country
+        if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
+          countryCode = 'BR'
+        } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
+          countryCode = 'US'
+        }
+        
+        // Query 1: estado como sigla
+        const selectFields = `
+          id,
+          professional_id,
+          user_id,
+          title,
+          description,
+          images,
+          service_category_id,
+          location_state,
+          location_city,
+          location_country,
+          likes_count,
+          comments_count,
+          created_at,
+          updated_at,
+          metadata,
+          is_featured,
+          is_premium,
+          premium_points_spent,
+          premium_expires_at,
+          premium_highlight_color,
+          tags,
+          professional:profiles!feed_posts_professional_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type,
+            is_available
+          ),
+          user:profiles!feed_posts_user_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type,
+            is_available
+          )
+        `
+        
+        let query1 = supabase
+          .from('feed_posts')
+          .select(selectFields)
+          .eq('is_active', true)
+          .eq('is_public', true)
+          .ilike('location_city', `%${locationFilter.city}%`)
+          .eq('location_state', locationFilter.state)
+          .order('created_at', { ascending: false })
+          .limit(ITEMS_PER_PAGE * 2) // Buscar mais para combinar depois
+        
+        if (countryCode) {
+          query1 = query1.or(`location_country.eq.${countryCode},location_country.is.null`)
+        }
+        
+        const { data: data1 } = await query1
+        
+        // Query 2: estado como nome completo (se diferente)
+        let data2: any[] = []
+        if (normalizedState !== locationFilter.state) {
+          let query2 = supabase
+            .from('feed_posts')
+            .select(selectFields)
+            .eq('is_active', true)
+            .eq('is_public', true)
+            .ilike('location_city', `%${locationFilter.city}%`)
+            .ilike('location_state', `%${normalizedState}%`)
+            .order('created_at', { ascending: false })
+            .limit(ITEMS_PER_PAGE * 2)
+          
+          if (countryCode) {
+            query2 = query2.or(`location_country.eq.${countryCode},location_country.is.null`)
+          }
+          
+          const { data } = await query2
+          data2 = data || []
+        }
+        
+        // Combinar e remover duplicatas
+        const allPosts = [...(data1 || []), ...data2]
+        postsFromLocationFilter = allPosts.filter((post, index, self) => 
+          index === self.findIndex(p => p.id === post.id)
+        )
+      }
+      
+      // Aplicar filtros de localização normais (para outros tipos)
+      if (filters.location_filter && !postsFromLocationFilter) {
         const locationFilter = filters.location_filter
         
         console.log('🔍 Aplicando filtro de localização:', JSON.stringify(locationFilter, null, 2))
         
-        // Função auxiliar para normalizar estado (aceitar tanto sigla quanto nome completo)
-        // SEMPRE retornar nome completo para evitar conflitos
+        // Função auxiliar para normalizar estado
         const normalizeStateForQuery = async (state: string): Promise<string> => {
           if (!state) return state
-          
-          // Se for sigla (2 caracteres), buscar nome completo
           if (state.length === 2) {
             try {
               const estado = await getEstadoBySigla(state)
               if (estado && estado.nome) {
-                return estado.nome // Retornar nome completo
+                return estado.nome
               }
             } catch (error) {
               console.error('Erro ao buscar nome do estado:', error)
             }
           }
-          
-          // Se já for nome completo ou não encontrou sigla, retornar como está
           return state
         }
         
         switch (locationFilter.type) {
-          case 'local':
-            if (locationFilter.city && locationFilter.state) {
-              console.log('🏠 Filtro local:', {
-                city: locationFilter.city,
-                state: locationFilter.state,
-                country: locationFilter.country
-              })
-              
-              // Normalizar estado para nome completo (evitar conflito sigla/nome)
-              const normalizedState = await normalizeStateForQuery(locationFilter.state)
-              
-              // Mapear país para código
-              let countryCode = locationFilter.country
-              if (locationFilter.country === 'Brasil' || locationFilter.country === 'Brazil') {
-                countryCode = 'BR'
-              } else if (locationFilter.country === 'United States' || locationFilter.country === 'Estados Unidos') {
-                countryCode = 'US'
-              }
-              
-              // Buscar posts que correspondam à cidade e estado (usando nome completo normalizado)
-              // Aceitar tanto sigla quanto nome completo na busca usando ilike
-              postsQuery = postsQuery
-                .ilike('location_city', locationFilter.city)
-                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
-            }
-            break
           case 'state':
             if (locationFilter.state) {
               console.log('🏙️ Filtro estado:', locationFilter.state, 'país:', locationFilter.country)
@@ -190,9 +279,21 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
               // Buscar por estado normalizado OU estado original (aceita sigla e nome)
-              postsQuery = postsQuery
-                .eq('location_country', countryCode)
-                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
+              // IMPORTANTE: location_state pode estar salvo como sigla ("RS") ou nome completo ("Rio Grande do Sul")
+              if (normalizedState && normalizedState !== locationFilter.state) {
+                // Se temos nome normalizado diferente da sigla, buscar por ambos
+                postsQuery = postsQuery
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${normalizedState}%`)
+              } else {
+                // Se não temos nome normalizado ou é o mesmo, buscar por igualdade e ilike
+                postsQuery = postsQuery
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${locationFilter.state}%`)
+              }
+              
+              // Filtrar por país também (ou NULL para posts antigos)
+              if (countryCode) {
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
+              }
             }
             break
           case 'country':
@@ -230,11 +331,23 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
               // Buscar posts por cidade e estado (aceita sigla e nome completo)
-              postsQuery = postsQuery
-                .ilike('location_city', locationFilter.city)
-                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
+              // IMPORTANTE: location_state pode estar salvo como sigla ("RS") ou nome completo ("Rio Grande do Sul")
+              if (normalizedState && normalizedState !== locationFilter.state) {
+                // Se temos nome normalizado diferente da sigla, buscar por ambos
+                postsQuery = postsQuery
+                  .ilike('location_city', `%${locationFilter.city}%`)
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${normalizedState}%`)
+              } else {
+                // Se não temos nome normalizado ou é o mesmo, buscar por igualdade e ilike
+                postsQuery = postsQuery
+                  .ilike('location_city', `%${locationFilter.city}%`)
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${locationFilter.state}%`)
+              }
+              
               // Filtrar por país ou NULL (posts antigos)
-              postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
+              if (countryCode) {
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
+              }
             } else if (locationFilter.state && !locationFilter.city) {
               // Se apenas estado foi selecionado (sem cidade)
               console.log('🏙️ Filtro custom: apenas estado:', locationFilter.state, 'país:', locationFilter.country)
@@ -251,9 +364,20 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               const normalizedState = await normalizeStateForQuery(locationFilter.state)
               
               // Buscar por estado normalizado OU estado original (aceita sigla e nome)
-              postsQuery = postsQuery
-                .eq('location_country', countryCode)
-                .or(`location_state.ilike.%${normalizedState}%,location_state.ilike.%${locationFilter.state}%`)
+              if (normalizedState && normalizedState !== locationFilter.state) {
+                // Se temos nome normalizado diferente da sigla, buscar por ambos
+                postsQuery = postsQuery
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${normalizedState}%`)
+              } else {
+                // Se não temos nome normalizado ou é o mesmo, buscar por igualdade e ilike
+                postsQuery = postsQuery
+                  .or(`location_state.eq.${locationFilter.state},location_state.ilike.%${locationFilter.state}%`)
+              }
+              
+              // Filtrar por país também (ou NULL para posts antigos)
+              if (countryCode) {
+                postsQuery = postsQuery.or(`location_country.eq.${countryCode},location_country.is.null`)
+              }
             } else {
               console.log('⚠️ Filtro custom sem dados completos:', {
                 city: locationFilter.city,
@@ -269,7 +393,31 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }
       }
 
-      const { data: posts, error: postsError } = await postsQuery
+      // Se temos posts do filtro local separado, usar eles; senão, fazer query normal
+      let posts: any[]
+      let postsError: any = null
+      
+      if (postsFromLocationFilter) {
+        // Aplicar filtro de busca nos posts já filtrados por localização
+        if (filters.search && filters.search.trim()) {
+          const searchTerm = filters.search.trim().toLowerCase()
+          postsFromLocationFilter = postsFromLocationFilter.filter(post => {
+            const title = (post.title || '').toLowerCase()
+            const description = (post.description || '').toLowerCase()
+            return title.includes(searchTerm) || description.includes(searchTerm)
+          })
+        }
+        
+        // Ordenar e paginar
+        posts = postsFromLocationFilter
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+      } else {
+        // Query normal
+        const result = await postsQuery
+        posts = result.data || []
+        postsError = result.error
+      }
 
       if (postsError) {
         console.error('❌ Erro ao buscar posts:', postsError)
