@@ -1508,62 +1508,64 @@ export default function ClassificadosPage() {
                   {/* V5: Layout Lista com Sidebar de Informações */}
                   <div className="flex">
                     {/* Sidebar de Informações */}
-                    <div className="w-48 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
-                      <Link href={`/perfil/${ad.user_id}`} className="block mb-3">
-                        <Avatar className="w-12 h-12 mx-auto mb-2 ring-2 ring-gray-200 dark:ring-gray-700">
+                    <div className="w-full sm:w-48 flex-shrink-0 sm:border-r border-b sm:border-b-0 border-gray-200 dark:border-gray-700 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 flex sm:flex-col items-center sm:items-start gap-3 sm:gap-0">
+                      <Link href={`/perfil/${ad.user_id}`} className="block sm:mb-3">
+                        <Avatar className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 ring-2 ring-gray-200 dark:ring-gray-700">
                           <AvatarImage src={ad.user_avatar_url} alt={ad.user_name} />
-                          <AvatarFallback className="text-sm font-medium">
+                          <AvatarFallback className="text-xs sm:text-sm font-medium">
                             {ad.user_name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <p className="text-xs font-medium text-gray-900 dark:text-white text-center truncate">
+                        <p className="text-[10px] sm:text-xs font-medium text-gray-900 dark:text-white text-center sm:text-center truncate max-w-[100px] sm:max-w-none">
                           {ad.user_name}
                         </p>
                       </Link>
-                      <div className="space-y-2 text-xs">
+                      <div className="flex sm:flex-col gap-2 sm:gap-2 text-[10px] sm:text-xs flex-1 sm:flex-none">
                         <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                           <MapPin className="h-3 w-3" />
-                          <span className="truncate">{ad.location_city}</span>
+                          <span className="truncate max-w-[80px] sm:max-w-none">{ad.location_city}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                           <Calendar className="h-3 w-3" />
-                          <span>{formatDate(ad.created_at)}</span>
+                          <span className="hidden sm:inline">{formatDate(ad.created_at)}</span>
+                          <span className="sm:hidden">{new Date(ad.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
                         </div>
                         {isActivePremium && (
                           <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
                             <Crown className="h-3 w-3" />
-                            <span className="font-medium">Premium</span>
+                            <span className="font-medium hidden sm:inline">Premium</span>
+                            <span className="sm:hidden">P</span>
                           </div>
                         )}
                       </div>
                     </div>
 
                     {/* Conteúdo Principal */}
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex-1 p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
                             <h3 
-                              className="font-bold text-lg text-gray-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity"
+                              className="font-bold text-base sm:text-lg text-gray-900 dark:text-white cursor-pointer hover:opacity-80 transition-opacity"
                               onClick={() => handleOpenAdModal(ad)}
                             >
-                              {isActivePremium && <Sparkles className="h-4 w-4 inline mr-1.5 text-amber-500" />}
+                              {isActivePremium && <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-1.5 text-amber-500" />}
                               {ad.title}
                             </h3>
-                            <Badge className={`text-xs ${
+                            <Badge className={`text-[10px] sm:text-xs ${
                               ad.ad_type === 'oferecer' 
                                 ? 'bg-blue-500 text-white' 
                                 : 'bg-emerald-500 text-white'
                             }`}>
                               {ad.ad_type === 'oferecer' ? (
-                                <><HandHeart className="h-3 w-3 mr-1" />Oferta</>
+                                <><HandHeart className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />Oferta</>
                               ) : (
-                                <><ShoppingCart className="h-3 w-3 mr-1" />Solicitação</>
+                                <><ShoppingCart className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />Solicitação</>
                               )}
                             </Badge>
                           </div>
                           <p 
-                            className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 cursor-pointer hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
+                            className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 cursor-pointer hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
                             onClick={() => handleOpenAdModal(ad)}
                           >
                             {ad.description}

@@ -615,14 +615,14 @@ export function ModernHeader({
                           <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('teste-classificados') ? 'rotate-180' : ''}`} />
                         </button>
                         {expandedSections.has('teste-classificados') && (
-                          <div className="grid grid-cols-2 gap-1 px-2 pb-2">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleNavigation('/classificados-v1')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
-                              <span className="truncate">Versão 1</span>
+                              <span className="truncate">V1</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -630,7 +630,7 @@ export function ModernHeader({
                               onClick={() => handleNavigation('/classificados-v2')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
-                              <span className="truncate">Versão 2</span>
+                              <span className="truncate">V2</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -638,7 +638,7 @@ export function ModernHeader({
                               onClick={() => handleNavigation('/classificados-v3')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
-                              <span className="truncate">Versão 3</span>
+                              <span className="truncate">V3</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -646,7 +646,7 @@ export function ModernHeader({
                               onClick={() => handleNavigation('/classificados-v4')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
-                              <span className="truncate">Versão 4</span>
+                              <span className="truncate">V4</span>
                             </Button>
                             <Button
                               variant="ghost"
@@ -654,7 +654,47 @@ export function ModernHeader({
                               onClick={() => handleNavigation('/classificados-v5')}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
-                              <span className="truncate">Versão 5</span>
+                              <span className="truncate">V5</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v6')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V6</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v7')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V7</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v8')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V8</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v9')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V9</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v10')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V10</span>
                             </Button>
                           </div>
                         )}

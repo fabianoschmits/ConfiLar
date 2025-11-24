@@ -1510,68 +1510,70 @@ export default function ClassificadosPage() {
                   } border-r border-t border-b border-gray-200 dark:border-gray-700 rounded-r-lg shadow-sm hover:shadow-md transition-all duration-200`}
                 >
                   {/* V1: Layout Lista Minimalista - Horizontal */}
-                  <div className="flex items-center gap-4 p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4">
                     {/* Avatar */}
                     <Link href={`/perfil/${ad.user_id}`} className="flex-shrink-0">
-                      <Avatar className="w-12 h-12 ring-2 ring-gray-200 dark:ring-gray-700">
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12 ring-2 ring-gray-200 dark:ring-gray-700">
                         <AvatarImage src={ad.user_avatar_url} alt={ad.user_name} />
-                        <AvatarFallback className="text-sm font-medium">
+                        <AvatarFallback className="text-xs sm:text-sm font-medium">
                           {ad.user_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </Link>
 
                     {/* Conteúdo Principal */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                         <div className="flex-1 min-w-0">
                           {/* Título e Badge */}
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                             <h3 
-                              className="font-bold text-base text-gray-900 dark:text-white truncate cursor-pointer hover:opacity-80 transition-opacity"
+                              className="font-bold text-sm sm:text-base text-gray-900 dark:text-white truncate cursor-pointer hover:opacity-80 transition-opacity"
                               onClick={() => handleOpenAdModal(ad)}
                             >
                               {isActivePremium && <Sparkles className="h-3 w-3 inline mr-1 text-amber-500" />}
                               {ad.title}
                             </h3>
                             {isActivePremium && (
-                              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-xs px-1.5 py-0.5">
-                                <Crown className="h-2.5 w-2.5 mr-0.5" />
-                                PREMIUM
+                              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5">
+                                <Crown className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" />
+                                <span className="hidden sm:inline">PREMIUM</span>
+                                <span className="sm:hidden">P</span>
                               </Badge>
                             )}
                           </div>
 
                           {/* Descrição */}
                           <p 
-                            className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mb-2 cursor-pointer hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
+                            className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mb-2 cursor-pointer hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
                             onClick={() => handleOpenAdModal(ad)}
                           >
                             {ad.description}
                           </p>
 
                           {/* Meta Info */}
-                          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                            <Badge variant="outline" className="text-xs border-gray-300 dark:border-gray-600">
-                              {getCategoryIcon(ad.category)} {ad.category}
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
+                            <Badge variant="outline" className="text-[10px] sm:text-xs border-gray-300 dark:border-gray-600 px-1.5 py-0.5">
+                              {getCategoryIcon(ad.category)} <span className="hidden sm:inline">{ad.category}</span>
                             </Badge>
                             <div className="flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              <span>{ad.location_city}, {ad.location_state}</span>
+                              <span className="truncate max-w-[120px] sm:max-w-none">{ad.location_city}, {ad.location_state}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              <span>{formatDate(ad.created_at)}</span>
+                              <span className="hidden sm:inline">{formatDate(ad.created_at)}</span>
+                              <span className="sm:hidden">{new Date(ad.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Ações */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                                <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
