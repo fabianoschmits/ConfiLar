@@ -696,6 +696,14 @@ export function ModernHeader({
                             >
                               <span className="truncate">V10</span>
                             </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/classificados-v11')}
+                              className="flex items-center gap-1 text-xs py-1 h-7"
+                            >
+                              <span className="truncate">V11</span>
+                            </Button>
                           </div>
                         )}
                       </div>
