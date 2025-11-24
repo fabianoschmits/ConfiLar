@@ -616,9 +616,9 @@ export default function FeedPage() {
                         description: data.description,
                         images: data.images,
                         service_category_id: data.service,
-                        location_state: profile.location_state,
-                        location_city: profile.location_city,
-                        location_country: (profile as any)?.country || 'BR',
+                        location_state: data.location_state || profile.location_state,
+                        location_city: data.location_city || profile.location_city,
+                        location_country: data.location_country || (profile as any)?.country || 'BR',
                         likes_count: 0,
                         comments_count: 0,
                         is_liked: false

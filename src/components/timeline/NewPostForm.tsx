@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { X, Send, Image as ImageIcon, Loader2, Info, Crown, AlertCircle } from 'lucide-react'
+import { X, Send, Image as ImageIcon, Loader2, Info, Crown, AlertCircle, MapPin } from 'lucide-react'
 import { LoadingButton } from '@/components/ui/LoadingButton'
 import { MentionInput } from '@/components/ui/MentionInput'
 import { ImageUploadFeed } from '@/components/ui/ImageUploadFeed'
@@ -12,6 +12,10 @@ import { usePoints } from '@/hooks/usePoints'
 import { PREMIUM_PRICES } from '@/constants/premiumPrices'
 import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
 import { toast } from 'sonner'
+import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
+import { useIBGE } from '@/hooks/useIBGE'
+import { getEstadoBySigla, getEstadoByNome } from '@/lib/ibge'
+import { useLocale } from '@/contexts/LocaleContext'
 
 interface NewPostFormProps {
   onSubmit: (post: {
@@ -21,6 +25,9 @@ interface NewPostFormProps {
     isPremium?: boolean
     pointsToSpend?: number
     durationDays?: number
+    location_country?: string
+    location_state?: string
+    location_city?: string
   }) => void
   onCancel: () => void
   isLoading?: boolean
@@ -35,6 +42,14 @@ export function NewPostForm({
 }: NewPostFormProps) {
   const { profile } = useAuthContext()
   const { balance } = usePoints(profile?.id)
+  const { country: contextCountry } = useLocale()
+  const { estados, loadCidades } = useIBGE()
+  const [showLocation, setShowLocation] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState<string>((profile as any)?.country || contextCountry || 'BR')
+  const [selectedState, setSelectedState] = useState<string>(profile?.location_state || '')
+  const [selectedStateSigla, setSelectedStateSigla] = useState<string>('')
+  const [selectedCity, setSelectedCity] = useState<string>(profile?.location_city || '')
+  
   const [post, setPost] = useState<{
     description: string
     images: string[]
@@ -50,6 +65,49 @@ export function NewPostForm({
     pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS,
     durationDays: 1
   })
+
+  // Inicializar estado e cidade do perfil
+  useEffect(() => {
+    if (profile?.location_state && profile?.location_city) {
+      // Se o estado é uma sigla (2 caracteres), buscar nome completo
+      if (profile.location_state.length === 2) {
+        const estado = estados.find(e => e.sigla === profile.location_state)
+        if (estado) {
+          setSelectedState(estado.nome)
+          setSelectedStateSigla(estado.sigla)
+          loadCidades(estado.sigla)
+        } else {
+          // Tentar buscar via API
+          getEstadoBySigla(profile.location_state).then(estado => {
+            if (estado) {
+              setSelectedState(estado.nome)
+              setSelectedStateSigla(estado.sigla)
+              loadCidades(estado.sigla)
+            }
+          }).catch(() => {
+            setSelectedState(profile.location_state)
+            setSelectedStateSigla(profile.location_state)
+          })
+        }
+      } else {
+        // Já é nome completo
+        setSelectedState(profile.location_state)
+        const estado = estados.find(e => e.nome === profile.location_state)
+        if (estado) {
+          setSelectedStateSigla(estado.sigla)
+          loadCidades(estado.sigla)
+        } else {
+          getEstadoByNome(profile.location_state).then(estado => {
+            if (estado) {
+              setSelectedStateSigla(estado.sigla)
+              loadCidades(estado.sigla)
+            }
+          })
+        }
+      }
+      setSelectedCity(profile.location_city)
+    }
+  }, [profile, estados, loadCidades])
 
   const isProfessional = profile?.user_type === 'professional'
   const charCount = post.description.length
@@ -124,6 +182,22 @@ export function NewPostForm({
 
   const handleSubmit = () => {
     if (post.description.trim()) {
+      // Normalizar estado: se for sigla, manter sigla; se for nome, converter para sigla se necessário
+      let finalState = selectedState
+      if (selectedStateSigla && selectedState.length > 2) {
+        // Se temos sigla e o estado é nome completo, usar sigla para salvar (padrão do banco)
+        finalState = selectedStateSigla
+      } else if (selectedState.length === 2) {
+        // Já é sigla
+        finalState = selectedState
+      } else if (selectedState && selectedState.length > 2) {
+        // É nome completo, buscar sigla
+        const estado = estados.find(e => e.nome === selectedState)
+        if (estado) {
+          finalState = estado.sigla
+        }
+      }
+      
       // NÃO remover URLs do YouTube aqui - deixar o hook fazer isso após detectar o vídeo
       // Isso garante que o vídeo seja detectado e salvo no metadata antes de remover o link
       onSubmit({
@@ -132,7 +206,10 @@ export function NewPostForm({
         service: post.service,
         isPremium: post.isPremium,
         pointsToSpend: post.isPremium ? post.pointsToSpend : undefined,
-        durationDays: post.isPremium ? post.durationDays : undefined
+        durationDays: post.isPremium ? post.durationDays : undefined,
+        location_country: selectedCountry || (profile as any)?.country || 'BR',
+        location_state: finalState || profile?.location_state || '',
+        location_city: selectedCity || profile?.location_city || ''
       })
     }
   }
@@ -254,6 +331,61 @@ export function NewPostForm({
               disabled={isLoading}
               className="mt-2"
             />
+          </div>
+
+          {/* LOCALIZAÇÃO - Botão para mostrar/esconder */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowLocation(!showLocation)}
+              className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <MapPin className={`h-4 w-4 ${showLocation ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+              <span className="font-medium">
+                {showLocation ? 'Ocultar' : 'Alterar'} localização
+              </span>
+              {!showLocation && (
+                <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">
+                  {selectedCity && selectedState ? `${selectedCity}, ${selectedState}` : 'Usar localização do perfil'}
+                </span>
+              )}
+            </button>
+
+            {/* Campos de localização (mostrar apenas quando showLocation for true) */}
+            {showLocation && (
+              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                  Localização do Post
+                </label>
+                <LocationComboboxesMultiCountry
+                  country={selectedCountry}
+                  stateCode={selectedStateSigla}
+                  city={selectedCity}
+                  onCountryChange={(newCountry) => {
+                    setSelectedCountry(newCountry)
+                    setSelectedState('')
+                    setSelectedStateSigla('')
+                    setSelectedCity('')
+                  }}
+                  onStateChange={(stateCode) => {
+                    setSelectedStateSigla(stateCode)
+                    const estado = estados.find(e => e.sigla === stateCode)
+                    if (estado) {
+                      setSelectedState(estado.nome)
+                      loadCidades(estado.sigla)
+                    }
+                    setSelectedCity('')
+                  }}
+                  onCityChange={(city) => {
+                    setSelectedCity(city)
+                  }}
+                  className="mt-2"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Por padrão, usa a localização do seu perfil. Você pode alterar aqui.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* TOGGLE POST PREMIUM */}
