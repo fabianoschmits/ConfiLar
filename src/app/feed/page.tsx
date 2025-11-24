@@ -627,10 +627,12 @@ export default function FeedPage() {
                     
                     // Mostrar "Enviado!" por 1 segundo antes de fechar
                     setPostStatus('sent')
-                    setTimeout(() => {
+                    setTimeout(async () => {
                       setShowNewPost(false)
                       setPostStatus('idle')
-                      refetch()
+                      // Aguardar um pouco antes de refetch para garantir que o post foi salvo
+                      await new Promise(resolve => setTimeout(resolve, 500))
+                      await refetch()
                     }, 1000)
                   } catch (error: any) {
                     console.error('Erro ao criar post:', error)

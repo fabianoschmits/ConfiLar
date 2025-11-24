@@ -136,9 +136,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           country: locationFilter.country
         })
         
-        // Normalizar estado
+        // Normalizar estado e obter sigla correspondente
         let normalizedState = locationFilter.state
+        let stateSigla: string | null = null
+        
         if (locationFilter.state.length === 2) {
+          // É sigla, buscar nome completo
+          stateSigla = locationFilter.state
           try {
             const estado = await getEstadoBySigla(locationFilter.state)
             if (estado && estado.nome) {
@@ -147,7 +151,24 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           } catch (error) {
             console.error('Erro ao buscar nome do estado:', error)
           }
+        } else {
+          // É nome completo, buscar sigla correspondente
+          try {
+            const estado = await getEstadoByNome(locationFilter.state)
+            if (estado && estado.sigla) {
+              stateSigla = estado.sigla
+              normalizedState = estado.nome // Garantir nome completo normalizado
+            }
+          } catch (error) {
+            console.error('Erro ao buscar sigla do estado:', error)
+          }
         }
+        
+        console.log('🔍 Estado normalizado:', {
+          original: locationFilter.state,
+          sigla: stateSigla,
+          nomeCompleto: normalizedState
+        })
         
         // Mapear país para código
         let countryCode = locationFilter.country
@@ -204,16 +225,16 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Fazer queries separadas para evitar problemas com .or() que substitui filtros anteriores
         const allResults: any[] = []
         
-        // Query 1: estado como sigla (sempre buscar se o filtro é sigla)
-        if (locationFilter.state.length === 2) {
-          // Buscar posts com estado exatamente igual à sigla
+        // Query 1: SEMPRE buscar por sigla (se tivermos sigla)
+        // Os posts estão salvos como sigla ("RS"), então esta é a query mais importante
+        if (stateSigla) {
           const baseQuery1 = supabase
             .from('feed_posts')
             .select(selectFields)
             .eq('is_active', true)
             .eq('is_public', true)
             .ilike('location_city', `%${locationFilter.city}%`)
-            .eq('location_state', locationFilter.state)
+            .eq('location_state', stateSigla)
             .order('created_at', { ascending: false })
             .limit(ITEMS_PER_PAGE * 2)
           
@@ -226,11 +247,12 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             const { data } = await baseQuery1
             if (data) allResults.push(...data)
           }
+          
+          console.log(`✅ Query 1 (sigla ${stateSigla}): encontrados ${allResults.length} posts`)
         }
         
-        // Query 2: estado como nome completo (sempre buscar, pois pode haver posts com nome completo)
-        // Se normalizamos e temos um nome diferente, buscar por esse nome também
-        if (normalizedState && normalizedState !== locationFilter.state) {
+        // Query 2: buscar por nome completo (caso algum post esteja salvo com nome completo)
+        if (normalizedState && normalizedState !== stateSigla) {
           const baseQuery2 = supabase
             .from('feed_posts')
             .select(selectFields)
@@ -250,10 +272,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             const { data } = await baseQuery2
             if (data) allResults.push(...data)
           }
+          
+          console.log(`✅ Query 2 (nome completo ${normalizedState}): total agora ${allResults.length} posts`)
         }
         
-        // Query 3: Se o filtro é nome completo (não sigla), buscar também por ilike do nome original
-        if (locationFilter.state.length > 2) {
+        // Query 3: Se o filtro original é nome completo, buscar também por ilike do nome original
+        // (pode haver variações no nome)
+        if (locationFilter.state.length > 2 && locationFilter.state !== normalizedState) {
           const baseQuery3 = supabase
             .from('feed_posts')
             .select(selectFields)
@@ -273,6 +298,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             const { data } = await baseQuery3
             if (data) allResults.push(...data)
           }
+          
+          console.log(`✅ Query 3 (nome original ${locationFilter.state}): total agora ${allResults.length} posts`)
         }
         
         // Remover duplicatas e ordenar
@@ -445,20 +472,26 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       let postsError: any = null
       
       if (postsFromLocationFilter) {
+        console.log(`📊 Posts do filtro local: ${postsFromLocationFilter.length} encontrados`)
+        
         // Aplicar filtro de busca nos posts já filtrados por localização
         if (filters.search && filters.search.trim()) {
           const searchTerm = filters.search.trim().toLowerCase()
+          const beforeSearch = postsFromLocationFilter.length
           postsFromLocationFilter = postsFromLocationFilter.filter(post => {
             const title = (post.title || '').toLowerCase()
             const description = (post.description || '').toLowerCase()
             return title.includes(searchTerm) || description.includes(searchTerm)
           })
+          console.log(`🔍 Após filtro de busca: ${beforeSearch} → ${postsFromLocationFilter.length} posts`)
         }
         
         // Ordenar e paginar
         posts = postsFromLocationFilter
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE)
+        
+        console.log(`📄 Após paginação (página ${page}): ${posts.length} posts`)
       } else {
         // Query normal
         const result = await postsQuery
@@ -888,6 +921,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         metadata: data.metadata // Metadata já inclui youtube_video_id se houver
       } as UnifiedTimelineItem
 
+      // Invalidar o cache para forçar uma nova busca que vai encontrar o post
+      // Isso garante que o post apareça mesmo após o refetch
+      queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
+      
+      // Também adicionar ao cache local imediatamente para aparecer na tela
       queryClient.setQueryData(queryKey, (oldData: any) => {
         if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
         return {
@@ -896,6 +934,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }
       })
 
+      console.log('✅ [addPost] Post adicionado ao cache e queries invalidadas')
       return timelinePost
     } catch (error) {
       console.error('Erro ao criar post:', error)
