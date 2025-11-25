@@ -322,7 +322,7 @@ export default function EditarPerfilPage() {
       }
       
       const encodedSeed = encodeURIComponent(seed)
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedSeed}&backgroundColor=transparent`
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&backgroundColor=transparent`
       
       const response = await fetch(avatarUrl)
       if (!response.ok) {
@@ -649,7 +649,7 @@ export default function EditarPerfilPage() {
                     </label>
                   </div>
 
-                  {/* Avatar Pixel-Art */}
+                  {/* Avatar Avataaars */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />

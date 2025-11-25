@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -269,13 +269,13 @@ export default function OnboardingPage() {
     return steps.find(step => step.id === currentStep) || steps[0]
   }
 
-  // Forçar validação quando os valores mudarem (especialmente para campos setados via setValue)
+  // Forçar validação quando chegar na última etapa
   useEffect(() => {
     if (currentStep === totalSteps) {
-      // Só validar quando estiver na última etapa
+      // Validar todos os campos quando chegar na última etapa
       trigger()
     }
-  }, [watchedValues, currentStep, totalSteps, trigger])
+  }, [currentStep, totalSteps, trigger])
 
   // Validação completa do formulário
   const isFormValid = (): boolean => {
@@ -470,7 +470,7 @@ export default function OnboardingPage() {
       }
       
       const encodedSeed = encodeURIComponent(seed)
-      const avatarUrl = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodedSeed}&backgroundColor=transparent`
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&backgroundColor=transparent`
       
       const response = await fetch(avatarUrl)
       if (!response.ok) {
@@ -1229,7 +1229,7 @@ export default function OnboardingPage() {
                           </label>
                         </div>
 
-                        {/* Avatar Pixel-Art */}
+                        {/* Avatar Avataaars */}
                         <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
@@ -1794,7 +1794,7 @@ export default function OnboardingPage() {
                       <Button
                         type="submit"
                         className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                        disabled={isLoading || !isFormValid()}
+                        disabled={isLoading || !isFormValid}
                       >
                         {isLoading ? (
                           <>
