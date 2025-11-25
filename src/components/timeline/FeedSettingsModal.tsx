@@ -279,9 +279,12 @@ export function FeedSettingsModal({
   return (
     <div 
       data-feed-settings-modal
-      className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[85vh] overflow-hidden"
+      className="fixed sm:absolute top-16 sm:top-full right-2 sm:right-0 mt-0 sm:mt-2 w-[calc(80vw-0.8rem)] sm:w-64 max-w-xs bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-[100] max-h-[calc(100vh-6rem)] sm:max-h-[85vh] overflow-y-auto overflow-x-hidden"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
+      style={{
+        bottom: '6rem' // Espaço para o QuickActionMenu no mobile (5rem do menu + 1rem de margem)
+      }}
     >
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between">
@@ -297,7 +300,7 @@ export function FeedSettingsModal({
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto max-h-[calc(85vh-100px)] p-3 space-y-4">
+      <div className="overflow-y-auto max-h-[calc(100vh-11rem)] sm:max-h-[calc(85vh-100px)] p-3 space-y-4">
           {/* Pesquisa */}
           <div>
             <label className="flex items-center gap-1.5 text-xs font-medium text-gray-900 dark:text-white mb-2">
@@ -308,14 +311,11 @@ export function FeedSettingsModal({
             <div className="space-y-1.5">
               <Input
                 type="text"
-                placeholder="Palavras-chave, user:nome ou id:uuid..."
+                placeholder="Buscar no feed..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
-              <p className="text-[10px] text-gray-500 dark:text-gray-400 break-words overflow-wrap-anywhere">
-                Digite palavras-chave, <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded break-all">user:nome</code> ou <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded break-all">id:uuid</code>
-              </p>
             </div>
           </div>
 

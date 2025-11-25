@@ -128,9 +128,11 @@ export default function OnboardingPage() {
     handleSubmit,
     watch,
     setValue,
+    trigger,
     formState: { errors, isValid },
   } = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
+    mode: 'onChange', // Validar em tempo real
     defaultValues: {
       user_type: 'client' as const,
       filhos: 0,
@@ -265,6 +267,50 @@ export default function OnboardingPage() {
 
   const getCurrentStepData = () => {
     return steps.find(step => step.id === currentStep) || steps[0]
+  }
+
+  // Forçar validação quando os valores mudarem (especialmente para campos setados via setValue)
+  useEffect(() => {
+    if (currentStep === totalSteps) {
+      // Só validar quando estiver na última etapa
+      trigger()
+    }
+  }, [watchedValues, currentStep, totalSteps, trigger])
+
+  // Validação completa do formulário
+  const isFormValid = (): boolean => {
+    const values = watchedValues
+    
+    // Verificar telefone (remover formatação para validar)
+    const phoneNumbers = values.phone ? values.phone.replace(/\D/g, '') : ''
+    
+    // Verificar CEP (remover formatação para validar)
+    const zipCodeNumbers = values.zip_code ? values.zip_code.replace(/\D/g, '') : ''
+    
+    // Verificar todos os campos obrigatórios
+    const hasRequiredFields = !!(
+      values.full_name &&
+      values.full_name.length >= 2 &&
+      values.cpf_cnpj &&
+      ValidationUtils.isValidCPF(values.cpf_cnpj) &&
+      phoneNumbers && 
+      phoneNumbers.length >= 10 &&
+      values.birth_date &&
+      values.gender &&
+      values.accept_terms && // Aceite dos termos obrigatório
+      values.country &&
+      values.location_state &&
+      values.location_city &&
+      values.neighborhood &&
+      values.address &&
+      values.address_number &&
+      zipCodeNumbers &&
+      zipCodeNumbers.length >= 8 &&
+      values.user_type &&
+      values.locale
+    )
+    
+    return hasRequiredFields
   }
 
   // Validação por etapa
@@ -1748,7 +1794,7 @@ export default function OnboardingPage() {
                       <Button
                         type="submit"
                         className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                        disabled={isLoading || !isValid}
+                        disabled={isLoading || !isFormValid()}
                       >
                         {isLoading ? (
                           <>

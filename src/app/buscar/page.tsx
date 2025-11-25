@@ -717,24 +717,24 @@ export default function BuscarPage() {
                               Serviços
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-80" align="end">
+                          <PopoverContent className="w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700" align="end">
                             <div className="space-y-3">
-                              <div className="flex items-center space-x-2 border-b pb-2">
-                                <Briefcase className="h-4 w-4 text-blue-600" />
+                              <div className="flex items-center space-x-2 border-b border-gray-200 dark:border-gray-700 pb-2">
+                                <Briefcase className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 <h4 className="font-semibold text-gray-900 dark:text-white">Serviços Oferecidos</h4>
                               </div>
                               <div className="max-h-64 overflow-y-auto space-y-2">
                                 {profile.professional_services.map((service, index) => (
                                   <div 
                                     key={index} 
-                                    className="flex items-start space-x-2 p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                    className="flex items-start space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                   >
-                                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm text-gray-900 dark:text-white">{service}</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm text-gray-900 dark:text-gray-100">{service}</span>
                                   </div>
                                 ))}
                               </div>
-                              <div className="text-xs text-gray-500 text-center pt-2 border-t">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2 border-t border-gray-200 dark:border-gray-700">
                                 {profile.professional_services.length} {profile.professional_services.length === 1 ? 'serviço' : 'serviços'}
                               </div>
                             </div>
