@@ -40,6 +40,9 @@ import {
   ChevronRight,
   Wrench
 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Combobox } from '@/components/ui/Combobox'
 import { Profile } from '@/types/database'
 import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
 import { useAvailabilityContext } from '@/contexts/AvailabilityContext'
@@ -52,14 +55,13 @@ import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
 import { supabase } from '@/lib/supabase'
 import { RecommendationButton } from '@/components/ui/RecommendationButton'
 import { FavoriteButton } from '@/components/ui/FavoriteButton'
-import { SmartSearchBar } from '@/components/search/SmartSearchBar'
 import { useTranslations } from 'next-intl'
 
 export default function BuscarPage() {
   const router = useRouter()
   const t = useTranslations('search')
   const tCommon = useTranslations('common')
-  const [showFilters, setShowFilters] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [profileViews, setProfileViews] = useState<Record<string, number>>({})
   const [profileStats, setProfileStats] = useState<Record<string, { rating: number; reviewCount: number }>>({})
@@ -338,34 +340,249 @@ export default function BuscarPage() {
             </CardContent>
           </Card>
 
-          {/* Barra de Busca Inteligente */}
-          <div className="mb-6">
-            <SmartSearchBar
-              onSearch={(query, searchFilters) => {
-                setFilters(searchFilters)
+          {/* Botão de Busca com Modal */}
+          <div className="mb-6 flex items-center gap-2">
+            <Dialog open={showSearchModal} onOpenChange={setShowSearchModal}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex-1 h-10 justify-start text-left font-normal"
+                >
+                  <Search className="h-4 w-4 mr-2 text-gray-400" />
+                  <span className="text-gray-500">
+                    {filters.searchTerm || filters.state || filters.city || filters.service !== 'all'
+                      ? `${filters.searchTerm ? filters.searchTerm + ' • ' : ''}${filters.state ? filters.state + ' • ' : ''}${filters.city ? filters.city + ' • ' : ''}${filters.service !== 'all' ? filters.service : ''}`
+                      : t('searchPlaceholder')}
+                  </span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    {t('search') || 'Buscar'}
+                  </DialogTitle>
+                </DialogHeader>
+                
+                <div className="space-y-4 mt-4">
+                  {/* Campo de Busca */}
+                  <div>
+                    <Label htmlFor="search-term">{t('searchTerm') || 'Termo de busca'}</Label>
+                    <Input
+                      id="search-term"
+                      value={filters.searchTerm}
+                      onChange={(e) => {
+                        const newFilters = { ...filters, searchTerm: e.target.value }
+                        setFilters(newFilters)
                 updateFilters({
-                  searchTerm: searchFilters.searchTerm,
-                  state: searchFilters.state,
-                  city: searchFilters.city,
-                  userType: searchFilters.userType,
-                  category: searchFilters.service
-                })
-                executeSearch()
-              }}
-              onFiltersChange={(searchFilters) => {
-                setFilters(searchFilters)
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                      placeholder={t('searchPlaceholder')}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  {/* Estado */}
+                  <div>
+                    <Label>{t('state') || 'Estado'}</Label>
+                    <EstadoCombobox
+                      value={filters.state}
+                      onValueChange={(newState) => {
+                        const newFilters = { ...filters, state: newState, city: '' }
+                        setFilters(newFilters)
                 updateFilters({
-                  searchTerm: searchFilters.searchTerm,
-                  state: searchFilters.state,
-                  city: searchFilters.city,
-                  userType: searchFilters.userType,
-                  category: searchFilters.service
-                })
-              }}
-              initialFilters={filters}
-              placeholder={t('searchPlaceholder')}
-              className="w-full"
-            />
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: '',
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        if (newState) {
+                          loadCidades(newState)
+                        }
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                      placeholder={t('selectState') || 'Selecione o estado'}
+                      className="w-full mt-1"
+                    />
+                  </div>
+
+                  {/* Cidade */}
+                  <div>
+                    <Label>{t('city') || 'Cidade'}</Label>
+                    <CidadeCombobox
+                      value={filters.city}
+                      onValueChange={(newCity) => {
+                        const newFilters = { ...filters, city: newCity }
+                        setFilters(newFilters)
+                        updateFilters({
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                      estadoSigla={filters.state}
+                      placeholder={t('selectCity') || 'Selecione a cidade'}
+                      className="w-full mt-1"
+                      disabled={!filters.state}
+                    />
+                  </div>
+
+                  {/* Serviço */}
+                  <div>
+                    <Label>{t('service') || 'Serviço'}</Label>
+                    <Select
+                      value={filters.service}
+                      onValueChange={(value) => {
+                        const newFilters = { ...filters, service: value }
+                        setFilters(newFilters)
+                        updateFilters({
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={t('allServices') || 'Todos os serviços'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('allServices') || 'Todos os serviços'}</SelectItem>
+                        {services.map(service => (
+                          <SelectItem key={service.name} value={service.name}>
+                            {service.icon} {service.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Avaliação */}
+                  <div>
+                    <Label>{t('rating') || 'Avaliação mínima'}</Label>
+                    <Select
+                      value={filters.rating}
+                      onValueChange={(value) => {
+                        const newFilters = { ...filters, rating: value }
+                        setFilters(newFilters)
+                        updateFilters({
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={t('anyRating') || 'Qualquer avaliação'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('anyRating') || 'Qualquer avaliação'}</SelectItem>
+                        <SelectItem value="4">4+ {t('stars') || 'estrelas'}</SelectItem>
+                        <SelectItem value="3">3+ {t('stars') || 'estrelas'}</SelectItem>
+                        <SelectItem value="2">2+ {t('stars') || 'estrelas'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Disponibilidade */}
+                  <div>
+                    <Label>{t('availability') || 'Disponibilidade'}</Label>
+                    <Select
+                      value={filters.availability}
+                      onValueChange={(value) => {
+                        const newFilters = { ...filters, availability: value }
+                        setFilters(newFilters)
+                        updateFilters({
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={t('all') || 'Todos'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('all') || 'Todos'}</SelectItem>
+                        <SelectItem value="available">{t('available') || 'Disponível agora'}</SelectItem>
+                        <SelectItem value="this_week">{t('thisWeek') || 'Esta semana'}</SelectItem>
+                        <SelectItem value="this_month">{t('thisMonth') || 'Este mês'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Tipo de Usuário */}
+                  <div>
+                    <Label>{t('userType') || 'Tipo de usuário'}</Label>
+                    <Select
+                      value={filters.userType}
+                      onValueChange={(value) => {
+                        const newFilters = { ...filters, userType: value }
+                        setFilters(newFilters)
+                        updateFilters({
+                          searchTerm: newFilters.searchTerm,
+                          state: newFilters.state,
+                          city: newFilters.city,
+                          userType: newFilters.userType,
+                          category: newFilters.service
+                        })
+                        setTimeout(() => executeSearch(), 100)
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={t('all') || 'Todos'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('all') || 'Todos'}</SelectItem>
+                        <SelectItem value="professional">{t('professionals') || 'Profissionais'}</SelectItem>
+                        <SelectItem value="client">{t('clients') || 'Clientes'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="flex justify-between gap-2 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        clearFilters()
+                        setShowSearchModal(false)
+                      }}
+                      className="flex-1"
+                    >
+                      {t('clearFilters') || 'Limpar'}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        executeSearch()
+                        setShowSearchModal(false)
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    >
+                      {t('search') || 'Buscar'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Controles de Visualização */}

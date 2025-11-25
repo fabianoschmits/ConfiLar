@@ -121,7 +121,7 @@ export function WelcomeUserPost({
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                   <MapPin className="h-3 w-3 mr-1" />
-                  {post.metadata?.location_city}, {post.metadata?.location_state}
+                  {(post.metadata?.location_city && post.metadata.location_city !== 'null') ? post.metadata.location_city : 'Cidade'}, {post.metadata?.location_state || 'Estado'}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   {formatTimeAgo(post.created_at)}

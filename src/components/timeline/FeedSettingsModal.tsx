@@ -226,20 +226,41 @@ export function FeedSettingsModal({
       onSearchChange(finalSearchValue)
       onLocationFilterChange(locationFilter)
 
-      // Salvar APENAS localização no banco de dados (cidade, estado, tipo)
+      // Salvar APENAS localização no banco de dados (cidade, estado, tipo, país)
       // NÃO salvar pesquisa (keywords, username, userid) - é apenas temporária
       if (user?.id) {
+        // Converter nome do país para código antes de salvar
+        const countryCode = getCountryCode(countryName)
+        
         const { error } = await supabase
           .from('profiles')
           .update({
             feed_location_filter_type: locationFilter.type,
             feed_location_filter_city: locationFilter.city || null,
             feed_location_filter_state: locationFilter.state || null,
+            feed_location_filter_country: countryCode || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id)
 
-        if (error) throw error
+        if (error) {
+          console.error('Erro ao salvar filtro de localização:', error)
+          // Se o campo feed_location_filter_country não existir, tentar sem ele
+          if (error.message?.includes('feed_location_filter_country')) {
+            const { error: error2 } = await supabase
+              .from('profiles')
+              .update({
+                feed_location_filter_type: locationFilter.type,
+                feed_location_filter_city: locationFilter.city || null,
+                feed_location_filter_state: locationFilter.state || null,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', user.id)
+            if (error2) throw error2
+          } else {
+            throw error
+          }
+        }
 
         // Salvar silenciosamente, sem mostrar mensagem
       }
@@ -258,18 +279,18 @@ export function FeedSettingsModal({
   return (
     <div 
       data-feed-settings-modal
-      className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[85vh] overflow-hidden"
+      className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-[85vh] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate pr-2">
           Configurações do Feed
         </h3>
         <button
           onClick={onClose}
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-1"
+          className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-1 flex-shrink-0"
         >
           <X className="h-4 w-4" />
         </button>
@@ -292,8 +313,8 @@ export function FeedSettingsModal({
                 onChange={(e) => setSearchValue(e.target.value)}
                 className="w-full bg-white dark:bg-gray-900 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1.5 text-xs h-8 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               />
-              <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                Digite palavras-chave, <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded">user:nome</code> ou <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded">id:uuid</code>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 break-words overflow-wrap-anywhere">
+                Digite palavras-chave, <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded break-all">user:nome</code> ou <code className="text-[9px] bg-gray-100 dark:bg-gray-800 px-1 rounded break-all">id:uuid</code>
               </p>
             </div>
           </div>
@@ -307,41 +328,44 @@ export function FeedSettingsModal({
             
             <div className="space-y-1.5">
               {/* Seleção de País - PRIMEIRO */}
-              <div className="mb-3">
+              <div className="mb-3 space-y-2">
                 <label className="text-[10px] font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                   País
                 </label>
-                <LocationComboboxesMultiCountry
-                  country={selectedCountry}
-                  stateCode={selectedStateSigla}
-                  city={selectedCity}
-                  onCountryChange={(newCountry) => {
-                    setSelectedCountry(newCountry)
-                    // Limpar estado e cidade quando país muda
-                    setSelectedState('')
-                    setSelectedStateSigla('')
-                    setSelectedCity('')
-                  }}
-                  onStateChange={(stateCode) => {
-                    setSelectedStateSigla(stateCode)
-                    // Buscar nome do estado baseado no país
-                    if (selectedCountry === 'BR') {
-                      const estado = estados.find(e => e.sigla === stateCode)
-                      if (estado) {
-                        setSelectedState(estado.nome)
-                        loadCidades(estado.sigla)
+                <div className="relative">
+                  <LocationComboboxesMultiCountry
+                    country={selectedCountry}
+                    stateCode={selectedStateSigla}
+                    city={selectedCity}
+                    onCountryChange={(newCountry) => {
+                      setSelectedCountry(newCountry)
+                      // Limpar estado e cidade quando país muda
+                      setSelectedState('')
+                      setSelectedStateSigla('')
+                      setSelectedCity('')
+                    }}
+                    onStateChange={(stateCode) => {
+                      setSelectedStateSigla(stateCode)
+                      // Buscar nome do estado baseado no país
+                      if (selectedCountry === 'BR') {
+                        const estado = estados.find(e => e.sigla === stateCode)
+                        if (estado) {
+                          setSelectedState(estado.nome)
+                          loadCidades(estado.sigla)
+                        }
+                      } else {
+                        // Para EUA, usar o código do estado diretamente
+                        setSelectedState(stateCode)
                       }
-                    } else {
-                      // Para EUA, usar o código do estado diretamente
-                      setSelectedState(stateCode)
-                    }
-                    setSelectedCity('')
-                    // NÃO fechar o modal ao selecionar estado
-                  }}
-                  onCityChange={(city) => {
-                    setSelectedCity(city)
-                  }}
-                />
+                      setSelectedCity('')
+                      // NÃO fechar o modal ao selecionar estado
+                    }}
+                    onCityChange={(city) => {
+                      setSelectedCity(city)
+                    }}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               {/* Opção: Minha Cidade */}
@@ -377,8 +401,8 @@ export function FeedSettingsModal({
                       : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  <div className="font-semibold text-xs">Minha Cidade</div>
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                  <div className="font-semibold text-xs break-words">Minha Cidade</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 break-words overflow-wrap-anywhere line-clamp-2">
                     {selectedCity && selectedState
                       ? `${selectedCity}, ${selectedState}`
                       : profile?.location_city && profile?.location_state 
@@ -412,8 +436,8 @@ export function FeedSettingsModal({
                       : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
-                  <div className="font-semibold text-xs">Meu Estado</div>
-                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                  <div className="font-semibold text-xs break-words">Meu Estado</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 break-words overflow-wrap-anywhere line-clamp-2">
                     {selectedState || profile?.location_state || 'Selecione um estado'}
                   </div>
                 </button>
@@ -455,8 +479,8 @@ export function FeedSettingsModal({
                     : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
-                <div className="font-semibold text-xs">Todos os Locais</div>
-                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <div className="font-semibold text-xs break-words">Todos os Locais</div>
+                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 break-words overflow-wrap-anywhere">
                   Posts de qualquer localização
                 </div>
               </button>

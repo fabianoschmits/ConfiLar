@@ -206,7 +206,9 @@ export function PremiumPostCard({
               {/* Localização */}
               <div className="flex items-center text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 mt-1">
                 <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
-                <span className="truncate">{post.location_city || 'Cidade'}, {post.location_state || 'UF'}</span>
+                <span className="truncate">
+                  {post.location_city && post.location_city !== 'null' ? post.location_city : 'Cidade'}, {post.location_state || 'UF'}
+                </span>
               </div>
               
               {/* Data e Hora da Postagem */}

@@ -170,7 +170,11 @@ export function SimpleAutomaticPost({ post, onDelete, isDeleting = false }: Simp
           {/* Linha de informações (localização e tempo) - mais compacta */}
           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
             <div className="flex items-center">
-              <span>📍 {post.metadata?.location_city || post.location_city || 'Cidade'}, {post.metadata?.location_state || post.location_state || 'Estado'}</span>
+              <span>📍 {
+                (post.metadata?.location_city && post.metadata.location_city !== 'null') || (post.location_city && post.location_city !== 'null')
+                  ? (post.metadata?.location_city || post.location_city)
+                  : 'Cidade'
+              }, {post.metadata?.location_state || post.location_state || 'Estado'}</span>
             </div>
             <div className="flex items-center">
               <span>🕒 {formatTimeAgo(post.created_at)}</span>

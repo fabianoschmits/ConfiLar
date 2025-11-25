@@ -925,6 +925,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
       
       // Preparar dados para inserção
+      // IMPORTANTE: Se location_city for string vazia ou apenas espaços, salvar como null
+      // Mas se location_city tiver valor (mesmo que seja uma string), salvar o valor
+      // Isso evita que apareça "null" na interface quando uma cidade foi realmente selecionada
+      const cityValue = newPost.location_city 
+        ? (newPost.location_city.trim() ? newPost.location_city.trim() : null)
+        : null
+      
       const postData = {
         professional_id: newPost.user_id,
         user_id: newPost.user_id,
@@ -934,7 +941,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         images: Array.isArray(newPost.images) ? newPost.images : [],
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,
-        location_city: newPost.location_city || null,
+        location_city: cityValue,
         location_country: location_country || 'BR', // Default para BR se não encontrar
         likes_count: 0,
         comments_count: 0,
@@ -946,6 +953,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
       
       console.log('📝 [addPost] Dados do post:', postData)
+      console.log('📝 [addPost] Location city recebido:', {
+        original: newPost.location_city,
+        originalType: typeof newPost.location_city,
+        trimmed: newPost.location_city?.trim(),
+        final: postData.location_city,
+        finalType: typeof postData.location_city
+      })
       
       // Criação do post
       const { data, error } = await supabase
@@ -1352,6 +1366,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
 
       // Criar post premium diretamente na tabela
+      // IMPORTANTE: Se location_city for string vazia ou apenas espaços, salvar como null
+      // Mas se location_city tiver valor (mesmo que seja uma string), salvar o valor
+      // Isso evita que apareça "null" na interface quando uma cidade foi realmente selecionada
+      const cityValuePremium = newPost.location_city 
+        ? (newPost.location_city.trim() ? newPost.location_city.trim() : null)
+        : null
+      
       const postData = {
         professional_id: newPost.user_id,
         user_id: newPost.user_id,
@@ -1361,7 +1382,8 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         images: Array.isArray(newPost.images) ? newPost.images : [],
         service_category_id: newPost.service_category_id || null,
         location_state: newPost.location_state || null,
-        location_city: newPost.location_city || null,
+        location_city: cityValuePremium,
+        location_country: newPost.location_country || 'BR',
         likes_count: 0,
         comments_count: 0,
         is_active: true,
@@ -1374,6 +1396,15 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         tags: ['premium'],
         metadata: metadata
       }
+      
+      console.log('📝 [addPremiumPost] Dados do post premium:', postData)
+      console.log('📝 [addPremiumPost] Location city recebido:', {
+        original: newPost.location_city,
+        originalType: typeof newPost.location_city,
+        trimmed: newPost.location_city?.trim(),
+        final: postData.location_city,
+        finalType: typeof postData.location_city
+      })
 
       const { data, error } = await supabase
         .from('feed_posts')

@@ -116,7 +116,10 @@ export function NewUserWelcomePost({
   const userName = post.metadata?.user || 'Usuário'
   const userAvatar = post.metadata?.avatar_url || ''
   const userBio = post.metadata?.bio || 'Profissional qualificado e experiente.'
-  const userLocationCity = post.metadata?.location_city || post.location_city || 'Cidade'
+  const userLocationCity = (
+    (post.metadata?.location_city && post.metadata.location_city !== 'null') || 
+    (post.location_city && post.location_city !== 'null')
+  ) ? (post.metadata?.location_city || post.location_city) : 'Cidade'
   const userLocationState = post.metadata?.location_state || post.location_state || 'Estado'
   const userType = post.metadata?.user_type || 'profissional'
 

@@ -24,6 +24,7 @@ export interface TimelinePost extends TimelineItem {
   service_category_id?: string
   location_state?: string
   location_city?: string
+  location_country?: string
   likes_count: number
   comments_count: number
   is_liked?: boolean

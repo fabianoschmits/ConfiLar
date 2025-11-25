@@ -16,6 +16,7 @@ import { LocationComboboxesMultiCountry } from '@/components/ui/LocationCombobox
 import { useIBGE } from '@/hooks/useIBGE'
 import { getEstadoBySigla, getEstadoByNome } from '@/lib/ibge'
 import { useLocale } from '@/contexts/LocaleContext'
+import { LocationService } from '@/lib/location/LocationService'
 
 interface NewPostFormProps {
   onSubmit: (post: {
@@ -202,8 +203,31 @@ export function NewPostForm({
       // Isso garante que o vídeo seja detectado e salvo no metadata antes de remover o link
       // IMPORTANTE: Se showLocation está true, usar os valores selecionados mesmo se vazios
       // Isso garante que quando o usuário seleciona uma cidade, ela seja salva corretamente
-      const finalCity = showLocation ? (selectedCity || '') : (selectedCity || profile?.location_city || '')
-      const finalStateValue = showLocation ? (finalState || '') : (finalState || profile?.location_state || '')
+      // Se showLocation está false, usar valores do perfil como fallback
+      // IMPORTANTE: Se selectedCity tem valor (mesmo que seja string vazia quando showLocation está true), usar ele
+      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
+      const finalCity = showLocation 
+        ? (selectedCity !== undefined ? selectedCity : '')  // Se showLocation está true, usar selectedCity (mesmo se vazio)
+        : (selectedCity || profile?.location_city || '')  // Se false, usar selectedCity ou perfil
+      
+      const finalStateValue = showLocation 
+        ? (finalState || '')  // Se showLocation está true, usar finalState (pode ser string vazia)
+        : (finalState || profile?.location_state || '')  // Se false, usar finalState ou perfil
+      
+      console.log('📝 [NewPostForm] Dados de localização sendo enviados:', {
+        showLocation,
+        selectedCity,
+        selectedCityType: typeof selectedCity,
+        finalCity,
+        finalCityType: typeof finalCity,
+        selectedState,
+        finalState,
+        finalStateValue,
+        selectedCountry,
+        selectedStateSigla,
+        profileCity: profile?.location_city,
+        profileState: profile?.location_state
+      })
       
       onSubmit({
         description: post.description.trim(), // Enviar descrição completa (com link se houver)
@@ -384,17 +408,44 @@ export function NewPostForm({
                     setSelectedStateSigla('')
                     setSelectedCity('')
                   }}
-                  onStateChange={(stateCode) => {
+                  onStateChange={async (stateCode) => {
+                    console.log('🏛️ Estado selecionado no NewPostForm:', { stateCode, selectedCountry })
                     setSelectedStateSigla(stateCode)
-                    const estado = estados.find(e => e.sigla === stateCode)
-                    if (estado) {
-                      setSelectedState(estado.nome)
-                      loadCidades(estado.sigla)
+                    
+                    // Para países que não são Brasil, buscar o nome do estado do LocationService
+                    if (selectedCountry === 'US') {
+                      // Para EUA, o stateCode já é o código do estado (ex: "CA")
+                      // Precisamos buscar o nome do estado
+                      try {
+                        const service = new LocationService(selectedCountry as 'BR' | 'US')
+                        const states = await service.getStates()
+                        const state = states.find(s => s.code === stateCode)
+                        if (state) {
+                          console.log('✅ Estado encontrado para EUA:', state.name)
+                          setSelectedState(state.name)
+                        } else {
+                          console.warn('⚠️ Estado não encontrado, usando código:', stateCode)
+                          setSelectedState(stateCode)
+                        }
+                      } catch (error) {
+                        console.error('❌ Erro ao buscar estado:', error)
+                        // Se falhar, usar o código como nome
+                        setSelectedState(stateCode)
+                      }
+                    } else {
+                      // Para Brasil, usar IBGE
+                      const estado = estados.find(e => e.sigla === stateCode)
+                      if (estado) {
+                        setSelectedState(estado.nome)
+                        loadCidades(estado.sigla)
+                      }
                     }
                     setSelectedCity('')
                   }}
                   onCityChange={(city) => {
-                    setSelectedCity(city)
+                    console.log('🏙️ Cidade selecionada no NewPostForm:', { city, selectedCountry, selectedState })
+                    // IMPORTANTE: Garantir que a cidade seja salva mesmo se for string vazia quando showLocation está ativo
+                    setSelectedCity(city || '')
                   }}
                   className="mt-2"
                 />

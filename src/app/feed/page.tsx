@@ -970,7 +970,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
               </p>
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {post.location_city && `${post.location_city}, ${post.location_state}`}
+              {post.location_city && post.location_city !== 'null' && `${post.location_city}, ${post.location_state || ''}`}
             </p>
           </div>
         </div>

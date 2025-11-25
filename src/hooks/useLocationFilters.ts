@@ -55,7 +55,7 @@ export function useLocationFilters() {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('feed_location_filter_type, feed_location_filter_city, feed_location_filter_state')
+          .select('feed_location_filter_type, feed_location_filter_city, feed_location_filter_state, feed_location_filter_country')
           .eq('id', user.id)
           .single()
 
@@ -65,10 +65,17 @@ export function useLocationFilters() {
         }
 
         if (data?.feed_location_filter_type) {
+          // IMPORTANTE: Usar o país salvo no filtro, não o país do perfil
+          // Isso garante que quando o usuário muda o país no filtro, ele seja mantido após recarregar
+          const savedCountry = data.feed_location_filter_country || (profile as any)?.country
+          const countryName = getCountryName(savedCountry)
+          
           // Normalizar estado: converter sigla para nome completo se necessário
+          // IMPORTANTE: Para países que não são Brasil (ex: US), o estado pode estar salvo como código
+          // Nesse caso, não tentar converter usando IBGE
           let normalizedState = data.feed_location_filter_state || profile.location_state
-          if (normalizedState && normalizedState.length === 2) {
-            // É uma sigla, converter para nome completo
+          if (normalizedState && savedCountry === 'BR' && normalizedState.length === 2) {
+            // É uma sigla do Brasil, converter para nome completo
             try {
               const estado = await getEstadoBySigla(normalizedState)
               if (estado) {
@@ -78,12 +85,21 @@ export function useLocationFilters() {
               console.error('Erro ao normalizar estado ao carregar:', error)
             }
           }
+          // Para outros países (ex: US), manter o estado como está (pode ser código ou nome)
+          
+          console.log('📋 [useLocationFilters] Carregando filtro salvo:', {
+            type: data.feed_location_filter_type,
+            city: data.feed_location_filter_city,
+            state: normalizedState,
+            savedCountry,
+            countryName
+          })
           
           setCurrentFilter({
             type: data.feed_location_filter_type as LocationFilter['type'],
             city: data.feed_location_filter_city || profile.location_city,
             state: normalizedState,
-            country: getCountryName((profile as any)?.country)
+            country: countryName
           })
         } else if (profile?.location_city && profile?.location_state) {
           // Normalizar estado do perfil: converter sigla para nome completo se necessário
@@ -113,8 +129,10 @@ export function useLocationFilters() {
         // Fallback para cidade do perfil
         if (profile?.location_city && profile?.location_state) {
           // Normalizar estado: converter sigla para nome completo se necessário
+          // IMPORTANTE: Apenas para Brasil
+          const profileCountry = (profile as any)?.country || 'BR'
           let normalizedState = profile.location_state
-          if (normalizedState && normalizedState.length === 2) {
+          if (normalizedState && profileCountry === 'BR' && normalizedState.length === 2) {
             try {
               const estado = await getEstadoBySigla(normalizedState)
               if (estado) {
@@ -129,7 +147,7 @@ export function useLocationFilters() {
             type: 'local',
             city: profile.location_city,
             state: normalizedState,
-            country: getCountryName((profile as any)?.country)
+            country: getCountryName(profileCountry)
           })
         }
       }

@@ -130,7 +130,7 @@ export function LocationComboboxesMultiCountry({
   const selectedCity = cities.find(c => c.name === city)
 
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4", className)}>
+    <div className={cn("grid grid-cols-1 gap-2 sm:gap-3", className)}>
       {/* País */}
       <Popover open={countryOpen} onOpenChange={setCountryOpen}>
         <PopoverTrigger asChild>
@@ -138,7 +138,14 @@ export function LocationComboboxesMultiCountry({
             variant="outline"
             role="combobox"
             aria-expanded={countryOpen}
-            className="w-full justify-between"
+            className={cn(
+              "w-full justify-between",
+              "!bg-white dark:!bg-gray-900",
+              "hover:!bg-white dark:hover:!bg-gray-900",
+              "focus:!bg-white dark:focus:!bg-gray-900",
+              "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
+              "active:!bg-white dark:active:!bg-gray-900"
+            )}
           >
             {selectedCountry ? (
               <span className="flex items-center gap-2">
@@ -151,7 +158,7 @@ export function LocationComboboxesMultiCountry({
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent className="w-[200px] sm:w-[250px] p-0" align="start">
           <Command>
             <CommandInput placeholder={t('selectCountry')} />
             <CommandList>
@@ -161,7 +168,7 @@ export function LocationComboboxesMultiCountry({
                   <CommandItem
                     key={c.code}
                     value={c.code}
-                    onSelect={() => {
+                    onSelect={(currentValue) => {
                       handleCountryChange(c.code)
                       setCountryOpen(false)
                     }}
@@ -173,7 +180,7 @@ export function LocationComboboxesMultiCountry({
                       )}
                     />
                     <span className="mr-2">{c.flag}</span>
-                    {c.name}
+                    <span className="truncate">{c.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -189,7 +196,14 @@ export function LocationComboboxesMultiCountry({
             variant="outline"
             role="combobox"
             aria-expanded={stateOpen}
-            className="w-full justify-between"
+            className={cn(
+              "w-full justify-between",
+              "!bg-white dark:!bg-gray-900",
+              "hover:!bg-white dark:hover:!bg-gray-900",
+              "focus:!bg-white dark:focus:!bg-gray-900",
+              "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
+              "active:!bg-white dark:active:!bg-gray-900"
+            )}
             disabled={!country || loadingStates}
           >
             {loadingStates ? (
@@ -202,7 +216,7 @@ export function LocationComboboxesMultiCountry({
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
+        <PopoverContent className="w-[200px] sm:w-[300px] p-0" align="start">
           <Command>
             <CommandInput placeholder={t('selectState')} />
             <CommandList>
@@ -214,7 +228,7 @@ export function LocationComboboxesMultiCountry({
                   <CommandItem
                     key={state.code}
                     value={state.code}
-                    onSelect={() => {
+                    onSelect={(currentValue) => {
                       handleStateChange(state.code)
                       setStateOpen(false)
                     }}
@@ -225,7 +239,7 @@ export function LocationComboboxesMultiCountry({
                         stateCode === state.code ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {state.name}
+                    <span className="truncate">{state.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -241,7 +255,14 @@ export function LocationComboboxesMultiCountry({
             variant="outline"
             role="combobox"
             aria-expanded={cityOpen}
-            className="w-full justify-between"
+            className={cn(
+              "w-full justify-between",
+              "!bg-white dark:!bg-gray-900",
+              "hover:!bg-white dark:hover:!bg-gray-900",
+              "focus:!bg-white dark:focus:!bg-gray-900",
+              "focus-visible:!bg-white dark:focus-visible:!bg-gray-900",
+              "active:!bg-white dark:active:!bg-gray-900"
+            )}
             disabled={!stateCode || loadingCities}
           >
             {loadingCities ? (
@@ -254,7 +275,7 @@ export function LocationComboboxesMultiCountry({
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
+        <PopoverContent className="w-[200px] sm:w-[300px] p-0" align="start">
           <Command>
             <CommandInput placeholder={t('selectCity')} />
             <CommandList>
@@ -266,7 +287,7 @@ export function LocationComboboxesMultiCountry({
                   <CommandItem
                     key={c.id}
                     value={c.name}
-                    onSelect={() => {
+                    onSelect={(currentValue) => {
                       handleCityChange(c.name)
                       setCityOpen(false)
                     }}
@@ -277,7 +298,7 @@ export function LocationComboboxesMultiCountry({
                         city === c.name ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {c.name}
+                    <span className="truncate">{c.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

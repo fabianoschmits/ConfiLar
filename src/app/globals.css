@@ -746,8 +746,28 @@ button, a, input, select, textarea {
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+  --chart-5: 340 75% 55%;
+}
+
+/* Remover borda preta do CommandInput quando focado */
+[data-slot="command-input"],
+[data-slot="command-input"]:focus,
+[data-slot="command-input"]:focus-visible,
+[data-slot="command-input"]:active {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Remover borda do wrapper do CommandInput */
+[data-slot="command-input-wrapper"] {
+  border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+.dark [data-slot="command-input-wrapper"] {
+  border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
+}
 
   /* Aplicar fonte Gilroy globalmente */
   html {
@@ -841,5 +861,43 @@ button, a, input, select, textarea {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* Remover borda preta do CommandInput quando focado */
+[data-slot="command-input"],
+[data-slot="command-input"]:focus,
+[data-slot="command-input"]:focus-visible,
+[data-slot="command-input"]:active {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+}
+
+/* Remover borda do wrapper do CommandInput */
+[data-slot="command-input-wrapper"] {
+  border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
+}
+
+.dark [data-slot="command-input-wrapper"] {
+  border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
+}
+
+/* Garantir que inputs dentro de Command não tenham borda preta */
+[data-slot="command"] input,
+[data-slot="command"] input:focus,
+[data-slot="command"] input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Garantir que inputs dentro de PopoverContent não tenham borda preta */
+[data-radix-popover-content] input,
+[data-radix-popover-content] input:focus,
+[data-radix-popover-content] input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
