@@ -65,6 +65,20 @@ export function useLocationFilters() {
         }
 
         if (data?.feed_location_filter_type) {
+          const filterType = data.feed_location_filter_type as LocationFilter['type']
+          
+          // IMPORTANTE: Se o tipo for 'all', não carregar nenhum valor de localização
+          if (filterType === 'all') {
+            console.log('📋 [useLocationFilters] Carregando filtro "all" - sem valores de localização')
+            setCurrentFilter({
+              type: 'all',
+              city: undefined,
+              state: undefined,
+              country: undefined
+            })
+            return // Sair cedo para não processar valores de localização
+          }
+          
           // IMPORTANTE: Usar o país salvo no filtro, não o país do perfil
           // Isso garante que quando o usuário muda o país no filtro, ele seja mantido após recarregar
           const savedCountry = data.feed_location_filter_country || (profile as any)?.country
@@ -88,7 +102,7 @@ export function useLocationFilters() {
           // Para outros países (ex: US), manter o estado como está (pode ser código ou nome)
           
           console.log('📋 [useLocationFilters] Carregando filtro salvo:', {
-            type: data.feed_location_filter_type,
+            type: filterType,
             city: data.feed_location_filter_city,
             state: normalizedState,
             savedCountry,
@@ -96,7 +110,7 @@ export function useLocationFilters() {
           })
           
           setCurrentFilter({
-            type: data.feed_location_filter_type as LocationFilter['type'],
+            type: filterType,
             city: data.feed_location_filter_city || profile.location_city,
             state: normalizedState,
             country: countryName

@@ -45,7 +45,7 @@ export default function ProfilePage() {
   const [mounted, setMounted] = useState(false)
   
   const { profile, loading, error } = useProfileData(userId)
-  const { reviews, loading: reviewsLoading, fetchUserReviews } = useSupabaseReviews()
+  const { reviews, loading: reviewsLoading, fetchUserReviews, respondToReview, deleteReview, updateReview } = useSupabaseReviews()
   const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
   const { recommendations, loading: recommendationsLoading } = useRecommendations(userId)
   const { recordView, getViewStats } = useProfileViews()
@@ -535,7 +535,39 @@ export default function ProfilePage() {
                   ) : reviews && reviews.length > 0 ? (
                     <div className="space-y-4">
                       {reviews.map((review) => (
-                        <ReviewCard key={review.id} review={review} currentUserId={user?.id} profileOwnerId={userId} />
+                        <ReviewCard 
+                          key={review.id} 
+                          review={review} 
+                          currentUserId={user?.id} 
+                          profileOwnerId={userId}
+                          onRespond={async (reviewId, responseText) => {
+                            const result = await respondToReview(reviewId, responseText)
+                            
+                            // Aguardar um pouco para garantir que o banco foi atualizado
+                            // e então refazer a busca para atualizar os dados
+                            if (userId && !result.error) {
+                              setTimeout(async () => {
+                                await fetchUserReviews(userId)
+                              }, 1000)
+                            }
+                            return result
+                          }}
+                          onEdit={async (reviewToEdit) => {
+                            // Abrir modal de edição ou atualizar diretamente
+                            // Por enquanto, apenas recarregar após edição
+                            fetchUserReviews(userId)
+                          }}
+                          onDelete={async (reviewId) => {
+                            const result = await deleteReview(reviewId)
+                            if (!result.error) {
+                              toast.success('Avaliação excluída com sucesso')
+                              // Recarregar avaliações após excluir
+                              fetchUserReviews(userId)
+                            } else {
+                              toast.error('Erro ao excluir avaliação')
+                            }
+                          }}
+                        />
                       ))}
                     </div>
                   ) : (

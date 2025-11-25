@@ -59,6 +59,7 @@ export function ReviewCard({
   const isReviewed = currentUserId === review.reviewed.id
   const isProfileOwner = currentUserId === profileOwnerId
 
+
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
@@ -208,44 +209,82 @@ export function ReviewCard({
             {showActions && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <button 
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                  >
                     <MoreVertical className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                <DropdownMenuContent align="end" className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg min-w-[200px]">
+                  {/* Se o usuário é o autor da avaliação */}
                   {isOwner && onEdit && (
-                    <DropdownMenuItem onClick={() => onEdit(review)} className="flex items-center gap-2">
+                    <DropdownMenuItem 
+                      onClick={() => onEdit(review)} 
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <Edit className="h-4 w-4" />
-                      Editar
+                      Editar Avaliação
                     </DropdownMenuItem>
                   )}
                   {isOwner && onDelete && (
                     <DropdownMenuItem 
-                      onClick={() => onDelete(review.id)}
-                      className="text-red-600 flex items-center gap-2"
+                      onClick={async () => {
+                        if (confirm('Tem certeza que deseja excluir esta avaliação?')) {
+                          await onDelete(review.id)
+                        }
+                      }}
+                      className="text-red-600 dark:text-red-400 flex items-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Excluir
+                      Excluir Avaliação
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {/* Se o usuário é o dono do perfil (foi avaliado) */}
+                  {isProfileOwner && !review.response_text && onRespond && (
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        setShowResponseForm(true)
+                        setResponseText('')
+                        setIsEditingResponse(false)
+                      }}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Reply className="h-4 w-4" />
+                      Responder
                     </DropdownMenuItem>
                   )}
                   {isProfileOwner && review.response_text && (
                     <DropdownMenuItem 
                       onClick={handleEditResponse}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 cursor-pointer"
                     >
                       <Edit className="h-4 w-4" />
                       Editar Resposta
                     </DropdownMenuItem>
                   )}
-                  {isProfileOwner && onDelete && (
+                  {isProfileOwner && review.response_text && (
                     <DropdownMenuItem 
-                      onClick={() => onDelete(review.id)}
-                      className="text-red-600 flex items-center gap-2"
+                      onClick={async () => {
+                        if (confirm('Tem certeza que deseja remover sua resposta?')) {
+                          if (onRespond) {
+                            await onRespond(review.id, '')
+                            setShowResponseForm(false)
+                            setResponseText('')
+                          }
+                        }
+                      }}
+                      className="text-orange-600 dark:text-orange-400 flex items-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Remover Avaliação
+                      Remover Resposta
                     </DropdownMenuItem>
                   )}
+                  
+                  {/* Se não é nem o autor nem o dono do perfil */}
                   {!isOwner && !isProfileOwner && (
                     <DropdownMenuItem asChild>
                       <ReportButton 
@@ -253,8 +292,15 @@ export function ReviewCard({
                         targetId={review.id}
                         targetName="Avaliação"
                         asDropdownItem={true}
-                        className="w-full justify-start p-0 h-auto font-normal"
+                        className="w-full justify-start p-0 h-auto font-normal cursor-pointer"
                       />
+                    </DropdownMenuItem>
+                  )}
+                  
+                  {/* Mensagem se não houver ações disponíveis */}
+                  {!isOwner && !isProfileOwner && !onEdit && !onDelete && (
+                    <DropdownMenuItem disabled className="text-gray-400 text-sm">
+                      Nenhuma ação disponível
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -296,12 +342,12 @@ export function ReviewCard({
           )}
 
           {/* Resposta do Avaliado */}
-          {review.response_text && (
+          {review.response_text && review.response_text.trim() && (
             <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 mb-4 border border-blue-200 dark:border-blue-800 ml-4">
               <div className="flex items-center gap-2 mb-2">
                 <Reply className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <span className="font-medium text-blue-900 dark:text-blue-300">
-                  Resposta de {review.reviewed.full_name}
+                  Resposta de {review.reviewed?.full_name || 'Usuário'}
                 </span>
                 {review.response_date && (
                   <span className="text-xs text-blue-600 dark:text-blue-400">

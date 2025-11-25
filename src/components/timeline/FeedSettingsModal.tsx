@@ -191,9 +191,10 @@ export function FeedSettingsModal({
       
       const locationFilter: LocationFilter = {
         type: selectedLocationType,
-        city: selectedLocationType === 'local' || selectedLocationType === 'custom' ? selectedCity : undefined,
-        state: selectedLocationType === 'local' || selectedLocationType === 'state' || selectedLocationType === 'custom' ? finalState : undefined,
-        country: countryName
+        // Quando tipo é 'all', não incluir city e state
+        city: selectedLocationType === 'all' ? undefined : (selectedLocationType === 'local' || selectedLocationType === 'custom' ? selectedCity : undefined),
+        state: selectedLocationType === 'all' ? undefined : (selectedLocationType === 'local' || selectedLocationType === 'state' || selectedLocationType === 'custom' ? finalState : undefined),
+        country: selectedLocationType === 'all' ? undefined : countryName
       }
 
       // Determinar o valor de pesquisa - detectar automaticamente o tipo
@@ -279,15 +280,12 @@ export function FeedSettingsModal({
   return (
     <div 
       data-feed-settings-modal
-      className="fixed sm:absolute top-16 sm:top-full right-2 sm:right-0 mt-0 sm:mt-2 w-[calc(80vw-0.8rem)] sm:w-64 max-w-xs bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-[100] max-h-[calc(100vh-6rem)] sm:max-h-[85vh] overflow-y-auto overflow-x-hidden"
+      className="fixed sm:absolute top-16 sm:top-full right-2 sm:right-0 mt-0 sm:mt-2 w-[calc(80vw-0.8rem)] sm:w-64 max-w-xs bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-[100] max-h-[calc(100vh-6rem)] sm:max-h-[85vh] bottom-[6rem] sm:bottom-auto flex flex-col overflow-hidden"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
-      style={{
-        bottom: '6rem' // Espaço para o QuickActionMenu no mobile (5rem do menu + 1rem de margem)
-      }}
     >
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between">
+      <div className="flex-shrink-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between">
         <h3 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate pr-2">
           Configurações do Feed
         </h3>
@@ -300,7 +298,7 @@ export function FeedSettingsModal({
       </div>
 
       {/* Content */}
-      <div className="overflow-y-auto max-h-[calc(100vh-11rem)] sm:max-h-[calc(85vh-100px)] p-3 space-y-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4 min-h-0">
           {/* Pesquisa */}
           <div>
             <label className="flex items-center gap-1.5 text-xs font-medium text-gray-900 dark:text-white mb-2">
@@ -486,58 +484,54 @@ export function FeedSettingsModal({
               </button>
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 px-3 py-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {onReset && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (onReset) {
-                    onReset()
-                  }
-                  onClose()
-                }}
-                size="sm"
-                className="text-xs h-7 px-2 text-gray-700 dark:text-gray-300"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Resetar
-              </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Footer */}
+      <div className="flex-shrink-0 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800 px-2 py-1.5 flex items-center justify-center gap-1.5 flex-nowrap">
+          {onReset && (
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={() => {
+                if (onReset) {
+                  onReset()
+                }
+                onClose()
+              }}
               size="sm"
-              className="text-xs h-7 px-2 text-gray-700 dark:text-gray-300"
+              className="text-[10px] h-6 px-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap"
             >
-              Cancelar
+              <RotateCcw className="h-2.5 w-2.5 mr-0.5" />
+              Resetar
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving}
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7 px-2"
-            >
-              {isSaving ? (
-                <>
-                  <span className="animate-spin mr-1 text-[10px]">⏳</span>
-                  <span className="text-[10px]">Salvando...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-3 w-3 mr-1" />
-                  <span className="text-xs">Salvar</span>
-                </>
-              )}
-            </Button>
-          </div>
+          )}
+          <Button
+            variant="outline"
+            onClick={onClose}
+            size="sm"
+            className="text-[10px] h-6 px-1.5 text-gray-700 dark:text-gray-300 whitespace-nowrap"
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] h-6 px-1.5 whitespace-nowrap"
+          >
+            {isSaving ? (
+              <>
+                <span className="animate-spin mr-0.5 text-[9px]">⏳</span>
+                <span className="text-[9px]">Salvando...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-2.5 w-2.5 mr-0.5" />
+                <span className="text-[10px]">Salvar</span>
+              </>
+            )}
+          </Button>
         </div>
-      </div>
+    </div>
   )
 }
 

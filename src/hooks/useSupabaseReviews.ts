@@ -55,6 +55,8 @@ export function useSupabaseReviews() {
           reviewed_id,
           rating_person,
           comment,
+          response_text,
+          response_date,
           created_at,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
@@ -73,9 +75,6 @@ export function useSupabaseReviews() {
         .order('created_at', { ascending: false })
         .limit(20) // Limitar a 20 avaliações por vez
 
-      console.log('📊 Hook useSupabaseReviews - Query executada:', { column, userId })
-      console.log('📊 Hook useSupabaseReviews - Dados retornados:', data?.length || 0)
-      console.log('📊 Hook useSupabaseReviews - Erro:', error)
 
       if (error) throw error
       setReviews(data as any || [])
@@ -321,33 +320,152 @@ export function useSupabaseReviews() {
   // Responder a uma avaliação
   const respondToReview = async (reviewId: string, responseText: string) => {
     try {
-      const { data, error } = await supabase
+      // Se responseText estiver vazio, remover a resposta
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      }
+      
+      if (responseText && responseText.trim()) {
+        updateData.response_text = responseText.trim()
+        updateData.response_date = new Date().toISOString()
+      } else {
+        // Remover resposta
+        updateData.response_text = null
+        updateData.response_date = null
+      }
+      
+      // Fazer o update sem select para evitar erro 406
+      const { data: updateResult, error: updateError } = await supabase
         .from('reviews')
-        .update({ 
-          response_text: responseText,
-          response_date: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', reviewId)
-        .select()
-        .single()
+        .select('id, response_text, response_date')
 
-      if (error) throw error
+      if (updateError) {
+        console.error('❌ Erro ao atualizar resposta:', updateError)
+        throw updateError
+      }
       
-      // Atualizar o estado local
-      setReviews(prevReviews => 
-        prevReviews.map(review => 
-          review.id === reviewId 
-            ? { 
+      // Se o update retornou dados, usar eles diretamente
+      if (updateResult && updateResult.length > 0 && updateResult[0].response_text) {
+        const updatedReview = updateResult[0]
+        
+        // Buscar relacionamentos separadamente
+        const { data: relationships } = await supabase
+          .from('reviews')
+          .select(`
+            reviewer:profiles!reviews_reviewer_id_fkey(
+              id,
+              full_name,
+              avatar_url,
+              user_type
+            ),
+            reviewed:profiles!reviews_reviewed_id_fkey(
+              id,
+              full_name,
+              avatar_url,
+              user_type
+            )
+          `)
+          .eq('id', reviewId)
+          .single()
+        
+        const reviewer = Array.isArray(relationships?.reviewer) 
+          ? relationships.reviewer[0] 
+          : relationships?.reviewer
+        const reviewed = Array.isArray(relationships?.reviewed) 
+          ? relationships.reviewed[0] 
+          : relationships?.reviewed
+        
+        const fullData = {
+          ...updatedReview,
+          reviewer: reviewer || null,
+          reviewed: reviewed || null
+        }
+        
+        // Atualizar o estado local
+        setReviews(prevReviews => {
+          const updated = prevReviews.map(review => {
+            if (review.id === reviewId) {
+              return { 
                 ...review, 
-                response_text: responseText,
-                response_date: new Date().toISOString()
+                ...updatedReview,
+                reviewer: reviewer || review.reviewer,
+                reviewed: reviewed || review.reviewed
               }
-            : review
-        )
-      )
+            }
+            return review
+          })
+          return updated
+        })
+        
+        return { data: fullData, error: null }
+      }
       
-      return { data, error: null }
+      // Pequeno delay para garantir que o banco processou a atualização
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Buscar os dados completos com relacionamentos em uma query separada
+      const { data: fullData, error: selectError } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          reviewer_id,
+          reviewed_id,
+          rating_person,
+          comment,
+          response_text,
+          response_date,
+          created_at,
+          updated_at,
+          reviewer:profiles!reviews_reviewer_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          ),
+          reviewed:profiles!reviews_reviewed_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type
+          )
+        `)
+        .eq('id', reviewId)
+        .single()
+      
+      if (selectError) {
+        console.error('❌ Erro ao buscar avaliação atualizada:', selectError)
+        throw selectError
+      }
+      
+      // Atualizar o estado local com todos os dados retornados
+      if (fullData) {
+        // Garantir que reviewer e reviewed sejam objetos únicos, não arrays
+        const reviewer = Array.isArray(fullData.reviewer) 
+          ? fullData.reviewer[0] 
+          : fullData.reviewer
+        const reviewed = Array.isArray(fullData.reviewed) 
+          ? fullData.reviewed[0] 
+          : fullData.reviewed
+        
+        setReviews(prevReviews => {
+          const updated = prevReviews.map(review => {
+            if (review.id === reviewId) {
+              return { 
+                ...review, 
+                ...fullData,
+                reviewer: reviewer || review.reviewer,
+                reviewed: reviewed || review.reviewed
+              } as typeof review
+            }
+            return review
+          })
+          return updated
+        })
+      }
+      
+      return { data: fullData, error: null }
     } catch (err) {
       console.error('Erro ao responder avaliação:', err)
       return { 

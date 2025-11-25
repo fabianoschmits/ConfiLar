@@ -94,7 +94,7 @@ export function EvaluationModal({
         .insert({
           reviewer_id: user.id,
           reviewed_id: targetUserId,
-          rating: rating,
+          rating_person: rating,
           comment: comment.trim() || null,
           created_at: new Date().toISOString()
         })

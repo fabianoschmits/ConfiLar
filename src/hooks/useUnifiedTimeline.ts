@@ -28,6 +28,22 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     queryFn: async ({ pageParam = 0 }) => {
       const page = pageParam as number
       
+      // Debug: Log do filtro recebido
+      if (filters.location_filter) {
+        console.log('🔍 [useUnifiedTimeline] Filtro recebido:', JSON.stringify(filters.location_filter, null, 2))
+        
+        // IMPORTANTE: Se o tipo for 'all', garantir que city, state e country sejam undefined
+        if (filters.location_filter.type === 'all') {
+          filters.location_filter = {
+            type: 'all',
+            city: undefined,
+            state: undefined,
+            country: undefined
+          }
+          console.log('✅ [useUnifiedTimeline] Filtro "all" normalizado - removidos city, state e country')
+        }
+      }
+      
       // Buscar posts de trabalhos
       // Nota: A ordenação por is_featured é feita no frontend após verificar se premium expirou
       let postsQuery = supabase
@@ -165,7 +181,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // Então vamos fazer isso ANTES da query principal e depois usar os resultados
       let postsFromLocationFilter: any[] | null = null
       
-      if (filters.location_filter && filters.location_filter.type === 'local' && 
+      // IMPORTANTE: Se o tipo for 'all', não executar NENHUMA query de filtro de localização
+      // e garantir que postsFromLocationFilter seja null
+      if (filters.location_filter?.type === 'all') {
+        console.log('🌍 Filtro "Todos os Locais" detectado - pulando TODAS as queries de localização')
+        postsFromLocationFilter = null
+        // Sair cedo - não processar nenhum filtro de localização
+      } else if (filters.location_filter && filters.location_filter.type === 'local' && 
           filters.location_filter.city && filters.location_filter.state) {
         const locationFilter = filters.location_filter
         
@@ -315,7 +337,12 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       }
       
       // Aplicar filtros de localização normais (para outros tipos)
-      if (filters.location_filter && !postsFromLocationFilter) {
+      // IMPORTANTE: Se o tipo for 'all', não aplicar nenhum filtro de localização
+      // Verificar novamente aqui para garantir que não processamos filtros quando tipo é 'all'
+      if (filters.location_filter?.type === 'all') {
+        console.log('🌍 Filtro "Todos os Locais" - garantindo que postsFromLocationFilter seja null')
+        postsFromLocationFilter = null
+      } else if (filters.location_filter && !postsFromLocationFilter) {
         const locationFilter = filters.location_filter
         
         console.log('🔍 Aplicando filtro de localização:', JSON.stringify(locationFilter, null, 2))
@@ -559,8 +586,10 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             }
             break
           case 'all':
-            console.log('🌍 Filtro: Todos os locais')
-            // Não aplicar filtro de localização
+            console.log('🌍 Filtro: Todos os locais - não aplicando filtro de localização')
+            // Não aplicar filtro de localização - postsQuery já está sem filtros de localização
+            // Garantir que postsFromLocationFilter seja null para usar a query normal
+            postsFromLocationFilter = null
             break
         }
       }
@@ -591,10 +620,43 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         
         console.log(`📄 Após paginação (página ${page}): ${posts.length} posts`)
       } else {
-        // Query normal
+        // Query normal (sem filtro de localização ou tipo 'all')
+        if (filters.location_filter?.type === 'all') {
+          console.log('🌍 Executando query normal para "Todos os Locais" - sem filtros de localização')
+          console.log('🔍 Query base:', {
+            table: 'feed_posts',
+            filters: {
+              is_active: true,
+              is_public: true
+            },
+            search: filters.search || 'nenhuma',
+            page: page,
+            limit: ITEMS_PER_PAGE
+          })
+        }
+        
+        // Executar a query
         const result = await postsQuery
         posts = result.data || []
         postsError = result.error
+        
+        if (filters.location_filter?.type === 'all') {
+          console.log(`✅ Query "Todos os Locais" retornou ${posts.length} posts`)
+          if (posts.length === 0) {
+            console.warn('⚠️ Query retornou 0 posts - verificando se há posts no banco...')
+            // Fazer uma query de teste para verificar se há posts
+            const testQuery = await supabase
+              .from('feed_posts')
+              .select('id', { count: 'exact' })
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .limit(1)
+            console.log('🔍 Teste de posts no banco:', {
+              count: testQuery.count,
+              error: testQuery.error
+            })
+          }
+        }
       }
 
       if (postsError) {

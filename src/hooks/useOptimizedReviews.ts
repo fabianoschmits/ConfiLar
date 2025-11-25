@@ -50,6 +50,8 @@ export function useUserReviews(userId: string, type: 'received' | 'given' = 'rec
           reviewed_id,
           rating_person,
           comment,
+          response_text,
+          response_date,
           created_at,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id,
