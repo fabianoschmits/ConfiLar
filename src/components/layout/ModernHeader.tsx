@@ -58,7 +58,8 @@ import {
   Send,
   Crown,
   ShoppingBag,
-  MapPin
+  MapPin,
+  Camera
 } from 'lucide-react'
 import { BrandLogo } from '@/components/common/BrandLogo'
 
@@ -652,6 +653,15 @@ export function ModernHeader({
                         </button>
                         {expandedSections.has('meu-perfil') && (
                           <div className="flex flex-col gap-1 px-2 pb-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleNavigation('/editarperfil/meu-avatar-foto')}
+                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                            >
+                              <Camera className="h-3 w-3" />
+                              <span>Meu Avatar/Foto</span>
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"

@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { 
-  X, RefreshCw, User, Phone, Save, Edit3, Mail, CheckCircle2, Calendar, FileText, Camera, Upload
+  X, User, Phone, Save, Edit3, Mail, CheckCircle2, Calendar, FileText
 } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -101,24 +101,12 @@ const accountDataSchema = z.object({
 
 type AccountDataFormData = z.infer<typeof accountDataSchema>
 
-type AvatarType = 'upload' | 'dicebear'
-type AvatarSelection = {
-  type: AvatarType
-  value: string | File
-  preview?: string
-}
-
 export default function DadosDaContaPage() {
   const { user } = useAuthContext()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
-  const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
-  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
 
   const {
     register,
@@ -180,17 +168,6 @@ export default function DadosDaContaPage() {
           setValue('escolaridade', profile.escolaridade || undefined)
           setValue('filhos', profile.filhos || 0)
           setValue('estado_civil', profile.estado_civil || undefined)
-
-          if (profile.avatar_url) {
-            setSelectedAvatar({
-              type: 'dicebear',
-              value: profile.avatar_url,
-              preview: profile.avatar_url
-            })
-            setDicebearAvatar(profile.avatar_url)
-          } else if (profile.full_name && profile.full_name.length >= 2) {
-            generateDicebearAvatar(profile.full_name)
-          }
         }
 
         // Verificar se email está verificado
@@ -239,111 +216,6 @@ export default function DadosDaContaPage() {
     }
   }
 
-  const generateDicebearAvatar = async (name: string, forceRandom = false) => {
-    if (!name || name.length < 2) return
-    
-    setIsGeneratingAvatar(true)
-    try {
-      let seed = name.trim()
-      
-      if (forceRandom) {
-        seed = `${name.trim()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      }
-      
-      const encodedSeed = encodeURIComponent(seed)
-      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&backgroundColor=transparent`
-      
-      const response = await fetch(avatarUrl)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const content = await response.text()
-      if (!content || content.includes('error') || !content.includes('<svg')) {
-        throw new Error('Conteúdo SVG inválido retornado')
-      }
-      
-      setDicebearAvatar(avatarUrl)
-      
-      if (forceRandom) {
-        setSelectedAvatar({
-          type: 'dicebear',
-          value: avatarUrl,
-          preview: avatarUrl
-        })
-      }
-      
-    } catch (error) {
-      console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      toast.error('Erro ao gerar avatar automático', {
-        description: 'Não foi possível gerar o avatar. Tente novamente ou faça upload de uma foto.'
-      })
-    } finally {
-      setIsGeneratingAvatar(false)
-    }
-  }
-
-  const generateRandomAvatar = () => {
-    const name = watchedValues.full_name
-    if (name && name.length >= 2) {
-      generateDicebearAvatar(name, true)
-    }
-  }
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setSelectedAvatar({
-          type: 'upload',
-          value: file,
-          preview: e.target?.result as string
-        })
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleDicebearSelect = () => {
-    if (dicebearAvatar) {
-      setSelectedAvatar({
-        type: 'dicebear',
-        value: dicebearAvatar,
-        preview: dicebearAvatar
-      })
-    }
-  }
-
-  // Gerar avatar automaticamente quando o nome muda
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    
-    const subscription = watch((value, { name }) => {
-      if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(() => {
-          generateDicebearAvatar(value.full_name)
-        }, 500)
-      }
-    })
-    
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeoutId)
-    }
-  }, [watch])
-
-  // Auto-selecionar avatar quando gerado
-  useEffect(() => {
-    if (dicebearAvatar && !selectedAvatar) {
-      setSelectedAvatar({
-        type: 'dicebear',
-        value: dicebearAvatar,
-        preview: dicebearAvatar
-      })
-    }
-  }, [dicebearAvatar, selectedAvatar])
 
   const onSubmit = async (data: AccountDataFormData) => {
     if (!user) {
@@ -356,52 +228,6 @@ export default function DadosDaContaPage() {
     setIsLoading(true)
     
     try {
-      let avatarUrl = null
-
-      if (selectedAvatar?.type === 'upload' && selectedAvatar.value instanceof File) {
-        const file = selectedAvatar.value
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
-        
-        setIsUploadingAvatar(true)
-        setUploadProgress(0)
-        
-        // Simular progresso do upload
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) return prev
-            return prev + 10
-          })
-        }, 200)
-        
-        const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, file)
-
-        clearInterval(progressInterval)
-        setUploadProgress(100)
-
-        if (uploadError) {
-          console.error('Erro no upload:', uploadError)
-          toast.error('Erro ao fazer upload da imagem', {
-            description: 'Não foi possível enviar a imagem. Verifique o tamanho do arquivo (máx. 5MB) e tente novamente.'
-          })
-          setIsUploadingAvatar(false)
-          setUploadProgress(0)
-          setIsLoading(false)
-          return
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName)
-        
-        avatarUrl = publicUrl
-        setIsUploadingAvatar(false)
-        setUploadProgress(0)
-      } else if (selectedAvatar?.type === 'dicebear') {
-        avatarUrl = selectedAvatar.value as string
-      }
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -411,7 +237,6 @@ export default function DadosDaContaPage() {
           cpf_cnpj: data.cpf_cnpj,
           birth_date: data.birth_date,
           bio: data.bio || null,
-          avatar_url: avatarUrl,
           // Novos campos
           escolaridade: data.escolaridade || null,
           filhos: data.filhos || 0,
@@ -433,7 +258,6 @@ export default function DadosDaContaPage() {
           phone: data.phone,
           birth_date: data.birth_date,
           bio: data.bio,
-          avatar_url: avatarUrl,
         }
       })
 
@@ -484,149 +308,6 @@ export default function DadosDaContaPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-              {/* Avatar/Foto */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-purple-600" />
-                    Foto de Perfil
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Preview do Avatar Selecionado */}
-                  {selectedAvatar && (
-                    <div className="flex items-center justify-center">
-                      <div className="w-20 h-20 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
-                        <img
-                          src={selectedAvatar.preview}
-                          alt="Avatar selecionado"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  {!selectedAvatar && (
-                    <div className="flex items-center justify-center">
-                      <div className="w-20 h-20 border-4 border-gray-300 rounded-full overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
-                        <span className="text-gray-500 text-sm">Sem avatar</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Opções de Avatar */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Upload de Foto */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Upload size={16} className="text-blue-600" />
-                        <span className="font-medium text-gray-700">Upload de Foto</span>
-                      </div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="avatar-upload"
-                      />
-                      <label
-                        htmlFor="avatar-upload"
-                        className={cn(
-                          "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-smooth text-center",
-                          selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50",
-                          isUploadingAvatar && "opacity-75 cursor-wait"
-                        )}
-                        aria-label="Upload de foto de perfil"
-                      >
-                        {isUploadingAvatar ? (
-                          <div className="space-y-2">
-                            <ProgressIndicator
-                              variant="bar"
-                              progress={uploadProgress}
-                              message="Enviando imagem..."
-                              size="sm"
-                            />
-                          </div>
-                        ) : (
-                          <>
-                            <div className="font-medium text-gray-700">
-                              {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
-                            </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              JPG, PNG ou GIF
-                            </div>
-                          </>
-                        )}
-                      </label>
-                    </div>
-
-                    {/* Avatar Avataaars */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
-                        <span className="font-medium text-gray-700">Avatar Automático</span>
-                      </div>
-                      {fullName && fullName.length >= 2 ? (
-                        <div className="space-y-3">
-                          <button
-                            type="button"
-                            onClick={handleDicebearSelect}
-                            disabled={isGeneratingAvatar || !dicebearAvatar}
-                            className={cn(
-                              "w-full p-4 border-2 border-dashed rounded-lg transition-smooth text-center hover:border-purple-500 hover:bg-purple-50/50",
-                              selectedAvatar?.type === 'dicebear' && "border-purple-500 bg-purple-50/50",
-                              (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
-                            )}
-                            aria-label="Selecionar avatar automático"
-                          >
-                            {isGeneratingAvatar ? (
-                              <div className="space-y-2">
-                                <ProgressIndicator
-                                  variant="dots"
-                                  message="Gerando avatar..."
-                                  size="sm"
-                                />
-                              </div>
-                            ) : dicebearAvatar ? (
-                              <>
-                                <div className="font-medium text-gray-700">✅ Avatar Criado</div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                  Baseado no seu nome
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="font-medium text-gray-700">🎨 Criando...</div>
-                                <div className="text-sm text-gray-500 mt-1">
-                                  Baseado no seu nome
-                                </div>
-                              </>
-                            )}
-                          </button>
-                          
-                          {/* Botão para gerar novo avatar aleatório */}
-                          {fullName && fullName.length >= 2 && (
-                            <button
-                              type="button"
-                              onClick={generateRandomAvatar}
-                              disabled={isGeneratingAvatar}
-                              className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-smooth disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                              aria-label="Gerar novo avatar aleatório"
-                            >
-                              <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
-                              {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                          <div className="font-medium text-gray-500">Digite seu nome primeiro</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Email */}
               <Card>
                 <CardHeader>
