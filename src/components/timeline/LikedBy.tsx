@@ -56,7 +56,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
   const remainingSlots = 5 - avatarsToShow.length
   avatarsToShow.push(...shuffledOtherUsers.slice(0, remainingSlots))
   
-  // Lista de usuários para mostrar nos nomes (máximo 2): usuário atual primeiro, depois os outros
+  // Lista de usuários para mostrar nos nomes (máximo 2): usuário atual primeiro, depois os outros (para mobile)
   const usersToShow: typeof reactionUsers = []
   if (currentUserLike) {
     usersToShow.push(currentUserLike)
@@ -65,8 +65,20 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
   const remainingNameSlots = 2 - usersToShow.length
   usersToShow.push(...otherUsers.slice(0, remainingNameSlots))
   
-  // Contar quantas pessoas restam
+  // Lista de usuários para mostrar nos nomes na versão desktop (máximo 4): usuário atual primeiro, depois os outros
+  const usersToShowDesktop: typeof reactionUsers = []
+  if (currentUserLike) {
+    usersToShowDesktop.push(currentUserLike)
+  }
+  // Adicionar outros usuários até completar 4 no total
+  const remainingNameSlotsDesktop = 4 - usersToShowDesktop.length
+  usersToShowDesktop.push(...otherUsers.slice(0, remainingNameSlotsDesktop))
+  
+  // Contar quantas pessoas restam (para mobile - 2 nomes)
   const remainingCount = reactionUsers.length - usersToShow.length
+  
+  // Contar quantas pessoas restam (para desktop - 4 nomes)
+  const remainingCountDesktop = reactionUsers.length - usersToShowDesktop.length
 
   // Se há 2 ou menos usuários, mostrar todos
   if (reactionUsers.length <= 2) {
@@ -173,7 +185,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
                 {' e '}
                 <button
                   onClick={() => setShowLikesModal(true)}
-                  className="font-semibold hover:underline text-gray-900 dark:text-white"
+                  className="font-semibold hover:underline text-gray-900 dark:text-white underline"
                 >
                   outras {remainingCount} {remainingCount === 1 ? 'pessoa' : 'pessoas'}
                 </button>
@@ -183,7 +195,7 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
         </p>
       </div>
 
-      {/* Versão Desktop: mostrar todos os nomes */}
+      {/* Versão Desktop: mostrar 4 nomes + "e outras X pessoas" */}
       <div className="-ml-2 -mr-4 pr-4 pb-2 flex items-center gap-1.5 w-full hidden md:flex">
         <div className="flex relative flex-shrink-0">
           {avatarsToShow.slice(0, 5).map((u, index) => {
@@ -210,10 +222,9 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
         <p className="text-xs text-gray-900 dark:text-white flex-1 min-w-0 overflow-hidden" style={{ fontSize: 'clamp(0.6rem, 1.5vw, 0.7rem)' }}>
           <span className="font-semibold whitespace-nowrap">
             Curtido por{' '}
-            {reactionUsers.map((u, index) => (
+            {usersToShowDesktop.map((u, index) => (
               <span key={u.id} className="inline">
-                {index > 0 && index < reactionUsers.length - 1 && ', '}
-                {index === reactionUsers.length - 1 && index > 0 && ' e '}
+                {index > 0 && ', '}
                 <Link 
                   href={`/perfil/${u.user_id}`}
                   className="text-inherit no-underline hover:opacity-80 transition-opacity"
@@ -222,6 +233,17 @@ export function LikedBy({ postId, likesCount }: LikedByProps) {
                 </Link>
               </span>
             ))}
+            {remainingCountDesktop > 0 && (
+              <>
+                {' e '}
+                <button
+                  onClick={() => setShowLikesModal(true)}
+                  className="font-semibold hover:underline text-gray-900 dark:text-white underline"
+                >
+                  outras {remainingCountDesktop} {remainingCountDesktop === 1 ? 'pessoa' : 'pessoas'}
+                </button>
+              </>
+            )}
           </span>
         </p>
       </div>

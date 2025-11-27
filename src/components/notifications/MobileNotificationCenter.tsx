@@ -138,13 +138,13 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                 />
               </div>
 
-              {/* Filtros mobile */}
+              {/* Filtros e ações na mesma linha */}
               <div className="flex gap-2">
                 <Button
                   variant={!showUnreadOnly ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setShowUnreadOnly(false)}
-                  className="flex-1 h-9"
+                  className="h-9 rounded-none"
                 >
                   Todas
                 </Button>
@@ -152,33 +152,19 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                   variant={showUnreadOnly ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setShowUnreadOnly(true)}
-                  className="flex-1 h-9"
+                  className="h-9 rounded-none"
                 >
                   Não lidas
-                </Button>
-              </div>
-
-              {/* Ações rápidas */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={markAllAsRead}
-                  disabled={unreadCount === 0}
-                  className="flex-1 h-9 text-sm"
-                >
-                  <CheckCheck className="w-4 h-4 mr-1" />
-                  Marcar todas
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={clearAll}
                   disabled={notifications.length === 0}
-                  className="flex-1 h-9 text-sm text-red-600"
+                  className="h-9 text-sm text-red-600 rounded-none"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  Limpar
+                  Limpar todas
                 </Button>
               </div>
             </div>

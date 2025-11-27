@@ -897,7 +897,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       })
       return lastPage.length === ITEMS_PER_PAGE ? allPages.length : undefined
     },
-    staleTime: 1000 * 10, // Cache por 10 segundos (mais frequente)
+    staleTime: 1000 * 30, // Cache por 30 segundos (evita refetches muito frequentes)
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
   })
 
@@ -1549,23 +1549,59 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         comments_count: 0,
         is_liked: false,
         is_featured: true, // Posts premium são destacados
+        is_premium: true, // Marcar como premium
+        premium_points_spent: newPost.pointsToSpend,
+        premium_expires_at: expiresAt.toISOString(),
+        premium_highlight_color: '#FFD700',
         tags: ['premium'],
         metadata: metadata // Usar o metadata que já inclui o vídeo (se houver)
       } as UnifiedTimelineItem
 
-      // Adicionar ao cache local (igual ao addPost)
+      // Adicionar ao cache local e ordenar corretamente (premium no topo)
       queryClient.setQueryData(queryKey, (oldData: any) => {
         if (!oldData) return { pages: [[timelinePost]], pageParams: [undefined] }
+        
+        // Adicionar o post premium à primeira página
+        const firstPage = [timelinePost, ...oldData.pages[0]]
+        
+        // Ordenar a primeira página: posts premium/featured primeiro, depois por data
+        const sortedFirstPage = firstPage.sort((a, b) => {
+          const aIsPost = a.type === 'post'
+          const bIsPost = b.type === 'post'
+          
+          // Verificar se premium expirou
+          const aPremiumExpired = aIsPost && a.premium_expires_at 
+            ? new Date(a.premium_expires_at) < new Date()
+            : false
+          const bPremiumExpired = bIsPost && b.premium_expires_at 
+            ? new Date(b.premium_expires_at) < new Date()
+            : false
+          
+          // Só considerar featured se não tiver expirado
+          const aIsFeatured = (a.is_featured || false) && !aPremiumExpired
+          const bIsFeatured = (b.is_featured || false) && !bPremiumExpired
+          
+          // Priorizar posts destacados que não expiraram
+          if (aIsFeatured && !bIsFeatured) return -1
+          if (!aIsFeatured && bIsFeatured) return 1
+          
+          // Se ambos são destacados ou ambos não são, ordenar por data
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        })
+        
         return {
           ...oldData,
-          pages: [[timelinePost, ...oldData.pages[0]], ...oldData.pages.slice(1)]
+          pages: [sortedFirstPage, ...oldData.pages.slice(1)]
         }
       })
 
       // Invalidar queries relacionadas para atualizar a timeline
-      queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
-      queryClient.invalidateQueries({ queryKey: ['user-posts', newPost.user_id] })
-      queryClient.invalidateQueries({ queryKey: ['user-points', newPost.user_id] })
+      // Usar um pequeno delay para garantir que o cache local seja atualizado primeiro
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['unified-timeline'] })
+        queryClient.invalidateQueries({ queryKey: ['user-posts', newPost.user_id] })
+        queryClient.invalidateQueries({ queryKey: ['user-points', newPost.user_id] })
+      }, 100)
 
       console.log('✅ [addPremiumPost] Post premium criado com sucesso!', {
         id: timelinePost.id,
@@ -1666,6 +1702,108 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       if (pointsError) {
         console.error('❌ [renewPremiumPost] Erro ao debitar pontos:', pointsError)
         throw new Error('Erro ao debitar pontos. Renovação não foi concluída.')
+      }
+
+      // Buscar dados completos do post renovado com relacionamentos
+      const { data: fullPostData, error: fullPostError } = await supabase
+        .from('feed_posts')
+        .select(`
+          *,
+          professional:profiles!feed_posts_professional_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type,
+            is_available
+          ),
+          user:profiles!feed_posts_user_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            user_type,
+            is_available
+          )
+        `)
+        .eq('id', postId)
+        .single()
+
+      if (!fullPostError && fullPostData) {
+        // Transformar para formato TimelinePost
+        const professionalData = (fullPostData.professional as any) || (fullPostData.user as any)
+        const userData = (fullPostData.user as any) || (fullPostData.professional as any)
+        
+        const premiumExpired = fullPostData.is_premium && fullPostData.premium_expires_at 
+          ? new Date(fullPostData.premium_expires_at) < new Date()
+          : false
+        
+        const isActivePremium = fullPostData.is_premium && !premiumExpired
+        const isActiveFeatured = fullPostData.is_featured && !premiumExpired
+
+        const updatedTimelinePost = {
+          id: fullPostData.id,
+          type: 'post' as const,
+          created_at: fullPostData.created_at,
+          user_id: fullPostData.user_id || fullPostData.professional_id,
+          user_name: userData?.full_name || 'Usuário',
+          user_avatar: userData?.avatar_url,
+          user_type: userData?.user_type,
+          title: fullPostData.title,
+          description: fullPostData.description || '',
+          images: fullPostData.images || [],
+          service_category_id: fullPostData.service_category_id,
+          location_state: fullPostData.location_state,
+          location_city: fullPostData.location_city,
+          likes_count: fullPostData.likes_count || 0,
+          comments_count: fullPostData.comments_count || 0,
+          is_liked: likedPosts.has(fullPostData.id),
+          is_featured: isActiveFeatured,
+          tags: fullPostData.tags || [],
+          is_premium: isActivePremium,
+          premium_points_spent: fullPostData.premium_points_spent,
+          premium_expires_at: fullPostData.premium_expires_at,
+          premium_highlight_color: fullPostData.premium_highlight_color,
+          metadata: fullPostData.metadata
+        } as UnifiedTimelineItem
+
+        // Atualizar cache local e reordenar
+        queryClient.setQueryData(queryKey, (oldData: any) => {
+          if (!oldData) return { pages: [[updatedTimelinePost]], pageParams: [undefined] }
+          
+          // Atualizar o post na timeline
+          const updatedPages = oldData.pages.map((page: any[]) =>
+            page.map((item: any) => 
+              item.id === postId && item.type === 'post' 
+                ? updatedTimelinePost 
+                : item
+            )
+          )
+          
+          // Reordenar a primeira página
+          const sortedFirstPage = updatedPages[0].sort((a, b) => {
+            const aIsPost = a.type === 'post'
+            const bIsPost = b.type === 'post'
+            
+            const aPremiumExpired = aIsPost && a.premium_expires_at 
+              ? new Date(a.premium_expires_at) < new Date()
+              : false
+            const bPremiumExpired = bIsPost && b.premium_expires_at 
+              ? new Date(b.premium_expires_at) < new Date()
+              : false
+            
+            const aIsFeatured = (a.is_featured || false) && !aPremiumExpired
+            const bIsFeatured = (b.is_featured || false) && !bPremiumExpired
+            
+            if (aIsFeatured && !bIsFeatured) return -1
+            if (!aIsFeatured && bIsFeatured) return 1
+            
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          })
+          
+          return {
+            ...oldData,
+            pages: [sortedFirstPage, ...updatedPages.slice(1)]
+          }
+        })
       }
 
       // Invalidar queries para atualizar a timeline

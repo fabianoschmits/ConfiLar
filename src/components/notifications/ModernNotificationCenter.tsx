@@ -215,13 +215,13 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                   {showFilters ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />}
                 </Button>
 
-                {/* Filtros rápidos */}
+                {/* Filtros rápidos e Limpar todas na mesma linha */}
                 <div className="flex gap-1">
                   <Button
                     variant={filter === 'all' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setFilter('all')}
-                    className="h-8 text-xs px-2"
+                    className="h-8 text-xs px-2 rounded-none"
                   >
                     Todas
                   </Button>
@@ -229,30 +229,21 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                     variant={filter === 'unread' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setFilter('unread')}
-                    className="h-8 text-xs px-2"
+                    className="h-8 text-xs px-2 rounded-none"
                   >
                     Não lidas
                   </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearAll}
+                    disabled={notifications.length === 0}
+                    className="h-8 text-xs px-2 text-red-600 rounded-none"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Limpar todas
+                  </Button>
                 </div>
-
-                {/* Ações rápidas */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={markAllAsRead} disabled={unreadCount === 0}>
-                      <CheckCheck className="w-4 h-4 mr-2" />
-                      Marcar todas como lidas
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={clearAll} disabled={notifications.length === 0}>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Limpar todas
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
 
               {/* Filtros expandidos */}

@@ -20,6 +20,7 @@ import { DynamicAvailabilityBadge } from '@/components/ui/DynamicAvailabilityBad
 import { CompactUserBadges } from '@/components/ui/CompactUserBadges'
 import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
 import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
+import { getCategoryById } from '@/data/serviceCategories'
 
 interface PremiumPostCardProps {
   post: TimelinePostType
@@ -123,6 +124,19 @@ export function PremiumPostCard({
   const youtubeVideos = detectYouTubeUrls(post.description || '')
   const cleanDescription = removeYouTubeUrls(post.description || '')
   
+  // Buscar categoria de serviço se houver service_category_id
+  const serviceCategory = post.service_category_id ? getCategoryById(post.service_category_id) : null
+  
+  // Debug: verificar service_category_id
+  if (post.service_category_id) {
+    console.log('🔍 [PremiumPostCard] service_category_id encontrado:', {
+      postId: post.id,
+      service_category_id: post.service_category_id,
+      categoryFound: !!serviceCategory,
+      categoryName: serviceCategory?.name
+    })
+  }
+  
   // Debug: verificar se está detectando vídeos
   if (post.description && post.description.includes('youtube')) {
     console.log('🔍 PremiumPostCard Debug:', {
@@ -183,6 +197,17 @@ export function PremiumPostCard({
                     {post.user_name || 'Usuário'}
                   </Link>
                 </h3>
+                
+                {/* Badge de Serviço */}
+                {serviceCategory && (
+                  <Badge 
+                    variant="outline" 
+                    className="text-[9px] sm:text-xs font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded-full border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 flex items-center gap-0.5 sm:gap-1 flex-shrink-0"
+                  >
+                    <span>{serviceCategory.icon}</span>
+                    <span>{serviceCategory.name}</span>
+                  </Badge>
+                )}
                 
                 {/* Ícones Compactos no lado direito */}
                 <div className="flex items-center gap-0 flex-shrink-0">

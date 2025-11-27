@@ -68,21 +68,21 @@ export function SimpleHeaderBell({ className = '' }: SimpleHeaderBellProps) {
           side="bottom"
         >
           {/* Header */}
-          <div className="p-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+          <div className="p-2 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <Bell className="w-4 h-4 text-white" />
+              <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <Bell className="w-3 h-3 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                   Notificações
                   {unreadCount > 0 && (
-                    <Badge className="bg-red-500 text-white font-medium px-2 py-1 rounded-full ml-2 text-xs">
+                    <Badge className="bg-red-500 text-white font-medium px-1.5 py-0.5 rounded-full ml-1.5 text-[10px]">
                       {unreadCount}
                     </Badge>
                   )}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
                   Gerencie suas notificações e alertos
                 </p>
               </div>

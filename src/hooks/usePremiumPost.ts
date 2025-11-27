@@ -13,6 +13,7 @@ interface CreatePremiumPostData {
   images?: string[]
   location_city?: string
   location_state?: string
+  service_category_id?: string
   pointsToSpend: number
   durationDays: number
 }
@@ -73,7 +74,7 @@ export function usePremiumPost({ onSuccess, onError }: UsePremiumPostProps) {
           description: postData.description,
           content: postData.description, // Usar description como content também
           images: postData.images || [],
-          service_category_id: null,
+          service_category_id: postData.service_category_id || null,
           location_city: postData.location_city,
           location_state: postData.location_state,
           location_country: location_country,

@@ -49,12 +49,15 @@ import { StoryViewer } from '@/components/stories/StoryViewer'
 import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
+import { getCategoryById } from '@/data/serviceCategories'
 
 export default function FeedPage() {
   const t = useTranslations('feed')
   const tCommon = useTranslations('common')
   const [mounted, setMounted] = useState(false)
   const { profile } = useAuthContext()
+  const { openChat } = useFloatingChat()
   const searchParams = useSearchParams()
   const highlightPostId = searchParams.get('post')
 
@@ -361,9 +364,12 @@ export default function FeedPage() {
                     />
                   )}
                 </div>
-                <button className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors">
+                <button 
+                  onClick={() => openChat()}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
+                  title="Abrir chat"
+                >
                   <MessageCircle className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
               </div>
             </div>
@@ -942,6 +948,19 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
   
   // Verificar se o usuário atual é o dono do post
   const isOwner = user?.id === userId
+  
+  // Buscar categoria de serviço se houver service_category_id
+  const serviceCategory = post.service_category_id ? getCategoryById(post.service_category_id) : null
+  
+  // Debug: verificar service_category_id
+  if (post.service_category_id) {
+    console.log('🔍 [InstagramPost] service_category_id encontrado:', {
+      postId: post.id,
+      service_category_id: post.service_category_id,
+      categoryFound: !!serviceCategory,
+      categoryName: serviceCategory?.name
+    })
+  }
 
   return (
     <article 
@@ -975,6 +994,16 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Badge de Serviço */}
+          {serviceCategory && (
+            <Badge 
+              variant="outline" 
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 flex items-center gap-1"
+            >
+              <span>{serviceCategory.icon}</span>
+              <span>{serviceCategory.name}</span>
+            </Badge>
+          )}
           {isActivePremium && (
             <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white border-0 text-[10px] px-1.5 py-0.5">
               <Crown className="h-2.5 w-2.5 mr-1" />
@@ -982,8 +1011,8 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             </Badge>
           )}
           {isTrending && (
-            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0">
-              <Flame className="h-3 w-3 mr-1" />
+            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[10px] px-1.5 py-0.5">
+              <Flame className="h-2.5 w-2.5 mr-1" />
               Popular
             </Badge>
           )}
