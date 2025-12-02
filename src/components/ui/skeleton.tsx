@@ -784,3 +784,139 @@ export function ReferralDashboardSkeleton() {
     </div>
   )
 }
+
+// Skeleton para a landing page (página inicial)
+export function LandingPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-gray-950">
+      {/* Header Flutuante Skeleton */}
+      <header className="absolute top-0 left-0 right-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex justify-between items-center bg-white/10 dark:bg-black/30 backdrop-blur-xl rounded-2xl px-6 py-4 border border-white/20">
+            {/* Logo */}
+            <Skeleton width={180} height={48} className="rounded-lg" />
+            
+            {/* Navigation (desktop) */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Skeleton width={60} height={20} />
+              <Skeleton width={60} height={20} />
+            </nav>
+
+            {/* Actions (desktop) */}
+            <div className="hidden md:flex items-center gap-3">
+              <Skeleton width={100} height={36} className="rounded-md" />
+              <Skeleton width={140} height={36} className="rounded-md" />
+            </div>
+
+            {/* Mobile menu button */}
+            <Skeleton width={32} height={32} className="md:hidden rounded-md" />
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section Skeleton */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background overlay */}
+        <div className="absolute inset-0 bg-gray-900/95" />
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-32 w-full">
+          {/* Badge */}
+          <div className="flex justify-center mb-6">
+            <Skeleton width={200} height={32} className="rounded-full" />
+          </div>
+          
+          {/* Title */}
+          <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
+            <Skeleton width={300} height={64} className="rounded-lg" />
+            <Skeleton width={200} height={64} className="rounded-lg" />
+            <Skeleton width={50} height={64} className="rounded-lg" />
+          </div>
+          
+          {/* Description */}
+          <div className="max-w-4xl mx-auto mb-4 space-y-2">
+            <Skeleton width="100%" height={28} className="rounded" />
+            <Skeleton width="90%" height={28} className="rounded mx-auto" />
+          </div>
+          
+          {/* Sub description */}
+          <div className="max-w-3xl mx-auto mb-12 space-y-2">
+            <Skeleton width="100%" height={20} className="rounded" />
+            <Skeleton width="85%" height={20} className="rounded mx-auto" />
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Skeleton width={200} height={56} className="rounded-lg" />
+            <Skeleton width={200} height={56} className="rounded-lg" />
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20">
+                <Skeleton width={80} height={48} className="mb-2 rounded-lg mx-auto" />
+                <Skeleton width={100} height={16} className="mb-1 rounded mx-auto" />
+                <Skeleton width={80} height={12} className="rounded mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Sections Skeleton */}
+      <section className="py-24 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Skeleton width={150} height={24} className="rounded-full mx-auto mb-4" />
+            <Skeleton width={400} height={48} className="rounded-lg mx-auto mb-4" />
+            <Skeleton width={600} height={24} className="rounded mx-auto" />
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="border-0 shadow-xl rounded-lg overflow-hidden">
+                <Skeleton width="100%" height={256} className="rounded-none" />
+                <div className="p-6 space-y-2">
+                  <Skeleton width="80%" height={20} />
+                  <Skeleton width="100%" height={16} />
+                  <Skeleton width="90%" height={16} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Skeleton */}
+      <footer className="bg-gray-900 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="col-span-1 md:col-span-2 space-y-4">
+              <Skeleton width={140} height={38} className="rounded-lg" />
+              <Skeleton width="100%" height={16} />
+              <Skeleton width="90%" height={16} />
+            </div>
+            <div className="space-y-4">
+              <Skeleton width={100} height={24} />
+              <div className="space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} width={120} height={16} />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Skeleton width={100} height={24} />
+              <div className="space-y-2">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Skeleton key={i} width={180} height={16} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}

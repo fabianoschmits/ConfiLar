@@ -17,7 +17,7 @@ import {
   TrendingUp, Award, Sparkles, Zap
 } from 'lucide-react'
 import { useHomeStats, formatStatNumber } from '@/hooks/useHomeStats'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
+import { LandingPageSkeleton } from '@/components/ui/skeleton'
 import { supabase } from '@/lib/supabase'
 import { BrandLogo } from '@/components/common/BrandLogo'
 import { LanguageSelector } from '@/components/ui/LanguageSelector'
@@ -72,7 +72,7 @@ function HomeContent() {
     return () => clearTimeout(timer)
   }, [])
 
-  if (loading || !mounted) return <DashboardSkeleton />
+  if (loading || !mounted) return <LandingPageSkeleton />
   if (user) return null
 
   return (
@@ -675,7 +675,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <HomePageLayout>
-      <Suspense fallback={<DashboardSkeleton />}>
+      <Suspense fallback={<LandingPageSkeleton />}>
         <HomeContent />
       </Suspense>
     </HomePageLayout>
