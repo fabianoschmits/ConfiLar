@@ -149,6 +149,17 @@ export const PUT = withAdminAuth(async (request: NextRequest, supabaseAuth, user
     const { reportId, status, notes, resolution } = await request.json()
     const adminSupabase = createAdminSupabaseClient()
 
+    // Buscar denúncia atual para comparar status
+    const { data: currentReport } = await adminSupabase
+      .from('reports')
+      .select('status, reporter_id, type, reason')
+      .eq('id', reportId)
+      .single()
+
+    if (!currentReport) {
+      return NextResponse.json({ error: 'Denúncia não encontrada' }, { status: 404 })
+    }
+
     const updateData: any = { status }
     if (notes) updateData.admin_notes = notes
     if (resolution) updateData.resolution = resolution
@@ -163,6 +174,24 @@ export const PUT = withAdminAuth(async (request: NextRequest, supabaseAuth, user
       return NextResponse.json({ error: 'Erro ao atualizar denúncia' }, { status: 500 })
     }
 
+    // Enviar notificação se o status mudou
+    if (currentReport.status !== status && currentReport.reporter_id) {
+      try {
+        await sendReportStatusNotification(
+          adminSupabase,
+          currentReport.reporter_id,
+          reportId,
+          currentReport.status,
+          status,
+          currentReport.type,
+          currentReport.reason
+        )
+      } catch (notifError) {
+        console.warn('⚠️ Erro ao enviar notificação de mudança de status (não crítico):', notifError)
+        // Não falha a operação se a notificação falhar
+      }
+    }
+
     console.log(`✅ Denúncia ${reportId} atualizada por admin ${user.id}`)
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -170,6 +199,111 @@ export const PUT = withAdminAuth(async (request: NextRequest, supabaseAuth, user
     return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
 })
+
+// Função helper para enviar notificação de mudança de status
+async function sendReportStatusNotification(
+  adminSupabase: any,
+  reporterId: string,
+  reportId: string,
+  oldStatus: string,
+  newStatus: string,
+  reportType: string,
+  reportReason: string
+) {
+  const statusLabels: Record<string, string> = {
+    pending: 'Pendente',
+    reviewing: 'Em Revisão',
+    resolved: 'Resolvida',
+    dismissed: 'Descartada'
+  }
+
+  const statusMessages: Record<string, string> = {
+    reviewing: 'Sua denúncia está sendo analisada pela nossa equipe de moderação.',
+    resolved: 'Sua denúncia foi resolvida. Verifique a resposta da moderação em "Minhas Denúncias".',
+    dismissed: 'Sua denúncia foi analisada e descartada. Caso discorde, entre em contato conosco.'
+  }
+
+  const title = `Denúncia ${statusLabels[newStatus] || newStatus}`
+  const message = statusMessages[newStatus] || `O status da sua denúncia mudou para "${statusLabels[newStatus] || newStatus}".`
+
+  // Criar notificação no banco
+  const { error: notifError } = await adminSupabase
+    .from('notifications')
+    .insert({
+      user_id: reporterId,
+      type: 'system',
+      title: title,
+      message: message,
+      action_url: `/minhas-denuncias`,
+      priority: newStatus === 'resolved' ? 'high' : 'normal',
+      metadata: {
+        report_id: reportId,
+        report_type: reportType,
+        report_reason: reportReason,
+        old_status: oldStatus,
+        new_status: newStatus,
+        type: 'report_status_change',
+        changed_at: new Date().toISOString()
+      },
+      is_read: false
+    })
+
+  if (notifError) {
+    console.error('Erro ao criar notificação de status:', notifError)
+    throw notifError
+  }
+
+  // Tentar enviar push notification
+  try {
+    const { data: subscription } = await adminSupabase
+      .from('push_subscriptions')
+      .select('*')
+      .eq('user_id', reporterId)
+      .single()
+
+    if (subscription) {
+      const webpush = (await import('web-push')).default
+      const vapidKeys = {
+        publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+        privateKey: process.env.VAPID_PRIVATE_KEY || ''
+      }
+
+      if (vapidKeys.publicKey && vapidKeys.privateKey) {
+        webpush.setVapidDetails(
+          'mailto:no-reply@appconfilar.com.br',
+          vapidKeys.publicKey,
+          vapidKeys.privateKey
+        )
+
+        const payload = JSON.stringify({
+          title: title,
+          body: message.substring(0, 100) + (message.length > 100 ? '...' : ''),
+          icon: '/icon-192x192.png',
+          badge: '/icon-96x96.png',
+          data: {
+            report_id: reportId,
+            type: 'report_status_change'
+          },
+          tag: 'confilar-notification',
+          requireInteraction: false,
+          silent: false
+        })
+
+        const pushSubscription = {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: subscription.p256dh,
+            auth: subscription.auth
+          }
+        }
+
+        await webpush.sendNotification(pushSubscription, payload)
+      }
+    }
+  } catch (pushError) {
+    console.warn('⚠️ Erro ao enviar push notification (não crítico):', pushError)
+  }
+}
 
 /**
  * DELETE /api/admin/reports

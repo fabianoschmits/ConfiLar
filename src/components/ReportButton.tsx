@@ -114,14 +114,40 @@ export function ReportButton({
 
       console.log('Enviando dados da denúncia:', reportData)
 
-      const { error } = await supabase
+      const { data: insertedReport, error } = await supabase
         .from('reports')
         .insert(reportData)
+        .select()
+        .single()
 
       if (error) {
         console.error('Erro ao enviar denúncia:', error)
         toast.error('Erro ao enviar denúncia. Tente novamente.')
         return
+      }
+
+      // Criar notificação para o usuário sobre a denúncia criada
+      if (insertedReport) {
+        try {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: user.id,
+              type: 'system',
+              title: 'Denúncia Enviada',
+              message: `Sua denúncia foi recebida e está sendo analisada. Você receberá atualizações sobre o status.`,
+              action_url: '/minhas-denuncias',
+              priority: 'normal',
+              metadata: {
+                report_id: insertedReport.id,
+                report_type: type,
+                type: 'report_created'
+              },
+              is_read: false
+            })
+        } catch (notifError) {
+          console.warn('⚠️ Erro ao criar notificação de denúncia criada (não crítico):', notifError)
+        }
       }
 
       toast.success('Denúncia enviada com sucesso! Nossa equipe irá analisá-la.')

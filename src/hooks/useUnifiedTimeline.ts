@@ -250,49 +250,134 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Query 1: SEMPRE buscar por sigla (se tivermos sigla)
         // Os posts estão salvos como sigla ("RS"), então esta é a query mais importante
         if (stateSigla) {
-          const baseQuery1 = supabase
-            .from('feed_posts')
-            .select(selectFields)
-            .eq('is_active', true)
-            .eq('is_public', true)
-            .ilike('location_city', `%${locationFilter.city}%`)
-            .eq('location_state', stateSigla)
-            .order('created_at', { ascending: false })
-            .limit(ITEMS_PER_PAGE * 2)
+          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
+          const citySearch = locationFilter.city?.trim() || ''
+          // Usar ILIKE com wildcards para buscar variações (inclui parte do nome)
+          const cityTerm = `%${citySearch}%`
           
           if (countryCode) {
-            const { data: dataWithCountry } = await baseQuery1.eq('location_country', countryCode)
-            const { data: dataWithoutCountry } = await baseQuery1.is('location_country', null)
-            if (dataWithCountry) allResults.push(...dataWithCountry)
-            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+            // Query com país específico
+            const queryWithCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .eq('location_state', stateSigla)
+              .eq('location_country', countryCode)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+            if (errorWithCountry) {
+              console.error('❌ Erro na query com país:', errorWithCountry)
+            } else if (dataWithCountry) {
+              allResults.push(...dataWithCountry)
+            }
+            
+            // Query sem país (posts antigos podem não ter país)
+            const queryWithoutCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .eq('location_state', stateSigla)
+              .is('location_country', null)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+            if (errorWithoutCountry) {
+              console.error('❌ Erro na query sem país:', errorWithoutCountry)
+            } else if (dataWithoutCountry) {
+              allResults.push(...dataWithoutCountry)
+            }
           } else {
-            const { data } = await baseQuery1
-            if (data) allResults.push(...data)
+            // Sem filtro de país, buscar todos
+            const queryAll = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .eq('location_state', stateSigla)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data, error } = await queryAll
+            if (error) {
+              console.error('❌ Erro na query sem filtro de país:', error)
+            } else if (data) {
+              allResults.push(...data)
+            }
           }
           
-          console.log(`✅ Query 1 (sigla ${stateSigla}): encontrados ${allResults.length} posts`)
+          console.log(`✅ Query 1 (sigla ${stateSigla}, cidade: ${locationFilter.city}): encontrados ${allResults.length} posts`)
         }
         
         // Query 2: buscar por nome completo (caso algum post esteja salvo com nome completo)
         if (normalizedState && normalizedState !== stateSigla) {
-          const baseQuery2 = supabase
-            .from('feed_posts')
-            .select(selectFields)
-            .eq('is_active', true)
-            .eq('is_public', true)
-            .ilike('location_city', `%${locationFilter.city}%`)
-            .ilike('location_state', `%${normalizedState}%`)
-            .order('created_at', { ascending: false })
-            .limit(ITEMS_PER_PAGE * 2)
+          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
+          const citySearch = locationFilter.city?.trim() || ''
+          const cityTerm = `%${citySearch}%`
           
           if (countryCode) {
-            const { data: dataWithCountry } = await baseQuery2.eq('location_country', countryCode)
-            const { data: dataWithoutCountry } = await baseQuery2.is('location_country', null)
-            if (dataWithCountry) allResults.push(...dataWithCountry)
-            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+            // Query com país específico
+            const queryWithCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${normalizedState}%`)
+              .eq('location_country', countryCode)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+            if (errorWithCountry) {
+              console.error('❌ Erro na query 2 com país:', errorWithCountry)
+            } else if (dataWithCountry) {
+              allResults.push(...dataWithCountry)
+            }
+            
+            // Query sem país
+            const queryWithoutCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${normalizedState}%`)
+              .is('location_country', null)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+            if (errorWithoutCountry) {
+              console.error('❌ Erro na query 2 sem país:', errorWithoutCountry)
+            } else if (dataWithoutCountry) {
+              allResults.push(...dataWithoutCountry)
+            }
           } else {
-            const { data } = await baseQuery2
-            if (data) allResults.push(...data)
+            // Sem filtro de país
+            const queryAll = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${normalizedState}%`)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data, error } = await queryAll
+            if (error) {
+              console.error('❌ Erro na query 2 sem filtro de país:', error)
+            } else if (data) {
+              allResults.push(...data)
+            }
           }
           
           console.log(`✅ Query 2 (nome completo ${normalizedState}): total agora ${allResults.length} posts`)
@@ -301,24 +386,66 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         // Query 3: Se o filtro original é nome completo, buscar também por ilike do nome original
         // (pode haver variações no nome)
         if (locationFilter.state.length > 2 && locationFilter.state !== normalizedState) {
-          const baseQuery3 = supabase
-            .from('feed_posts')
-            .select(selectFields)
-            .eq('is_active', true)
-            .eq('is_public', true)
-            .ilike('location_city', `%${locationFilter.city}%`)
-            .ilike('location_state', `%${locationFilter.state}%`)
-            .order('created_at', { ascending: false })
-            .limit(ITEMS_PER_PAGE * 2)
+          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
+          const citySearch = locationFilter.city?.trim() || ''
+          const cityTerm = `%${citySearch}%`
           
           if (countryCode) {
-            const { data: dataWithCountry } = await baseQuery3.eq('location_country', countryCode)
-            const { data: dataWithoutCountry } = await baseQuery3.is('location_country', null)
-            if (dataWithCountry) allResults.push(...dataWithCountry)
-            if (dataWithoutCountry) allResults.push(...dataWithoutCountry)
+            // Query com país específico
+            const queryWithCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${locationFilter.state}%`)
+              .eq('location_country', countryCode)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+            if (errorWithCountry) {
+              console.error('❌ Erro na query 3 com país:', errorWithCountry)
+            } else if (dataWithCountry) {
+              allResults.push(...dataWithCountry)
+            }
+            
+            // Query sem país
+            const queryWithoutCountry = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${locationFilter.state}%`)
+              .is('location_country', null)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+            if (errorWithoutCountry) {
+              console.error('❌ Erro na query 3 sem país:', errorWithoutCountry)
+            } else if (dataWithoutCountry) {
+              allResults.push(...dataWithoutCountry)
+            }
           } else {
-            const { data } = await baseQuery3
-            if (data) allResults.push(...data)
+            // Sem filtro de país
+            const queryAll = supabase
+              .from('feed_posts')
+              .select(selectFields)
+              .eq('is_active', true)
+              .eq('is_public', true)
+              .ilike('location_city', cityTerm)
+              .ilike('location_state', `%${locationFilter.state}%`)
+              .order('created_at', { ascending: false })
+              .limit(ITEMS_PER_PAGE * 10)
+            
+            const { data, error } = await queryAll
+            if (error) {
+              console.error('❌ Erro na query 3 sem filtro de país:', error)
+            } else if (data) {
+              allResults.push(...data)
+            }
           }
           
           console.log(`✅ Query 3 (nome original ${locationFilter.state}): total agora ${allResults.length} posts`)
@@ -415,23 +542,59 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               
               // Query 1: Buscar por sigla (se tivermos sigla)
               if (stateSigla) {
-                const baseQuery1 = supabase
-                  .from('feed_posts')
-                  .select(selectFields)
-                  .eq('is_active', true)
-                  .eq('is_public', true)
-                  .eq('location_state', stateSigla)
-                  .order('created_at', { ascending: false })
-                  .limit(ITEMS_PER_PAGE * 2)
-                
                 if (countryCode) {
-                  const { data: dataWithCountry } = await baseQuery1.eq('location_country', countryCode)
-                  const { data: dataWithoutCountry } = await baseQuery1.is('location_country', null)
-                  if (dataWithCountry) allStateResults.push(...dataWithCountry)
-                  if (dataWithoutCountry) allStateResults.push(...dataWithoutCountry)
+                  // Query com país específico
+                  const queryWithCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .eq('location_state', stateSigla)
+                    .eq('location_country', countryCode)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+                  if (errorWithCountry) {
+                    console.error('❌ Erro na query estado com país:', errorWithCountry)
+                  } else if (dataWithCountry) {
+                    allStateResults.push(...dataWithCountry)
+                  }
+                  
+                  // Query sem país (posts antigos podem não ter país)
+                  const queryWithoutCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .eq('location_state', stateSigla)
+                    .is('location_country', null)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+                  if (errorWithoutCountry) {
+                    console.error('❌ Erro na query estado sem país:', errorWithoutCountry)
+                  } else if (dataWithoutCountry) {
+                    allStateResults.push(...dataWithoutCountry)
+                  }
                 } else {
-                  const { data } = await baseQuery1
-                  if (data) allStateResults.push(...data)
+                  // Sem filtro de país
+                  const queryAll = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .eq('location_state', stateSigla)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data, error } = await queryAll
+                  if (error) {
+                    console.error('❌ Erro na query estado sem filtro de país:', error)
+                  } else if (data) {
+                    allStateResults.push(...data)
+                  }
                 }
                 
                 console.log(`✅ Query estado por sigla (${stateSigla}): encontrados ${allStateResults.length} posts`)
@@ -439,23 +602,59 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               
               // Query 2: Buscar por nome completo (caso algum post esteja salvo com nome completo)
               if (normalizedState && normalizedState !== stateSigla) {
-                const baseQuery2 = supabase
-                  .from('feed_posts')
-                  .select(selectFields)
-                  .eq('is_active', true)
-                  .eq('is_public', true)
-                  .ilike('location_state', `%${normalizedState}%`)
-                  .order('created_at', { ascending: false })
-                  .limit(ITEMS_PER_PAGE * 2)
-                
                 if (countryCode) {
-                  const { data: dataWithCountry } = await baseQuery2.eq('location_country', countryCode)
-                  const { data: dataWithoutCountry } = await baseQuery2.is('location_country', null)
-                  if (dataWithCountry) allStateResults.push(...dataWithCountry)
-                  if (dataWithoutCountry) allStateResults.push(...dataWithoutCountry)
+                  // Query com país específico
+                  const queryWithCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${normalizedState}%`)
+                    .eq('location_country', countryCode)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+                  if (errorWithCountry) {
+                    console.error('❌ Erro na query estado nome completo com país:', errorWithCountry)
+                  } else if (dataWithCountry) {
+                    allStateResults.push(...dataWithCountry)
+                  }
+                  
+                  // Query sem país
+                  const queryWithoutCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${normalizedState}%`)
+                    .is('location_country', null)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+                  if (errorWithoutCountry) {
+                    console.error('❌ Erro na query estado nome completo sem país:', errorWithoutCountry)
+                  } else if (dataWithoutCountry) {
+                    allStateResults.push(...dataWithoutCountry)
+                  }
                 } else {
-                  const { data } = await baseQuery2
-                  if (data) allStateResults.push(...data)
+                  // Sem filtro de país
+                  const queryAll = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${normalizedState}%`)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data, error } = await queryAll
+                  if (error) {
+                    console.error('❌ Erro na query estado nome completo sem filtro de país:', error)
+                  } else if (data) {
+                    allStateResults.push(...data)
+                  }
                 }
                 
                 console.log(`✅ Query estado por nome completo (${normalizedState}): total agora ${allStateResults.length} posts`)
@@ -463,23 +662,59 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
               
               // Query 3: Se o filtro original é nome completo diferente do normalizado, buscar também
               if (locationFilter.state.length > 2 && locationFilter.state !== normalizedState) {
-                const baseQuery3 = supabase
-                  .from('feed_posts')
-                  .select(selectFields)
-                  .eq('is_active', true)
-                  .eq('is_public', true)
-                  .ilike('location_state', `%${locationFilter.state}%`)
-                  .order('created_at', { ascending: false })
-                  .limit(ITEMS_PER_PAGE * 2)
-                
                 if (countryCode) {
-                  const { data: dataWithCountry } = await baseQuery3.eq('location_country', countryCode)
-                  const { data: dataWithoutCountry } = await baseQuery3.is('location_country', null)
-                  if (dataWithCountry) allStateResults.push(...dataWithCountry)
-                  if (dataWithoutCountry) allStateResults.push(...dataWithoutCountry)
+                  // Query com país específico
+                  const queryWithCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${locationFilter.state}%`)
+                    .eq('location_country', countryCode)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithCountry, error: errorWithCountry } = await queryWithCountry
+                  if (errorWithCountry) {
+                    console.error('❌ Erro na query estado nome original com país:', errorWithCountry)
+                  } else if (dataWithCountry) {
+                    allStateResults.push(...dataWithCountry)
+                  }
+                  
+                  // Query sem país
+                  const queryWithoutCountry = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${locationFilter.state}%`)
+                    .is('location_country', null)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data: dataWithoutCountry, error: errorWithoutCountry } = await queryWithoutCountry
+                  if (errorWithoutCountry) {
+                    console.error('❌ Erro na query estado nome original sem país:', errorWithoutCountry)
+                  } else if (dataWithoutCountry) {
+                    allStateResults.push(...dataWithoutCountry)
+                  }
                 } else {
-                  const { data } = await baseQuery3
-                  if (data) allStateResults.push(...data)
+                  // Sem filtro de país
+                  const queryAll = supabase
+                    .from('feed_posts')
+                    .select(selectFields)
+                    .eq('is_active', true)
+                    .eq('is_public', true)
+                    .ilike('location_state', `%${locationFilter.state}%`)
+                    .order('created_at', { ascending: false })
+                    .limit(ITEMS_PER_PAGE * 10)
+                  
+                  const { data, error } = await queryAll
+                  if (error) {
+                    console.error('❌ Erro na query estado nome original sem filtro de país:', error)
+                  } else if (data) {
+                    allStateResults.push(...data)
+                  }
                 }
                 
                 console.log(`✅ Query estado por nome original (${locationFilter.state}): total agora ${allStateResults.length} posts`)

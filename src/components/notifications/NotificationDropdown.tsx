@@ -91,7 +91,7 @@ const formatTimestamp = (timestamp: string) => {
 };
 
 export const NotificationDropdown: React.FC = () => {
-  const { user } = useAuthContext();
+  const { user, profile } = useAuthContext();
   
   const { 
     notifications, 
@@ -257,6 +257,20 @@ export const NotificationDropdown: React.FC = () => {
     
     // Action URL
     if (notification.action_url) {
+      // Verificar se é redirecionamento para onboarding e se o usuário já completou
+      if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+        // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
+        const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
+          (profile && (profile as any)?.onboarding_completed === true)
+        
+        if (hasCompletedOnboarding) {
+          console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+          // Redirecionar para feed ao invés de onboarding
+          window.location.href = '/feed'
+          return
+        }
+      }
+      
       if (notification.action_url.startsWith('/')) {
         window.location.href = notification.action_url;
       } else {

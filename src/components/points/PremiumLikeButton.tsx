@@ -87,14 +87,15 @@ export function PremiumLikeButton({
   
   const totalLikesCount = stats?.total_likes || likes?.length || 0
   const pointsReceived = stats?.total_points_received || 0
-  const hasEnoughPoints = balance?.balance >= PREMIUM_PRICES.LIKE.POINTS // Verificação de segurança para balance
+  // Verificação de saldo: permite cliques múltiplos se tiver pelo menos o valor necessário
+  const hasEnoughPoints = (balance?.balance ?? 0) >= PREMIUM_PRICES.LIKE.POINTS
 
   const handlePremiumLike = () => {
     if (isOwnPost) {
       return // Não pode curtir próprio post
     }
 
-    // Verificar se tem pontos suficientes
+    // Verificar se tem pontos suficientes (verificação otimista baseada no saldo atual)
     if (!hasEnoughPoints) {
       toast.error(
         `Saldo insuficiente! Você precisa de ${PREMIUM_PRICES.LIKE.POINTS} ConfiPoints para curtir premium. Você tem ${balance?.balance || 0} ConfiPoints.`,
@@ -103,13 +104,6 @@ export function PremiumLikeButton({
         }
       )
       return
-    }
-
-    // Feedback háptico
-    if (userPremiumLiked) {
-      // Haptic feedback removido
-    } else {
-      // Haptic feedback removido
     }
 
     // Ativar animação no botão
@@ -121,6 +115,7 @@ export function PremiumLikeButton({
       onPremiumLikeClick()
     }
 
+    // Permitir múltiplos cliques - o hook vai processar em background
     premiumLike()
   }
 
@@ -130,10 +125,11 @@ export function PremiumLikeButton({
         <TooltipTrigger asChild>
           <button
             onClick={handlePremiumLike}
-            disabled={isOwnPost || isPremiumLiking}
+            disabled={isOwnPost || !hasEnoughPoints}
             className={cn(
               'transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5',
               isOwnPost && 'cursor-not-allowed',
+              !hasEnoughPoints && 'cursor-not-allowed',
               className
             )}
           >

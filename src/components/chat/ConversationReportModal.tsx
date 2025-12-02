@@ -70,14 +70,40 @@ export function ConversationReportModal({
 
       console.log('Enviando denúncia de conversa:', reportData)
 
-      const { error } = await supabase
+      const { data: insertedReport, error } = await supabase
         .from('reports')
         .insert(reportData)
+        .select()
+        .single()
 
       if (error) {
         console.error('Erro ao enviar denúncia:', error)
         toast.error('Erro ao enviar denúncia. Tente novamente.')
         return
+      }
+
+      // Criar notificação para o usuário sobre a denúncia criada
+      if (insertedReport) {
+        try {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: user.id,
+              type: 'system',
+              title: 'Denúncia Enviada',
+              message: `Sua denúncia de conversa foi recebida e está sendo analisada. Você receberá atualizações sobre o status.`,
+              action_url: '/minhas-denuncias',
+              priority: 'normal',
+              metadata: {
+                report_id: insertedReport.id,
+                report_type: 'other',
+                type: 'report_created'
+              },
+              is_read: false
+            })
+        } catch (notifError) {
+          console.warn('⚠️ Erro ao criar notificação de denúncia criada (não crítico):', notifError)
+        }
       }
 
       toast.success('Denúncia de conversa enviada com sucesso! Nossa equipe irá analisá-la.')

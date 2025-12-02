@@ -23,6 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { useNotifications } from './NotificationProviderSimple'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { 
@@ -61,6 +62,7 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
     removeNotification,
     clearAll
   } = useNotifications()
+  const { profile } = useAuthContext()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
@@ -283,7 +285,26 @@ export function MobileNotificationCenter({ isOpen, onClose }: MobileNotification
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
-                                    window.open(notification.action_url, '_blank')
+                                    // Verificar se é redirecionamento para onboarding e se o usuário já completou
+                                    if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+                                      // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
+                                      const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
+                                        (profile && (profile as any)?.onboarding_completed === true)
+                                      
+                                      if (hasCompletedOnboarding) {
+                                        console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+                                        // Redirecionar para feed ao invés de onboarding
+                                        window.location.href = '/feed'
+                                        markAsRead(notification.id)
+                                        return
+                                      }
+                                    }
+                                    
+                                    if (notification.action_url.startsWith('/')) {
+                                      window.location.href = notification.action_url
+                                    } else {
+                                      window.open(notification.action_url, '_blank')
+                                    }
                                     markAsRead(notification.id)
                                   }}
                                   className="w-full h-10 text-sm font-medium"

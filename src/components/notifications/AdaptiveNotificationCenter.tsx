@@ -30,6 +30,7 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
   const { isSupported, isGranted, isSubscribed, requestPermission, subscribe, unsubscribe, isLoading, error } = usePushNotifications()
   const { updatePreferences: updateSoundPreferences, isEnabled: soundEnabled } = useNotificationSound()
   const { openChat } = useFloatingChat()
+  const { profile } = useAuthContext()
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [showSettings, setShowSettings] = useState(false)
   const [notificationSettings, setNotificationSettings] = useState({
@@ -327,6 +328,20 @@ function FloatingNotificationContent({ isOpen, onClose }: AdaptiveNotificationCe
     
     // 12. FALLBACK - Usar action_url se disponível
     if (notification.action_url) {
+      // Verificar se é redirecionamento para onboarding e se o usuário já completou
+      if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+        // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
+        const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
+          (profile && (profile as any)?.onboarding_completed === true)
+        
+        if (hasCompletedOnboarding) {
+          console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+          // Redirecionar para feed ao invés de onboarding
+          window.location.href = '/feed'
+          return
+        }
+      }
+      
       if (notification.action_url.startsWith('/')) {
         window.location.href = notification.action_url
       } else if (notification.action_url.startsWith('#')) {

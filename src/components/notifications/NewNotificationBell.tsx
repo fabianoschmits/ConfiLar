@@ -15,7 +15,7 @@ import { MobileNotificationItem } from './MobileNotificationItem'
 export function NewNotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, clearAll } = useNotifications()
   const { openChat } = useFloatingChat()
-  const { user } = useAuthContext()
+  const { user, profile } = useAuthContext()
   const [isOpen, setIsOpen] = useState(false)
 
   // Marcar todas como lidas ao fechar o menu
@@ -145,6 +145,20 @@ export function NewNotificationBell() {
     
     // 12. FALLBACK - Usar action_url se disponível
     if (notification.action_url) {
+      // Verificar se é redirecionamento para onboarding e se o usuário já completou
+      if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+        // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
+        const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
+          (profile && (profile as any)?.onboarding_completed === true)
+        
+        if (hasCompletedOnboarding) {
+          console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+          // Redirecionar para feed ao invés de onboarding
+          window.location.href = '/feed'
+          return
+        }
+      }
+      
       if (notification.action_url.startsWith('/')) {
         window.location.href = notification.action_url;
       } else if (notification.action_url.startsWith('#')) {

@@ -74,7 +74,7 @@ export function usePremiumLikes(postId: string) {
   // Verificar se usuário curtiu premium (para compatibilidade)
   const userPremiumLiked = userPremiumLikesCount > 0
 
-  // Curtir post premium
+  // Curtir post premium - permite múltiplos cliques sem esperar
   const premiumLikeMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('Usuário não autenticado')
@@ -102,19 +102,28 @@ export function usePremiumLikes(postId: string) {
       return data
     },
     onMutate: async () => {
-      // Cancelar queries em andamento
-      await queryClient.cancelQueries({ queryKey: ['post-likes', postId] })
-      await queryClient.cancelQueries({ queryKey: ['post-premium-stats', postId] })
+      const requiredPoints = 5
+
+      // Verificar saldo atual (após possíveis updates otimistas anteriores)
+      const currentBalance = queryClient.getQueryData(['user-points-balance', user?.id]) as any
+      const currentBalanceValue = currentBalance?.balance || 0
+
+      // Se não tiver pontos suficientes, não fazer update otimista
+      if (currentBalanceValue < requiredPoints) {
+        throw new Error(`Saldo insuficiente. Você tem ${currentBalanceValue} pontos, precisa de ${requiredPoints}.`)
+      }
+
+      // Cancelar queries em andamento apenas para snapshot (não bloqueia outros cliques)
       await queryClient.cancelQueries({ queryKey: ['user-points-balance', user?.id] })
 
-      // Snapshot dos valores anteriores
+      // Snapshot dos valores anteriores para possível rollback
       const previousLikes = queryClient.getQueryData(['post-likes', postId])
       const previousStats = queryClient.getQueryData(['post-premium-stats', postId])
       const previousBalance = queryClient.getQueryData(['user-points-balance', user?.id])
 
       // Atualizar otimisticamente: adicionar like premium
       const optimisticLike: PremiumLike = {
-        id: `temp-${Date.now()}`,
+        id: `temp-${Date.now()}-${Math.random()}`, // ID único para cada like
         post_id: postId,
         user_id: user!.id,
         is_premium: true,
@@ -125,9 +134,13 @@ export function usePremiumLikes(postId: string) {
         updated_at: new Date().toISOString()
       }
 
-      // Atualizar likes otimisticamente
+      // Atualizar likes otimisticamente (adicionar ao início da lista)
       queryClient.setQueryData(['post-likes', postId], (oldLikes: PremiumLike[] = []) => {
-        return [optimisticLike, ...oldLikes]
+        // Evitar duplicatas otimistas removendo temporários anteriores do mesmo usuário
+        const filteredLikes = oldLikes.filter(like => 
+          !(like.id.startsWith('temp-') && like.user_id === user!.id && like.post_id === postId)
+        )
+        return [optimisticLike, ...filteredLikes]
       })
 
       // Atualizar stats otimisticamente
@@ -153,16 +166,17 @@ export function usePremiumLikes(postId: string) {
         }
       })
 
-      // Atualizar saldo otimisticamente (reduzir 5 pontos)
+      // Atualizar saldo otimisticamente (reduzir 5 pontos) - baseado no saldo atual, não no anterior
       queryClient.setQueryData(['user-points-balance', user?.id], (oldBalance: any) => {
         if (!oldBalance) return { balance: 0 }
+        const newBalance = Math.max(0, (oldBalance.balance || 0) - requiredPoints)
         return {
           ...oldBalance,
-          balance: Math.max(0, (oldBalance.balance || 0) - 5)
+          balance: newBalance
         }
       })
 
-      return { previousLikes, previousStats, previousBalance }
+      return { previousLikes, previousStats, previousBalance, optimisticLike }
     },
     onError: (error: any, variables, context) => {
       // Reverter em caso de erro
@@ -176,6 +190,13 @@ export function usePremiumLikes(postId: string) {
         queryClient.setQueryData(['user-points-balance', user?.id], context.previousBalance)
       }
 
+      // Remover o like otimista que falhou
+      if (context?.optimisticLike) {
+        queryClient.setQueryData(['post-likes', postId], (oldLikes: PremiumLike[] = []) => {
+          return oldLikes.filter(like => like.id !== context.optimisticLike.id)
+        })
+      }
+
       if (error.message?.includes('Saldo insuficiente')) {
         toast.error(error.message)
       } else {
@@ -183,21 +204,8 @@ export function usePremiumLikes(postId: string) {
       }
     },
     onSuccess: (data) => {
-      const totalLikes = data?.total_premium_likes || 1
-      const totalPoints = data?.total_points_sent || 5
-      
-      // Buscar quantas curtidas premium o usuário deu neste post
-      const userLikesInPost = likes?.filter(like => 
-        like.user_id === user?.id && like.is_premium === true
-      ).length || 0
-      
-      const userTotalDonated = (userLikesInPost + 1) * 5 // +1 porque acabou de adicionar
-      
-      toast.success(
-        `🎉 Curtida premium enviada!\n💰 ${totalPoints} pontos transferidos para o criador\n📊 ${totalLikes} curtidas premium no total neste post\n🎁 Você já deu ${userLikesInPost + 1} curtidas premium neste post\n💝 Valor total doado: ${userTotalDonated} ConfiPoints`
-      )
-      
-      // Invalidar cache para garantir sincronização
+      // Invalidar cache para sincronizar com o servidor periodicamente
+      // Usar um debounce para evitar muitas invalidações quando há múltiplos cliques
       queryClient.invalidateQueries({ queryKey: ['post-likes', postId] })
       queryClient.invalidateQueries({ queryKey: ['post-premium-stats', postId] })
       queryClient.invalidateQueries({ queryKey: ['user-points-balance', user?.id] })

@@ -29,6 +29,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { useNotifications } from './NotificationProviderSimple'
+import { useAuthContext } from '@/contexts/AuthContext'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { 
@@ -97,6 +98,7 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
     removeNotification,
     clearAll
   } = useNotifications()
+  const { profile } = useAuthContext()
 
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -397,6 +399,21 @@ export function ModernNotificationCenter({ isOpen, onClose }: ModernNotification
                                   // Se for mensagem, já foi tratado no clique do card
                                   // Para outros tipos, usar action_url ou metadata
                                   if (notification.action_url) {
+                                    // Verificar se é redirecionamento para onboarding e se o usuário já completou
+                                    if (notification.action_url === '/onboarding' || notification.action_url.startsWith('/onboarding')) {
+                                      // Verificar se o usuário já completou o onboarding (usar localStorage ou verificar no profile como any)
+                                      const hasCompletedOnboarding = (typeof window !== 'undefined' && localStorage.getItem('onboarding_completed') === 'true') ||
+                                        (profile && (profile as any)?.onboarding_completed === true)
+                                      
+                                      if (hasCompletedOnboarding) {
+                                        console.log('✅ Usuário já completou onboarding, redirecionando para feed ao invés de onboarding')
+                                        // Redirecionar para feed ao invés de onboarding
+                                        window.location.href = '/feed'
+                                        markAsRead(notification.id)
+                                        return
+                                      }
+                                    }
+                                    
                                     if (notification.action_url.startsWith('/')) {
                                       window.location.href = notification.action_url;
                                     } else if (notification.action_url.startsWith('#')) {

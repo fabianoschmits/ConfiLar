@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Bell, Trash2, CheckCircle2, XCircle, Clock, AlertCircle, Eye, EyeOff, Key, HelpCircle, BookOpen, PlayCircle } from 'lucide-react'
+import { Loader2, Bell, Trash2, CheckCircle2, XCircle, Clock, AlertCircle, Eye, EyeOff, Key, HelpCircle, BookOpen, PlayCircle, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface NotificationResult {
@@ -38,20 +38,46 @@ interface StoriesCleanupResult {
   timestamp: string
 }
 
+interface InactiveUsersResult {
+  success: boolean
+  message: string
+  users_marked_unavailable: number
+  user_ids: string[]
+  user_details?: Array<{
+    id: string
+    name: string
+    email: string
+    last_login_at?: string | null
+    updated_at?: string | null
+    days_inactive: number
+  }>
+  timestamp: string
+}
+
 export function CronJobsSection() {
   const [loadingNotifications, setLoadingNotifications] = useState(false)
   const [loadingClassifieds, setLoadingClassifieds] = useState(false)
   const [loadingStories, setLoadingStories] = useState(false)
+  const [loadingInactiveUsers, setLoadingInactiveUsers] = useState(false)
   const [notificationResult, setNotificationResult] = useState<NotificationResult | null>(null)
   const [classifiedsResult, setClassifiedsResult] = useState<ClassifiedsResult | null>(null)
   const [storiesResult, setStoriesResult] = useState<StoriesCleanupResult | null>(null)
+  const [inactiveUsersResult, setInactiveUsersResult] = useState<InactiveUsersResult | null>(null)
   const [notificationError, setNotificationError] = useState<string | null>(null)
   const [classifiedsError, setClassifiedsError] = useState<string | null>(null)
   const [storiesError, setStoriesError] = useState<string | null>(null)
+  const [inactiveUsersError, setInactiveUsersError] = useState<string | null>(null)
   const [serviceRoleKey, setServiceRoleKey] = useState<string>('')
   const [showServiceRoleKey, setShowServiceRoleKey] = useState(false)
 
-  const executeNotifications = async () => {
+      const executeNotifications = async () => {
+    if (!serviceRoleKey.trim()) {
+      toast.error('Credenciais necessárias', {
+        description: 'Por favor, insira suas credenciais antes de executar o cron job.',
+      })
+      return
+    }
+
     setLoadingNotifications(true)
     setNotificationError(null)
     setNotificationResult(null)
@@ -59,12 +85,8 @@ export function CronJobsSection() {
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
-      }
-
-      // Se service role key for fornecida, usar ela
-      if (serviceRoleKey.trim()) {
-        headers['Authorization'] = `Bearer ${serviceRoleKey.trim()}`
-        headers['X-Service-Role-Key'] = 'true'
+        'Authorization': `Bearer ${serviceRoleKey.trim()}`,
+        'X-Service-Role-Key': 'true'
       }
 
       const response = await fetch('/api/cron/premium-posts-notifications', {
@@ -96,6 +118,13 @@ export function CronJobsSection() {
   }
 
   const executeClassifiedsMaintenance = async () => {
+    if (!serviceRoleKey.trim()) {
+      toast.error('Credenciais necessárias', {
+        description: 'Por favor, insira suas credenciais antes de executar o cron job.',
+      })
+      return
+    }
+
     setLoadingClassifieds(true)
     setClassifiedsError(null)
     setClassifiedsResult(null)
@@ -103,11 +132,7 @@ export function CronJobsSection() {
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
-      }
-
-      // Se service role key for fornecida, usar ela
-      if (serviceRoleKey.trim()) {
-        headers['Authorization'] = `Bearer ${serviceRoleKey.trim()}`
+        'Authorization': `Bearer ${serviceRoleKey.trim()}`
       }
 
       const response = await fetch('/api/cron/expired-premium-classifieds', {
@@ -136,6 +161,13 @@ export function CronJobsSection() {
   }
 
   const executeStoriesCleanup = async () => {
+    if (!serviceRoleKey.trim()) {
+      toast.error('Credenciais necessárias', {
+        description: 'Por favor, insira suas credenciais antes de executar o cron job.',
+      })
+      return
+    }
+
     setLoadingStories(true)
     setStoriesError(null)
     setStoriesResult(null)
@@ -143,12 +175,8 @@ export function CronJobsSection() {
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
-      }
-
-      // Se service role key for fornecida, usar ela
-      if (serviceRoleKey.trim()) {
-        headers['Authorization'] = `Bearer ${serviceRoleKey.trim()}`
-        headers['X-Service-Role-Key'] = 'true'
+        'Authorization': `Bearer ${serviceRoleKey.trim()}`,
+        'X-Service-Role-Key': 'true'
       }
 
       const response = await fetch('/api/cron/cleanup-stories', {
@@ -176,6 +204,50 @@ export function CronJobsSection() {
     }
   }
 
+  const executeInactiveUsers = async () => {
+    if (!serviceRoleKey.trim()) {
+      toast.error('Credenciais necessárias', {
+        description: 'Por favor, insira suas credenciais antes de executar o cron job.',
+      })
+      return
+    }
+
+    setLoadingInactiveUsers(true)
+    setInactiveUsersError(null)
+    setInactiveUsersResult(null)
+
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceRoleKey.trim()}`,
+        'X-Service-Role-Key': 'true'
+      }
+
+      const response = await fetch('/api/cron/inactive-users-availability', {
+        method: 'GET',
+        headers,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao processar usuários inativos')
+      }
+
+      setInactiveUsersResult(data)
+      toast.success('Usuários inativos processados!', {
+        description: `${data.users_marked_unavailable} usuário(s) marcado(s) como indisponível(is)`,
+      })
+    } catch (err: any) {
+      setInactiveUsersError(err.message || 'Erro ao processar usuários inativos')
+      toast.error('Erro ao processar usuários inativos', {
+        description: err.message,
+      })
+    } finally {
+      setLoadingInactiveUsers(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -187,29 +259,30 @@ export function CronJobsSection() {
         </p>
       </div>
 
-      {/* Campo para Service Role Key */}
+      {/* Campo de Credenciais */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="h-5 w-5" />
-            Service Role Key
+            Credenciais de Execução
           </CardTitle>
           <CardDescription>
-            Insira a Service Role Key do Supabase para executar os cron jobs. Esta key não é armazenada.
+            Insira suas credenciais para executar os cron jobs
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="service-role-key">Service Role Key</Label>
+              <Label htmlFor="credentials">Credenciais</Label>
               <div className="relative">
                 <Input
-                  id="service-role-key"
+                  id="credentials"
                   type={showServiceRoleKey ? 'text' : 'password'}
-                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  placeholder="Insira suas credenciais aqui..."
                   value={serviceRoleKey}
                   onChange={(e) => setServiceRoleKey(e.target.value)}
-                  className="pr-10"
+                  className="pr-10 font-mono text-sm"
+                  required
                 />
                 <Button
                   type="button"
@@ -217,6 +290,7 @@ export function CronJobsSection() {
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowServiceRoleKey(!showServiceRoleKey)}
+                  aria-label={showServiceRoleKey ? 'Ocultar credenciais' : 'Mostrar credenciais'}
                 >
                   {showServiceRoleKey ? (
                     <EyeOff className="h-4 w-4 text-gray-500" />
@@ -226,14 +300,17 @@ export function CronJobsSection() {
                 </Button>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                A key será usada apenas durante a execução dos cron jobs. Ela não é salva ou armazenada.
+                As credenciais não são armazenadas e serão usadas apenas durante a execução dos cron jobs.
               </p>
             </div>
             {serviceRoleKey && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Service Role Key configurada. Os cron jobs usarão esta key para autenticação.
-                </p>
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <p className="text-sm font-medium">
+                    Credenciais configuradas. Os cron jobs estão prontos para execução.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -256,7 +333,7 @@ export function CronJobsSection() {
             <div className="space-y-4">
               <Button
                 onClick={executeNotifications}
-                disabled={loadingNotifications}
+                disabled={loadingNotifications || !serviceRoleKey.trim()}
                 className="w-full"
                 size="lg"
               >
@@ -358,7 +435,7 @@ export function CronJobsSection() {
             <div className="space-y-4">
               <Button
                 onClick={executeClassifiedsMaintenance}
-                disabled={loadingClassifieds}
+                disabled={loadingClassifieds || !serviceRoleKey.trim()}
                 className="w-full"
                 size="lg"
               >
@@ -446,6 +523,100 @@ export function CronJobsSection() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Usuários Inativos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserX className="h-5 w-5" />
+              Usuários Inativos
+            </CardTitle>
+            <CardDescription>
+              Marca como indisponível usuários que ficaram mais de 1 semana sem acessar o site
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Button
+                onClick={executeInactiveUsers}
+                disabled={loadingInactiveUsers || !serviceRoleKey.trim()}
+                className="w-full"
+                size="lg"
+                variant="outline"
+              >
+                {loadingInactiveUsers ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Executando...
+                  </>
+                ) : (
+                  <>
+                    <UserX className="mr-2 h-4 w-4" />
+                    Marcar Usuários Inativos
+                  </>
+                )}
+              </Button>
+
+              {inactiveUsersError && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <XCircle className="h-5 w-5" />
+                    <span className="font-medium">Erro</span>
+                  </div>
+                  <p className="mt-2 text-sm text-red-700 dark:text-red-300">{inactiveUsersError}</p>
+                </div>
+              )}
+
+              {inactiveUsersResult && (
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span className="font-medium">Sucesso!</span>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                    {inactiveUsersResult.message}
+                  </p>
+
+                  <div className="p-3 bg-white dark:bg-gray-800 rounded-lg mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <UserX className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Usuários Marcados
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-lg">
+                      {inactiveUsersResult.users_marked_unavailable}
+                    </Badge>
+                  </div>
+
+                  {inactiveUsersResult.user_details && inactiveUsersResult.user_details.length > 0 && (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Detalhes dos usuários:
+                      </p>
+                      {inactiveUsersResult.user_details.map((user) => (
+                        <div key={user.id} className="p-2 bg-white dark:bg-gray-800 rounded text-xs">
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {user.name || user.email}
+                          </p>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            {user.days_inactive} dias sem atividade
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {inactiveUsersResult.timestamp && (
+                    <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                      Executado em: {new Date(inactiveUsersResult.timestamp).toLocaleString('pt-BR')}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Limpeza de Stories */}
         <Card>
           <CardHeader>
@@ -461,7 +632,7 @@ export function CronJobsSection() {
             <div className="space-y-4">
               <Button
                 onClick={executeStoriesCleanup}
-                disabled={loadingStories}
+                disabled={loadingStories || !serviceRoleKey.trim()}
                 className="w-full"
                 size="lg"
                 variant="destructive"
@@ -536,29 +707,26 @@ export function CronJobsSection() {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {/* Passo 1: Service Role Key */}
+            {/* Passo 1: Credenciais */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
                   1
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Configurar Service Role Key
+                  Configurar Credenciais
                 </h3>
               </div>
               <div className="ml-10 space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <p>
-                  <strong>O que é:</strong> A Service Role Key é uma chave de autenticação do Supabase que permite executar operações administrativas no banco de dados.
+                  <strong>O que é:</strong> As credenciais são necessárias para autenticar e executar operações administrativas no sistema.
                 </p>
                 <p>
-                  <strong>Onde encontrar:</strong> Acesse o <strong>Supabase Dashboard</strong> → <strong>Settings</strong> → <strong>API</strong> → <strong>service_role key</strong>
-                </p>
-                <p>
-                  <strong>Como usar:</strong> Copie a Service Role Key e cole no campo acima. A key não é armazenada, apenas usada durante a execução dos cron jobs.
+                  <strong>Como usar:</strong> Insira suas credenciais no campo acima. Elas não são armazenadas e serão usadas apenas durante a execução dos cron jobs.
                 </p>
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mt-2">
                   <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                    ⚠️ <strong>Importante:</strong> Mantenha a Service Role Key em segredo. Ela tem acesso total ao banco de dados.
+                    ⚠️ <strong>Importante:</strong> Mantenha suas credenciais em segredo. Elas têm acesso administrativo ao sistema.
                   </p>
                 </div>
               </div>
@@ -648,11 +816,47 @@ export function CronJobsSection() {
               </div>
             </div>
 
-            {/* Passo 5: Monitoramento */}
+            {/* Passo 5: Usuários Inativos */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
                   5
+                </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  Marcar Usuários Inativos como Indisponíveis
+                </h3>
+              </div>
+              <div className="ml-10 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <p>
+                  <strong>O que faz:</strong> Identifica usuários que ficaram mais de 1 semana (7 dias) sem acessar o site e marca o perfil deles como indisponível (is_available = false). Isso afeta o botão de disponibilidade no menu dropdown.
+                </p>
+                <p>
+                  <strong>Como executar:</strong> Clique no botão <strong>"Marcar Usuários Inativos"</strong> acima.
+                </p>
+                <p>
+                  <strong>Quando executar:</strong> Execute diariamente ou algumas vezes por semana para manter os perfis atualizados.
+                </p>
+                <p>
+                  <strong>Critério de inatividade:</strong> Usuários que não acessaram o site há mais de 7 dias (verifica last_login_at ou updated_at).
+                </p>
+                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de usuários marcados como indisponíveis e os detalhes de cada um (nome, email, dias inativo).
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mt-2">
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    ℹ️ <strong>Nota:</strong> Usuários podem voltar a ficar disponíveis manualmente através do botão de disponibilidade no menu dropdown.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Passo 6: Monitoramento */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                  6
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
                   Monitorar Resultados
@@ -664,6 +868,9 @@ export function CronJobsSection() {
                 </p>
                 <p>
                   <strong>Stories:</strong> Verifique se os stories antigos foram deletados. Stories que já passaram de 24 horas não devem mais aparecer no app.
+                </p>
+                <p>
+                  <strong>Usuários Inativos:</strong> Verifique se os usuários inativos foram marcados como indisponíveis. Eles não aparecerão como disponíveis para receber ofertas até que voltem a acessar o site.
                 </p>
                 <p>
                   <strong>Logs:</strong> Os resultados de cada execução são exibidos abaixo dos botões. Verifique se há erros ou avisos.
@@ -681,9 +888,10 @@ export function CronJobsSection() {
                     Para garantir que todas as tarefas sejam executadas em tempo hábil, execute os cron jobs manualmente algumas vezes ao dia:
                   </p>
                   <ul className="list-disc list-inside ml-2 space-y-1">
-                    <li><strong>Manhã (08:00):</strong> Executar notificações e limpeza</li>
+                    <li><strong>Manhã (08:00):</strong> Executar notificações, limpeza e usuários inativos</li>
                     <li><strong>Tarde (14:00):</strong> Executar notificações e limpeza</li>
                     <li><strong>Noite (20:00):</strong> Executar notificações e limpeza</li>
+                    <li><strong>Diariamente (uma vez):</strong> Executar usuários inativos</li>
                   </ul>
                   <p className="text-xs mt-2">
                     <strong>Nota:</strong> Como estamos usando o plano free da Vercel, não podemos usar cron jobs automáticos. Por isso, a execução manual é necessária.
@@ -729,11 +937,21 @@ export function CronJobsSection() {
 
             <div>
               <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                Usuários Inativos
+              </h3>
+              <p>
+                Marca como indisponível usuários que ficaram mais de 1 semana (7 dias) sem acessar o site.
+                Isso afeta o botão de disponibilidade no menu dropdown. Execute diariamente ou algumas vezes por semana.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">
                 Frequência Recomendada
               </h3>
               <p>
                 Execute manualmente algumas vezes ao dia (manhã, tarde, noite) para garantir que
-                todas as tarefas sejam executadas em tempo hábil.
+                todas as tarefas sejam executadas em tempo hábil. Usuários inativos podem ser executados diariamente.
               </p>
             </div>
           </div>
