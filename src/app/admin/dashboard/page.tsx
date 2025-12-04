@@ -694,7 +694,7 @@ export default function AdminDashboardPage() {
         : 0
 
       const avgPostsPerUser = totalUsers && totalUsers > 0 ? (totalPosts || 0) / totalUsers : 0
-      const conversionRate = totalConversations && totalUsers > 0 
+      const conversionRate = totalConversations && totalUsers && totalUsers > 0 
         ? Math.round((totalConversations / totalUsers) * 100 * 10) / 10 
         : 0
 
@@ -712,7 +712,7 @@ export default function AdminDashboardPage() {
         usersGrowth,
         usersByState,
         avgSessionTime: 0, // Seria necessário tracking
-        retentionRate: activeUsers7d && totalUsers > 0 ? Math.round((activeUsers7d / totalUsers) * 100) : 0,
+        retentionRate: activeUsers7d && totalUsers && totalUsers > 0 ? Math.round((activeUsers7d / totalUsers) * 100) : 0,
         totalPosts: totalPosts || 0,
         postsToday: postsToday || 0,
         postsThisWeek: postsThisWeek || 0,

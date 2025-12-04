@@ -546,7 +546,7 @@ export default function FeedPage() {
                   onLike={() => handleLike(item.id)}
                   onEdit={handleEditPost}
                   onDelete={handleDeletePost}
-                  onRenewPremium={(postId) => {
+                  onRenewPremium={(postId: string) => {
                     setRenewingPostId(postId)
                     setShowRenewPremiumModal(true)
                   }}

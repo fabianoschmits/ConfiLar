@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Crown, Medal, Award, Star, Users } from 'lucide-react'
 import { usePointsLeaderboard } from '@/hooks/usePoints'
-import { formatPoints, USER_LEVELS } from '@/types/points'
+import { formatPoints, USER_LEVELS, PointsLeaderboard } from '@/types/points'
 import { cn } from '@/lib/utils'
 import { RankingListSkeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
@@ -132,7 +132,7 @@ export default function ConfiPointsRankingPage() {
                 <CardContent className="p-4 text-center">
                   <Star className="w-8 h-8 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
                   <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {leaderboard.filter(u => u.user_level === 'diamond').length}
+                    {leaderboard.filter((u: PointsLeaderboard) => u.user_level === 'diamond').length}
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {t('diamondUsers')}
@@ -156,7 +156,7 @@ export default function ConfiPointsRankingPage() {
               </Card>
             ) : (
               <div className="space-y-3">
-                {leaderboard.map((user, index) => (
+                {leaderboard.map((user: PointsLeaderboard, index: number) => (
                   <Card 
                     key={user.user_id}
                     className={cn(

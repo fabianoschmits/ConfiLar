@@ -406,6 +406,7 @@ export default function ReputacaoPage() {
     const reviewsToFilter = reviewsSubTab === 'received' ? reviews : givenReviews
     return reviewsToFilter.filter(review => {
       const user = reviewsSubTab === 'received' ? review.reviewer : review.reviewed
+      if (!user) return false
       const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesFilter = filterType === 'all' || user.user_type === filterType
       return matchesSearch && matchesFilter
@@ -416,6 +417,7 @@ export default function ReputacaoPage() {
     const recommendationsToFilter = recommendationsSubTab === 'received' ? recommendations : givenRecommendations
     return recommendationsToFilter.filter(rec => {
       const user = recommendationsSubTab === 'received' ? rec.recommender : rec.recommended
+      if (!user) return false
       const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesFilter = filterType === 'all' || user.user_type === filterType
       return matchesSearch && matchesFilter

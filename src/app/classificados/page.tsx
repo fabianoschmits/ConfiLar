@@ -1777,7 +1777,7 @@ export default function ClassificadosPage() {
                               ? 'ring-blue-200 group-hover/user:ring-blue-400'
                               : 'ring-emerald-200 group-hover/user:ring-emerald-400'
                         }`}>
-                          <AvatarImage src={ad.user_avatar_url} alt={`Avatar de ${ad.user_name}`} />
+                          <AvatarImage src={ad.user_avatar_url || undefined} alt={`Avatar de ${ad.user_name}`} />
                           <AvatarFallback className={`text-xs font-medium ${
                             isActivePremium
                               ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400'

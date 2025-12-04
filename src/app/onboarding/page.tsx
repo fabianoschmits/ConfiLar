@@ -541,7 +541,7 @@ export default function OnboardingPage() {
       if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
         clearTimeout(timeoutId)
         timeoutId = setTimeout(() => {
-        generateDicebearAvatar(value.full_name)
+        generateDicebearAvatar(value.full_name || '')
         }, 500)
       }
     })

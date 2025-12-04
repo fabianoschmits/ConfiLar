@@ -108,16 +108,18 @@ export async function GET(request: NextRequest) {
           // Se não tem nenhuma data, considerar inativo se updated_at for muito antigo
           // ou se não existe last_login_at e updated_at é antigo
           if (lastUpdate) {
+            const lastUpdateDate = new Date(lastUpdate)
             const daysSinceUpdate = Math.floor(
-              (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
+              (now.getTime() - lastUpdateDate.getTime()) / (1000 * 60 * 60 * 24)
             )
             return daysSinceUpdate >= 7
           }
           return false
         }
         
+        const lastActivityDate = new Date(lastActivity)
         const daysSinceActivity = Math.floor(
-          (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+          (now.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24)
         )
         
         return daysSinceActivity >= 7

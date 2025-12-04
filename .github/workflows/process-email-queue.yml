@@ -1,0 +1,82 @@
+name: 📧 Process Email Queue
+
+on:
+  # Executar a cada 5 minutos
+  schedule:
+    - cron: '*/5 * * * *'
+  
+  # Permitir execução manual
+  workflow_dispatch:
+  
+  # Executar quando houver push no master/main
+  push:
+    branches: [ master, main ]
+    paths:
+      - '.github/workflows/process-email-queue.yml'
+      - 'src/app/api/cron/process-email-queue/**'
+
+jobs:
+  process-email-queue:
+    name: 📧 Processar Fila de Emails
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 🔍 Verificar Status
+        run: |
+          echo "🕐 Processando fila de emails..."
+          echo "📅 Data/Hora: $(date)"
+      
+      - name: 📞 Chamar API de Processamento
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          API_URL: ${{ secrets.API_URL || 'https://confilar.vercel.app' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "⚠️ CRON_SECRET não configurado. Tentando sem autenticação..."
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "${API_URL}/api/cron/process-email-queue" || echo "ERROR")
+          else
+            echo "🔐 Usando CRON_SECRET para autenticação..."
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "${API_URL}/api/cron/process-email-queue" \
+              -H "Authorization: Bearer ${CRON_SECRET}" || echo "ERROR")
+          fi
+          
+          # Separar body e status code
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
+          
+          echo "📊 Status HTTP: ${HTTP_STATUS}"
+          echo "📝 Resposta:"
+          echo "$BODY" | jq '.' || echo "$BODY"
+          
+          # Verificar se foi bem-sucedido
+          if [ "$HTTP_STATUS" -eq 200 ] || [ "$HTTP_STATUS" -eq 201 ]; then
+            echo "✅ Processamento concluído com sucesso!"
+            
+            # Extrair informações da resposta
+            PROCESSED=$(echo "$BODY" | jq -r '.processed // 0' || echo "0")
+            FAILED=$(echo "$BODY" | jq -r '.failed // 0' || echo "0")
+            TOTAL=$(echo "$BODY" | jq -r '.total // 0' || echo "0")
+            
+            echo "📊 Estatísticas:"
+            echo "   - Total processado: ${TOTAL}"
+            echo "   - Enviados: ${PROCESSED}"
+            echo "   - Falhados: ${FAILED}"
+            
+            # Falhar o workflow se houver muitos erros
+            if [ "$FAILED" -gt 10 ]; then
+              echo "❌ Muitos emails falharam (${FAILED}). Verifique os logs."
+              exit 1
+            fi
+          else
+            echo "❌ Erro ao processar fila de emails (Status: ${HTTP_STATUS})"
+            echo "$BODY"
+            exit 1
+          fi
+      
+      - name: 📧 Verificar Resultado
+        if: always()
+        run: |
+          echo "✅ Workflow concluído!"
+          echo "📅 Próxima execução: em 5 minutos"
+
