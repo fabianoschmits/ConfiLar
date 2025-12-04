@@ -1021,15 +1021,9 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 📞 Contato e Suporte
 
-- **Website:** [https://confilar.com](https://confilar.com)
-- **Email:** contato@confilar.com
+- **Website:** [https://appconfilar.com](https://appconfilar.com)
+- **Email:** contato@appconfilar.com
 - **GitHub:** [https://github.com/confilar](https://github.com/confilar)
-
----
-
-## 🙏 Agradecimentos
-
-Agradecimentos a todos os desenvolvedores e contribuidores que tornaram este projeto possível.
 
 ---
 
@@ -1037,6 +1031,6 @@ Agradecimentos a todos os desenvolvedores e contribuidores que tornaram este pro
 
 ---
 
-_Última atualização: 2025-01-18_
+_Última atualização: 2025-12-04_
 _Versão: 0.1.0_
 _Status: Produção_
