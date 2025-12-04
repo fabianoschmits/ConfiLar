@@ -29,8 +29,70 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  console.log(`📥 Requisição recebida: ${req.method} ${req.url}`);
+
+  // Verificar se o método é POST
+  if (req.method !== 'POST') {
+    console.warn(`⚠️ Método não permitido: ${req.method}`);
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed. Use POST.' }),
+      { 
+        status: 405, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+
   try {
-    const { to, subject, template, data }: NotificationEmail = await req.json();
+    // Verificar se há conteúdo no body antes de fazer parse
+    const contentType = req.headers.get('content-type');
+    console.log(`📋 Content-Type: ${contentType}`);
+    
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`⚠️ Content-Type inválido: ${contentType}`);
+      return new Response(
+        JSON.stringify({ error: 'Content-Type must be application/json' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Ler o body como texto primeiro para validar
+    const bodyText = await req.text();
+    console.log(`📝 Body recebido (${bodyText.length} caracteres):`, bodyText.substring(0, 200));
+    
+    if (!bodyText || bodyText.trim() === '') {
+      console.error('❌ Body vazio ou sem conteúdo');
+      return new Response(
+        JSON.stringify({ error: 'Request body is empty' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Fazer parse do JSON
+    let requestData: NotificationEmail;
+    try {
+      requestData = JSON.parse(bodyText);
+    } catch (parseError: any) {
+      console.error('❌ Erro ao fazer parse do JSON:', parseError.message);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: parseError.message 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const { to, subject, template, data } = requestData;
 
     if (!to || !subject || !template) {
       return new Response(
@@ -42,43 +104,75 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Para mensagens, verificar se pode enviar email (controle de frequência)
-    if (template === 'message' && data.conversationId && data.recipientId) {
-      const canSend = await checkEmailFrequency(
-        data.recipientId, 
-        data.conversationId, 
-        'message'
+    // Validar email do destinatário
+    if (!to || !to.includes('@')) {
+      console.error(`❌ Email inválido: ${to}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid email address' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       );
+    }
+
+    // Gerar conteúdo do email baseado no template
+    let emailContent;
+    try {
+      emailContent = generateEmailContent(template, data, subject);
+    } catch (templateError: any) {
+      console.error('❌ Erro ao gerar conteúdo do email:', templateError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to generate email content',
+          details: templateError.message 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Enviar email usando Resend
+    let emailResponse;
+    try {
+      emailResponse = await sendEmail({
+        to,
+        subject,
+        html: emailContent.html,
+        text: emailContent.text,
+      });
+    } catch (emailError: any) {
+      console.error('❌ Erro ao enviar email:', emailError);
       
-      if (!canSend) {
+      // Se for erro de API key não configurada, retornar 503 (Service Unavailable)
+      if (emailError.message?.includes('RESEND_API_KEY não configurada')) {
         return new Response(
           JSON.stringify({ 
-            success: false, 
-            message: 'Email not sent due to frequency control',
-            template,
-            to 
+            error: 'Email service not configured',
+            message: 'RESEND_API_KEY não está configurada. Configure no Supabase Dashboard.',
+            details: emailError.message
           }),
           { 
+            status: 503, 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
           }
         );
       }
-    }
-
-    // Gerar conteúdo do email baseado no template
-    const emailContent = generateEmailContent(template, data, subject);
-
-    // Enviar email usando Resend
-    const emailResponse = await sendEmail({
-      to,
-      subject,
-      html: emailContent.html,
-      text: emailContent.text,
-    });
-
-    // Para mensagens, atualizar controle de frequência
-    if (template === 'message' && data.conversationId && data.recipientId) {
-      await updateEmailFrequency(data.recipientId, data.conversationId, 'message');
+      
+      // Outros erros de envio
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to send email',
+          message: emailError.message || 'Erro desconhecido ao enviar email',
+          details: emailError.message
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     return new Response(
@@ -94,11 +188,14 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error: any) {
-    console.error('Error sending notification email:', error);
+    console.error('❌ Erro inesperado ao processar email de notificação:', error);
+    const errorMessage = error.message || 'Erro desconhecido ao enviar email';
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to send email',
-        details: error.message 
+        error: 'Internal server error',
+        message: errorMessage,
+        details: error.stack ? error.stack.substring(0, 500) : errorMessage
       }),
       { 
         status: 500, 
@@ -336,107 +433,70 @@ async function sendEmail({ to, subject, html, text }: {
   html: string;
   text: string;
 }) {
+  // Verificar se a API key está configurada
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   
-  if (!resendApiKey) {
-    throw new Error('RESEND_API_KEY não configurada. Configure no Supabase Dashboard: Settings > Secrets');
+  if (!resendApiKey || resendApiKey.trim() === '') {
+    console.error('❌ RESEND_API_KEY não configurada ou está vazia');
+    throw new Error('RESEND_API_KEY não configurada. Configure no Supabase Dashboard: Settings > Edge Functions > Secrets');
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: 'ConfiLar <noreply@confilar.com.br>',
+  console.log(`📧 Tentando enviar email para: ${to}`);
+  console.log(`📧 Subject: ${subject}`);
+  console.log(`📧 Template HTML length: ${html.length} caracteres`);
+  console.log(`📧 Template text length: ${text.length} caracteres`);
+
+  try {
+    const emailPayload = {
+      from: 'ConfiLar <noreply@appconfilar.com.br>', // Domínio verificado do Resend
       to: [to],
       subject,
       html,
       text,
-    }),
-  });
+    };
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(`Failed to send email: ${response.status} - ${errorData.message || response.statusText}`);
-  }
+    console.log(`📤 Payload preparado, enviando para Resend API...`);
 
-  return await response.json();
-}
-
-/**
- * Verifica se pode enviar email (controle de frequência)
- */
-async function checkEmailFrequency(
-  userId: string, 
-  conversationId: string, 
-  notificationType: string,
-  delayMinutes: number = 5
-): Promise<boolean> {
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/can_send_email_notification`, {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
-        'apikey': supabaseServiceKey
       },
-      body: JSON.stringify({
-        p_user_id: userId,
-        p_conversation_id: conversationId,
-        p_notification_type: notificationType,
-        p_delay_minutes: delayMinutes
-      })
+      body: JSON.stringify(emailPayload),
     });
 
+    console.log(`📥 Resposta recebida: ${response.status} ${response.statusText}`);
+
     if (!response.ok) {
-      console.error('Error checking email frequency:', response.statusText);
-      return true; // Em caso de erro, permitir envio
+      const errorText = await response.text();
+      console.error(`❌ Resposta de erro do Resend:`, errorText);
+      
+      let errorData: any = {};
+      
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText || 'Unknown error' };
+      }
+
+      const errorMessage = errorData.message || errorData.error || response.statusText;
+      console.error(`❌ Erro ao enviar email (${response.status}):`, errorMessage);
+      throw new Error(`Failed to send email: ${response.status} - ${errorMessage}`);
     }
 
     const result = await response.json();
-    return result === true;
-  } catch (error) {
-    console.error('Error in checkEmailFrequency:', error);
-    return true; // Em caso de erro, permitir envio
-  }
-}
-
-/**
- * Atualiza controle de frequência de emails
- */
-async function updateEmailFrequency(
-  userId: string, 
-  conversationId: string, 
-  notificationType: string
-): Promise<void> {
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/update_email_notification_control`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'Content-Type': 'application/json',
-        'apikey': supabaseServiceKey
-      },
-      body: JSON.stringify({
-        p_user_id: userId,
-        p_conversation_id: conversationId,
-        p_notification_type: notificationType
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Error updating email frequency:', response.statusText);
+    console.log(`✅ Email enviado com sucesso: ${result.id}`);
+    return result;
+  } catch (error: any) {
+    // Se já é um erro que lançamos, apenas re-lançar
+    if (error.message?.includes('RESEND_API_KEY') || error.message?.includes('Failed to send email')) {
+      throw error;
     }
-  } catch (error) {
-    console.error('Error in updateEmailFrequency:', error);
+    
+    // Outros erros de rede ou parsing
+    console.error('❌ Erro na requisição ao Resend:', error.message);
+    throw new Error(`Network or parsing error: ${error.message}`);
   }
 }
 

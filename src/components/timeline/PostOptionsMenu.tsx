@@ -18,9 +18,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Edit, Trash2, Loader2, Flag, Crown } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Loader2, Flag, Crown, Shield } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { ReportButton } from '@/components/ReportButton'
+import { useIsSuperAdmin } from '@/hooks/useAdmin'
 
 interface PostOptionsMenuProps {
   postId: string
@@ -46,6 +47,7 @@ export function PostOptionsMenu({
   premiumExpired = false
 }: PostOptionsMenuProps) {
   const { user } = useAuthContext()
+  const { isSuperAdmin } = useIsSuperAdmin()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   // Se não há usuário logado, não mostrar menu
@@ -54,6 +56,7 @@ export function PostOptionsMenu({
   }
 
   const isOwner = user.id === postUserId
+  const canDelete = isOwner || isSuperAdmin // Apenas dono ou super_admin podem deletar
 
   const handleDelete = () => {
     onDelete(postId)
@@ -109,15 +112,28 @@ export function PostOptionsMenu({
             </>
           ) : (
             // Opções para outros usuários
-            <DropdownMenuItem asChild>
-              <ReportButton 
-                type="post" 
-                targetId={postId}
-                targetName={postTitle || 'Post'}
-                asDropdownItem={true}
-                className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900"
-              />
-            </DropdownMenuItem>
+            <>
+              {isSuperAdmin && (
+                // Apenas super_admin pode deletar posts de outros usuários
+                <DropdownMenuItem 
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="cursor-pointer text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
+                  aria-label="Deletar post (super admin)"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Deletar Post (Super Admin)
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem asChild>
+                <ReportButton 
+                  type="post" 
+                  targetId={postId}
+                  targetName={postTitle || 'Post'}
+                  asDropdownItem={true}
+                  className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900"
+                />
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -125,10 +141,21 @@ export function PostOptionsMenu({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 dark:text-white">Deletar Post</AlertDialogTitle>
+            <AlertDialogTitle className="text-gray-900 dark:text-white">
+              {isSuperAdmin && !isOwner ? 'Deletar Post (Super Admin)' : 'Deletar Post'}
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
-              Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.
-              O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
+              {isSuperAdmin && !isOwner ? (
+                <>
+                  Você está deletando este post como <strong>Super Administrador</strong>. Esta ação não pode ser desfeita.
+                  O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
+                </>
+              ) : (
+                <>
+                  Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.
+                  O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1491,7 +1491,40 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // O post pode ter user_id OU professional_id
       const isOwner = postData?.user_id === user.id || postData?.professional_id === user.id
       
+      // Verificar se o usuário é super_admin
+      let isSuperAdmin = false
       if (!isOwner) {
+        const { data: adminData } = await supabase
+          .from('admins')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single()
+        
+        isSuperAdmin = adminData?.role === 'super_admin'
+        
+        if (isSuperAdmin) {
+          console.log('✅ Usuário é super_admin, usando API de admin para deletar post')
+          
+          // Usar API de admin para deletar
+          const response = await fetch(`/api/admin/posts/${postId}`, {
+            method: 'DELETE',
+          })
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }))
+            throw new Error(errorData.error || `Erro ao deletar post: ${response.status}`)
+          }
+          
+          console.log('✅ Post deletado com sucesso via API de admin')
+          
+          // Invalidar cache e recarregar
+          queryClient.invalidateQueries({ queryKey })
+          return
+        }
+      }
+      
+      if (!isOwner && !isSuperAdmin) {
         console.error('❌ PERMISSÃO NEGADA: Usuário não pode deletar este post')
         console.error('❌ Post user_id:', postData?.user_id, '| professional_id:', postData?.professional_id, '| Usuário atual:', user.id)
         throw new Error('Você não tem permissão para deletar este post')

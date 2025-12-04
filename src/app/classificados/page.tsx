@@ -55,7 +55,8 @@ import {
   HandHeart,
   ShoppingCart,
   Crown,
-  Sparkles
+  Sparkles,
+  Shield
 } from 'lucide-react'
 import { ClientOnly } from '@/components/ClientOnly'
 import { PremiumAdForm } from '@/components/classifieds/PremiumAdForm'
@@ -63,6 +64,7 @@ import { RenewPremiumAdForm } from '@/components/classifieds/RenewPremiumAdForm'
 import { PremiumTimeRemaining } from '@/components/classifieds/PremiumTimeRemaining'
 import { ReportButton } from '@/components/ReportButton'
 import { useTranslations } from 'next-intl'
+import { useIsSuperAdmin } from '@/hooks/useAdmin'
 
 type AdType = 'all' | 'offers' | 'requests'
 
@@ -70,6 +72,7 @@ export default function ClassificadosPage() {
   const t = useTranslations('classifieds')
   const tCommon = useTranslations('common')
   const tLocation = useTranslations('location')
+  const { isSuperAdmin } = useIsSuperAdmin()
   const [mounted, setMounted] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showPremiumAdDialog, setShowPremiumAdDialog] = useState(false)
@@ -376,26 +379,72 @@ export default function ClassificadosPage() {
       return
     }
 
-    if (!confirm('Tem certeza que deseja deletar este anúncio? Esta ação não pode ser desfeita.')) {
+    // Buscar anúncio para verificar se é o dono
+    const { data: adData } = await supabase
+      .from('classified_ads')
+      .select('user_id')
+      .eq('id', adId)
+      .single()
+
+    const isOwner = adData?.user_id === user.id
+
+    // Se não for o dono, verificar se é super_admin
+    let isSuperAdmin = false
+    if (!isOwner) {
+      const { data: adminData } = await supabase
+        .from('admins')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single()
+      
+      isSuperAdmin = adminData?.role === 'super_admin'
+
+      if (!isSuperAdmin) {
+        toast.error('Você não tem permissão para deletar este anúncio')
+        return
+      }
+    }
+
+    const confirmMessage = isSuperAdmin 
+      ? 'Você está deletando este anúncio como administrador. Tem certeza que deseja continuar? Esta ação não pode ser desfeita.'
+      : 'Tem certeza que deseja deletar este anúncio? Esta ação não pode ser desfeita.'
+
+    if (!confirm(confirmMessage)) {
       return
     }
 
     try {
-      const { error } = await supabase
-        .from('classified_ads')
-        .delete()
-        .eq('id', adId)
-        .eq('user_id', user.id) // Garantir que só o dono pode deletar
+      if (isSuperAdmin) {
+        // Usar API de admin para deletar
+        const response = await fetch(`/api/admin/classified-ads/${adId}`, {
+          method: 'DELETE',
+        })
 
-      if (error) throw error
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }))
+          throw new Error(errorData.error || `Erro ao deletar anúncio: ${response.status}`)
+        }
 
-      toast.success('Anúncio deletado com sucesso!')
+        toast.success('Anúncio deletado com sucesso (como Super Administrador)!')
+      } else {
+        // Deletar normalmente (só o dono)
+        const { error } = await supabase
+          .from('classified_ads')
+          .delete()
+          .eq('id', adId)
+          .eq('user_id', user.id) // Garantir que só o dono pode deletar
+
+        if (error) throw error
+
+        toast.success('Anúncio deletado com sucesso!')
+      }
       
       // Recarregar anúncios
       await loadClassifiedAds()
     } catch (error) {
       console.error('Erro ao deletar anúncio:', error)
-      toast.error('Erro ao deletar anúncio')
+      toast.error(error instanceof Error ? error.message : 'Erro ao deletar anúncio')
     }
   }
 
@@ -1426,8 +1475,22 @@ export default function ClassificadosPage() {
                                 </>
                               )}
                               
-                              {/* Botão de denunciar (para usuários que não são donos do anúncio) */}
-                              {user && selectedAd.user_id !== user.id && (
+                              {/* Ações para super_admin (mesmo quando não são donos) */}
+                              {user && isSuperAdmin && selectedAd.user_id !== user.id && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setShowAdModal(false)
+                                    handleDeleteAd(selectedAd.id)
+                                  }}
+                                  className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Deletar Anúncio (Super Admin)
+                                </DropdownMenuItem>
+                              )}
+                              
+                              {/* Botão de denunciar (para usuários que não são donos do anúncio e não são super_admin) */}
+                              {user && selectedAd.user_id !== user.id && !isSuperAdmin && (
                                 <DropdownMenuItem asChild>
                                   <ReportButton 
                                     type="classified" 
@@ -1843,8 +1906,19 @@ export default function ClassificadosPage() {
                               </>
                             )}
                             
-                            {/* Botão de denunciar (para usuários que não são donos do anúncio) */}
-                            {user && ad.user_id !== user.id && (
+                            {/* Ações para super_admin (mesmo quando não são donos) */}
+                            {user && isSuperAdmin && ad.user_id !== user.id && (
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteAd(ad.id)}
+                                className="text-gray-700 hover:text-red-600 hover:bg-red-50"
+                              >
+                                <Shield className="h-4 w-4 mr-2" />
+                                Deletar Anúncio (Super Admin)
+                              </DropdownMenuItem>
+                            )}
+                            
+                            {/* Botão de denunciar (para usuários que não são donos do anúncio e não são super_admin) */}
+                            {user && ad.user_id !== user.id && !isSuperAdmin && (
                               <DropdownMenuItem asChild>
                                 <ReportButton 
                                   type="classified" 
