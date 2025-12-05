@@ -42,12 +42,14 @@ export interface Conversation {
     full_name: string
     avatar_url?: string
     user_type?: string
+    phone?: string | null
   }
   professional?: {
     id: string
     full_name: string
     avatar_url?: string
     user_type?: string
+    phone?: string | null
   }
   last_message?: {
     content: string
@@ -106,8 +108,8 @@ export function useMessages() {
           deleted_by_professional,
           deleted_at_client,
           deleted_at_professional,
-          client:client_id(id, full_name, avatar_url, user_type),
-          professional:professional_id(id, full_name, avatar_url, user_type)
+          client:client_id(id, full_name, avatar_url, user_type, phone),
+          professional:professional_id(id, full_name, avatar_url, user_type, phone)
         `)
         .or(`client_id.eq.${user.id},professional_id.eq.${user.id}`)
         .order('last_message_at', { ascending: false })

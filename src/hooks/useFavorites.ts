@@ -23,6 +23,7 @@ export interface Favorite {
     bio?: string
     badge?: string
     professional_services?: string[]
+    phone?: string | null
   }
 }
 
@@ -60,7 +61,8 @@ export function useFavorites() {
             is_verified,
             bio,
             badge,
-            professional_services
+            professional_services,
+            phone
           )
         `)
         .eq('user_id', user.id)
