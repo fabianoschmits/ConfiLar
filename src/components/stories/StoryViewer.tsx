@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Heart, Sparkles, Share2 } from 'lucide-react'
 import { useStories, StoryGroup } from '@/hooks/useStories'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useStoryLikes } from '@/hooks/useStoryLikes'
+import { FloatingLikes } from '@/components/stories/FloatingLikes'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
 
 interface StoryViewerProps {
   initialGroupIndex: number
@@ -17,17 +21,35 @@ const STORY_DURATION = 5000 // 5 segundos
 
 export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: StoryViewerProps) {
   const { storyGroups, viewStory } = useStories()
+  const { user } = useAuthContext()
   const [currentGroupIndex, setCurrentGroupIndex] = useState(initialGroupIndex)
   const [currentStoryIndex, setCurrentStoryIndex] = useState(initialStoryIndex)
   const [progress, setProgress] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const storyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const currentGroup: StoryGroup | undefined = storyGroups[currentGroupIndex]
   const currentStory = currentGroup?.stories[currentStoryIndex]
+
+  // Hook para likes do story atual
+  const {
+    toggleLike,
+    givePremiumLike,
+    isLiking,
+    isPremiumLiking,
+    isLiked,
+    isPremiumLiked,
+    likeCounts,
+    likeUsers
+  } = useStoryLikes({
+    storyId: currentStory?.id || '',
+    storyOwnerId: currentGroup?.userId || '',
+    storyOwnerName: currentGroup?.userName || 'Usuário'
+  })
 
   const goToNextStory = useCallback(() => {
     if (!currentGroup) return
@@ -150,9 +172,9 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
 
   // Handler de clique na tela (canto direito para próximo, esquerdo para anterior)
   const handleScreenClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Evitar navegação se clicar no header (botão X, avatar, etc)
+    // Evitar navegação se clicar no header (botão X, avatar, etc) ou nos botões de ação
     const target = e.target as HTMLElement
-    if (target.closest('.story-header') || target.closest('button') || target.closest('svg')) {
+    if (target.closest('.story-header') || target.closest('.story-actions') || target.closest('button') || target.closest('svg')) {
       return
     }
 
@@ -167,6 +189,25 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
       goToPreviousStory()
     }
     // Se clicou no meio (30% a 70%), não faz nada (permite pausar visualmente)
+  }
+
+  // Handler para compartilhar story
+  const handleShare = () => {
+    if (!currentStory) return
+
+    const storyUrl = `${window.location.origin}/stories/${currentStory.id}`
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Story de ${currentGroup?.userName}`,
+        text: `Confira o story de ${currentGroup?.userName} no ConfiLar`,
+        url: storyUrl
+      }).catch(err => console.log('Erro ao compartilhar:', err))
+    } else {
+      // Copiar link para área de transferência
+      navigator.clipboard.writeText(storyUrl)
+      toast.success('Link copiado para área de transferência!')
+    }
   }
 
   if (!currentStory || !currentGroup) {
@@ -267,6 +308,61 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
       >
         <ChevronRight className="h-8 w-8 text-white" />
       </button>
+
+      {/* Botões de ação (Like, Like Premium, Compartilhar) */}
+      {user && (
+        <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-3 story-actions">
+          {/* Botão Like Normal */}
+          <button
+            onClick={toggleLike}
+            disabled={isLiking}
+            className={`relative bg-white/20 backdrop-blur-sm p-3 rounded-full transition-all hover:bg-white/30 active:scale-95 disabled:opacity-50 ${
+              isLiked ? 'bg-red-500/30' : ''
+            }`}
+            title="Curtir story"
+          >
+            <Heart
+              className={`h-6 w-6 ${
+                isLiked ? 'text-red-500 fill-red-500' : 'text-white'
+              } transition-all`}
+            />
+            {likeCounts.normal > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {likeCounts.normal > 99 ? '99+' : likeCounts.normal}
+              </span>
+            )}
+          </button>
+
+          {/* Botão Like Premium */}
+          <button
+            onClick={givePremiumLike}
+            disabled={isPremiumLiking || isPremiumLiked}
+            className={`relative bg-gradient-to-r from-yellow-400 to-yellow-600 p-3 rounded-full transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 ${
+              isPremiumLiked ? 'opacity-70' : ''
+            }`}
+            title={isPremiumLiked ? 'Você já deu like premium' : 'Like Premium (100 pontos)'}
+          >
+            <Sparkles className="h-6 w-6 text-white" />
+            {likeCounts.premium > 0 && (
+              <span className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {likeCounts.premium > 99 ? '99+' : likeCounts.premium}
+              </span>
+            )}
+          </button>
+
+          {/* Botão Compartilhar */}
+          <button
+            onClick={handleShare}
+            className="relative bg-white/20 backdrop-blur-sm p-3 rounded-full transition-all hover:bg-white/30 active:scale-95"
+            title="Compartilhar story"
+          >
+            <Share2 className="h-6 w-6 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* Componente de Likes Flutuantes */}
+      <FloatingLikes likeUsers={likeUsers} isVisible={true} />
     </div>
   )
 }
