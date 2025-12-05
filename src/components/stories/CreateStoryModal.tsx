@@ -43,36 +43,16 @@ export function CreateStoryModal({ isOpen, onClose, onStoryCreated }: CreateStor
       return
     }
 
-    // Validar formato vertical (aspect ratio)
-    const img = new Image()
-    const objectUrl = URL.createObjectURL(file)
-    
-    img.onload = () => {
-      const aspectRatio = img.width / img.height
-      const isVertical = aspectRatio < 1 // Altura maior que largura
-      
-      if (!isVertical) {
-        toast.error('Por favor, selecione uma foto no formato vertical (retrato)')
-        URL.revokeObjectURL(objectUrl)
-        return
-      }
-
-      // Armazenar o arquivo e criar preview
-      setSelectedFile(file)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string)
-        URL.revokeObjectURL(objectUrl)
-      }
-      reader.readAsDataURL(file)
+    // Armazenar o arquivo e criar preview (aceita qualquer resolução/orientação)
+    setSelectedFile(file)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setSelectedImage(e.target?.result as string)
     }
-    
-    img.onerror = () => {
+    reader.onerror = () => {
       toast.error('Erro ao carregar a imagem')
-      URL.revokeObjectURL(objectUrl)
     }
-    
-    img.src = objectUrl
+    reader.readAsDataURL(file)
   }
 
   const handleUpload = async () => {
@@ -151,10 +131,10 @@ export function CreateStoryModal({ isOpen, onClose, onStoryCreated }: CreateStor
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-white dark:bg-black rounded-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-md bg-white dark:bg-black rounded-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Criar Story
           </h2>
@@ -167,7 +147,7 @@ export function CreateStoryModal({ isOpen, onClose, onStoryCreated }: CreateStor
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto flex-1">
           {!selectedImage ? (
             <div className="space-y-4">
               <div
@@ -182,7 +162,7 @@ export function CreateStoryModal({ isOpen, onClose, onStoryCreated }: CreateStor
                   PNG, JPG ou WEBP até 10MB
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-600 mt-1">
-                  Apenas formato vertical (retrato)
+                  Qualquer resolução ou orientação
                 </p>
               </div>
 
@@ -197,16 +177,16 @@ export function CreateStoryModal({ isOpen, onClose, onStoryCreated }: CreateStor
           ) : (
             <div className="space-y-4">
               {/* Preview */}
-              <div className="relative w-full aspect-[9/16] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
+              <div className="relative w-full max-h-[600px] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                 <img
                   src={selectedImage}
                   alt="Preview"
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-4 pb-2 flex-shrink-0 sticky bottom-0 bg-white dark:bg-black">
                 <button
                   onClick={() => {
                     setSelectedImage(null)
