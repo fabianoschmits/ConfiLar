@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/contexts/AuthContext'
 
@@ -37,7 +37,7 @@ export function useAdmin() {
     error: null
   })
 
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     if (!user?.id) {
       setState(prev => ({
         ...prev,
@@ -77,11 +77,8 @@ export function useAdmin() {
             adminError.message?.includes('relation') ||
             adminError.message?.includes('does not exist')
         
-        if (!isExpectedError) {
-          // Apenas logar erros inesperados
-          console.warn('Erro inesperado ao verificar status de administrador:', adminError)
-        }
         // Silenciar erros esperados - usuário não é admin, não é erro
+        // Não fazer nada, apenas não definir adminData
       } else {
         adminData = data
       }
@@ -107,11 +104,11 @@ export function useAdmin() {
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       }))
     }
-  }
+  }, [user?.id])
 
   useEffect(() => {
     checkAdminStatus()
-  }, [user?.id])
+  }, [checkAdminStatus])
 
   const refreshAdminStatus = () => {
     checkAdminStatus()

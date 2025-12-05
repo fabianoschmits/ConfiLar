@@ -76,27 +76,7 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       }, { status: 400 })
     }
 
-    // Verificar se já deu like premium neste story
-    const { data: existingPremiumLike, error: likeCheckError } = await supabase
-      .from('story_likes')
-      .select('id')
-      .eq('story_id', storyId)
-      .eq('user_id', authenticatedUserId) // 🔒 Sempre ID autenticado
-      .eq('is_premium', true)
-      .maybeSingle()
-    
-    if (likeCheckError) {
-      console.error('❌ [Premium Like Story API] Erro ao verificar like existente:', likeCheckError)
-      return NextResponse.json({ error: 'Erro ao verificar like' }, { status: 500 })
-    }
-    
-    if (existingPremiumLike) {
-      return NextResponse.json({ 
-        error: 'Você já deu um like premium neste story' 
-      }, { status: 400 })
-    }
-
-    // Criar like premium
+    // SEMPRE criar novo like premium (permite múltiplos likes)
     console.log('🆕 [Premium Like Story API] Criando novo like premium...')
     
     const { data: premiumLike, error: likeError } = await supabase
@@ -111,11 +91,22 @@ export const POST = withAuth(async (request: NextRequest, supabaseAuth, user) =>
       .single()
 
     if (likeError) {
-      console.error('❌ [Premium Like Story API] Erro ao criar premium like:', likeError)
-      return NextResponse.json({ error: 'Erro ao criar like premium' }, { status: 500 })
+      console.error('❌ [Premium Like Story API] Erro ao criar premium like:', {
+        error: likeError,
+        code: likeError.code,
+        message: likeError.message,
+        details: likeError.details,
+        hint: likeError.hint,
+        storyId,
+        userId: authenticatedUserId
+      })
+      return NextResponse.json({ 
+        error: 'Erro ao criar like premium',
+        details: likeError.message 
+      }, { status: 500 })
     }
     
-    console.log('✅ [Premium Like Story API] Like premium criado com sucesso')
+    console.log('✅ [Premium Like Story API] Like premium criado com sucesso:', premiumLike?.id)
 
     // 2. Deduzir pontos do usuário autenticado que curtiu
     const { error: deductError } = await supabase

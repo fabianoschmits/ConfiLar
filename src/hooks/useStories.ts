@@ -99,16 +99,24 @@ export function useStories() {
       // Verificar quais usuários têm stories novos (não visualizados pelo usuário atual)
       // E ordenar stories dentro de cada grupo (não visualizados primeiro)
       if (user?.id) {
-        for (const group of groupsMap.values()) {
-          // Verificar se o usuário atual visualizou algum story deste grupo
+        // OTIMIZAÇÃO: Buscar TODAS as views de UMA VEZ em vez de uma por grupo
+        const allStoryIds = Array.from(groupsMap.values()).flatMap(group => 
+          group.stories.map(s => s.id)
+        )
+        
+        let viewedStoryIds = new Set<string>()
+        if (allStoryIds.length > 0) {
           const { data: views } = await supabase
             .from('story_views')
             .select('story_id')
             .eq('viewer_id', user.id)
-            .in('story_id', group.stories.map(s => s.id))
-
-          const viewedStoryIds = new Set(views?.map(v => v.story_id) || [])
+            .in('story_id', allStoryIds)
           
+          viewedStoryIds = new Set(views?.map(v => v.story_id) || [])
+        }
+        
+        // Agora processar cada grupo usando o Set já carregado
+        for (const group of groupsMap.values()) {
           // Ordenar stories dentro do grupo: não visualizados primeiro, visualizados depois
           group.stories.sort((a, b) => {
             const aViewed = viewedStoryIds.has(a.id)
@@ -158,9 +166,11 @@ export function useStories() {
 
       return groupsArray
     },
-    staleTime: 1000 * 30, // Cache por 30 segundos
+    staleTime: 1000 * 60, // Cache por 60 segundos
     gcTime: 1000 * 60 * 5, // Manter no cache por 5 minutos
-    refetchInterval: 1000 * 60, // Refetch a cada minuto
+    refetchOnWindowFocus: false, // NÃO refazer ao focar janela
+    refetchOnMount: false, // NÃO refazer ao montar novamente
+    refetchInterval: false, // DESABILITAR refetch automático
   })
 
   // Mutation para criar um novo story
@@ -247,10 +257,9 @@ export function useStories() {
       }
     },
     onSuccess: () => {
-      // Invalidar cache imediatamente para atualizar a ordenação
+      // Invalidar cache para atualizar na próxima vez que for necessário
+      // NÃO fazer refetch imediato para evitar loops
       queryClient.invalidateQueries({ queryKey: ['stories'] })
-      // Refetch para atualizar a ordem (stories visualizados vão para o final)
-      queryClient.refetchQueries({ queryKey: ['stories'] })
     }
   })
 

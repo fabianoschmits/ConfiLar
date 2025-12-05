@@ -23,39 +23,17 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
   const [isLiking, setIsLiking] = useState(false)
   const [isPremiumLiking, setIsPremiumLiking] = useState(false)
 
-  // Buscar contagem de likes
-  const { data: likeCounts } = useQuery({
-    queryKey: ['story-likes-count', storyId],
+  // UMA ÚNICA QUERY para buscar TUDO (otimizado)
+  const { data: likesData } = useQuery({
+    queryKey: ['story-likes-all', storyId],
     queryFn: async () => {
-      const [normalLikes, premiumLikes] = await Promise.all([
-        supabase
-          .from('story_likes')
-          .select('id', { count: 'exact', head: true })
-          .eq('story_id', storyId)
-          .eq('is_premium', false),
-        supabase
-          .from('story_likes')
-          .select('id', { count: 'exact', head: true })
-          .eq('story_id', storyId)
-          .eq('is_premium', true)
-      ])
-
-      return {
-        normal: normalLikes.count || 0,
-        premium: premiumLikes.count || 0,
-        total: (normalLikes.count || 0) + (premiumLikes.count || 0)
-      }
-    }
-  })
-
-  // Buscar lista de usuários que curtiram (para animação)
-  const { data: likeUsers } = useQuery({
-    queryKey: ['story-likes-users', storyId],
-    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      
       const { data, error } = await supabase
         .from('story_likes')
         .select(`
           id,
+          user_id,
           is_premium,
           created_at,
           user:profiles!story_likes_user_id_fkey(
@@ -68,56 +46,47 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
         .order('created_at', { ascending: false })
         .limit(20)
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro ao buscar likes:', error)
+        return {
+          likeCounts: { normal: 0, premium: 0, total: 0 },
+          likeUsers: [],
+          userLike: null,
+          userPremiumLike: null
+        }
+      }
 
-      return (data || []).map((like: any) => ({
+      // Processar dados
+      const normalLikes = data.filter(like => !like.is_premium).length
+      const premiumLikes = data.filter(like => like.is_premium).length
+      
+      const likeUsers: LikeUser[] = data.map((like: any) => ({
         id: like.user.id,
         full_name: like.user.full_name,
         avatar_url: like.user.avatar_url,
         is_premium: like.is_premium,
         created_at: like.created_at
-      })) as LikeUser[]
-    }
-  })
+      }))
 
-  // Verificar se o usuário atual curtiu
-  const { data: userLike } = useQuery({
-    queryKey: ['story-user-like', storyId],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
+      const userLike = user ? data.find(like => like.user_id === user.id && !like.is_premium) : null
+      const userPremiumLike = user ? data.find(like => like.user_id === user.id && like.is_premium) : null
 
-      const { data, error } = await supabase
-        .from('story_likes')
-        .select('id, is_premium')
-        .eq('story_id', storyId)
-        .eq('user_id', user.id)
-        .eq('is_premium', false)
-        .maybeSingle()
-
-      if (error) throw error
-      return data
-    }
-  })
-
-  // Verificar se o usuário atual deu like premium
-  const { data: userPremiumLike } = useQuery({
-    queryKey: ['story-user-premium-like', storyId],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return null
-
-      const { data, error } = await supabase
-        .from('story_likes')
-        .select('id, is_premium')
-        .eq('story_id', storyId)
-        .eq('user_id', user.id)
-        .eq('is_premium', true)
-        .maybeSingle()
-
-      if (error) throw error
-      return data
-    }
+      return {
+        likeCounts: {
+          normal: normalLikes,
+          premium: premiumLikes,
+          total: normalLikes + premiumLikes
+        },
+        likeUsers,
+        userLike,
+        userPremiumLike
+      }
+    },
+    enabled: !!storyId,
+    staleTime: 0, // Sempre considerar dados "stale" para atualizar imediatamente
+    refetchOnWindowFocus: false, // NÃO refazer ao focar janela
+    refetchOnMount: true, // Refazer ao montar para garantir dados atualizados
+    refetchInterval: false, // NÃO refazer automaticamente
   })
 
   // Mutation para like normal
@@ -127,6 +96,8 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
       if (!user) throw new Error('Usuário não autenticado')
 
       setIsLiking(true)
+
+      const userLike = likesData?.userLike
 
       if (userLike) {
         // Remover like
@@ -166,9 +137,10 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['story-likes-count', storyId] })
-      queryClient.invalidateQueries({ queryKey: ['story-likes-users', storyId] })
-      queryClient.invalidateQueries({ queryKey: ['story-user-like', storyId] })
+      // Invalidar e refetch imediatamente para atualizar contador sem atraso
+      queryClient.invalidateQueries({ queryKey: ['story-likes-all', storyId] })
+      queryClient.refetchQueries({ queryKey: ['story-likes-all', storyId] })
+      // Toast removido para permitir múltiplos likes em sequência sem interrupção
     },
     onError: (error) => {
       console.error('Erro ao curtir story:', error)
@@ -179,19 +151,13 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
     }
   })
 
-  // Mutation para like premium
+  // Mutation para like premium (permite múltiplos likes)
   const premiumLikeMutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Usuário não autenticado')
 
       setIsPremiumLiking(true)
-
-      // Verificar se já deu like premium
-      if (userPremiumLike) {
-        toast.info('Você já deu um like premium neste story')
-        return { action: 'already_liked' }
-      }
 
       // Chamar API para processar like premium (deduzir pontos, etc)
       const response = await fetch('/api/points/premium-like-story', {
@@ -212,14 +178,12 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
       const data = await response.json()
       return data
     },
-    onSuccess: (data) => {
-      if (data.action !== 'already_liked') {
-        toast.success('💰 Like premium enviado!')
-        queryClient.invalidateQueries({ queryKey: ['story-likes-count', storyId] })
-        queryClient.invalidateQueries({ queryKey: ['story-likes-users', storyId] })
-        queryClient.invalidateQueries({ queryKey: ['story-user-premium-like', storyId] })
-        queryClient.invalidateQueries({ queryKey: ['user-points'] })
-      }
+    onSuccess: () => {
+      // Invalidar e refetch imediatamente para atualizar contador sem atraso
+      queryClient.invalidateQueries({ queryKey: ['story-likes-all', storyId] })
+      queryClient.refetchQueries({ queryKey: ['story-likes-all', storyId] })
+      queryClient.invalidateQueries({ queryKey: ['user-points'] })
+      // Toast removido para permitir múltiplos likes em sequência sem interrupção
     },
     onError: (error: any) => {
       console.error('Erro ao dar like premium:', error)
@@ -250,12 +214,12 @@ export function useStoryLikes({ storyId, storyOwnerId, storyOwnerName }: UseStor
     // States
     isLiking,
     isPremiumLiking,
-    isLiked: !!userLike,
-    isPremiumLiked: !!userPremiumLike,
+    isLiked: !!likesData?.userLike,
+    isPremiumLiked: !!likesData?.userPremiumLike,
     
     // Data
-    likeCounts: likeCounts || { normal: 0, premium: 0, total: 0 },
-    likeUsers: likeUsers || []
+    likeCounts: likesData?.likeCounts || { normal: 0, premium: 0, total: 0 },
+    likeUsers: likesData?.likeUsers || []
   }
 }
 

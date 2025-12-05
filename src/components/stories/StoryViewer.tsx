@@ -8,8 +8,8 @@ import { ptBR } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useStoryLikes } from '@/hooks/useStoryLikes'
 import { FloatingLikes } from '@/components/stories/FloatingLikes'
+import { ShareStoryModal } from '@/components/stories/ShareStoryModal'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
 
 interface StoryViewerProps {
   initialGroupIndex: number
@@ -31,11 +31,14 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
   const [showShareModal, setShowShareModal] = useState(false)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const storyTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const viewedStoryIdsRef = useRef<Set<string>>(new Set()) // Rastrear stories já visualizados nesta sessão
+  const pausedTimeRef = useRef<number | null>(null) // Tempo quando foi pausado
+  const startTimeRef = useRef<number>(0) // Tempo de início do story atual
 
   const currentGroup: StoryGroup | undefined = storyGroups[currentGroupIndex]
   const currentStory = currentGroup?.stories[currentStoryIndex]
 
-  // Hook para likes do story atual
+  // Hook para likes do story atual - só chamar se tiver story válido
   const {
     toggleLike,
     givePremiumLike,
@@ -51,12 +54,22 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
     storyOwnerName: currentGroup?.userName || 'Usuário'
   })
 
+  // Só mostrar likes flutuantes se houver likes
+  const shouldShowFloatingLikes = likeUsers && likeUsers.length > 0
+
   const goToNextStory = useCallback(() => {
     if (!currentGroup) return
+
+    // Limpar timers antes de mudar
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = null
+    }
 
     // Próximo story do mesmo usuário
     if (currentStoryIndex < currentGroup.stories.length - 1) {
       setCurrentStoryIndex(currentStoryIndex + 1)
+      setProgress(0)
       return
     }
 
@@ -64,17 +77,29 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
     if (currentGroupIndex < storyGroups.length - 1) {
       setCurrentGroupIndex(currentGroupIndex + 1)
       setCurrentStoryIndex(0)
+      setProgress(0)
       return
     }
 
     // Fim dos stories, fechar
-    onClose()
+    try {
+      onClose()
+    } catch (error) {
+      console.error('Erro ao fechar stories:', error)
+    }
   }, [currentGroup, currentStoryIndex, currentGroupIndex, storyGroups.length, onClose])
 
   const goToPreviousStory = useCallback(() => {
+    // Limpar timers antes de mudar
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = null
+    }
+
     // Story anterior do mesmo usuário
     if (currentStoryIndex > 0) {
       setCurrentStoryIndex(currentStoryIndex - 1)
+      setProgress(0)
       return
     }
 
@@ -83,6 +108,7 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
       const prevGroup = storyGroups[currentGroupIndex - 1]
       setCurrentGroupIndex(currentGroupIndex - 1)
       setCurrentStoryIndex(prevGroup.stories.length - 1)
+      setProgress(0)
       return
     }
   }, [currentStoryIndex, currentGroupIndex, storyGroups])
@@ -100,49 +126,64 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
     }
 
     setProgress(0)
-    setIsPaused(false)
 
-    // Registrar visualização
-    viewStory(currentStory.id)
+    // Registrar visualização (apenas uma vez por story)
+    if (!viewedStoryIdsRef.current.has(currentStory.id)) {
+      viewedStoryIdsRef.current.add(currentStory.id)
+      try {
+        viewStory(currentStory.id)
+      } catch (err) {
+        console.error('Erro ao registrar visualização:', err)
+      }
+    }
 
     // Iniciar progresso
-    let startTime = Date.now()
-    let pausedTime = 0
-    let pauseStart = 0
+    const startTime = Date.now()
+    startTimeRef.current = startTime
+    pausedTimeRef.current = null
 
     const updateProgress = () => {
-      if (isPaused) {
-        if (pauseStart === 0) {
-          pauseStart = Date.now()
+      // Se estiver pausado ou modal aberto, não atualizar
+      if (isPaused || showShareModal) {
+        // Salvar o tempo quando pausar pela primeira vez
+        if (pausedTimeRef.current === null && (isPaused || showShareModal)) {
+          pausedTimeRef.current = Date.now()
         }
         return
-      } else {
-        if (pauseStart > 0) {
-          pausedTime += Date.now() - pauseStart
-          pauseStart = 0
-        }
       }
 
-      const elapsed = Date.now() - startTime - pausedTime
+      // Se estava pausado, ajustar o tempo de início
+      if (pausedTimeRef.current !== null) {
+        const pauseDuration = Date.now() - pausedTimeRef.current
+        startTimeRef.current = startTimeRef.current + pauseDuration
+        pausedTimeRef.current = null
+      }
+
+      const elapsed = Date.now() - startTimeRef.current
       const newProgress = Math.min((elapsed / STORY_DURATION) * 100, 100)
       setProgress(newProgress)
 
       if (newProgress >= 100) {
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current)
+        }
         goToNextStory()
       }
     }
 
-    progressIntervalRef.current = setInterval(updateProgress, 50) // Atualizar a cada 50ms
+    progressIntervalRef.current = setInterval(updateProgress, 16) // ~60fps para animação suave
 
     return () => {
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
       }
       if (storyTimeoutRef.current) {
         clearTimeout(storyTimeoutRef.current)
+        storyTimeoutRef.current = null
       }
     }
-  }, [currentStory?.id, isPaused, goToNextStory, viewStory])
+  }, [currentStory?.id, goToNextStory, isPaused, showShareModal]) // Adicionado isPaused e showShareModal
 
   // Handlers de toque para swipe
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -191,23 +232,22 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
     // Se clicou no meio (30% a 70%), não faz nada (permite pausar visualmente)
   }
 
-  // Handler para compartilhar story
+  // Handler para abrir modal de compartilhamento
   const handleShare = () => {
-    if (!currentStory) return
-
-    const storyUrl = `${window.location.origin}/stories/${currentStory.id}`
-    
-    if (navigator.share) {
-      navigator.share({
-        title: `Story de ${currentGroup?.userName}`,
-        text: `Confira o story de ${currentGroup?.userName} no ConfiLar`,
-        url: storyUrl
-      }).catch(err => console.log('Erro ao compartilhar:', err))
-    } else {
-      // Copiar link para área de transferência
-      navigator.clipboard.writeText(storyUrl)
-      toast.success('Link copiado para área de transferência!')
+    // Pausar o story
+    setIsPaused(true)
+    if (pausedTimeRef.current === null) {
+      pausedTimeRef.current = Date.now()
     }
+    setShowShareModal(true)
+  }
+
+  // Handler para fechar modal de compartilhamento
+  const handleCloseShareModal = () => {
+    setShowShareModal(false)
+    // Retomar o story
+    setIsPaused(false)
+    // O pausedTimeRef será limpo automaticamente quando o updateProgress retomar
   }
 
   if (!currentStory || !currentGroup) {
@@ -229,68 +269,73 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
     >
       {/* Header com barra de progresso e informações do usuário */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 story-header">
-        {/* Barras de progresso */}
-        <div className="flex gap-1 mb-4">
-          {currentGroup.stories.map((story, index) => (
-            <div
-              key={story.id}
-              className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden"
-            >
+        {/* Container centralizado para desktop */}
+        <div className="max-w-2xl mx-auto">
+          {/* Barras de progresso */}
+          <div className="flex gap-1 mb-4">
+            {currentGroup.stories.map((story, index) => (
               <div
-                className={`h-full bg-white transition-all duration-75 ${
-                  index < currentStoryIndex
-                    ? 'w-full'
-                    : index === currentStoryIndex
-                    ? 'w-full'
-                    : 'w-0'
-                }`}
-                style={{
-                  width:
+                key={story.id}
+                className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden"
+              >
+                <div
+                  className={`h-full bg-white transition-all duration-75 ${
                     index < currentStoryIndex
-                      ? '100%'
+                      ? 'w-full'
                       : index === currentStoryIndex
-                      ? `${progress}%`
-                      : '0%',
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Informações do usuário */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10 border-2 border-white">
-              <AvatarImage src={currentGroup.userAvatar || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white">
-                {currentGroup.userName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-white font-semibold text-sm">
-                {currentGroup.userName}
-              </p>
-              <p className="text-white/70 text-xs">{timeAgo}</p>
-            </div>
+                      ? 'w-full'
+                      : 'w-0'
+                  }`}
+                  style={{
+                    width:
+                      index < currentStoryIndex
+                        ? '100%'
+                        : index === currentStoryIndex
+                        ? `${progress}%`
+                        : '0%',
+                  }}
+                />
+              </div>
+            ))}
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-          >
-            <X className="h-6 w-6 text-white" />
-          </button>
+          {/* Informações do usuário */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 pl-2 md:pl-4">
+              <Avatar className="w-10 h-10 border-2 border-white">
+                <AvatarImage src={currentGroup.userAvatar || undefined} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-400 to-purple-500 text-white">
+                  {currentGroup.userName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-white font-semibold text-sm">
+                  {currentGroup.userName}
+                </p>
+                <p className="text-white/70 text-xs">{timeAgo}</p>
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="h-6 w-6 text-white" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Imagem do story */}
       <div className="absolute inset-0 flex items-center justify-center bg-black">
-        <img
-          src={currentStory.image_url}
-          alt={`Story de ${currentGroup.userName}`}
-          className="max-w-full max-h-full w-auto h-full object-contain"
-          style={{ aspectRatio: '9/16' }}
-        />
+        <div className="w-full max-w-2xl mx-auto flex items-center justify-center h-full">
+          <img
+            src={currentStory.image_url}
+            alt={`Story de ${currentGroup.userName}`}
+            className="max-w-full max-h-full w-auto h-full object-contain"
+            style={{ aspectRatio: '9/16' }}
+          />
+        </div>
       </div>
 
       {/* Botões de navegação (apenas para desktop, invisíveis mas clicáveis) */}
@@ -311,12 +356,12 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
 
       {/* Botões de ação (Like, Like Premium, Compartilhar) */}
       {user && (
-        <div className="absolute bottom-20 right-4 z-10 flex flex-col gap-3 story-actions">
+        <div className="absolute bottom-20 right-4 md:right-[calc((100vw-42rem)/2+1rem)] z-10 flex flex-col gap-3 story-actions">
           {/* Botão Like Normal */}
           <button
             onClick={toggleLike}
             disabled={isLiking}
-            className={`relative bg-white/20 backdrop-blur-sm p-3 rounded-full transition-all hover:bg-white/30 active:scale-95 disabled:opacity-50 ${
+            className={`relative flex flex-col items-center justify-center gap-1 bg-white/20 backdrop-blur-sm p-3 rounded-full transition-all hover:bg-white/30 active:scale-95 disabled:opacity-50 ${
               isLiked ? 'bg-red-500/30' : ''
             }`}
             title="Curtir story"
@@ -327,25 +372,25 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
               } transition-all`}
             />
             {likeCounts.normal > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {likeCounts.normal > 99 ? '99+' : likeCounts.normal}
+              <span className="text-white text-xs font-bold">
+                {likeCounts.normal > 999 ? `${Math.floor(likeCounts.normal / 1000)}k` : likeCounts.normal}
               </span>
             )}
           </button>
 
-          {/* Botão Like Premium */}
-          <button
-            onClick={givePremiumLike}
-            disabled={isPremiumLiking || isPremiumLiked}
-            className={`relative bg-gradient-to-r from-yellow-400 to-yellow-600 p-3 rounded-full transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50 ${
-              isPremiumLiked ? 'opacity-70' : ''
-            }`}
-            title={isPremiumLiked ? 'Você já deu like premium' : 'Like Premium (100 pontos)'}
-          >
-            <Sparkles className="h-6 w-6 text-white" />
+              {/* Botão Like Premium */}
+              <button
+                onClick={givePremiumLike}
+                disabled={isPremiumLiking}
+                className="relative flex flex-col items-center justify-center gap-1 bg-gradient-to-r from-yellow-400 to-yellow-600 p-3 rounded-full transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-50"
+                title="Like Premium (5 pontos)"
+              >
+            <Sparkles
+              className="h-6 w-6 text-white transition-all"
+            />
             {likeCounts.premium > 0 && (
-              <span className="absolute -top-1 -right-1 bg-yellow-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {likeCounts.premium > 99 ? '99+' : likeCounts.premium}
+              <span className="text-white text-xs font-bold">
+                {likeCounts.premium > 999 ? `${Math.floor(likeCounts.premium / 1000)}k` : likeCounts.premium}
               </span>
             )}
           </button>
@@ -361,8 +406,20 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
         </div>
       )}
 
+      {/* Modal de Compartilhamento */}
+      {currentStory && currentGroup && (
+        <ShareStoryModal
+          isOpen={showShareModal}
+          onClose={handleCloseShareModal}
+          storyId={currentStory.id}
+          userName={currentGroup.userName}
+        />
+      )}
+
       {/* Componente de Likes Flutuantes */}
-      <FloatingLikes likeUsers={likeUsers} isVisible={true} />
+      {shouldShowFloatingLikes && (
+        <FloatingLikes likeUsers={likeUsers} isVisible={true} />
+      )}
     </div>
   )
 }
