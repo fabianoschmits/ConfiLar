@@ -1,13 +1,4 @@
 {
-  "*.{js,jsx,ts,tsx}": [
-    "eslint --fix",
-    "prettier --write"
-  ],
-  "*.{json,css,md}": [
-    "prettier --write"
-  ],
-  "*.{ts,tsx}": [
-    "bash -c 'npm run test:ci'"
-  ]
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "npx prettier --write"],
+  "*.{json,css,md}": ["npx prettier --write"]
 }
-

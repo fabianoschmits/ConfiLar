@@ -248,6 +248,8 @@ mcp-config.json
 !jest.config.js
 !playwright.config.ts
 !tsconfig.json
+!eslint.config.js
+!commitlint.config.js
 
 # =====================================================
 # ARQUIVOS DE BACKUP E TEMPORÁRIOS
