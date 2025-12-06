@@ -274,21 +274,21 @@ export function ReportsManagementFixed() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'reviewing': return 'bg-blue-100 text-blue-800'
-      case 'resolved': return 'bg-green-100 text-green-800'
-      case 'dismissed': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'pending': return 'bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400'
+      case 'reviewing': return 'bg-primary-100 text-primary-800 dark:bg-primary-900/20 dark:text-primary-400'
+      case 'resolved': return 'bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400'
+      case 'dismissed': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
     }
   }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800'
-      case 'high': return 'bg-orange-100 text-orange-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'urgent': return 'bg-error-100 text-error-800 dark:bg-error-900/20 dark:text-error-400'
+      case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
+      case 'medium': return 'bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400'
+      case 'low': return 'bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
     }
   }
 
@@ -330,7 +330,7 @@ export function ReportsManagementFixed() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     )
   }

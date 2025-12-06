@@ -150,7 +150,7 @@ export default function ProfilePage() {
 
   return (
     <MainLayout requireAuth={false}>
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-950 dark:via-teal-950 dark:to-black">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-primary-50 dark:from-gray-950 dark:via-primary-950 dark:to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header Criativo Portfolio Style */}
           <div className="mb-12">
@@ -159,7 +159,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col lg:flex-row gap-12 items-center lg:items-start">
                   {/* Foto Grande com Efeito Artístico */}
                   <div className="flex-shrink-0 relative">
-                    <div className="absolute -inset-6 bg-gradient-to-r from-[#00b0b0] via-cyan-400 to-blue-400 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                    <div className="absolute -inset-6 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 rounded-full blur-2xl opacity-30 animate-pulse"></div>
                     <div className="relative">
                       <UserAvatar
                         src={profile.avatar_url || profile.profile_photo_url}
@@ -168,10 +168,10 @@ export default function ProfilePage() {
                         size="xl"
                         userId={profile.id}
                         showReferralBadge={true}
-                        className="ring-4 ring-teal-200 dark:ring-teal-800 shadow-2xl transform hover:scale-105 transition-transform"
+                        className="ring-4 ring-primary-200 dark:ring-primary-800 shadow-2xl transform hover:scale-105 transition-transform"
                       />
                       {profile.is_verified && (
-                        <div className="absolute -bottom-3 -right-3 bg-gradient-to-r from-green-400 to-green-600 rounded-full p-2 shadow-lg">
+                        <div className="absolute -bottom-3 -right-3 bg-gradient-to-r from-success-400 to-success-600 rounded-full p-2 shadow-lg">
                           <CheckCircle className="w-6 h-6 text-white" />
                         </div>
                       )}

@@ -69,12 +69,12 @@ export function PWAInstallPrompt() {
     <>
       {/* Overlay escuro */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-in fade-in duration-300"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] animate-in fade-in duration-300"
         onClick={handleRemindLater}
       />
 
       {/* Modal de instalação */}
-      <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 pointer-events-none">
+      <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-4 pointer-events-none">
         <Card className="w-full max-w-md pointer-events-auto animate-in slide-in-from-bottom duration-300 md:slide-in-from-bottom-0">
           <CardContent className="p-6 space-y-4">
             {/* Header */}

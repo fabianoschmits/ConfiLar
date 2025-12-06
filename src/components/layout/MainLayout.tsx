@@ -46,11 +46,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, requireAuth = 
       {/* Header Moderno */}
       <ModernHeader />
       
-      <main className={`min-h-screen bg-white dark:bg-black transition-colors duration-200 lg:ml-72 pb-20 lg:pb-0 pt-12 sm:pt-16 lg:pt-28`}>
+      <main className="min-h-screen bg-white dark:bg-black transition-colors duration-200 lg:ml-72 pb-20 lg:pb-0 pt-12 sm:pt-16 lg:pt-28">
         {requireAuth && !isLoggedIn ? (
           // Mostrar prompt de login se a página requer autenticação
           <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center space-y-4 max-w-md mx-auto p-6">
+            <div className="text-center space-y-4 max-w-md mx-auto p-6 md:p-8">
               <div className="h-10 flex items-center">
                 <BrandLogo width={120} height={28} />
               </div>

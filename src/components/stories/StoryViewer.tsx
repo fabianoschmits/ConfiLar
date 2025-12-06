@@ -261,7 +261,7 @@ export function StoryViewer({ initialGroupIndex, initialStoryIndex, onClose }: S
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black"
+      className="fixed inset-0 z-[100] bg-black"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

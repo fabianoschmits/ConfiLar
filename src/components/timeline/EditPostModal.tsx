@@ -125,7 +125,7 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 dark:bg-black/80 backdrop-blur-sm"
       onClick={handleClose}
     >
       <div 
@@ -150,7 +150,7 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
               disabled={!editedPost.description.trim() || isLoading}
               isLoading={isLoading}
               size="sm"
-              className="text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white"
+              className="text-sm font-medium bg-primary-600 hover:bg-primary-700 text-white"
             >
               {isLoading ? 'Salvando...' : 'Salvar'}
             </LoadingButton>
@@ -186,16 +186,16 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
                   : "Conte sua experiência, o que mais gostou..."
                 }
                 disabled={isLoading}
-                className="pr-16 min-h-24 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="pr-16 min-h-24 resize-none text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 minHeight="96px"
               />
               <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                <span className={`text-xs ${charCount > maxChars * 0.9 ? 'text-red-500' : 'text-gray-400'}`}>
+                <span className={`text-xs ${charCount > maxChars * 0.9 ? 'text-error-500' : 'text-gray-400'}`}>
                   {charCount}/{maxChars}
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <Info className="h-3 w-3 text-green-500" />
+                <Info className="h-3 w-3 text-success-500" />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Use @ para mencionar • Cole um link do YouTube para adicionar vídeo
                 </p>
@@ -203,14 +203,14 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
               
               {/* Aviso sobre vídeos do YouTube */}
               {firstVideo && (
-                <div className="mt-1.5 p-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="mt-1.5 p-1.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg">
                   <div className="flex items-start gap-1.5">
-                    <Info className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <Info className="h-3.5 w-3.5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-xs text-blue-800 dark:text-blue-300 font-medium">
+                      <p className="text-xs text-primary-800 dark:text-primary-300 font-medium">
                         Vídeo do YouTube detectado
                       </p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                      <p className="text-xs text-primary-600 dark:text-primary-400 mt-0.5">
                         O vídeo será exibido acima da descrição no post
                       </p>
                     </div>
@@ -220,14 +220,14 @@ export function EditPostModal({ isOpen, onClose, post, onSave }: EditPostModalPr
               
               {/* Aviso sobre múltiplos vídeos */}
               {hasMultipleVideos && (
-                <div className="mt-1.5 p-1.5 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <div className="mt-1.5 p-1.5 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg">
                   <div className="flex items-start gap-1.5">
-                    <AlertCircle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                    <AlertCircle className="h-3.5 w-3.5 text-warning-600 dark:text-warning-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-xs text-yellow-800 dark:text-yellow-300 font-medium">
+                      <p className="text-xs text-warning-800 dark:text-warning-300 font-medium">
                         Múltiplos vídeos detectados
                       </p>
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
+                      <p className="text-xs text-warning-600 dark:text-warning-400 mt-0.5">
                         Apenas o primeiro vídeo será publicado. Os demais serão removidos automaticamente.
                       </p>
                     </div>

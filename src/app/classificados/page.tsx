@@ -604,7 +604,7 @@ export default function ClassificadosPage() {
                       executeSearch(newFilters)
                     }}
                     placeholder={t('searchPlaceholder')}
-                    className="pl-8 pr-4 h-10 text-sm border border-gray-300 focus:border-blue-500 rounded-lg"
+                    className="pl-8 pr-4 h-10 text-sm border border-gray-300 focus:border-primary-500 rounded-lg"
                   />
                 </div>
                 
@@ -644,7 +644,7 @@ export default function ClassificadosPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`h-10 px-3 flex items-center gap-2 ${
                     (filters.state || filters.city) 
-                      ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400' 
+                      ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-300 dark:border-primary-600 text-primary-700 dark:text-primary-400' 
                       : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
                   }`}
                 >
@@ -729,7 +729,7 @@ export default function ClassificadosPage() {
                       <Button
                         size="sm"
                         onClick={() => setShowFilters(false)}
-                        className="bg-blue-600 hover:bg-blue-700 text-xs h-6 px-3"
+                        className="bg-primary-600 hover:bg-primary-700 text-xs h-6 px-3"
                       >
                         {t('applyFilters')}
                       </Button>
@@ -767,8 +767,8 @@ export default function ClassificadosPage() {
                     onClick={() => setActiveTab('offers')}
                     className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === 'offers'
-                        ? 'border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-600'
+                        ? 'border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -780,8 +780,8 @@ export default function ClassificadosPage() {
                     onClick={() => setActiveTab('requests')}
                     className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                       activeTab === 'requests'
-                        ? 'border-green-500 dark:border-green-400 text-green-700 dark:text-green-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:border-green-300 dark:hover:border-green-600'
+                        ? 'border-success-500 dark:border-success-400 text-success-700 dark:text-success-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-success-600 dark:hover:text-success-400 hover:border-success-300 dark:hover:border-success-600'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -851,7 +851,7 @@ export default function ClassificadosPage() {
                     <DialogTrigger asChild>
                       <Button 
                         size="sm" 
-                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
+                        className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
                         onClick={handleOpenCreateDialog}
                       >
                         <Plus className="h-3 w-3 sm:mr-1" />
@@ -1007,7 +1007,7 @@ export default function ClassificadosPage() {
                   <DialogTrigger asChild>
                     <Button 
                       size="sm" 
-                      className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap shadow-lg"
+                      className="bg-gradient-to-r from-warning-500 to-warning-600 hover:from-warning-600 hover:to-warning-700 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap shadow-lg"
                     >
                       <Crown className="h-3 w-3 sm:mr-1" />
                       <span className="hidden sm:inline">Premium</span>
@@ -1296,7 +1296,7 @@ export default function ClassificadosPage() {
 
                       {/* Informações do Anunciante */}
                       {(selectedAd as any).user_profile && (
-                        <div className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="p-3 sm:p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
                           <h4 className="text-sm sm:text-base font-semibold text-blue-900 dark:text-blue-200 mb-3">
                             📋 Sobre o Anunciante
                           </h4>
@@ -1389,7 +1389,7 @@ export default function ClassificadosPage() {
                         {user && selectedAd.user_id === user.id && selectedAd.is_premium && selectedAd.premium_expires_at && (
                           <div className="mt-2">
                             {new Date(selectedAd.premium_expires_at) < new Date() ? (
-                              <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                              <div className="p-2 bg-error-50 dark:bg-error-900/20 rounded-lg border border-error-200 dark:border-error-800">
                                 <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium">
                                   ⚠️ Seu anúncio premium expirou. Renove para continuar em destaque!
                                 </p>
@@ -1497,7 +1497,7 @@ export default function ClassificadosPage() {
                                     targetId={selectedAd.id}
                                     targetName={selectedAd.title}
                                     asDropdownItem={true}
-                                    className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50"
+                                    className="w-full justify-start text-gray-700 hover:text-error-600 hover:bg-error-50"
                                   />
                                 </DropdownMenuItem>
                               )}
@@ -1797,7 +1797,7 @@ export default function ClassificadosPage() {
 
                     {/* Duração do anúncio premium (apenas para o criador) */}
                     {isActivePremium && user && ad.user_id === user.id && ad.premium_expires_at && (
-                      <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="mb-3 p-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
                         <div className="flex items-center gap-1.5 text-xs text-blue-800 dark:text-blue-300">
                           <Calendar className="h-3 w-3" />
                           <span className="font-semibold">Duração:</span>
@@ -1821,7 +1821,7 @@ export default function ClassificadosPage() {
                           isActivePremium
                             ? 'border-amber-400 dark:border-amber-600 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30'
                             : ad.ad_type === 'oferecer' 
-                              ? 'border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                              ? 'border-primary-400 dark:border-primary-600 text-primary-700 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30' 
                               : 'border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30'
                         }`}
                       >

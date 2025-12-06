@@ -91,7 +91,7 @@ export function RenewPremiumAdForm({ adId, adTitle, onSubmit, onCancel }: RenewP
 
   return (
     <div className="space-y-4">
-      <Card className="border-yellow-300 dark:border-yellow-600 bg-yellow-50/50 dark:bg-yellow-900/10">
+      <Card className="border-warning-300 dark:border-warning-600 bg-warning-50/50 dark:bg-warning-900/10">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5" />
@@ -127,7 +127,7 @@ export function RenewPremiumAdForm({ adId, adTitle, onSubmit, onCancel }: RenewP
                 key={option.points}
                 className={`cursor-pointer transition-all ${
                   formData.pointsToSpend === option.points 
-                    ? 'ring-2 ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600' 
+                    ? 'ring-2 ring-warning-500 bg-warning-50 dark:bg-warning-900/20 border-warning-300 dark:border-warning-600' 
                     : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
                 } ${!canAfford && option.points > (balance?.balance || 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={() => {
@@ -215,7 +215,7 @@ export function RenewPremiumAdForm({ adId, adTitle, onSubmit, onCancel }: RenewP
             disabled={!canAfford || isProcessing}
             isLoading={isProcessing}
             loadingText="Renovando..."
-            className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
+            className="flex-1 bg-warning-600 hover:bg-warning-700 text-white"
           >
             <Crown className="h-4 w-4 mr-2" />
             Renovar Premium

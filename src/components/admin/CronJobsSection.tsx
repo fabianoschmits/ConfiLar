@@ -304,8 +304,8 @@ export function CronJobsSection() {
               </p>
             </div>
             {serviceRoleKey && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+                <div className="flex items-center gap-2 text-success-700 dark:text-success-300">
                   <CheckCircle2 className="h-5 w-5" />
                   <p className="text-sm font-medium">
                     Credenciais configuradas. Os cron jobs estão prontos para execução.
@@ -351,22 +351,22 @@ export function CronJobsSection() {
               </Button>
 
               {notificationError && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-error-600 dark:text-error-400">
                     <XCircle className="h-5 w-5" />
                     <span className="font-medium">Erro</span>
                   </div>
-                  <p className="mt-2 text-sm text-red-700 dark:text-red-300">{notificationError}</p>
+                  <p className="mt-2 text-sm text-error-700 dark:text-error-300">{notificationError}</p>
                 </div>
               )}
 
               {notificationResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                <div className="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-success-600 dark:text-success-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="font-medium">Sucesso!</span>
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                  <p className="text-sm text-success-700 dark:text-success-300 mb-4">
                     {notificationResult.message}
                   </p>
 
@@ -374,7 +374,7 @@ export function CronJobsSection() {
                     {notificationResult.deactivated_count !== undefined && (
                       <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                         <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success-500" />
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Convertidos
                           </span>
@@ -386,7 +386,7 @@ export function CronJobsSection() {
                     )}
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
+                        <Clock className="h-4 w-4 text-primary-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Expirando (24h)
                         </span>
@@ -398,7 +398,7 @@ export function CronJobsSection() {
 
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-error-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Expirados
                         </span>
@@ -453,8 +453,8 @@ export function CronJobsSection() {
               </Button>
 
               {classifiedsError && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-error-600 dark:text-error-400">
                     <XCircle className="h-5 w-5" />
                     <span className="font-medium">Erro</span>
                   </div>
@@ -463,12 +463,12 @@ export function CronJobsSection() {
               )}
 
               {classifiedsResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                <div className="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-success-600 dark:text-success-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="font-medium">Sucesso!</span>
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                  <p className="text-sm text-success-700 dark:text-success-300 mb-4">
                     {classifiedsResult.message}
                   </p>
 
@@ -487,7 +487,7 @@ export function CronJobsSection() {
 
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <Clock className="h-4 w-4 text-blue-500" />
+                        <Clock className="h-4 w-4 text-primary-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Expirando (24h)
                         </span>
@@ -499,7 +499,7 @@ export function CronJobsSection() {
 
                     <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-error-500" />
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           Expirados
                         </span>
@@ -557,8 +557,8 @@ export function CronJobsSection() {
               </Button>
 
               {inactiveUsersError && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-error-600 dark:text-error-400">
                     <XCircle className="h-5 w-5" />
                     <span className="font-medium">Erro</span>
                   </div>
@@ -567,12 +567,12 @@ export function CronJobsSection() {
               )}
 
               {inactiveUsersResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                <div className="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-success-600 dark:text-success-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="font-medium">Sucesso!</span>
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                  <p className="text-sm text-success-700 dark:text-success-300 mb-4">
                     {inactiveUsersResult.message}
                   </p>
 
@@ -651,8 +651,8 @@ export function CronJobsSection() {
               </Button>
 
               {storiesError && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-error-600 dark:text-error-400">
                     <XCircle className="h-5 w-5" />
                     <span className="font-medium">Erro</span>
                   </div>
@@ -661,18 +661,18 @@ export function CronJobsSection() {
               )}
 
               {storiesResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-2">
+                <div className="p-4 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-success-600 dark:text-success-400 mb-2">
                     <CheckCircle2 className="h-5 w-5" />
                     <span className="font-medium">Sucesso!</span>
                   </div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                  <p className="text-sm text-success-700 dark:text-success-300 mb-4">
                     {storiesResult.message}
                   </p>
 
                   <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-error-500" />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Stories Deletados
                       </span>
@@ -710,7 +710,7 @@ export function CronJobsSection() {
             {/* Passo 1: Credenciais */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   1
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -724,8 +724,8 @@ export function CronJobsSection() {
                 <p>
                   <strong>Como usar:</strong> Insira suas credenciais no campo acima. Elas não são armazenadas e serão usadas apenas durante a execução dos cron jobs.
                 </p>
-                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg mt-2">
-                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                <div className="p-3 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-lg mt-2">
+                  <p className="text-xs text-warning-700 dark:text-warning-300">
                     ⚠️ <strong>Importante:</strong> Mantenha suas credenciais em segredo. Elas têm acesso administrativo ao sistema.
                   </p>
                 </div>
@@ -735,7 +735,7 @@ export function CronJobsSection() {
             {/* Passo 2: Executar Notificações */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   2
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -752,8 +752,8 @@ export function CronJobsSection() {
                 <p>
                   <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para garantir que posts expirados sejam convertidos para normais e todas as notificações sejam criadas em tempo hábil.
                 </p>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg mt-2">
+                  <p className="text-xs text-success-700 dark:text-success-300">
                     ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de posts convertidos para normais, notificações criadas (expirando e expiradas) e os IDs dos posts afetados.
                   </p>
                 </div>
@@ -763,7 +763,7 @@ export function CronJobsSection() {
             {/* Passo 3: Executar Manutenção de Classificados */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   3
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -780,8 +780,8 @@ export function CronJobsSection() {
                 <p>
                   <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para garantir que classificados expirados sejam convertidos para normais.
                 </p>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg mt-2">
+                  <p className="text-xs text-success-700 dark:text-success-300">
                     ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de classificados convertidos para normais e notificações criadas.
                   </p>
                 </div>
@@ -791,7 +791,7 @@ export function CronJobsSection() {
             {/* Passo 4: Executar Limpeza */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   4
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -808,8 +808,8 @@ export function CronJobsSection() {
                 <p>
                   <strong>Quando executar:</strong> Execute algumas vezes ao dia (manhã, tarde, noite) para manter o banco de dados limpo.
                 </p>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg mt-2">
+                  <p className="text-xs text-success-700 dark:text-success-300">
                     ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de stories deletados e os IDs dos stories removidos.
                   </p>
                 </div>
@@ -819,7 +819,7 @@ export function CronJobsSection() {
             {/* Passo 5: Usuários Inativos */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   5
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -839,13 +839,13 @@ export function CronJobsSection() {
                 <p>
                   <strong>Critério de inatividade:</strong> Usuários que não acessaram o site há mais de 7 dias (verifica last_login_at ou updated_at).
                 </p>
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-2">
-                  <p className="text-xs text-green-700 dark:text-green-300">
+                <div className="p-3 bg-success-50 dark:bg-success-900/20 border border-success-200 dark:border-success-800 rounded-lg mt-2">
+                  <p className="text-xs text-success-700 dark:text-success-300">
                     ✅ <strong>Resultado esperado:</strong> Você verá a quantidade de usuários marcados como indisponíveis e os detalhes de cada um (nome, email, dias inativo).
                   </p>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mt-2">
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg mt-2">
+                  <p className="text-xs text-primary-700 dark:text-primary-300">
                     ℹ️ <strong>Nota:</strong> Usuários podem voltar a ficar disponíveis manualmente através do botão de disponibilidade no menu dropdown.
                   </p>
                 </div>
@@ -855,7 +855,7 @@ export function CronJobsSection() {
             {/* Passo 6: Monitoramento */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 font-bold">
                   6
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -881,8 +881,8 @@ export function CronJobsSection() {
             {/* Dica Final */}
             <div className="p-4 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
               <div className="flex items-start gap-3">
-                <HelpCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                <HelpCircle className="h-5 w-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                <div className="space-y-2 text-sm text-primary-700 dark:text-primary-300">
                   <p className="font-semibold">💡 Dica:</p>
                   <p>
                     Para garantir que todas as tarefas sejam executadas em tempo hábil, execute os cron jobs manualmente algumas vezes ao dia:

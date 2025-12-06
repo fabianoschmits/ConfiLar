@@ -1,6 +1,10 @@
+'use client'
+
 import { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { Button } from './button'
+import { useDraggable } from '@/hooks/useDraggable'
+import { cn } from '@/lib/utils'
 
 interface ModalProps {
   isOpen: boolean
@@ -9,6 +13,7 @@ interface ModalProps {
   children: ReactNode
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showCloseButton?: boolean
+  draggable?: boolean
 }
 
 export function Modal({ 
@@ -17,8 +22,13 @@ export function Modal({
   title, 
   children, 
   size = 'md',
-  showCloseButton = true 
+  showCloseButton = true,
+  draggable = true
 }: ModalProps) {
+  const { position, elementRef, dragHandleProps } = useDraggable({
+    enabled: draggable
+  })
+
   if (!isOpen) return null
 
   const sizeClasses = {
@@ -29,7 +39,7 @@ export function Modal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -37,14 +47,26 @@ export function Modal({
       />
       
       {/* Modal Content */}
-      <div className={`
-        relative w-full ${sizeClasses[size]} 
-        bg-white dark:bg-black rounded-xl shadow-2xl
-        animate-in fade-in-0 zoom-in-95 duration-200
-        max-h-[90vh] overflow-hidden
-      `}>
-        {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-900">
+      <div 
+        ref={elementRef}
+        className={cn(
+          "relative w-full",
+          sizeClasses[size],
+          "bg-white dark:bg-black rounded-xl shadow-xl border border-gray-200 dark:border-gray-800",
+          "animate-in fade-in-0 zoom-in-95 duration-200",
+          "max-h-[90vh] overflow-hidden"
+        )}
+        style={{
+          transform: position.x !== 0 || position.y !== 0 
+            ? `translate(${position.x}px, ${position.y}px)` 
+            : undefined
+        }}
+      >
+        {/* Header - Drag Handle */}
+        <div 
+          {...dragHandleProps}
+          className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"
+        >
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
           {showCloseButton && (
             <Button

@@ -106,7 +106,7 @@ export function ImageModal({ isOpen, onClose, imageUrl, alt = '', title }: Image
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div 

@@ -31,9 +31,9 @@ export function BanNotification({ children }: BanNotificationProps) {
 
   const getBanTypeColor = (type: string) => {
     switch (type) {
-      case 'permanent': return 'bg-red-100 text-red-800'
-      case 'temporary': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'permanent': return 'bg-error-100 text-error-800 dark:bg-error-900/20 dark:text-error-400'
+      case 'temporary': return 'bg-warning-100 text-warning-800 dark:bg-warning-900/20 dark:text-warning-400'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
     }
   }
 

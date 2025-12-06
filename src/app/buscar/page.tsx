@@ -575,7 +575,7 @@ export default function BuscarPage() {
                         executeSearch()
                         setShowSearchModal(false)
                       }}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                      className="flex-1 bg-primary-600 hover:bg-primary-700"
                     >
                       {t('search') || 'Buscar'}
                     </Button>
@@ -711,7 +711,7 @@ export default function BuscarPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                              className="absolute top-2 right-2 h-auto py-1 px-2 text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors"
                             >
                               <Wrench className="h-3 w-3 mr-1" />
                               Serviços
@@ -773,7 +773,7 @@ export default function BuscarPage() {
                               variant={profile.user_type === 'professional' ? 'default' : 'secondary'}
                               className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
                                 profile.user_type === 'professional'
-                                  ? 'bg-blue-100 text-blue-800 border border-blue-200 shadow-sm' 
+                                  ? 'bg-primary-100 text-primary-800 border border-primary-200 shadow-sm' 
                                   : 'bg-purple-100 text-purple-800 border border-purple-200 shadow-sm'
                               }`}
                             >
@@ -801,12 +801,12 @@ export default function BuscarPage() {
                                   variant={isAvailable ? 'default' : 'secondary'}
                                   className={`text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1 transition-all duration-300 ${
                                     isAvailable 
-                                      ? 'bg-green-100 text-green-800 border border-green-200 shadow-sm' 
-                                      : 'bg-red-100 text-red-800 border border-red-200 shadow-sm'
+                                      ? 'bg-success-100 text-success-800 border border-success-200 shadow-sm' 
+                                      : 'bg-error-100 text-error-800 border border-error-200 shadow-sm'
                                   }`}
                                 >
                                   <div className={`w-2 h-2 rounded-full animate-pulse ${
-                                    isAvailable ? 'bg-green-500' : 'bg-red-500'
+                                    isAvailable ? 'bg-success-500' : 'bg-error-500'
                                   }`}></div>
                                   {isAvailable ? t('available') : t('unavailable')}
                                 </Badge>
@@ -886,7 +886,7 @@ export default function BuscarPage() {
                           <Button 
                             size="sm"
                             onClick={() => openChat(profile.id, profile.full_name || 'Usuário')}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-primary-600 hover:bg-primary-700"
                             title={t('contact')}
                           >
                             <MessageCircle className="h-4 w-4" />
@@ -941,7 +941,7 @@ export default function BuscarPage() {
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`px-3 ${
                         currentPage === pageNumber 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          ? 'bg-primary-600 text-white hover:bg-primary-700' 
                           : ''
                       }`}
                     >

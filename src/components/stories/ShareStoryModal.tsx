@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase'
 import { Search, Send, Loader2, X, Users, Link2, Check, Copy } from 'lucide-react'
 import { useAuthContext } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { useDraggable } from '@/hooks/useDraggable'
 
 interface User {
   id: string
@@ -26,6 +27,7 @@ interface ShareStoryModalProps {
 
 export function ShareStoryModal({ isOpen, onClose, storyId, userName }: ShareStoryModalProps) {
   const { profile } = useAuthContext()
+  const { position, elementRef, dragHandleProps } = useDraggable({ enabled: true })
   const [searchQuery, setSearchQuery] = useState('')
   const [users, setUsers] = useState<User[]>([])
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
@@ -233,7 +235,7 @@ export function ShareStoryModal({ isOpen, onClose, storyId, userName }: ShareSto
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 dark:bg-black/80 backdrop-blur-sm"
@@ -242,11 +244,20 @@ export function ShareStoryModal({ isOpen, onClose, storyId, userName }: ShareSto
       
       {/* Modal Content */}
       <div 
+        ref={elementRef}
         className="relative w-full max-w-2xl flex flex-col h-full max-h-[90vh] bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          transform: position.x !== 0 || position.y !== 0 
+            ? `translate(${position.x}px, ${position.y}px)` 
+            : undefined
+        }}
       >
         {/* HEADER FIXO */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
+        <div 
+          {...dragHandleProps}
+          className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800"
+        >
           <div className="flex items-center justify-between p-4">
             <button
               onClick={onClose}
@@ -265,7 +276,7 @@ export function ShareStoryModal({ isOpen, onClose, storyId, userName }: ShareSto
         <div className="flex-1 overflow-y-auto px-4 pb-6">
           <div className="space-y-4 pt-4">
             {/* Informações do story */}
-            <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+            <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-lg border border-primary-100 dark:border-primary-800">
               <h4 className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-1">Story a compartilhar:</h4>
               <p className="text-sm text-blue-800 dark:text-blue-200">Story de {userName}</p>
             </div>
@@ -382,8 +393,8 @@ export function ShareStoryModal({ isOpen, onClose, storyId, userName }: ShareSto
               {shareStatus !== 'idle' && (
                 <div className={`flex items-center justify-center gap-2 py-2 px-4 rounded-lg ${
                   shareStatus === 'sharing' 
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800' 
-                    : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 border border-primary-200 dark:border-primary-800' 
+                    : 'bg-success-50 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-success-200 dark:border-success-800'
                 }`}>
                   {shareStatus === 'sharing' ? (
                     <>

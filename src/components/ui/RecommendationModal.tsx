@@ -199,7 +199,7 @@ export function RecommendationModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white rounded-xl shadow-2xl border border-gray-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -225,7 +225,7 @@ export function RecommendationModal({
         {/* Conteúdo em uma única página */}
         <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
           {/* Seção: Recomendar Usuário */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+          <div className="bg-gradient-to-r from-success-50 to-emerald-50 rounded-lg p-6 border border-success-200">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
                 <Heart className="h-6 w-6 text-white" />
@@ -274,7 +274,7 @@ export function RecommendationModal({
 
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
               </div>
             ) : recommendations.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">

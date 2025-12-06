@@ -373,7 +373,7 @@ export function ModernHeader({
                       <div className="py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
                         <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">{t('myReputation')}</h4>
                         <div className="flex justify-between gap-1">
-                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-blue-900/30 rounded-md">
+                          <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 dark:bg-primary-900/30 rounded-md">
                             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 dark:text-blue-400 mb-0.5" />
                             <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalViews}</div>
                           </div>

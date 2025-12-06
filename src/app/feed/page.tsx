@@ -382,7 +382,7 @@ export default function FeedPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
                     activeTab === tab
-                      ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                      ? 'border-primary-600 text-primary-600 dark:text-primary-400'
                       : 'border-transparent text-gray-500 dark:text-gray-400'
                   }`}
                 >
@@ -444,7 +444,7 @@ export default function FeedPage() {
                         }}
                         className={`relative w-16 h-16 rounded-full p-0.5 block ${
                           story.hasNew 
-                            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
+                            ? 'bg-gradient-to-tr from-warning-400 via-error-500 to-primary-500' 
                             : 'bg-gray-300 dark:bg-gray-700'
                         }`}
                       >
@@ -474,7 +474,7 @@ export default function FeedPage() {
                           className="absolute -bottom-3 -right-3 bg-transparent border-0 flex items-center justify-center hover:opacity-80 transition-opacity z-10 p-0"
                           title={t('createStory')}
                         >
-                          <Plus className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                          <Plus className="h-3 w-3 text-primary-600 dark:text-primary-400" />
                         </button>
                       )}
                     </div>
@@ -495,7 +495,7 @@ export default function FeedPage() {
               {isRefreshing ? (
                 <RefreshCw className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
               ) : (
-                <RefreshCw className="h-5 w-5 text-blue-600 dark:text-blue-400" style={{ transform: `rotate(${pullDistance * 2}deg)` }} />
+                <RefreshCw className="h-5 w-5 text-primary-600 dark:text-primary-400" style={{ transform: `rotate(${pullDistance * 2}deg)` }} />
               )}
             </div>
           </div>
@@ -523,11 +523,11 @@ export default function FeedPage() {
                   : 'Seja o primeiro a compartilhar algo!'}
               </p>
               {(search || currentFilter.type !== 'all') && (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 max-w-md">
-                  <p className="text-sm text-blue-900 dark:text-blue-200 font-medium mb-2">
+                <div className="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 max-w-md">
+                  <p className="text-sm text-primary-900 dark:text-primary-200 font-medium mb-2">
                     💡 Dicas para encontrar mais posts:
                   </p>
-                  <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1 list-disc list-inside">
+                  <ul className="text-xs text-primary-800 dark:text-primary-300 space-y-1 list-disc list-inside">
                     <li>Limpe a pesquisa usando o botão "Resetar" nas configurações</li>
                     <li>Mude o filtro de localização para outra cidade ou estado</li>
                     <li>Selecione "Todos os Locais" para ver posts de qualquer lugar</li>
@@ -967,7 +967,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       id={`post-${post.id}`}
       className={`bg-white dark:bg-black ${
         isActivePremium 
-          ? 'border-l-2 border-l-yellow-400 dark:border-l-yellow-500 bg-gradient-to-r from-yellow-50/30 to-transparent dark:from-yellow-900/10 dark:to-transparent' 
+          ? 'border-l-2 border-l-warning-400 dark:border-l-warning-500 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent' 
           : ''
       }`}
     >
@@ -998,20 +998,20 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
           {serviceCategory && (
             <Badge 
               variant="outline" 
-              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 flex items-center gap-1"
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/30 flex items-center gap-1"
             >
               <span>{serviceCategory.icon}</span>
               <span>{serviceCategory.name}</span>
             </Badge>
           )}
           {isActivePremium && (
-            <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white border-0 text-[10px] px-1.5 py-0.5">
+            <Badge variant="premium" className="text-[10px] px-1.5 py-0.5">
               <Crown className="h-2.5 w-2.5 mr-1" />
               Premium
             </Badge>
           )}
           {isTrending && (
-            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 text-[10px] px-1.5 py-0.5">
+            <Badge className="bg-gradient-to-r from-warning-500 to-error-500 text-white border-0 text-[10px] px-1.5 py-0.5">
               <Flame className="h-2.5 w-2.5 mr-1" />
               Popular
             </Badge>
@@ -1086,9 +1086,9 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <div className="relative h-20 w-20">
                   <Coins 
-                    className="h-20 w-20 absolute inset-0 text-yellow-500 animate-ping"
+                    className="h-20 w-20 absolute inset-0 text-warning-500 animate-ping"
                     style={{
-                      fill: '#eab308',
+                      fill: 'currentColor',
                       stroke: 'none',
                       zIndex: 1
                     }}
@@ -1150,7 +1150,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             <MessageCircle 
               className={`h-4 w-4 transition-all ${
                 showComments 
-                  ? 'text-blue-600 dark:text-blue-400' 
+                  ? 'text-primary-600 dark:text-primary-400' 
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             />
@@ -1207,7 +1207,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                                   value={editCommentContent}
                                   onChange={(value) => setEditCommentContent(value)}
                                   placeholder={t('editComment')}
-                                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 outline-none pb-1"
+                                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 outline-none pb-1"
                                   onKeyPress={(e) => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
                                       e.preventDefault()
@@ -1316,7 +1316,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                   onChange={(value) => setNewComment(value)}
                   placeholder={t('addComment')}
                   disabled={isAddingComment}
-                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-blue-500 dark:focus:border-blue-400 pb-1"
+                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 pb-1"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
@@ -1332,7 +1332,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
                 <button
                   onClick={handleAddComment}
                   disabled={isAddingComment}
-                  className="text-blue-600 dark:text-blue-400 font-semibold text-sm disabled:opacity-50"
+                    className="text-primary-600 dark:text-primary-400 font-semibold text-sm disabled:opacity-50"
                 >
                   {isAddingComment ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

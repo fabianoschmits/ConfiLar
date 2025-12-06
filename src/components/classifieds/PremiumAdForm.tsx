@@ -206,8 +206,8 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       {/* Header Premium */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
-          <h3 className="text-lg sm:text-xl font-bold text-yellow-600">Anúncio Premium</h3>
+          <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-warning-500" />
+          <h3 className="text-lg sm:text-xl font-bold text-warning-600">Anúncio Premium</h3>
         </div>
         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 px-2">
           Escolha a duração do destaque para seu anúncio ter maior visibilidade
@@ -215,19 +215,19 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       </div>
 
       {/* Saldo Atual */}
-      <Card className="border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20">
+      <Card className="border-warning-200 dark:border-warning-600 bg-warning-50 dark:bg-warning-900/20">
         <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 dark:text-yellow-400" />
+              <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-warning-600 dark:text-warning-400" />
               <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">Seus ConfiPoints:</span>
             </div>
             {balanceLoading || !balance ? (
-              <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+              <Badge variant="secondary" className="bg-warning-100 dark:bg-warning-800 text-warning-800 dark:text-warning-100 text-xs sm:text-sm">
                 Carregando...
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+              <Badge variant="secondary" className="bg-warning-100 dark:bg-warning-800 text-warning-800 dark:text-warning-100 text-xs sm:text-sm">
                 {balance.balance.toLocaleString('pt-BR')} pontos
               </Badge>
             )}
@@ -246,7 +246,7 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
               key={option.points}
               className={`cursor-pointer transition-all ${
                 formData.pointsToSpend === option.points 
-                  ? 'ring-1 ring-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-600' 
+                  ? 'ring-1 ring-warning-500 bg-warning-50 dark:bg-warning-900/20 border-warning-300 dark:border-warning-600' 
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
               } ${!canAfford && option.points > (balance?.balance || 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={() => {
@@ -442,14 +442,14 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       </div>
 
       {/* Resumo do Custo */}
-      <Card className="border-yellow-200 dark:border-yellow-600 bg-yellow-50 dark:bg-yellow-900/20">
+      <Card className="border-warning-200 dark:border-warning-600 bg-warning-50 dark:bg-warning-900/20">
         <CardContent className="p-2 sm:p-4">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600 dark:text-yellow-400" />
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-warning-600 dark:text-warning-400" />
               <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">Custo do Anúncio Premium:</span>
             </div>
-            <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-100 text-xs sm:text-sm">
+            <Badge variant="secondary" className="bg-warning-100 dark:bg-warning-800 text-warning-800 dark:text-warning-100 text-xs sm:text-sm">
               {formData.pointsToSpend.toLocaleString('pt-BR')} ConfiPoints
             </Badge>
           </div>
@@ -488,7 +488,7 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
 
       {/* Aviso sobre saldo insuficiente */}
       {balance && balance.balance < formData.pointsToSpend && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-2.5 sm:p-3">
+        <div className="bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-lg p-2.5 sm:p-3">
           <p className="text-xs sm:text-sm text-red-700 dark:text-red-400">
             ⚠️ Saldo insuficiente. Você precisa de {formData.pointsToSpend.toLocaleString('pt-BR')} pontos para criar este anúncio premium.
             <br className="hidden sm:block" />
@@ -499,7 +499,7 @@ export function PremiumAdForm({ onSubmit, onCancel, isLoading = false }: Premium
       
       {/* Aviso sobre carregamento */}
       {balanceLoading && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 sm:p-3">
+        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg p-2.5 sm:p-3">
           <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-400">
             ⏳ Carregando informações do saldo...
           </p>
