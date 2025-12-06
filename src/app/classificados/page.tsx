@@ -20,6 +20,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -77,6 +87,7 @@ import {
   Crown,
   Sparkles,
   Shield,
+  Loader2,
 } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
 import { PremiumAdForm } from "@/components/classifieds/PremiumAdForm";
@@ -115,6 +126,10 @@ export default function ClassificadosPage() {
   const [activeTab, setActiveTab] = useState<"all" | "offers" | "requests">(
     "all",
   );
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingAdIsOwner, setDeletingAdIsOwner] = useState(false);
 
   // Estados para filtros
   const [filters, setFilters] = useState({
@@ -411,8 +426,8 @@ export default function ClassificadosPage() {
     toast.success("Iniciando conversa...");
   };
 
-  // Deletar anúncio
-  const handleDeleteAd = async (adId: string) => {
+  // Abrir diálogo de confirmação de deleção
+  const handleDeleteClick = async (adId: string) => {
     if (!user) {
       toast.error("Você precisa estar logado para deletar anúncios");
       return;
@@ -426,35 +441,52 @@ export default function ClassificadosPage() {
       .single();
 
     const isOwner = adData?.user_id === user.id;
+    setDeletingAdIsOwner(isOwner);
+    setDeletingAdId(adId);
+    setShowDeleteDialog(true);
+  };
 
-    // Se não for o dono, verificar se é super_admin
-    let isSuperAdmin = false;
-    if (!isOwner) {
-      const { data: adminData } = await supabase
-        .from("admins")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("is_active", true)
-        .single();
-
-      isSuperAdmin = adminData?.role === "super_admin";
-
-      if (!isSuperAdmin) {
-        toast.error("Você não tem permissão para deletar este anúncio");
-        return;
-      }
-    }
-
-    const confirmMessage = isSuperAdmin
-      ? "Você está deletando este anúncio como administrador. Tem certeza que deseja continuar? Esta ação não pode ser desfeita."
-      : "Tem certeza que deseja deletar este anúncio? Esta ação não pode ser desfeita.";
-
-    if (!confirm(confirmMessage)) {
+  // Deletar anúncio
+  const handleDeleteAd = async () => {
+    if (!deletingAdId || !user) {
       return;
     }
 
+    const adId = deletingAdId;
+    setIsDeleting(true);
+
     try {
-      if (isSuperAdmin) {
+      // Buscar anúncio para verificar se é o dono
+      const { data: adData } = await supabase
+        .from("classified_ads")
+        .select("user_id")
+        .eq("id", adId)
+        .single();
+
+      const isOwner = adData?.user_id === user.id;
+
+      // Se não for o dono, verificar se é super_admin
+      let isSuperAdminCheck = false;
+      if (!isOwner) {
+        const { data: adminData } = await supabase
+          .from("admins")
+          .select("role")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .single();
+
+        isSuperAdminCheck = adminData?.role === "super_admin";
+
+        if (!isSuperAdminCheck) {
+          toast.error("Você não tem permissão para deletar este anúncio");
+          setShowDeleteDialog(false);
+          setDeletingAdId(null);
+          setIsDeleting(false);
+          return;
+        }
+      }
+
+      if (isSuperAdminCheck) {
         // Usar API de admin para deletar
         const response = await fetch(`/api/admin/classified-ads/${adId}`, {
           method: "DELETE",
@@ -487,11 +519,16 @@ export default function ClassificadosPage() {
 
       // Recarregar anúncios
       await loadClassifiedAds();
+
+      setShowDeleteDialog(false);
+      setDeletingAdId(null);
     } catch (error) {
       console.error("Erro ao deletar anúncio:", error);
       toast.error(
         error instanceof Error ? error.message : "Erro ao deletar anúncio",
       );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -1820,7 +1857,7 @@ export default function ClassificadosPage() {
                                     <DropdownMenuItem
                                       onClick={() => {
                                         setShowAdModal(false);
-                                        handleDeleteAd(selectedAd.id);
+                                        handleDeleteClick(selectedAd.id);
                                       }}
                                       className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                     >
@@ -1837,7 +1874,7 @@ export default function ClassificadosPage() {
                                     <DropdownMenuItem
                                       onClick={() => {
                                         setShowAdModal(false);
-                                        handleDeleteAd(selectedAd.id);
+                                        handleDeleteClick(selectedAd.id);
                                       }}
                                       className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                     >
@@ -2451,7 +2488,7 @@ export default function ClassificadosPage() {
                                       )}
 
                                     <DropdownMenuItem
-                                      onClick={() => handleDeleteAd(ad.id)}
+                                      onClick={() => handleDeleteClick(ad.id)}
                                       className="text-gray-700 hover:text-red-600 hover:bg-red-50"
                                     >
                                       <Trash2 className="h-4 w-4 mr-2" />
@@ -2465,7 +2502,7 @@ export default function ClassificadosPage() {
                                   isSuperAdmin &&
                                   ad.user_id !== user.id && (
                                     <DropdownMenuItem
-                                      onClick={() => handleDeleteAd(ad.id)}
+                                      onClick={() => handleDeleteClick(ad.id)}
                                       className="text-gray-700 hover:text-red-600 hover:bg-red-50"
                                     >
                                       <Shield className="h-4 w-4 mr-2" />
@@ -2610,6 +2647,55 @@ export default function ClassificadosPage() {
           </div>
         </div>
       </MainLayout>
+
+      {/* AlertDialog para confirmação de deleção */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-gray-900 dark:text-white">
+              {isSuperAdmin && !deletingAdIsOwner
+                ? "Deletar Anúncio (Super Admin)"
+                : "Deletar Anúncio"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
+              {isSuperAdmin && !deletingAdIsOwner ? (
+                <>
+                  Você está deletando este anúncio como{" "}
+                  <strong>Super Administrador</strong>. Esta ação não pode ser
+                  desfeita. O anúncio será removido permanentemente.
+                </>
+              ) : (
+                <>
+                  Tem certeza que deseja deletar este anúncio? Esta ação não
+                  pode ser desfeita. O anúncio será removido permanentemente.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700"
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAd}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deletando...
+                </>
+              ) : (
+                "Deletar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ClientOnly>
   );
 }

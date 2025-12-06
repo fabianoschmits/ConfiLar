@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatDistance(distanceKm: number): string {
@@ -17,19 +17,41 @@ export function formatDistance(distanceKm: number): string {
 
 export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
-  const targetDate = typeof date === 'string' ? new Date(date) : date;
-  const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
+  const targetDate = typeof date === "string" ? new Date(date) : date;
+  const diffInSeconds = Math.floor(
+    (now.getTime() - targetDate.getTime()) / 1000,
+  );
 
-  if (diffInSeconds < 60) return 'agora';
+  if (diffInSeconds < 60) return "agora";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}min atrás`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h atrás`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d atrás`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)}h atrás`;
+  if (diffInSeconds < 2592000)
+    return `${Math.floor(diffInSeconds / 86400)}d atrás`;
   return `${Math.floor(diffInSeconds / 2592000)}mês atrás`;
 }
 
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(value);
+}
+
+/**
+ * Valida se uma string é um UUID válido
+ * Previne injeção SQL em queries dinâmicas
+ */
+export function isValidUUID(uuid: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
+ * Valida um array de UUIDs
+ * Retorna apenas os UUIDs válidos
+ */
+export function validateUUIDs(uuids: string[]): string[] {
+  return uuids.filter((uuid) => isValidUUID(uuid));
 }

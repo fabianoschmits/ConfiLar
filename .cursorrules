@@ -36,9 +36,11 @@ mcp:
       command: node
       args: ["scripts/mcp-supabase-server.js"]
       env:
-        SUPABASE_URL: https://oolqodaehouaidxuowtw.supabase.co
-        SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbHFvZGFlaG91YWlkeHVvd3R3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY5ODg1NCwiZXhwIjoyMDcxMjc0ODU0fQ.1FLdgPEei6Xbe1Bbp-M-3kMul4gGrI0baNFJDnIvr34
-        SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vbHFvZGFlaG91YWlkeHVvd3R3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2OTg4NTQsImV4cCI6MjA3MTI3NDg1NH0.h1OxM9qHsUFdtsTBA_halxFXZzLkS5viSfjugPYe9UY
+        # ⚠️ SEGURANÇA: NUNCA commitar keys neste arquivo!
+        # Use variáveis de ambiente do sistema ou arquivo .env.local (não versionado)
+        SUPABASE_URL: ${SUPABASE_URL}
+        SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+        SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       cwd: .
       timeout: 30000
 

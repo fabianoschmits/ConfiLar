@@ -1,130 +1,134 @@
-'use client'
+"use client";
 
-import React, { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Upload, X, Check, AlertCircle } from 'lucide-react'
-import { useImageCompression } from '@/hooks/useImageCompression'
-import { cn } from '@/lib/utils'
+import React, { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { Upload, X, Check, AlertCircle } from "lucide-react";
+import { useImageCompression } from "@/hooks/useImageCompression";
+import { cn } from "@/lib/utils";
 
 interface AvatarUploadProps {
-  currentAvatarUrl?: string | null
-  onUpload: (file: File) => Promise<{ data: string | null; error: { message: string } | null }>
-  className?: string
+  currentAvatarUrl?: string | null;
+  onUpload: (
+    file: File,
+  ) => Promise<{ data: string | null; error: { message: string } | null }>;
+  className?: string;
 }
 
-export function AvatarUpload({ 
-  currentAvatarUrl, 
-  onUpload, 
-  className 
+export function AvatarUpload({
+  currentAvatarUrl,
+  onUpload,
+  className,
 }: AvatarUploadProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [uploadSuccess, setUploadSuccess] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const { compressImage, isCompressing, compressionProgress } = useImageCompression()
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { compressImage, isCompressing, compressionProgress } =
+    useImageCompression();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    // Validar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError('Tipo de arquivo não suportado. Use JPEG, PNG ou WebP.')
-      return
+    // ⚠️ SEGURANÇA: Validação completa de arquivo (tipo, tamanho e magic bytes)
+    const { validateImageFile } = await import("@/lib/fileValidation");
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const validation = await validateImageFile(file, {
+      allowedTypes,
+      maxSizeMB: 5,
+      validateMagicBytes: true,
+    });
+
+    if (!validation.valid) {
+      setUploadError(validation.error || "Arquivo inválido");
+      return;
     }
 
-    // Validar tamanho inicial (máximo 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      setUploadError('Arquivo muito grande. Máximo 5MB.')
-      return
-    }
-
-    setUploadError(null)
-    setUploadSuccess(false)
+    setUploadError(null);
+    setUploadSuccess(false);
 
     try {
       // Comprimir imagem
-      console.log('🗜️ Comprimindo avatar...')
+      console.log("🗜️ Comprimindo avatar...");
       const compressedFile = await compressImage(file, {
         maxSizeMB: 0.5, // 500KB máximo para avatares
         maxWidthOrHeight: 512, // 512px máximo
-        useWebWorker: true
-      })
+        useWebWorker: true,
+      });
 
-      console.log('✅ Avatar comprimido:', {
+      console.log("✅ Avatar comprimido:", {
         original: `${(file.size / 1024).toFixed(1)}KB`,
         compressed: `${(compressedFile.size / 1024).toFixed(1)}KB`,
-        reduction: `${Math.round((1 - compressedFile.size / file.size) * 100)}%`
-      })
+        reduction: `${Math.round((1 - compressedFile.size / file.size) * 100)}%`,
+      });
 
-      setSelectedFile(compressedFile)
+      setSelectedFile(compressedFile);
 
       // Criar preview com arquivo comprimido
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string)
-      }
-      reader.readAsDataURL(compressedFile)
-
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(compressedFile);
     } catch (error) {
-      console.error('Erro ao comprimir imagem:', error)
-      setUploadError('Erro ao processar imagem. Tente novamente.')
+      console.error("Erro ao comprimir imagem:", error);
+      setUploadError("Erro ao processar imagem. Tente novamente.");
     }
-  }
+  };
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) return;
 
-    setIsUploading(true)
-    setUploadError(null)
-    setUploadSuccess(false)
+    setIsUploading(true);
+    setUploadError(null);
+    setUploadSuccess(false);
 
     try {
-      const result = await onUpload(selectedFile)
-      
+      const result = await onUpload(selectedFile);
+
       if (result.error) {
-        setUploadError(result.error.message)
+        setUploadError(result.error.message);
       } else {
-        setUploadSuccess(true)
+        setUploadSuccess(true);
         // Limpar arquivo selecionado após sucesso
         setTimeout(() => {
-          setSelectedFile(null)
-          setPreviewUrl(null)
-          setUploadSuccess(false)
-        }, 2000)
+          setSelectedFile(null);
+          setPreviewUrl(null);
+          setUploadSuccess(false);
+        }, 2000);
       }
     } catch (error) {
-      setUploadError('Erro inesperado no upload')
+      setUploadError("Erro inesperado no upload");
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleRemoveFile = () => {
-    setSelectedFile(null)
-    setPreviewUrl(null)
-    setUploadError(null)
-    setUploadSuccess(false)
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setUploadError(null);
+    setUploadSuccess(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const handleClickUpload = () => {
-    fileInputRef.current?.click()
-  }
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Avatar Atual */}
       <div className="flex flex-col items-center space-y-3">
         <div className="relative">
-          <UserAvatar 
+          <UserAvatar
             src={currentAvatarUrl}
             alt="Avatar atual"
             fallback="U"
@@ -136,10 +140,8 @@ export function AvatarUpload({
             </div>
           )}
         </div>
-        
-        <p className="text-sm text-black font-bold text-center">
-          AVATAR ATUAL
-        </p>
+
+        <p className="text-sm text-black font-bold text-center">AVATAR ATUAL</p>
       </div>
 
       {/* Upload de Novo Avatar */}
@@ -190,10 +192,12 @@ export function AvatarUpload({
                 className="flex-1 bg-green-500 text-white border-2 border-black hover:bg-green-600 font-black"
                 disabled={isUploading || isCompressing}
               >
-                {(isUploading || isCompressing) ? (
+                {isUploading || isCompressing ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    {isCompressing ? `COMPRIMINDO... ${compressionProgress}%` : 'FAZENDO UPLOAD...'}
+                    {isCompressing
+                      ? `COMPRIMINDO... ${compressionProgress}%`
+                      : "FAZENDO UPLOAD..."}
                   </>
                 ) : (
                   <>
@@ -211,7 +215,9 @@ export function AvatarUpload({
       {uploadError && (
         <div className="flex items-center space-x-2 p-3 bg-red-500 border-2 border-black">
           <AlertCircle className="w-4 h-4 text-white" />
-          <p className="text-sm text-white font-bold">{uploadError.toUpperCase()}</p>
+          <p className="text-sm text-white font-bold">
+            {uploadError.toUpperCase()}
+          </p>
         </div>
       )}
 
@@ -230,5 +236,5 @@ export function AvatarUpload({
         <p>TAMANHO MÁXIMO: 5MB</p>
       </div>
     </div>
-  )
+  );
 }

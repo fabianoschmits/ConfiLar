@@ -1,470 +1,250 @@
-import { z } from 'zod'
+import { z } from "zod";
 
-// ===================================
-// SCHEMAS DE VALIDAÇÃO UNIVERSAL
-// ===================================
+/**
+ * Funções de validação padronizadas para entrada de usuário
+ * Previne injeção SQL, XSS e outros ataques
+ */
 
-// Schema base para dados pessoais
-export const PersonalDataSchema = z.object({
-  full_name: z
-    .string()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome deve ter no máximo 100 caracteres')
-    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
-  
-  email: z
-    .string()
-    .email('Email deve ter um formato válido')
-    .toLowerCase(),
-  
-  phone: z
-    .string()
-    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, 'Telefone deve estar no formato (99) 99999-9999')
-    .optional()
-    .or(z.literal('')),
-  
-  cpf_cnpj: z
-    .string()
-    .regex(/^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})$/, 'CPF/CNPJ deve ter formato válido')
-    .optional()
-    .or(z.literal('')),
-  
-  birth_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD')
-    .refine((date) => {
-      const birthDate = new Date(date)
-      const today = new Date()
-      const age = today.getFullYear() - birthDate.getFullYear()
-      return age >= 16 && age <= 120
-    }, 'Idade deve estar entre 16 e 120 anos')
-    .optional()
-    .or(z.literal('')),
-})
+/**
+ * Valida CPF completo (formato e dígitos verificadores)
+ */
+export function isValidCPF(cpf: string): boolean {
+  if (!cpf || typeof cpf !== "string") return false;
 
-// Função para criar schema de localização baseado no país
-export const createLocationSchema = (country: 'BR' | 'US' = 'BR') => {
-  // Validação de código postal baseada no país
-  const postalCodeValidation = country === 'US' 
-    ? z.string().regex(/^\d{5}(-\d{4})?$/, 'ZIP Code deve estar no formato 12345 ou 12345-6789')
-    : z.string().regex(/^\d{5}-?\d{3}$/, 'CEP deve estar no formato 12345-678')
+  // Remove formatação
+  const cleanCPF = cpf.replace(/[^\d]/g, "");
 
-  return z.object({
-    country: z.string().default(country),
-    location_state: z
-      .string()
-      .length(2, country === 'US' ? 'State must have 2 characters' : 'Estado deve ter 2 caracteres')
-      .toUpperCase(),
-    
-    location_city: z
-      .string()
-      .min(2, country === 'US' ? 'City must have at least 2 characters' : 'Cidade deve ter pelo menos 2 caracteres')
-      .max(100, country === 'US' ? 'City must have at most 100 characters' : 'Cidade deve ter no máximo 100 caracteres'),
-    
-    neighborhood: z
-      .string()
-      .max(100, country === 'US' ? 'Neighborhood must have at most 100 characters' : 'Bairro deve ter no máximo 100 caracteres')
-      .optional()
-      .or(z.literal('')),
-    
-    address: z
-      .string()
-      .max(200, country === 'US' ? 'Address must have at most 200 characters' : 'Endereço deve ter no máximo 200 caracteres')
-      .optional()
-      .or(z.literal('')),
-    
-    zip_code: postalCodeValidation.optional().or(z.literal(''))
-  })
+  // Deve ter 11 dígitos
+  if (cleanCPF.length !== 11) return false;
+
+  // Verifica se todos os dígitos são iguais (CPF inválido)
+  if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
+
+  // Validação dos dígitos verificadores
+  let sum = 0;
+  let remainder;
+
+  // Valida primeiro dígito
+  for (let i = 1; i <= 9; i++) {
+    sum += parseInt(cleanCPF.substring(i - 1, i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cleanCPF.substring(9, 10))) return false;
+
+  // Valida segundo dígito
+  sum = 0;
+  for (let i = 1; i <= 10; i++) {
+    sum += parseInt(cleanCPF.substring(i - 1, i)) * (12 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cleanCPF.substring(10, 11))) return false;
+
+  return true;
 }
 
-// Schema para localização (padrão Brasil - mantido para compatibilidade)
-export const LocationSchema = createLocationSchema('BR')
+/**
+ * ValidationUtils - objeto com funções de validação
+ */
+export const ValidationUtils = {
+  isValidCPF,
+};
 
-// Schema para dados profissionais
-export const ProfessionalDataSchema = z.object({
-  bio: z
-    .string()
-    .max(500, 'Bio deve ter no máximo 500 caracteres')
-    .optional()
-    .or(z.literal('')),
-  
-  professional_services: z
-    .array(z.string())
-    .max(10, 'Máximo de 10 serviços')
-    .optional()
-    .default([]),
-  
-  professional_experience_years: z
-    .number()
-    .int('Anos de experiência deve ser um número inteiro')
-    .min(0, 'Anos de experiência não pode ser negativo')
-    .max(50, 'Anos de experiência deve ser no máximo 50')
-    .optional()
-    .default(0),
-  
-  professional_certifications: z
-    .array(z.string())
-    .max(20, 'Máximo de 20 certificações')
-    .optional()
-    .default([]),
-  
-  whatsapp: z
-    .string()
-    .regex(/^\(\d{2}\)\s\d{4,5}-\d{4}$/, 'WhatsApp deve estar no formato (99) 99999-9999')
-    .optional()
-    .or(z.literal(''))
-})
+/**
+ * Valida se uma string é um UUID válido
+ */
+export function isValidUUID(uuid: string): boolean {
+  if (!uuid || typeof uuid !== "string") return false;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid.trim());
+}
 
-// Schema completo do perfil
-export const ProfileSchema = PersonalDataSchema
-  .merge(LocationSchema)
-  .merge(ProfessionalDataSchema)
-  .extend({
-    user_type: z.enum(['client', 'professional']).refine(
-      (value) => ['client', 'professional'].includes(value),
-      { message: 'Tipo de usuário deve ser "client" ou "professional"' }
-    ),
-    
-    is_available: z.boolean().optional().default(true),
-    
-    avatar_url: z
-      .string()
-      .url('URL do avatar deve ser válida')
-      .optional()
-      .or(z.literal(''))
-      .or(z.null())
-  })
+/**
+ * Valida um array de UUIDs
+ */
+export function validateUUIDs(uuids: string[]): string[] {
+  if (!Array.isArray(uuids)) return [];
+  return uuids.filter((uuid) => isValidUUID(uuid));
+}
 
-// Schema para autenticação
+/**
+ * Sanitiza uma string removendo caracteres perigosos
+ */
+export function sanitizeString(input: string, maxLength?: number): string {
+  if (!input || typeof input !== "string") return "";
+
+  // Remover caracteres de controle e normalizar
+  let sanitized = input
+    .replace(/[\x00-\x1F\x7F]/g, "") // Remove control characters
+    .trim();
+
+  // Limitar tamanho se especificado
+  if (maxLength && sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+
+  return sanitized;
+}
+
+/**
+ * Valida e sanitiza um email
+ */
+export function validateEmail(email: string): boolean {
+  if (!email || typeof email !== "string") return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+/**
+ * Valida um número inteiro positivo
+ */
+export function validatePositiveInteger(value: any): boolean {
+  if (typeof value === "string") {
+    const num = parseInt(value, 10);
+    return !isNaN(num) && num > 0 && num.toString() === value.trim();
+  }
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+/**
+ * Valida um número dentro de um range
+ */
+export function validateNumberRange(
+  value: any,
+  min: number,
+  max: number,
+): boolean {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  return !isNaN(num) && num >= min && num <= max;
+}
+
+/**
+ * Valida uma string não vazia
+ */
+export function validateNonEmptyString(
+  value: any,
+  minLength = 1,
+  maxLength?: number,
+): boolean {
+  if (typeof value !== "string") return false;
+  const trimmed = value.trim();
+  if (trimmed.length < minLength) return false;
+  if (maxLength && trimmed.length > maxLength) return false;
+  return true;
+}
+
+/**
+ * Valida um array não vazio
+ */
+export function validateNonEmptyArray<T>(value: any): value is T[] {
+  return Array.isArray(value) && value.length > 0;
+}
+
+/**
+ * Valida formato de código de referral
+ */
+export function validateReferralCode(code: string): boolean {
+  if (!code || typeof code !== "string") return false;
+  const codeRegex = /^[A-Z0-9]{6,12}$/;
+  return codeRegex.test(code.toUpperCase().trim());
+}
+
+/**
+ * Valida formato de CPF (apenas formato, não dígitos verificadores)
+ */
+export function validateCPFFormat(cpf: string): boolean {
+  if (!cpf || typeof cpf !== "string") return false;
+  // Remove formatação
+  const cleanCPF = cpf.replace(/[^\d]/g, "");
+  // Deve ter 11 dígitos
+  return /^\d{11}$/.test(cleanCPF);
+}
+
+/**
+ * Valida se uma string contém apenas caracteres alfanuméricos e espaços
+ */
+export function validateAlphanumericWithSpaces(
+  value: string,
+  maxLength?: number,
+): boolean {
+  if (!value || typeof value !== "string") return false;
+  const regex = /^[a-zA-Z0-9\s]+$/;
+  const isValid = regex.test(value);
+  if (!isValid) return false;
+  if (maxLength && value.length > maxLength) return false;
+  return true;
+}
+
+/**
+ * Valida se uma URL é segura (http/https apenas)
+ */
+export function validateSafeURL(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Schemas Zod para validação de formulários
+ */
+
+// Schema de Login
 export const LoginSchema = z.object({
-  email: z
-    .string()
-    .email('Email deve ter um formato válido')
-    .toLowerCase(),
-  
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+
+// Schema de SignUp
+export const SignUpSchema = z.object({
+  email: z.string().email("Email inválido"),
   password: z
     .string()
-    .min(6, 'Senha deve ter pelo menos 6 caracteres')
-})
-
-export const SignUpSchema = LoginSchema.extend({
-  full_name: z
-    .string()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome deve ter no máximo 100 caracteres'),
-  
-  user_type: z.enum(['client', 'professional']),
-  
-  // Campos opcionais para compatibilidade com formulários complexos
-  phone: z.string().optional(),
+    .min(8, "Senha deve ter pelo menos 8 caracteres")
+    .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
+    .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
+    .regex(/[0-9]/, "Senha deve conter pelo menos um número"),
+  full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   cpf_cnpj: z.string().optional(),
+  referral_code: z.string().optional(),
+  user_type: z.enum(["client", "professional"]).optional(),
+  phone: z.string().optional(),
   birth_date: z.string().optional(),
   location_state: z.string().optional(),
   location_city: z.string().optional(),
   neighborhood: z.string().optional(),
+  address: z.string().optional(),
+  address_number: z.string().optional(),
+  zip_code: z.string().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
-  emergency_service: z.boolean().optional(),
-  insurance_coverage: z.boolean().optional(),
-  gender: z.enum(['male', 'female']).optional(),
-  avatar_data: z.any().optional(),
-  
-  confirmPassword: z
-    .string()
-    .min(6, 'Confirmação de senha deve ter pelo menos 6 caracteres')
-    .optional()
-}).refine((data) => {
-  // Só validar confirmação de senha se o campo estiver presente
-  if (data.confirmPassword) {
-    return data.password === data.confirmPassword
-  }
-  return true
-}, {
-  message: 'Senhas não coincidem',
-  path: ['confirmPassword']
-})
+});
 
-// Schema para alteração de senha
-export const ChangePasswordSchema = z.object({
-  currentPassword: z
+// Schema de Profile
+export const ProfileSchema = z.object({
+  full_name: z
     .string()
-    .min(1, 'Senha atual é obrigatória'),
-  
-  newPassword: z
-    .string()
-    .min(6, 'Nova senha deve ter pelo menos 6 caracteres')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Nova senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número'),
-  
-  confirmNewPassword: z
-    .string()
-    .min(6, 'Confirmação da nova senha é obrigatória')
-}).refine((data) => data.newPassword === data.confirmNewPassword, {
-  message: 'Nova senha e confirmação não coincidem',
-  path: ['confirmNewPassword']
-})
-
-// Schema para mensagens
-export const MessageSchema = z.object({
-  content: z
-    .string()
-    .min(1, 'Mensagem não pode estar vazia')
-    .max(1000, 'Mensagem deve ter no máximo 1000 caracteres')
-    .trim(),
-  
-  conversation_id: z
-    .string()
-    .uuid('ID da conversa deve ser válido')
-})
-
-// Schema para anúncios classificados
-export const ClassifiedAdSchema = z.object({
-  title: z
-    .string()
-    .min(10, 'Título deve ter pelo menos 10 caracteres')
-    .max(100, 'Título deve ter no máximo 100 caracteres'),
-  
-  description: z
-    .string()
-    .min(20, 'Descrição deve ter pelo menos 20 caracteres')
-    .max(1000, 'Descrição deve ter no máximo 1000 caracteres'),
-  
-  category: z
-    .string()
-    .min(1, 'Categoria é obrigatória'),
-  
-  location_state: z
-    .string()
-    .length(2, 'Estado deve ter 2 caracteres')
-    .toUpperCase(),
-  
-  location_city: z
-    .string()
-    .min(2, 'Cidade é obrigatória'),
-  
-  price_range: z
-    .string()
-    .optional()
-    .or(z.literal(''))
-})
-
-// Schema para avaliações
-export const ReviewSchema = z.object({
-  rating: z
-    .number()
-    .int('Avaliação deve ser um número inteiro')
-    .min(1, 'Avaliação deve ser pelo menos 1 estrela')
-    .max(5, 'Avaliação deve ser no máximo 5 estrelas'),
-  
-  comment: z
-    .string()
-    .min(10, 'Comentário deve ter pelo menos 10 caracteres')
-    .max(500, 'Comentário deve ter no máximo 500 caracteres')
-    .optional()
-    .or(z.literal('')),
-  
-  pros: z
-    .array(z.string().max(100))
-    .max(5, 'Máximo de 5 pontos positivos')
-    .optional()
-    .default([]),
-  
-  cons: z
-    .array(z.string().max(100))
-    .max(5, 'Máximo de 5 pontos negativos')
-    .optional()
-    .default([])
-})
-
-// ===================================
-// TIPOS TYPESCRIPT DERIVADOS
-// ===================================
-
-export type PersonalData = z.infer<typeof PersonalDataSchema>
-export type Location = z.infer<typeof LocationSchema>
-export type ProfessionalData = z.infer<typeof ProfessionalDataSchema>
-export type ProfileData = z.infer<typeof ProfileSchema>
-export type LoginData = z.infer<typeof LoginSchema>
-export type SignUpData = z.infer<typeof SignUpSchema>
-export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>
-export type MessageData = z.infer<typeof MessageSchema>
-export type ClassifiedAdData = z.infer<typeof ClassifiedAdSchema>
-export type ReviewData = z.infer<typeof ReviewSchema>
-
-// ===================================
-// HOOKS DE VALIDAÇÃO
-// ===================================
-
-export function useValidation<T>(schema: z.ZodSchema<T>) {
-  return {
-    validate: (data: unknown): { data: T | null; errors: string[]; isValid: boolean } => {
-      const result = schema.safeParse(data)
-      
-      if (result.success) {
-        return {
-          data: result.data,
-          errors: [],
-          isValid: true
-        }
-      }
-      
-      return {
-        data: null,
-        errors: result.error.issues.map(error => error.message),
-        isValid: false
-      }
-    },
-    
-    validateField: (field: string, value: unknown): { error: string | null; isValid: boolean } => {
-      try {
-        // Para validar um campo específico, criamos um schema parcial
-        const shape = (schema as any).shape
-        if (shape && shape[field]) {
-          const fieldSchema = shape[field]
-          const result = fieldSchema.safeParse(value)
-          
-          if (result.success) {
-            return { error: null, isValid: true }
-          }
-          
-          return {
-            error: result.error.issues[0]?.message || 'Erro de validação',
-            isValid: false
-          }
-        }
-        
-        return { error: null, isValid: true }
-      } catch {
-        return { error: 'Erro de validação', isValid: false }
-      }
-    }
-  }
-}
-
-// ===================================
-// UTILITÁRIOS DE VALIDAÇÃO
-// ===================================
-
-export const ValidationUtils = {
-  // Validar CPF
-  isValidCPF: (cpf: string): boolean => {
-    const cleanCPF = cpf.replace(/[^\d]/g, '')
-    
-    if (cleanCPF.length !== 11) return false
-    if (/^(\d)\1{10}$/.test(cleanCPF)) return false
-    
-    let sum = 0
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
-    }
-    
-    let remainder = (sum * 10) % 11
-    if (remainder === 10 || remainder === 11) remainder = 0
-    if (remainder !== parseInt(cleanCPF.charAt(9))) return false
-    
-    sum = 0
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(cleanCPF.charAt(i)) * (11 - i)
-    }
-    
-    remainder = (sum * 10) % 11
-    if (remainder === 10 || remainder === 11) remainder = 0
-    
-    return remainder === parseInt(cleanCPF.charAt(10))
-  },
-  
-  // Validar CNPJ
-  isValidCNPJ: (cnpj: string): boolean => {
-    const cleanCNPJ = cnpj.replace(/[^\d]/g, '')
-    
-    if (cleanCNPJ.length !== 14) return false
-    if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false
-    
-    let length = cleanCNPJ.length - 2
-    let numbers = cleanCNPJ.substring(0, length)
-    const digits = cleanCNPJ.substring(length)
-    let sum = 0
-    let pos = length - 7
-    
-    for (let i = length; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(length - i)) * pos--
-      if (pos < 2) pos = 9
-    }
-    
-    let result = sum % 11 < 2 ? 0 : 11 - (sum % 11)
-    if (result !== parseInt(digits.charAt(0))) return false
-    
-    length = length + 1
-    numbers = cleanCNPJ.substring(0, length)
-    sum = 0
-    pos = length - 7
-    
-    for (let i = length; i >= 1; i--) {
-      sum += parseInt(numbers.charAt(length - i)) * pos--
-      if (pos < 2) pos = 9
-    }
-    
-    result = sum % 11 < 2 ? 0 : 11 - (sum % 11)
-    return result === parseInt(digits.charAt(1))
-  },
-  
-  // Formatar telefone
-  formatPhone: (phone: string): string => {
-    const cleaned = phone.replace(/\D/g, '')
-    const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/)
-    
-    if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`
-    }
-    
-    return phone
-  },
-  
-  // Formatar CPF
-  formatCPF: (cpf: string): string => {
-    const cleaned = cpf.replace(/\D/g, '')
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{3})(\d{2})$/)
-    
-    if (match) {
-      return `${match[1]}.${match[2]}.${match[3]}-${match[4]}`
-    }
-    
-    return cpf
-  },
-  
-  // Formatar CNPJ
-  formatCNPJ: (cnpj: string): string => {
-    const cleaned = cnpj.replace(/\D/g, '')
-    const match = cleaned.match(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/)
-    
-    if (match) {
-      return `${match[1]}.${match[2]}.${match[3]}/${match[4]}-${match[5]}`
-    }
-    
-    return cnpj
-  }
-}
-
-// Schema customizado com validação de CPF/CNPJ
-export const CPFCNPJSchema = z
-  .string()
-  .refine((value) => {
-    if (!value) return true // Opcional
-    
-    const cleaned = value.replace(/[^\d]/g, '')
-    
-    if (cleaned.length === 11) {
-      return ValidationUtils.isValidCPF(value)
-    }
-    
-    if (cleaned.length === 14) {
-      return ValidationUtils.isValidCNPJ(value)
-    }
-    
-    return false
-  }, 'CPF ou CNPJ inválido')
-
-// Aplicar validação de CPF/CNPJ ao schema do perfil
-export const EnhancedProfileSchema = ProfileSchema.extend({
-  cpf_cnpj: CPFCNPJSchema.optional().or(z.literal(''))
-})
+    .min(2, "Nome deve ter pelo menos 2 caracteres")
+    .optional(),
+  bio: z.string().optional(),
+  phone: z.string().optional(),
+  birth_date: z.string().optional(),
+  gender: z.enum(["male", "female", "other"]).optional(),
+  user_type: z.enum(["client", "professional"]).optional(),
+  location_state: z.string().optional(),
+  location_city: z.string().optional(),
+  neighborhood: z.string().optional(),
+  address: z.string().optional(),
+  address_number: z.string().optional(),
+  zip_code: z.string().optional(),
+  avatar_url: z.string().optional(),
+  services_offered: z.array(z.string()).optional(),
+  experience_years: z.string().optional(),
+});
