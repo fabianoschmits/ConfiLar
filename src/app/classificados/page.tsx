@@ -1715,23 +1715,28 @@ export default function ClassificadosPage() {
                                     </div>
                                   )}
                                   {(selectedAd as any).user_profile
-                                    .professional_experience_years && (
-                                    <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                      <span className="font-semibold">
-                                        Experiência:
-                                      </span>
-                                      <span>
-                                        {
-                                          (selectedAd as any).user_profile
-                                            .professional_experience_years
-                                        }{" "}
-                                        {(selectedAd as any).user_profile
-                                          .professional_experience_years === 1
-                                          ? "ano"
-                                          : "anos"}
-                                      </span>
-                                    </div>
-                                  )}
+                                    .professional_experience_years !==
+                                    undefined &&
+                                    (selectedAd as any).user_profile
+                                      .professional_experience_years !== null &&
+                                    (selectedAd as any).user_profile
+                                      .professional_experience_years > 0 && (
+                                      <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                        <span className="font-semibold">
+                                          Experiência:
+                                        </span>
+                                        <span>
+                                          {
+                                            (selectedAd as any).user_profile
+                                              .professional_experience_years
+                                          }{" "}
+                                          {(selectedAd as any).user_profile
+                                            .professional_experience_years === 1
+                                            ? "ano"
+                                            : "anos"}
+                                        </span>
+                                      </div>
+                                    )}
                                   {(selectedAd as any).user_profile
                                     .referencia_profissional && (
                                     <div className="sm:col-span-2 mt-2">
@@ -2209,7 +2214,12 @@ export default function ClassificadosPage() {
                                   {(ad as any).user_profile.user_type ===
                                     "professional" &&
                                     (ad as any).user_profile
-                                      .professional_experience_years && (
+                                      .professional_experience_years !==
+                                      undefined &&
+                                    (ad as any).user_profile
+                                      .professional_experience_years !== null &&
+                                    (ad as any).user_profile
+                                      .professional_experience_years > 0 && (
                                       <div className="flex items-start gap-1.5 text-gray-700 dark:text-gray-300">
                                         <span className="font-semibold flex-shrink-0">
                                           Experiência:

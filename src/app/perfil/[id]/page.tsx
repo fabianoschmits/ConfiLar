@@ -1,132 +1,173 @@
-'use client'
+"use client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useProfileData, formatEscolaridade, formatEstadoCivil, formatTurnoTrabalho, formatGender } from '@/hooks/useProfileData'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
-import { 
-  MapPin, Star, Phone, Mail, User, Briefcase, MessageCircle, Calendar,
-  CheckCircle, Eye, GraduationCap, Heart, Users, Clock, Award, Building2,
-  Globe, Share2, Palette, Layers, Sparkles, ThumbsUp
-} from 'lucide-react'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { toast } from 'sonner'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useSupabaseReviews } from '@/hooks/useSupabaseReviews'
-import { usePortfolio } from '@/hooks/usePortfolio'
-import { useRecommendations } from '@/hooks/useRecommendations'
-import { useProfileViews } from '@/hooks/useProfileViews'
-import { ReviewCard } from '@/components/reviews/ReviewCard'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { ProfilePageSkeleton } from '@/components/ui/skeleton'
-import Link from 'next/link'
-import { useReferralStats } from '@/hooks/useReferralStats'
-import { ReferralBadgeLarge } from '@/components/referral/ReferralBadge'
-import { useTranslations } from 'next-intl'
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
+import {
+  useProfileData,
+  formatEscolaridade,
+  formatEstadoCivil,
+  formatTurnoTrabalho,
+  formatGender,
+} from "@/hooks/useProfileData";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import {
+  MapPin,
+  Star,
+  Phone,
+  Mail,
+  User,
+  Briefcase,
+  MessageCircle,
+  Calendar,
+  CheckCircle,
+  Eye,
+  GraduationCap,
+  Heart,
+  Users,
+  Clock,
+  Award,
+  Building2,
+  Globe,
+  Share2,
+  Palette,
+  Layers,
+  Sparkles,
+  ThumbsUp,
+} from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSupabaseReviews } from "@/hooks/useSupabaseReviews";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { useRecommendations } from "@/hooks/useRecommendations";
+import { useProfileViews } from "@/hooks/useProfileViews";
+import { ReviewCard } from "@/components/reviews/ReviewCard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ProfilePageSkeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { useReferralStats } from "@/hooks/useReferralStats";
+import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
+import { useTranslations } from "next-intl";
 
 export default function ProfilePage() {
-  const t = useTranslations('profile')
-  const tCommon = useTranslations('common')
-  const tNav = useTranslations('navigation')
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useAuthContext()
-  const { openChat } = useFloatingChat()
-  const userId = params.id as string
-  const [mounted, setMounted] = useState(false)
-  
-  const { profile, loading, error } = useProfileData(userId)
-  const { reviews, loading: reviewsLoading, fetchUserReviews, respondToReview, deleteReview, updateReview } = useSupabaseReviews()
-  const { projects: portfolioProjects, loading: portfolioLoading } = usePortfolio(userId || '')
-  const { recommendations, loading: recommendationsLoading } = useRecommendations(userId)
-  const { recordView, getViewStats } = useProfileViews()
-  const [viewStats, setViewStats] = useState<{ total_views: number } | null>(null)
-  const { stats: referralStats, loading: referralLoading } = useReferralStats(userId)
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
+  const tNav = useTranslations("navigation");
+  const params = useParams();
+  const router = useRouter();
+  const { user } = useAuthContext();
+  const { openChat } = useFloatingChat();
+  const userId = params.id as string;
+  const [mounted, setMounted] = useState(false);
+
+  const { profile, loading, error } = useProfileData(userId);
+  const {
+    reviews,
+    loading: reviewsLoading,
+    fetchUserReviews,
+    respondToReview,
+    deleteReview,
+    updateReview,
+  } = useSupabaseReviews();
+  const { projects: portfolioProjects, loading: portfolioLoading } =
+    usePortfolio(userId || "");
+  const { recommendations, loading: recommendationsLoading } =
+    useRecommendations(userId);
+  const { recordView, getViewStats } = useProfileViews();
+  const [viewStats, setViewStats] = useState<{ total_views: number } | null>(
+    null,
+  );
+  const { stats: referralStats, loading: referralLoading } =
+    useReferralStats(userId);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (userId) {
-      fetchUserReviews(userId)
+      fetchUserReviews(userId);
     }
-  }, [userId, fetchUserReviews])
+  }, [userId, fetchUserReviews]);
 
   // Registrar visualização automaticamente quando o perfil é visualizado
   useEffect(() => {
-    if (!userId || !mounted) return
-    
+    if (!userId || !mounted) return;
+
     // Não registrar visualização do próprio perfil
-    if (user?.id === userId) return
-    
+    if (user?.id === userId) return;
+
     // Registrar visualização mesmo se o usuário não estiver autenticado
     const timer = setTimeout(async () => {
       try {
-        await recordView(userId)
+        await recordView(userId);
       } catch (error) {
-        console.error('Erro ao registrar visualização:', error)
+        console.error("Erro ao registrar visualização:", error);
       }
-    }, 2000) // 2 segundos de delay
+    }, 2000); // 2 segundos de delay
 
     return () => {
-      clearTimeout(timer)
-    }
-  }, [userId, mounted, user?.id, recordView])
+      clearTimeout(timer);
+    };
+  }, [userId, mounted, user?.id, recordView]);
 
   // Buscar estatísticas de visualizações
   useEffect(() => {
-    if (!userId || !mounted) return
+    if (!userId || !mounted) return;
 
     const fetchViewStats = async () => {
       try {
-        const stats = await getViewStats(userId)
+        const stats = await getViewStats(userId);
         if (stats) {
-          setViewStats(stats)
+          setViewStats(stats);
         }
       } catch (error) {
-        console.error('Erro ao buscar estatísticas de visualizações:', error)
+        console.error("Erro ao buscar estatísticas de visualizações:", error);
       }
-    }
+    };
 
-    fetchViewStats()
-  }, [userId, mounted, getViewStats])
+    fetchViewStats();
+  }, [userId, mounted, getViewStats]);
 
   const handleContact = () => {
     if (!user) {
-      toast.error('Login necessário')
-      return
+      toast.error("Login necessário");
+      return;
     }
     if (userId === user.id) {
-      toast.error('Ação inválida')
-      return
+      toast.error("Ação inválida");
+      return;
     }
-    openChat(userId, profile?.full_name || 'Usuário')
-    toast.success('Iniciando conversa...')
-  }
+    openChat(userId, profile?.full_name || "Usuário");
+    toast.success("Iniciando conversa...");
+  };
 
   const handleShare = async () => {
     try {
-      const profileUrl = `${window.location.origin}/perfil/${userId}`
-      await navigator.clipboard.writeText(profileUrl)
-      toast.success(t('profileLinkCopied'))
+      const profileUrl = `${window.location.origin}/perfil/${userId}`;
+      await navigator.clipboard.writeText(profileUrl);
+      toast.success(t("profileLinkCopied"));
     } catch (error) {
-      console.error('Erro ao copiar link:', error)
-      toast.error(t('errorCopyingLink'))
+      console.error("Erro ao copiar link:", error);
+      toast.error(t("errorCopyingLink"));
     }
-  }
+  };
 
   if (!mounted || loading) {
-    return <MainLayout requireAuth={false}><ProfilePageSkeleton /></MainLayout>
+    return (
+      <MainLayout requireAuth={false}>
+        <ProfilePageSkeleton />
+      </MainLayout>
+    );
   }
 
   if (error || !profile) {
@@ -136,17 +177,21 @@ export default function ProfilePage() {
           <Card className="max-w-md mx-auto">
             <CardContent className="p-8 text-center">
               <User className="w-16 h-16 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{error || t('profileNotFound')}</h2>
-              <Button onClick={() => router.push('/buscar')}>{tNav('search')}</Button>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                {error || t("profileNotFound")}
+              </h2>
+              <Button onClick={() => router.push("/buscar")}>
+                {tNav("search")}
+              </Button>
             </CardContent>
           </Card>
         </div>
       </MainLayout>
-    )
+    );
   }
 
-  const isOwnProfile = user?.id === profile.id
-  const isProfessional = profile.user_type === 'professional'
+  const isOwnProfile = user?.id === profile.id;
+  const isProfessional = profile.user_type === "professional";
 
   return (
     <MainLayout requireAuth={false}>
@@ -163,8 +208,10 @@ export default function ProfilePage() {
                     <div className="relative">
                       <UserAvatar
                         src={profile.avatar_url || profile.profile_photo_url}
-                        alt={profile.full_name || 'Usuário'}
-                        fallback={profile.full_name?.charAt(0).toUpperCase() || 'U'}
+                        alt={profile.full_name || "Usuário"}
+                        fallback={
+                          profile.full_name?.charAt(0).toUpperCase() || "U"
+                        }
                         size="xl"
                         userId={profile.id}
                         showReferralBadge={true}
@@ -182,7 +229,7 @@ export default function ProfilePage() {
                   <div className="flex-1 min-w-0 text-center lg:text-left">
                     <div className="mb-6">
                       <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00b0b0] via-cyan-600 to-blue-600 mb-4">
-                        {profile.full_name || 'Usuário'}
+                        {profile.full_name || "Usuário"}
                       </h1>
                       {profile.bio && (
                         <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
@@ -193,15 +240,21 @@ export default function ProfilePage() {
                         {profile.is_verified && (
                           <Badge className="bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-1.5 text-sm">
                             <CheckCircle className="w-4 h-4 mr-1" />
-                            {t('verified')}
+                            {t("verified")}
                           </Badge>
                         )}
-                        <Badge className={`px-4 py-1.5 text-sm ${isProfessional ? 'bg-gradient-to-r from-blue-400 to-blue-600 text-white' : 'bg-gradient-to-r from-gray-400 to-gray-600 text-white'}`}>
-                          {isProfessional ? t('professional') : t('client')}
+                        <Badge
+                          className={`px-4 py-1.5 text-sm ${isProfessional ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white" : "bg-gradient-to-r from-gray-400 to-gray-600 text-white"}`}
+                        >
+                          {isProfessional ? t("professional") : t("client")}
                         </Badge>
                         {isProfessional && (
-                          <Badge className={`px-4 py-1.5 text-sm ${profile.is_available ? 'bg-gradient-to-r from-green-400 to-green-600 text-white' : 'bg-gradient-to-r from-red-400 to-red-600 text-white'}`}>
-                            {profile.is_available ? t('available') : t('unavailable')}
+                          <Badge
+                            className={`px-4 py-1.5 text-sm ${profile.is_available ? "bg-gradient-to-r from-green-400 to-green-600 text-white" : "bg-gradient-to-r from-red-400 to-red-600 text-white"}`}
+                          >
+                            {profile.is_available
+                              ? t("available")
+                              : t("unavailable")}
                           </Badge>
                         )}
                       </div>
@@ -211,34 +264,51 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                       <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Star className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">{profile.rating.toFixed(1)}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('rating')}</div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white">
+                          {profile.rating.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                          {t("rating")}
+                        </div>
                       </div>
                       <div className="bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <div className="text-3xl font-black text-gray-900 dark:text-white">{profile.total_reviews}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('reviews')}</div>
+                        <div className="text-3xl font-black text-gray-900 dark:text-white">
+                          {profile.total_reviews}
+                        </div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                          {t("reviews")}
+                        </div>
                       </div>
                       <div className="bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/30 dark:to-teal-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Eye className="w-8 h-8 text-[#00b0b0] mx-auto mb-2" />
                         <div className="text-3xl font-black text-gray-900 dark:text-white">
-                          {viewStats?.total_views?.toLocaleString('pt-BR') || '0'}
+                          {viewStats?.total_views?.toLocaleString("pt-BR") ||
+                            "0"}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('views')}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                          {t("views")}
+                        </div>
                       </div>
                       <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 rounded-2xl p-4 text-center transform hover:scale-105 transition-transform">
                         <Award className="w-8 h-8 text-orange-600 mx-auto mb-2" />
                         <div className="flex justify-center items-center mb-2">
                           {referralLoading ? (
-                            <div className="text-2xl font-black text-gray-400">...</div>
+                            <div className="text-2xl font-black text-gray-400">
+                              ...
+                            </div>
                           ) : (
                             <ReferralBadgeLarge
-                              tier={referralStats?.tier || 'none'}
-                              totalReferrals={referralStats?.totalReferrals || 0}
+                              tier={referralStats?.tier || "none"}
+                              totalReferrals={
+                                referralStats?.totalReferrals || 0
+                              }
                             />
                           )}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('badgeReferrals')}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                          {t("badgeReferrals")}
+                        </div>
                       </div>
                     </div>
 
@@ -247,56 +317,81 @@ export default function ProfilePage() {
                       {profile.location_city && profile.location_state && (
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
                           <MapPin className="w-5 h-5 text-red-500" />
-                          <span className="text-sm font-medium">{profile.location_city}, {profile.location_state}</span>
+                          <span className="text-sm font-medium">
+                            {profile.location_city}, {profile.location_state}
+                          </span>
                         </div>
                       )}
                       {profile.idade && (
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
                           <Calendar className="w-5 h-5 text-blue-500" />
-                          <span className="text-sm font-medium">{profile.idade} {t('years')}</span>
+                          <span className="text-sm font-medium">
+                            {profile.idade} {t("years")}
+                          </span>
                         </div>
                       )}
                       {profile.escolaridade && (
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
                           <GraduationCap className="w-5 h-5 text-[#00b0b0]" />
-                          <span className="text-sm font-medium truncate">{formatEscolaridade(profile.escolaridade)}</span>
+                          <span className="text-sm font-medium truncate">
+                            {formatEscolaridade(profile.escolaridade)}
+                          </span>
                         </div>
                       )}
                       {profile.estado_civil && (
                         <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
                           <Heart className="w-5 h-5 text-cyan-500" />
-                          <span className="text-sm font-medium">{formatEstadoCivil(profile.estado_civil)}</span>
+                          <span className="text-sm font-medium">
+                            {formatEstadoCivil(profile.estado_civil)}
+                          </span>
                         </div>
                       )}
-                      {profile.filhos !== null && profile.filhos !== undefined && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <Users className="w-5 h-5 text-green-500" />
-                          <span className="text-sm font-medium">{profile.filhos} {profile.filhos === 1 ? t('child') : t('children')}</span>
-                        </div>
-                      )}
-                      {isProfessional && profile.professional_experience_years && (
-                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                          <Briefcase className="w-5 h-5 text-indigo-500" />
-                          <span className="text-sm font-medium">{profile.professional_experience_years} {profile.professional_experience_years === 1 ? t('year') : t('years')}</span>
-                        </div>
-                      )}
+                      {profile.filhos !== null &&
+                        profile.filhos !== undefined && (
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                            <Users className="w-5 h-5 text-green-500" />
+                            <span className="text-sm font-medium">
+                              {profile.filhos}{" "}
+                              {profile.filhos === 1
+                                ? t("child")
+                                : t("children")}
+                            </span>
+                          </div>
+                        )}
+                      {isProfessional &&
+                        profile.professional_experience_years !== undefined &&
+                        profile.professional_experience_years !== null &&
+                        profile.professional_experience_years > 0 && (
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                            <Briefcase className="w-5 h-5 text-indigo-500" />
+                            <span className="text-sm font-medium">
+                              {profile.professional_experience_years}{" "}
+                              {profile.professional_experience_years === 1
+                                ? t("year")
+                                : t("years")}
+                            </span>
+                          </div>
+                        )}
                     </div>
 
                     {/* Botões de Ação */}
                     <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                       {!isOwnProfile && (
-                        <Button onClick={handleContact} className="bg-gradient-to-r from-[#00b0b0] to-cyan-600 hover:from-[#00a0a0] hover:to-cyan-700 text-white px-8 py-6 text-lg font-bold shadow-lg transform hover:scale-105 transition-transform">
+                        <Button
+                          onClick={handleContact}
+                          className="bg-gradient-to-r from-[#00b0b0] to-cyan-600 hover:from-[#00a0a0] hover:to-cyan-700 text-white px-8 py-6 text-lg font-bold shadow-lg transform hover:scale-105 transition-transform"
+                        >
                           <MessageCircle className="w-5 h-5 mr-2" />
-                          {t('contact')}
+                          {t("contact")}
                         </Button>
                       )}
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="px-8 py-6 text-lg font-bold border-2"
                         onClick={handleShare}
                       >
                         <Share2 className="w-5 h-5 mr-2" />
-                        {t('share')}
+                        {t("share")}
                       </Button>
                     </div>
                   </div>
@@ -307,12 +402,43 @@ export default function ProfilePage() {
 
           {/* Tabs Portfolio Style */}
           <Tabs defaultValue="recommendations" className="space-y-8">
-            <TabsList className={`grid w-full ${isProfessional ? 'grid-cols-5' : 'grid-cols-4'} bg-white/50 dark:bg-gray-900/50 backdrop-blur-lg border-2 border-gray-200 dark:border-gray-800 rounded-xl p-2`}>
-              <TabsTrigger value="recommendations" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg">Recomend.</TabsTrigger>
-              {isProfessional && <TabsTrigger value="services" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg">{t('services')}</TabsTrigger>}
-              <TabsTrigger value="reviews" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg">{t('reviews')}</TabsTrigger>
-              {isProfessional && <TabsTrigger value="portfolio" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg">{t('portfolio')}</TabsTrigger>}
-              <TabsTrigger value="about" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg">Sobre</TabsTrigger>
+            <TabsList
+              className={`grid w-full ${isProfessional ? "grid-cols-5" : "grid-cols-4"} bg-white/50 dark:bg-gray-900/50 backdrop-blur-lg border-2 border-gray-200 dark:border-gray-800 rounded-xl p-2`}
+            >
+              <TabsTrigger
+                value="recommendations"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+              >
+                Recomend.
+              </TabsTrigger>
+              {isProfessional && (
+                <TabsTrigger
+                  value="services"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                >
+                  {t("services")}
+                </TabsTrigger>
+              )}
+              <TabsTrigger
+                value="reviews"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+              >
+                {t("reviews")}
+              </TabsTrigger>
+              {isProfessional && (
+                <TabsTrigger
+                  value="portfolio"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+                >
+                  {t("portfolio")}
+                </TabsTrigger>
+              )}
+              <TabsTrigger
+                value="about"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#00b0b0] data-[state=active]:to-cyan-500 data-[state=active]:text-white rounded-lg"
+              >
+                Sobre
+              </TabsTrigger>
             </TabsList>
 
             {/* Aba de Recomendações */}
@@ -321,9 +447,12 @@ export default function ProfilePage() {
                 <CardHeader className="bg-gradient-to-r from-cyan-500 to-[#00b0b0] text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <ThumbsUp className="w-5 h-5" />
-                    {t('recommendations')}
+                    {t("recommendations")}
                     {recommendations.length > 0 && (
-                      <Badge variant="secondary" className="ml-2 bg-white/20 text-white">
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-white/20 text-white"
+                      >
                         {recommendations.length}
                       </Badge>
                     )}
@@ -333,7 +462,10 @@ export default function ProfilePage() {
                   {recommendationsLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-pulse">
+                        <div
+                          key={i}
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3 animate-pulse"
+                        >
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                             <div className="flex-1 space-y-2">
@@ -345,18 +477,28 @@ export default function ProfilePage() {
                       ))}
                     </div>
                   ) : recommendations.length === 0 ? (
-                    <EmptyState icon={<ThumbsUp className="h-12 w-12 text-gray-400" />} title="Nenhuma recomendação encontrada" description="Este usuário ainda não recebeu recomendações." />
+                    <EmptyState
+                      icon={<ThumbsUp className="h-12 w-12 text-gray-400" />}
+                      title="Nenhuma recomendação encontrada"
+                      description="Este usuário ainda não recebeu recomendações."
+                    />
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {recommendations.map((rec) => (
-                        <Link key={rec.id} href={`/perfil/${rec.recommender.id}`} className="block">
+                        <Link
+                          key={rec.id}
+                          href={`/perfil/${rec.recommender.id}`}
+                          className="block"
+                        >
                           <Card className="hover:shadow-xl transition-shadow cursor-pointer h-full border-0 shadow-lg bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 transform hover:scale-105">
                             <CardContent className="p-4">
                               <div className="flex items-start gap-3">
                                 <UserAvatar
                                   src={rec.recommender.avatar_url}
                                   alt={rec.recommender.full_name}
-                                  fallback={rec.recommender.full_name?.charAt(0) || 'U'}
+                                  fallback={
+                                    rec.recommender.full_name?.charAt(0) || "U"
+                                  }
                                   size="md"
                                 />
                                 <div className="flex-1 min-w-0">
@@ -368,12 +510,14 @@ export default function ProfilePage() {
                                       <CheckCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
                                     )}
                                   </div>
-                                  {rec.recommender.location_city && rec.recommender.location_state && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
-                                      <MapPin className="w-3 h-3" />
-                                      {rec.recommender.location_city}, {rec.recommender.location_state}
-                                    </p>
-                                  )}
+                                  {rec.recommender.location_city &&
+                                    rec.recommender.location_state && (
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mb-2">
+                                        <MapPin className="w-3 h-3" />
+                                        {rec.recommender.location_city},{" "}
+                                        {rec.recommender.location_state}
+                                      </p>
+                                    )}
                                   <div className="flex items-center gap-2 mb-2">
                                     {rec.recommender.rating > 0 && (
                                       <div className="flex items-center gap-1">
@@ -383,13 +527,28 @@ export default function ProfilePage() {
                                         </span>
                                       </div>
                                     )}
-                                    <Badge variant={rec.recommender.user_type === 'professional' ? 'default' : 'secondary'} className="text-xs">
-                                      {rec.recommender.user_type === 'professional' ? t('professional') : t('client')}
+                                    <Badge
+                                      variant={
+                                        rec.recommender.user_type ===
+                                        "professional"
+                                          ? "default"
+                                          : "secondary"
+                                      }
+                                      className="text-xs"
+                                    >
+                                      {rec.recommender.user_type ===
+                                      "professional"
+                                        ? t("professional")
+                                        : t("client")}
                                     </Badge>
                                   </div>
                                   <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
-                                    {format(new Date(rec.created_at), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                                    {format(
+                                      new Date(rec.created_at),
+                                      "dd 'de' MMM 'de' yyyy",
+                                      { locale: ptBR },
+                                    )}
                                   </p>
                                 </div>
                               </div>
@@ -415,66 +574,103 @@ export default function ProfilePage() {
                   <CardContent className="pt-6 space-y-4">
                     {profile.gender && (
                       <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">Gênero</span>
-                        <span className="font-semibold">{formatGender(profile.gender)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Gênero
+                        </span>
+                        <span className="font-semibold">
+                          {formatGender(profile.gender)}
+                        </span>
                       </div>
                     )}
                     {profile.idade && (
                       <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">{t('age')}</span>
-                        <span className="font-semibold">{profile.idade} {t('years')}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {t("age")}
+                        </span>
+                        <span className="font-semibold">
+                          {profile.idade} {t("years")}
+                        </span>
                       </div>
                     )}
                     {profile.escolaridade && (
                       <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">{t('education')}</span>
-                        <span className="font-semibold text-right">{formatEscolaridade(profile.escolaridade)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {t("education")}
+                        </span>
+                        <span className="font-semibold text-right">
+                          {formatEscolaridade(profile.escolaridade)}
+                        </span>
                       </div>
                     )}
                     {profile.estado_civil && (
                       <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                        <span className="text-gray-600 dark:text-gray-400">{t('maritalStatus')}</span>
-                        <span className="font-semibold">{formatEstadoCivil(profile.estado_civil)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">
+                          {t("maritalStatus")}
+                        </span>
+                        <span className="font-semibold">
+                          {formatEstadoCivil(profile.estado_civil)}
+                        </span>
                       </div>
                     )}
-                    {profile.filhos !== null && profile.filhos !== undefined && (
-                      <div className="flex justify-between py-3">
-                        <span className="text-gray-600 dark:text-gray-400">{t('childrenLabel')}</span>
-                        <span className="font-semibold">{profile.filhos} {profile.filhos === 1 ? t('child') : t('children')}</span>
-                      </div>
-                    )}
+                    {profile.filhos !== null &&
+                      profile.filhos !== undefined && (
+                        <div className="flex justify-between py-3">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {t("childrenLabel")}
+                          </span>
+                          <span className="font-semibold">
+                            {profile.filhos}{" "}
+                            {profile.filhos === 1 ? t("child") : t("children")}
+                          </span>
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
 
                 {isProfessional && (
                   <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
                     <CardHeader className="bg-gradient-to-r from-[#00b0b0] to-cyan-500 text-white rounded-t-lg">
-                        <CardTitle className="flex items-center gap-2">
-                          <Briefcase className="w-5 h-5" />
-                          {t('professionalInfo')}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-6 space-y-4">
-                        {profile.professional_experience_years && (
-                          <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                            <span className="text-gray-600 dark:text-gray-400">{t('experience')}</span>
-                            <span className="font-semibold">{profile.professional_experience_years} {profile.professional_experience_years === 1 ? t('year') : t('years')}</span>
-                          </div>
-                        )}
-                        {profile.turno_trabalho && (
-                          <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                            <span className="text-gray-600 dark:text-gray-400">{t('shift')}</span>
-                            <span className="font-semibold">{formatTurnoTrabalho(profile.turno_trabalho)}</span>
-                          </div>
-                        )}
-                        {profile.referencia_profissional && (
-                          <div className="py-3">
-                            <span className="text-gray-600 dark:text-gray-400 block mb-2">{t('professionalReference')}</span>
-                            <p className="text-sm text-gray-900 dark:text-white leading-relaxed">{profile.referencia_profissional}</p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                      <CardTitle className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        {t("professionalInfo")}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                      {profile.professional_experience_years && (
+                        <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {t("experience")}
+                          </span>
+                          <span className="font-semibold">
+                            {profile.professional_experience_years}{" "}
+                            {profile.professional_experience_years === 1
+                              ? t("year")
+                              : t("years")}
+                          </span>
+                        </div>
+                      )}
+                      {profile.turno_trabalho && (
+                        <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {t("shift")}
+                          </span>
+                          <span className="font-semibold">
+                            {formatTurnoTrabalho(profile.turno_trabalho)}
+                          </span>
+                        </div>
+                      )}
+                      {profile.referencia_profissional && (
+                        <div className="py-3">
+                          <span className="text-gray-600 dark:text-gray-400 block mb-2">
+                            {t("professionalReference")}
+                          </span>
+                          <p className="text-sm text-gray-900 dark:text-white leading-relaxed">
+                            {profile.referencia_profissional}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </TabsContent>
@@ -485,21 +681,31 @@ export default function ProfilePage() {
                   <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2">
                       <Briefcase className="w-5 h-5" />
-                      {t('servicesOffered')}
+                      {t("servicesOffered")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    {profile.professional_services && profile.professional_services.length > 0 ? (
+                    {profile.professional_services &&
+                    profile.professional_services.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {profile.professional_services.map((service, index) => (
-                          <div key={index} className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                          >
                             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                            <span className="text-gray-900 dark:text-white font-medium">{service}</span>
+                            <span className="text-gray-900 dark:text-white font-medium">
+                              {service}
+                            </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <EmptyState icon={<Briefcase className="h-12 w-12 text-gray-400" />} title={t('noServices')} description={t('noServicesDescription')} />
+                      <EmptyState
+                        icon={<Briefcase className="h-12 w-12 text-gray-400" />}
+                        title={t("noServices")}
+                        description={t("noServicesDescription")}
+                      />
                     )}
                   </CardContent>
                 </Card>
@@ -507,8 +713,12 @@ export default function ProfilePage() {
                 <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
                   <CardContent className="p-8 text-center">
                     <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('client')}</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Este usuário é um cliente e não oferece serviços.</p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      {t("client")}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Este usuário é um cliente e não oferece serviços.
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -519,14 +729,17 @@ export default function ProfilePage() {
                 <CardHeader className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
                     <Star className="w-5 h-5" />
-                    {t('reviews')}
+                    {t("reviews")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6">
                   {reviewsLoading ? (
                     <div className="space-y-4">
                       {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse">
+                        <div
+                          key={i}
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse"
+                        >
                           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
                           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                         </div>
@@ -535,43 +748,50 @@ export default function ProfilePage() {
                   ) : reviews && reviews.length > 0 ? (
                     <div className="space-y-4">
                       {reviews.map((review) => (
-                        <ReviewCard 
-                          key={review.id} 
-                          review={review} 
-                          currentUserId={user?.id} 
+                        <ReviewCard
+                          key={review.id}
+                          review={review}
+                          currentUserId={user?.id}
                           profileOwnerId={userId}
                           onRespond={async (reviewId, responseText) => {
-                            const result = await respondToReview(reviewId, responseText)
-                            
+                            const result = await respondToReview(
+                              reviewId,
+                              responseText,
+                            );
+
                             // Aguardar um pouco para garantir que o banco foi atualizado
                             // e então refazer a busca para atualizar os dados
                             if (userId && !result.error) {
                               setTimeout(async () => {
-                                await fetchUserReviews(userId)
-                              }, 1000)
+                                await fetchUserReviews(userId);
+                              }, 1000);
                             }
-                            return result
+                            return result;
                           }}
                           onEdit={async (reviewToEdit) => {
                             // Abrir modal de edição ou atualizar diretamente
                             // Por enquanto, apenas recarregar após edição
-                            fetchUserReviews(userId)
+                            fetchUserReviews(userId);
                           }}
                           onDelete={async (reviewId) => {
-                            const result = await deleteReview(reviewId)
+                            const result = await deleteReview(reviewId);
                             if (!result.error) {
-                              toast.success('Avaliação excluída com sucesso')
+                              toast.success("Avaliação excluída com sucesso");
                               // Recarregar avaliações após excluir
-                              fetchUserReviews(userId)
+                              fetchUserReviews(userId);
                             } else {
-                              toast.error('Erro ao excluir avaliação')
+                              toast.error("Erro ao excluir avaliação");
                             }
                           }}
                         />
                       ))}
                     </div>
                   ) : (
-                    <EmptyState icon={<Star className="h-12 w-12 text-gray-400" />} title="Nenhuma avaliação encontrada" description="Este usuário ainda não recebeu avaliações." />
+                    <EmptyState
+                      icon={<Star className="h-12 w-12 text-gray-400" />}
+                      title="Nenhuma avaliação encontrada"
+                      description="Este usuário ainda não recebeu avaliações."
+                    />
                   )}
                 </CardContent>
               </Card>
@@ -583,14 +803,17 @@ export default function ProfilePage() {
                   <CardHeader className="bg-gradient-to-r from-indigo-500 to-[#00b0b0] text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-2">
                       <Building2 className="w-5 h-5" />
-                      {t('portfolio')}
+                      {t("portfolio")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-6">
                     {portfolioLoading ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Array.from({ length: 3 }).map((_, i) => (
-                          <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse">
+                          <div
+                            key={i}
+                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse"
+                          >
                             <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
                             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
                           </div>
@@ -599,18 +822,34 @@ export default function ProfilePage() {
                     ) : portfolioProjects && portfolioProjects.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {portfolioProjects.map((project) => (
-                          <div key={project.id} className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform">
-                            <h4 className="font-medium text-gray-900 dark:text-white mb-2">{project.title}</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{project.description}</p>
+                          <div
+                            key={project.id}
+                            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform"
+                          >
+                            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                              {project.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                              {project.description}
+                            </p>
                             <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                              <span>{format(new Date(project.created_at), 'dd/MM/yyyy')}</span>
+                              <span>
+                                {format(
+                                  new Date(project.created_at),
+                                  "dd/MM/yyyy",
+                                )}
+                              </span>
                               <span>{project.views_count} visualizações</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <EmptyState icon={<Building2 className="h-12 w-12 text-gray-400" />} title="Nenhum projeto no portfólio" description="Este profissional ainda não adicionou projetos ao portfólio." />
+                      <EmptyState
+                        icon={<Building2 className="h-12 w-12 text-gray-400" />}
+                        title="Nenhum projeto no portfólio"
+                        description="Este profissional ainda não adicionou projetos ao portfólio."
+                      />
                     )}
                   </CardContent>
                 </Card>
@@ -618,8 +857,12 @@ export default function ProfilePage() {
                 <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
                   <CardContent className="p-8 text-center">
                     <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t('client')}</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Este usuário é um cliente e não possui portfólio.</p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                      {t("client")}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Este usuário é um cliente e não possui portfólio.
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -628,5 +871,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </MainLayout>
-  )
+  );
 }
