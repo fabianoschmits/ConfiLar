@@ -66,6 +66,8 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { getCategoryById } from "@/data/serviceCategories";
+import { ScrollToTop } from "@/components/ui/ScrollToTop";
+import { useNavigationShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 export default function FeedPage() {
   const t = useTranslations("feed");
@@ -128,6 +130,9 @@ export default function FeedPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showFeedSettings]);
+
+  // Atalhos de teclado para navegação
+  useNavigationShortcuts();
 
   // NÃO carregar preferências de pesquisa salvas
   // A pesquisa (keywords, username, userid) é apenas temporária
@@ -613,29 +618,44 @@ export default function FeedPage() {
           ) : (
             <div className="space-y-4 px-0 sm:px-0">
               {filteredItems.map(
-                (item) =>
+                (item, index) =>
                   item.type === "post" && (
-                    <InstagramPost
+                    <div
                       key={item.id}
-                      post={item}
-                      isLiked={likedPosts.has(item.id)}
-                      onLike={() => handleLike(item.id)}
-                      onEdit={handleEditPost}
-                      onDelete={handleDeletePost}
-                      onRenewPremium={(postId: string) => {
-                        setRenewingPostId(postId);
-                        setShowRenewPremiumModal(true);
+                      className="animate-in fade-in slide-in-from-bottom-4 duration-300"
+                      style={{
+                        animationDelay: `${Math.min(index * 50, 300)}ms`,
                       }}
-                      isTrending={trendingPosts.some((t) => t.id === item.id)}
-                      isDeleting={deletingPostId === item.id}
-                    />
+                    >
+                      <InstagramPost
+                        post={item}
+                        isLiked={likedPosts.has(item.id)}
+                        onLike={() => handleLike(item.id)}
+                        onEdit={handleEditPost}
+                        onDelete={handleDeletePost}
+                        onRenewPremium={(postId: string) => {
+                          setRenewingPostId(postId);
+                          setShowRenewPremiumModal(true);
+                        }}
+                        isTrending={trendingPosts.some((t) => t.id === item.id)}
+                        isDeleting={deletingPostId === item.id}
+                      />
+                    </div>
                   ),
               )}
 
               {hasNextPage && (
-                <div ref={loadingRef} className="flex justify-center py-8">
+                <div
+                  ref={loadingRef}
+                  className="flex flex-col items-center gap-2 py-8"
+                >
                   {isFetchingNextPage && (
-                    <Loader2 className="h-6 w-6 animate-spin text-blue-600 dark:text-blue-400" />
+                    <>
+                      <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 animate-pulse">
+                        Carregando mais posts...
+                      </p>
+                    </>
                   )}
                 </div>
               )}
@@ -882,6 +902,9 @@ export default function FeedPage() {
             />
           </Modal>
         )}
+
+        {/* Botão Voltar ao Topo */}
+        <ScrollToTop showAfter={400} />
       </div>
     </MainLayout>
   );
@@ -955,6 +978,15 @@ function InstagramPost({
     addReaction("like");
     // Atualizar cache e chamar callback
     onLike();
+
+    // Feedback visual
+    if (!isLikedByUser) {
+      toast.success("❤️ Post curtido!", {
+        duration: 1500,
+        position: "bottom-center",
+      });
+    }
+
     setTimeout(() => setIsLiking(false), 300);
   };
 
@@ -965,6 +997,10 @@ function InstagramPost({
     try {
       await addComment(newComment.trim());
       setNewComment("");
+      toast.success("💬 Comentário publicado!", {
+        duration: 2000,
+        position: "bottom-center",
+      });
     } catch (error) {
       console.error("Erro ao adicionar comentário:", error);
       toast.error("Erro ao adicionar comentário. Tente novamente.");
@@ -986,6 +1022,10 @@ function InstagramPost({
       await editComment(editingComment, editCommentContent.trim());
       setEditingComment(null);
       setEditCommentContent("");
+      toast.success("✏️ Comentário atualizado!", {
+        duration: 2000,
+        position: "bottom-center",
+      });
     } catch (error) {
       console.error("Erro ao editar comentário:", error);
       toast.error("Erro ao editar comentário. Tente novamente.");
@@ -1005,6 +1045,10 @@ function InstagramPost({
     if (confirm("Tem certeza que deseja deletar este comentário?")) {
       try {
         await deleteComment(commentId);
+        toast.success("🗑️ Comentário deletado!", {
+          duration: 2000,
+          position: "bottom-center",
+        });
       } catch (error) {
         console.error("Erro ao deletar comentário:", error);
         toast.error("Erro ao deletar comentário. Tente novamente.");
@@ -1242,15 +1286,16 @@ function InstagramPost({
 
       {/* AÇÕES */}
       <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           {/* Botão de Like Normal */}
           <button
             onClick={handleLikeClick}
             disabled={isLiking || isReactionLoading}
-            className="transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5"
+            aria-label={isLikedByUser ? "Descurtir post" : "Curtir post"}
+            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <Heart
-              className={`h-4 w-4 transition-all ${
+              className={`h-5 w-5 transition-all ${
                 isLikedByUser
                   ? "text-red-500 fill-red-500"
                   : "text-gray-700 dark:text-gray-300"
@@ -1276,10 +1321,14 @@ function InstagramPost({
           {/* Botão de Comentários */}
           <button
             onClick={() => setShowComments(!showComments)}
-            className="transition-transform active:scale-125 flex items-center gap-1.5"
+            aria-label={
+              showComments ? "Ocultar comentários" : "Ver comentários"
+            }
+            aria-expanded={showComments}
+            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <MessageCircle
-              className={`h-4 w-4 transition-all ${
+              className={`h-5 w-5 transition-all ${
                 showComments
                   ? "text-primary-600 dark:text-primary-400"
                   : "text-gray-700 dark:text-gray-300"
@@ -1293,9 +1342,10 @@ function InstagramPost({
           {/* Botão de Compartilhar */}
           <button
             onClick={() => setShowShareModal(true)}
-            className="transition-transform active:scale-125 flex items-center gap-1.5"
+            aria-label="Compartilhar post"
+            className="min-h-[44px] min-w-[44px] p-2 transition-transform active:scale-125 flex items-center gap-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <Share2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+            <Share2 className="h-5 w-5 text-gray-700 dark:text-gray-300" />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
               {sharesCount > 0 ? sharesCount.toLocaleString("pt-BR") : "0"}
             </span>

@@ -1,78 +1,92 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { ChevronLeft, ChevronRight, Heart, Coins, Play } from 'lucide-react'
-import { YouTubePlayer } from '@/components/ui/YouTubePlayer'
-import { detectYouTubeUrls } from '@/utils/youtube'
+import { useState } from "react";
+import Image from "next/image";
+import { ChevronLeft, ChevronRight, Heart, Coins, Play } from "lucide-react";
+import { YouTubePlayer } from "@/components/ui/YouTubePlayer";
+import { detectYouTubeUrls } from "@/utils/youtube";
 
 interface PostMediaProps {
-  images: string[]
-  description?: string
-  youtubeVideoId?: string | null
-  onDoubleClick?: () => void
-  isLiking?: boolean
-  isPremiumLiking?: boolean
+  images: string[];
+  description?: string;
+  youtubeVideoId?: string | null;
+  onDoubleClick?: () => void;
+  isLiking?: boolean;
+  isPremiumLiking?: boolean;
 }
 
-export function PostMedia({ 
-  images, 
-  description = '', 
+export function PostMedia({
+  images,
+  description = "",
   youtubeVideoId,
   onDoubleClick,
   isLiking = false,
-  isPremiumLiking = false
+  isPremiumLiking = false,
 }: PostMediaProps) {
   // Detectar vídeos do YouTube: primeiro verificar se há vídeo passado via prop (metadata), depois descrição
   // Isso permite que o componente receba o vídeo diretamente (via metadata) ou detecte na descrição (posts antigos)
-  const firstVideo = youtubeVideoId 
-    ? { id: youtubeVideoId, url: '', thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg` }
-    : (detectYouTubeUrls(description).length > 0 ? detectYouTubeUrls(description)[0] : null)
-  
-  // Combinar mídia: vídeo primeiro (se houver), depois fotos
-  const allMedia: Array<{ type: 'image' | 'video', content: string }> = [
-    ...(firstVideo ? [{ type: 'video' as const, content: firstVideo.id }] : []),
-    ...images.map(img => ({ type: 'image' as const, content: img }))
-  ]
+  const firstVideo = youtubeVideoId
+    ? {
+        id: youtubeVideoId,
+        url: "",
+        thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
+      }
+    : detectYouTubeUrls(description).length > 0
+      ? detectYouTubeUrls(description)[0]
+      : null;
 
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const currentMedia = allMedia[currentIndex]
-  const hasMultipleMedia = allMedia.length > 1
-  const canGoPrev = hasMultipleMedia && currentIndex > 0
-  const canGoNext = hasMultipleMedia && currentIndex < allMedia.length - 1
+  // Combinar mídia: vídeo primeiro (se houver), depois fotos
+  const allMedia: Array<{ type: "image" | "video"; content: string }> = [
+    ...(firstVideo ? [{ type: "video" as const, content: firstVideo.id }] : []),
+    ...images.map((img) => ({ type: "image" as const, content: img })),
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentMedia = allMedia[currentIndex];
+  const hasMultipleMedia = allMedia.length > 1;
+  const canGoPrev = hasMultipleMedia && currentIndex > 0;
+  const canGoNext = hasMultipleMedia && currentIndex < allMedia.length - 1;
 
   const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (canGoPrev) {
-      setCurrentIndex(currentIndex - 1)
+      setCurrentIndex(currentIndex - 1);
     }
-  }
+  };
 
   const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (canGoNext) {
-      setCurrentIndex(currentIndex + 1)
+      setCurrentIndex(currentIndex + 1);
     }
-  }
+  };
 
   // Se não há mídia, retornar null
   if (allMedia.length === 0) {
-    return null
+    return null;
   }
 
   return (
-    <div 
+    <div
       className="relative w-full aspect-square bg-gray-100 dark:bg-gray-900"
       onDoubleClick={onDoubleClick}
     >
       {/* Conteúdo atual (foto ou vídeo) */}
-      {currentMedia.type === 'image' ? (
+      {currentMedia.type === "image" ? (
         <Image
           src={currentMedia.content}
           alt="Post"
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 640px"
+          {...(currentIndex === 0
+            ? { priority: true }
+            : {
+                loading: "lazy" as const,
+                placeholder: "blur" as const,
+                blurDataURL:
+                  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==",
+              })}
         />
       ) : (
         <div className="w-full h-full bg-black relative">
@@ -96,21 +110,21 @@ export function PostMedia({
       {isPremiumLiking && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div className="relative h-20 w-20">
-            <Coins 
+            <Coins
               className="h-20 w-20 absolute inset-0 text-yellow-500 animate-ping"
               style={{
-                fill: '#eab308',
-                stroke: 'none',
-                zIndex: 1
+                fill: "#eab308",
+                stroke: "none",
+                zIndex: 1,
               }}
             />
-            <Coins 
+            <Coins
               className="h-20 w-20 absolute inset-0 text-gray-700 dark:text-gray-300 animate-ping"
               style={{
-                fill: 'none',
-                stroke: 'currentColor',
+                fill: "none",
+                stroke: "currentColor",
                 strokeWidth: 3,
-                zIndex: 2
+                zIndex: 2,
               }}
             />
           </div>
@@ -146,17 +160,17 @@ export function PostMedia({
             <button
               key={index}
               onClick={(e) => {
-                e.stopPropagation()
-                setCurrentIndex(index)
+                e.stopPropagation();
+                setCurrentIndex(index);
               }}
               className={`relative transition-all duration-200 rounded-full overflow-hidden border-2 backdrop-blur-sm ${
                 index === currentIndex
-                  ? 'w-10 h-10 border-white/80 shadow-lg scale-110 opacity-90'
-                  : 'w-8 h-8 border-white/40 opacity-30 hover:opacity-50 hover:scale-105'
+                  ? "w-10 h-10 border-white/80 shadow-lg scale-110 opacity-90"
+                  : "w-8 h-8 border-white/40 opacity-30 hover:opacity-50 hover:scale-105"
               }`}
               aria-label={`Ir para ${index + 1}`}
             >
-              {media.type === 'image' ? (
+              {media.type === "image" ? (
                 <div className="w-full h-full opacity-90">
                   <Image
                     src={media.content}
@@ -164,6 +178,7 @@ export function PostMedia({
                     fill
                     className="object-cover"
                     sizes="40px"
+                    loading="lazy"
                   />
                 </div>
               ) : (
@@ -173,8 +188,8 @@ export function PostMedia({
                     alt="Vídeo do YouTube"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      target.src = `https://img.youtube.com/vi/${media.content}/default.jpg`
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://img.youtube.com/vi/${media.content}/default.jpg`;
                     }}
                   />
                   {/* Ícone de play sobre a miniatura do vídeo */}
@@ -188,6 +203,5 @@ export function PostMedia({
         </div>
       )}
     </div>
-  )
+  );
 }
-

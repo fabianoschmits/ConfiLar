@@ -4,32 +4,32 @@
 
 /* Fontes Gilroy locais */
 @font-face {
-  font-family: 'Gilroy';
-  src: url('/Fonts/Gilroy-Light.otf') format('opentype');
+  font-family: "Gilroy";
+  src: url("/Fonts/Gilroy-Light.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Gilroy';
-  src: url('/Fonts/gilroy-regular.ttf') format('truetype');
+  font-family: "Gilroy";
+  src: url("/Fonts/gilroy-regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Gilroy';
-  src: url('/Fonts/Gilroy-ExtraBold.otf') format('opentype');
+  font-family: "Gilroy";
+  src: url("/Fonts/Gilroy-ExtraBold.otf") format("opentype");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Gilroy';
-  src: url('/Fonts/gilroy-black.ttf') format('truetype');
+  font-family: "Gilroy";
+  src: url("/Fonts/gilroy-black.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -37,32 +37,38 @@
 
 /* Animações customizadas para cards de classificados */
 @keyframes glow-blue {
-  0%, 100% {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 
-                0 15px 30px -10px rgba(0, 0, 0, 0.3),
-                0 0 25px rgba(59, 130, 246, 0.5), 
-                0 0 50px rgba(59, 130, 246, 0.3);
+  0%,
+  100% {
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.4),
+      0 15px 30px -10px rgba(0, 0, 0, 0.3),
+      0 0 25px rgba(59, 130, 246, 0.5),
+      0 0 50px rgba(59, 130, 246, 0.3);
   }
   50% {
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45), 
-                0 20px 35px -10px rgba(0, 0, 0, 0.35),
-                0 0 40px rgba(59, 130, 246, 0.7), 
-                0 0 80px rgba(59, 130, 246, 0.4);
+    box-shadow:
+      0 30px 60px -12px rgba(0, 0, 0, 0.45),
+      0 20px 35px -10px rgba(0, 0, 0, 0.35),
+      0 0 40px rgba(59, 130, 246, 0.7),
+      0 0 80px rgba(59, 130, 246, 0.4);
   }
 }
 
 @keyframes glow-emerald {
-  0%, 100% {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 
-                0 15px 30px -10px rgba(0, 0, 0, 0.3),
-                0 0 25px rgba(16, 185, 129, 0.5), 
-                0 0 50px rgba(16, 185, 129, 0.3);
+  0%,
+  100% {
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.4),
+      0 15px 30px -10px rgba(0, 0, 0, 0.3),
+      0 0 25px rgba(16, 185, 129, 0.5),
+      0 0 50px rgba(16, 185, 129, 0.3);
   }
   50% {
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.45), 
-                0 20px 35px -10px rgba(0, 0, 0, 0.35),
-                0 0 40px rgba(16, 185, 129, 0.7), 
-                0 0 80px rgba(16, 185, 129, 0.4);
+    box-shadow:
+      0 30px 60px -12px rgba(0, 0, 0, 0.45),
+      0 20px 35px -10px rgba(0, 0, 0, 0.35),
+      0 0 40px rgba(16, 185, 129, 0.7),
+      0 0 80px rgba(16, 185, 129, 0.4);
   }
 }
 
@@ -192,7 +198,7 @@
 }
 
 .ripple-effect::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -201,12 +207,18 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition:
+    width 0.6s,
+    height 0.6s;
 }
 
 .ripple-effect:active::after {
   width: 300px;
   height: 300px;
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out;
 }
 
 /* Modern Design System Variables */
@@ -279,28 +291,30 @@
   --brand: #00b0b0;
 
   /* Spacing (4px base) */
-  --spacing-xs: 0.25rem;   /* 4px */
-  --spacing-sm: 0.5rem;    /* 8px */
-  --spacing-md: 1rem;      /* 16px */
-  --spacing-lg: 1.5rem;    /* 24px */
-  --spacing-xl: 2rem;      /* 32px */
-  --spacing-2xl: 3rem;     /* 48px */
-  --spacing-3xl: 4rem;     /* 64px */
-  --spacing-4xl: 6rem;     /* 96px */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+  --spacing-3xl: 4rem; /* 64px */
+  --spacing-4xl: 6rem; /* 96px */
 
   /* Border Radius */
-  --radius-sm: 0.375rem;   /* 6px */
-  --radius-md: 0.5rem;     /* 8px */
-  --radius-lg: 0.75rem;    /* 12px */
-  --radius-xl: 1rem;       /* 16px */
-  --radius-2xl: 1.5rem;    /* 24px */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.5rem; /* 24px */
   --radius-full: 9999px;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
@@ -414,7 +428,19 @@
 }
 
 /* Allow text selection for content areas */
-p, h1, h2, h3, h4, h5, h6, span, div, a, button, input, textarea {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+div,
+a,
+button,
+input,
+textarea {
   -webkit-user-select: text;
   -khtml-user-select: text;
   -moz-user-select: text;
@@ -428,9 +454,12 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
-
 /* Better touch targets for mobile */
-button, a, input, select, textarea {
+button,
+a,
+input,
+select,
+textarea {
   min-height: 44px;
   min-width: 44px;
 }
@@ -450,100 +479,102 @@ button, a, input, select, textarea {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   /* Improve touch scrolling */
-  .overflow-auto, .overflow-scroll {
+  .overflow-auto,
+  .overflow-scroll {
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* Better spacing for mobile */
   .space-y-4 > * + * {
     margin-top: 1rem;
   }
-  
+
   .space-y-6 > * + * {
     margin-top: 1.5rem;
   }
-  
+
   .space-y-8 > * + * {
     margin-top: 2rem;
   }
-  
+
   /* Mobile navigation improvements */
   .mobile-nav {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   /* Better card spacing on mobile */
   .card {
     margin-bottom: 1rem;
   }
-  
+
   /* Improve button touch targets */
   .btn-mobile {
     min-height: 48px;
     min-width: 48px;
     padding: 12px;
   }
-  
+
   /* Better form inputs on mobile */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-size: 16px; /* Prevents zoom on iOS */
   }
-  
+
   /* Improve modal/sheet positioning */
   .sheet-content {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   /* Better list spacing */
   .list-item {
     padding: 12px 16px;
   }
-  
+
   /* Improve grid layouts for mobile */
   .grid-mobile {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
   }
-  
+
   /* Better text sizing for mobile */
   .text-mobile {
     font-size: 14px;
     line-height: 1.5;
   }
-  
+
   .text-mobile-lg {
     font-size: 16px;
     line-height: 1.6;
   }
-  
+
   /* Improve spacing for mobile */
   .p-mobile {
     padding: 1rem;
   }
-  
+
   .px-mobile {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
-  
+
   .py-mobile {
     padding-top: 1rem;
     padding-bottom: 1rem;
   }
-  
+
   /* Better margins for mobile */
   .m-mobile {
     margin: 1rem;
   }
-  
+
   .mx-mobile {
     margin-left: 1rem;
     margin-right: 1rem;
   }
-  
+
   .my-mobile {
     margin-top: 1rem;
     margin-bottom: 1rem;
@@ -555,15 +586,15 @@ button, a, input, select, textarea {
   .safe-area-top {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
-  
+
   .safe-area-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
-  
+
   .safe-area-left {
     padding-left: max(1rem, env(safe-area-inset-left));
   }
-  
+
   .safe-area-right {
     padding-right: max(1rem, env(safe-area-inset-right));
   }
@@ -603,7 +634,9 @@ button, a, input, select, textarea {
   height: 480px;
   background: white;
   border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
@@ -618,14 +651,14 @@ button, a, input, select, textarea {
     height: 480px;
     width: 256px;
   }
-  
+
   .floating-chat .messages-area {
     flex: 1;
     overflow-y: auto;
     scroll-behavior: smooth;
     min-height: 0; /* Importante para flex funcionar */
   }
-  
+
   .floating-chat .input-area {
     background: white;
     border-top: 1px solid #e5e7eb;
@@ -641,7 +674,7 @@ button, a, input, select, textarea {
     right: 1rem !important;
     left: auto !important;
   }
-  
+
   /* Área de mensagens otimizada para mobile */
   .floating-chat .messages-area {
     flex: 1;
@@ -649,7 +682,7 @@ button, a, input, select, textarea {
     scroll-behavior: smooth;
     min-height: 0; /* Importante para flex funcionar */
   }
-  
+
   /* Input sempre visível no mobile */
   .floating-chat .input-area {
     background: white;
@@ -693,23 +726,24 @@ button, a, input, select, textarea {
     height: 100vh;
     height: 100dvh;
   }
-  
+
   .chat-input {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
-  
+
   /* Prevent zoom on input focus */
-  input, textarea {
+  input,
+  textarea {
     font-size: 16px !important;
   }
-  
+
   /* Better touch targets */
   .chat-button {
     min-height: 44px;
     min-width: 44px;
     padding: 0.75rem;
   }
-  
+
   /* Improve scrolling */
   .chat-scroll {
     -webkit-overflow-scrolling: touch;
@@ -821,81 +855,81 @@ button, a, input, select, textarea {
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-}
+    --chart-5: 340 75% 55%;
+  }
 
-/* Remover borda preta do CommandInput quando focado */
-[data-slot="command-input"],
-[data-slot="command-input"]:focus,
-[data-slot="command-input"]:focus-visible,
-[data-slot="command-input"]:active {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  ring: none !important;
-}
+  /* Remover borda preta do CommandInput quando focado */
+  [data-slot="command-input"],
+  [data-slot="command-input"]:focus,
+  [data-slot="command-input"]:focus-visible,
+  [data-slot="command-input"]:active {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    ring: none !important;
+  }
 
-/* Remover borda do wrapper do CommandInput */
-[data-slot="command-input-wrapper"] {
-  border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
-}
+  /* Remover borda do wrapper do CommandInput */
+  [data-slot="command-input-wrapper"] {
+    border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
+  }
 
-.dark [data-slot="command-input-wrapper"] {
-  border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
-}
+  .dark [data-slot="command-input-wrapper"] {
+    border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
+  }
 
   /* Aplicar fonte Gilroy globalmente */
   html {
-    font-family: 'Gilroy', system-ui, sans-serif;
+    font-family: "Gilroy", system-ui, sans-serif;
   }
-  
+
   body {
-    font-family: 'Gilroy', system-ui, sans-serif;
+    font-family: "Gilroy", system-ui, sans-serif;
     font-weight: 400;
     background-color: white;
   }
-  
+
   .dark body {
     background-color: black;
   }
-  
+
   .dark html {
     background-color: black;
   }
-  
+
   /* Mapeamento de font-weight para os pesos disponíveis da Gilroy */
   /* Light (300) */
   .font-light,
   .font-thin {
     font-weight: 300;
   }
-  
+
   /* Regular (400) - padrão */
   .font-normal,
   .font-regular {
     font-weight: 400;
   }
-  
+
   /* Medium (500) - usar Regular */
   .font-medium {
     font-weight: 400;
   }
-  
+
   /* SemiBold (600) - usar ExtraBold */
   .font-semibold {
     font-weight: 800;
   }
-  
+
   /* Bold (700) - usar ExtraBold */
   .font-bold {
     font-weight: 800;
   }
-  
+
   /* ExtraBold (800) */
   .font-extrabold {
     font-weight: 800;
   }
-  
+
   /* Black (900) */
   .font-black {
     font-weight: 900;
@@ -904,26 +938,26 @@ button, a, input, select, textarea {
 
 /* Garantir que os toasts do Sonner usem a fonte Gilroy */
 [data-sonner-toaster] {
-  font-family: 'Gilroy', system-ui, sans-serif !important;
+  font-family: "Gilroy", system-ui, sans-serif !important;
 }
 
 [data-sonner-toast] {
-  font-family: 'Gilroy', system-ui, sans-serif !important;
+  font-family: "Gilroy", system-ui, sans-serif !important;
 }
 
 [data-sonner-toast] [data-title] {
-  font-family: 'Gilroy', system-ui, sans-serif !important;
+  font-family: "Gilroy", system-ui, sans-serif !important;
 }
 
 [data-sonner-toast] [data-description] {
-  font-family: 'Gilroy', system-ui, sans-serif !important;
+  font-family: "Gilroy", system-ui, sans-serif !important;
 }
 
 /* Garantir que componentes de notificação usem a fonte Gilroy */
 .notification-item,
 .notification-dropdown,
 .notification-center {
-  font-family: 'Gilroy', system-ui, sans-serif;
+  font-family: "Gilroy", system-ui, sans-serif;
 }
 
 /* Hide scrollbar utility */
@@ -932,7 +966,7 @@ button, a, input, select, textarea {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -975,4 +1009,3 @@ button, a, input, select, textarea {
   outline: none !important;
   box-shadow: none !important;
 }
-
