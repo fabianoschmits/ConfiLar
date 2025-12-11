@@ -1,105 +1,133 @@
-'use client'
+"use client";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { Plus, Search, MessageCircle, Heart, Share2, MoreHorizontal, Flame, X, Send, Camera, Loader2, RefreshCw, Crown, Coins } from 'lucide-react'
-import { useUnifiedTimeline } from '@/hooks/useUnifiedTimeline'
-import { useTimelineRealtime } from '@/hooks/useTimelineRealtime'
-import { usePostRanking } from '@/hooks/usePostRanking'
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
-import { usePullToRefresh } from '@/hooks/usePullToRefresh'
-import { NewPostForm } from '@/components/timeline/NewPostForm'
-import { PremiumPostForm } from '@/components/timeline/PremiumPostForm'
-import { Modal } from '@/components/ui/modal'
-import { useLocationFilters } from '@/hooks/useLocationFilters'
-import { InstagramPostSkeleton } from '@/components/ui/skeleton'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
-import Link from 'next/link'
-import { UnifiedTimelineItem } from '@/types/timeline'
-import { useComments } from '@/hooks/useComments'
-import { SharePostModal } from '@/components/timeline/SharePostModal'
-import { useReactions, useReactionCounts } from '@/hooks/useReactions'
-import { PostOptionsMenu } from '@/components/timeline/PostOptionsMenu'
-import { CommentOptionsMenu } from '@/components/timeline/CommentOptionsMenu'
-import { EditPostModal } from '@/components/timeline/EditPostModal'
-import { useCommentsCount } from '@/hooks/useCommentsCount'
-import { cn } from '@/lib/utils'
-import { PremiumLikeButton } from '@/components/points/PremiumLikeButton'
-import { usePostShares } from '@/hooks/usePostShares'
-import { useQueryClient } from '@tanstack/react-query'
-import { LikedBy } from '@/components/timeline/LikedBy'
-import { PostMedia } from '@/components/timeline/PostMedia'
-import { detectYouTubeUrls, removeYouTubeUrls } from '@/utils/youtube'
-import { PremiumTimeRemaining } from '@/components/timeline/PremiumTimeRemaining'
-import { MentionText } from '@/components/ui/MentionText'
-import { MentionInput } from '@/components/ui/MentionInput'
-import { FeedSettingsModal } from '@/components/timeline/FeedSettingsModal'
-import { supabase } from '@/lib/supabase'
-import { LocationFilter } from '@/hooks/useLocationFilters'
-import { usePremiumNotifications } from '@/hooks/usePremiumNotifications'
-import { useStories } from '@/hooks/useStories'
-import { StoryViewer } from '@/components/stories/StoryViewer'
-import { CreateStoryModal } from '@/components/stories/CreateStoryModal'
-import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
-import { getCategoryById } from '@/data/serviceCategories'
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { MainLayout } from "@/components/layout/MainLayout";
+import {
+  Plus,
+  Search,
+  MessageCircle,
+  Heart,
+  Share2,
+  MoreHorizontal,
+  Flame,
+  X,
+  Send,
+  Camera,
+  Loader2,
+  RefreshCw,
+  Crown,
+  Coins,
+} from "lucide-react";
+import { useUnifiedTimeline } from "@/hooks/useUnifiedTimeline";
+import { useTimelineRealtime } from "@/hooks/useTimelineRealtime";
+import { usePostRanking } from "@/hooks/usePostRanking";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { NewPostForm } from "@/components/timeline/NewPostForm";
+import { PremiumPostForm } from "@/components/timeline/PremiumPostForm";
+import { Modal } from "@/components/ui/modal";
+import { useLocationFilters } from "@/hooks/useLocationFilters";
+import { InstagramPostSkeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import Link from "next/link";
+import { UnifiedTimelineItem } from "@/types/timeline";
+import { useComments } from "@/hooks/useComments";
+import { SharePostModal } from "@/components/timeline/SharePostModal";
+import { useReactions, useReactionCounts } from "@/hooks/useReactions";
+import { PostOptionsMenu } from "@/components/timeline/PostOptionsMenu";
+import { CommentOptionsMenu } from "@/components/timeline/CommentOptionsMenu";
+import { EditPostModal } from "@/components/timeline/EditPostModal";
+import { useCommentsCount } from "@/hooks/useCommentsCount";
+import { cn } from "@/lib/utils";
+import { PremiumLikeButton } from "@/components/points/PremiumLikeButton";
+import { usePostShares } from "@/hooks/usePostShares";
+import { useQueryClient } from "@tanstack/react-query";
+import { LikedBy } from "@/components/timeline/LikedBy";
+import { PostMedia } from "@/components/timeline/PostMedia";
+import { detectYouTubeUrls, removeYouTubeUrls } from "@/utils/youtube";
+import { PremiumTimeRemaining } from "@/components/timeline/PremiumTimeRemaining";
+import { MentionText } from "@/components/ui/MentionText";
+import { MentionInput } from "@/components/ui/MentionInput";
+import { FeedSettingsModal } from "@/components/timeline/FeedSettingsModal";
+import { supabase } from "@/lib/supabase";
+import { LocationFilter } from "@/hooks/useLocationFilters";
+import { usePremiumNotifications } from "@/hooks/usePremiumNotifications";
+import { useStories } from "@/hooks/useStories";
+import { StoryViewer } from "@/components/stories/StoryViewer";
+import { CreateStoryModal } from "@/components/stories/CreateStoryModal";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { getCategoryById } from "@/data/serviceCategories";
 
 export default function FeedPage() {
-  const t = useTranslations('feed')
-  const tCommon = useTranslations('common')
-  const [mounted, setMounted] = useState(false)
-  const { profile } = useAuthContext()
-  const { openChat } = useFloatingChat()
-  const searchParams = useSearchParams()
-  const highlightPostId = searchParams.get('post')
+  const t = useTranslations("feed");
+  const tCommon = useTranslations("common");
+  const [mounted, setMounted] = useState(false);
+  const { profile } = useAuthContext();
+  const { openChat } = useFloatingChat();
+  const searchParams = useSearchParams();
+  const highlightPostId = searchParams.get("post");
 
-  const [activeTab, setActiveTab] = useState<'all' | 'posts' | 'notifications'>('posts')
-  const [showNewPost, setShowNewPost] = useState(false)
-  const [showPremiumPost, setShowPremiumPost] = useState(false)
-  const [showFeedSettings, setShowFeedSettings] = useState(false)
-  const [search, setSearch] = useState('')
-  const [isPosting, setIsPosting] = useState(false)
-  const [postStatus, setPostStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
-  const feedSettingsRef = useRef<HTMLDivElement>(null)
-  const [showCreateStory, setShowCreateStory] = useState(false)
-  const [showStoryViewer, setShowStoryViewer] = useState(false)
-  const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0)
-  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
+  const [activeTab, setActiveTab] = useState<"all" | "posts" | "notifications">(
+    "posts",
+  );
+  const [showNewPost, setShowNewPost] = useState(false);
+  const [showPremiumPost, setShowPremiumPost] = useState(false);
+  const [showFeedSettings, setShowFeedSettings] = useState(false);
+  const [search, setSearch] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
+  const [postStatus, setPostStatus] = useState<"idle" | "sending" | "sent">(
+    "idle",
+  );
+  const feedSettingsRef = useRef<HTMLDivElement>(null);
+  const [showCreateStory, setShowCreateStory] = useState(false);
+  const [showStoryViewer, setShowStoryViewer] = useState(false);
+  const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
 
-  const { currentFilter, setFilter } = useLocationFilters()
-  const { storyGroups, isLoading: storiesLoading, refetch: refetchStories } = useStories()
+  const { currentFilter, setFilter } = useLocationFilters();
+  const {
+    storyGroups,
+    isLoading: storiesLoading,
+    refetch: refetchStories,
+  } = useStories();
 
   // Fechar dropdown quando clicar fora (mas não quando clicar dentro do modal)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
+      const target = event.target as Node;
       // Verificar se o clique foi fora do modal e do botão que abre o modal
-      if (feedSettingsRef.current && 
-          !feedSettingsRef.current.contains(target) &&
-          !(target instanceof Element && target.closest('[data-feed-settings-modal]'))) {
-        setShowFeedSettings(false)
+      if (
+        feedSettingsRef.current &&
+        !feedSettingsRef.current.contains(target) &&
+        !(
+          target instanceof Element &&
+          target.closest("[data-feed-settings-modal]")
+        )
+      ) {
+        setShowFeedSettings(false);
       }
-    }
+    };
 
     if (showFeedSettings) {
       // Usar um pequeno delay para evitar fechar imediatamente ao abrir
       setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-      }, 100)
+        document.addEventListener("mousedown", handleClickOutside);
+      }, 100);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showFeedSettings])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showFeedSettings]);
 
   // NÃO carregar preferências de pesquisa salvas
   // A pesquisa (keywords, username, userid) é apenas temporária
@@ -118,145 +146,155 @@ export default function FeedPage() {
     renewPremiumPost,
     editPost,
     deletePost,
-    refetch
-  } = useUnifiedTimeline({ search, location_filter: currentFilter })
-  
-  const [editingPost, setEditingPost] = useState<any>(null)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
-  const [renewingPostId, setRenewingPostId] = useState<string | null>(null)
-  const [showRenewPremiumModal, setShowRenewPremiumModal] = useState(false)
+    refetch,
+  } = useUnifiedTimeline({ search, location_filter: currentFilter });
 
-  const { containerRef, isPulling, isRefreshing, pullDistance } = usePullToRefresh({ 
-    onRefresh: async () => {
-      await refetch()
-    }
-  })
+  const [editingPost, setEditingPost] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [renewingPostId, setRenewingPostId] = useState<string | null>(null);
+  const [showRenewPremiumModal, setShowRenewPremiumModal] = useState(false);
 
-  const { loadingRef } = useInfiniteScroll({ 
-    hasNextPage, 
-    isFetchingNextPage, 
-    fetchNextPage: loadMore, 
-    threshold: 400 
-  })
+  const { containerRef, isPulling, isRefreshing, pullDistance } =
+    usePullToRefresh({
+      onRefresh: async () => {
+        await refetch();
+      },
+    });
 
-  useTimelineRealtime()
-  
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: loadMore,
+    threshold: 400,
+  });
+
+  useTimelineRealtime();
+
   // Verificar notificações premium automaticamente
-  usePremiumNotifications()
-  
-  const { trendingPosts } = usePostRanking({ 
-    location_city: profile?.location_city, 
-    location_state: profile?.location_state, 
-    limit: 5 
-  })
+  usePremiumNotifications();
 
-  useEffect(() => setMounted(true), [])
+  const { trendingPosts } = usePostRanking({
+    location_city: profile?.location_city,
+    location_state: profile?.location_state,
+    limit: 5,
+  });
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (highlightPostId && mounted) {
       setTimeout(() => {
-        const el = document.getElementById(`post-${highlightPostId}`)
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        el?.classList.add('animate-pulse', 'ring-4', 'ring-blue-500')
+        const el = document.getElementById(`post-${highlightPostId}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        el?.classList.add("animate-pulse", "ring-4", "ring-blue-500");
         setTimeout(() => {
-          el?.classList.remove('animate-pulse', 'ring-4', 'ring-blue-500')
-        }, 2000)
-      }, 800)
+          el?.classList.remove("animate-pulse", "ring-4", "ring-blue-500");
+        }, 2000);
+      }, 800);
     }
-  }, [highlightPostId, mounted])
+  }, [highlightPostId, mounted]);
 
-  const filteredItems = items.filter(item => {
-    if (activeTab === 'posts') {
+  const filteredItems = items.filter((item) => {
+    if (activeTab === "posts") {
       // Incluir todos os posts (normais e premium)
       // Excluir apenas notificações automáticas (que têm metadata.type diferente de 'premium')
-      if (item.type !== 'post') return false
-      const metadataType = (item as any).metadata?.type
+      if (item.type !== "post") return false;
+      const metadataType = (item as any).metadata?.type;
       // Incluir posts sem metadata.type, posts premium, e excluir notificações automáticas
-      return !metadataType || metadataType === 'premium'
+      return !metadataType || metadataType === "premium";
     }
-    if (activeTab === 'notifications') {
-      return item.type === 'notification' || ((item as any).metadata?.type && (item as any).metadata?.type !== 'premium')
+    if (activeTab === "notifications") {
+      return (
+        item.type === "notification" ||
+        ((item as any).metadata?.type &&
+          (item as any).metadata?.type !== "premium")
+      );
     }
-    return true
-  })
+    return true;
+  });
 
-  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   const handleLike = (postId: string) => {
-    likePost(postId)
-    setLikedPosts(prev => {
-      const next = new Set(prev)
-      next.has(postId) ? next.delete(postId) : next.add(postId)
-      return next
-    })
-  }
+    likePost(postId);
+    setLikedPosts((prev) => {
+      const next = new Set(prev);
+      next.has(postId) ? next.delete(postId) : next.add(postId);
+      return next;
+    });
+  };
 
   const handleEditPost = (postId: string) => {
-    const post = items.find(item => item.type === 'post' && item.id === postId)
+    const post = items.find(
+      (item) => item.type === "post" && item.id === postId,
+    );
     if (post) {
-      setEditingPost(post)
-      setShowEditModal(true)
+      setEditingPost(post);
+      setShowEditModal(true);
     }
-  }
+  };
 
   const handleDeletePost = async (postId: string) => {
-    setDeletingPostId(postId)
+    setDeletingPostId(postId);
     try {
-      await deletePost(postId)
-      await refetch()
+      await deletePost(postId);
+      await refetch();
     } catch (error) {
-      console.error('Erro ao deletar post:', error)
-      toast.error('Erro ao deletar post. Tente novamente.')
+      console.error("Erro ao deletar post:", error);
+      toast.error("Erro ao deletar post. Tente novamente.");
     } finally {
-      setDeletingPostId(null)
+      setDeletingPostId(null);
     }
-  }
+  };
 
   const handleCameraClick = () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       // Tentar abrir câmera
-      navigator.mediaDevices.getUserMedia({ video: true })
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
         .then(() => {
-          setShowNewPost(true)
+          setShowNewPost(true);
         })
         .catch(() => {
-          setShowNewPost(true)
-        })
+          setShowNewPost(true);
+        });
     } else {
-      setShowNewPost(true)
+      setShowNewPost(true);
     }
-  }
+  };
 
   // Preparar lista de stories para exibição
   // Verificar se o usuário tem stories próprios
-  const myStoryGroup = storyGroups.find(group => group.userId === profile?.id)
+  const myStoryGroup = storyGroups.find(
+    (group) => group.userId === profile?.id,
+  );
   const displayStories = [
     // "Seu story" sempre aparece primeiro
     {
-      id: 'my-story',
-      userId: profile?.id || '',
-      userName: 'Seu story',
+      id: "my-story",
+      userId: profile?.id || "",
+      userName: "Seu story",
       userAvatar: profile?.avatar_url || null,
       hasNew: false,
       isMyStory: true,
-      stories: myStoryGroup?.stories || []
+      stories: myStoryGroup?.stories || [],
     },
     // Stories de outros usuários
     ...storyGroups
-      .filter(group => group.userId !== profile?.id)
-      .map(group => ({
+      .filter((group) => group.userId !== profile?.id)
+      .map((group) => ({
         id: group.userId,
         userId: group.userId,
         userName: group.userName,
         userAvatar: group.userAvatar,
         hasNew: group.hasNew,
         isMyStory: false,
-        stories: group.stories
-      }))
-  ]
+        stories: group.stories,
+      })),
+  ];
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <MainLayout requireAuth={true}>
@@ -275,7 +313,7 @@ export default function FeedPage() {
           isOpen={showCreateStory}
           onClose={() => setShowCreateStory(false)}
           onStoryCreated={async () => {
-            await refetchStories()
+            await refetchStories();
           }}
         />
       )}
@@ -289,22 +327,22 @@ export default function FeedPage() {
                 ConfiLar
               </h1>
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={() => setShowNewPost(true)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                  title={t('createPost')}
+                  title={t("createPost")}
                 >
                   <Plus className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                 </button>
                 <div className="relative" ref={feedSettingsRef}>
-                  <button 
+                  <button
                     onClick={() => setShowFeedSettings(!showFeedSettings)}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                    title={t('title')}
+                    title={t("title")}
                   >
                     <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                   </button>
-                  
+
                   {/* Dropdown de Configurações */}
                   {showFeedSettings && (
                     <FeedSettingsModal
@@ -313,58 +351,69 @@ export default function FeedPage() {
                       currentSearch={search}
                       currentLocationFilter={currentFilter}
                       onSearchChange={(newSearch) => {
-                        setSearch(newSearch)
+                        setSearch(newSearch);
                       }}
                       onLocationFilterChange={(newFilter) => {
-                        setFilter(newFilter)
+                        setFilter(newFilter);
                       }}
                       onReset={async () => {
                         // Resetar para estado original (cidade do usuário)
                         const resetFilter: LocationFilter = {
-                          type: 'local',
-                          city: profile?.location_city || '',
-                          state: profile?.location_state || '',
-                          country: 'Brasil'
-                        }
-                        
+                          type: "local",
+                          city: profile?.location_city || "",
+                          state: profile?.location_state || "",
+                          country: "Brasil",
+                        };
+
                         // Normalizar estado se for sigla
-                        if (resetFilter.state && resetFilter.state.length === 2) {
+                        if (
+                          resetFilter.state &&
+                          resetFilter.state.length === 2
+                        ) {
                           try {
-                            const { getEstadoBySigla } = await import('@/lib/ibge')
-                            const estado = await getEstadoBySigla(resetFilter.state)
+                            const { getEstadoBySigla } =
+                              await import("@/lib/ibge");
+                            const estado = await getEstadoBySigla(
+                              resetFilter.state,
+                            );
                             if (estado) {
-                              resetFilter.state = estado.nome
+                              resetFilter.state = estado.nome;
                             }
                           } catch (error) {
-                            console.error('Erro ao normalizar estado no reset:', error)
+                            console.error(
+                              "Erro ao normalizar estado no reset:",
+                              error,
+                            );
                           }
                         }
-                        
-                        setSearch('')
-                        setFilter(resetFilter)
-                        
+
+                        setSearch("");
+                        setFilter(resetFilter);
+
                         // Salvar APENAS localização resetada no perfil
                         // NÃO salvar pesquisa (keywords, username, userid)
                         if (profile?.id) {
                           try {
                             await supabase
-                              .from('profiles')
+                              .from("profiles")
                               .update({
-                                feed_location_filter_type: 'local',
-                                feed_location_filter_city: resetFilter.city || null,
-                                feed_location_filter_state: resetFilter.state || null,
-                                updated_at: new Date().toISOString()
+                                feed_location_filter_type: "local",
+                                feed_location_filter_city:
+                                  resetFilter.city || null,
+                                feed_location_filter_state:
+                                  resetFilter.state || null,
+                                updated_at: new Date().toISOString(),
                               })
-                              .eq('id', profile.id)
+                              .eq("id", profile.id);
                           } catch (error) {
-                            console.error('Erro ao salvar reset:', error)
+                            console.error("Erro ao salvar reset:", error);
                           }
                         }
                       }}
                     />
                   )}
                 </div>
-                <button 
+                <button
                   onClick={() => openChat()}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
                   title="Abrir chat"
@@ -376,17 +425,21 @@ export default function FeedPage() {
 
             {/* ABAS */}
             <div className="flex gap-6">
-              {(['all', 'posts', 'notifications'] as const).map(tab => (
+              {(["all", "posts", "notifications"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
                     activeTab === tab
-                      ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400'
+                      ? "border-primary-600 text-primary-600 dark:text-primary-400"
+                      : "border-transparent text-gray-500 dark:text-gray-400"
                   }`}
                 >
-                  {tab === 'all' ? t('all') : tab === 'posts' ? t('posts') : t('notifications')}
+                  {tab === "all"
+                    ? t("all")
+                    : tab === "posts"
+                      ? t("posts")
+                      : t("notifications")}
                 </button>
               ))}
             </div>
@@ -399,7 +452,10 @@ export default function FeedPage() {
             {storiesLoading ? (
               <div className="flex gap-4 overflow-x-auto scrollbar-hide">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2 min-w-[70px] flex-shrink-0">
+                  <div
+                    key={i}
+                    className="flex flex-col items-center gap-2 min-w-[70px] flex-shrink-0"
+                  >
                     <div className="relative">
                       <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse border-2 border-gray-300 dark:border-gray-700" />
                     </div>
@@ -420,38 +476,45 @@ export default function FeedPage() {
                         onClick={() => {
                           if (story.isMyStory) {
                             // Se for "Seu story", verificar se tem stories para ver
-                            if (myStoryGroup && myStoryGroup.stories.length > 0) {
+                            if (
+                              myStoryGroup &&
+                              myStoryGroup.stories.length > 0
+                            ) {
                               // Encontrar o índice do grupo do usuário
-                              const groupIndex = storyGroups.findIndex(g => g.userId === profile?.id)
+                              const groupIndex = storyGroups.findIndex(
+                                (g) => g.userId === profile?.id,
+                              );
                               if (groupIndex !== -1) {
-                                setSelectedStoryGroupIndex(groupIndex)
-                                setSelectedStoryIndex(0)
-                                setShowStoryViewer(true)
+                                setSelectedStoryGroupIndex(groupIndex);
+                                setSelectedStoryIndex(0);
+                                setShowStoryViewer(true);
                               }
                             } else {
                               // Se não tem stories, abrir modal de criar
-                              setShowCreateStory(true)
+                              setShowCreateStory(true);
                             }
                           } else {
                             // Encontrar o índice do grupo na lista real
-                            const groupIndex = storyGroups.findIndex(g => g.userId === story.userId)
+                            const groupIndex = storyGroups.findIndex(
+                              (g) => g.userId === story.userId,
+                            );
                             if (groupIndex !== -1) {
-                              setSelectedStoryGroupIndex(groupIndex)
-                              setSelectedStoryIndex(0)
-                              setShowStoryViewer(true)
+                              setSelectedStoryGroupIndex(groupIndex);
+                              setSelectedStoryIndex(0);
+                              setShowStoryViewer(true);
                             }
                           }
                         }}
                         className={`relative w-16 h-16 rounded-full p-0.5 block ${
-                          story.hasNew 
-                            ? 'bg-gradient-to-tr from-warning-400 via-error-500 to-primary-500' 
-                            : 'bg-gray-300 dark:bg-gray-700'
+                          story.hasNew
+                            ? "bg-gradient-to-tr from-warning-400 via-error-500 to-primary-500"
+                            : "bg-gray-300 dark:bg-gray-700"
                         }`}
                       >
                         <div className="w-full h-full rounded-full bg-white dark:bg-black p-0.5">
                           {story.userAvatar ? (
-                            <img 
-                              src={story.userAvatar} 
+                            <img
+                              src={story.userAvatar}
                               alt={story.userName}
                               className="w-full h-full rounded-full object-cover"
                             />
@@ -468,11 +531,11 @@ export default function FeedPage() {
                       {story.isMyStory && (
                         <button
                           onClick={(e) => {
-                            e.stopPropagation()
-                            setShowCreateStory(true)
+                            e.stopPropagation();
+                            setShowCreateStory(true);
                           }}
                           className="absolute -bottom-3 -right-3 bg-transparent border-0 flex items-center justify-center hover:opacity-80 transition-opacity z-10 p-0"
-                          title={t('createStory')}
+                          title={t("createStory")}
                         >
                           <Plus className="h-3 w-3 text-primary-600 dark:text-primary-400" />
                         </button>
@@ -495,7 +558,10 @@ export default function FeedPage() {
               {isRefreshing ? (
                 <RefreshCw className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
               ) : (
-                <RefreshCw className="h-5 w-5 text-primary-600 dark:text-primary-400" style={{ transform: `rotate(${pullDistance * 2}deg)` }} />
+                <RefreshCw
+                  className="h-5 w-5 text-primary-600 dark:text-primary-400"
+                  style={{ transform: `rotate(${pullDistance * 2}deg)` }}
+                />
               )}
             </div>
           </div>
@@ -504,7 +570,7 @@ export default function FeedPage() {
         {/* FEED */}
         <div ref={containerRef} className="max-w-2xl mx-auto pb-20">
           {isLoading ? (
-            <div className="space-y-0">
+            <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <InstagramPostSkeleton key={i} />
               ))}
@@ -518,42 +584,53 @@ export default function FeedPage() {
                 Nenhum post encontrado
               </h3>
               <p className="text-gray-500 dark:text-gray-400 text-center mb-4">
-                {search || currentFilter.type !== 'all' 
-                  ? 'Não encontramos posts com os filtros selecionados.'
-                  : 'Seja o primeiro a compartilhar algo!'}
+                {search || currentFilter.type !== "all"
+                  ? "Não encontramos posts com os filtros selecionados."
+                  : "Seja o primeiro a compartilhar algo!"}
               </p>
-              {(search || currentFilter.type !== 'all') && (
+              {(search || currentFilter.type !== "all") && (
                 <div className="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 max-w-md">
                   <p className="text-sm text-primary-900 dark:text-primary-200 font-medium mb-2">
                     💡 Dicas para encontrar mais posts:
                   </p>
                   <ul className="text-xs text-primary-800 dark:text-primary-300 space-y-1 list-disc list-inside">
-                    <li>Limpe a pesquisa usando o botão "Resetar" nas configurações</li>
-                    <li>Mude o filtro de localização para outra cidade ou estado</li>
-                    <li>Selecione "Todos os Locais" para ver posts de qualquer lugar</li>
+                    <li>
+                      Limpe a pesquisa usando o botão "Resetar" nas
+                      configurações
+                    </li>
+                    <li>
+                      Mude o filtro de localização para outra cidade ou estado
+                    </li>
+                    <li>
+                      Selecione "Todos os Locais" para ver posts de qualquer
+                      lugar
+                    </li>
                     <li>Verifique se os termos de pesquisa estão corretos</li>
                   </ul>
                 </div>
               )}
             </div>
           ) : (
-            <div className="space-y-0">
-              {filteredItems.map(item => item.type === 'post' && (
-                <InstagramPost
-                  key={item.id}
-                  post={item}
-                  isLiked={likedPosts.has(item.id)}
-                  onLike={() => handleLike(item.id)}
-                  onEdit={handleEditPost}
-                  onDelete={handleDeletePost}
-                  onRenewPremium={(postId: string) => {
-                    setRenewingPostId(postId)
-                    setShowRenewPremiumModal(true)
-                  }}
-                  isTrending={trendingPosts.some(t => t.id === item.id)}
-                  isDeleting={deletingPostId === item.id}
-                />
-              ))}
+            <div className="space-y-4 px-0 sm:px-0">
+              {filteredItems.map(
+                (item) =>
+                  item.type === "post" && (
+                    <InstagramPost
+                      key={item.id}
+                      post={item}
+                      isLiked={likedPosts.has(item.id)}
+                      onLike={() => handleLike(item.id)}
+                      onEdit={handleEditPost}
+                      onDelete={handleDeletePost}
+                      onRenewPremium={(postId: string) => {
+                        setRenewingPostId(postId);
+                        setShowRenewPremiumModal(true);
+                      }}
+                      isTrending={trendingPosts.some((t) => t.id === item.id)}
+                      isDeleting={deletingPostId === item.id}
+                    />
+                  ),
+              )}
 
               {hasNextPage && (
                 <div ref={loadingRef} className="flex justify-center py-8">
@@ -565,7 +642,6 @@ export default function FeedPage() {
             </div>
           )}
         </div>
-
 
         {/* MODAIS */}
         {/* Modal de Novo Post */}
@@ -582,25 +658,35 @@ export default function FeedPage() {
               <NewPostForm
                 onSubmit={async (data) => {
                   if (!profile?.id) {
-                    toast.error('Erro: Usuário não autenticado')
-                    return
+                    toast.error("Erro: Usuário não autenticado");
+                    return;
                   }
-                  
-                  setIsPosting(true)
-                  setPostStatus('sending')
-                  
+
+                  setIsPosting(true);
+                  setPostStatus("sending");
+
                   try {
                     // Se for post premium, usar addPremiumPost
-                    if (data.isPremium && data.pointsToSpend && data.durationDays) {
+                    if (
+                      data.isPremium &&
+                      data.pointsToSpend &&
+                      data.durationDays
+                    ) {
                       // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
                       // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
-                      const finalCityPremium = data.location_city !== undefined ? data.location_city : profile.location_city
-                      const finalStatePremium = data.location_state !== undefined ? data.location_state : profile.location_state
-                      
+                      const finalCityPremium =
+                        data.location_city !== undefined
+                          ? data.location_city
+                          : profile.location_city;
+                      const finalStatePremium =
+                        data.location_state !== undefined
+                          ? data.location_state
+                          : profile.location_state;
+
                       await addPremiumPost({
-                        type: 'post',
+                        type: "post",
                         user_id: profile.id,
-                        user_name: profile.full_name || 'Usuário',
+                        user_name: profile.full_name || "Usuário",
                         user_avatar: profile.avatar_url,
                         user_type: profile.user_type,
                         title: data.description.trim().slice(0, 100), // Título gerado da descrição
@@ -609,24 +695,33 @@ export default function FeedPage() {
                         service_category_id: data.service,
                         location_state: finalStatePremium,
                         location_city: finalCityPremium,
-                        location_country: data.location_country || (profile as any)?.country || 'BR',
+                        location_country:
+                          data.location_country ||
+                          (profile as any)?.country ||
+                          "BR",
                         pointsToSpend: data.pointsToSpend,
                         durationDays: data.durationDays,
                         likes_count: 0,
                         comments_count: 0,
-                        is_liked: false
-                      } as any)
+                        is_liked: false,
+                      } as any);
                     } else {
                       // Post normal
                       // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
                       // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
-                      const finalCity = data.location_city !== undefined ? data.location_city : profile.location_city
-                      const finalState = data.location_state !== undefined ? data.location_state : profile.location_state
-                      
+                      const finalCity =
+                        data.location_city !== undefined
+                          ? data.location_city
+                          : profile.location_city;
+                      const finalState =
+                        data.location_state !== undefined
+                          ? data.location_state
+                          : profile.location_state;
+
                       await addPost({
-                        type: 'post',
+                        type: "post",
                         user_id: profile.id,
-                        user_name: profile.full_name || 'Usuário',
+                        user_name: profile.full_name || "Usuário",
                         user_avatar: profile.avatar_url,
                         user_type: profile.user_type,
                         title: data.description.trim().slice(0, 100), // Título gerado da descrição
@@ -635,29 +730,32 @@ export default function FeedPage() {
                         service_category_id: data.service,
                         location_state: finalState,
                         location_city: finalCity,
-                        location_country: data.location_country || (profile as any)?.country || 'BR',
+                        location_country:
+                          data.location_country ||
+                          (profile as any)?.country ||
+                          "BR",
                         likes_count: 0,
                         comments_count: 0,
-                        is_liked: false
-                      })
+                        is_liked: false,
+                      });
                     }
-                    
+
                     // Mostrar "Enviado!" por 1 segundo antes de fechar
-                    setPostStatus('sent')
+                    setPostStatus("sent");
                     setTimeout(async () => {
-                      setShowNewPost(false)
-                      setPostStatus('idle')
+                      setShowNewPost(false);
+                      setPostStatus("idle");
                       // Aguardar um pouco antes de refetch para garantir que o post foi salvo
-                      await new Promise(resolve => setTimeout(resolve, 500))
-                      await refetch()
-                    }, 1000)
+                      await new Promise((resolve) => setTimeout(resolve, 500));
+                      await refetch();
+                    }, 1000);
                   } catch (error: any) {
-                    console.error('Erro ao criar post:', error)
-                    const errorMessage = error?.message || 'Erro ao criar post'
-                    toast.error(`Erro ao criar post: ${errorMessage}`)
-                    setPostStatus('idle')
+                    console.error("Erro ao criar post:", error);
+                    const errorMessage = error?.message || "Erro ao criar post";
+                    toast.error(`Erro ao criar post: ${errorMessage}`);
+                    setPostStatus("idle");
                   } finally {
-                    setIsPosting(false)
+                    setIsPosting(false);
                   }
                 }}
                 onCancel={() => setShowNewPost(false)}
@@ -672,17 +770,17 @@ export default function FeedPage() {
           isOpen={showPremiumPost}
           onClose={() => setShowPremiumPost(false)}
           size="lg"
-          title={t('premiumPost')}
+          title={t("premiumPost")}
         >
           <PremiumPostForm
             onSubmit={async (data) => {
-              if (!profile?.id) return
+              if (!profile?.id) return;
               await addPremiumPost({
-                type: 'post',
+                type: "post",
                 user_id: profile.id,
-                user_name: profile.full_name || '',
+                user_name: profile.full_name || "",
                 user_avatar: profile.avatar_url || undefined,
-                user_type: profile.user_type || 'professional',
+                user_type: profile.user_type || "professional",
                 title: data.title,
                 description: data.description,
                 images: data.images || [],
@@ -690,9 +788,9 @@ export default function FeedPage() {
                 location_state: profile.location_state || undefined,
                 location_city: profile.location_city || undefined,
                 pointsToSpend: data.pointsToSpend,
-                durationDays: data.durationDays
-              } as any)
-              setShowPremiumPost(false)
+                durationDays: data.durationDays,
+              } as any);
+              setShowPremiumPost(false);
             }}
             onCancel={() => setShowPremiumPost(false)}
             isLoading={false}
@@ -705,28 +803,31 @@ export default function FeedPage() {
           <EditPostModal
             isOpen={showEditModal}
             onClose={() => {
-              setShowEditModal(false)
-              setEditingPost(null)
+              setShowEditModal(false);
+              setEditingPost(null);
             }}
             post={{
               id: editingPost.id,
-              description: editingPost.description || '',
+              description: editingPost.description || "",
               images: editingPost.images || [],
-              service: editingPost.service_category_id || ''
+              service: editingPost.service_category_id || "",
             }}
-            onSave={async (postId: string, updatedPost: { description: string; images: string[] }) => {
+            onSave={async (
+              postId: string,
+              updatedPost: { description: string; images: string[] },
+            ) => {
               try {
                 await editPost(postId, {
                   title: updatedPost.description.slice(0, 100), // Gerar título automaticamente
                   description: updatedPost.description,
-                  images: updatedPost.images
-                })
-                setShowEditModal(false)
-                setEditingPost(null)
-                await refetch()
+                  images: updatedPost.images,
+                });
+                setShowEditModal(false);
+                setEditingPost(null);
+                await refetch();
               } catch (error) {
-                console.error('Erro ao editar post:', error)
-                toast.error('Erro ao editar post. Tente novamente.')
+                console.error("Erro ao editar post:", error);
+                toast.error("Erro ao editar post. Tente novamente.");
               }
             }}
           />
@@ -737,75 +838,88 @@ export default function FeedPage() {
           <Modal
             isOpen={showRenewPremiumModal}
             onClose={() => {
-              setShowRenewPremiumModal(false)
-              setRenewingPostId(null)
+              setShowRenewPremiumModal(false);
+              setRenewingPostId(null);
             }}
             size="lg"
-            title={t('renewPremium')}
+            title={t("renewPremium")}
           >
             <PremiumPostForm
               isRenewal={true}
               onSubmit={async (data) => {
-                if (!profile?.id || !renewingPostId) return
+                if (!profile?.id || !renewingPostId) return;
                 try {
-                  setIsPosting(true)
-                  setPostStatus('sending')
-                  await renewPremiumPost(renewingPostId, data.pointsToSpend, data.durationDays)
-                  setPostStatus('sent')
+                  setIsPosting(true);
+                  setPostStatus("sending");
+                  await renewPremiumPost(
+                    renewingPostId,
+                    data.pointsToSpend,
+                    data.durationDays,
+                  );
+                  setPostStatus("sent");
                   setTimeout(() => {
-                    setShowRenewPremiumModal(false)
-                    setRenewingPostId(null)
-                    setPostStatus('idle')
-                    refetch()
-                  }, 1000)
+                    setShowRenewPremiumModal(false);
+                    setRenewingPostId(null);
+                    setPostStatus("idle");
+                    refetch();
+                  }, 1000);
                 } catch (error: any) {
-                  console.error('Erro ao renovar post premium:', error)
-                  toast.error(`Erro ao renovar post premium: ${error?.message || 'Erro desconhecido'}`)
-                  setPostStatus('idle')
+                  console.error("Erro ao renovar post premium:", error);
+                  toast.error(
+                    `Erro ao renovar post premium: ${error?.message || "Erro desconhecido"}`,
+                  );
+                  setPostStatus("idle");
                 } finally {
-                  setIsPosting(false)
+                  setIsPosting(false);
                 }
               }}
               onCancel={() => {
-                setShowRenewPremiumModal(false)
-                setRenewingPostId(null)
+                setShowRenewPremiumModal(false);
+                setRenewingPostId(null);
               }}
               isLoading={isPosting}
               postStatus={postStatus}
             />
           </Modal>
         )}
-
       </div>
     </MainLayout>
-  )
+  );
 }
 
 // COMPONENTE DE POST (INSTAGRAM STYLE)
-function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium, isTrending, isDeleting = false }: any) {
-  const t = useTranslations('feed')
-  const { profile, user } = useAuthContext()
-  const queryClient = useQueryClient()
-  const [showFull, setShowFull] = useState(false)
-  const [isLiking, setIsLiking] = useState(false)
-  const [isPremiumLiking, setIsPremiumLiking] = useState(false)
-  const [showComments, setShowComments] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
-  
+function InstagramPost({
+  post,
+  isLiked,
+  onLike,
+  onEdit,
+  onDelete,
+  onRenewPremium,
+  isTrending,
+  isDeleting = false,
+}: any) {
+  const t = useTranslations("feed");
+  const { profile, user } = useAuthContext();
+  const queryClient = useQueryClient();
+  const [showFull, setShowFull] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [isPremiumLiking, setIsPremiumLiking] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Hook de reações (likes) - igual ao usado na página principal
-  const { addReaction, userReaction, isLoading: isReactionLoading } = useReactions(
-    post.id,
-    post.user_id,
-    post.user_name || 'Usuário'
-  )
-  
+  const {
+    addReaction,
+    userReaction,
+    isLoading: isReactionLoading,
+  } = useReactions(post.id, post.user_id, post.user_name || "Usuário");
+
   // Hook para contagem de reações
-  const { reactionCounts } = useReactionCounts(post.id)
-  
+  const { reactionCounts } = useReactionCounts(post.id);
+
   // Verificar se o usuário curtiu
-  const isLikedByUser = userReaction === 'like'
-  const likesCount = reactionCounts.like || 0
+  const isLikedByUser = userReaction === "like";
+  const likesCount = reactionCounts.like || 0;
 
   // Hook de comentários
   const {
@@ -818,157 +932,172 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
     isAddingComment,
     isLikingComment,
     isEditingComment,
-    isDeletingComment
+    isDeletingComment,
   } = useComments({
     post_id: post.id,
     postOwnerId: post.user_id,
-    postOwnerName: post.user_name || 'Usuário'
-  })
+    postOwnerName: post.user_name || "Usuário",
+  });
 
   // Hook para contagem de comentários
-  const { count: commentsCount } = useCommentsCount(post.id)
-  
-  // Hook para contagem de compartilhamentos
-  const { sharesCount } = usePostShares(post.id)
+  const { count: commentsCount } = useCommentsCount(post.id);
 
-  const [newComment, setNewComment] = useState('')
-  const [editingComment, setEditingComment] = useState<string | null>(null)
-  const [editCommentContent, setEditCommentContent] = useState('')
+  // Hook para contagem de compartilhamentos
+  const { sharesCount } = usePostShares(post.id);
+
+  const [newComment, setNewComment] = useState("");
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editCommentContent, setEditCommentContent] = useState("");
 
   // Função para curtir/descurtir usando o hook de reações
   const handleLikeClick = () => {
-    setIsLiking(true)
-    addReaction('like')
+    setIsLiking(true);
+    addReaction("like");
     // Atualizar cache e chamar callback
-    onLike()
-    setTimeout(() => setIsLiking(false), 300)
-  }
+    onLike();
+    setTimeout(() => setIsLiking(false), 300);
+  };
 
   // Função para adicionar comentário
   const handleAddComment = async () => {
-    if (!newComment.trim() || isAddingComment) return
+    if (!newComment.trim() || isAddingComment) return;
 
     try {
-      await addComment(newComment.trim())
-      setNewComment('')
+      await addComment(newComment.trim());
+      setNewComment("");
     } catch (error) {
-      console.error('Erro ao adicionar comentário:', error)
-      toast.error('Erro ao adicionar comentário. Tente novamente.')
+      console.error("Erro ao adicionar comentário:", error);
+      toast.error("Erro ao adicionar comentário. Tente novamente.");
     }
-  }
+  };
 
   // Função para editar comentário
   const handleEditComment = (commentId: string, currentContent: string) => {
-    setEditingComment(commentId)
-    setEditCommentContent(currentContent)
-  }
+    setEditingComment(commentId);
+    setEditCommentContent(currentContent);
+  };
 
   // Função para salvar edição de comentário
   const handleSaveEditComment = async () => {
-    if (!editingComment || !editCommentContent.trim() || isEditingComment) return
+    if (!editingComment || !editCommentContent.trim() || isEditingComment)
+      return;
 
     try {
-      await editComment(editingComment, editCommentContent.trim())
-      setEditingComment(null)
-      setEditCommentContent('')
+      await editComment(editingComment, editCommentContent.trim());
+      setEditingComment(null);
+      setEditCommentContent("");
     } catch (error) {
-      console.error('Erro ao editar comentário:', error)
-      toast.error('Erro ao editar comentário. Tente novamente.')
+      console.error("Erro ao editar comentário:", error);
+      toast.error("Erro ao editar comentário. Tente novamente.");
     }
-  }
+  };
 
   // Função para cancelar edição de comentário
   const handleCancelEditComment = () => {
-    setEditingComment(null)
-    setEditCommentContent('')
-  }
+    setEditingComment(null);
+    setEditCommentContent("");
+  };
 
   // Função para deletar comentário
   const handleDeleteComment = async (commentId: string) => {
-    if (isDeletingComment) return
-    
-    if (confirm('Tem certeza que deseja deletar este comentário?')) {
+    if (isDeletingComment) return;
+
+    if (confirm("Tem certeza que deseja deletar este comentário?")) {
       try {
-        await deleteComment(commentId)
+        await deleteComment(commentId);
       } catch (error) {
-        console.error('Erro ao deletar comentário:', error)
-        toast.error('Erro ao deletar comentário. Tente novamente.')
+        console.error("Erro ao deletar comentário:", error);
+        toast.error("Erro ao deletar comentário. Tente novamente.");
       }
     }
-  }
-
+  };
 
   // Pegar dados do usuário de diferentes fontes possíveis
-  const postUser = post.professional || post.user || {}
-  const postImages = post.images || []
-  
+  const postUser = post.professional || post.user || {};
+  const postImages = post.images || [];
+
   // Detectar vídeos do YouTube: primeiro verificar metadata, depois descrição (para compatibilidade com posts antigos)
-  const youtubeVideoId = (post.metadata as any)?.youtube_video_id || null
-  const youtubeVideos = youtubeVideoId 
-    ? [{ id: youtubeVideoId, url: (post.metadata as any)?.youtube_video_url || '', thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg` }]
-    : detectYouTubeUrls(post.description || '')
-  const cleanDescription = removeYouTubeUrls(post.description || '')
-  
+  const youtubeVideoId = (post.metadata as any)?.youtube_video_id || null;
+  const youtubeVideos = youtubeVideoId
+    ? [
+        {
+          id: youtubeVideoId,
+          url: (post.metadata as any)?.youtube_video_url || "",
+          thumbnail: `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`,
+        },
+      ]
+    : detectYouTubeUrls(post.description || "");
+  const cleanDescription = removeYouTubeUrls(post.description || "");
+
   // Garantir que temos todos os dados do usuário, tentando todas as fontes possíveis
-  const userAvatar = 
-    postUser?.avatar_url || 
-    post.user_avatar || 
-    post.professional?.avatar_url || 
-    post.user?.avatar_url || 
-    undefined
-  
+  const userAvatar =
+    postUser?.avatar_url ||
+    post.user_avatar ||
+    post.professional?.avatar_url ||
+    post.user?.avatar_url ||
+    undefined;
+
   // Extrair nome do usuário de todas as fontes possíveis
-  const userName = 
-    (postUser as any)?.full_name || 
-    post.user_name || 
-    (post.professional as any)?.full_name || 
-    (post.user as any)?.full_name || 
-    (post as any).metadata?.user || 
-    'Usuário'
-  
-  const userId = 
-    postUser?.id || 
-    post.user_id || 
-    post.professional?.id || 
-    post.user?.id || 
-    ''
-  
+  const userName =
+    (postUser as any)?.full_name ||
+    post.user_name ||
+    (post.professional as any)?.full_name ||
+    (post.user as any)?.full_name ||
+    (post as any).metadata?.user ||
+    "Usuário";
+
+  const userId =
+    postUser?.id ||
+    post.user_id ||
+    post.professional?.id ||
+    post.user?.id ||
+    "";
+
   // Garantir que sempre temos um nome válido
-  const displayUserName = userName && userName !== '' ? userName : 'Usuário'
-  
+  const displayUserName = userName && userName !== "" ? userName : "Usuário";
+
   // Texto para exibir (sem vídeos do YouTube)
-  const displayText = cleanDescription || post.title || ''
-  const shouldTruncate = displayText.length > 120
-  const finalDisplayText = showFull ? displayText : displayText.slice(0, 120) + (shouldTruncate ? '...' : '')
+  const displayText = cleanDescription || post.title || "";
+  const shouldTruncate = displayText.length > 120;
+  const finalDisplayText = showFull
+    ? displayText
+    : displayText.slice(0, 120) + (shouldTruncate ? "..." : "");
 
   // Verificar se é post premium
-  const isPremium = post.is_premium || post.tags?.includes('premium') || post.metadata?.type === 'premium'
-  const premiumExpired = post.premium_expires_at ? new Date(post.premium_expires_at) < new Date() : false
-  const isActivePremium = isPremium && !premiumExpired
-  
+  const isPremium =
+    post.is_premium ||
+    post.tags?.includes("premium") ||
+    post.metadata?.type === "premium";
+  const premiumExpired = post.premium_expires_at
+    ? new Date(post.premium_expires_at) < new Date()
+    : false;
+  const isActivePremium = isPremium && !premiumExpired;
+
   // Verificar se o usuário atual é o dono do post
-  const isOwner = user?.id === userId
-  
+  const isOwner = user?.id === userId;
+
   // Buscar categoria de serviço se houver service_category_id
-  const serviceCategory = post.service_category_id ? getCategoryById(post.service_category_id) : null
-  
+  const serviceCategory = post.service_category_id
+    ? getCategoryById(post.service_category_id)
+    : null;
+
   // Debug: verificar service_category_id
   if (post.service_category_id) {
-    console.log('🔍 [InstagramPost] service_category_id encontrado:', {
+    console.log("🔍 [InstagramPost] service_category_id encontrado:", {
       postId: post.id,
       service_category_id: post.service_category_id,
       categoryFound: !!serviceCategory,
-      categoryName: serviceCategory?.name
-    })
+      categoryName: serviceCategory?.name,
+    });
   }
 
   return (
-    <article 
+    <article
       id={`post-${post.id}`}
-      className={`bg-white dark:bg-black ${
-        isActivePremium 
-          ? 'border-l-2 border-l-warning-400 dark:border-l-warning-500 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent' 
-          : ''
+      className={`bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${
+        isActivePremium
+          ? "ring-2 ring-warning-400 dark:ring-warning-500 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent"
+          : ""
       }`}
     >
       {/* HEADER */}
@@ -989,15 +1118,17 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
               </p>
             </Link>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {post.location_city && post.location_city !== 'null' && `${post.location_city}, ${post.location_state || ''}`}
+              {post.location_city &&
+                post.location_city !== "null" &&
+                `${post.location_city}, ${post.location_state || ""}`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {/* Badge de Serviço */}
           {serviceCategory && (
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className="text-[10px] font-medium px-1.5 py-0.5 rounded-full border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 bg-success-50 dark:bg-success-900/30 flex items-center gap-1"
             >
               <span>{serviceCategory.icon}</span>
@@ -1020,12 +1151,12 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
         <PostOptionsMenu
           postId={post.id}
           postUserId={userId}
-          postTitle={post.title || post.description || 'Post'}
+          postTitle={post.title || post.description || "Post"}
           onEdit={(postId) => {
-            if (onEdit) onEdit(postId)
+            if (onEdit) onEdit(postId);
           }}
           onDelete={(postId) => {
-            if (onDelete) onDelete(postId)
+            if (onDelete) onDelete(postId);
           }}
           onRenewPremium={onRenewPremium}
           isDeleting={isDeleting}
@@ -1035,7 +1166,7 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       </div>
 
       {/* MÍDIA (FOTOS E/OU VÍDEO) - Sempre mostrar se houver */}
-      {(postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId) ? (
+      {postImages.length > 0 || youtubeVideos.length > 0 || youtubeVideoId ? (
         <>
           <PostMedia
             images={postImages}
@@ -1085,21 +1216,21 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             {isPremiumLiking && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                 <div className="relative h-20 w-20">
-                  <Coins 
+                  <Coins
                     className="h-20 w-20 absolute inset-0 text-warning-500 animate-ping"
                     style={{
-                      fill: 'currentColor',
-                      stroke: 'none',
-                      zIndex: 1
+                      fill: "currentColor",
+                      stroke: "none",
+                      zIndex: 1,
                     }}
                   />
-                  <Coins 
+                  <Coins
                     className="h-20 w-20 absolute inset-0 text-gray-700 dark:text-gray-300 animate-ping"
                     style={{
-                      fill: 'none',
-                      stroke: 'currentColor',
+                      fill: "none",
+                      stroke: "currentColor",
                       strokeWidth: 3,
-                      zIndex: 2
+                      zIndex: 2,
                     }}
                   />
                 </div>
@@ -1118,18 +1249,18 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             disabled={isLiking || isReactionLoading}
             className="transition-transform active:scale-125 disabled:opacity-50 flex items-center gap-1.5"
           >
-            <Heart 
+            <Heart
               className={`h-4 w-4 transition-all ${
-                isLikedByUser 
-                  ? 'text-red-500 fill-red-500' 
-                  : 'text-gray-700 dark:text-gray-300'
+                isLikedByUser
+                  ? "text-red-500 fill-red-500"
+                  : "text-gray-700 dark:text-gray-300"
               }`}
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {likesCount > 0 ? likesCount.toLocaleString('pt-BR') : '0'}
+              {likesCount > 0 ? likesCount.toLocaleString("pt-BR") : "0"}
             </span>
           </button>
-          
+
           {/* Botão de Like Premium */}
           <PremiumLikeButton
             postId={post.id}
@@ -1137,212 +1268,221 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
             size="sm"
             showStats={false}
             onPremiumLikeClick={() => {
-              setIsPremiumLiking(true)
-              setTimeout(() => setIsPremiumLiking(false), 600) // Duração da animação
+              setIsPremiumLiking(true);
+              setTimeout(() => setIsPremiumLiking(false), 600); // Duração da animação
             }}
           />
-          
+
           {/* Botão de Comentários */}
           <button
             onClick={() => setShowComments(!showComments)}
             className="transition-transform active:scale-125 flex items-center gap-1.5"
           >
-            <MessageCircle 
+            <MessageCircle
               className={`h-4 w-4 transition-all ${
-                showComments 
-                  ? 'text-primary-600 dark:text-primary-400' 
-                  : 'text-gray-700 dark:text-gray-300'
+                showComments
+                  ? "text-primary-600 dark:text-primary-400"
+                  : "text-gray-700 dark:text-gray-300"
               }`}
             />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {(commentsCount ?? 0).toLocaleString('pt-BR')}
+              {(commentsCount ?? 0).toLocaleString("pt-BR")}
             </span>
           </button>
-          
+
           {/* Botão de Compartilhar */}
-          <button 
+          <button
             onClick={() => setShowShareModal(true)}
             className="transition-transform active:scale-125 flex items-center gap-1.5"
           >
             <Share2 className="h-4 w-4 text-gray-700 dark:text-gray-300" />
             <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-              {sharesCount > 0 ? sharesCount.toLocaleString('pt-BR') : '0'}
+              {sharesCount > 0 ? sharesCount.toLocaleString("pt-BR") : "0"}
             </span>
           </button>
         </div>
-        
+
         {/* Mostrar quem curtiu */}
         <LikedBy postId={post.id} likesCount={likesCount} />
       </div>
 
       {/* COMENTÁRIOS */}
       {showComments && (
-          <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-900 px-4 pb-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            {/* Lista de comentários */}
-            {commentsLoading ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-              </div>
-            ) : comments && comments.length > 0 ? (
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {comments.slice(0, 10).map((comment: any) => (
-                  <div key={comment.id} className="flex gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarImage src={comment.user?.avatar_url} />
-                      <AvatarFallback className="text-xs">
-                        {comment.user?.full_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <p className="text-sm">
-                            <span className="font-semibold text-gray-900 dark:text-white">
-                              {comment.user?.full_name || 'Usuário'}
-                            </span>
-                            {' '}
-                            {editingComment === comment.id ? (
-                              <div className="mt-2 space-y-2">
-                                <MentionInput
-                                  value={editCommentContent}
-                                  onChange={(value) => setEditCommentContent(value)}
-                                  placeholder={t('editComment')}
-                                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 outline-none pb-1"
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                      e.preventDefault()
-                                      handleSaveEditComment()
-                                    }
-                                    if (e.key === 'Escape') {
-                                      handleCancelEditComment()
-                                    }
-                                  }}
-                                  minHeight="40px"
-                                />
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={handleSaveEditComment}
-                                    disabled={isEditingComment || !editCommentContent.trim()}
-                                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold disabled:opacity-50"
-                                  >
-                                    Salvar
-                                  </button>
-                                  <button
-                                    onClick={handleCancelEditComment}
-                                    className="text-xs text-gray-500 dark:text-gray-400"
-                                  >
-                                    Cancelar
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <span className="text-gray-700 dark:text-gray-300">
-                                <MentionText text={comment.content} />
-                              </span>
-                            )}
-                          </p>
-                          {editingComment !== comment.id && (
-                            <div className="flex items-center gap-3 mt-1">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
-                                {new Date(comment.created_at).toLocaleDateString('pt-BR', {
-                                  day: 'numeric',
-                                  month: 'short'
-                                })}
-                              </p>
-                              {/* Botão de Like */}
-                              <button
-                                onClick={() => {
-                                  likeComment(comment.id)
+        <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-900 px-4 pb-3 animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Lista de comentários */}
+          {commentsLoading ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          ) : comments && comments.length > 0 ? (
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {comments.slice(0, 10).map((comment: any) => (
+                <div key={comment.id} className="flex gap-2">
+                  <Avatar className="w-6 h-6">
+                    <AvatarImage src={comment.user?.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {comment.user?.full_name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <span className="font-semibold text-gray-900 dark:text-white">
+                            {comment.user?.full_name || "Usuário"}
+                          </span>{" "}
+                          {editingComment === comment.id ? (
+                            <div className="mt-2 space-y-2">
+                              <MentionInput
+                                value={editCommentContent}
+                                onChange={(value) =>
+                                  setEditCommentContent(value)
+                                }
+                                placeholder={t("editComment")}
+                                className="w-full bg-transparent text-sm text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 outline-none pb-1"
+                                onKeyPress={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSaveEditComment();
+                                  }
+                                  if (e.key === "Escape") {
+                                    handleCancelEditComment();
+                                  }
                                 }}
-                                disabled={isLikingComment}
-                                className={cn(
-                                  "flex items-center gap-1 text-xs transition-all duration-200",
-                                  comment.is_liked 
-                                    ? 'text-red-500 hover:text-red-600' 
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
-                                )}
-                              >
-                                <Heart 
-                                  className={cn(
-                                    "w-3.5 h-3.5 transition-all duration-300",
-                                    comment.is_liked && 'fill-current'
-                                  )}
-                                />
-                                <span className="font-medium">
-                                  {comment.likes_count || 0}
-                                </span>
-                              </button>
+                                minHeight="40px"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={handleSaveEditComment}
+                                  disabled={
+                                    isEditingComment ||
+                                    !editCommentContent.trim()
+                                  }
+                                  className="text-xs text-blue-600 dark:text-blue-400 font-semibold disabled:opacity-50"
+                                >
+                                  Salvar
+                                </button>
+                                <button
+                                  onClick={handleCancelEditComment}
+                                  className="text-xs text-gray-500 dark:text-gray-400"
+                                >
+                                  Cancelar
+                                </button>
+                              </div>
                             </div>
+                          ) : (
+                            <span className="text-gray-700 dark:text-gray-300">
+                              <MentionText text={comment.content} />
+                            </span>
                           )}
-                        </div>
+                        </p>
                         {editingComment !== comment.id && (
-                          <CommentOptionsMenu
-                            commentId={comment.id}
-                            commentUserId={comment.user?.id || comment.user_id}
-                            onEdit={() => handleEditComment(comment.id, comment.content)}
-                            onDelete={() => handleDeleteComment(comment.id)}
-                            isDeleting={isDeletingComment}
-                          />
+                          <div className="flex items-center gap-3 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(comment.created_at).toLocaleDateString(
+                                "pt-BR",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                },
+                              )}
+                            </p>
+                            {/* Botão de Like */}
+                            <button
+                              onClick={() => {
+                                likeComment(comment.id);
+                              }}
+                              disabled={isLikingComment}
+                              className={cn(
+                                "flex items-center gap-1 text-xs transition-all duration-200",
+                                comment.is_liked
+                                  ? "text-red-500 hover:text-red-600"
+                                  : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400",
+                              )}
+                            >
+                              <Heart
+                                className={cn(
+                                  "w-3.5 h-3.5 transition-all duration-300",
+                                  comment.is_liked && "fill-current",
+                                )}
+                              />
+                              <span className="font-medium">
+                                {comment.likes_count || 0}
+                              </span>
+                            </button>
+                          </div>
                         )}
                       </div>
+                      {editingComment !== comment.id && (
+                        <CommentOptionsMenu
+                          commentId={comment.id}
+                          commentUserId={comment.user?.id || comment.user_id}
+                          onEdit={() =>
+                            handleEditComment(comment.id, comment.content)
+                          }
+                          onDelete={() => handleDeleteComment(comment.id)}
+                          isDeleting={isDeletingComment}
+                        />
+                      )}
                     </div>
                   </div>
-                ))}
-                {comments.length > 10 && (
-                  <button className="text-xs text-gray-500 dark:text-gray-400">
-                    Ver mais comentários
-                  </button>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-                Nenhum comentário ainda. Seja o primeiro!
-              </p>
-            )}
-
-            {/* Input de comentário */}
-            <div className="flex gap-2 items-start">
-              {profile?.avatar_url && (
-                <Avatar className="w-6 h-6 mt-1 flex-shrink-0">
-                  <AvatarImage src={profile.avatar_url} />
-                  <AvatarFallback>
-                    {profile.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <div className="flex-1">
-                <MentionInput
-                  value={newComment}
-                  onChange={(value) => setNewComment(value)}
-                  placeholder={t('addComment')}
-                  disabled={isAddingComment}
-                  className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 pb-1"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleAddComment()
-                    }
-                  }}
-                  minHeight="48px"
-                />
-              </div>
-            </div>
-            {newComment.trim() && (
-              <div className="flex justify-end mt-2">
-                <button
-                  onClick={handleAddComment}
-                  disabled={isAddingComment}
-                    className="text-primary-600 dark:text-primary-400 font-semibold text-sm disabled:opacity-50"
-                >
-                  {isAddingComment ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    'Publicar'
-                  )}
+                </div>
+              ))}
+              {comments.length > 10 && (
+                <button className="text-xs text-gray-500 dark:text-gray-400">
+                  Ver mais comentários
                 </button>
-              </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+              Nenhum comentário ainda. Seja o primeiro!
+            </p>
+          )}
+
+          {/* Input de comentário */}
+          <div className="flex gap-2 items-start">
+            {profile?.avatar_url && (
+              <Avatar className="w-6 h-6 mt-1 flex-shrink-0">
+                <AvatarImage src={profile.avatar_url} />
+                <AvatarFallback>
+                  {profile.full_name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
             )}
+            <div className="flex-1">
+              <MentionInput
+                value={newComment}
+                onChange={(value) => setNewComment(value)}
+                placeholder={t("addComment")}
+                disabled={isAddingComment}
+                className="w-full bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none border-b border-gray-200 dark:border-gray-800 focus:border-primary-500 dark:focus:border-primary-400 pb-1"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAddComment();
+                  }
+                }}
+                minHeight="48px"
+              />
+            </div>
           </div>
+          {newComment.trim() && (
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={handleAddComment}
+                disabled={isAddingComment}
+                className="text-primary-600 dark:text-primary-400 font-semibold text-sm disabled:opacity-50"
+              >
+                {isAddingComment ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Publicar"
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Modal de compartilhamento */}
@@ -1350,10 +1490,10 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         postId={post.id}
-        postTitle={post.title || post.description || 'Post'}
+        postTitle={post.title || post.description || "Post"}
         onShareRecorded={() => {
           // Invalidar query para atualizar contador
-          queryClient.invalidateQueries({ queryKey: ['post-shares', post.id] })
+          queryClient.invalidateQueries({ queryKey: ["post-shares", post.id] });
         }}
       />
 
@@ -1361,28 +1501,26 @@ function InstagramPost({ post, isLiked, onLike, onEdit, onDelete, onRenewPremium
       <div className="px-4 pb-3">
         <div className="flex items-center gap-2 flex-wrap">
           <p className="text-xs text-gray-500 dark:text-gray-400 uppercase">
-            {new Date(post.created_at).toLocaleDateString('pt-BR', { 
-              day: 'numeric', 
-              month: 'short',
-              hour: '2-digit',
-              minute: '2-digit'
+            {new Date(post.created_at).toLocaleDateString("pt-BR", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </p>
           {isPremium && isOwner && post.premium_expires_at && (
             <>
-              <span className="text-xs text-gray-400 dark:text-gray-600">|</span>
-              <PremiumTimeRemaining 
-                expiresAt={post.premium_expires_at} 
+              <span className="text-xs text-gray-400 dark:text-gray-600">
+                |
+              </span>
+              <PremiumTimeRemaining
+                expiresAt={post.premium_expires_at}
                 isOwner={isOwner}
               />
             </>
           )}
         </div>
       </div>
-      
-      {/* LINHA SEPARADORA - Indica o fim do post */}
-      <div className="border-b-2 border-gray-300 dark:border-gray-700 my-2"></div>
     </article>
-  )
+  );
 }
-
