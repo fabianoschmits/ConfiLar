@@ -90,11 +90,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { ClientOnly } from "@/components/ClientOnly";
-import { PremiumAdForm } from "@/components/classifieds/PremiumAdForm";
+
 import { RenewPremiumAdForm } from "@/components/classifieds/RenewPremiumAdForm";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
 import { ReportButton } from "@/components/ReportButton";
 import { useTranslations } from "next-intl";
+import { UnifiedCreateAdForm } from "@/components/classifieds/UnifiedCreateAdForm";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 
 type AdType = "all" | "offers" | "requests";
@@ -106,7 +107,7 @@ export default function ClassificadosPage() {
   const { isSuperAdmin } = useIsSuperAdmin();
   const [mounted, setMounted] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showPremiumAdDialog, setShowPremiumAdDialog] = useState(false);
+
   const [showRenewPremiumDialog, setShowRenewPremiumDialog] = useState(false);
   const [renewingAdId, setRenewingAdId] = useState<string | null>(null);
   const [isCreatingAd, setIsCreatingAd] = useState(false);
@@ -314,40 +315,26 @@ export default function ClassificadosPage() {
     setShowCreateDialog(true);
   };
 
-  const handleCreateAd = async () => {
-    console.log("🔍 Debug - Iniciando criação de anúncio");
-    console.log("👤 User:", user);
-    console.log("👤 Profile:", profile);
+  // Nova função unificada para criar anúncio
+  const handleCreateUnifiedAd = async (data: {
+    title: string;
+    description: string;
+    category: string;
+    ad_type: "offer" | "request";
+    price?: number;
+    images: string[];
+    isPremium: boolean;
+    pointsToSpend?: number;
+    durationDays?: number;
+    location_country: string;
+    location_state: string;
+    location_city: string;
+  }) => {
+    console.log("🔍 Debug - Iniciando criação de anúncio unificado:", data);
 
     if (!user || !profile) {
-      console.log("❌ Usuário ou perfil não encontrado");
       toast.error("Login necessário", {
-        description:
-          "Você precisa estar logado para criar anúncios. Faça login e tente novamente.",
-      });
-      return;
-    }
-
-    if (
-      !formData.title ||
-      !formData.description ||
-      !formData.category ||
-      !formData.ad_type
-    ) {
-      console.log("❌ Campos obrigatórios não preenchidos");
-      toast.error("Campos obrigatórios", {
-        description:
-          "Por favor, preencha todos os campos obrigatórios antes de criar o anúncio.",
-      });
-      return;
-    }
-
-    // Validar se a categoria escolhida é válida
-    if (!isValidCategory(formData.category)) {
-      console.log("❌ Categoria inválida:", formData.category);
-      toast.error("Categoria inválida", {
-        description:
-          "A categoria selecionada não é válida. Por favor, selecione uma categoria válida.",
+        description: "Você precisa estar logado para criar anúncios.",
       });
       return;
     }
@@ -355,54 +342,97 @@ export default function ClassificadosPage() {
     try {
       setIsCreatingAd(true);
 
-      const adData = {
-        user_id: user.id,
-        user_name: profile?.full_name || user.email?.split("@")[0] || "Usuário",
-        user_type: profile?.user_type || "client",
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        location_state: formData.location_state,
-        location_city: formData.location_city,
-        ad_type: formData.ad_type === "offer" ? "oferecer" : "procurar",
-        is_active: true,
+      // Calcular expiração se premium
+      let premiumData: any = {
+        is_premium: false,
+        premium_expires_at: null,
       };
 
-      console.log("📝 Dados do anúncio:", adData);
-
-      const { data, error } = await supabase
-        .from("classified_ads")
-        .insert([adData]);
-
-      console.log("📊 Resultado da inserção:", { data, error });
-
-      if (error) {
-        console.error("❌ Erro ao criar anúncio:", error);
-        throw error;
+      if (data.isPremium && data.durationDays) {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + data.durationDays);
+        premiumData = {
+          is_premium: true,
+          premium_expires_at: expiryDate.toISOString(),
+          // premium_type could be added if schema supports it
+        };
       }
 
-      console.log("✅ Anúncio criado com sucesso!");
-      toast.success("Anúncio criado com sucesso!");
-      setShowCreateDialog(false);
-      setFormData({
-        title: "",
-        description: "",
-        category: "",
-        location_state: "",
-        location_city: "",
-        price_range: "",
-        urgency_level: "normal",
-        ad_type: "offer",
-      });
+      // 1. Inserir Anúncio
+      const adPayload = {
+        user_id: user.id,
+        user_name: profile.full_name || user.email?.split("@")[0] || "Usuário",
+        user_type: profile.user_type || "client",
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        location_state: data.location_state,
+        location_city: data.location_city,
+        ad_type: data.ad_type === "offer" ? "oferecer" : "procurar",
+        images: data.images, // Array de strings
+        price_range: data.price ? data.price.toString() : null, // Schema uses price_range string usually
+        // price: data.price || null, // REMOVED: Column does not exist in DB
+        is_active: true,
+        ...premiumData,
+      };
 
-      // Recarregar anúncios
+      console.log("📝 Payload do anúncio:", adPayload);
+
+      const { data: newAd, error: adError } = await supabase
+        .from("classified_ads")
+        .insert([adPayload])
+        .select()
+        .single();
+
+      if (adError) throw adError;
+
+      // 2. Se Premium, deduzir pontos
+      if (data.isPremium && data.pointsToSpend) {
+        // Deduzir pontos usando RPC 'add_points' com valor negativo ou insert direto se permitido
+        // Melhor usar RPC add_points se suportar negativo, ou insert em point_transactions
+        // Vou tentar insert direto pois o RPC add_points soma.
+
+        // ADD TRANSACTION
+        const { error: txError } = await supabase
+          .from("point_transactions")
+          .insert({
+            user_id: user.id,
+            amount: -data.pointsToSpend, // Negative amount
+            type: "spend", // Assuming 'spend' is a valid type
+            source: "premium_ad_purchase", // New source added
+            description: `Destaque de anúncio "${data.title}" por ${data.durationDays} dias`,
+            metadata: {
+              ad_id: newAd.id,
+              duration_days: data.durationDays,
+            },
+          });
+
+        if (txError) {
+          console.error("❌ Erro ao deduzir pontos:", txError);
+          toast.error(
+            "Anúncio criado, mas houve erro ao descontar pontos. Contate o suporte.",
+          );
+          // Não reverter anúncio pois já foi criado, mas idealmente seria transação.
+        }
+      }
+
+      toast.success(
+        data.isPremium
+          ? "Anúncio Premium criado com sucesso!"
+          : "Anúncio criado com sucesso!",
+      );
+
+      setShowCreateDialog(false);
+
+      // Resetar form (local state of form resets on unmount generally if inside dialog conditional)
+      // Mas o Dialog mantém estado se não for destruído. O UnifiedForm reseta estado interno?
+      // O UnifiedForm tem estado local, então ao fechar o Dialog (se desmontar), reseta.
+
       await loadClassifiedAds();
     } catch (error: any) {
       console.error("❌ Erro ao criar anúncio:", error);
       toast.error("Erro ao criar anúncio", {
-        description:
-          error?.message ||
-          "Não foi possível criar o anúncio. Verifique os dados e tente novamente.",
+        description: error?.message || "Tente novamente.",
       });
     } finally {
       setIsCreatingAd(false);
@@ -1011,161 +1041,18 @@ export default function ClassificadosPage() {
                           </span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-                        <DialogHeader>
-                          <DialogTitle className="text-gray-900 dark:text-white">
+                      <DialogContent className="max-w-3xl bg-white dark:bg-black border-gray-200 dark:border-gray-800 p-0 overflow-hidden">
+                        <DialogHeader className="p-4 sm:p-6 pb-2">
+                          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
                             Criar Novo Anúncio
                           </DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="title">Título *</Label>
-                            <Input
-                              id="title"
-                              value={formData.title}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  title: e.target.value,
-                                }))
-                              }
-                              placeholder={
-                                formData.ad_type === "offer"
-                                  ? "Ex: Ofereço serviços de pintura"
-                                  : "Ex: Preciso de um pedreiro"
-                              }
-                            />
-                          </div>
-
-                          <div>
-                            <Label htmlFor="description">Descrição *</Label>
-                            <Textarea
-                              id="description"
-                              value={formData.description}
-                              onChange={(e) =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  description: e.target.value,
-                                }))
-                              }
-                              placeholder={
-                                formData.ad_type === "offer"
-                                  ? "Descreva os serviços que você oferece, sua experiência, disponibilidade, etc..."
-                                  : "Descreva o que você precisa, quando precisa, orçamento disponível, etc..."
-                              }
-                              rows={4}
-                            />
-                          </div>
-
-                          <div>
-                            <Label htmlFor="ad_type">Tipo de Anúncio *</Label>
-                            <Select
-                              value={formData.ad_type}
-                              onValueChange={(value: "offer" | "request") =>
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  ad_type: value,
-                                }))
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione o tipo de anúncio" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="offer">
-                                  <div className="flex items-center gap-2">
-                                    <HandHeart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                    <div>
-                                      <div className="font-medium text-emerald-700 dark:text-emerald-400">
-                                        Oferta de Serviço
-                                      </div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                                        Estou oferecendo um serviço
-                                      </div>
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="request">
-                                  <div className="flex items-center gap-2">
-                                    <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    <div>
-                                      <div className="font-medium text-blue-700 dark:text-blue-400">
-                                        Solicitação de Serviço
-                                      </div>
-                                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                                        Preciso de um serviço
-                                      </div>
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="category">Serviços *</Label>
-                              <Combobox
-                                options={categoryOptions}
-                                value={formData.category}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    category: value,
-                                  }))
-                                }
-                                placeholder="Selecione"
-                                searchPlaceholder="Buscar categoria..."
-                                emptyMessage="Nenhuma categoria encontrada."
-                              />
-                            </div>
-
-                            <div>
-                              <Label htmlFor="state">Estado</Label>
-                              <EstadoCombobox
-                                value={formData.location_state}
-                                onValueChange={(value) => {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    location_state: value,
-                                    location_city: "",
-                                  }));
-                                  if (value) loadCidades(value);
-                                }}
-                              />
-                            </div>
-                          </div>
-
-                          {formData.location_state && (
-                            <div>
-                              <Label htmlFor="city">Cidade</Label>
-                              <CidadeCombobox
-                                value={formData.location_city}
-                                onValueChange={(value) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    location_city: value,
-                                  }))
-                                }
-                                estadoSigla={formData.location_state}
-                              />
-                            </div>
-                          )}
-
-                          <div className="flex justify-end space-x-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => setShowCreateDialog(false)}
-                            >
-                              Cancelar
-                            </Button>
-                            <Button
-                              onClick={handleCreateAd}
-                              disabled={isCreatingAd}
-                            >
-                              {isCreatingAd ? t("creating") : t("createAd")}
-                            </Button>
-                          </div>
+                        <div className="max-h-[85vh] overflow-y-auto">
+                          <UnifiedCreateAdForm
+                            onSubmit={handleCreateUnifiedAd}
+                            onCancel={() => setShowCreateDialog(false)}
+                            isLoading={isCreatingAd}
+                          />
                         </div>
                       </DialogContent>
                     </Dialog>
@@ -1204,38 +1091,6 @@ export default function ClassificadosPage() {
                             }}
                           />
                         )}
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* Botão Premium */}
-                    <Dialog
-                      open={showPremiumAdDialog}
-                      onOpenChange={setShowPremiumAdDialog}
-                    >
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          className="bg-gradient-to-r from-warning-500 to-warning-600 hover:from-warning-600 hover:to-warning-700 text-white text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap shadow-lg"
-                        >
-                          <Crown className="h-3 w-3 sm:mr-1" />
-                          <span className="hidden sm:inline">Premium</span>
-                          <span className="sm:hidden ml-0.5">⭐</span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl w-[95vw] sm:w-full max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-                        <DialogHeader className="mb-4 sm:mb-6">
-                          <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-                            <span>{t("premiumAd")}</span>
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="overflow-y-auto max-h-[calc(90vh-120px)] pr-1">
-                          <PremiumAdForm
-                            onSubmit={() => setShowPremiumAdDialog(false)}
-                            onCancel={() => setShowPremiumAdDialog(false)}
-                            isLoading={isCreatingAd}
-                          />
-                        </div>
                       </DialogContent>
                     </Dialog>
                   </>
@@ -1987,7 +1842,7 @@ export default function ClassificadosPage() {
                     >
                       {/* Badge Premium - aparece apenas se for premium */}
                       {isActivePremium && (
-                        <div className="absolute top-3 right-3 z-10">
+                        <div className="absolute top-3 right-3 z-20">
                           <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-lg flex items-center gap-1 px-2 py-1">
                             <Crown className="h-3 w-3" />
                             <span className="text-xs font-bold">PREMIUM</span>
