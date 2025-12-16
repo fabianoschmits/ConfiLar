@@ -11,6 +11,9 @@ import {
   Share2,
   Heart,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
@@ -51,8 +54,49 @@ export function ClassifiedsCard({
   const { openChat } = useFloatingChat();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [userInfoExpanded, setUserInfoExpanded] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (images && images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (images && images.length > 1) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? images.length - 1 : prev - 1,
+      );
+    }
+  };
+
+  const toggleImageExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsImageExpanded(!isImageExpanded);
+  };
 
   const isOwner = user?.id === ad.user_id;
+
+  // Ensure images is safely parsed as an array
+  let images: string[] = [];
+  try {
+    if (Array.isArray(ad.images)) {
+      images = ad.images;
+    } else if (typeof ad.images === "string") {
+      // If it's a JSON string, parse it
+      const parsed = JSON.parse(ad.images);
+      if (Array.isArray(parsed)) images = parsed;
+    }
+  } catch (e) {
+    console.error("Error parsing images:", e);
+    images = [];
+  }
 
   // Premium Logic
   const isPremiumAd = ad.is_premium || false;
@@ -194,18 +238,57 @@ export function ClassifiedsCard({
       </div>
 
       {/* 3. Media Area (Only if images exist) */}
-      {ad.images && ad.images.length > 0 && (
-        <div className="w-full bg-gray-50 dark:bg-gray-900 aspect-video relative overflow-hidden">
+      {/* 3. Media Area (Only if images exist) */}
+      {/* 3. Media Area (Only if images exist) */}
+      {images && images.length > 0 && (
+        <div
+          className={cn(
+            "w-full bg-gray-50 dark:bg-gray-900 relative overflow-hidden group/media transition-all duration-500 ease-in-out cursor-pointer",
+            isImageExpanded ? "h-auto" : "aspect-video",
+          )}
+          onClick={toggleImageExpand}
+        >
           <img
-            src={ad.images[0]}
-            alt={ad.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            key={currentImageIndex} // Trigger animation on change
+            src={images[currentImageIndex]}
+            alt={`${ad.title} - Foto ${currentImageIndex + 1}`}
+            className={cn(
+              "w-full animate-in fade-in zoom-in-95 duration-300", // Animation classes
+              isImageExpanded
+                ? "h-auto max-h-[600px] object-contain"
+                : "h-full object-cover group-hover:scale-105 transition-transform",
+            )}
           />
 
-          {/* Count badge if more images */}
-          {ad.images.length > 1 && (
-            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-              +{ad.images.length - 1}
+          {/* Expand Hint Icon (Only on hover when not expanded) */}
+          {!isImageExpanded && (
+            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+              <Maximize2 className="text-white w-8 h-8 drop-shadow-md opacity-80" />
+            </div>
+          )}
+
+          {/* Navigation Arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={prevImage}
+                className="absolute left-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button
+                onClick={nextImage}
+                className="absolute right-1 top-1/2 -translate-y-1/2 text-white/90 hover:text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] opacity-0 group-hover/media:opacity-100 transition-all hover:scale-110 z-10"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </>
+          )}
+
+          {/* Count badge */}
+          {images.length > 1 && (
+            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-medium pointer-events-none">
+              {currentImageIndex + 1} / {images.length}
             </div>
           )}
         </div>

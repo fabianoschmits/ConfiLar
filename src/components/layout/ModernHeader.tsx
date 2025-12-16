@@ -1,27 +1,27 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useAdmin } from '@/hooks/useAdmin'
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
-import { supabase } from '@/lib/supabase'
-import { StarRating } from '@/components/ui/StarRating'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { UserAvatar } from '@/components/ui/UserAvatar'
-import { SimpleHeaderBell } from '@/components/notifications/SimpleHeaderBell'
-import { UserReportsModal } from '@/components/UserReportsModal'
-import { useMessages } from '@/hooks/useMessages'
-import { AvailabilityToggleCompact } from '@/components/ui/AvailabilityToggle'
-import { useAvailability } from '@/hooks/useAvailability'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { LanguageSelector } from '@/components/ui/LanguageSelector'
-import { soundManager } from '@/lib/soundManager'
-import { useTranslations } from 'next-intl'
-import { 
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { supabase } from "@/lib/supabase";
+import { StarRating } from "@/components/ui/StarRating";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { SimpleHeaderBell } from "@/components/notifications/SimpleHeaderBell";
+import { UserReportsModal } from "@/components/UserReportsModal";
+import { useMessages } from "@/hooks/useMessages";
+import { AvailabilityToggleCompact } from "@/components/ui/AvailabilityToggle";
+import { useAvailability } from "@/hooks/useAvailability";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageSelector } from "@/components/ui/LanguageSelector";
+import { soundManager } from "@/lib/soundManager";
+import { useTranslations } from "next-intl";
+import {
   Search,
   Bell,
   Menu,
@@ -59,16 +59,17 @@ import {
   Crown,
   ShoppingBag,
   MapPin,
-  Camera
-} from 'lucide-react'
-import { BrandLogo } from '@/components/common/BrandLogo'
+  Camera,
+} from "lucide-react";
+import { BrandLogo } from "@/components/common/BrandLogo";
+import { cn } from "@/lib/utils";
 
 interface ModernHeaderProps {
-  showBackButton?: boolean
-  title?: string
-  showMenuButton?: boolean
-  onBackClick?: () => void
-  onMenuClick?: () => void
+  showBackButton?: boolean;
+  title?: string;
+  showMenuButton?: boolean;
+  onBackClick?: () => void;
+  onMenuClick?: () => void;
 }
 
 export function ModernHeader({
@@ -76,172 +77,222 @@ export function ModernHeader({
   title,
   showMenuButton = false,
   onBackClick,
-  onMenuClick
+  onMenuClick,
 }: ModernHeaderProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const { user, profile, signOut } = useAuthContext()
-  const { openChat } = useFloatingChat()
-  const { getTotalUnreadCount } = useMessages()
-  const { isAvailable } = useAvailability()
-  const t = useTranslations('header')
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
-  
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, profile, signOut } = useAuthContext();
+  const { openChat } = useFloatingChat();
+  const { getTotalUnreadCount } = useMessages();
+  const { isAvailable } = useAvailability();
+  const t = useTranslations("header");
+  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(),
+  );
+
   // Verificar se o usuário é admin
-  const { isAdmin } = useAdmin()
+  const { isAdmin } = useAdmin();
   const [reputationStats, setReputationStats] = useState({
     totalViews: 0,
     totalRecommendations: 0,
     totalReviews: 0,
-    averageRating: 0
-  })
+    averageRating: 0,
+  });
+
+  // Scroll detection for dynamic header
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Carregar estatísticas de reputação
   useEffect(() => {
     if (profile?.id) {
-      loadReputationStats()
+      loadReputationStats();
     }
-  }, [profile?.id])
+  }, [profile?.id]);
 
   const loadReputationStats = async () => {
-    if (!profile?.id) return
+    if (!profile?.id) return;
 
     try {
       // Carregar avaliações
       const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select('rating_person, is_recommended')
-        .eq('reviewed_id', profile.id)
+        .from("reviews")
+        .select("rating_person, is_recommended")
+        .eq("reviewed_id", profile.id);
 
-      if (reviewsError) throw reviewsError
+      if (reviewsError) throw reviewsError;
 
       // Carregar visualizações
       const { data: viewsData, error: viewsError } = await supabase
-        .from('profile_views')
-        .select('id')
-        .eq('viewed_profile_id', profile.id)
+        .from("profile_views")
+        .select("id")
+        .eq("viewed_profile_id", profile.id);
 
-      if (viewsError) throw viewsError
+      if (viewsError) throw viewsError;
 
       // Carregar recomendações da tabela user_recommendations
-      const { data: recommendationsData, error: recommendationsError } = await supabase
-        .from('user_recommendations')
-        .select('id')
-        .eq('recommended_id', profile.id)
+      const { data: recommendationsData, error: recommendationsError } =
+        await supabase
+          .from("user_recommendations")
+          .select("id")
+          .eq("recommended_id", profile.id);
 
       if (recommendationsError) {
-        console.error('📊 Header - Erro ao carregar recomendações:', recommendationsError)
+        console.error(
+          "📊 Header - Erro ao carregar recomendações:",
+          recommendationsError,
+        );
       }
 
-      console.log('📊 Header - Avaliações carregadas:', reviewsData?.length || 0)
-      console.log('📊 Header - Dados das avaliações:', reviewsData)
-      console.log('📊 Header - Recomendações carregadas:', recommendationsData?.length || 0)
-      console.log('📊 Header - Dados das recomendações:', recommendationsData)
+      console.log(
+        "📊 Header - Avaliações carregadas:",
+        reviewsData?.length || 0,
+      );
+      console.log("📊 Header - Dados das avaliações:", reviewsData);
+      console.log(
+        "📊 Header - Recomendações carregadas:",
+        recommendationsData?.length || 0,
+      );
+      console.log("📊 Header - Dados das recomendações:", recommendationsData);
 
       // Calcular estatísticas
-      const totalReviews = reviewsData?.length || 0
-      const totalRecommendations = recommendationsData?.length || 0
-      const averageRating = totalReviews > 0 
-        ? parseFloat((reviewsData.reduce((sum, r) => sum + r.rating_person, 0) / totalReviews).toFixed(1))
-        : 0
-      const totalViews = viewsData?.length || 0
+      const totalReviews = reviewsData?.length || 0;
+      const totalRecommendations = recommendationsData?.length || 0;
+      const averageRating =
+        totalReviews > 0
+          ? parseFloat(
+              (
+                reviewsData.reduce((sum, r) => sum + r.rating_person, 0) /
+                totalReviews
+              ).toFixed(1),
+            )
+          : 0;
+      const totalViews = viewsData?.length || 0;
 
       setReputationStats({
         totalViews,
         totalRecommendations,
         totalReviews,
-        averageRating
-      })
+        averageRating,
+      });
     } catch (error) {
-      console.error('Erro ao carregar estatísticas de reputação:', error)
+      console.error("Erro ao carregar estatísticas de reputação:", error);
     }
-  }
+  };
 
   // Só renderiza se o usuário estiver logado
   if (!user || !profile) {
-    return null
+    return null;
   }
 
   // Função de navegação simplificada
   const handleNavigation = (path: string) => {
     try {
-      console.log('Navegando para:', path)
-      setIsMenuExpanded(false)
-      router.push(path)
+      console.log("Navegando para:", path);
+      setIsMenuExpanded(false);
+      router.push(path);
     } catch (error) {
-      console.error('Erro na navegação:', error)
+      console.error("Erro na navegação:", error);
       // Fallback para window.location
-      window.location.href = path
+      window.location.href = path;
     }
-  }
+  };
 
   // Função para alternar seções
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev)
+    setExpandedSections((prev) => {
+      const newSet = new Set(prev);
       if (newSet.has(section)) {
-        newSet.delete(section)
+        newSet.delete(section);
       } else {
-        newSet.add(section)
+        newSet.add(section);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const getPageTitle = () => {
-    if (title) return title
-    
+    if (title) return title;
+
     const pathTitles: Record<string, string> = {
-      '/home': t('dashboard'),
-      '/buscar': t('searchProfessionals'),
-      '/classificados': t('classifieds'),
-      '/feed': t('socialFeed'),
-      '/perfil': t('myProfile'),
-      '/favoritos': t('favorites'),
-      '/portfolio': t('myPortfolio'),
-      '/reputacao': t('reputation'),
-      '/ajuda': t('helpCenter'),
-      '/contato': t('contact'),
-      '/sobre': t('aboutUs')
-    }
-    
-    return pathTitles[pathname] || 'ConfiLar'
-  }
+      "/home": t("dashboard"),
+      "/buscar": t("searchProfessionals"),
+      "/classificados": t("classifieds"),
+      "/feed": t("socialFeed"),
+      "/perfil": t("myProfile"),
+      "/favoritos": t("favorites"),
+      "/portfolio": t("myPortfolio"),
+      "/reputacao": t("reputation"),
+      "/ajuda": t("helpCenter"),
+      "/contato": t("contact"),
+      "/sobre": t("aboutUs"),
+    };
+
+    return pathTitles[pathname] || "ConfiLar";
+  };
 
   const handleSignOut = async () => {
-    console.log('Executando logout...')
-    setIsMenuExpanded(false)
-    await signOut()
+    console.log("Executando logout...");
+    setIsMenuExpanded(false);
+    await signOut();
     // Redirecionar diretamente para a página de login
-    window.location.href = '/auth'
-  }
+    window.location.href = "/auth";
+  };
 
   // Dados do usuário
   const accountStats = {
-    memberSince: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024',
-    verificationStatus: profile?.user_type === 'professional' ? 'verified' : 'basic',
-    premiumStatus: false
-  }
+    memberSince: profile?.created_at
+      ? new Date(profile.created_at).getFullYear()
+      : "2024",
+    verificationStatus:
+      profile?.user_type === "professional" ? "verified" : "basic",
+    premiumStatus: false,
+  };
 
   const getVerificationBadge = () => {
-    if (accountStats.verificationStatus === 'verified') {
-      return <Badge variant="default" className="bg-green-100 text-green-800">{t('verified')}</Badge>
+    if (accountStats.verificationStatus === "verified") {
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-800">
+          {t("verified")}
+        </Badge>
+      );
     }
-    return <Badge variant="secondary">{t('basic')}</Badge>
-  }
+    return <Badge variant="secondary">{t("basic")}</Badge>;
+  };
 
   const getPremiumBadge = () => {
     if (accountStats.premiumStatus) {
-      return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Premium</Badge>
+      return (
+        <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+          Premium
+        </Badge>
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <>
-      {/* Header Moderno - Flutuante no Mobile e Desktop */}
-      <div className="fixed top-5 left-1/2 -translate-x-1/2 w-[95%] lg:top-6 lg:left-80 lg:right-6 lg:translate-x-0 lg:w-auto lg:max-w-[calc(100vw-18rem)] z-50 bg-white dark:bg-black/95 border border-gray-200 dark:border-gray-900 rounded-full lg:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md lg:backdrop-blur-lg">
+      {/* Header Moderno - Flutuante no Mobile (dinâmico) e Desktop (fixo) */}
+      <div
+        className={cn(
+          "fixed z-50 transition-all duration-300 border border-gray-200 dark:border-gray-900",
+          // Desktop styles (always pill-like)
+          "lg:top-6 lg:left-80 lg:right-6 lg:translate-x-0 lg:w-auto lg:max-w-[calc(100vw-18rem)] lg:rounded-2xl lg:shadow-[0_8px_30px_rgb(0,0,0,0.12)] lg:dark:shadow-2xl lg:backdrop-blur-lg lg:bg-white lg:dark:bg-black/95",
+          // Mobile styles (dynamic)
+          isScrolled
+            ? "top-5 left-1/2 -translate-x-1/2 w-[95%] rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-2xl backdrop-blur-md bg-white/90 dark:bg-black/90"
+            : "top-0 left-0 translate-x-0 w-full rounded-none shadow-none border-x-0 border-t-0 bg-white dark:bg-black",
+        )}
+      >
         <div className="px-3 sm:px-4 lg:px-4">
           <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
             {/* Left side */}
@@ -253,12 +304,22 @@ export function ModernHeader({
                   onClick={onBackClick}
                   className="p-2"
                 >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </Button>
               )}
-              
+
               {showMenuButton && (
                 <Button
                   variant="ghost"
@@ -269,7 +330,7 @@ export function ModernHeader({
                   <Menu className="h-5 w-5" />
                 </Button>
               )}
-              
+
               {/* Logo */}
               <Link href="/home" className="flex items-center space-x-2">
                 <div className="h-12 flex items-center justify-center">
@@ -298,26 +359,28 @@ export function ModernHeader({
               <div className="relative -ml-1">
                 <ThemeToggle />
               </div>
-              
+
               {/* Notificações */}
               <div className="relative -ml-1">
                 <SimpleHeaderBell />
               </div>
-              
+
               {/* Avatar e Menu do Usuário */}
               <div className="relative -ml-1">
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    soundManager.play('/sounds/New/very-fast.mp3', { volume: 0.3 })
-                    setIsMenuExpanded(!isMenuExpanded)
+                    soundManager.play("/sounds/New/very-fast.mp3", {
+                      volume: 0.3,
+                    });
+                    setIsMenuExpanded(!isMenuExpanded);
                   }}
                   className="flex items-center gap-1 px-2 py-2"
                 >
-                  <UserAvatar 
+                  <UserAvatar
                     src={profile?.avatar_url}
-                    alt={profile?.full_name || 'Usuário'}
-                    fallback={profile?.full_name?.charAt(0) || 'U'}
+                    alt={profile?.full_name || "Usuário"}
+                    fallback={profile?.full_name?.charAt(0) || "U"}
                     size="sm"
                     userId={user?.id}
                     showReferralBadge={false}
@@ -332,15 +395,15 @@ export function ModernHeader({
                       {/* Header do Perfil */}
                       <div className="flex items-center space-x-2 sm:space-x-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700 -mx-3 sm:-mx-4 px-3 sm:px-4">
                         {/* Link para o perfil - apenas foto e nome */}
-                        <Link 
+                        <Link
                           href={`/perfil/${profile?.id}`}
                           onClick={() => setIsMenuExpanded(false)}
                           className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0 hover:opacity-80 transition-opacity cursor-pointer"
                         >
-                          <UserAvatar 
+                          <UserAvatar
                             src={profile?.avatar_url}
-                            alt={profile?.full_name || 'Usuário'}
-                            fallback={profile?.full_name?.charAt(0) || 'U'}
+                            alt={profile?.full_name || "Usuário"}
+                            fallback={profile?.full_name?.charAt(0) || "U"}
                             size="lg"
                             className="w-11 h-11 sm:w-17 sm:h-17 flex-shrink-0"
                             userId={user?.id}
@@ -348,10 +411,12 @@ export function ModernHeader({
                           />
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium text-gray-900 dark:text-white truncate text-sm sm:text-base">
-                              {profile?.full_name || 'Usuário'}
+                              {profile?.full_name || "Usuário"}
                             </h3>
                             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                              {profile?.user_type === 'professional' ? t('professional') : t('client')}
+                              {profile?.user_type === "professional"
+                                ? t("professional")
+                                : t("client")}
                             </p>
                             <div className="flex gap-1 mt-1">
                               <div className="text-xs">
@@ -371,72 +436,94 @@ export function ModernHeader({
 
                       {/* Estatísticas de Reputação */}
                       <div className="py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">{t('myReputation')}</h4>
+                        <h4 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white mb-2">
+                          {t("myReputation")}
+                        </h4>
                         <div className="flex justify-between gap-1">
                           <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 dark:bg-primary-900/30 rounded-md">
                             <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-blue-600 dark:text-blue-400 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalViews}</div>
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                              {reputationStats.totalViews}
+                            </div>
                           </div>
                           <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-50 dark:bg-green-900/30 rounded-md">
                             <ThumbsUp className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 dark:text-green-400 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalRecommendations}</div>
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                              {reputationStats.totalRecommendations}
+                            </div>
                           </div>
                           <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-orange-50 dark:bg-orange-900/30 rounded-md">
                             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-orange-600 dark:text-orange-400 mb-0.5" />
-                            <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.totalReviews}</div>
-                          </div>
-                          {profile?.user_type === 'professional' && reputationStats.averageRating > 0 && (
-                            <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-700 rounded-md">
-                              <div className="mb-0.5">
-                                <StarRating 
-                                  rating={reputationStats.averageRating} 
-                                  size="sm" 
-                                  variant="compact"
-                                  showValue={false}
-                                  className="scale-75 sm:scale-75"
-                                />
-                              </div>
-                              <div className="text-xs font-semibold text-gray-900 dark:text-white">{reputationStats.averageRating.toFixed(1)}</div>
+                            <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                              {reputationStats.totalReviews}
                             </div>
-                          )}
+                          </div>
+                          {profile?.user_type === "professional" &&
+                            reputationStats.averageRating > 0 && (
+                              <div className="flex flex-col items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-gray-50 dark:bg-gray-700 rounded-md">
+                                <div className="mb-0.5">
+                                  <StarRating
+                                    rating={reputationStats.averageRating}
+                                    size="sm"
+                                    variant="compact"
+                                    showValue={false}
+                                    className="scale-75 sm:scale-75"
+                                  />
+                                </div>
+                                <div className="text-xs font-semibold text-gray-900 dark:text-white">
+                                  {reputationStats.averageRating.toFixed(1)}
+                                </div>
+                              </div>
+                            )}
                         </div>
                         {/* Labels */}
                         <div className="flex justify-between gap-1 mt-1">
                           <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('views')}</div>
-                          </div>
-                          <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('recommendations')}</div>
-                          </div>
-                          <div className="w-10 sm:w-12 text-center">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('reviews')}</div>
-                          </div>
-                          {profile?.user_type === 'professional' && reputationStats.averageRating > 0 && (
-                            <div className="w-10 sm:w-12 text-center">
-                              <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{t('rating')}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+                              {t("views")}
                             </div>
-                          )}
+                          </div>
+                          <div className="w-10 sm:w-12 text-center">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+                              {t("recommendations")}
+                            </div>
+                          </div>
+                          <div className="w-10 sm:w-12 text-center">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+                              {t("reviews")}
+                            </div>
+                          </div>
+                          {profile?.user_type === "professional" &&
+                            reputationStats.averageRating > 0 && (
+                              <div className="w-10 sm:w-12 text-center">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+                                  {t("rating")}
+                                </div>
+                              </div>
+                            )}
                         </div>
                       </div>
 
                       {/* Principal */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('principal')}
+                          onClick={() => toggleSection("principal")}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Home className="h-3 w-3" />
-                            {t('principal')}
+                            {t("principal")}
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('principal') ? 'rotate-180' : ''}`} />
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("principal") ? "rotate-180" : ""}`}
+                          />
                         </button>
-                        {expandedSections.has('principal') && (
+                        {expandedSections.has("principal") && (
                           <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/home')}
+                              onClick={() => handleNavigation("/home")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Home className="h-3 w-3" />
@@ -445,29 +532,35 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/classificados')}
+                              onClick={() => handleNavigation("/classificados")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Briefcase className="h-3 w-3" />
-                              <span className="truncate">{t('classifieds')}</span>
+                              <span className="truncate">
+                                {t("classifieds")}
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/feed')}
+                              onClick={() => handleNavigation("/feed")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Users className="h-3 w-3" />
-                              <span className="truncate">{t('socialFeed')}</span>
+                              <span className="truncate">
+                                {t("socialFeed")}
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/buscar')}
+                              onClick={() => handleNavigation("/buscar")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Search className="h-3 w-3" />
-                              <span className="truncate">{t('searchProfessionals')}</span>
+                              <span className="truncate">
+                                {t("searchProfessionals")}
+                              </span>
                             </Button>
                           </div>
                         )}
@@ -476,57 +569,64 @@ export function ModernHeader({
                       {/* Gestão */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('gestao')}
+                          onClick={() => toggleSection("gestao")}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3" />
-                            {t('management')}
+                            {t("management")}
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('gestao') ? 'rotate-180' : ''}`} />
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("gestao") ? "rotate-180" : ""}`}
+                          />
                         </button>
-                        {expandedSections.has('gestao') && (
+                        {expandedSections.has("gestao") && (
                           <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/favoritos')}
+                              onClick={() => handleNavigation("/favoritos")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Heart className="h-3 w-3" />
-                              <span className="truncate">{t('favorites')}</span>
+                              <span className="truncate">{t("favorites")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/avaliacoes')}
+                              onClick={() => handleNavigation("/avaliacoes")}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <Star className="h-3 w-3" />
-                              <span className="truncate">{t('reviews')}</span>
+                              <span className="truncate">{t("reviews")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/indicacoes')}
+                              onClick={() => handleNavigation("/indicacoes")}
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
                             >
                               <UserPlus className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">Indicações</span>
+                              <span className="truncate text-green-700 dark:text-green-300">
+                                Indicações
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                openChat()
-                                setIsMenuExpanded(false)
+                                openChat();
+                                setIsMenuExpanded(false);
                               }}
                               className="flex items-center gap-1 text-xs py-1 h-7"
                             >
                               <MessageCircle className="h-3 w-3" />
                               <span className="truncate">Mensagens</span>
                               {getTotalUnreadCount() > 0 && (
-                                <Badge variant="destructive" className="ml-auto text-xs px-1 py-0">
+                                <Badge
+                                  variant="destructive"
+                                  className="ml-auto text-xs px-1 py-0"
+                                >
                                   {getTotalUnreadCount()}
                                 </Badge>
                               )}
@@ -538,101 +638,128 @@ export function ModernHeader({
                       {/* ConfiPoints */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('confipoints')}
+                          onClick={() => toggleSection("confipoints")}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <Coins className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                            {t('confipoints')}
+                            {t("confipoints")}
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('confipoints') ? 'rotate-180' : ''}`} />
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("confipoints") ? "rotate-180" : ""}`}
+                          />
                         </button>
-                        {expandedSections.has('confipoints') && (
+                        {expandedSections.has("confipoints") && (
                           <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/dashboard')}
+                              onClick={() =>
+                                handleNavigation("/confipoints/dashboard")
+                              }
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-yellow-50 dark:bg-yellow-950/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
                             >
                               <BarChart3 className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-                              <span className="truncate text-yellow-700 dark:text-yellow-300">Dashboard</span>
+                              <span className="truncate text-yellow-700 dark:text-yellow-300">
+                                Dashboard
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/comprar')}
+                              onClick={() =>
+                                handleNavigation("/confipoints/comprar")
+                              }
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-purple-50 dark:bg-purple-950/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
                             >
                               <Crown className="h-3 w-3 text-purple-600 dark:text-purple-400" />
-                              <span className="truncate text-purple-700 dark:text-purple-300">Loja Premium</span>
+                              <span className="truncate text-purple-700 dark:text-purple-300">
+                                Loja Premium
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/compras')}
+                              onClick={() =>
+                                handleNavigation("/confipoints/compras")
+                              }
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30"
                             >
                               <ShoppingBag className="h-3 w-3 text-green-600 dark:text-green-400" />
-                              <span className="truncate text-green-700 dark:text-green-300">Minhas Compras</span>
+                              <span className="truncate text-green-700 dark:text-green-300">
+                                Minhas Compras
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/confipoints/transferir')}
+                              onClick={() =>
+                                handleNavigation("/confipoints/transferir")
+                              }
                               className="flex items-center gap-1 text-xs py-1 h-7 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                             >
                               <Send className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                              <span className="truncate text-blue-700 dark:text-blue-300">Transferir</span>
+                              <span className="truncate text-blue-700 dark:text-blue-300">
+                                Transferir
+                              </span>
                             </Button>
                             {isAdmin && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleNavigation('/confipoints/admin')}
+                                onClick={() =>
+                                  handleNavigation("/confipoints/admin")
+                                }
                                 className="flex items-center gap-1 text-xs py-1 h-7 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800"
                               >
                                 <BarChart3 className="h-3 w-3 text-red-600 dark:text-red-400" />
-                                <span className="truncate text-red-700 dark:text-red-300">Admin</span>
+                                <span className="truncate text-red-700 dark:text-red-300">
+                                  Admin
+                                </span>
                               </Button>
                             )}
                           </div>
                         )}
                       </div>
 
-
                       {/* Profissional */}
-                      {profile?.user_type === 'professional' && (
+                      {profile?.user_type === "professional" && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('profissional')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="h-3 w-3" />
-                            {t('professional')}
-                          </div>
-                            <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('profissional') ? 'rotate-180' : ''}`} />
+                          <button
+                            onClick={() => toggleSection("profissional")}
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="h-3 w-3" />
+                              {t("professional")}
+                            </div>
+                            <ChevronDown
+                              className={`h-3 w-3 transition-transform ${expandedSections.has("profissional") ? "rotate-180" : ""}`}
+                            />
                           </button>
-                          {expandedSections.has('profissional') && (
+                          {expandedSections.has("profissional") && (
                             <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleNavigation('/portfolio')}
+                                onClick={() => handleNavigation("/portfolio")}
                                 className="flex items-center gap-1 text-xs py-1 h-7"
                               >
                                 <FileText className="h-3 w-3" />
-                                <span className="truncate">{t('myPortfolio')}</span>
+                                <span className="truncate">
+                                  {t("myPortfolio")}
+                                </span>
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleNavigation('/reputacao')}
+                                onClick={() => handleNavigation("/reputacao")}
                                 className="flex items-center gap-1 text-xs py-1 h-7"
                               >
                                 <Award className="h-3 w-3" />
-                                <span className="truncate">{t('reputation')}</span>
+                                <span className="truncate">
+                                  {t("reputation")}
+                                </span>
                               </Button>
                             </div>
                           )}
@@ -642,21 +769,27 @@ export function ModernHeader({
                       {/* Meu Perfil */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('meu-perfil')}
+                          onClick={() => toggleSection("meu-perfil")}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <User className="h-3 w-3" />
-                            {t('myProfileMenu')}
+                            {t("myProfileMenu")}
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('meu-perfil') ? 'rotate-180' : ''}`} />
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("meu-perfil") ? "rotate-180" : ""}`}
+                          />
                         </button>
-                        {expandedSections.has('meu-perfil') && (
+                        {expandedSections.has("meu-perfil") && (
                           <div className="flex flex-col gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/editarperfil/meu-avatar-foto')}
+                              onClick={() =>
+                                handleNavigation(
+                                  "/editarperfil/meu-avatar-foto",
+                                )
+                              }
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Camera className="h-3 w-3" />
@@ -665,48 +798,60 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/editarperfil/dados-da-conta')}
+                              onClick={() =>
+                                handleNavigation("/editarperfil/dados-da-conta")
+                              }
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <User className="h-3 w-3" />
-                              <span>{t('accountData')}</span>
+                              <span>{t("accountData")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/editarperfil/seguranca')}
+                              onClick={() =>
+                                handleNavigation("/editarperfil/seguranca")
+                              }
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Shield className="h-3 w-3" />
-                              <span>{t('security')}</span>
+                              <span>{t("security")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/editarperfil/endereco')}
+                              onClick={() =>
+                                handleNavigation("/editarperfil/endereco")
+                              }
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <MapPin className="h-3 w-3" />
-                              <span>{t('address')}</span>
+                              <span>{t("address")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/editarperfil/tipo-conta')}
+                              onClick={() =>
+                                handleNavigation("/editarperfil/tipo-conta")
+                              }
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Briefcase className="h-3 w-3" />
-                              <span>{t('accountType')}</span>
+                              <span>{t("accountType")}</span>
                             </Button>
-                            {profile?.user_type === 'professional' && (
+                            {profile?.user_type === "professional" && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleNavigation('/editarperfil/dados-profissionais')}
+                                onClick={() =>
+                                  handleNavigation(
+                                    "/editarperfil/dados-profissionais",
+                                  )
+                                }
                                 className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                               >
                                 <Briefcase className="h-3 w-3" />
-                                <span>{t('professionalData')}</span>
+                                <span>{t("professionalData")}</span>
                               </Button>
                             )}
                           </div>
@@ -716,48 +861,52 @@ export function ModernHeader({
                       {/* Suporte */}
                       <div className="border-b border-gray-200 dark:border-gray-700">
                         <button
-                          onClick={() => toggleSection('suporte')}
+                          onClick={() => toggleSection("suporte")}
                           className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
                         >
                           <div className="flex items-center gap-2">
                             <HelpCircle className="h-3 w-3" />
-                            {t('support')}
+                            {t("support")}
                           </div>
-                          <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('suporte') ? 'rotate-180' : ''}`} />
+                          <ChevronDown
+                            className={`h-3 w-3 transition-transform ${expandedSections.has("suporte") ? "rotate-180" : ""}`}
+                          />
                         </button>
-                        {expandedSections.has('suporte') && (
+                        {expandedSections.has("suporte") && (
                           <div className="grid grid-cols-2 gap-1 px-2 pb-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/ajuda')}
+                              onClick={() => handleNavigation("/ajuda")}
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <HelpCircle className="h-3 w-3" />
-                              <span className="truncate">{t('helpCenter')}</span>
+                              <span className="truncate">
+                                {t("helpCenter")}
+                              </span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/contato')}
+                              onClick={() => handleNavigation("/contato")}
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <MessageCircle className="h-3 w-3" />
-                              <span className="truncate">{t('contact')}</span>
+                              <span className="truncate">{t("contact")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/sobre')}
+                              onClick={() => handleNavigation("/sobre")}
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <Users className="h-3 w-3" />
-                              <span className="truncate">{t('aboutUs')}</span>
+                              <span className="truncate">{t("aboutUs")}</span>
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/termos')}
+                              onClick={() => handleNavigation("/termos")}
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <FileText className="h-3 w-3" />
@@ -766,11 +915,13 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleNavigation('/privacidade')}
+                              onClick={() => handleNavigation("/privacidade")}
                               className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
                             >
                               <Shield className="h-3 w-3" />
-                              <span className="truncate">Política de Privacidade</span>
+                              <span className="truncate">
+                                Política de Privacidade
+                              </span>
                             </Button>
                             <UserReportsModal>
                               <Button
@@ -779,7 +930,9 @@ export function ModernHeader({
                                 className="flex items-center gap-1 text-xs py-1 h-7 justify-start w-full"
                               >
                                 <Flag className="h-3 w-3" />
-                                <span className="truncate">{t('myReports')}</span>
+                                <span className="truncate">
+                                  {t("myReports")}
+                                </span>
                               </Button>
                             </UserReportsModal>
                           </div>
@@ -789,26 +942,32 @@ export function ModernHeader({
                       {/* Administração - Apenas para Admin */}
                       {isAdmin && (
                         <div className="border-b border-gray-200 dark:border-gray-700">
-                        <button
-                          onClick={() => toggleSection('administracao')}
-                          className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-3 w-3" />
-                            {t('administration')}
-                          </div>
-                            <ChevronDown className={`h-3 w-3 transition-transform ${expandedSections.has('administracao') ? 'rotate-180' : ''}`} />
+                          <button
+                            onClick={() => toggleSection("administracao")}
+                            className="w-full py-2 flex items-center justify-between text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-2"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="h-3 w-3" />
+                              {t("administration")}
+                            </div>
+                            <ChevronDown
+                              className={`h-3 w-3 transition-transform ${expandedSections.has("administracao") ? "rotate-180" : ""}`}
+                            />
                           </button>
-                          {expandedSections.has('administracao') && (
+                          {expandedSections.has("administracao") && (
                             <div className="grid grid-cols-1 gap-1 px-2 pb-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleNavigation('/admin/dashboard')}
+                                onClick={() =>
+                                  handleNavigation("/admin/dashboard")
+                                }
                                 className="flex items-center gap-1 text-xs py-1 h-7 bg-gray-100 hover:bg-gray-200"
                               >
                                 <ShieldCheck className="h-3 w-3" />
-                                <span className="truncate">{t('adminPanel')}</span>
+                                <span className="truncate">
+                                  {t("adminPanel")}
+                                </span>
                               </Button>
                             </div>
                           )}
@@ -824,24 +983,33 @@ export function ModernHeader({
                           className="w-full text-xs sm:text-sm py-1.5 sm:py-2"
                         >
                           <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                          {t('logout')}
+                          {t("logout")}
                         </Button>
                       </div>
 
                       {/* Informações do Usuário */}
                       <div className="pt-2 sm:pt-3 text-center">
                         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
-                          <div className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                          <div
+                            className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full ${isAvailable ? "bg-green-500" : "bg-red-500"}`}
+                          ></div>
                           <span className="text-xs text-gray-600 dark:text-gray-400 font-medium leading-tight">
-                            {profile?.user_type === 'professional' ? t('professionalActive') : t('clientActive')}
-                            {profile?.location_city && profile?.location_state && (
-                              <> - {profile.location_city}, {profile.location_state}</>
-                            )}
-                            {' - '}{t('memberSince')}{' '}
-                            {profile?.created_at 
-                              ? new Date(profile.created_at).getFullYear() 
-                              : '2024'
-                            }
+                            {profile?.user_type === "professional"
+                              ? t("professionalActive")
+                              : t("clientActive")}
+                            {profile?.location_city &&
+                              profile?.location_state && (
+                                <>
+                                  {" "}
+                                  - {profile.location_city},{" "}
+                                  {profile.location_state}
+                                </>
+                              )}
+                            {" - "}
+                            {t("memberSince")}{" "}
+                            {profile?.created_at
+                              ? new Date(profile.created_at).getFullYear()
+                              : "2024"}
                           </span>
                         </div>
                       </div>
@@ -856,11 +1024,11 @@ export function ModernHeader({
 
       {/* Overlay para fechar menu */}
       {isMenuExpanded && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black bg-opacity-25"
           onClick={() => setIsMenuExpanded(false)}
         />
       )}
     </>
-  )
+  );
 }
