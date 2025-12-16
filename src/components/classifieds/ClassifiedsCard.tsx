@@ -13,8 +13,10 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Maximize2,
+  Clock,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { useIsAdmin } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
@@ -172,6 +174,22 @@ export function ClassifiedsCard({
               Premium
             </Badge>
           )}
+
+          {/* Creation Date */}
+          {ad.created_at && (
+            <div
+              className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 ml-1"
+              title={`Criado em: ${new Date(ad.created_at).toLocaleDateString("pt-BR")}`}
+            >
+              <Clock className="w-3 h-3" />
+              <span className="capitalize">
+                {formatDistanceToNow(new Date(ad.created_at), {
+                  addSuffix: true,
+                  locale: ptBR,
+                })}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Options Menu */}
@@ -268,11 +286,7 @@ export function ClassifiedsCard({
           />
 
           {/* Expand Hint Icon (Only on hover when not expanded) */}
-          {!isImageExpanded && (
-            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-              <Maximize2 className="text-white w-8 h-8 drop-shadow-md opacity-80" />
-            </div>
-          )}
+          {/* Expand Hint Icon (Only on hover when not expanded) - REMOVED */}
 
           {/* Navigation Arrows */}
           {images.length > 1 && (
