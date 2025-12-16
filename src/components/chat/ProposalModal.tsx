@@ -1,11 +1,16 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { 
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
   Handshake,
   CheckCircle,
   XCircle,
@@ -15,72 +20,72 @@ import {
   FileText,
   User,
   AlertCircle,
-  X
-} from 'lucide-react'
+  X,
+} from "lucide-react";
 // import { ContactAgreement } from '@/hooks/useContactAgreements' // Removido - sistema antigo
 
 // Tipo local para compatibilidade
 interface ContactAgreement {
-  id: string
-  proposed_by: string
-  client_id: string
-  professional_id: string
-  service_description: string
-  agreed_price: number
-  proposed_date: string
-  proposed_time: string
-  estimated_duration?: string
-  notes?: string
-  client?: { full_name: string }
-  professional?: { full_name: string }
+  id: string;
+  proposed_by: string;
+  client_id: string;
+  professional_id: string;
+  service_description: string;
+  agreed_price: number;
+  proposed_date: string;
+  proposed_time: string;
+  estimated_duration?: string;
+  notes?: string;
+  client?: { full_name: string };
+  professional?: { full_name: string };
   // Adicione outras propriedades conforme necessário
 }
 
 interface ProposalModalProps {
-  isOpen: boolean
-  onClose: () => void
-  agreement: ContactAgreement | null
-  onAccept: (agreementId: string) => void
-  onReject: (agreementId: string) => void
-  isLoading?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  agreement: ContactAgreement | null;
+  onAccept: (agreementId: string) => void;
+  onReject: (agreementId: string) => void;
+  isLoading?: boolean;
 }
 
-export function ProposalModal({ 
-  isOpen, 
-  onClose, 
-  agreement, 
-  onAccept, 
-  onReject, 
-  isLoading = false 
+export function ProposalModal({
+  isOpen,
+  onClose,
+  agreement,
+  onAccept,
+  onReject,
+  isLoading = false,
 }: ProposalModalProps) {
-  if (!agreement) return null
+  if (!agreement) return null;
 
   const handleAccept = () => {
-    onAccept(agreement.id)
-  }
+    onAccept(agreement.id);
+  };
 
   const handleReject = () => {
-    onReject(agreement.id)
-  }
+    onReject(agreement.id);
+  };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Não especificado'
-    return new Date(dateString).toLocaleDateString('pt-BR')
-  }
+    if (!dateString) return "Não especificado";
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  };
 
   const formatTime = (timeString?: string) => {
-    if (!timeString) return 'Não especificado'
-    return timeString
-  }
+    if (!timeString) return "Não especificado";
+    return timeString;
+  };
 
   const formatPrice = (price?: number) => {
-    if (!price) return 'A combinar'
-    return `R$ ${price.toFixed(2)}`
-  }
+    if (!price) return "A combinar";
+    return `R$ ${price.toFixed(2)}`;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto bg-white border-0 shadow-xl rounded-xl mx-4 sm:mx-0">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] overflow-y-auto bg-white border-0 shadow-xl rounded-xl">
         <DialogHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 rounded-t-xl p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3 text-gray-900 font-semibold text-lg sm:text-xl">
@@ -114,9 +119,9 @@ export function ProposalModal({
                   </p>
                   <p className="text-blue-800 font-semibold text-base sm:text-lg">
                     {agreement.proposed_by === agreement.client_id
-                      ? (agreement as any).client?.full_name || 'Cliente'
-                      : (agreement as any).professional?.full_name || 'Profissional'
-                    }
+                      ? (agreement as any).client?.full_name || "Cliente"
+                      : (agreement as any).professional?.full_name ||
+                        "Profissional"}
                   </p>
                 </div>
               </div>
@@ -130,7 +135,7 @@ export function ProposalModal({
                 <FileText className="h-5 w-5 text-gray-600" />
                 Detalhes da proposta
               </h3>
-              
+
               <div className="space-y-4 sm:space-y-6">
                 {/* Descrição do Serviço */}
                 <div>
@@ -138,7 +143,9 @@ export function ProposalModal({
                     Descrição do serviço
                   </label>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <p className="text-gray-900 text-sm sm:text-base">{agreement.service_description}</p>
+                    <p className="text-gray-900 text-sm sm:text-base">
+                      {agreement.service_description}
+                    </p>
                   </div>
                 </div>
 
@@ -149,7 +156,9 @@ export function ProposalModal({
                   </label>
                   <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-3">
                     <DollarSign className="h-5 w-5 text-green-600" />
-                    <span className="text-green-800 font-semibold text-base sm:text-lg">{formatPrice(agreement.agreed_price)}</span>
+                    <span className="text-green-800 font-semibold text-base sm:text-lg">
+                      {formatPrice(agreement.agreed_price)}
+                    </span>
                   </div>
                 </div>
 
@@ -161,7 +170,9 @@ export function ProposalModal({
                     </label>
                     <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <Calendar className="h-4 w-4 text-blue-600" />
-                      <span className="text-blue-800 font-medium text-sm sm:text-base">{formatDate(agreement.proposed_date)}</span>
+                      <span className="text-blue-800 font-medium text-sm sm:text-base">
+                        {formatDate(agreement.proposed_date)}
+                      </span>
                     </div>
                   </div>
                   <div>
@@ -170,7 +181,9 @@ export function ProposalModal({
                     </label>
                     <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <Clock className="h-4 w-4 text-blue-600" />
-                      <span className="text-blue-800 font-medium text-sm sm:text-base">{formatTime(agreement.proposed_time)}</span>
+                      <span className="text-blue-800 font-medium text-sm sm:text-base">
+                        {formatTime(agreement.proposed_time)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -183,7 +196,9 @@ export function ProposalModal({
                     </label>
                     <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg p-3">
                       <Clock className="h-4 w-4 text-purple-600" />
-                      <span className="text-purple-800 font-medium">{agreement.estimated_duration} horas</span>
+                      <span className="text-purple-800 font-medium">
+                        {agreement.estimated_duration} horas
+                      </span>
                     </div>
                   </div>
                 )}
@@ -195,7 +210,9 @@ export function ProposalModal({
                       Observações
                     </label>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <p className="text-amber-900 text-sm">{agreement.notes}</p>
+                      <p className="text-amber-900 text-sm">
+                        {agreement.notes}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -217,11 +234,15 @@ export function ProposalModal({
                   <ul className="text-sm text-orange-800 space-y-2">
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Ao aceitar, vocês terão acesso aos dados de contato</span>
+                      <span>
+                        Ao aceitar, vocês terão acesso aos dados de contato
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Após 20 horas do acordo aceito, poderão se avaliar</span>
+                      <span>
+                        Após 20 horas do acordo aceito, poderão se avaliar
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
@@ -229,7 +250,9 @@ export function ProposalModal({
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 bg-orange-600 rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Você pode rejeitar a proposta se não concordar</span>
+                      <span>
+                        Você pode rejeitar a proposta se não concordar
+                      </span>
                     </li>
                   </ul>
                 </div>
@@ -268,5 +291,5 @@ export function ProposalModal({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

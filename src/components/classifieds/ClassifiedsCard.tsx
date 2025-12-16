@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Maximize2,
 } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useAdmin";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ export function ClassifiedsCard({
 }: ClassifiedsCardProps) {
   const { user } = useAuthContext();
   const { openChat } = useFloatingChat();
+  const { isAdmin } = useIsAdmin();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [userInfoExpanded, setUserInfoExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -173,6 +175,7 @@ export function ClassifiedsCard({
         </div>
 
         {/* Options Menu */}
+        {/* Options Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -184,30 +187,34 @@ export function ClassifiedsCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {isOwner ? (
-              <>
-                <DropdownMenuItem onClick={() => onEdit && onEdit(ad)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar
-                </DropdownMenuItem>
-                {isActivePremium && premiumExpired && (
-                  <DropdownMenuItem
-                    onClick={() => onRenewPremium && onRenewPremium(ad.id)}
-                    className="text-yellow-600 dark:text-yellow-400"
-                  >
-                    <Crown className="h-4 w-4 mr-2" />
-                    Renovar Premium
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onClick={() => onDelete && onDelete(ad.id)}
-                  className="text-red-600 dark:text-red-400"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Deletar
-                </DropdownMenuItem>
-              </>
-            ) : (
+            {isOwner && (
+              <DropdownMenuItem onClick={() => onEdit && onEdit(ad)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </DropdownMenuItem>
+            )}
+
+            {isOwner && isActivePremium && premiumExpired && (
+              <DropdownMenuItem
+                onClick={() => onRenewPremium && onRenewPremium(ad.id)}
+                className="text-yellow-600 dark:text-yellow-400"
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                Renovar Premium
+              </DropdownMenuItem>
+            )}
+
+            {(isOwner || isAdmin) && (
+              <DropdownMenuItem
+                onClick={() => onDelete && onDelete(ad.id)}
+                className="text-red-600 dark:text-red-400"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isAdmin && !isOwner ? "Deletar (Admin)" : "Deletar"}
+              </DropdownMenuItem>
+            )}
+
+            {!isOwner && (
               <DropdownMenuItem>
                 <ReportButton
                   type="classified"

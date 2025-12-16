@@ -1,147 +1,182 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Flag, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Flag,
+  Clock,
+  CheckCircle,
+  XCircle,
   Eye,
   RefreshCw,
-  AlertTriangle
-} from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { toast } from 'sonner'
+  AlertTriangle,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface UserReport {
-  id: string
-  type: 'user' | 'post' | 'message' | 'review' | 'classified' | 'other'
-  reason: string
-  description: string
-  status: 'pending' | 'reviewing' | 'resolved' | 'dismissed'
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  created_at: string
-  updated_at: string
-  admin_notes?: string
-  resolution?: string
+  id: string;
+  type: "user" | "post" | "message" | "review" | "classified" | "other";
+  reason: string;
+  description: string;
+  status: "pending" | "reviewing" | "resolved" | "dismissed";
+  priority: "low" | "medium" | "high" | "urgent";
+  created_at: string;
+  updated_at: string;
+  admin_notes?: string;
+  resolution?: string;
 }
 
 interface UserReportsModalProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function UserReportsModal({ children }: UserReportsModalProps) {
-  const [reports, setReports] = useState<UserReport[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
-  const { user } = useAuthContext()
+  const [reports, setReports] = useState<UserReport[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuthContext();
 
   const fetchUserReports = async () => {
-    if (!user?.id) return
+    if (!user?.id) return;
 
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .eq('reporter_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(10) // Limitar a 10 denúncias mais recentes
+        .from("reports")
+        .select("*")
+        .eq("reporter_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10); // Limitar a 10 denúncias mais recentes
 
       if (error) {
-        console.error('Erro ao buscar denúncias:', error)
-        toast.error('Erro ao carregar suas denúncias')
-        return
+        console.error("Erro ao buscar denúncias:", error);
+        toast.error("Erro ao carregar suas denúncias");
+        return;
       }
 
-      setReports(data || [])
+      setReports(data || []);
     } catch (error) {
-      console.error('Erro ao buscar denúncias:', error)
-      toast.error('Erro ao carregar suas denúncias')
+      console.error("Erro ao buscar denúncias:", error);
+      toast.error("Erro ao carregar suas denúncias");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (isOpen && user?.id) {
-      fetchUserReports()
+      fetchUserReports();
     }
-  }, [isOpen, user?.id])
+  }, [isOpen, user?.id]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'reviewing': return 'bg-blue-100 text-blue-800'
-      case 'resolved': return 'bg-green-100 text-green-800'
-      case 'dismissed': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "reviewing":
+        return "bg-blue-100 text-blue-800";
+      case "resolved":
+        return "bg-green-100 text-green-800";
+      case "dismissed":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'pending': return 'Pendente'
-      case 'reviewing': return 'Em Revisão'
-      case 'resolved': return 'Resolvida'
-      case 'dismissed': return 'Dispensada'
-      default: return status
+      case "pending":
+        return "Pendente";
+      case "reviewing":
+        return "Em Revisão";
+      case "resolved":
+        return "Resolvida";
+      case "dismissed":
+        return "Dispensada";
+      default:
+        return status;
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <Clock className="h-3 w-3" />
-      case 'reviewing': return <Eye className="h-3 w-3" />
-      case 'resolved': return <CheckCircle className="h-3 w-3" />
-      case 'dismissed': return <XCircle className="h-3 w-3" />
-      default: return <AlertTriangle className="h-3 w-3" />
+      case "pending":
+        return <Clock className="h-3 w-3" />;
+      case "reviewing":
+        return <Eye className="h-3 w-3" />;
+      case "resolved":
+        return <CheckCircle className="h-3 w-3" />;
+      case "dismissed":
+        return <XCircle className="h-3 w-3" />;
+      default:
+        return <AlertTriangle className="h-3 w-3" />;
     }
-  }
+  };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'user': return 'Usuário'
-      case 'post': return 'Post'
-      case 'message': return 'Mensagem'
-      case 'review': return 'Avaliação'
-      case 'classified': return 'Anúncio'
-      default: return 'Outros'
+      case "user":
+        return "Usuário";
+      case "post":
+        return "Post";
+      case "message":
+        return "Mensagem";
+      case "review":
+        return "Avaliação";
+      case "classified":
+        return "Anúncio";
+      default:
+        return "Outros";
     }
-  }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800'
-      case 'high': return 'bg-orange-100 text-orange-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "urgent":
+        return "bg-red-100 text-red-800";
+      case "high":
+        return "bg-orange-100 text-orange-800";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800";
+      case "low":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'Urgente'
-      case 'high': return 'Alta'
-      case 'medium': return 'Média'
-      case 'low': return 'Baixa'
-      default: return priority
+      case "urgent":
+        return "Urgente";
+      case "high":
+        return "Alta";
+      case "medium":
+        return "Média";
+      case "low":
+        return "Baixa";
+      default:
+        return priority;
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden p-0">
         <DialogHeader className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
           <DialogTitle className="flex items-center justify-between text-gray-900 dark:text-white">
             <div className="flex items-center gap-2">
@@ -153,13 +188,15 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                 </Badge>
               )}
             </div>
-            <Button 
-              onClick={fetchUserReports} 
+            <Button
+              onClick={fetchUserReports}
               disabled={isLoading}
               variant="outline"
               size="sm"
             >
-              <RefreshCw className={`h-3 w-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-3 w-3 mr-1 ${isLoading ? "animate-spin" : ""}`}
+              />
               Atualizar
             </Button>
           </DialogTitle>
@@ -173,13 +210,17 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                 Nenhuma denúncia encontrada
               </h3>
               <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                Você ainda não enviou nenhuma denúncia. Quando enviar, elas aparecerão aqui.
+                Você ainda não enviou nenhuma denúncia. Quando enviar, elas
+                aparecerão aqui.
               </p>
             </div>
           ) : (
             <div className="grid gap-4">
               {reports.map((report) => (
-                <Card key={report.id} className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500 dark:border-l-blue-400">
+                <Card
+                  key={report.id}
+                  className="hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500 dark:border-l-blue-400"
+                >
                   <CardContent className="p-5">
                     {/* Header com badges */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -188,23 +229,30 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                           Denúncia de {getTypeLabel(report.type)}
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          <Badge className={`${getStatusColor(report.status)} flex items-center gap-1 text-xs px-2 py-1`}>
+                          <Badge
+                            className={`${getStatusColor(report.status)} flex items-center gap-1 text-xs px-2 py-1`}
+                          >
                             {getStatusIcon(report.status)}
                             {getStatusLabel(report.status)}
                           </Badge>
-                          <Badge className={`${getPriorityColor(report.priority)} text-xs px-2 py-1`}>
+                          <Badge
+                            className={`${getPriorityColor(report.priority)} text-xs px-2 py-1`}
+                          >
                             {getPriorityLabel(report.priority)}
                           </Badge>
                         </div>
                       </div>
                       <div className="text-xs text-gray-500">
-                        {new Date(report.created_at).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {new Date(report.created_at).toLocaleDateString(
+                          "pt-BR",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </div>
                     </div>
 
@@ -225,16 +273,24 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                     {/* Notas do Admin */}
                     {report.admin_notes && (
                       <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h5 className="font-medium text-blue-900 mb-2 text-sm">Nota do Administrador:</h5>
-                        <p className="text-blue-800 text-sm leading-relaxed">{report.admin_notes}</p>
+                        <h5 className="font-medium text-blue-900 mb-2 text-sm">
+                          Nota do Administrador:
+                        </h5>
+                        <p className="text-blue-800 text-sm leading-relaxed">
+                          {report.admin_notes}
+                        </p>
                       </div>
                     )}
 
                     {/* Resolução */}
                     {report.resolution && (
                       <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <h5 className="font-medium text-green-900 mb-2 text-sm">Resolução:</h5>
-                        <p className="text-green-800 text-sm leading-relaxed">{report.resolution}</p>
+                        <h5 className="font-medium text-green-900 mb-2 text-sm">
+                          Resolução:
+                        </h5>
+                        <p className="text-green-800 text-sm leading-relaxed">
+                          {report.resolution}
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -251,11 +307,11 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
                 <Flag className="h-4 w-4" />
                 <span>Mostrando as 10 denúncias mais recentes</span>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
-                  setIsOpen(false)
+                  setIsOpen(false);
                   // Navegar para página completa se necessário
                 }}
                 className="text-xs"
@@ -267,5 +323,5 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

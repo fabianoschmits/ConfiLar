@@ -993,13 +993,13 @@ export default function ClassificadosPage() {
                           </span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-3xl bg-white dark:bg-black border-gray-200 dark:border-gray-800 p-0 overflow-hidden">
-                        <DialogHeader className="p-4 sm:p-6 pb-2">
+                      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] bg-white dark:bg-black border-gray-200 dark:border-gray-800 p-0 overflow-hidden flex flex-col">
+                        <DialogHeader className="p-4 sm:p-6 pb-2 flex-shrink-0">
                           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
                             Criar Novo Anúncio
                           </DialogTitle>
                         </DialogHeader>
-                        <div className="max-h-[85vh] overflow-y-auto">
+                        <div className="flex-1 overflow-y-auto">
                           <UnifiedCreateAdForm
                             onSubmit={handleCreateUnifiedAd}
                             onCancel={() => setShowCreateDialog(false)}
@@ -1050,7 +1050,7 @@ export default function ClassificadosPage() {
 
                 {/* Dialog de Edição */}
                 <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                  <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+                  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
                     <DialogHeader>
                       <DialogTitle className="text-gray-900 dark:text-white">
                         {t("editAd")}
