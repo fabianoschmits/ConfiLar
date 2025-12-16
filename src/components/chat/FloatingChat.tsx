@@ -661,7 +661,7 @@ export function FloatingChat() {
             }}
           >
             <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl h-full flex flex-col">
-              <CardContent className="p-0">
+              <CardContent className="p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
                 {!selectedConversation ? (
                   /* Lista de Conversas */
                   <div className="p-4">
@@ -1187,7 +1187,7 @@ export function FloatingChat() {
                     </div>
 
                     {/* Input de Mensagem */}
-                    <div className="border-t border-gray-200 p-3">
+                    <div className="border-t border-gray-200 p-2 pb-1">
                       <div className="flex gap-2">
                         <Input
                           ref={messageInputRef}
