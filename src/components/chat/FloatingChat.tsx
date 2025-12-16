@@ -256,42 +256,53 @@ export function FloatingChat() {
 
   // Carregar tamanho salvo do localStorage
   useEffect(() => {
-    if (!isMobile) {
-      const saved = localStorage.getItem("chatSize");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setChatSize(parsed);
-        } catch (e) {
-          console.error("Erro ao carregar tamanho do chat:", e);
-        }
+    const saved = localStorage.getItem("chatSize");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setChatSize(parsed);
+      } catch (e) {
+        console.error("Erro ao carregar tamanho do chat:", e);
       }
     }
-  }, [isMobile]);
+  }, []);
 
   // Salvar tamanho no localStorage
   useEffect(() => {
-    if (!isMobile && !isResizing) {
+    if (!isResizing) {
       localStorage.setItem("chatSize", JSON.stringify(chatSize));
     }
-  }, [chatSize, isMobile, isResizing]);
+  }, [chatSize, isResizing]);
 
   // Função para iniciar redimensionamento
-  const handleResizeStart = (e: React.MouseEvent, direction: string) => {
-    if (isMobile) return; // Desabilitar resize em mobile
-
-    e.preventDefault();
+  const handleResizeStart = (e: any, direction: string) => {
+    // Prevenir scroll e seleção em mobile (se cancelável)
+    if (e.cancelable && e.type === "touchstart") e.preventDefault();
     e.stopPropagation();
     setIsResizing(true);
 
-    const startX = e.clientX;
-    const startY = e.clientY;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const startX = clientX;
+    const startY = clientY;
     const startWidth = chatSize.width;
     const startHeight = chatSize.height;
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      let deltaX = moveEvent.clientX - startX;
-      let deltaY = moveEvent.clientY - startY;
+    const handleMove = (moveEvent: any) => {
+      // Prevenir scroll em mobile durante resize
+      if (moveEvent.cancelable && moveEvent.type === "touchmove")
+        moveEvent.preventDefault();
+
+      const moveClientX = moveEvent.touches
+        ? moveEvent.touches[0].clientX
+        : moveEvent.clientX;
+      const moveClientY = moveEvent.touches
+        ? moveEvent.touches[0].clientY
+        : moveEvent.clientY;
+
+      let deltaX = moveClientX - startX;
+      let deltaY = moveClientY - startY;
 
       let newWidth = startWidth;
       let newHeight = startHeight;
@@ -309,20 +320,22 @@ export function FloatingChat() {
       setChatSize({ width: newWidth, height: newHeight });
     };
 
-    const handleMouseUp = () => {
+    const handleEnd = () => {
       setIsResizing(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleEnd);
+      document.removeEventListener("touchmove", handleMove);
+      document.removeEventListener("touchend", handleEnd);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleEnd);
+    document.addEventListener("touchmove", handleMove, { passive: false });
+    document.addEventListener("touchend", handleEnd);
   };
 
   // Função para maximizar/restaurar
   const toggleMaximize = () => {
-    if (isMobile) return; // Desabilitar maximizar em mobile
-
     if (isMaximized) {
       // Restaurar tamanho anterior
       setChatSize({ width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT });
@@ -642,8 +655,8 @@ export function FloatingChat() {
           <div
             className="max-w-[calc(100vw-2rem)] relative"
             style={{
-              width: isMobile ? "320px" : `${chatSize.width}px`,
-              height: isMobile ? "480px" : `${chatSize.height}px`,
+              width: `${chatSize.width}px`,
+              height: `${chatSize.height}px`,
               transition: isResizing ? "none" : "all 0.2s ease",
             }}
           >
@@ -911,21 +924,19 @@ export function FloatingChat() {
                             })()}
                         </div>
                         <div className="flex items-center gap-2">
-                          {!isMobile && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={toggleMaximize}
-                              className="text-white hover:bg-white/20 p-1 rounded-lg"
-                              title={isMaximized ? "Restaurar" : "Maximizar"}
-                            >
-                              {isMaximized ? (
-                                <Minimize2 className="h-3 w-3" />
-                              ) : (
-                                <Maximize2 className="h-3 w-3" />
-                              )}
-                            </Button>
-                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={toggleMaximize}
+                            className="text-white hover:bg-white/20 p-1 rounded-lg"
+                            title={isMaximized ? "Restaurar" : "Maximizar"}
+                          >
+                            {isMaximized ? (
+                              <Minimize2 className="h-3 w-3" />
+                            ) : (
+                              <Maximize2 className="h-3 w-3" />
+                            )}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1202,46 +1213,52 @@ export function FloatingChat() {
                 )}
               </CardContent>
 
-              {/* Resize Handles - Only on desktop */}
-              {!isMobile && (
-                <>
-                  {/* Bordas */}
-                  <div
-                    className="resize-handle resize-n"
-                    onMouseDown={(e) => handleResizeStart(e, "n")}
-                  />
-                  <div
-                    className="resize-handle resize-s"
-                    onMouseDown={(e) => handleResizeStart(e, "s")}
-                  />
-                  <div
-                    className="resize-handle resize-e"
-                    onMouseDown={(e) => handleResizeStart(e, "e")}
-                  />
-                  <div
-                    className="resize-handle resize-w"
-                    onMouseDown={(e) => handleResizeStart(e, "w")}
-                  />
+              {/* Resize Handles */}
+              <>
+                {/* Bordas */}
+                <div
+                  className="resize-handle resize-n"
+                  onMouseDown={(e) => handleResizeStart(e, "n")}
+                  onTouchStart={(e) => handleResizeStart(e, "n")}
+                />
+                <div
+                  className="resize-handle resize-s"
+                  onMouseDown={(e) => handleResizeStart(e, "s")}
+                  onTouchStart={(e) => handleResizeStart(e, "s")}
+                />
+                <div
+                  className="resize-handle resize-e"
+                  onMouseDown={(e) => handleResizeStart(e, "e")}
+                  onTouchStart={(e) => handleResizeStart(e, "e")}
+                />
+                <div
+                  className="resize-handle resize-w"
+                  onMouseDown={(e) => handleResizeStart(e, "w")}
+                  onTouchStart={(e) => handleResizeStart(e, "w")}
+                />
 
-                  {/* Cantos */}
-                  <div
-                    className="resize-handle resize-ne"
-                    onMouseDown={(e) => handleResizeStart(e, "ne")}
-                  />
-                  <div
-                    className="resize-handle resize-nw"
-                    onMouseDown={(e) => handleResizeStart(e, "nw")}
-                  />
-                  <div
-                    className="resize-handle resize-se"
-                    onMouseDown={(e) => handleResizeStart(e, "se")}
-                  />
-                  <div
-                    className="resize-handle resize-sw"
-                    onMouseDown={(e) => handleResizeStart(e, "sw")}
-                  />
-                </>
-              )}
+                {/* Cantos */}
+                <div
+                  className="resize-handle resize-ne"
+                  onMouseDown={(e) => handleResizeStart(e, "ne")}
+                  onTouchStart={(e) => handleResizeStart(e, "ne")}
+                />
+                <div
+                  className="resize-handle resize-nw"
+                  onMouseDown={(e) => handleResizeStart(e, "nw")}
+                  onTouchStart={(e) => handleResizeStart(e, "nw")}
+                />
+                <div
+                  className="resize-handle resize-se"
+                  onMouseDown={(e) => handleResizeStart(e, "se")}
+                  onTouchStart={(e) => handleResizeStart(e, "se")}
+                />
+                <div
+                  className="resize-handle resize-sw"
+                  onMouseDown={(e) => handleResizeStart(e, "sw")}
+                  onTouchStart={(e) => handleResizeStart(e, "sw")}
+                />
+              </>
             </Card>
           </div>
         ) : (

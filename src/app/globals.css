@@ -45,6 +45,7 @@
       0 0 25px rgba(59, 130, 246, 0.5),
       0 0 50px rgba(59, 130, 246, 0.3);
   }
+
   50% {
     box-shadow:
       0 30px 60px -12px rgba(0, 0, 0, 0.45),
@@ -63,6 +64,7 @@
       0 0 25px rgba(16, 185, 129, 0.5),
       0 0 50px rgba(16, 185, 129, 0.3);
   }
+
   50% {
     box-shadow:
       0 30px 60px -12px rgba(0, 0, 0, 0.45),
@@ -86,6 +88,7 @@
     opacity: 0;
     transform: translateY(-20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -109,6 +112,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -119,6 +123,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -130,6 +135,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -162,6 +168,7 @@
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -186,6 +193,7 @@
     transform: scale(0);
     opacity: 1;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
@@ -291,21 +299,34 @@
   --brand: #00b0b0;
 
   /* Spacing (4px base) */
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem; /* 8px */
-  --spacing-md: 1rem; /* 16px */
-  --spacing-lg: 1.5rem; /* 24px */
-  --spacing-xl: 2rem; /* 32px */
-  --spacing-2xl: 3rem; /* 48px */
-  --spacing-3xl: 4rem; /* 64px */
-  --spacing-4xl: 6rem; /* 96px */
+  --spacing-xs: 0.25rem;
+  /* 4px */
+  --spacing-sm: 0.5rem;
+  /* 8px */
+  --spacing-md: 1rem;
+  /* 16px */
+  --spacing-lg: 1.5rem;
+  /* 24px */
+  --spacing-xl: 2rem;
+  /* 32px */
+  --spacing-2xl: 3rem;
+  /* 48px */
+  --spacing-3xl: 4rem;
+  /* 64px */
+  --spacing-4xl: 6rem;
+  /* 96px */
 
   /* Border Radius */
-  --radius-sm: 0.375rem; /* 6px */
-  --radius-md: 0.5rem; /* 8px */
-  --radius-lg: 0.75rem; /* 12px */
-  --radius-xl: 1rem; /* 16px */
-  --radius-2xl: 1.5rem; /* 24px */
+  --radius-sm: 0.375rem;
+  /* 6px */
+  --radius-md: 0.5rem;
+  /* 8px */
+  --radius-lg: 0.75rem;
+  /* 12px */
+  --radius-xl: 1rem;
+  /* 16px */
+  --radius-2xl: 1.5rem;
+  /* 24px */
   --radius-full: 9999px;
 
   /* Shadows */
@@ -367,6 +388,7 @@
   .modern-input {
     @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder-gray-400 transition-colors duration-200;
   }
+
   .modern-input:focus {
     @apply outline-none ring-1;
     border-color: hsl(var(--primary));
@@ -520,7 +542,8 @@ textarea {
   input,
   textarea,
   select {
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
   }
 
   /* Improve modal/sheet positioning */
@@ -603,7 +626,8 @@ textarea {
 /* Chat mobile improvements */
 .chat-container {
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100dvh;
+  /* Dynamic viewport height for mobile */
   display: flex;
   flex-direction: column;
 }
@@ -640,8 +664,10 @@ textarea {
   border: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease-in-out; /* Animação suave */
-  font-size: 0.875rem; /* Reduzir fonte em ~30% */
+  transition: all 0.3s ease-in-out;
+  /* Animação suave */
+  font-size: 0.875rem;
+  /* Reduzir fonte em ~30% */
 }
 
 /* Desktop: Ajustar posição quando conversa está ativa */
@@ -656,7 +682,8 @@ textarea {
     flex: 1;
     overflow-y: auto;
     scroll-behavior: smooth;
-    min-height: 0; /* Importante para flex funcionar */
+    min-height: 0;
+    /* Importante para flex funcionar */
   }
 
   .floating-chat .input-area {
@@ -680,7 +707,8 @@ textarea {
     flex: 1;
     overflow-y: auto;
     scroll-behavior: smooth;
-    min-height: 0; /* Importante para flex funcionar */
+    min-height: 0;
+    /* Importante para flex funcionar */
   }
 
   /* Input sempre visível no mobile */
@@ -818,14 +846,27 @@ textarea {
 .resize-n {
   top: 0;
 }
+
 .resize-s {
   bottom: 0;
 }
+
 .resize-e {
   right: 0;
 }
+
 .resize-w {
   left: 0;
+}
+
+.resize-ne,
+.resize-sw {
+  cursor: nesw-resize;
+}
+
+.resize-nw,
+.resize-se {
+  cursor: nwse-resize;
 }
 
 .resize-ne,
@@ -834,26 +875,6 @@ textarea {
 .resize-sw {
   width: 12px;
   height: 12px;
-}
-
-.resize-ne {
-  top: 0;
-  right: 0;
-  cursor: nesw-resize;
-}
-.resize-nw {
-  top: 0;
-  left: 0;
-  cursor: nwse-resize;
-}
-.resize-se {
-  bottom: 0;
-  right: 0;
-  cursor: nwse-resize;
-}
-.resize-sw {
-  bottom: 0;
-  left: 0;
   cursor: nesw-resize;
 }
 
@@ -870,6 +891,7 @@ textarea {
   from {
     width: 100%;
   }
+
   to {
     width: 0%;
   }
@@ -877,12 +899,18 @@ textarea {
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Branco */
-    --foreground: 222.2 84% 4.9%; /* Quase preto */
-    --card: 0 0% 100%; /* Branco */
-    --card-foreground: 222.2 84% 4.9%; /* Quase preto */
-    --popover: 0 0% 100%; /* Branco */
-    --popover-foreground: 222.2 84% 4.9%; /* Quase preto */
+    --background: 0 0% 100%;
+    /* Branco */
+    --foreground: 222.2 84% 4.9%;
+    /* Quase preto */
+    --card: 0 0% 100%;
+    /* Branco */
+    --card-foreground: 222.2 84% 4.9%;
+    /* Quase preto */
+    --popover: 0 0% 100%;
+    /* Branco */
+    --popover-foreground: 222.2 84% 4.9%;
+    /* Quase preto */
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
@@ -905,12 +933,18 @@ textarea {
   }
 
   .dark {
-    --background: 0 0% 0%; /* Preto puro */
-    --foreground: 0 0% 100%; /* Branco */
-    --card: 222.2 47.4% 11.2%; /* Cinza escuro */
-    --card-foreground: 0 0% 100%; /* Branco */
-    --popover: 222.2 47.4% 11.2%; /* Cinza escuro */
-    --popover-foreground: 0 0% 100%; /* Branco */
+    --background: 0 0% 0%;
+    /* Preto puro */
+    --foreground: 0 0% 100%;
+    /* Branco */
+    --card: 222.2 47.4% 11.2%;
+    /* Cinza escuro */
+    --card-foreground: 0 0% 100%;
+    /* Branco */
+    --popover: 222.2 47.4% 11.2%;
+    /* Cinza escuro */
+    --popover-foreground: 0 0% 100%;
+    /* Branco */
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
@@ -944,11 +978,13 @@ textarea {
 
   /* Remover borda do wrapper do CommandInput */
   [data-slot="command-input-wrapper"] {
-    border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
+    border-bottom-color: rgb(229 231 235) !important;
+    /* gray-200 */
   }
 
   .dark [data-slot="command-input-wrapper"] {
-    border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
+    border-bottom-color: rgb(55 65 81) !important;
+    /* gray-700 */
   }
 
   /* Aplicar fonte Gilroy globalmente */
@@ -1058,11 +1094,13 @@ textarea {
 
 /* Remover borda do wrapper do CommandInput */
 [data-slot="command-input-wrapper"] {
-  border-bottom-color: rgb(229 231 235) !important; /* gray-200 */
+  border-bottom-color: rgb(229 231 235) !important;
+  /* gray-200 */
 }
 
 .dark [data-slot="command-input-wrapper"] {
-  border-bottom-color: rgb(55 65 81) !important; /* gray-700 */
+  border-bottom-color: rgb(55 65 81) !important;
+  /* gray-700 */
 }
 
 /* Garantir que inputs dentro de Command não tenham borda preta */
