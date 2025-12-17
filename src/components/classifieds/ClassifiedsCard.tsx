@@ -134,7 +134,7 @@ export function ClassifiedsCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl bg-white dark:bg-black border transition-all duration-300 hover:shadow-lg",
+        "group relative flex flex-col h-full overflow-hidden rounded-3xl bg-white dark:bg-black border transition-all duration-300 hover:shadow-lg",
         isActivePremium
           ? "border-warning-200 dark:border-warning-800 ring-1 ring-warning-100 dark:ring-warning-900 shadow-sm"
           : "border-gray-200 dark:border-gray-800",
@@ -339,7 +339,7 @@ export function ClassifiedsCard({
       </div>
 
       {/* 5. Footer: User + Contact */}
-      <div className="bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
+      <div className="mt-auto bg-gray-50/50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-800">
         <div className="px-5 py-4 flex items-center justify-between">
           {/* User Info with Badge at Bottom Right */}
           <div className="flex items-center gap-3">

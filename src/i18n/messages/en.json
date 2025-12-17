@@ -17,7 +17,8 @@
     "previous": "Previous",
     "submit": "Submit",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "all": "All"
   },
   "navigation": {
     "home": "Home",
@@ -288,44 +289,84 @@
       "step1": {
         "title": "Complete your profile",
         "description": "Create a complete profile to be easily found",
-        "details": ["Personal data", "Profile photo", "Location", "Service preferences"]
+        "details": [
+          "Personal data",
+          "Profile photo",
+          "Location",
+          "Service preferences"
+        ]
       },
       "step2": {
         "title": "Search professionals",
         "description": "Find qualified professionals in your area",
-        "details": ["Filter by location", "Choose service category", "See real reviews", "Compare profiles"]
+        "details": [
+          "Filter by location",
+          "Choose service category",
+          "See real reviews",
+          "Compare profiles"
+        ]
       },
       "step3": {
         "title": "Get in touch",
         "description": "Talk directly with the chosen professional",
-        "details": ["Secure chat", "Information exchange", "Negotiate prices", "Schedule service"]
+        "details": [
+          "Secure chat",
+          "Information exchange",
+          "Negotiate prices",
+          "Schedule service"
+        ]
       },
       "step4": {
         "title": "Rate the service",
         "description": "Leave your honest review after the service",
-        "details": ["Rate quality", "Share experience", "Help other clients", "Build trust"]
+        "details": [
+          "Rate quality",
+          "Share experience",
+          "Help other clients",
+          "Build trust"
+        ]
       }
     },
     "professionalSteps": {
       "step1": {
         "title": "Create your portfolio",
         "description": "Show your work and professional experience",
-        "details": ["Add work photos", "Describe your services", "Set fair prices", "Show specialties"]
+        "details": [
+          "Add work photos",
+          "Describe your services",
+          "Set fair prices",
+          "Show specialties"
+        ]
       },
       "step2": {
         "title": "Be found",
         "description": "Appear in searches from interested clients",
-        "details": ["Optimize your profile", "Use relevant keywords", "Maintain availability", "Respond quickly"]
+        "details": [
+          "Optimize your profile",
+          "Use relevant keywords",
+          "Maintain availability",
+          "Respond quickly"
+        ]
       },
       "step3": {
         "title": "Receive proposals",
         "description": "Clients will contact you",
-        "details": ["Respond to messages", "Negotiate prices", "Schedule services", "Maintain clear communication"]
+        "details": [
+          "Respond to messages",
+          "Negotiate prices",
+          "Schedule services",
+          "Maintain clear communication"
+        ]
       },
       "step4": {
         "title": "Build reputation",
         "description": "Receive reviews and grow on the platform",
-        "details": ["Deliver quality", "Be punctual", "Communicate well", "Ask for honest reviews"]
+        "details": [
+          "Deliver quality",
+          "Be punctual",
+          "Communicate well",
+          "Ask for honest reviews"
+        ]
       }
     }
   },

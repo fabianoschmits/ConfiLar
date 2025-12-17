@@ -17,7 +17,8 @@
     "previous": "Anterior",
     "submit": "Enviar",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "all": "Todos"
   },
   "navigation": {
     "home": "Home",
@@ -288,44 +289,84 @@
       "step1": {
         "title": "Complete seu perfil",
         "description": "Crie um perfil completo para ser encontrado facilmente",
-        "details": ["Dados pessoais", "Foto de perfil", "Localização", "Preferências de serviço"]
+        "details": [
+          "Dados pessoais",
+          "Foto de perfil",
+          "Localização",
+          "Preferências de serviço"
+        ]
       },
       "step2": {
         "title": "Busque profissionais",
         "description": "Encontre profissionais qualificados na sua região",
-        "details": ["Filtre por localização", "Escolha categoria de serviço", "Veja avaliações reais", "Compare perfis"]
+        "details": [
+          "Filtre por localização",
+          "Escolha categoria de serviço",
+          "Veja avaliações reais",
+          "Compare perfis"
+        ]
       },
       "step3": {
         "title": "Entre em contato",
         "description": "Converse diretamente com o profissional escolhido",
-        "details": ["Chat seguro", "Troca de informações", "Negocie valores", "Agende o serviço"]
+        "details": [
+          "Chat seguro",
+          "Troca de informações",
+          "Negocie valores",
+          "Agende o serviço"
+        ]
       },
       "step4": {
         "title": "Avalie o serviço",
         "description": "Deixe sua avaliação honesta após o serviço",
-        "details": ["Avalie qualidade", "Compartilhe experiência", "Ajude outros clientes", "Construa confiança"]
+        "details": [
+          "Avalie qualidade",
+          "Compartilhe experiência",
+          "Ajude outros clientes",
+          "Construa confiança"
+        ]
       }
     },
     "professionalSteps": {
       "step1": {
         "title": "Crie seu portfólio",
         "description": "Mostre seu trabalho e experiência profissional",
-        "details": ["Adicione fotos do trabalho", "Descreva seus serviços", "Defina preços justos", "Mostre especialidades"]
+        "details": [
+          "Adicione fotos do trabalho",
+          "Descreva seus serviços",
+          "Defina preços justos",
+          "Mostre especialidades"
+        ]
       },
       "step2": {
         "title": "Seja encontrado",
         "description": "Apareça nas buscas dos clientes interessados",
-        "details": ["Otimize seu perfil", "Use palavras-chave relevantes", "Mantenha disponibilidade", "Responda rapidamente"]
+        "details": [
+          "Otimize seu perfil",
+          "Use palavras-chave relevantes",
+          "Mantenha disponibilidade",
+          "Responda rapidamente"
+        ]
       },
       "step3": {
         "title": "Receba propostas",
         "description": "Clientes entrarão em contato com você",
-        "details": ["Responda mensagens", "Negocie valores", "Agende serviços", "Mantenha comunicação clara"]
+        "details": [
+          "Responda mensagens",
+          "Negocie valores",
+          "Agende serviços",
+          "Mantenha comunicação clara"
+        ]
       },
       "step4": {
         "title": "Construa reputação",
         "description": "Receba avaliações e cresça na plataforma",
-        "details": ["Entregue qualidade", "Seja pontual", "Comunique-se bem", "Peça avaliações honestas"]
+        "details": [
+          "Entregue qualidade",
+          "Seja pontual",
+          "Comunique-se bem",
+          "Peça avaliações honestas"
+        ]
       }
     }
   },
