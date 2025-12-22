@@ -809,7 +809,7 @@ export default function BuscarPage() {
                 {displayProfiles.map((profile) => (
                   <Card
                     key={profile.id}
-                    className="hover:shadow-md transition-shadow duration-200 relative"
+                    className="shadow-lg hover:shadow-xl transition-all duration-300 relative border-gray-200 dark:border-gray-800"
                   >
                     <CardContent className="p-6">
                       {/* Badge de Serviços - Canto Superior Direito */}
@@ -966,6 +966,9 @@ export default function BuscarPage() {
                           "Profissional qualificado e experiente."}
                       </p>
 
+                      {/* Separator Line Bottom */}
+                      <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
+
                       {/* Avaliações */}
                       {(() => {
                         const stats = profileStats[profile.id];
@@ -973,7 +976,7 @@ export default function BuscarPage() {
                         const reviewCount = stats?.reviewCount || 0;
 
                         return (
-                          <div className="flex items-center mb-4">
+                          <div className="flex items-center justify-center mb-4">
                             <div className="flex items-center">
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
@@ -994,9 +997,6 @@ export default function BuscarPage() {
                           </div>
                         );
                       })()}
-
-                      {/* Separator Line Bottom */}
-                      <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
 
                       {/* Footer do Card */}
                       <div className="flex items-center justify-between">

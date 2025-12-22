@@ -358,7 +358,7 @@ export function ClassifiedsListSkeleton({
 // Skeleton para card de usuário (buscar, favoritos)
 export function UserCardSkeleton() {
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200 animate-fade-in">
+    <Card className="shadow-lg hover:shadow-xl transition-all duration-300 relative border-gray-200 dark:border-gray-800 animate-fade-in">
       <CardContent className="p-6">
         {/* Badge de Serviços (canto superior direito) */}
         <div className="absolute top-2 right-2">
@@ -385,14 +385,20 @@ export function UserCardSkeleton() {
           </div>
         </div>
 
+        {/* Separator Line Top */}
+        <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
+
         {/* Bio */}
         <div className="mb-4 space-y-2">
           <Skeleton width="100%" height={16} />
           <Skeleton width="85%" height={16} />
         </div>
 
+        {/* Separator Line Bottom */}
+        <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
+
         {/* Avaliações */}
-        <div className="flex items-center mb-4">
+        <div className="flex items-center justify-center mb-4">
           <div className="flex gap-1 mr-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} width={16} height={16} className="rounded-sm" />
@@ -401,13 +407,8 @@ export function UserCardSkeleton() {
           <Skeleton width={120} height={14} />
         </div>
 
-        {/* Visualizações */}
-        <div className="mb-4">
-          <Skeleton width={100} height={14} />
-        </div>
-
         {/* Footer do Card */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
           <Skeleton width={80} height={14} />
           <div className="flex gap-2">
             <Skeleton width={36} height={32} className="rounded-md" />
