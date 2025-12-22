@@ -57,6 +57,7 @@ import Link from "next/link";
 import { useReferralStats } from "@/hooks/useReferralStats";
 import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
 import { useTranslations } from "next-intl";
+import { PortfolioProjectCard } from "@/components/portfolio/PortfolioProjectCard";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
@@ -798,74 +799,54 @@ export default function ProfilePage() {
             </TabsContent>
 
             <TabsContent value="portfolio">
-              {isProfessional ? (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-[#00b0b0] text-white rounded-t-lg">
+              <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
+                <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+                  <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
-                      <Building2 className="w-5 h-5" />
+                      <Briefcase className="w-5 h-5" />
                       {t("portfolio")}
                     </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    {portfolioLoading ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                          <div
-                            key={i}
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse"
-                          >
-                            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : portfolioProjects && portfolioProjects.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {portfolioProjects.map((project) => (
-                          <div
-                            key={project.id}
-                            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 transform hover:scale-105 transition-transform"
-                          >
-                            <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                              {project.title}
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                              {project.description}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                              <span>
-                                {format(
-                                  new Date(project.created_at),
-                                  "dd/MM/yyyy",
-                                )}
-                              </span>
-                              <span>{project.views_count} visualizações</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <EmptyState
-                        icon={<Building2 className="h-12 w-12 text-gray-400" />}
-                        title="Nenhum projeto no portfólio"
-                        description="Este profissional ainda não adicionou projetos ao portfólio."
-                      />
+                    {isOwnProfile && (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="secondary"
+                        className="bg-white/20 hover:bg-white/30 text-white border-0"
+                      >
+                        <Link href="/portfolio">Gerenciar Portfólio</Link>
+                      </Button>
                     )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg">
-                  <CardContent className="p-8 text-center">
-                    <User className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      {t("client")}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Este usuário é um cliente e não possui portfólio.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {portfolioLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+                        />
+                      ))}
+                    </div>
+                  ) : portfolioProjects && portfolioProjects.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {portfolioProjects.map((project) => (
+                        <PortfolioProjectCard
+                          key={project.id}
+                          project={project}
+                          isOwner={false}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={<Briefcase className="h-12 w-12 text-gray-400" />}
+                      title="Nenhum projeto encontrado"
+                      description="Este usuário ainda não adicionou projetos ao portfólio."
+                    />
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
