@@ -362,9 +362,9 @@ export default function FeedPage() {
                         setFilter(newFilter);
                       }}
                       onReset={async () => {
-                        // Resetar para estado original (cidade do usuário)
+                        // Resetar para estado original (estado do usuário)
                         const resetFilter: LocationFilter = {
-                          type: "local",
+                          type: "state",
                           city: profile?.location_city || "",
                           state: profile?.location_state || "",
                           country: "Brasil",
@@ -402,7 +402,7 @@ export default function FeedPage() {
                             await supabase
                               .from("profiles")
                               .update({
-                                feed_location_filter_type: "local",
+                                feed_location_filter_type: "state",
                                 feed_location_filter_city:
                                   resetFilter.city || null,
                                 feed_location_filter_state:
