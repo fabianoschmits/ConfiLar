@@ -18,6 +18,7 @@ import {
   Search,
   Maximize2,
   Minimize2,
+  ArrowUpLeft,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
@@ -660,13 +661,21 @@ export function FloatingChat() {
               transition: isResizing ? "none" : "all 0.2s ease",
             }}
           >
-            <Card className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-xl rounded-2xl h-full flex flex-col">
+            <Card className="bg-white/95 dark:bg-black backdrop-blur-sm border border-gray-200 dark:border-gray-800 shadow-xl rounded-2xl h-full flex flex-col relative text-left">
+              {/* Indicador de Resize */}
+              <div className="absolute top-2.5 left-2.5 z-50 pointer-events-none opacity-50">
+                <ArrowUpLeft
+                  className={`w-3.5 h-3.5 cursor-nw-resize ${
+                    selectedConversation ? "text-white" : "text-gray-400"
+                  }`}
+                />
+              </div>
               <CardContent className="p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
                 {!selectedConversation ? (
                   /* Lista de Conversas */
-                  <div className="p-4">
+                  <div className="p-4 h-full flex flex-col">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold text-gray-900 text-lg">
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-lg ml-3">
                         Conversas Ativas
                       </h4>
                       <Badge className="bg-blue-500 text-white font-medium px-2 py-1 rounded-full">
@@ -783,7 +792,7 @@ export function FloatingChat() {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                      <div className="space-y-2 flex-1 overflow-y-auto min-h-0">
                         {conversations.map((conversation) => {
                           const otherUser =
                             user.id === conversation.client_id
@@ -797,10 +806,10 @@ export function FloatingChat() {
                               onClick={() =>
                                 selectConversation(conversation.id)
                               }
-                              className={`bg-white border rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 ${
+                              className={`bg-white dark:bg-gray-800 border rounded-xl p-3 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200 ${
                                 unreadCount > 0
-                                  ? "border-blue-200 bg-blue-50/30"
-                                  : "border-gray-200"
+                                  ? "border-blue-200 bg-blue-50/30 dark:bg-blue-900/20 dark:border-blue-800"
+                                  : "border-gray-200 dark:border-gray-700"
                               }`}
                             >
                               <div className="flex items-center gap-3">
@@ -817,62 +826,60 @@ export function FloatingChat() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between mb-1">
-                                    <h5 className="font-semibold text-gray-900 text-sm truncate">
+                                    <h5 className="font-semibold text-gray-900 dark:text-white text-sm truncate pr-2">
                                       {otherUser.full_name}
                                     </h5>
-                                    <div className="flex items-center gap-2">
-                                      {conversation.last_message
-                                        ?.created_at && (
-                                        <span className="text-xs text-gray-400 font-medium">
-                                          {formatTime(
-                                            conversation.last_message
-                                              .created_at,
-                                          )}
-                                        </span>
-                                      )}
-                                      {unreadCount > 0 && (
-                                        <Badge className="bg-red-500 text-white font-medium text-xs px-2 py-1 rounded-full min-w-[20px] h-5 flex items-center justify-center">
-                                          {unreadCount}
-                                        </Badge>
-                                      )}
-                                    </div>
                                   </div>
 
                                   {conversation.last_message ? (
-                                    <div className="flex items-center gap-2">
-                                      <p className="text-xs text-gray-600 truncate flex-1">
-                                        {conversation.last_message.sender_id ===
-                                        user?.id ? (
-                                          <span className="text-gray-500">
-                                            Você:{" "}
-                                          </span>
-                                        ) : (
-                                          <span className="text-gray-500">
-                                            {otherUser.full_name.split(" ")[0]}
-                                            :{" "}
-                                          </span>
-                                        )}
-                                        <span
-                                          className={
-                                            conversation.last_message
-                                              .sender_id !== user?.id &&
-                                            unreadCount > 0
-                                              ? "font-medium text-gray-900"
-                                              : ""
-                                          }
-                                        >
-                                          {conversation.last_message.content}
-                                        </span>
-                                      </p>
+                                    <p className="text-xs text-gray-600 truncate">
                                       {conversation.last_message.sender_id ===
-                                        user?.id && (
-                                        <CheckCheck className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                      user?.id ? (
+                                        <span className="text-gray-400 mr-1">
+                                          Você:
+                                        </span>
+                                      ) : (
+                                        <span className="text-gray-500 mr-1">
+                                          {otherUser.full_name.split(" ")[0]}
+                                          :{" "}
+                                        </span>
                                       )}
-                                    </div>
+                                      <span
+                                        className={
+                                          conversation.last_message
+                                            .sender_id !== user?.id &&
+                                          unreadCount > 0
+                                            ? "font-medium text-gray-900 dark:text-white"
+                                            : "text-gray-500 dark:text-gray-400"
+                                        }
+                                      >
+                                        {conversation.last_message.content}
+                                      </span>
+                                    </p>
                                   ) : (
                                     <p className="text-xs text-gray-400 italic">
                                       Nenhuma mensagem ainda
                                     </p>
+                                  )}
+                                </div>
+
+                                {/* Coluna da Direita (Tempo e Badge) */}
+                                <div className="flex flex-col items-end gap-1 min-w-[50px]">
+                                  {conversation.last_message?.created_at && (
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap">
+                                      {formatTime(
+                                        conversation.last_message.created_at,
+                                      )}
+                                    </span>
+                                  )}
+                                  {unreadCount > 0 && (
+                                    <Badge className="bg-blue-600 text-white font-medium text-[10px] h-5 min-w-[20px] rounded-full flex items-center justify-center px-1 shadow-sm">
+                                      {unreadCount}
+                                    </Badge>
+                                  )}
+                                  {conversation.last_message?.sender_id ===
+                                    user?.id && (
+                                    <CheckCheck className="h-3 w-3 text-blue-500" />
                                   )}
                                 </div>
                               </div>
@@ -888,7 +895,7 @@ export function FloatingChat() {
                     {/* Header da Conversa */}
                     <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-t-2xl">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 ml-4">
                           <MessageCircle className="h-4 w-4 text-white" />
                           <h3 className="font-medium text-white text-sm">
                             Chat
@@ -959,7 +966,7 @@ export function FloatingChat() {
                     </div>
 
                     {/* Header da Conversa */}
-                    <div className="bg-gray-50 border-b border-gray-200 p-3">
+                    <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-3 animate-slide-in-right">
                       <div className="flex items-center justify-between">
                         <Link
                           href={`/perfil/${
@@ -995,12 +1002,12 @@ export function FloatingChat() {
                             />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 text-sm">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
                               {user.id === selectedConversation.client_id
                                 ? selectedConversation.professional.full_name
                                 : selectedConversation.client.full_name}
                             </h4>
-                            <p className="text-xs text-gray-500 capitalize">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                               {user.id === selectedConversation.client_id
                                 ? selectedConversation.professional.user_type
                                 : selectedConversation.client.user_type}
@@ -1058,8 +1065,8 @@ export function FloatingChat() {
                             <div
                               className={`max-w-[80%] rounded-2xl relative ${
                                 isOwn
-                                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white dark:bg-white dark:text-gray-900 dark:border dark:border-gray-200 p-2"
-                                  : "bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-3"
+                                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white p-2"
+                                  : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-3"
                               }`}
                             >
                               {isEditing ? (
@@ -1187,14 +1194,14 @@ export function FloatingChat() {
                     </div>
 
                     {/* Input de Mensagem */}
-                    <div className="border-t border-gray-200 p-2 pb-1">
+                    <div className="border-t border-gray-200 dark:border-gray-800 p-2 pb-1 animate-slide-in-right">
                       <div className="flex gap-2">
                         <Input
                           ref={messageInputRef}
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
                           placeholder="Digite sua mensagem..."
-                          className="flex-1 bg-white border border-gray-300 focus:border-blue-500 rounded-xl px-4 py-2 text-gray-900 placeholder:text-gray-500"
+                          className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:border-blue-500 rounded-xl px-4 py-2 text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                           onKeyPress={(e) =>
                             e.key === "Enter" && handleSendMessage()
                           }

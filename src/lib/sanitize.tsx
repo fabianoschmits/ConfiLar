@@ -1,71 +1,50 @@
+import DOMPurify from "isomorphic-dompurify";
 import React from "react";
 
 /**
- * Sanitiza HTML removendo tags e atributos perigosos
- * Previne XSS (Cross-Site Scripting) attacks
+ * Configuração de tags e atributos permitidos
+ * Mantemos apenas o essencial para formatação básica de texto
  */
+const sanitizeConfig = {
+  ALLOWED_TAGS: [
+    "p",
+    "br",
+    "strong",
+    "em",
+    "u",
+    "a",
+    "ul",
+    "ol",
+    "li",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "span",
+    "div",
+    "blockquote",
+  ],
+  ALLOWED_ATTR: ["href", "target", "rel", "className", "class"],
+  // Evitar ataques de abertura de nova aba (reverse tabnabbing)
+  ADD_ATTR: ["target"],
+};
 
-const ALLOWED_TAGS = [
-  "p",
-  "br",
-  "strong",
-  "em",
-  "u",
-  "a",
-  "ul",
-  "ol",
-  "li",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "span",
-  "div",
-];
-const ALLOWED_ATTRIBUTES = ["href", "target", "rel"];
+// Hook para adicionar rel="noopener noreferrer" em links externos
+DOMPurify.addHook("afterSanitizeAttributes", function (node) {
+  if ("target" in node && node.getAttribute("target") === "_blank") {
+    node.setAttribute("rel", "noopener noreferrer");
+  }
+});
 
 /**
- * Sanitiza uma string HTML removendo tags e atributos perigosos
+ * Sanitiza HTML usando DOMPurify (biblioteca padrão de segurança)
+ * Previne XSS (Cross-Site Scripting) de forma robusta
  */
 export function sanitizeHTML(html: string): string {
   if (!html) return "";
-
-  // Remover tags script, iframe, object, embed, form, input, etc.
-  let sanitized = html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, "")
-    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, "")
-    .replace(/<form\b[^<]*(?:(?!<\/form>)<[^<]*)*<\/form>/gi, "")
-    .replace(/<input\b[^>]*>/gi, "")
-    .replace(/<textarea\b[^<]*(?:(?!<\/textarea>)<[^<]*)*<\/textarea>/gi, "")
-    .replace(/<select\b[^<]*(?:(?!<\/select>)<[^<]*)*<\/select>/gi, "");
-
-  // Remover atributos de eventos (onclick, onerror, etc.)
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
-
-  // Remover javascript: e data: URLs
-  sanitized = sanitized.replace(/javascript:/gi, "");
-  sanitized = sanitized.replace(/data:text\/html/gi, "");
-
-  // Remover style tags e atributos style perigosos
-  sanitized = sanitized.replace(
-    /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
-    "",
-  );
-  sanitized = sanitized.replace(
-    /\s*style\s*=\s*["'][^"']*expression[^"']*["']/gi,
-    "",
-  );
-  sanitized = sanitized.replace(
-    /\s*style\s*=\s*["'][^"']*javascript:[^"']*["']/gi,
-    "",
-  );
-
-  return sanitized;
+  return DOMPurify.sanitize(html, sanitizeConfig);
 }
 
 /**
