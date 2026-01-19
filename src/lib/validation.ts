@@ -45,11 +45,34 @@ export function isValidCPF(cpf: string): boolean {
 }
 
 /**
- * ValidationUtils - objeto com funções de validação
+ * ValidationUtils - objeto com funções de validação e formatação
  */
 export const ValidationUtils = {
   isValidCPF,
+  formatFullName,
 };
+
+/**
+ * Formata um nome completo para capitalizar cada palavra,
+ * mantendo partículas brasileiras (da, de, do, das, dos) em minúsculo.
+ */
+export function formatFullName(name: string): string {
+  if (!name) return "";
+
+  const particles = ["da", "de", "do", "das", "dos"];
+  const words = name.toLowerCase().trim().split(/\s+/);
+
+  const formattedWords = words.map((word, index) => {
+    // Se for a primeira palavra ou não estiver na lista de partículas, capitaliza
+    if (index === 0 || !particles.includes(word)) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+    // Caso contrário, mantém em minúsculo (partícula)
+    return word;
+  });
+
+  return formattedWords.join(" ");
+}
 
 /**
  * Valida se uma string é um UUID válido

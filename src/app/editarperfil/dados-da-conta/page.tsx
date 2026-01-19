@@ -1,38 +1,62 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { Button } from '@/components/ui/button'
-import { LoadingButton } from '@/components/ui/LoadingButton'
-import { ProgressIndicator } from '@/components/ui/ProgressIndicator'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import { 
-  X, User, Phone, Save, Edit3, Mail, CheckCircle2, Calendar, FileText
-} from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { ChangeEmailForm } from '@/components/forms/ChangeEmailForm'
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { ProgressIndicator } from "@/components/ui/ProgressIndicator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  X,
+  User,
+  Phone,
+  Save,
+  Edit3,
+  Mail,
+  CheckCircle2,
+  Calendar,
+  FileText,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { ChangeEmailForm } from "@/components/forms/ChangeEmailForm";
+import { ValidationUtils } from "@/lib/validation";
 
 // Função para validar CPF
 const validateCPF = (cpf: string): boolean => {
-  cpf = cpf.replace(/[^\d]+/g, '');
+  cpf = cpf.replace(/[^\d]+/g, "");
   if (cpf.length !== 11) return false;
 
   const invalidCPFs = [
-    '00000000000', '11111111111', '22222222222', '33333333333', '44444444444',
-    '55555555555', '66666666666', '77777777777', '88888888888', '99999999999',
-    '12345678901', '12345678909'
+    "00000000000",
+    "11111111111",
+    "22222222222",
+    "33333333333",
+    "44444444444",
+    "55555555555",
+    "66666666666",
+    "77777777777",
+    "88888888888",
+    "99999999999",
+    "12345678901",
+    "12345678909",
   ];
 
   if (invalidCPFs.includes(cpf)) return false;
@@ -44,7 +68,7 @@ const validateCPF = (cpf: string): boolean => {
   }
   let resto = soma % 11;
   const primeiroDigito = resto < 2 ? 0 : 11 - resto;
-  
+
   if (parseInt(cpf.charAt(9)) !== primeiroDigito) return false;
 
   soma = 0;
@@ -53,60 +77,65 @@ const validateCPF = (cpf: string): boolean => {
   }
   resto = soma % 11;
   const segundoDigito = resto < 2 ? 0 : 11 - resto;
-  
+
   if (parseInt(cpf.charAt(10)) !== segundoDigito) return false;
 
   return true;
-}
+};
 
 const accountDataSchema = z.object({
-  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  phone: z.string().min(10, 'Telefone inválido'),
-  cpf_cnpj: z.string()
-    .min(11, 'CPF/CNPJ deve ter pelo menos 11 dígitos')
+  full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  phone: z.string().min(10, "Telefone inválido"),
+  cpf_cnpj: z
+    .string()
+    .min(11, "CPF/CNPJ deve ter pelo menos 11 dígitos")
     .refine((value) => {
-      const cleanValue = value.replace(/\D/g, '')
+      const cleanValue = value.replace(/\D/g, "");
       if (cleanValue.length === 11) {
-        return validateCPF(value)
+        return validateCPF(value);
       }
       if (cleanValue.length === 14) {
-        return true
+        return true;
       }
-      return false
-    }, 'CPF/CNPJ inválido ou bloqueado'),
-  birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
+      return false;
+    }, "CPF/CNPJ inválido ou bloqueado"),
+  birth_date: z.string().min(1, "Data de nascimento é obrigatória"),
   bio: z.string().optional(),
   // Novos campos
-  escolaridade: z.enum([
-    'ensino_fundamental_incompleto',
-    'ensino_fundamental_completo',
-    'ensino_medio_incompleto',
-    'ensino_medio_completo',
-    'ensino_superior_incompleto',
-    'ensino_superior_completo',
-    'pos_graduacao',
-    'mestrado',
-    'doutorado'
-  ]).optional(),
+  escolaridade: z
+    .enum([
+      "ensino_fundamental_incompleto",
+      "ensino_fundamental_completo",
+      "ensino_medio_incompleto",
+      "ensino_medio_completo",
+      "ensino_superior_incompleto",
+      "ensino_superior_completo",
+      "pos_graduacao",
+      "mestrado",
+      "doutorado",
+    ])
+    .optional(),
   filhos: z.number().min(0).max(20).default(0).optional(),
-  estado_civil: z.enum([
-    'solteiro',
-    'casado',
-    'divorciado',
-    'viuvo',
-    'uniao_estavel',
-    'outro'
-  ]).optional(),
-})
+  estado_civil: z
+    .enum([
+      "solteiro",
+      "casado",
+      "divorciado",
+      "viuvo",
+      "uniao_estavel",
+      "outro",
+    ])
+    .optional(),
+});
 
-type AccountDataFormData = z.infer<typeof accountDataSchema>
+type AccountDataFormData = z.infer<typeof accountDataSchema>;
 
 export default function DadosDaContaPage() {
-  const { user } = useAuthContext()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showEmailForm, setShowEmailForm] = useState(false)
-  const [emailVerified, setEmailVerified] = useState(false)
+  const { user } = useAuthContext();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const {
     register,
@@ -119,118 +148,131 @@ export default function DadosDaContaPage() {
     defaultValues: {
       filhos: 0,
     },
-  })
+  });
 
-  const watchedValues = watch()
-  const fullName = watchedValues.full_name || (user as { user_metadata?: { full_name?: string } })?.user_metadata?.full_name || 'Usuário'
+  const watchedValues = watch();
+  const fullName =
+    watchedValues.full_name ||
+    (user as { user_metadata?: { full_name?: string } })?.user_metadata
+      ?.full_name ||
+    "Usuário";
 
   // Salvar página anterior ao montar o componente
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const referrer = document.referrer || window.location.href
+    if (typeof window !== "undefined") {
+      const referrer = document.referrer || window.location.href;
       // Salvar apenas se não for uma página de editar perfil
-      if (!referrer.includes('/editarperfil/')) {
-        sessionStorage.setItem('previousPage', referrer)
+      if (!referrer.includes("/editarperfil/")) {
+        sessionStorage.setItem("previousPage", referrer);
       }
     }
-  }, [])
+  }, []);
 
   // Carregar dados do perfil existente
   useEffect(() => {
     const loadProfileData = async () => {
       if (!user) {
-        router.push('/auth')
-        return
+        router.push("/auth");
+        return;
       }
 
       try {
         const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
         if (error) {
-          console.error('Erro ao carregar perfil:', error)
-          toast.error('Erro ao carregar dados do perfil', {
-            description: 'Não foi possível carregar suas informações. Tente recarregar a página.'
-          })
-          return
+          console.error("Erro ao carregar perfil:", error);
+          toast.error("Erro ao carregar dados do perfil", {
+            description:
+              "Não foi possível carregar suas informações. Tente recarregar a página.",
+          });
+          return;
         }
 
         if (profile) {
-          setValue('full_name', profile.full_name || '')
-          setValue('phone', profile.phone || '')
-          setValue('cpf_cnpj', profile.cpf_cnpj || '')
-          setValue('birth_date', profile.birth_date || '')
-          setValue('bio', profile.bio || '')
+          setValue("full_name", profile.full_name || "");
+          setValue("phone", profile.phone || "");
+          setValue("cpf_cnpj", profile.cpf_cnpj || "");
+          setValue("birth_date", profile.birth_date || "");
+          setValue("bio", profile.bio || "");
           // Novos campos
-          setValue('escolaridade', profile.escolaridade || undefined)
-          setValue('filhos', profile.filhos || 0)
-          setValue('estado_civil', profile.estado_civil || undefined)
+          setValue("escolaridade", profile.escolaridade || undefined);
+          setValue("filhos", profile.filhos || 0);
+          setValue("estado_civil", profile.estado_civil || undefined);
         }
 
         // Verificar se email está verificado
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        setEmailVerified(authUser?.email_confirmed_at !== null)
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        setEmailVerified(authUser?.email_confirmed_at !== null);
       } catch (error) {
-        console.error('Erro ao carregar perfil:', error)
-        toast.error('Erro ao carregar dados do perfil')
+        console.error("Erro ao carregar perfil:", error);
+        toast.error("Erro ao carregar dados do perfil");
       }
-    }
+    };
 
-    loadProfileData()
-  }, [user, router, setValue])
+    loadProfileData();
+  }, [user, router, setValue]);
 
   // Formatação automática para telefone
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 2) return numbers
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`
-    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
-  }
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 6)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 10)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
 
   // Formatação automática para CPF
   const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 3) return numbers
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
-  }
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value)
-    setValue('phone', formatted)
-  }
+    const formatted = formatPhone(e.target.value);
+    setValue("phone", formatted);
+  };
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value)
-    setValue('cpf_cnpj', formatted)
-    
-    const cleanValue = formatted.replace(/\D/g, '')
-    if (cleanValue.length === 11) {
-      const isValid = validateCPF(formatted)
-      setValue('cpf_cnpj', formatted, { shouldValidate: true, shouldDirty: true })
-    }
-  }
+    const formatted = formatCPF(e.target.value);
+    setValue("cpf_cnpj", formatted);
 
+    const cleanValue = formatted.replace(/\D/g, "");
+    if (cleanValue.length === 11) {
+      const isValid = validateCPF(formatted);
+      setValue("cpf_cnpj", formatted, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  };
 
   const onSubmit = async (data: AccountDataFormData) => {
     if (!user) {
-      toast.error('Usuário não autenticado', {
-        description: 'Você precisa estar logado para atualizar seus dados. Faça login e tente novamente.'
-      })
-      return
+      toast.error("Usuário não autenticado", {
+        description:
+          "Você precisa estar logado para atualizar seus dados. Faça login e tente novamente.",
+      });
+      return;
     }
 
-    setIsLoading(true)
-    
-    try {
+    setIsLoading(true);
 
+    try {
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           full_name: data.full_name,
           phone: data.phone,
@@ -242,14 +284,16 @@ export default function DadosDaContaPage() {
           filhos: data.filhos || 0,
           estado_civil: data.estado_civil || null,
         })
-        .eq('id', user.id)
+        .eq("id", user.id);
 
       if (profileError) {
-        console.error('❌ Erro ao salvar perfil:', profileError)
-        toast.error('Erro ao salvar dados', {
-          description: profileError.message || 'Não foi possível salvar suas informações. Verifique os dados e tente novamente.'
-        })
-        return
+        console.error("❌ Erro ao salvar perfil:", profileError);
+        toast.error("Erro ao salvar dados", {
+          description:
+            profileError.message ||
+            "Não foi possível salvar suas informações. Verifique os dados e tente novamente.",
+        });
+        return;
       }
 
       const { error: userUpdateError } = await supabase.auth.updateUser({
@@ -258,35 +302,38 @@ export default function DadosDaContaPage() {
           phone: data.phone,
           birth_date: data.birth_date,
           bio: data.bio,
-        }
-      })
+        },
+      });
 
       if (userUpdateError) {
-        console.warn('⚠️ Erro ao atualizar metadados do usuário:', userUpdateError)
+        console.warn(
+          "⚠️ Erro ao atualizar metadados do usuário:",
+          userUpdateError,
+        );
       }
 
-      console.log('✅ Dados da conta salvos com sucesso!')
-      toast.success('🎉 Dados atualizados com sucesso!')
-      
+      console.log("✅ Dados da conta salvos com sucesso!");
+      toast.success("🎉 Dados atualizados com sucesso!");
+
       // Redirecionar para página anterior após salvar
       setTimeout(() => {
-        const previousPage = sessionStorage.getItem('previousPage')
+        const previousPage = sessionStorage.getItem("previousPage");
         if (previousPage && previousPage !== window.location.href) {
-          router.push(previousPage)
+          router.push(previousPage);
         } else {
-          router.back()
+          router.back();
         }
-      }, 1000)
-      
+      }, 1000);
     } catch (error) {
-      console.error('Erro ao atualizar dados:', error)
-      toast.error('Erro inesperado ao atualizar dados', {
-        description: 'Ocorreu um erro inesperado. Tente novamente em alguns instantes ou recarregue a página.'
-      })
+      console.error("Erro ao atualizar dados:", error);
+      toast.error("Erro inesperado ao atualizar dados", {
+        description:
+          "Ocorreu um erro inesperado. Tente novamente em alguns instantes ou recarregue a página.",
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <MainLayout requireAuth={true}>
@@ -300,8 +347,12 @@ export default function DadosDaContaPage() {
                   <Edit3 className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dados da Conta</h1>
-                  <p className="text-gray-600">Gerencie suas informações pessoais</p>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Dados da Conta
+                  </h1>
+                  <p className="text-gray-600">
+                    Gerencie suas informações pessoais
+                  </p>
                 </div>
               </div>
             </div>
@@ -332,7 +383,10 @@ export default function DadosDaContaPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {emailVerified && (
-                          <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-200 dark:border-green-800 flex items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className="text-green-600 dark:text-green-400 border-green-200 dark:border-green-800 flex items-center gap-1"
+                          >
                             <CheckCircle2 className="w-3 h-3" />
                             Verificado
                           </Badge>
@@ -343,7 +397,7 @@ export default function DadosDaContaPage() {
                           size="sm"
                           onClick={() => setShowEmailForm(!showEmailForm)}
                         >
-                          {showEmailForm ? 'Cancelar' : 'Alterar'}
+                          {showEmailForm ? "Cancelar" : "Alterar"}
                         </Button>
                       </div>
                     </div>
@@ -351,11 +405,11 @@ export default function DadosDaContaPage() {
                     {showEmailForm && (
                       <div className="mt-4">
                         <ChangeEmailForm
-                          currentEmail={user?.email || ''}
+                          currentEmail={user?.email || ""}
                           onSuccess={() => {
-                            setShowEmailForm(false)
-                            setEmailVerified(true)
-                            toast.success('Email alterado com sucesso!')
+                            setShowEmailForm(false);
+                            setEmailVerified(true);
+                            toast.success("Email alterado com sucesso!");
                           }}
                           onCancel={() => setShowEmailForm(false)}
                         />
@@ -376,16 +430,32 @@ export default function DadosDaContaPage() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="full_name" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="full_name"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Nome completo <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="full_name"
                         placeholder="Digite seu nome completo"
-                        {...register('full_name')}
+                        {...register("full_name")}
+                        onBlur={(e) => {
+                          const hookFormOnBlur = register("full_name").onBlur;
+                          if (hookFormOnBlur) hookFormOnBlur(e);
+
+                          const formatted = ValidationUtils.formatFullName(
+                            e.target.value,
+                          );
+                          setValue("full_name", formatted, {
+                            shouldValidate: true,
+                          });
+                        }}
                         className={cn(
                           "h-10",
-                          errors.full_name ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                          errors.full_name
+                            ? "border-red-400 focus:border-red-500"
+                            : "focus:border-blue-500",
                         )}
                       />
                       {errors.full_name && (
@@ -397,7 +467,10 @@ export default function DadosDaContaPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="phone"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Telefone <span className="text-red-500">*</span>
                       </Label>
                       <div className="relative">
@@ -405,11 +478,13 @@ export default function DadosDaContaPage() {
                         <Input
                           id="phone"
                           placeholder="(11) 99999-9999"
-                          {...register('phone')}
+                          {...register("phone")}
                           onChange={handlePhoneChange}
                           className={cn(
                             "h-10 pl-10",
-                            errors.phone ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            errors.phone
+                              ? "border-red-400 focus:border-red-500"
+                              : "focus:border-blue-500",
                           )}
                         />
                       </div>
@@ -422,17 +497,22 @@ export default function DadosDaContaPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="cpf_cnpj"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         CPF <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="cpf_cnpj"
                         placeholder="000.000.000-00"
-                        {...register('cpf_cnpj')}
+                        {...register("cpf_cnpj")}
                         onChange={handleCPFChange}
                         className={cn(
                           "h-10",
-                          errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                          errors.cpf_cnpj
+                            ? "border-red-400 focus:border-red-500"
+                            : "focus:border-blue-500",
                         )}
                       />
                       {errors.cpf_cnpj && (
@@ -444,18 +524,24 @@ export default function DadosDaContaPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700">
-                        Data de Nascimento <span className="text-red-500">*</span>
+                      <Label
+                        htmlFor="birth_date"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Data de Nascimento{" "}
+                        <span className="text-red-500">*</span>
                       </Label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <Input
                           id="birth_date"
                           type="date"
-                          {...register('birth_date')}
+                          {...register("birth_date")}
                           className={cn(
                             "h-10 pl-10",
-                            errors.birth_date ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
+                            errors.birth_date
+                              ? "border-red-400 focus:border-red-500"
+                              : "focus:border-blue-500",
                           )}
                         />
                       </div>
@@ -468,24 +554,43 @@ export default function DadosDaContaPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="escolaridade" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="escolaridade"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Escolaridade
                       </Label>
-                      <Select 
-                        value={watchedValues.escolaridade || ''} 
-                        onValueChange={(value) => setValue('escolaridade', value as any)}
+                      <Select
+                        value={watchedValues.escolaridade || ""}
+                        onValueChange={(value) =>
+                          setValue("escolaridade", value as any)
+                        }
                       >
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Selecione sua escolaridade" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ensino_fundamental_incompleto">Ensino Fundamental Incompleto</SelectItem>
-                          <SelectItem value="ensino_fundamental_completo">Ensino Fundamental Completo</SelectItem>
-                          <SelectItem value="ensino_medio_incompleto">Ensino Médio Incompleto</SelectItem>
-                          <SelectItem value="ensino_medio_completo">Ensino Médio Completo</SelectItem>
-                          <SelectItem value="ensino_superior_incompleto">Ensino Superior Incompleto</SelectItem>
-                          <SelectItem value="ensino_superior_completo">Ensino Superior Completo</SelectItem>
-                          <SelectItem value="pos_graduacao">Pós-Graduação</SelectItem>
+                          <SelectItem value="ensino_fundamental_incompleto">
+                            Ensino Fundamental Incompleto
+                          </SelectItem>
+                          <SelectItem value="ensino_fundamental_completo">
+                            Ensino Fundamental Completo
+                          </SelectItem>
+                          <SelectItem value="ensino_medio_incompleto">
+                            Ensino Médio Incompleto
+                          </SelectItem>
+                          <SelectItem value="ensino_medio_completo">
+                            Ensino Médio Completo
+                          </SelectItem>
+                          <SelectItem value="ensino_superior_incompleto">
+                            Ensino Superior Incompleto
+                          </SelectItem>
+                          <SelectItem value="ensino_superior_completo">
+                            Ensino Superior Completo
+                          </SelectItem>
+                          <SelectItem value="pos_graduacao">
+                            Pós-Graduação
+                          </SelectItem>
                           <SelectItem value="mestrado">Mestrado</SelectItem>
                           <SelectItem value="doutorado">Doutorado</SelectItem>
                         </SelectContent>
@@ -493,12 +598,17 @@ export default function DadosDaContaPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="estado_civil" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="estado_civil"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Estado Civil
                       </Label>
-                      <Select 
-                        value={watchedValues.estado_civil || ''} 
-                        onValueChange={(value) => setValue('estado_civil', value as any)}
+                      <Select
+                        value={watchedValues.estado_civil || ""}
+                        onValueChange={(value) =>
+                          setValue("estado_civil", value as any)
+                        }
                       >
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Selecione seu estado civil" />
@@ -506,16 +616,23 @@ export default function DadosDaContaPage() {
                         <SelectContent>
                           <SelectItem value="solteiro">Solteiro(a)</SelectItem>
                           <SelectItem value="casado">Casado(a)</SelectItem>
-                          <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                          <SelectItem value="divorciado">
+                            Divorciado(a)
+                          </SelectItem>
                           <SelectItem value="viuvo">Viúvo(a)</SelectItem>
-                          <SelectItem value="uniao_estavel">União Estável</SelectItem>
+                          <SelectItem value="uniao_estavel">
+                            União Estável
+                          </SelectItem>
                           <SelectItem value="outro">Outro</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="filhos" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="filhos"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Número de Filhos
                       </Label>
                       <Input
@@ -526,8 +643,8 @@ export default function DadosDaContaPage() {
                         placeholder="0"
                         value={watchedValues.filhos || 0}
                         onChange={(e) => {
-                          const value = parseInt(e.target.value) || 0
-                          setValue('filhos', Math.max(0, Math.min(20, value)))
+                          const value = parseInt(e.target.value) || 0;
+                          setValue("filhos", Math.max(0, Math.min(20, value)));
                         }}
                         className="h-10"
                       />
@@ -549,21 +666,25 @@ export default function DadosDaContaPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
+                    <Label
+                      htmlFor="bio"
+                      className="text-sm font-medium text-gray-700"
+                    >
                       Conte um pouco sobre você (Opcional)
                     </Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 text-gray-400 h-4 w-4" />
                       <Textarea
                         id="bio"
-                        {...register('bio')}
+                        {...register("bio")}
                         placeholder="Conte um pouco sobre você, seus interesses, experiência ou o que você busca na plataforma..."
                         rows={4}
                         className="resize-none pl-10"
                       />
                     </div>
                     <p className="text-xs text-gray-500">
-                      Esta biografia aparecerá no seu perfil e ajudará outros usuários a conhecer você melhor.
+                      Esta biografia aparecerá no seu perfil e ajudará outros
+                      usuários a conhecer você melhor.
                     </p>
                   </div>
                 </CardContent>
@@ -587,6 +708,5 @@ export default function DadosDaContaPage() {
         </div>
       </div>
     </MainLayout>
-  )
+  );
 }
-

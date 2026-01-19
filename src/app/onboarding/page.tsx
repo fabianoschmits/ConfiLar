@@ -1068,6 +1068,19 @@ export default function OnboardingPage() {
                               id="full_name"
                               placeholder="Digite seu nome completo"
                               {...register("full_name")}
+                              onBlur={(e) => {
+                                const hookFormOnBlur =
+                                  register("full_name").onBlur;
+                                if (hookFormOnBlur) hookFormOnBlur(e);
+
+                                const formatted =
+                                  ValidationUtils.formatFullName(
+                                    e.target.value,
+                                  );
+                                setValue("full_name", formatted, {
+                                  shouldValidate: true,
+                                });
+                              }}
                               className={cn(
                                 "h-10",
                                 errors.full_name
