@@ -8,6 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { tutorialSteps } from "@/data/tutorialSteps";
 
 interface TutorialContextType {
@@ -27,18 +28,22 @@ const TutorialContext = createContext<TutorialContextType | undefined>(
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const { user } = useAuthContext();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     // Check if we should start the tutorial based on URL param
+    if (!user?.id) return;
+
     const shouldWelcome = searchParams.get("welcome") === "true";
-    const hasSeenTutorial = localStorage.getItem("confilar_tutorial_seen");
+    const storageKey = `confilar_tutorial_seen_${user.id}`;
+    const hasSeenTutorial = localStorage.getItem(storageKey);
 
     if (shouldWelcome && !hasSeenTutorial) {
       setIsActive(true);
     }
-  }, [searchParams]);
+  }, [searchParams, user?.id]);
 
   const startTutorial = () => {
     setIsActive(true);
@@ -46,8 +51,10 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   };
 
   const endTutorial = () => {
+    if (user?.id) {
+      localStorage.setItem(`confilar_tutorial_seen_${user.id}`, "true");
+    }
     setIsActive(false);
-    localStorage.setItem("confilar_tutorial_seen", "true");
     // Optional: Remove query param without reload
     const url = new URL(window.location.href);
     url.searchParams.delete("welcome");

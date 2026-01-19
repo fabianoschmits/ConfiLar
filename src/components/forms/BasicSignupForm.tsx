@@ -550,6 +550,7 @@ export function BasicSignupForm() {
           const referralResult = await createReferral(
             signUpData.user.id,
             "signup_form",
+            data.referral_code,
           );
 
           if (referralResult.success) {

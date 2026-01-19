@@ -241,15 +241,15 @@ export function UnifiedCreateAdForm({
       return;
     }
 
-    // Auto-select credit if available for selected duration (optional, but good UX)
-    // Or just clear it and let user select?
-    // Let's reset it to avoid stale state, but user must explicitly click "Use Credit"?
-    // User requested: "na hora de celecionar o anuncio premium ele deve ter a opção de usar o anuncio de boas vindas"
-    // So let's provide an option effectively.
-
+    // Auto-select credit if available for selected duration
     setFormData((p) => {
-      // If current selected duration matches a credit type, we can keep it if already set, or default to false?
-      // Let's reset if duration doesn't match credit type
+      // If switching to a duration where we have credit, use it by default?
+      // Or just let the UI handle it?
+      // We'll update the logic: if user selects a duration and has credit, we likely want to auto-use it
+      // but let's do that in the onClick handler of the buttons instead of effect
+      // to avoid loop.
+
+      // Clear credit usage if duration mismatch
       if (p.useCreditType === "1d" && p.durationDays !== 1)
         return { ...p, useCreditType: undefined };
       if (p.useCreditType === "7d" && p.durationDays !== 7)
@@ -464,91 +464,71 @@ export function UnifiedCreateAdForm({
                 Duração do Destaque
               </Label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {premiumOptions.map((opt) => (
-                  <button
-                    key={opt.days}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        pointsToSpend: opt.points,
-                        durationDays: opt.days,
-                      }))
-                    }
-                    disabled={currentBalance < opt.points}
-                    className={`
+                {premiumOptions.map((opt) => {
+                  // Determine if this option is "Free" via credit
+                  let isFreeCredit = false;
+                  if (opt.days === 1 && hasCredit1Day) isFreeCredit = true;
+                  if (opt.days === 7 && hasCredit7Days) isFreeCredit = true;
+
+                  const isSelected =
+                    formData.pointsToSpend === opt.points &&
+                    formData.durationDays === opt.days;
+                  // If utilizing credit, pointsToSpend should conceptually be 0, but we keep track of "which option" via duration/points
+                  // Actually, validation logic uses useCreditType to zero the cost.
+
+                  return (
+                    <button
+                      key={opt.days}
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          pointsToSpend: opt.points,
+                          durationDays: opt.days,
+                          // Auto-select credit if available for this duration
+                          useCreditType:
+                            opt.days === 1 && hasCredit1Day
+                              ? "1d"
+                              : opt.days === 7 && hasCredit7Days
+                                ? "7d"
+                                : undefined,
+                        }))
+                      }
+                      disabled={!isFreeCredit && currentBalance < opt.points}
+                      className={`
                                     relative p-3 rounded-lg border-2 text-left transition-all
                                     ${
-                                      formData.pointsToSpend === opt.points
+                                      formData.durationDays === opt.days
                                         ? "border-yellow-500 bg-white dark:bg-gray-800 shadow-sm"
                                         : "border-transparent bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800"
                                     }
-                                    ${currentBalance < opt.points ? "opacity-50 cursor-not-allowed" : ""}
+                                    ${!isFreeCredit && currentBalance < opt.points ? "opacity-50 cursor-not-allowed" : ""}
                                 `}
-                  >
-                    <div className="text-xs font-bold text-gray-900 dark:text-white mb-0.5">
-                      {opt.label}
-                    </div>
-                    <div className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
-                      {opt.points} pts
-                    </div>
-                    {formData.pointsToSpend === opt.points && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-yellow-500" />
-                    )}
-                  </button>
-                ))}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-gray-900 dark:text-white mb-0.5">
+                          {opt.label}
+                        </span>
+
+                        {isFreeCredit ? (
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <Zap className="w-3 h-3" fill="currentColor" />
+                            GRÁTIS
+                          </span>
+                        ) : (
+                          <span className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
+                            {opt.points} pts
+                          </span>
+                        )}
+                      </div>
+
+                      {formData.durationDays === opt.days && (
+                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-yellow-500" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-
-              {/* CREDIT USAGE OPTION */}
-              {formData.durationDays === 1 && hasCredit1Day && (
-                <div className="mt-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-emerald-500 hover:bg-emerald-600">
-                      GRÁTIS
-                    </Badge>
-                    <div className="text-sm text-emerald-800 dark:text-emerald-300">
-                      <span className="font-bold">Usar Crédito de 1 Dia</span>
-                      <span className="text-xs block opacity-80">
-                        Você tem {credits1d} disponível(is)
-                      </span>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={formData.useCreditType === "1d"}
-                    onCheckedChange={(checked) =>
-                      setFormData((p) => ({
-                        ...p,
-                        useCreditType: checked ? "1d" : undefined,
-                      }))
-                    }
-                  />
-                </div>
-              )}
-
-              {formData.durationDays === 7 && hasCredit7Days && (
-                <div className="mt-4 p-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black">
-                      GRÁTIS
-                    </Badge>
-                    <div className="text-sm text-yellow-800 dark:text-yellow-300">
-                      <span className="font-bold">Usar Crédito de 7 Dias</span>
-                      <span className="text-xs block opacity-80">
-                        Você tem {credits7d} disponível(is)
-                      </span>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={formData.useCreditType === "7d"}
-                    onCheckedChange={(checked) =>
-                      setFormData((p) => ({
-                        ...p,
-                        useCreditType: checked ? "7d" : undefined,
-                      }))
-                    }
-                  />
-                </div>
-              )}
 
               <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
                 <span>
