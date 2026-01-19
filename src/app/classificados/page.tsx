@@ -775,6 +775,7 @@ export default function ClassificadosPage() {
                 {/* Botão de filtro de localização */}
                 <div className="relative">
                   <Button
+                    id="ad-filters"
                     variant="outline"
                     onClick={() => setShowFilters(!showFilters)}
                     className={`h-10 px-3 flex items-center gap-2 ${
@@ -1017,6 +1018,7 @@ export default function ClassificadosPage() {
                     >
                       <DialogTrigger asChild>
                         <Button
+                          id="create-ad-button"
                           size="sm"
                           variant="outline"
                           className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
@@ -1810,7 +1812,7 @@ export default function ClassificadosPage() {
               <div
                 className={`grid gap-5 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
               >
-                {paginatedAds.map((ad) => (
+                {paginatedAds.map((ad, index) => (
                   <ClassifiedsCard
                     key={ad.id}
                     ad={ad}

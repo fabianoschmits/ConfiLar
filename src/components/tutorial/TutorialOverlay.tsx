@@ -1,29 +1,44 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTutorial } from "@/contexts/TutorialContext";
-import { tutorialSteps } from "@/data/tutorialSteps";
 import { Button } from "@/components/ui/button";
 import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function TutorialOverlay() {
-  const { isActive, currentStepIndex, nextStep, prevStep, skipTutorial } =
-    useTutorial();
+  const {
+    isActive,
+    currentStepIndex,
+    currentSteps,
+    nextStep,
+    prevStep,
+    skipTutorial,
+  } = useTutorial();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Update target rect when step changes or resize
   useEffect(() => {
     if (!isActive) return;
 
     const updateRect = () => {
-      const step = tutorialSteps[currentStepIndex];
+      const step = currentSteps[currentStepIndex];
       const element = document.getElementById(step.targetId);
 
       if (element) {
         const rect = element.getBoundingClientRect();
-        // Add some padding
         const padding = 8;
         setTargetRect(
           DOMRect.fromRect({
@@ -34,7 +49,6 @@ export function TutorialOverlay() {
           }),
         );
       } else {
-        // Fallback for "center" position or missing element
         setTargetRect(null);
       }
     };
@@ -43,7 +57,6 @@ export function TutorialOverlay() {
     window.addEventListener("resize", updateRect);
     window.addEventListener("scroll", updateRect, true);
 
-    // Check periodically for the element in case it renders late
     const interval = setInterval(updateRect, 500);
 
     return () => {
@@ -51,13 +64,65 @@ export function TutorialOverlay() {
       window.removeEventListener("scroll", updateRect, true);
       clearInterval(interval);
     };
-  }, [isActive, currentStepIndex]);
+  }, [isActive, currentStepIndex, currentSteps]);
 
   if (!isActive) return null;
 
-  const step = tutorialSteps[currentStepIndex];
+  const step = currentSteps[currentStepIndex];
   const isFirst = currentStepIndex === 0;
-  const isLast = currentStepIndex === tutorialSteps.length - 1;
+  const isLast = currentStepIndex === currentSteps.length - 1;
+
+  // Calculate position style
+  const getPositionStyle = (): React.CSSProperties => {
+    if (isMobile) {
+      // Mobile: always bottom-center
+      return {
+        bottom: "1rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+      };
+    }
+
+    // Desktop: position based on target
+    if (!targetRect) {
+      return {
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
+    }
+
+    const style: React.CSSProperties = {};
+
+    switch (step.position) {
+      case "bottom":
+        style.top = `${targetRect.bottom + 20}px`;
+        style.left = `${targetRect.left + targetRect.width / 2}px`;
+        style.transform = "translateX(-50%)";
+        break;
+      case "top":
+        style.bottom = `${window.innerHeight - targetRect.top + 20}px`;
+        style.left = `${targetRect.left + targetRect.width / 2}px`;
+        style.transform = "translateX(-50%)";
+        break;
+      case "right":
+        style.top = `${targetRect.top + targetRect.height / 2}px`;
+        style.left = `${targetRect.right + 20}px`;
+        style.transform = "translateY(-50%)";
+        break;
+      case "left":
+        style.top = `${targetRect.top + targetRect.height / 2}px`;
+        style.right = `${window.innerWidth - targetRect.left + 20}px`;
+        style.transform = "translateY(-50%)";
+        break;
+      default:
+        style.top = "50%";
+        style.left = "50%";
+        style.transform = "translate(-50%, -50%)";
+    }
+
+    return style;
+  };
 
   return (
     <AnimatePresence>
@@ -92,38 +157,8 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className={cn(
-            "fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px]",
-            // Positioning logic
-            !targetRect && "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-            targetRect &&
-              step.position === "bottom" &&
-              "top-[calc(var(--target-bottom)+20px)] left-[calc(var(--target-left)+var(--target-width)/2)] -translate-x-1/2",
-            targetRect &&
-              step.position === "top" &&
-              "bottom-[calc(100vh-var(--target-top)+20px)] left-[calc(var(--target-left)+var(--target-width)/2)] -translate-x-1/2",
-            targetRect &&
-              step.position === "right" &&
-              "top-[calc(var(--target-top)+var(--target-height)/2)] left-[calc(var(--target-right)+20px)] -translate-y-1/2",
-            targetRect &&
-              step.position === "left" &&
-              "top-[calc(var(--target-top)+var(--target-height)/2)] right-[calc(100vw-var(--target-left)+20px)] -translate-y-1/2",
-            // Fallbacks for other positions can be added as needed
-            // Using CSS variables for dynamic positioning
-            "bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl",
-          )}
-          style={
-            targetRect
-              ? ({
-                  "--target-top": `${targetRect.top}px`,
-                  "--target-bottom": `${targetRect.bottom}px`,
-                  "--target-left": `${targetRect.left}px`,
-                  "--target-right": `${targetRect.right}px`,
-                  "--target-width": `${targetRect.width}px`,
-                  "--target-height": `${targetRect.height}px`,
-                } as React.CSSProperties)
-              : {}
-          }
+          className="fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
+          style={getPositionStyle()}
         >
           {/* Header */}
           <div className="flex justify-between items-start mb-3">
@@ -149,7 +184,7 @@ export function TutorialOverlay() {
           {/* Footer / Controls */}
           <div className="flex items-center justify-between">
             <div className="flex space-x-1">
-              {tutorialSteps.map((_, i) => (
+              {currentSteps.map((_, i) => (
                 <div
                   key={i}
                   className={cn(

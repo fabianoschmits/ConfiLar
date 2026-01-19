@@ -7,14 +7,21 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { tutorialSteps } from "@/data/tutorialSteps";
+import { tutorialSteps, TutorialStep } from "@/data/tutorialSteps";
+import { tutorialStepsClassifieds } from "@/data/tutorialStepsClassifieds";
+import { tutorialStepsBusca } from "@/data/tutorialStepsBusca";
+
+export type TutorialPage = "feed" | "classificados" | "busca";
 
 interface TutorialContextType {
   isActive: boolean;
   currentStepIndex: number;
+  currentSteps: TutorialStep[];
+  currentPage: TutorialPage | null;
   startTutorial: () => void;
+  startPageTutorial: (page: TutorialPage) => void;
   endTutorial: () => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -25,40 +32,86 @@ const TutorialContext = createContext<TutorialContextType | undefined>(
   undefined,
 );
 
+const TUTORIAL_STEPS_MAP: Record<TutorialPage, TutorialStep[]> = {
+  feed: tutorialSteps,
+  classificados: tutorialStepsClassifieds,
+  busca: tutorialStepsBusca,
+};
+
 export function TutorialProvider({ children }: { children: ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState<TutorialPage | null>(null);
+  const [currentSteps, setCurrentSteps] =
+    useState<TutorialStep[]>(tutorialSteps);
+
   const { user } = useAuthContext();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
 
+  // Auto-trigger tutorial on first visit to each page
   useEffect(() => {
-    // Check if we should start the tutorial based on URL param
     if (!user?.id) return;
+    if (isActive) return; // Don't interrupt active tutorial
 
-    const shouldWelcome = searchParams.get("welcome") === "true";
-    const storageKey = `confilar_tutorial_seen_${user.id}`;
+    // Determine current page from pathname
+    let page: TutorialPage | null = null;
+    if (pathname === "/feed") page = "feed";
+    else if (pathname === "/classificados") page = "classificados";
+    else if (pathname === "/buscar") page = "busca";
+
+    if (!page) return;
+
+    const storageKey = `confilar_tutorial_seen_${page}_${user.id}`;
     const hasSeenTutorial = localStorage.getItem(storageKey);
 
-    if (shouldWelcome && !hasSeenTutorial) {
-      setIsActive(true);
+    // Check for welcome param (for feed after signup)
+    const shouldWelcome = searchParams.get("welcome") === "true";
+
+    if (
+      (shouldWelcome && page === "feed" && !hasSeenTutorial) ||
+      (!hasSeenTutorial && page !== "feed")
+    ) {
+      // Small delay to ensure page is fully rendered
+      const timer = setTimeout(() => {
+        startPageTutorial(page as TutorialPage);
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [searchParams, user?.id]);
+  }, [pathname, user?.id, searchParams, isActive]);
 
   const startTutorial = () => {
     setIsActive(true);
     setCurrentStepIndex(0);
+    setCurrentPage("feed");
+    setCurrentSteps(tutorialSteps);
+  };
+
+  const startPageTutorial = (page: TutorialPage) => {
+    const steps = TUTORIAL_STEPS_MAP[page];
+    setCurrentSteps(steps);
+    setCurrentPage(page);
+    setCurrentStepIndex(0);
+    setIsActive(true);
   };
 
   const endTutorial = () => {
-    if (user?.id) {
-      localStorage.setItem(`confilar_tutorial_seen_${user.id}`, "true");
+    if (user?.id && currentPage) {
+      localStorage.setItem(
+        `confilar_tutorial_seen_${currentPage}_${user.id}`,
+        "true",
+      );
     }
     setIsActive(false);
-    // Optional: Remove query param without reload
+    setCurrentPage(null);
+
+    // Remove welcome param if present
     const url = new URL(window.location.href);
-    url.searchParams.delete("welcome");
-    window.history.replaceState({}, "", url);
+    if (url.searchParams.has("welcome")) {
+      url.searchParams.delete("welcome");
+      window.history.replaceState({}, "", url);
+    }
   };
 
   const skipTutorial = () => {
@@ -66,7 +119,7 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
   };
 
   const nextStep = () => {
-    if (currentStepIndex < tutorialSteps.length - 1) {
+    if (currentStepIndex < currentSteps.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
     } else {
       endTutorial();
@@ -84,7 +137,10 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
       value={{
         isActive,
         currentStepIndex,
+        currentSteps,
+        currentPage,
         startTutorial,
+        startPageTutorial,
         endTutorial,
         nextStep,
         prevStep,
