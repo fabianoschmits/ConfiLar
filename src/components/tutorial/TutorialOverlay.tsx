@@ -157,7 +157,10 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className="fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
+          className={cn(
+            "fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl",
+            isMobile && "!left-1/2 !-translate-x-1/2 !bottom-4",
+          )}
           style={getPositionStyle()}
         >
           {/* Header */}
