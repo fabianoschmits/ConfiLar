@@ -333,6 +333,7 @@ export default function FeedPage() {
               </h1>
               <div className="flex items-center gap-2">
                 <button
+                  id="create-post-button"
                   onClick={() => setShowNewPost(true)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
                   title={t("createPost")}
@@ -573,7 +574,11 @@ export default function FeedPage() {
         )}
 
         {/* FEED */}
-        <div ref={containerRef} className="max-w-2xl mx-auto pb-20">
+        <div
+          id="feed-container"
+          ref={containerRef}
+          className="max-w-2xl mx-auto pb-20"
+        >
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (

@@ -1,127 +1,182 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
-import { Label } from '@/components/ui/label'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { 
-  Check, ChevronDown, X, Upload, RefreshCw, User, MapPin, Briefcase, 
-  Camera, ArrowRight, Shield, ArrowLeft, Sparkles, Eye, EyeOff, Home, Save
-} from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
-import { supabase } from '@/lib/supabase'
-import { estadosBrasil, getCidadesByEstado } from '@/data/brazilianLocations'
-import { services } from '@/data/services'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { getBioOrDefault } from '@/utils/autoBioGenerator'
-import { useAutoNotifications } from '@/hooks/useAutoNotifications'
-import { LightModeLayout } from '@/components/layout/LightModeLayout'
-import { updateReferralMilestone, createReferral } from '@/hooks/useReferralTracking'
-import { BrandLogo } from '@/components/common/BrandLogo'
-import { ValidationUtils } from '@/lib/validation'
-import { useLocale } from '@/contexts/LocaleContext'
-import { LocationComboboxesMultiCountry } from '@/components/ui/LocationComboboxesMultiCountry'
-import { useTranslations } from 'next-intl'
-
+import { useState, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import {
+  Check,
+  ChevronDown,
+  X,
+  Upload,
+  RefreshCw,
+  User,
+  MapPin,
+  Briefcase,
+  Camera,
+  ArrowRight,
+  Shield,
+  ArrowLeft,
+  Sparkles,
+  Eye,
+  EyeOff,
+  Home,
+  Save,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/lib/supabase";
+import { estadosBrasil, getCidadesByEstado } from "@/data/brazilianLocations";
+import { services } from "@/data/services";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { getBioOrDefault } from "@/utils/autoBioGenerator";
+import { useAutoNotifications } from "@/hooks/useAutoNotifications";
+import { LightModeLayout } from "@/components/layout/LightModeLayout";
+import {
+  updateReferralMilestone,
+  createReferral,
+} from "@/hooks/useReferralTracking";
+import { BrandLogo } from "@/components/common/BrandLogo";
+import { ValidationUtils } from "@/lib/validation";
+import { useLocale } from "@/contexts/LocaleContext";
+import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
+import { useTranslations } from "next-intl";
 
 const onboardingSchema = z.object({
-  full_name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  cpf_cnpj: z.string().min(1, 'CPF é obrigatório').refine((value) => {
-    if (!value) return false
-    return ValidationUtils.isValidCPF(value)
-  }, {
-    message: 'CPF inválido'
-  }),
-  phone: z.string().min(10, 'Telefone inválido'),
-  birth_date: z.string().min(1, 'Data de nascimento é obrigatória'),
-  gender: z.enum(['male', 'female', 'other']),
-  user_type: z.enum(['client', 'professional']),
-  location_state: z.string().min(1, 'Estado é obrigatório'),
-  location_city: z.string().min(1, 'Cidade é obrigatória'),
-  neighborhood: z.string().min(1, 'Bairro é obrigatório'),
-  address: z.string().min(1, 'Endereço é obrigatório'),
-  address_number: z.string().min(1, 'Número é obrigatório'),
-  zip_code: z.string().min(8, 'CEP inválido').max(9, 'CEP inválido'),
+  full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  cpf_cnpj: z
+    .string()
+    .min(1, "CPF é obrigatório")
+    .refine(
+      (value) => {
+        if (!value) return false;
+        return ValidationUtils.isValidCPF(value);
+      },
+      {
+        message: "CPF inválido",
+      },
+    ),
+  phone: z.string().min(10, "Telefone inválido"),
+  birth_date: z.string().min(1, "Data de nascimento é obrigatória"),
+  gender: z.enum(["male", "female", "other"]),
+  user_type: z.enum(["client", "professional"]),
+  location_state: z.string().min(1, "Estado é obrigatório"),
+  location_city: z.string().min(1, "Cidade é obrigatória"),
+  neighborhood: z.string().min(1, "Bairro é obrigatório"),
+  address: z.string().min(1, "Endereço é obrigatório"),
+  address_number: z.string().min(1, "Número é obrigatório"),
+  zip_code: z.string().min(8, "CEP inválido").max(9, "CEP inválido"),
   bio: z.string().optional(),
   services_offered: z.array(z.string()).optional(),
   experience_years: z.string().optional(),
   // Novos campos
-  escolaridade: z.enum([
-    'ensino_fundamental_incompleto',
-    'ensino_fundamental_completo',
-    'ensino_medio_incompleto',
-    'ensino_medio_completo',
-    'ensino_superior_incompleto',
-    'ensino_superior_completo',
-    'pos_graduacao',
-    'mestrado',
-    'doutorado'
-  ]).optional(),
+  escolaridade: z
+    .enum([
+      "ensino_fundamental_incompleto",
+      "ensino_fundamental_completo",
+      "ensino_medio_incompleto",
+      "ensino_medio_completo",
+      "ensino_superior_incompleto",
+      "ensino_superior_completo",
+      "pos_graduacao",
+      "mestrado",
+      "doutorado",
+    ])
+    .optional(),
   filhos: z.number().min(0).max(20).default(0).optional(),
-  estado_civil: z.enum([
-    'solteiro',
-    'casado',
-    'divorciado',
-    'viuvo',
-    'uniao_estavel',
-    'outro'
-  ]).optional(),
+  estado_civil: z
+    .enum([
+      "solteiro",
+      "casado",
+      "divorciado",
+      "viuvo",
+      "uniao_estavel",
+      "outro",
+    ])
+    .optional(),
   referencia_profissional: z.string().optional(),
-  turno_trabalho: z.enum([
-    'manha',
-    'tarde',
-    'noite',
-    'integral',
-    'flexivel'
-  ]).optional(),
-  country: z.enum(['BR', 'US']),
-  locale: z.enum(['pt-BR', 'en']),
+  turno_trabalho: z
+    .enum(["manha", "tarde", "noite", "integral", "flexivel"])
+    .optional(),
+  country: z.enum(["BR", "US"]),
+  locale: z.enum(["pt-BR", "en"]),
   accept_terms: z.boolean().refine((value) => value === true, {
-    message: 'Você deve aceitar os Termos de Uso para continuar'
+    message: "Você deve aceitar os Termos de Uso para continuar",
   }),
-})
+});
 
-type OnboardingFormData = z.infer<typeof onboardingSchema>
+type OnboardingFormData = z.infer<typeof onboardingSchema>;
 
-type AvatarType = 'upload' | 'dicebear'
+type AvatarType = "upload" | "dicebear";
 type AvatarSelection = {
-  type: AvatarType
-  value: string | File
-  preview?: string
-}
+  type: AvatarType;
+  value: string | File;
+  preview?: string;
+};
 
 export default function OnboardingPage() {
-  const { user, refreshAuth } = useAuthContext()
-  const { country: contextCountry, locale: contextLocale, setCountry, setLocale } = useLocale()
-  const router = useRouter()
-  const t = useTranslations('location')
-  const [isLoading, setIsLoading] = useState(false)
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
-  const [stateOpen, setStateOpen] = useState(false)
-  const [cityOpen, setCityOpen] = useState(false)
-  const [servicesOpen, setServicesOpen] = useState(false)
-  const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(null)
-  const [dicebearAvatar, setDicebearAvatar] = useState<string>('')
-  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right')
-  const [showDataSummary, setShowDataSummary] = useState(false)
-  const [userCpf, setUserCpf] = useState<string | null>(null) // CPF do usuário (salvo no cadastro)
-  const { createWelcomePost} = useAutoNotifications()
+  const { user, refreshAuth } = useAuthContext();
+  const {
+    country: contextCountry,
+    locale: contextLocale,
+    setCountry,
+    setLocale,
+  } = useLocale();
+  const router = useRouter();
+  const t = useTranslations("location");
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<AvatarSelection | null>(
+    null,
+  );
+  const [dicebearAvatar, setDicebearAvatar] = useState<string>("");
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right">(
+    "right",
+  );
+  const [showDataSummary, setShowDataSummary] = useState(false);
+  const [userCpf, setUserCpf] = useState<string | null>(null); // CPF do usuário (salvo no cadastro)
+  const { createWelcomePost } = useAutoNotifications();
 
   const {
     register,
@@ -132,168 +187,194 @@ export default function OnboardingPage() {
     formState: { errors, isValid },
   } = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
-    mode: 'onChange', // Validar em tempo real
+    mode: "onChange", // Validar em tempo real
     defaultValues: {
-      user_type: 'client' as const,
+      user_type: "client" as const,
       filhos: 0,
-      country: (contextCountry || 'BR') as 'BR' | 'US',
-      locale: (contextLocale || 'pt-BR') as 'pt-BR' | 'en',
+      country: (contextCountry || "BR") as "BR" | "US",
+      locale: (contextLocale || "pt-BR") as "pt-BR" | "en",
     },
-  })
+  });
 
   // Sincronizar país e locale do contexto com o formulário
   useEffect(() => {
-    setValue('country', (contextCountry || 'BR') as 'BR' | 'US')
-    setValue('locale', (contextLocale || 'pt-BR') as 'pt-BR' | 'en')
-  }, [contextCountry, contextLocale, setValue])
+    setValue("country", (contextCountry || "BR") as "BR" | "US");
+    setValue("locale", (contextLocale || "pt-BR") as "pt-BR" | "en");
+  }, [contextCountry, contextLocale, setValue]);
 
-  const watchedValues = watch()
-  const isProfessional = watchedValues.user_type === 'professional'
-  const fullName = watchedValues.full_name || (user as any)?.user_metadata?.full_name || 'Usuário'
+  const watchedValues = watch();
+  const isProfessional = watchedValues.user_type === "professional";
+  const fullName =
+    watchedValues.full_name ||
+    (user as any)?.user_metadata?.full_name ||
+    "Usuário";
 
   // Verificar se usuário está logado e carregar CPF do banco
   useEffect(() => {
     if (!user) {
-      router.push('/auth')
-      return
+      router.push("/auth");
+      return;
     }
 
     // Buscar CPF direto da tabela profiles (mesmo lugar que editar perfil usa)
     const loadUserCpf = async () => {
       try {
-        console.log('🔍 [Onboarding] Buscando CPF na tabela profiles para user:', user.id)
-        
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('cpf_cnpj, email')
-          .eq('id', user.id)
-          .maybeSingle()
+        console.log(
+          "🔍 [Onboarding] Buscando CPF na tabela profiles para user:",
+          user.id,
+        );
 
-        console.log('🔍 [Onboarding] Resultado da busca:', { profileData, error })
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("cpf_cnpj, email")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        console.log("🔍 [Onboarding] Resultado da busca:", {
+          profileData,
+          error,
+        });
 
         if (error) {
-          console.error('❌ [Onboarding] Erro ao buscar CPF:', error)
-          return
+          console.error("❌ [Onboarding] Erro ao buscar CPF:", error);
+          return;
         }
 
         if (profileData?.cpf_cnpj) {
-          console.log('✅ [Onboarding] CPF encontrado na tabela profiles:', profileData.cpf_cnpj)
-          console.log('✅ [Onboarding] Email do perfil:', profileData.email)
-          setUserCpf(profileData.cpf_cnpj)
+          console.log(
+            "✅ [Onboarding] CPF encontrado na tabela profiles:",
+            profileData.cpf_cnpj,
+          );
+          console.log("✅ [Onboarding] Email do perfil:", profileData.email);
+          setUserCpf(profileData.cpf_cnpj);
           // Preencher o campo do formulário com o CPF encontrado
-          setValue('cpf_cnpj', profileData.cpf_cnpj)
+          setValue("cpf_cnpj", profileData.cpf_cnpj);
         } else {
-          console.log('⚠️ [Onboarding] CPF não encontrado na tabela profiles')
-          console.log('⚠️ [Onboarding] Profile data completo:', profileData)
+          console.log("⚠️ [Onboarding] CPF não encontrado na tabela profiles");
+          console.log("⚠️ [Onboarding] Profile data completo:", profileData);
         }
       } catch (err) {
-        console.error('❌ [Onboarding] Erro ao buscar CPF:', err)
+        console.error("❌ [Onboarding] Erro ao buscar CPF:", err);
       }
-    }
+    };
 
-    loadUserCpf()
-  }, [user, router])
+    loadUserCpf();
+  }, [user, router]);
 
   // Steps para melhor organização
   const steps = [
-    { 
-      id: 1, 
-      title: 'Boas-vindas', 
-      shortTitle: 'Início',
-      icon: Sparkles, 
-      description: 'Vamos conhecer você!',
-      fields: []
+    {
+      id: 1,
+      title: "Boas-vindas",
+      shortTitle: "Início",
+      icon: Sparkles,
+      description: "Vamos conhecer você!",
+      fields: [],
     },
-    { 
-      id: 2, 
-      title: 'Seus Dados', 
-      shortTitle: 'Dados',
-      icon: User, 
-      description: 'Informações pessoais básicas',
-      fields: ['full_name', 'cpf_cnpj', 'phone', 'birth_date', 'gender']
+    {
+      id: 2,
+      title: "Seus Dados",
+      shortTitle: "Dados",
+      icon: User,
+      description: "Informações pessoais básicas",
+      fields: ["full_name", "cpf_cnpj", "phone", "birth_date", "gender"],
     },
-    { 
-      id: 3, 
-      title: 'Informações Adicionais', 
-      shortTitle: 'Info',
-      icon: User, 
-      description: 'Mais sobre você',
-      fields: ['escolaridade', 'estado_civil', 'filhos']
+    {
+      id: 3,
+      title: "Informações Adicionais",
+      shortTitle: "Info",
+      icon: User,
+      description: "Mais sobre você",
+      fields: ["escolaridade", "estado_civil", "filhos"],
     },
-    { 
-      id: 4, 
-      title: 'Sua Foto', 
-      shortTitle: 'Foto',
-      icon: Camera, 
-      description: 'Escolha sua foto de perfil',
-      fields: []
+    {
+      id: 4,
+      title: "Sua Foto",
+      shortTitle: "Foto",
+      icon: Camera,
+      description: "Escolha sua foto de perfil",
+      fields: [],
     },
-    { 
-      id: 5, 
-      title: 'Onde Você Mora', 
-      shortTitle: 'Local',
-      icon: MapPin, 
-      description: 'Sua localização',
-      fields: ['country', 'location_state', 'location_city', 'neighborhood', 'address']
+    {
+      id: 5,
+      title: "Onde Você Mora",
+      shortTitle: "Local",
+      icon: MapPin,
+      description: "Sua localização",
+      fields: [
+        "country",
+        "location_state",
+        "location_city",
+        "neighborhood",
+        "address",
+      ],
     },
-    { 
-      id: 6, 
-      title: 'Tipo de Usuário', 
-      shortTitle: 'Tipo',
-      icon: User, 
-      description: 'Cliente ou Profissional?',
-      fields: ['user_type']
+    {
+      id: 6,
+      title: "Tipo de Usuário",
+      shortTitle: "Tipo",
+      icon: User,
+      description: "Cliente ou Profissional?",
+      fields: ["user_type"],
     },
-    { 
-      id: 7, 
-      title: 'Dados Profissionais', 
-      shortTitle: 'Trabalho',
-      icon: Briefcase, 
-      description: 'Seus serviços e experiência',
-      fields: ['bio', 'services_offered', 'experience_years', 'referencia_profissional', 'turno_trabalho']
+    {
+      id: 7,
+      title: "Dados Profissionais",
+      shortTitle: "Trabalho",
+      icon: Briefcase,
+      description: "Seus serviços e experiência",
+      fields: [
+        "bio",
+        "services_offered",
+        "experience_years",
+        "referencia_profissional",
+        "turno_trabalho",
+      ],
     },
-    { 
-      id: 8, 
-      title: 'Resumo Final', 
-      shortTitle: 'Resumo',
-      icon: Eye, 
-      description: 'Confira seus dados',
-      fields: []
+    {
+      id: 8,
+      title: "Resumo Final",
+      shortTitle: "Resumo",
+      icon: Eye,
+      description: "Confira seus dados",
+      fields: [],
     },
-  ]
+  ];
 
-  const totalSteps = steps.length
-  const progressPercentage = (currentStep / totalSteps) * 100
+  const totalSteps = steps.length;
+  const progressPercentage = (currentStep / totalSteps) * 100;
 
   const getCurrentStepData = () => {
-    return steps.find(step => step.id === currentStep) || steps[0]
-  }
+    return steps.find((step) => step.id === currentStep) || steps[0];
+  };
 
   // Forçar validação quando chegar na última etapa
   useEffect(() => {
     if (currentStep === totalSteps) {
       // Validar todos os campos quando chegar na última etapa
-      trigger()
+      trigger();
     }
-  }, [currentStep, totalSteps, trigger])
+  }, [currentStep, totalSteps, trigger]);
 
   // Validação completa do formulário
   const isFormValid = (): boolean => {
-    const values = watchedValues
-    
+    const values = watchedValues;
+
     // Verificar telefone (remover formatação para validar)
-    const phoneNumbers = values.phone ? values.phone.replace(/\D/g, '') : ''
-    
+    const phoneNumbers = values.phone ? values.phone.replace(/\D/g, "") : "";
+
     // Verificar CEP (remover formatação para validar)
-    const zipCodeNumbers = values.zip_code ? values.zip_code.replace(/\D/g, '') : ''
-    
+    const zipCodeNumbers = values.zip_code
+      ? values.zip_code.replace(/\D/g, "")
+      : "";
+
     // Verificar todos os campos obrigatórios
     const hasRequiredFields = !!(
       values.full_name &&
       values.full_name.length >= 2 &&
       values.cpf_cnpj &&
       ValidationUtils.isValidCPF(values.cpf_cnpj) &&
-      phoneNumbers && 
+      phoneNumbers &&
       phoneNumbers.length >= 10 &&
       values.birth_date &&
       values.gender &&
@@ -308,38 +389,38 @@ export default function OnboardingPage() {
       zipCodeNumbers.length >= 8 &&
       values.user_type &&
       values.locale
-    )
-    
-    return hasRequiredFields
-  }
+    );
+
+    return hasRequiredFields;
+  };
 
   // Validação por etapa
   const validateCurrentStep = (): boolean => {
-    const values = watchedValues
+    const values = watchedValues;
 
     switch (currentStep) {
       case 1: // Boas-vindas - sempre válido
-        return true
-      
+        return true;
+
       case 2: // Dados pessoais
         return !!(
           values.full_name &&
           values.full_name.length >= 2 &&
           values.cpf_cnpj &&
           ValidationUtils.isValidCPF(values.cpf_cnpj) &&
-          values.phone && 
+          values.phone &&
           values.phone.length >= 10 &&
           values.birth_date &&
           values.gender &&
           values.accept_terms // Aceite dos termos obrigatório
-        )
-      
+        );
+
       case 3: // Informações adicionais - sempre válido (opcional)
-        return true
-      
+        return true;
+
       case 4: // Avatar - sempre válido (opcional)
-        return true
-      
+        return true;
+
       case 5: // Localização
         return !!(
           values.country &&
@@ -349,312 +430,328 @@ export default function OnboardingPage() {
           values.address &&
           values.address_number &&
           values.zip_code
-        )
-      
+        );
+
       case 6: // Tipo de usuário
-        return !!values.user_type
-      
+        return !!values.user_type;
+
       case 7: // Dados profissionais - só obrigatório se for profissional
-        if (values.user_type !== 'professional') return true
-        return true // Bio e outros campos são opcionais
-      
+        if (values.user_type !== "professional") return true;
+        return true; // Bio e outros campos são opcionais
+
       case 8: // Resumo - sempre válido
-        return true
-      
+        return true;
+
       default:
-        return false
+        return false;
     }
-  }
+  };
 
   const nextStep = async () => {
-    if (currentStep >= totalSteps) return
-    
+    if (currentStep >= totalSteps) return;
+
     // Validar etapa atual antes de avançar
     if (!validateCurrentStep()) {
-      toast.error('Por favor, preencha todos os campos obrigatórios')
-      return
+      toast.error("Por favor, preencha todos os campos obrigatórios");
+      return;
     }
-    
-    setIsTransitioning(true)
-    setSlideDirection('right')
-    
+
+    setIsTransitioning(true);
+    setSlideDirection("right");
+
     // Pequeno delay para suavizar a transição
     setTimeout(() => {
-      setCurrentStep(currentStep + 1)
-      setIsTransitioning(false)
-    }, 150)
-  }
+      setCurrentStep(currentStep + 1);
+      setIsTransitioning(false);
+    }, 150);
+  };
 
   const prevStep = () => {
-    if (currentStep <= 1) return
-    
-    setIsTransitioning(true)
-    setSlideDirection('left')
-    
+    if (currentStep <= 1) return;
+
+    setIsTransitioning(true);
+    setSlideDirection("left");
+
     setTimeout(() => {
-      setCurrentStep(currentStep - 1)
-      setIsTransitioning(false)
-    }, 150)
-  }
+      setCurrentStep(currentStep - 1);
+      setIsTransitioning(false);
+    }, 150);
+  };
 
   const goToStep = (stepId: number) => {
-    if (stepId === currentStep) return
-    
-    setIsTransitioning(true)
-    setSlideDirection(stepId > currentStep ? 'right' : 'left')
-    
+    if (stepId === currentStep) return;
+
+    setIsTransitioning(true);
+    setSlideDirection(stepId > currentStep ? "right" : "left");
+
     setTimeout(() => {
-      setCurrentStep(stepId)
-      setIsTransitioning(false)
-    }, 150)
-  }
+      setCurrentStep(stepId);
+      setIsTransitioning(false);
+    }, 150);
+  };
 
   // Formatação automática para telefone
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 2) return numbers
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`
-    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`
-  }
-
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 6)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 10)
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value)
-    setValue('phone', formatted)
-  }
+    const formatted = formatPhone(e.target.value);
+    setValue("phone", formatted);
+  };
 
   // Formatação automática para CPF
   const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '')
-    if (numbers.length <= 3) return numbers
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`
-  }
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9)
+      return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+  };
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCPF(e.target.value)
-    setValue('cpf_cnpj', formatted)
-  }
-
+    const formatted = formatCPF(e.target.value);
+    setValue("cpf_cnpj", formatted);
+  };
 
   // Converter categorias para formato de string simples
-  const serviceCategoryNames = services.map(cat => cat.name)
+  const serviceCategoryNames = services.map((cat) => cat.name);
 
   const handleServiceToggle = (service: string) => {
-    const newSelectedServices = selectedServices.includes(service) 
-      ? selectedServices.filter(s => s !== service)
-      : [...selectedServices, service]
-    
-    setSelectedServices(newSelectedServices)
-    setValue('services_offered', newSelectedServices)
-  }
+    const newSelectedServices = selectedServices.includes(service)
+      ? selectedServices.filter((s) => s !== service)
+      : [...selectedServices, service];
+
+    setSelectedServices(newSelectedServices);
+    setValue("services_offered", newSelectedServices);
+  };
 
   const removeService = (serviceToRemove: string) => {
-    const newSelectedServices = selectedServices.filter(s => s !== serviceToRemove)
-    setSelectedServices(newSelectedServices)
-    setValue('services_offered', newSelectedServices)
-  }
+    const newSelectedServices = selectedServices.filter(
+      (s) => s !== serviceToRemove,
+    );
+    setSelectedServices(newSelectedServices);
+    setValue("services_offered", newSelectedServices);
+  };
 
   const generateDicebearAvatar = async (name: string, forceRandom = false) => {
-    if (!name || name.length < 2) return
-    
-    setIsGeneratingAvatar(true)
+    if (!name || name.length < 2) return;
+
+    setIsGeneratingAvatar(true);
     try {
-      let seed = name.trim()
-      
+      let seed = name.trim();
+
       // Se for para gerar aleatório, adiciona timestamp para garantir unicidade
       if (forceRandom) {
-        seed = `${name.trim()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        seed = `${name.trim()}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       }
-      
-      const encodedSeed = encodeURIComponent(seed)
-      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&backgroundColor=transparent`
-      
-      const response = await fetch(avatarUrl)
+
+      const encodedSeed = encodeURIComponent(seed);
+      const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodedSeed}&backgroundColor=transparent`;
+
+      const response = await fetch(avatarUrl);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const content = await response.text()
-      if (!content || content.includes('error') || !content.includes('<svg')) {
-        throw new Error('Conteúdo SVG inválido retornado')
+
+      const content = await response.text();
+      if (!content || content.includes("error") || !content.includes("<svg")) {
+        throw new Error("Conteúdo SVG inválido retornado");
       }
-      
-      setDicebearAvatar(avatarUrl)
-      
+
+      setDicebearAvatar(avatarUrl);
+
       // Auto-selecionar o novo avatar gerado
       if (forceRandom) {
         setSelectedAvatar({
-          type: 'dicebear',
+          type: "dicebear",
           value: avatarUrl,
-          preview: avatarUrl
-        })
+          preview: avatarUrl,
+        });
       }
-      
     } catch (error) {
-      console.error('❌ Erro ao gerar avatar Dicebear:', error)
-      toast.error('Erro ao gerar avatar automático')
+      console.error("❌ Erro ao gerar avatar Dicebear:", error);
+      toast.error("Erro ao gerar avatar automático");
     } finally {
-      setIsGeneratingAvatar(false)
+      setIsGeneratingAvatar(false);
     }
-  }
+  };
 
   const generateRandomAvatar = () => {
-    const name = watchedValues.full_name
+    const name = watchedValues.full_name;
     if (name && name.length >= 2) {
-      generateDicebearAvatar(name, true)
+      generateDicebearAvatar(name, true);
     }
-  }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedAvatar({
-          type: 'upload',
+          type: "upload",
           value: file,
-          preview: e.target?.result as string
-        })
-      }
-      reader.readAsDataURL(file)
+          preview: e.target?.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleDicebearSelect = () => {
     if (dicebearAvatar) {
       setSelectedAvatar({
-        type: 'dicebear',
+        type: "dicebear",
         value: dicebearAvatar,
-        preview: dicebearAvatar
-      })
+        preview: dicebearAvatar,
+      });
     }
-  }
+  };
 
   // Gerar avatar automaticamente quando o nome muda
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
-    
+    let timeoutId: NodeJS.Timeout;
+
     const subscription = watch((value, { name }) => {
-      if (name === 'full_name' && value.full_name && value.full_name.length >= 2) {
-        clearTimeout(timeoutId)
+      if (
+        name === "full_name" &&
+        value.full_name &&
+        value.full_name.length >= 2
+      ) {
+        clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-        generateDicebearAvatar(value.full_name || '')
-        }, 500)
+          generateDicebearAvatar(value.full_name || "");
+        }, 500);
       }
-    })
-    
+    });
+
     return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeoutId)
-    }
-  }, [watch])
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
+  }, [watch]);
 
   // Auto-selecionar avatar quando gerado
   useEffect(() => {
     if (dicebearAvatar && !selectedAvatar) {
       setSelectedAvatar({
-        type: 'dicebear',
+        type: "dicebear",
         value: dicebearAvatar,
-        preview: dicebearAvatar
-      })
+        preview: dicebearAvatar,
+      });
     }
-  }, [dicebearAvatar, selectedAvatar])
+  }, [dicebearAvatar, selectedAvatar]);
 
   const onSubmit = async (data: OnboardingFormData) => {
     if (!user) {
-      toast.error('Usuário não autenticado')
-      return
+      toast.error("Usuário não autenticado");
+      return;
     }
 
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       // ✅ VALIDAR DUPLICATAS ANTES DE SALVAR
-      console.log('🔍 Verificando duplicatas...')
-      
-      console.log('✅ Dados validados')
-      let avatarUrl = null
+      console.log("🔍 Verificando duplicatas...");
+
+      console.log("✅ Dados validados");
+      let avatarUrl = null;
 
       // Upload da imagem se necessário
-      if (selectedAvatar?.type === 'upload' && selectedAvatar.value instanceof File) {
-        const file = selectedAvatar.value
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
-        
+      if (
+        selectedAvatar?.type === "upload" &&
+        selectedAvatar.value instanceof File
+      ) {
+        const file = selectedAvatar.value;
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
         const { error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(fileName, file)
+          .from("avatars")
+          .upload(fileName, file);
 
         if (uploadError) {
-          console.error('Erro no upload:', uploadError)
-          toast.error('Erro ao fazer upload da imagem')
-          return
+          console.error("Erro no upload:", uploadError);
+          toast.error("Erro ao fazer upload da imagem");
+          return;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName)
-        
-        avatarUrl = publicUrl
-      } else if (selectedAvatar?.type === 'dicebear') {
-        avatarUrl = selectedAvatar.value as string
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+        avatarUrl = publicUrl;
+      } else if (selectedAvatar?.type === "dicebear") {
+        avatarUrl = selectedAvatar.value as string;
       }
 
       // Gerar biografia automática se não fornecida
-      const autoBio = getBioOrDefault(
-        data.bio,
-        data.user_type,
-        {
-          location_state: data.location_state,
-          professional_services: selectedServices,
-          full_name: data.full_name
-        }
-      )
+      const autoBio = getBioOrDefault(data.bio, data.user_type, {
+        location_state: data.location_state,
+        professional_services: selectedServices,
+        full_name: data.full_name,
+      });
 
       // Usar o CPF digitado no formulário (tem prioridade sobre o CPF do banco)
       // Se não foi digitado, tentar buscar do banco como fallback
-      let finalCpf = data.cpf_cnpj || null
-      
+      let finalCpf = data.cpf_cnpj || null;
+
       if (!finalCpf) {
-        console.log('🔍 [Onboarding] CPF não foi digitado, buscando do banco...')
+        console.log(
+          "🔍 [Onboarding] CPF não foi digitado, buscando do banco...",
+        );
         const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('cpf_cnpj')
-          .eq('id', user.id)
-          .maybeSingle()
-        
+          .from("profiles")
+          .select("cpf_cnpj")
+          .eq("id", user.id)
+          .maybeSingle();
+
         // Tentar buscar CPF de múltiplas fontes:
         // 1. Da tabela profiles (se foi salvo no cadastro inicial)
         // 2. Dos user_metadata do auth (fallback)
-        const cpfFromProfile = existingProfile?.cpf_cnpj || null
-        const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null
-        finalCpf = cpfFromProfile || cpfFromMetadata || null
-        
-        console.log('🔍 [Onboarding] CPF encontrado na tabela profiles:', cpfFromProfile)
-        console.log('🔍 [Onboarding] CPF encontrado nos user_metadata:', cpfFromMetadata)
-        console.log('🔍 [Onboarding] CPF final que será usado:', finalCpf)
+        const cpfFromProfile = existingProfile?.cpf_cnpj || null;
+        const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null;
+        finalCpf = cpfFromProfile || cpfFromMetadata || null;
+
+        console.log(
+          "🔍 [Onboarding] CPF encontrado na tabela profiles:",
+          cpfFromProfile,
+        );
+        console.log(
+          "🔍 [Onboarding] CPF encontrado nos user_metadata:",
+          cpfFromMetadata,
+        );
+        console.log("🔍 [Onboarding] CPF final que será usado:", finalCpf);
       } else {
-        console.log('✅ [Onboarding] CPF digitado no formulário:', finalCpf)
+        console.log("✅ [Onboarding] CPF digitado no formulário:", finalCpf);
       }
-      
+
       if (!finalCpf) {
-        console.warn('⚠️ [Onboarding] ATENÇÃO: CPF não encontrado em nenhuma fonte!')
-        toast.error('CPF é obrigatório. Por favor, preencha o campo CPF.')
-        setIsLoading(false)
-        return
+        console.warn(
+          "⚠️ [Onboarding] ATENÇÃO: CPF não encontrado em nenhuma fonte!",
+        );
+        toast.error("CPF é obrigatório. Por favor, preencha o campo CPF.");
+        setIsLoading(false);
+        return;
       }
-      
+
       // Validar CPF antes de salvar
       if (!ValidationUtils.isValidCPF(finalCpf)) {
-        console.error('❌ [Onboarding] CPF inválido:', finalCpf)
-        toast.error('CPF inválido. Por favor, verifique o CPF digitado.')
-        setIsLoading(false)
-        return
+        console.error("❌ [Onboarding] CPF inválido:", finalCpf);
+        toast.error("CPF inválido. Por favor, verifique o CPF digitado.");
+        setIsLoading(false);
+        return;
       }
-      
+
       const profileData = {
         id: user.id, // A tabela profiles usa 'id' como chave primária
         email: user.email, // Campo obrigatório na tabela
@@ -664,17 +761,20 @@ export default function OnboardingPage() {
         birth_date: data.birth_date,
         gender: data.gender,
         user_type: data.user_type,
-        country: data.country || 'BR',
-        locale: data.locale || 'pt-BR',
+        country: data.country || "BR",
+        locale: data.locale || "pt-BR",
         location_state: data.location_state,
         location_city: data.location_city,
         neighborhood: data.neighborhood,
         address: data.address,
         address_number: data.address_number,
-        zip_code: data.zip_code?.replace(/\D/g, ''),
+        zip_code: data.zip_code?.replace(/\D/g, ""),
         bio: autoBio,
-        professional_services: selectedServices.length > 0 ? selectedServices : [],
-        professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
+        professional_services:
+          selectedServices.length > 0 ? selectedServices : [],
+        professional_experience_years: data.experience_years
+          ? parseInt(data.experience_years.split("-")[0]) || 0
+          : 0,
         avatar_url: avatarUrl,
         profile_completed: true,
         // Novos campos
@@ -684,24 +784,27 @@ export default function OnboardingPage() {
         referencia_profissional: data.referencia_profissional || null,
         turno_trabalho: data.turno_trabalho || null,
         // A idade será calculada automaticamente pelo trigger no banco
-      }
-      
-      console.log('🔍 [Onboarding] Dados do perfil que serão salvos:', profileData)
-      console.log('🔍 [Onboarding] CPF que será salvo:', profileData.cpf_cnpj)
+      };
 
-      console.log('📝 Dados do perfil que serão enviados:', profileData)
+      console.log(
+        "🔍 [Onboarding] Dados do perfil que serão salvos:",
+        profileData,
+      );
+      console.log("🔍 [Onboarding] CPF que será salvo:", profileData.cpf_cnpj);
+
+      console.log("📝 Dados do perfil que serão enviados:", profileData);
 
       // Usar upsert para inserir ou atualizar na tabela profiles
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from("profiles")
         .upsert(profileData, {
-          onConflict: 'id'
-        })
+          onConflict: "id",
+        });
 
       if (profileError) {
-        console.error('❌ Erro ao salvar perfil:', profileError)
-        toast.error('Erro ao salvar perfil: ' + profileError.message)
-        return
+        console.error("❌ Erro ao salvar perfil:", profileError);
+        toast.error("Erro ao salvar perfil: " + profileError.message);
+        return;
       }
 
       // Atualizar metadados do usuário no auth.users para aparecer no dashboard do Supabase
@@ -713,1111 +816,1538 @@ export default function OnboardingPage() {
           user_type: data.user_type,
           avatar_url: avatarUrl,
           onboarding_completed: true,
-          
+
           // Dados pessoais completos
           bio: autoBio,
           cpf_cnpj: finalCpf, // CPF digitado no formulário (tem prioridade) ou do banco como fallback
           birth_date: data.birth_date,
           gender: data.gender,
-          
+
           // Dados de localização
-          country: data.country || 'BR',
-          locale: data.locale || 'pt-BR',
+          country: data.country || "BR",
+          locale: data.locale || "pt-BR",
           location_state: data.location_state,
           location_city: data.location_city,
           neighborhood: data.neighborhood,
           address: data.address,
-          
+
           // Dados profissionais
           services_offered: selectedServices,
           experience_years: data.experience_years,
-          professional_experience_years: data.experience_years ? parseInt(data.experience_years.split('-')[0]) || 0 : 0,
-          
+          professional_experience_years: data.experience_years
+            ? parseInt(data.experience_years.split("-")[0]) || 0
+            : 0,
+
           // Dados de verificação
           email_verified: true,
-          phone_verified: false
-        }
-      })
+          phone_verified: false,
+        },
+      });
 
       if (userUpdateError) {
-        console.warn('⚠️ Erro ao atualizar metadados do usuário:', userUpdateError)
+        console.warn(
+          "⚠️ Erro ao atualizar metadados do usuário:",
+          userUpdateError,
+        );
         // Não falhar o processo, apenas avisar
       }
 
-      console.log('✅ Perfil salvo com sucesso!')
-      
+      console.log("✅ Perfil salvo com sucesso!");
+
       // ✅ CRIAR REFERRAL SE AINDA NÃO FOI CRIADO (fallback)
       // Isso garante que mesmo se o referral não foi criado no cadastro, será criado aqui
-      const REFERRAL_STORAGE_KEY = 'confilar_referral_code'
-      let referralCreated = false
-      
+      const REFERRAL_STORAGE_KEY = "confilar_referral_code";
+      let referralCreated = false;
+
       try {
-        console.log('👥 [Onboarding] Verificando se referral precisa ser criado...')
-        const referralResult = await createReferral(user.id, 'onboarding_complete')
-        
+        console.log(
+          "👥 [Onboarding] Verificando se referral precisa ser criado...",
+        );
+        const referralResult = await createReferral(
+          user.id,
+          "onboarding_complete",
+        );
+
         if (referralResult.success) {
-          console.log('✅ [Onboarding] Referral criado/verificado com sucesso!')
-          referralCreated = true
-        } else if (referralResult.error && !referralResult.error.includes('Nenhum código')) {
+          console.log(
+            "✅ [Onboarding] Referral criado/verificado com sucesso!",
+          );
+          referralCreated = true;
+        } else if (
+          referralResult.error &&
+          !referralResult.error.includes("Nenhum código")
+        ) {
           // Só logar se não for erro de "nenhum código" (é esperado se não houver código)
-          console.warn('⚠️ [Onboarding] Aviso ao criar referral:', referralResult.error)
+          console.warn(
+            "⚠️ [Onboarding] Aviso ao criar referral:",
+            referralResult.error,
+          );
         }
       } catch (referralCreateError) {
-        console.warn('⚠️ [Onboarding] Erro ao criar referral (não crítico):', referralCreateError)
+        console.warn(
+          "⚠️ [Onboarding] Erro ao criar referral (não crítico):",
+          referralCreateError,
+        );
         // Não falhar o processo por causa do referral
       }
-      
+
       // Marcar milestone de perfil completado (se foi indicado)
       try {
-        console.log('👥 Marcando milestone de perfil completado...')
-        await updateReferralMilestone(user.id, 'profile_completed')
-        console.log('✅ Milestone marcado com sucesso!')
+        console.log("👥 Marcando milestone de perfil completado...");
+        await updateReferralMilestone(user.id, "profile_completed");
+        console.log("✅ Milestone marcado com sucesso!");
       } catch (referralError) {
-        console.warn('⚠️ Erro ao marcar milestone:', referralError)
+        console.warn("⚠️ Erro ao marcar milestone:", referralError);
         // Não falhar o processo por causa do milestone
       }
-      
+
       // Limpar localStorage APENAS após completar o onboarding
       // Isso garante que o código esteja disponível durante todo o processo
-      if (referralCreated && typeof window !== 'undefined') {
+      if (referralCreated && typeof window !== "undefined") {
         try {
-          localStorage.removeItem(REFERRAL_STORAGE_KEY)
-          console.log('🧹 [Onboarding] Código de referral removido do localStorage após completar onboarding')
+          localStorage.removeItem(REFERRAL_STORAGE_KEY);
+          console.log(
+            "🧹 [Onboarding] Código de referral removido do localStorage após completar onboarding",
+          );
         } catch (err) {
-          console.warn('⚠️ [Onboarding] Erro ao limpar localStorage:', err)
+          console.warn("⚠️ [Onboarding] Erro ao limpar localStorage:", err);
         }
       }
-      
+
       // Criar post de boas-vindas
       try {
-        console.log('🎉 Criando post de boas-vindas...')
+        console.log("🎉 Criando post de boas-vindas...");
         const welcomeResult = await createWelcomePost(
           user.id,
           data.full_name,
-          data.user_type
-        )
-        
+          data.user_type,
+        );
+
         if (welcomeResult.success) {
-          console.log('✅ Post de boas-vindas criado com sucesso!')
+          console.log("✅ Post de boas-vindas criado com sucesso!");
         } else {
-          console.warn('⚠️ Erro ao criar post de boas-vindas:', welcomeResult.error)
+          console.warn(
+            "⚠️ Erro ao criar post de boas-vindas:",
+            welcomeResult.error,
+          );
         }
       } catch (welcomeError) {
-        console.warn('⚠️ Erro ao criar post de boas-vindas:', welcomeError)
+        console.warn("⚠️ Erro ao criar post de boas-vindas:", welcomeError);
         // Não falhar o processo se o post de boas-vindas falhar
       }
-      
-      toast.success('🎉 Perfil completado com sucesso!')
-      
-      console.log('✅ Perfil salvo com sucesso!')
-      
+
+      toast.success("🎉 Perfil completado com sucesso!");
+
+      console.log("✅ Perfil salvo com sucesso!");
+
       // Recarregar o contexto de autenticação (agora também busca o perfil atualizado do banco)
-      console.log('🔄 Atualizando contexto de autenticação...')
-      await refreshAuth()
-      
-      console.log('✅ Contexto atualizado, redirecionando para feed...')
-      
+      console.log("🔄 Atualizando contexto de autenticação...");
+      await refreshAuth();
+
+      console.log("✅ Contexto atualizado, redirecionando para feed...");
+
       // Aguardar um pouco para garantir que o contexto foi atualizado
       setTimeout(() => {
-        router.push('/feed')
-      }, 300)
-      
+        router.push("/feed?welcome=true");
+      }, 300);
     } catch (error) {
-      console.error('Erro no onboarding:', error)
-      toast.error('Erro inesperado ao completar perfil')
+      console.error("Erro no onboarding:", error);
+      toast.error("Erro inesperado ao completar perfil");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const currentStepData = getCurrentStepData()
-  const isStepValid = validateCurrentStep()
+  const currentStepData = getCurrentStepData();
+  const isStepValid = validateCurrentStep();
 
   return (
     <LightModeLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header Glassmorphism */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center space-x-3">
-            <BrandLogo width={160} height={40} className="object-contain" />
+        {/* Header Glassmorphism */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+          <div className="container flex h-16 items-center justify-between px-4">
+            <div className="flex items-center space-x-3">
+              <BrandLogo width={160} height={40} className="object-contain" />
+            </div>
+
+            <Button
+              onClick={() => router.push("/feed")}
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
+            >
+              <Home size={16} />
+              <span>Dashboard</span>
+            </Button>
           </div>
-          
-          <Button 
-            onClick={() => router.push('/feed')}
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900 dark:text-white transition-colors flex items-center gap-2"
-          >
-            <Home size={16} />
-            <span>Dashboard</span>
-          </Button>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content Glassmorphism */}
-      <div className="container py-12 md:py-24">
-        <div className="mx-auto max-w-md">
-          {/* Header Card Glassmorphism */}
-          <Card className="mb-8 bg-white/50 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="text-center p-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <currentStepData.icon className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
-                {currentStepData.title}
-              </h1>
-              <p className="text-gray-600 text-lg">
-                {currentStepData.description}
-              </p>
-            </CardContent>
-          </Card>
+        {/* Main Content Glassmorphism */}
+        <div className="container py-12 md:py-24">
+          <div className="mx-auto max-w-md">
+            {/* Header Card Glassmorphism */}
+            <Card className="mb-8 bg-white/50 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="text-center p-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <currentStepData.icon className="h-8 w-8 text-white" />
+                </div>
+                <h1 className="text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+                  {currentStepData.title}
+                </h1>
+                <p className="text-gray-600 text-lg">
+                  {currentStepData.description}
+                </p>
+              </CardContent>
+            </Card>
 
-          {/* Form Card Glassmorphism */}
-          <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                
-                {/* Container de Transição */}
-                <div 
-                  className={cn(
-                    "transition-all duration-300 ease-in-out",
-                    isTransitioning && slideDirection === 'right' && "transform translate-x-full opacity-0",
-                    isTransitioning && slideDirection === 'left' && "transform -translate-x-full opacity-0",
-                    !isTransitioning && "transform translate-x-0 opacity-100"
-                  )}
-                >
-                  
-                  {/* Etapa 1: Boas-vindas */}
-                  {currentStep === 1 && (
-                    <div className="text-center space-y-4 py-8">
-                      <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
-                        <Sparkles className="w-10 h-10 text-white" />
-                      </div>
-                      <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Bem-vindo ao ConfiLar!
-                        </h3>
-                        <p className="text-gray-600 text-lg">
-                          Seja bem-vindo! 🎉
-                        </p>
-                        <p className="text-gray-600">
-                          Vamos completar seu perfil em algumas etapas simples. 
-                          Isso nos ajudará a conectar você com as pessoas certas!
-                        </p>
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                          <div className="flex items-center gap-3 text-blue-800">
-                            <Shield className="w-5 h-5" />
-                            <span className="font-semibold">Seus dados estão seguros</span>
-                          </div>
-                          <p className="text-blue-700 text-sm mt-2">
-                            Todas as informações são protegidas e usadas apenas para melhorar sua experiência.
-                          </p>
+            {/* Form Card Glassmorphism */}
+            <Card className="bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Container de Transição */}
+                  <div
+                    className={cn(
+                      "transition-all duration-300 ease-in-out",
+                      isTransitioning &&
+                        slideDirection === "right" &&
+                        "transform translate-x-full opacity-0",
+                      isTransitioning &&
+                        slideDirection === "left" &&
+                        "transform -translate-x-full opacity-0",
+                      !isTransitioning && "transform translate-x-0 opacity-100",
+                    )}
+                  >
+                    {/* Etapa 1: Boas-vindas */}
+                    {currentStep === 1 && (
+                      <div className="text-center space-y-4 py-8">
+                        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
+                          <Sparkles className="w-10 h-10 text-white" />
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etapa 2: Dados Pessoais */}
-                  {currentStep === 2 && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="full_name" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Nome completo <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="full_name"
-                            placeholder="Digite seu nome completo"
-                            {...register('full_name')}
-                            className={cn(
-                              "h-10",
-                              errors.full_name ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.full_name && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.full_name.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="cpf_cnpj" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            CPF <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="cpf_cnpj"
-                            placeholder="000.000.000-00"
-                            {...register('cpf_cnpj')}
-                            onChange={handleCPFChange}
-                            maxLength={14}
-                            className={cn(
-                              "h-10",
-                              errors.cpf_cnpj ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.cpf_cnpj && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.cpf_cnpj.message}
-                            </p>
-                          )}
-                          {watchedValues.cpf_cnpj && !errors.cpf_cnpj && ValidationUtils.isValidCPF(watchedValues.cpf_cnpj) && (
-                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              CPF válido
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="phone" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Telefone <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="phone"
-                            placeholder="(11) 99999-9999"
-                            {...register('phone')}
-                            onChange={handlePhoneChange}
-                            className={cn(
-                              "h-10",
-                              errors.phone ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.phone && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.phone.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="birth_date" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Nascimento <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="birth_date"
-                            type="date"
-                            {...register('birth_date')}
-                            className={cn(
-                              "h-10",
-                              errors.birth_date ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.birth_date && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              Obrigatório
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="gender" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Sexo <span className="text-red-500">*</span>
-                          </Label>
-                          <Select value={watchedValues.gender || ''} onValueChange={(value) => setValue('gender', value as 'male' | 'female' | 'other')}>
-                            <SelectTrigger className={cn(
-                              "h-10",
-                              errors.gender ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}>
-                              <SelectValue placeholder="Selecione seu sexo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="male">Masculino</SelectItem>
-                              <SelectItem value="female">Feminino</SelectItem>
-                              <SelectItem value="other">Outros</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.gender && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.gender.message}
-                            </p>
-                          )}
-                          {watchedValues.gender && !errors.gender && (
-                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              Sexo selecionado
-                            </p>
-                          )}
-                        </div>
-
-                      </div>
-
-                      {/* Aceite dos Termos de Uso */}
-                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            id="accept_terms"
-                            checked={watchedValues.accept_terms || false}
-                            onCheckedChange={(checked) => setValue('accept_terms', !!checked)}
-                            className="mt-1"
-                          />
-                          <div className="space-y-1">
-                            <Label 
-                              htmlFor="accept_terms" 
-                              className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-1"
-                            >
-                              Aceito os <span className="text-red-500">*</span>
-                            </Label>
-                            <p className="text-xs text-gray-600">
-                              Ao marcar esta opção, você concorda com nossos{' '}
-                              <a 
-                                href="/termos" 
-                                target="_blank"
-                                className="text-blue-600 underline hover:text-blue-700 font-medium"
-                              >
-                                Termos de Uso
-                              </a>{' '}
-                              e{' '}
-                              <a 
-                                href="/privacidade" 
-                                target="_blank"
-                                className="text-blue-600 underline hover:text-blue-700 font-medium"
-                              >
-                                Política de Privacidade
-                              </a>
-                            </p>
-                            {errors.accept_terms && (
-                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                                <X className="w-3 h-3" />
-                                {errors.accept_terms.message}
-                              </p>
-                            )}
-                            {watchedValues.accept_terms && !errors.accept_terms && (
-                              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                                <Check className="w-3 h-3" />
-                                Termos aceitos
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etapa 3: Informações Adicionais */}
-                  {currentStep === 3 && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="escolaridade" className="text-sm font-medium text-gray-700">
-                            Escolaridade
-                          </Label>
-                          <Select 
-                            value={watchedValues.escolaridade || ''} 
-                            onValueChange={(value) => setValue('escolaridade', value as any)}
-                          >
-                            <SelectTrigger className="h-10">
-                              <SelectValue placeholder="Selecione sua escolaridade" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ensino_fundamental_incompleto">Ensino Fundamental Incompleto</SelectItem>
-                              <SelectItem value="ensino_fundamental_completo">Ensino Fundamental Completo</SelectItem>
-                              <SelectItem value="ensino_medio_incompleto">Ensino Médio Incompleto</SelectItem>
-                              <SelectItem value="ensino_medio_completo">Ensino Médio Completo</SelectItem>
-                              <SelectItem value="ensino_superior_incompleto">Ensino Superior Incompleto</SelectItem>
-                              <SelectItem value="ensino_superior_completo">Ensino Superior Completo</SelectItem>
-                              <SelectItem value="pos_graduacao">Pós-Graduação</SelectItem>
-                              <SelectItem value="mestrado">Mestrado</SelectItem>
-                              <SelectItem value="doutorado">Doutorado</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="estado_civil" className="text-sm font-medium text-gray-700">
-                            Estado Civil
-                          </Label>
-                          <Select 
-                            value={watchedValues.estado_civil || ''} 
-                            onValueChange={(value) => setValue('estado_civil', value as any)}
-                          >
-                            <SelectTrigger className="h-10">
-                              <SelectValue placeholder="Selecione seu estado civil" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="solteiro">Solteiro(a)</SelectItem>
-                              <SelectItem value="casado">Casado(a)</SelectItem>
-                              <SelectItem value="divorciado">Divorciado(a)</SelectItem>
-                              <SelectItem value="viuvo">Viúvo(a)</SelectItem>
-                              <SelectItem value="uniao_estavel">União Estável</SelectItem>
-                              <SelectItem value="outro">Outro</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="filhos" className="text-sm font-medium text-gray-700">
-                            Número de Filhos
-                          </Label>
-                          <Input
-                            id="filhos"
-                            type="number"
-                            min="0"
-                            max="20"
-                            placeholder="0"
-                            value={watchedValues.filhos || 0}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value) || 0
-                              setValue('filhos', Math.max(0, Math.min(20, value)))
-                            }}
-                            className="h-10"
-                          />
-                          <p className="text-xs text-gray-500">
-                            Informe quantos filhos você tem (0 se não tiver)
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-700">
-                          💡 Estas informações são opcionais e nos ajudam a conhecer você melhor.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etapa 4: Avatar/Foto */}
-                  {currentStep === 4 && (
-                    <div className="space-y-6">
-                      {/* Preview do Avatar Selecionado */}
-                      {selectedAvatar && (
-                        <div className="flex items-center justify-center">
-                          <div className="w-24 h-24 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
-                            <img
-                              src={selectedAvatar.preview}
-                              alt="Avatar selecionado"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Opções de Avatar */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Upload de Foto */}
                         <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Upload size={16} className="text-blue-600" />
-                            <span className="font-medium text-gray-700">Upload de Foto</span>
+                          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Bem-vindo ao ConfiLar!
+                          </h3>
+                          <p className="text-gray-600 text-lg">
+                            Seja bem-vindo! 🎉
+                          </p>
+                          <p className="text-gray-600">
+                            Vamos completar seu perfil em algumas etapas
+                            simples. Isso nos ajudará a conectar você com as
+                            pessoas certas!
+                          </p>
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                            <div className="flex items-center gap-3 text-blue-800">
+                              <Shield className="w-5 h-5" />
+                              <span className="font-semibold">
+                                Seus dados estão seguros
+                              </span>
+                            </div>
+                            <p className="text-blue-700 text-sm mt-2">
+                              Todas as informações são protegidas e usadas
+                              apenas para melhorar sua experiência.
+                            </p>
                           </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                            id="avatar-upload"
-                          />
-                          <label
-                            htmlFor="avatar-upload"
-                            className={cn(
-                              "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
-                              selectedAvatar?.type === 'upload' && "border-blue-500 bg-blue-50/50"
-                            )}
-                          >
-                            <div className="font-medium text-gray-700">
-                              {selectedAvatar?.type === 'upload' ? '✅ Foto Selecionada' : '📁 Escolher Arquivo'}
-                            </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              JPG, PNG ou GIF
-                            </div>
-                          </label>
-                        </div>
-
-                        {/* Avatar Avataaars */}
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <RefreshCw size={16} className={cn("text-purple-600", isGeneratingAvatar && "animate-spin")} />
-                            <span className="font-medium text-gray-700">Avatar Automático</span>
-                          </div>
-                          {fullName && fullName.length >= 2 ? (
-                            <div className="space-y-3">
-                              <button
-                                type="button"
-                                onClick={handleDicebearSelect}
-                                disabled={isGeneratingAvatar || !dicebearAvatar}
-                                className={cn(
-                                  "w-full p-4 border-2 border-dashed rounded-lg transition-all text-center hover:border-purple-500 hover:bg-purple-50/50",
-                                  selectedAvatar?.type === 'dicebear' && "border-purple-500 bg-purple-50/50",
-                                  (isGeneratingAvatar || !dicebearAvatar) && "opacity-50 cursor-not-allowed"
-                                )}
-                              >
-                                {isGeneratingAvatar ? (
-                                  <div className="font-medium text-gray-700">🎨 Criando...</div>
-                                ) : dicebearAvatar ? (
-                                  <div className="font-medium text-gray-700">✅ Avatar Criado</div>
-                                ) : (
-                                  <div className="font-medium text-gray-700">🎨 Criando...</div>
-                                )}
-                                <div className="text-sm text-gray-500 mt-1">
-                                  Baseado no seu nome
-                                </div>
-                              </button>
-                              
-                              {/* Botão para gerar novo avatar aleatório */}
-                              {dicebearAvatar && (
-                                <button
-                                  type="button"
-                                  onClick={generateRandomAvatar}
-                                  disabled={isGeneratingAvatar}
-                                  className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                  <RefreshCw size={14} className={cn(isGeneratingAvatar && "animate-spin")} />
-                                  {isGeneratingAvatar ? 'Gerando...' : 'Gerar Outro Avatar'}
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
-                              <div className="font-medium text-gray-500">Digite seu nome primeiro</div>
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Etapa 5: Localização */}
-                  {currentStep === 5 && (
-                    <div className="space-y-4">
-                      {/* Seleção de País */}
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                          {t('country')} <span className="text-red-500">*</span>
-                        </Label>
-                        <LocationComboboxesMultiCountry
-                          country={watchedValues.country}
-                          stateCode={watchedValues.location_state}
-                          city={watchedValues.location_city}
-                          onCountryChange={(newCountry) => {
-                            setValue('country', newCountry as 'BR' | 'US')
-                            // Atualizar locale baseado no país
-                            const newLocale = newCountry === 'US' ? 'en' : 'pt-BR'
-                            setValue('locale', newLocale)
-                            setCountry(newCountry as 'BR' | 'US')
-                            setLocale(newLocale)
-                            // Limpar estado e cidade quando país muda
-                            setValue('location_state', '')
-                            setValue('location_city', '')
-                          }}
-                          onStateChange={(stateCode) => {
-                            setValue('location_state', stateCode)
-                            setValue('location_city', '')
-                          }}
-                          onCityChange={(city) => {
-                            setValue('location_city', city)
-                          }}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div className="space-y-2">
-                          <Label htmlFor="neighborhood" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Bairro <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="neighborhood"
-                            placeholder="Digite o bairro"
-                            {...register('neighborhood')}
-                            className={cn(
-                              "h-10",
-                              errors.neighborhood ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.neighborhood && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.neighborhood.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="address" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Endereço <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="address"
-                            placeholder="Ex: Rua das Flores"
-                            {...register('address')}
-                            className={cn(
-                              "h-10",
-                              errors.address ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.address && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.address.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="address_number" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            Número <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="address_number"
-                            placeholder="Ex: 123"
-                            {...register('address_number')}
-                            className={cn(
-                              "h-10",
-                              errors.address_number ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.address_number && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.address_number.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="zip_code" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                            CEP <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id="zip_code"
-                            placeholder="00000-000"
-                            {...register('zip_code')}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '')
-                              const formatted = value.replace(/(\d{5})(\d{3})/, '$1-$2')
-                              e.target.value = formatted
-                              setValue('zip_code', formatted)
-                            }}
-                            maxLength={9}
-                            className={cn(
-                              "h-10",
-                              errors.zip_code ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                            )}
-                          />
-                          {errors.zip_code && (
-                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                              <X className="w-3 h-3" />
-                              {errors.zip_code.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etapa 6: Tipo de Usuário */}
-                  {currentStep === 6 && (
-                    <div className="space-y-6">
+                    {/* Etapa 2: Dados Pessoais */}
+                    {currentStep === 2 && (
                       <div className="space-y-4">
-                        <Label htmlFor="user_type" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                          Como você pretende usar o ConfiLar? <span className="text-red-500">*</span>
-                        </Label>
-                        <Select value={watchedValues.user_type} onValueChange={(value) => setValue('user_type', value as 'client' | 'professional')}>
-                          <SelectTrigger className={cn(
-                            "h-12",
-                            errors.user_type ? 'border-red-400 focus:border-red-500' : 'focus:border-blue-500'
-                          )}>
-                            <SelectValue placeholder="Selecione uma opção" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="client">🙋‍♂️ Cliente - Procuro profissionais</SelectItem>
-                            <SelectItem value="professional">👨‍💼 Profissional - Ofereço serviços</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.user_type && (
-                          <p className="text-xs text-red-600 font-medium flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.user_type.message}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Explicação dos tipos */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-2xl">🙋‍♂️</span>
-                            <span className="font-semibold text-blue-900">Cliente</span>
-                          </div>
-                          <p className="text-sm text-blue-700">
-                            Você busca profissionais para resolver suas necessidades.
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-2xl">👨‍💼</span>
-                            <span className="font-semibold text-green-900">Profissional</span>
-                          </div>
-                          <p className="text-sm text-green-700">
-                            Você oferece serviços e quer ser encontrado por clientes.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Etapa 7: Dados Profissionais */}
-                  {currentStep === 7 && isProfessional && (
-                    <div className="space-y-6">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                            Biografia (Opcional)
-                          </Label>
-                          <Textarea
-                            {...register('bio')}
-                            placeholder="Conte um pouco sobre você..."
-                            rows={3}
-                            className="resize-none"
-                          />
-                        </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">
-                              Anos de experiência
+                            <Label
+                              htmlFor="full_name"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Nome completo{" "}
+                              <span className="text-red-500">*</span>
                             </Label>
-                            <Select value={watchedValues.experience_years || ''} onValueChange={(value) => setValue('experience_years', value)}>
-                              <SelectTrigger className="h-10">
-                                <SelectValue placeholder="Selecione" />
+                            <Input
+                              id="full_name"
+                              placeholder="Digite seu nome completo"
+                              {...register("full_name")}
+                              className={cn(
+                                "h-10",
+                                errors.full_name
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.full_name && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.full_name.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="cpf_cnpj"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              CPF <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="cpf_cnpj"
+                              placeholder="000.000.000-00"
+                              {...register("cpf_cnpj")}
+                              onChange={handleCPFChange}
+                              maxLength={14}
+                              className={cn(
+                                "h-10",
+                                errors.cpf_cnpj
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.cpf_cnpj && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.cpf_cnpj.message}
+                              </p>
+                            )}
+                            {watchedValues.cpf_cnpj &&
+                              !errors.cpf_cnpj &&
+                              ValidationUtils.isValidCPF(
+                                watchedValues.cpf_cnpj,
+                              ) && (
+                                <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                  <Check className="w-3 h-3" />
+                                  CPF válido
+                                </p>
+                              )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="phone"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Telefone <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="phone"
+                              placeholder="(11) 99999-9999"
+                              {...register("phone")}
+                              onChange={handlePhoneChange}
+                              className={cn(
+                                "h-10",
+                                errors.phone
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.phone && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.phone.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="birth_date"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Nascimento <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="birth_date"
+                              type="date"
+                              {...register("birth_date")}
+                              className={cn(
+                                "h-10",
+                                errors.birth_date
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.birth_date && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                Obrigatório
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="gender"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Sexo <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                              value={watchedValues.gender || ""}
+                              onValueChange={(value) =>
+                                setValue(
+                                  "gender",
+                                  value as "male" | "female" | "other",
+                                )
+                              }
+                            >
+                              <SelectTrigger
+                                className={cn(
+                                  "h-10",
+                                  errors.gender
+                                    ? "border-red-400 focus:border-red-500"
+                                    : "focus:border-blue-500",
+                                )}
+                              >
+                                <SelectValue placeholder="Selecione seu sexo" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="0-1">🌱 0-1 ano</SelectItem>
-                                <SelectItem value="1-3">📈 1-3 anos</SelectItem>
-                                <SelectItem value="3-5">🎯 3-5 anos</SelectItem>
-                                <SelectItem value="5-10">🏆 5-10 anos</SelectItem>
-                                <SelectItem value="10+">👑 Mais de 10 anos</SelectItem>
+                                <SelectItem value="male">Masculino</SelectItem>
+                                <SelectItem value="female">Feminino</SelectItem>
+                                <SelectItem value="other">Outros</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.gender && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.gender.message}
+                              </p>
+                            )}
+                            {watchedValues.gender && !errors.gender && (
+                              <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                <Check className="w-3 h-3" />
+                                Sexo selecionado
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Aceite dos Termos de Uso */}
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              id="accept_terms"
+                              checked={watchedValues.accept_terms || false}
+                              onCheckedChange={(checked) =>
+                                setValue("accept_terms", !!checked)
+                              }
+                              className="mt-1"
+                            />
+                            <div className="space-y-1">
+                              <Label
+                                htmlFor="accept_terms"
+                                className="text-sm font-medium text-gray-700 cursor-pointer flex items-center gap-1"
+                              >
+                                Aceito os{" "}
+                                <span className="text-red-500">*</span>
+                              </Label>
+                              <p className="text-xs text-gray-600">
+                                Ao marcar esta opção, você concorda com nossos{" "}
+                                <a
+                                  href="/termos"
+                                  target="_blank"
+                                  className="text-blue-600 underline hover:text-blue-700 font-medium"
+                                >
+                                  Termos de Uso
+                                </a>{" "}
+                                e{" "}
+                                <a
+                                  href="/privacidade"
+                                  target="_blank"
+                                  className="text-blue-600 underline hover:text-blue-700 font-medium"
+                                >
+                                  Política de Privacidade
+                                </a>
+                              </p>
+                              {errors.accept_terms && (
+                                <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                  <X className="w-3 h-3" />
+                                  {errors.accept_terms.message}
+                                </p>
+                              )}
+                              {watchedValues.accept_terms &&
+                                !errors.accept_terms && (
+                                  <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                    <Check className="w-3 h-3" />
+                                    Termos aceitos
+                                  </p>
+                                )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Etapa 3: Informações Adicionais */}
+                    {currentStep === 3 && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="escolaridade"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Escolaridade
+                            </Label>
+                            <Select
+                              value={watchedValues.escolaridade || ""}
+                              onValueChange={(value) =>
+                                setValue("escolaridade", value as any)
+                              }
+                            >
+                              <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Selecione sua escolaridade" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ensino_fundamental_incompleto">
+                                  Ensino Fundamental Incompleto
+                                </SelectItem>
+                                <SelectItem value="ensino_fundamental_completo">
+                                  Ensino Fundamental Completo
+                                </SelectItem>
+                                <SelectItem value="ensino_medio_incompleto">
+                                  Ensino Médio Incompleto
+                                </SelectItem>
+                                <SelectItem value="ensino_medio_completo">
+                                  Ensino Médio Completo
+                                </SelectItem>
+                                <SelectItem value="ensino_superior_incompleto">
+                                  Ensino Superior Incompleto
+                                </SelectItem>
+                                <SelectItem value="ensino_superior_completo">
+                                  Ensino Superior Completo
+                                </SelectItem>
+                                <SelectItem value="pos_graduacao">
+                                  Pós-Graduação
+                                </SelectItem>
+                                <SelectItem value="mestrado">
+                                  Mestrado
+                                </SelectItem>
+                                <SelectItem value="doutorado">
+                                  Doutorado
+                                </SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
 
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-gray-700">
-                              Serviços oferecidos (Opcional)
+                            <Label
+                              htmlFor="estado_civil"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Estado Civil
                             </Label>
-                            <Popover open={servicesOpen} onOpenChange={setServicesOpen}>
-                              <PopoverTrigger asChild>
+                            <Select
+                              value={watchedValues.estado_civil || ""}
+                              onValueChange={(value) =>
+                                setValue("estado_civil", value as any)
+                              }
+                            >
+                              <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Selecione seu estado civil" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="solteiro">
+                                  Solteiro(a)
+                                </SelectItem>
+                                <SelectItem value="casado">
+                                  Casado(a)
+                                </SelectItem>
+                                <SelectItem value="divorciado">
+                                  Divorciado(a)
+                                </SelectItem>
+                                <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                                <SelectItem value="uniao_estavel">
+                                  União Estável
+                                </SelectItem>
+                                <SelectItem value="outro">Outro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="filhos"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Número de Filhos
+                            </Label>
+                            <Input
+                              id="filhos"
+                              type="number"
+                              min="0"
+                              max="20"
+                              placeholder="0"
+                              value={watchedValues.filhos || 0}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value) || 0;
+                                setValue(
+                                  "filhos",
+                                  Math.max(0, Math.min(20, value)),
+                                );
+                              }}
+                              className="h-10"
+                            />
+                            <p className="text-xs text-gray-500">
+                              Informe quantos filhos você tem (0 se não tiver)
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm text-blue-700">
+                            💡 Estas informações são opcionais e nos ajudam a
+                            conhecer você melhor.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Etapa 4: Avatar/Foto */}
+                    {currentStep === 4 && (
+                      <div className="space-y-6">
+                        {/* Preview do Avatar Selecionado */}
+                        {selectedAvatar && (
+                          <div className="flex items-center justify-center">
+                            <div className="w-24 h-24 border-4 border-blue-300 rounded-full overflow-hidden shadow-lg">
+                              <img
+                                src={selectedAvatar.preview}
+                                alt="Avatar selecionado"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Opções de Avatar */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Upload de Foto */}
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Upload size={16} className="text-blue-600" />
+                              <span className="font-medium text-gray-700">
+                                Upload de Foto
+                              </span>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              id="avatar-upload"
+                            />
+                            <label
+                              htmlFor="avatar-upload"
+                              className={cn(
+                                "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
+                                selectedAvatar?.type === "upload" &&
+                                  "border-blue-500 bg-blue-50/50",
+                              )}
+                            >
+                              <div className="font-medium text-gray-700">
+                                {selectedAvatar?.type === "upload"
+                                  ? "✅ Foto Selecionada"
+                                  : "📁 Escolher Arquivo"}
+                              </div>
+                              <div className="text-sm text-gray-500 mt-1">
+                                JPG, PNG ou GIF
+                              </div>
+                            </label>
+                          </div>
+
+                          {/* Avatar Avataaars */}
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <RefreshCw
+                                size={16}
+                                className={cn(
+                                  "text-purple-600",
+                                  isGeneratingAvatar && "animate-spin",
+                                )}
+                              />
+                              <span className="font-medium text-gray-700">
+                                Avatar Automático
+                              </span>
+                            </div>
+                            {fullName && fullName.length >= 2 ? (
+                              <div className="space-y-3">
                                 <button
                                   type="button"
-                                  className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
+                                  onClick={handleDicebearSelect}
+                                  disabled={
+                                    isGeneratingAvatar || !dicebearAvatar
+                                  }
+                                  className={cn(
+                                    "w-full p-4 border-2 border-dashed rounded-lg transition-all text-center hover:border-purple-500 hover:bg-purple-50/50",
+                                    selectedAvatar?.type === "dicebear" &&
+                                      "border-purple-500 bg-purple-50/50",
+                                    (isGeneratingAvatar || !dicebearAvatar) &&
+                                      "opacity-50 cursor-not-allowed",
+                                  )}
                                 >
-                                  <span className="text-gray-900 dark:text-white">
-                                    {selectedServices.length === 0
-                                      ? "Selecione os serviços..."
-                                      : `${selectedServices.length} serviço(s)`}
-                                  </span>
-                                  <ChevronDown size={16} className="ml-2 shrink-0 text-gray-400" />
+                                  {isGeneratingAvatar ? (
+                                    <div className="font-medium text-gray-700">
+                                      🎨 Criando...
+                                    </div>
+                                  ) : dicebearAvatar ? (
+                                    <div className="font-medium text-gray-700">
+                                      ✅ Avatar Criado
+                                    </div>
+                                  ) : (
+                                    <div className="font-medium text-gray-700">
+                                      🎨 Criando...
+                                    </div>
+                                  )}
+                                  <div className="text-sm text-gray-500 mt-1">
+                                    Baseado no seu nome
+                                  </div>
                                 </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
-                                <Command>
-                                  <CommandInput placeholder="Buscar serviços..." />
-                                  <CommandList>
-                                    <CommandEmpty>Nenhum serviço encontrado.</CommandEmpty>
-                                    <CommandGroup>
-                                      {serviceCategoryNames.map((service) => (
-                                        <CommandItem
-                                          key={service}
-                                          value={service}
-                                          onSelect={() => handleServiceToggle(service)}
-                                        >
-                                          <Check
-                                            size={16} className={cn(
-                                              "mr-2",
-                                              selectedServices.includes(service) ? "opacity-100" : "opacity-0"
-                                            )}
-                                          />
-                                          {service}
-                                        </CommandItem>
-                                      ))}
-                                    </CommandGroup>
-                                  </CommandList>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          </div>
-                        </div>
-                        
-                        {/* Serviços selecionados */}
-                        {selectedServices.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-700">Serviços selecionados:</p>
-                            <div className="text-sm text-gray-600 leading-tight">
-                              {selectedServices.map((service, index) => (
-                                <span key={service} className="inline">
-                                  {service}
+
+                                {/* Botão para gerar novo avatar aleatório */}
+                                {dicebearAvatar && (
                                   <button
                                     type="button"
-                                    onClick={() => removeService(service)}
-                                    className="ml-1 text-red-500 hover:text-red-700 font-bold"
-                                    title="Remover serviço"
+                                    onClick={generateRandomAvatar}
+                                    disabled={isGeneratingAvatar}
+                                    className="w-full px-4 py-2 text-sm bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                   >
-                                    ×
+                                    <RefreshCw
+                                      size={14}
+                                      className={cn(
+                                        isGeneratingAvatar && "animate-spin",
+                                      )}
+                                    />
+                                    {isGeneratingAvatar
+                                      ? "Gerando..."
+                                      : "Gerar Outro Avatar"}
                                   </button>
-                                  {index < selectedServices.length - 1 && <span className="text-gray-400 mx-1">•</span>}
-                                </span>
-                              ))}
-                            </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50">
+                                <div className="font-medium text-gray-500">
+                                  Digite seu nome primeiro
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
+                      </div>
+                    )}
 
-                        {/* Referência Profissional */}
+                    {/* Etapa 5: Localização */}
+                    {currentStep === 5 && (
+                      <div className="space-y-4">
+                        {/* Seleção de País */}
                         <div className="space-y-2">
-                          <Label htmlFor="referencia_profissional" className="text-sm font-medium text-gray-700">
-                            Referência Profissional
+                          <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                            {t("country")}{" "}
+                            <span className="text-red-500">*</span>
                           </Label>
-                          <Textarea
-                            {...register('referencia_profissional')}
-                            placeholder="Conte sobre suas experiências profissionais, projetos importantes, certificações ou qualquer informação relevante sobre sua carreira..."
-                            rows={4}
-                            className="resize-none"
+                          <LocationComboboxesMultiCountry
+                            country={watchedValues.country}
+                            stateCode={watchedValues.location_state}
+                            city={watchedValues.location_city}
+                            onCountryChange={(newCountry) => {
+                              setValue("country", newCountry as "BR" | "US");
+                              // Atualizar locale baseado no país
+                              const newLocale =
+                                newCountry === "US" ? "en" : "pt-BR";
+                              setValue("locale", newLocale);
+                              setCountry(newCountry as "BR" | "US");
+                              setLocale(newLocale);
+                              // Limpar estado e cidade quando país muda
+                              setValue("location_state", "");
+                              setValue("location_city", "");
+                            }}
+                            onStateChange={(stateCode) => {
+                              setValue("location_state", stateCode);
+                              setValue("location_city", "");
+                            }}
+                            onCityChange={(city) => {
+                              setValue("location_city", city);
+                            }}
                           />
-                          <p className="text-xs text-gray-500">
-                            Compartilhe informações sobre sua experiência profissional, projetos realizados, certificações ou outras informações relevantes.
-                          </p>
                         </div>
 
-                        {/* Turno de Trabalho */}
-                        <div className="space-y-2">
-                          <Label htmlFor="turno_trabalho" className="text-sm font-medium text-gray-700">
-                            Turno de Trabalho
-                          </Label>
-                          <Select 
-                            value={watchedValues.turno_trabalho || ''} 
-                            onValueChange={(value) => setValue('turno_trabalho', value as any)}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="neighborhood"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Bairro <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="neighborhood"
+                              placeholder="Digite o bairro"
+                              {...register("neighborhood")}
+                              className={cn(
+                                "h-10",
+                                errors.neighborhood
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.neighborhood && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.neighborhood.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="address"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Endereço <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="address"
+                              placeholder="Ex: Rua das Flores"
+                              {...register("address")}
+                              className={cn(
+                                "h-10",
+                                errors.address
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.address && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.address.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="address_number"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              Número <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="address_number"
+                              placeholder="Ex: 123"
+                              {...register("address_number")}
+                              className={cn(
+                                "h-10",
+                                errors.address_number
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.address_number && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.address_number.message}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="zip_code"
+                              className="text-sm font-medium text-gray-700 flex items-center gap-1"
+                            >
+                              CEP <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="zip_code"
+                              placeholder="00000-000"
+                              {...register("zip_code")}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, "");
+                                const formatted = value.replace(
+                                  /(\d{5})(\d{3})/,
+                                  "$1-$2",
+                                );
+                                e.target.value = formatted;
+                                setValue("zip_code", formatted);
+                              }}
+                              maxLength={9}
+                              className={cn(
+                                "h-10",
+                                errors.zip_code
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            />
+                            {errors.zip_code && (
+                              <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                                <X className="w-3 h-3" />
+                                {errors.zip_code.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Etapa 6: Tipo de Usuário */}
+                    {currentStep === 6 && (
+                      <div className="space-y-6">
+                        <div className="space-y-4">
+                          <Label
+                            htmlFor="user_type"
+                            className="text-sm font-medium text-gray-700 flex items-center gap-1"
                           >
-                            <SelectTrigger className="h-10">
-                              <SelectValue placeholder="Selecione seu turno de trabalho" />
+                            Como você pretende usar o ConfiLar?{" "}
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Select
+                            value={watchedValues.user_type}
+                            onValueChange={(value) =>
+                              setValue(
+                                "user_type",
+                                value as "client" | "professional",
+                              )
+                            }
+                          >
+                            <SelectTrigger
+                              className={cn(
+                                "h-12",
+                                errors.user_type
+                                  ? "border-red-400 focus:border-red-500"
+                                  : "focus:border-blue-500",
+                              )}
+                            >
+                              <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="manha">Manhã</SelectItem>
-                              <SelectItem value="tarde">Tarde</SelectItem>
-                              <SelectItem value="noite">Noite</SelectItem>
-                              <SelectItem value="integral">Turno Integral</SelectItem>
-                              <SelectItem value="flexivel">Horário Flexível</SelectItem>
+                              <SelectItem value="client">
+                                🙋‍♂️ Cliente - Procuro profissionais
+                              </SelectItem>
+                              <SelectItem value="professional">
+                                👨‍💼 Profissional - Ofereço serviços
+                              </SelectItem>
                             </SelectContent>
                           </Select>
-                          <p className="text-xs text-gray-500">
-                            Informe em qual turno você prefere trabalhar ou está disponível.
+                          {errors.user_type && (
+                            <p className="text-xs text-red-600 font-medium flex items-center gap-1">
+                              <X className="w-3 h-3" />
+                              {errors.user_type.message}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Explicação dos tipos */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-2xl">🙋‍♂️</span>
+                              <span className="font-semibold text-blue-900">
+                                Cliente
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              Você busca profissionais para resolver suas
+                              necessidades.
+                            </p>
+                          </div>
+
+                          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-2xl">👨‍💼</span>
+                              <span className="font-semibold text-green-900">
+                                Profissional
+                              </span>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              Você oferece serviços e quer ser encontrado por
+                              clientes.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Etapa 7: Dados Profissionais */}
+                    {currentStep === 7 && isProfessional && (
+                      <div className="space-y-6">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="bio"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Biografia (Opcional)
+                            </Label>
+                            <Textarea
+                              {...register("bio")}
+                              placeholder="Conte um pouco sobre você..."
+                              rows={3}
+                              className="resize-none"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-gray-700">
+                                Anos de experiência
+                              </Label>
+                              <Select
+                                value={watchedValues.experience_years || ""}
+                                onValueChange={(value) =>
+                                  setValue("experience_years", value)
+                                }
+                              >
+                                <SelectTrigger className="h-10">
+                                  <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="0-1">
+                                    🌱 0-1 ano
+                                  </SelectItem>
+                                  <SelectItem value="1-3">
+                                    📈 1-3 anos
+                                  </SelectItem>
+                                  <SelectItem value="3-5">
+                                    🎯 3-5 anos
+                                  </SelectItem>
+                                  <SelectItem value="5-10">
+                                    🏆 5-10 anos
+                                  </SelectItem>
+                                  <SelectItem value="10+">
+                                    👑 Mais de 10 anos
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium text-gray-700">
+                                Serviços oferecidos (Opcional)
+                              </Label>
+                              <Popover
+                                open={servicesOpen}
+                                onOpenChange={setServicesOpen}
+                              >
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    className="w-full px-3 py-2 border rounded-lg bg-white text-left hover:border-gray-400 transition-colors flex items-center justify-between h-10"
+                                  >
+                                    <span className="text-gray-900 dark:text-white">
+                                      {selectedServices.length === 0
+                                        ? "Selecione os serviços..."
+                                        : `${selectedServices.length} serviço(s)`}
+                                    </span>
+                                    <ChevronDown
+                                      size={16}
+                                      className="ml-2 shrink-0 text-gray-400"
+                                    />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Buscar serviços..." />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        Nenhum serviço encontrado.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {serviceCategoryNames.map((service) => (
+                                          <CommandItem
+                                            key={service}
+                                            value={service}
+                                            onSelect={() =>
+                                              handleServiceToggle(service)
+                                            }
+                                          >
+                                            <Check
+                                              size={16}
+                                              className={cn(
+                                                "mr-2",
+                                                selectedServices.includes(
+                                                  service,
+                                                )
+                                                  ? "opacity-100"
+                                                  : "opacity-0",
+                                              )}
+                                            />
+                                            {service}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          </div>
+
+                          {/* Serviços selecionados */}
+                          {selectedServices.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-gray-700">
+                                Serviços selecionados:
+                              </p>
+                              <div className="text-sm text-gray-600 leading-tight">
+                                {selectedServices.map((service, index) => (
+                                  <span key={service} className="inline">
+                                    {service}
+                                    <button
+                                      type="button"
+                                      onClick={() => removeService(service)}
+                                      className="ml-1 text-red-500 hover:text-red-700 font-bold"
+                                      title="Remover serviço"
+                                    >
+                                      ×
+                                    </button>
+                                    {index < selectedServices.length - 1 && (
+                                      <span className="text-gray-400 mx-1">
+                                        •
+                                      </span>
+                                    )}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Referência Profissional */}
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="referencia_profissional"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Referência Profissional
+                            </Label>
+                            <Textarea
+                              {...register("referencia_profissional")}
+                              placeholder="Conte sobre suas experiências profissionais, projetos importantes, certificações ou qualquer informação relevante sobre sua carreira..."
+                              rows={4}
+                              className="resize-none"
+                            />
+                            <p className="text-xs text-gray-500">
+                              Compartilhe informações sobre sua experiência
+                              profissional, projetos realizados, certificações
+                              ou outras informações relevantes.
+                            </p>
+                          </div>
+
+                          {/* Turno de Trabalho */}
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="turno_trabalho"
+                              className="text-sm font-medium text-gray-700"
+                            >
+                              Turno de Trabalho
+                            </Label>
+                            <Select
+                              value={watchedValues.turno_trabalho || ""}
+                              onValueChange={(value) =>
+                                setValue("turno_trabalho", value as any)
+                              }
+                            >
+                              <SelectTrigger className="h-10">
+                                <SelectValue placeholder="Selecione seu turno de trabalho" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="manha">Manhã</SelectItem>
+                                <SelectItem value="tarde">Tarde</SelectItem>
+                                <SelectItem value="noite">Noite</SelectItem>
+                                <SelectItem value="integral">
+                                  Turno Integral
+                                </SelectItem>
+                                <SelectItem value="flexivel">
+                                  Horário Flexível
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-gray-500">
+                              Informe em qual turno você prefere trabalhar ou
+                              está disponível.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Etapa 7: Pular se for cliente */}
+                    {currentStep === 7 && !isProfessional && (
+                      <div className="text-center space-y-4 py-8">
+                        <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
+                          <Check className="w-10 h-10 text-white" />
+                        </div>
+                        <div className="space-y-3">
+                          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Quase lá!
+                          </h3>
+                          <p className="text-gray-600 text-lg">
+                            Como você é um Cliente, não precisamos de dados
+                            profissionais.
                           </p>
                         </div>
-
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Etapa 7: Pular se for cliente */}
-                  {currentStep === 7 && !isProfessional && (
-                    <div className="text-center space-y-4 py-8">
-                      <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-lg">
-                        <Check className="w-10 h-10 text-white" />
-                      </div>
-                      <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                          Quase lá!
-                        </h3>
-                        <p className="text-gray-600 text-lg">
-                          Como você é um Cliente, não precisamos de dados profissionais.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    {/* Etapa 8: Resumo Final */}
+                    {currentStep === 8 && (
+                      <div className="space-y-6">
+                        {/* Toggle para mostrar/ocultar dados sensíveis */}
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <span className="text-sm text-gray-600">
+                            Mostrar dados sensíveis
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowDataSummary(!showDataSummary)}
+                            className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
+                          >
+                            {showDataSummary ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                            {showDataSummary ? "Ocultar" : "Mostrar"}
+                          </button>
+                        </div>
 
-                  {/* Etapa 8: Resumo Final */}
-                  {currentStep === 8 && (
-                    <div className="space-y-6">
-                      {/* Toggle para mostrar/ocultar dados sensíveis */}
-                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <span className="text-sm text-gray-600">Mostrar dados sensíveis</span>
-                        <button
-                          type="button"
-                          onClick={() => setShowDataSummary(!showDataSummary)}
-                          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700"
-                        >
-                          {showDataSummary ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          {showDataSummary ? 'Ocultar' : 'Mostrar'}
-                        </button>
-                      </div>
-
-                      {/* Resumo dos dados */}
-                      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-lg">📋 Resumo do seu perfil:</h4>
-                        <div className="space-y-3 text-sm text-gray-700">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <p><strong>Nome:</strong> {watchedValues.full_name || 'Não informado'}</p>
-                              <p><strong>Telefone:</strong> {showDataSummary ? (watchedValues.phone || 'Não informado') : '(***) ***-****'}</p>
-                              <p><strong>CPF:</strong> {showDataSummary ? (watchedValues.cpf_cnpj || userCpf ? (watchedValues.cpf_cnpj || userCpf || '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não informado') : '***.***.***-**'}</p>
+                        {/* Resumo dos dados */}
+                        <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
+                          <h4 className="font-semibold text-gray-900 dark:text-white mb-4 text-lg">
+                            📋 Resumo do seu perfil:
+                          </h4>
+                          <div className="space-y-3 text-sm text-gray-700">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <p>
+                                  <strong>Nome:</strong>{" "}
+                                  {watchedValues.full_name || "Não informado"}
+                                </p>
+                                <p>
+                                  <strong>Telefone:</strong>{" "}
+                                  {showDataSummary
+                                    ? watchedValues.phone || "Não informado"
+                                    : "(***) ***-****"}
+                                </p>
+                                <p>
+                                  <strong>CPF:</strong>{" "}
+                                  {showDataSummary
+                                    ? watchedValues.cpf_cnpj || userCpf
+                                      ? (
+                                          watchedValues.cpf_cnpj ||
+                                          userCpf ||
+                                          ""
+                                        ).replace(
+                                          /(\d{3})(\d{3})(\d{3})(\d{2})/,
+                                          "$1.$2.$3-$4",
+                                        )
+                                      : "Não informado"
+                                    : "***.***.***-**"}
+                                </p>
+                              </div>
+                              <div>
+                                <p>
+                                  <strong>Nascimento:</strong>{" "}
+                                  {showDataSummary
+                                    ? watchedValues.birth_date ||
+                                      "Não informado"
+                                    : "**/**/****"}
+                                </p>
+                                <p>
+                                  <strong>Sexo:</strong>{" "}
+                                  {watchedValues.gender === "male"
+                                    ? "👨 Masculino"
+                                    : watchedValues.gender === "female"
+                                      ? "👩 Feminino"
+                                      : watchedValues.gender === "other"
+                                        ? "🏳️‍⚧️ Outros"
+                                        : "Não informado"}
+                                </p>
+                                <p>
+                                  <strong>Tipo:</strong>{" "}
+                                  {watchedValues.user_type === "professional"
+                                    ? "👨‍💼 Profissional"
+                                    : watchedValues.user_type === "client"
+                                      ? "🙋‍♂️ Cliente"
+                                      : "Não informado"}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p><strong>Nascimento:</strong> {showDataSummary ? (watchedValues.birth_date || 'Não informado') : '**/**/****'}</p>
-                              <p><strong>Sexo:</strong> {watchedValues.gender === 'male' ? '👨 Masculino' : watchedValues.gender === 'female' ? '👩 Feminino' : watchedValues.gender === 'other' ? '🏳️‍⚧️ Outros' : 'Não informado'}</p>
-                              <p><strong>Tipo:</strong> {watchedValues.user_type === 'professional' ? '👨‍💼 Profissional' : watchedValues.user_type === 'client' ? '🙋‍♂️ Cliente' : 'Não informado'}</p>
+
+                            {/* Informações Adicionais */}
+                            {(watchedValues.escolaridade ||
+                              watchedValues.estado_civil ||
+                              (watchedValues.filhos !== undefined &&
+                                watchedValues.filhos > 0)) && (
+                              <div className="border-t border-gray-300 pt-3 mt-3">
+                                <h5 className="font-semibold mb-2">
+                                  Informações Adicionais:
+                                </h5>
+                                {watchedValues.escolaridade && (
+                                  <p>
+                                    <strong>Escolaridade:</strong>{" "}
+                                    {watchedValues.escolaridade ===
+                                    "ensino_fundamental_incompleto"
+                                      ? "Ensino Fundamental Incompleto"
+                                      : watchedValues.escolaridade ===
+                                          "ensino_fundamental_completo"
+                                        ? "Ensino Fundamental Completo"
+                                        : watchedValues.escolaridade ===
+                                            "ensino_medio_incompleto"
+                                          ? "Ensino Médio Incompleto"
+                                          : watchedValues.escolaridade ===
+                                              "ensino_medio_completo"
+                                            ? "Ensino Médio Completo"
+                                            : watchedValues.escolaridade ===
+                                                "ensino_superior_incompleto"
+                                              ? "Ensino Superior Incompleto"
+                                              : watchedValues.escolaridade ===
+                                                  "ensino_superior_completo"
+                                                ? "Ensino Superior Completo"
+                                                : watchedValues.escolaridade ===
+                                                    "pos_graduacao"
+                                                  ? "Pós-Graduação"
+                                                  : watchedValues.escolaridade ===
+                                                      "mestrado"
+                                                    ? "Mestrado"
+                                                    : watchedValues.escolaridade ===
+                                                        "doutorado"
+                                                      ? "Doutorado"
+                                                      : watchedValues.escolaridade}
+                                  </p>
+                                )}
+                                {watchedValues.estado_civil && (
+                                  <p>
+                                    <strong>Estado Civil:</strong>{" "}
+                                    {watchedValues.estado_civil === "solteiro"
+                                      ? "Solteiro(a)"
+                                      : watchedValues.estado_civil === "casado"
+                                        ? "Casado(a)"
+                                        : watchedValues.estado_civil ===
+                                            "divorciado"
+                                          ? "Divorciado(a)"
+                                          : watchedValues.estado_civil ===
+                                              "viuvo"
+                                            ? "Viúvo(a)"
+                                            : watchedValues.estado_civil ===
+                                                "uniao_estavel"
+                                              ? "União Estável"
+                                              : watchedValues.estado_civil ===
+                                                  "outro"
+                                                ? "Outro"
+                                                : watchedValues.estado_civil}
+                                  </p>
+                                )}
+                                {watchedValues.filhos !== undefined &&
+                                  watchedValues.filhos > 0 && (
+                                    <p>
+                                      <strong>Filhos:</strong>{" "}
+                                      {watchedValues.filhos}{" "}
+                                      {watchedValues.filhos === 1
+                                        ? "filho"
+                                        : "filhos"}
+                                    </p>
+                                  )}
+                              </div>
+                            )}
+
+                            <div className="border-t border-gray-300 pt-3 mt-3">
+                              <p>
+                                <strong>País:</strong>{" "}
+                                {watchedValues.country === "US"
+                                  ? "🇺🇸 Estados Unidos"
+                                  : watchedValues.country === "BR"
+                                    ? "🇧🇷 Brasil"
+                                    : "Não informado"}
+                              </p>
+                              <p>
+                                <strong>Idioma:</strong>{" "}
+                                {watchedValues.locale === "en"
+                                  ? "🇺🇸 English"
+                                  : watchedValues.locale === "pt-BR"
+                                    ? "🇧🇷 Português"
+                                    : "Não informado"}
+                              </p>
+                              <p>
+                                <strong>Estado:</strong>{" "}
+                                {watchedValues.location_state ||
+                                  "Não informado"}
+                              </p>
+                              <p>
+                                <strong>Cidade:</strong>{" "}
+                                {watchedValues.location_city || "Não informado"}
+                              </p>
+                              <p>
+                                <strong>Bairro:</strong>{" "}
+                                {watchedValues.neighborhood || "Não informado"}
+                              </p>
+                              <p>
+                                <strong>Endereço:</strong>{" "}
+                                {showDataSummary
+                                  ? watchedValues.address || "Não informado"
+                                  : "Oculto"}
+                              </p>
+                              <p>
+                                <strong>Número:</strong>{" "}
+                                {showDataSummary
+                                  ? watchedValues.address_number ||
+                                    "Não informado"
+                                  : "Oculto"}
+                              </p>
+                              <p>
+                                <strong>CEP:</strong>{" "}
+                                {showDataSummary
+                                  ? watchedValues.zip_code || "Não informado"
+                                  : "Oculto"}
+                              </p>
                             </div>
+
+                            {selectedAvatar && (
+                              <div className="border-t border-gray-300 pt-3 mt-3">
+                                <p>
+                                  <strong>Avatar:</strong>{" "}
+                                  {selectedAvatar.type === "upload"
+                                    ? "📸 Foto personalizada"
+                                    : "🎨 Avatar gerado"}
+                                </p>
+                              </div>
+                            )}
+
+                            {isProfessional && (
+                              <div className="border-t border-gray-300 pt-3 mt-3">
+                                <h5 className="font-semibold mb-2">
+                                  Dados Profissionais:
+                                </h5>
+                                {watchedValues.experience_years && (
+                                  <p>
+                                    <strong>Experiência:</strong>{" "}
+                                    {watchedValues.experience_years}
+                                  </p>
+                                )}
+                                {selectedServices.length > 0 && (
+                                  <p>
+                                    <strong>Serviços:</strong>{" "}
+                                    {selectedServices.length} selecionado(s)
+                                  </p>
+                                )}
+                                {watchedValues.turno_trabalho && (
+                                  <p>
+                                    <strong>Turno de Trabalho:</strong>{" "}
+                                    {watchedValues.turno_trabalho === "manha"
+                                      ? "Manhã"
+                                      : watchedValues.turno_trabalho === "tarde"
+                                        ? "Tarde"
+                                        : watchedValues.turno_trabalho ===
+                                            "noite"
+                                          ? "Noite"
+                                          : watchedValues.turno_trabalho ===
+                                              "integral"
+                                            ? "Turno Integral"
+                                            : watchedValues.turno_trabalho ===
+                                                "flexivel"
+                                              ? "Horário Flexível"
+                                              : watchedValues.turno_trabalho}
+                                  </p>
+                                )}
+                                {watchedValues.referencia_profissional && (
+                                  <p>
+                                    <strong>Referência Profissional:</strong>{" "}
+                                    {watchedValues.referencia_profissional.substring(
+                                      0,
+                                      100,
+                                    )}
+                                    {watchedValues.referencia_profissional
+                                      .length > 100
+                                      ? "..."
+                                      : ""}
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          
-                          {/* Informações Adicionais */}
-                          {(watchedValues.escolaridade || watchedValues.estado_civil || (watchedValues.filhos !== undefined && watchedValues.filhos > 0)) && (
-                            <div className="border-t border-gray-300 pt-3 mt-3">
-                              <h5 className="font-semibold mb-2">Informações Adicionais:</h5>
-                              {watchedValues.escolaridade && (
-                                <p><strong>Escolaridade:</strong> {
-                                  watchedValues.escolaridade === 'ensino_fundamental_incompleto' ? 'Ensino Fundamental Incompleto' :
-                                  watchedValues.escolaridade === 'ensino_fundamental_completo' ? 'Ensino Fundamental Completo' :
-                                  watchedValues.escolaridade === 'ensino_medio_incompleto' ? 'Ensino Médio Incompleto' :
-                                  watchedValues.escolaridade === 'ensino_medio_completo' ? 'Ensino Médio Completo' :
-                                  watchedValues.escolaridade === 'ensino_superior_incompleto' ? 'Ensino Superior Incompleto' :
-                                  watchedValues.escolaridade === 'ensino_superior_completo' ? 'Ensino Superior Completo' :
-                                  watchedValues.escolaridade === 'pos_graduacao' ? 'Pós-Graduação' :
-                                  watchedValues.escolaridade === 'mestrado' ? 'Mestrado' :
-                                  watchedValues.escolaridade === 'doutorado' ? 'Doutorado' :
-                                  watchedValues.escolaridade
-                                }</p>
-                              )}
-                              {watchedValues.estado_civil && (
-                                <p><strong>Estado Civil:</strong> {
-                                  watchedValues.estado_civil === 'solteiro' ? 'Solteiro(a)' :
-                                  watchedValues.estado_civil === 'casado' ? 'Casado(a)' :
-                                  watchedValues.estado_civil === 'divorciado' ? 'Divorciado(a)' :
-                                  watchedValues.estado_civil === 'viuvo' ? 'Viúvo(a)' :
-                                  watchedValues.estado_civil === 'uniao_estavel' ? 'União Estável' :
-                                  watchedValues.estado_civil === 'outro' ? 'Outro' :
-                                  watchedValues.estado_civil
-                                }</p>
-                              )}
-                              {(watchedValues.filhos !== undefined && watchedValues.filhos > 0) && (
-                                <p><strong>Filhos:</strong> {watchedValues.filhos} {watchedValues.filhos === 1 ? 'filho' : 'filhos'}</p>
-                              )}
-                            </div>
-                          )}
-                          
-                          <div className="border-t border-gray-300 pt-3 mt-3">
-                            <p><strong>País:</strong> {watchedValues.country === 'US' ? '🇺🇸 Estados Unidos' : watchedValues.country === 'BR' ? '🇧🇷 Brasil' : 'Não informado'}</p>
-                            <p><strong>Idioma:</strong> {watchedValues.locale === 'en' ? '🇺🇸 English' : watchedValues.locale === 'pt-BR' ? '🇧🇷 Português' : 'Não informado'}</p>
-                            <p><strong>Estado:</strong> {watchedValues.location_state || 'Não informado'}</p>
-                            <p><strong>Cidade:</strong> {watchedValues.location_city || 'Não informado'}</p>
-                            <p><strong>Bairro:</strong> {watchedValues.neighborhood || 'Não informado'}</p>
-                            <p><strong>Endereço:</strong> {showDataSummary ? (watchedValues.address || 'Não informado') : 'Oculto'}</p>
-                            <p><strong>Número:</strong> {showDataSummary ? (watchedValues.address_number || 'Não informado') : 'Oculto'}</p>
-                            <p><strong>CEP:</strong> {showDataSummary ? (watchedValues.zip_code || 'Não informado') : 'Oculto'}</p>
+                        </div>
+
+                        {/* Aviso final */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center gap-3 text-green-800 mb-2">
+                            <Shield className="w-5 h-5" />
+                            <span className="font-semibold">Tudo pronto!</span>
                           </div>
-                          
-                          {selectedAvatar && (
-                            <div className="border-t border-gray-300 pt-3 mt-3">
-                              <p><strong>Avatar:</strong> {selectedAvatar.type === 'upload' ? '📸 Foto personalizada' : '🎨 Avatar gerado'}</p>
-                            </div>
-                          )}
-                          
-                          {isProfessional && (
-                            <div className="border-t border-gray-300 pt-3 mt-3">
-                              <h5 className="font-semibold mb-2">Dados Profissionais:</h5>
-                              {watchedValues.experience_years && (
-                                <p><strong>Experiência:</strong> {watchedValues.experience_years}</p>
-                              )}
-                              {selectedServices.length > 0 && (
-                                <p><strong>Serviços:</strong> {selectedServices.length} selecionado(s)</p>
-                              )}
-                              {watchedValues.turno_trabalho && (
-                                <p><strong>Turno de Trabalho:</strong> {
-                                  watchedValues.turno_trabalho === 'manha' ? 'Manhã' :
-                                  watchedValues.turno_trabalho === 'tarde' ? 'Tarde' :
-                                  watchedValues.turno_trabalho === 'noite' ? 'Noite' :
-                                  watchedValues.turno_trabalho === 'integral' ? 'Turno Integral' :
-                                  watchedValues.turno_trabalho === 'flexivel' ? 'Horário Flexível' :
-                                  watchedValues.turno_trabalho
-                                }</p>
-                              )}
-                              {watchedValues.referencia_profissional && (
-                                <p><strong>Referência Profissional:</strong> {watchedValues.referencia_profissional.substring(0, 100)}{watchedValues.referencia_profissional.length > 100 ? '...' : ''}</p>
-                              )}
-                            </div>
-                          )}
+                          <p className="text-green-700 text-sm">
+                            Seus dados estão corretos? Clique em
+                            &quot;Finalizar&quot; para completar seu cadastro.
+                          </p>
                         </div>
                       </div>
-
-                      {/* Aviso final */}
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <div className="flex items-center gap-3 text-green-800 mb-2">
-                          <Shield className="w-5 h-5" />
-                          <span className="font-semibold">Tudo pronto!</span>
-                        </div>
-                        <p className="text-green-700 text-sm">
-                          Seus dados estão corretos? Clique em &quot;Finalizar&quot; para completar seu cadastro.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Navigation Buttons */}
-                <div className={cn(
-                  "flex pt-6 border-t border-gray-200",
-                  currentStep === 1 ? "justify-end" : "justify-between items-center"
-                )}>
-                  {currentStep > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={prevStep}
-                      disabled={isTransitioning}
-                      className="flex items-center gap-2"
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                      Anterior
-                    </Button>
-                  )}
-
-                  <div className="flex items-center gap-3">
-                    {currentStep < totalSteps ? (
-                      <Button
-                        type="button"
-                        onClick={nextStep}
-                        disabled={isTransitioning}
-                        className={cn(
-                          "flex items-center gap-2",
-                          !isStepValid && currentStep > 1 && currentStep < totalSteps 
-                            ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400" 
-                            : "bg-blue-600 hover:bg-blue-700"
-                        )}
-                      >
-                        {currentStep === 2 && !watchedValues.accept_terms ? 'Aceite os termos' : 'Próximo'}
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                        disabled={isLoading || !isFormValid}
-                      >
-                        {isLoading ? (
-                          <>
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            Finalizando...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4" />
-                            Finalizar Cadastro
-                          </>
-                        )}
-                      </Button>
                     )}
                   </div>
-                </div>
-              </form>
 
-            </CardContent>
-          </Card>
+                  {/* Navigation Buttons */}
+                  <div
+                    className={cn(
+                      "flex pt-6 border-t border-gray-200",
+                      currentStep === 1
+                        ? "justify-end"
+                        : "justify-between items-center",
+                    )}
+                  >
+                    {currentStep > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevStep}
+                        disabled={isTransitioning}
+                        className="flex items-center gap-2"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Anterior
+                      </Button>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                      {currentStep < totalSteps ? (
+                        <Button
+                          type="button"
+                          onClick={nextStep}
+                          disabled={isTransitioning}
+                          className={cn(
+                            "flex items-center gap-2",
+                            !isStepValid &&
+                              currentStep > 1 &&
+                              currentStep < totalSteps
+                              ? "bg-gray-400 cursor-not-allowed hover:bg-gray-400"
+                              : "bg-blue-600 hover:bg-blue-700",
+                          )}
+                        >
+                          {currentStep === 2 && !watchedValues.accept_terms
+                            ? "Aceite os termos"
+                            : "Próximo"}
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                          disabled={isLoading || !isFormValid}
+                        >
+                          {isLoading ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Finalizando...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-4 h-4" />
+                              Finalizar Cadastro
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-      </div>
     </LightModeLayout>
-  )
+  );
 }

@@ -442,6 +442,7 @@ export function ModernSidebar() {
                       item.onClick ? (
                         <button
                           key={item.id}
+                          id={`nav-item-${item.id}`}
                           onClick={() => {
                             item.onClick?.();
                             setIsMobileOpen(false);
@@ -479,6 +480,7 @@ export function ModernSidebar() {
                       ) : (
                         <NavigationLink
                           key={item.id}
+                          id={`nav-item-${item.id}`}
                           href={item.href}
                           destination={item.title}
                           onClick={() => setIsMobileOpen(false)}
