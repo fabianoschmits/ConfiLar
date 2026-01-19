@@ -1640,10 +1640,21 @@ export function ConfiPointsAdminDashboard() {
         <TabsContent value="manage" className="space-y-4 sm:space-y-6 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                Gerenciar Pontos de Usuários
-              </CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Gerenciar Pontos de Usuários
+                </CardTitle>
+                <div className="relative w-full sm:w-auto">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar por nome ou email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 w-full sm:w-72 text-sm bg-gray-50/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
