@@ -40,6 +40,7 @@ interface UnifiedCreateAdFormProps {
     isPremium: boolean;
     pointsToSpend?: number;
     durationDays?: number;
+    useCreditType?: "1d" | "7d";
     location_country: string;
     location_state: string;
     location_city: string;
@@ -108,6 +109,7 @@ export function UnifiedCreateAdForm({
     isPremium: false,
     pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS as number,
     durationDays: 1 as number,
+    useCreditType: undefined as "1d" | "7d" | undefined,
   });
 
   const [showLocation, setShowLocation] = useState(false);
@@ -172,8 +174,13 @@ export function UnifiedCreateAdForm({
       price: parsedPrice,
       images: formData.images,
       isPremium: formData.isPremium,
-      pointsToSpend: formData.isPremium ? formData.pointsToSpend : undefined,
+      pointsToSpend: formData.useCreditType
+        ? 0
+        : formData.isPremium
+          ? formData.pointsToSpend
+          : undefined,
       durationDays: formData.isPremium ? formData.durationDays : undefined,
+      useCreditType: formData.useCreditType,
       location_country: selectedCountry,
       location_state: finalState,
       location_city: finalCity,
@@ -190,8 +197,39 @@ export function UnifiedCreateAdForm({
   };
 
   const currentBalance = balance?.balance || 0;
+
+  // Credit Availability
+  const hasCredit1Day = (profile?.credits_ad_premium_1d || 0) > 0;
+  const hasCredit7Days = (profile?.credits_ad_premium_7d || 0) > 0;
+
+  // Update useCreditType when duration changes or toggle premium
+  useEffect(() => {
+    if (!formData.isPremium) {
+      setFormData((p) => ({ ...p, useCreditType: undefined }));
+      return;
+    }
+
+    // Auto-select credit if available for selected duration (optional, but good UX)
+    // Or just clear it and let user select?
+    // Let's reset it to avoid stale state, but user must explicitly click "Use Credit"?
+    // User requested: "na hora de celecionar o anuncio premium ele deve ter a opção de usar o anuncio de boas vindas"
+    // So let's provide an option effectively.
+
+    setFormData((p) => {
+      // If current selected duration matches a credit type, we can keep it if already set, or default to false?
+      // Let's reset if duration doesn't match credit type
+      if (p.useCreditType === "1d" && p.durationDays !== 1)
+        return { ...p, useCreditType: undefined };
+      if (p.useCreditType === "7d" && p.durationDays !== 7)
+        return { ...p, useCreditType: undefined };
+      return p;
+    });
+  }, [formData.isPremium, formData.durationDays]);
+
   const canAfford =
-    !formData.isPremium || currentBalance >= formData.pointsToSpend;
+    !formData.isPremium ||
+    !!formData.useCreditType ||
+    currentBalance >= formData.pointsToSpend;
 
   // Toggle Type
   const toggleType = (type: "offer" | "request") => {
@@ -429,6 +467,57 @@ export function UnifiedCreateAdForm({
                 ))}
               </div>
 
+              {/* CREDIT USAGE OPTION */}
+              {formData.durationDays === 1 && hasCredit1Day && (
+                <div className="mt-4 p-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-500 hover:bg-emerald-600">
+                      GRÁTIS
+                    </Badge>
+                    <div className="text-sm text-emerald-800 dark:text-emerald-300">
+                      <span className="font-bold">Usar Crédito de 1 Dia</span>
+                      <span className="text-xs block opacity-80">
+                        Você tem {profile?.credits_ad_premium_1d} disponível(is)
+                      </span>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={formData.useCreditType === "1d"}
+                    onCheckedChange={(checked) =>
+                      setFormData((p) => ({
+                        ...p,
+                        useCreditType: checked ? "1d" : undefined,
+                      }))
+                    }
+                  />
+                </div>
+              )}
+
+              {formData.durationDays === 7 && hasCredit7Days && (
+                <div className="mt-4 p-3 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black">
+                      GRÁTIS
+                    </Badge>
+                    <div className="text-sm text-yellow-800 dark:text-yellow-300">
+                      <span className="font-bold">Usar Crédito de 7 Dias</span>
+                      <span className="text-xs block opacity-80">
+                        Você tem {profile?.credits_ad_premium_7d} disponível(is)
+                      </span>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={formData.useCreditType === "7d"}
+                    onCheckedChange={(checked) =>
+                      setFormData((p) => ({
+                        ...p,
+                        useCreditType: checked ? "7d" : undefined,
+                      }))
+                    }
+                  />
+                </div>
+              )}
+
               <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
                 <span>
                   Saldo atual:{" "}
@@ -438,8 +527,16 @@ export function UnifiedCreateAdForm({
                 </span>
                 <span>
                   Custo:{" "}
-                  <span className="font-medium text-red-500">
-                    -{formData.pointsToSpend} pts
+                  <span
+                    className={`font-medium ${formData.useCreditType ? "text-emerald-500 decoration-none" : "text-red-500"}`}
+                  >
+                    {formData.useCreditType ? (
+                      <span className="flex items-center gap-1">
+                        0 pts (Crédito)
+                      </span>
+                    ) : (
+                      `-${formData.pointsToSpend} pts`
+                    )}
                   </span>
                 </span>
               </div>

@@ -88,6 +88,8 @@ export interface Database {
             | null;
           country?: string | null;
           locale?: string | null;
+          credits_ad_premium_1d?: number;
+          credits_ad_premium_7d?: number;
         };
         Insert: {
           id: string;
@@ -874,6 +876,8 @@ export interface Profile {
   // Campos de internacionalização
   country?: string | null;
   locale?: string | null;
+  credits_ad_premium_1d?: number;
+  credits_ad_premium_7d?: number;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

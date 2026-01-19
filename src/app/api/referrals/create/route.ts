@@ -111,6 +111,36 @@ const handler = async (request: NextRequest) => {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
+    // ✅ BONUS: Conceder crédito de anúncio premium de 7 dias para o usuário indicado
+    console.log(
+      "🎁 [API create] Concedendo bônus de indicação (1 crédito 7 dias)...",
+    );
+    const { error: bonusError } = await supabase
+      .from("profiles")
+      .update({ credits_ad_premium_7d: 1 }) // Define como 1 (ou incrementa, mas para novos users é 1)
+      .eq("id", referredUserId);
+
+    if (bonusError) {
+      console.error("❌ [API create] Erro ao conceder bônus:", bonusError);
+      // Não falhar a requisição principal, apenas logar
+    } else {
+      console.log(
+        "✅ [API create] Bônus concedido com sucesso para:",
+        referredUserId,
+      );
+
+      // 🔔 Enviar notificação
+      await supabase.from("notifications").insert({
+        user_id: referredUserId,
+        title: "🎁 Bônus de Indicação Recebido!",
+        message:
+          "Você ganhou 1 crédito para criar um Anúncio Premium de 7 Dias grátis por ter sido indicado! Aproveite.",
+        type: "system",
+        priority: "high",
+        is_read: false,
+      });
+    }
+
     console.log("✅ [API create] Referral criado com sucesso:", insertData?.id);
 
     return NextResponse.json({
