@@ -219,21 +219,11 @@ export default function OnboardingPage() {
     // Buscar CPF direto da tabela profiles (mesmo lugar que editar perfil usa)
     const loadUserCpf = async () => {
       try {
-        console.log(
-          "🔍 [Onboarding] Buscando CPF na tabela profiles para user:",
-          user.id,
-        );
-
         const { data: profileData, error } = await supabase
           .from("profiles")
           .select("cpf_cnpj, email")
           .eq("id", user.id)
           .maybeSingle();
-
-        console.log("🔍 [Onboarding] Resultado da busca:", {
-          profileData,
-          error,
-        });
 
         if (error) {
           console.error("❌ [Onboarding] Erro ao buscar CPF:", error);
@@ -241,17 +231,9 @@ export default function OnboardingPage() {
         }
 
         if (profileData?.cpf_cnpj) {
-          console.log(
-            "✅ [Onboarding] CPF encontrado na tabela profiles:",
-            profileData.cpf_cnpj,
-          );
-          console.log("✅ [Onboarding] Email do perfil:", profileData.email);
           setUserCpf(profileData.cpf_cnpj);
           // Preencher o campo do formulário com o CPF encontrado
           setValue("cpf_cnpj", profileData.cpf_cnpj);
-        } else {
-          console.log("⚠️ [Onboarding] CPF não encontrado na tabela profiles");
-          console.log("⚠️ [Onboarding] Profile data completo:", profileData);
         }
       } catch (err) {
         console.error("❌ [Onboarding] Erro ao buscar CPF:", err);
@@ -660,10 +642,6 @@ export default function OnboardingPage() {
     setIsLoading(true);
 
     try {
-      // ✅ VALIDAR DUPLICATAS ANTES DE SALVAR
-      console.log("🔍 Verificando duplicatas...");
-
-      console.log("✅ Dados validados");
       let avatarUrl = null;
 
       // Upload da imagem se necessário
@@ -706,9 +684,6 @@ export default function OnboardingPage() {
       let finalCpf = data.cpf_cnpj || null;
 
       if (!finalCpf) {
-        console.log(
-          "🔍 [Onboarding] CPF não foi digitado, buscando do banco...",
-        );
         const { data: existingProfile } = await supabase
           .from("profiles")
           .select("cpf_cnpj")
@@ -721,18 +696,6 @@ export default function OnboardingPage() {
         const cpfFromProfile = existingProfile?.cpf_cnpj || null;
         const cpfFromMetadata = (user as any)?.user_metadata?.cpf_cnpj || null;
         finalCpf = cpfFromProfile || cpfFromMetadata || null;
-
-        console.log(
-          "🔍 [Onboarding] CPF encontrado na tabela profiles:",
-          cpfFromProfile,
-        );
-        console.log(
-          "🔍 [Onboarding] CPF encontrado nos user_metadata:",
-          cpfFromMetadata,
-        );
-        console.log("🔍 [Onboarding] CPF final que será usado:", finalCpf);
-      } else {
-        console.log("✅ [Onboarding] CPF digitado no formulário:", finalCpf);
       }
 
       if (!finalCpf) {
@@ -785,14 +748,6 @@ export default function OnboardingPage() {
         turno_trabalho: data.turno_trabalho || null,
         // A idade será calculada automaticamente pelo trigger no banco
       };
-
-      console.log(
-        "🔍 [Onboarding] Dados do perfil que serão salvos:",
-        profileData,
-      );
-      console.log("🔍 [Onboarding] CPF que será salvo:", profileData.cpf_cnpj);
-
-      console.log("📝 Dados do perfil que serão enviados:", profileData);
 
       // Usar upsert para inserir ou atualizar na tabela profiles
       const { error: profileError } = await supabase

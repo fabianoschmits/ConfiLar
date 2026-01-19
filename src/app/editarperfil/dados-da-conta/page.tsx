@@ -312,7 +312,6 @@ export default function DadosDaContaPage() {
         );
       }
 
-      console.log("✅ Dados da conta salvos com sucesso!");
       toast.success("🎉 Dados atualizados com sucesso!");
 
       // Redirecionar para página anterior após salvar

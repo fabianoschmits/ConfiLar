@@ -189,7 +189,6 @@ export default function ClassificadosPage() {
 
   // Executar busca inicial
   useEffect(() => {
-    console.log("🔍 Executando busca com filtros:", filters);
     executeSearch(filters);
   }, [executeSearch, filters]);
 
@@ -199,7 +198,6 @@ export default function ClassificadosPage() {
       ...filters,
       adType: activeTab,
     };
-    console.log("🔍 Aplicando filtros:", { activeTab, updatedFilters });
     executeSearch(updatedFilters);
   }, [filters, activeTab, executeSearch]);
 

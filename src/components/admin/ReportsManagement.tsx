@@ -191,8 +191,6 @@ export function ReportsManagement() {
     resolution?: string,
   ) => {
     try {
-      console.log("Atualizando denúncia:", { reportId, status });
-
       const response = await fetch("/api/admin/reports", {
         method: "PUT",
         headers: {
@@ -286,8 +284,6 @@ export function ReportsManagement() {
     const report = reports.find((r) => r.id === reportId);
     if (!report) return;
 
-    console.log("Ação solicitada:", action, "para denúncia:", reportId);
-
     switch (action) {
       case "review":
         await updateReportStatus(reportId, "reviewing");
@@ -309,7 +305,7 @@ export function ReportsManagement() {
         }
         break;
       default:
-        console.log("Ação não reconhecida:", action);
+        break;
     }
   };
 
