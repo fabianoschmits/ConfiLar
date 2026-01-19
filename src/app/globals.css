@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom selection color for premium feel */
+::selection {
+  background-color: rgba(0, 176, 176, 0.2);
+  color: #00b0b0;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
+  }
+}
+
 /* Fontes Gilroy locais */
 @font-face {
   font-family: "Gilroy";
@@ -159,6 +176,7 @@
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
