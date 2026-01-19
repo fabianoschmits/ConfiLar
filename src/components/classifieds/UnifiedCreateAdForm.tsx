@@ -28,6 +28,7 @@ import { PREMIUM_PRICES } from "@/constants/premiumPrices";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useIBGE } from "@/hooks/useIBGE";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 
 interface UnifiedCreateAdFormProps {
   onSubmit: (data: {
@@ -70,6 +71,37 @@ export function UnifiedCreateAdForm({
   const [selectedCity, setSelectedCity] = useState<string>(
     profile?.location_city || "",
   );
+
+  // States for fresh credits
+  const [credits1d, setCredits1d] = useState(
+    profile?.credits_ad_premium_1d || 0,
+  );
+  const [credits7d, setCredits7d] = useState(
+    profile?.credits_ad_premium_7d || 0,
+  );
+
+  // Fetch latest credits on mount
+  useEffect(() => {
+    async function fetchCredits() {
+      if (!profile?.id) return;
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("credits_ad_premium_1d, credits_ad_premium_7d")
+          .eq("id", profile.id)
+          .single();
+
+        if (data) {
+          console.log("🎟️ Créditos atualizados:", data);
+          setCredits1d(data.credits_ad_premium_1d || 0);
+          setCredits7d(data.credits_ad_premium_7d || 0);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar créditos:", err);
+      }
+    }
+    fetchCredits();
+  }, [profile?.id]);
 
   // Initialize location state properly
   useEffect(() => {
@@ -198,9 +230,9 @@ export function UnifiedCreateAdForm({
 
   const currentBalance = balance?.balance || 0;
 
-  // Credit Availability
-  const hasCredit1Day = (profile?.credits_ad_premium_1d || 0) > 0;
-  const hasCredit7Days = (profile?.credits_ad_premium_7d || 0) > 0;
+  // Credit Availability (Use fresh state values)
+  const hasCredit1Day = credits1d > 0;
+  const hasCredit7Days = credits7d > 0;
 
   // Update useCreditType when duration changes or toggle premium
   useEffect(() => {
@@ -477,7 +509,7 @@ export function UnifiedCreateAdForm({
                     <div className="text-sm text-emerald-800 dark:text-emerald-300">
                       <span className="font-bold">Usar Crédito de 1 Dia</span>
                       <span className="text-xs block opacity-80">
-                        Você tem {profile?.credits_ad_premium_1d} disponível(is)
+                        Você tem {credits1d} disponível(is)
                       </span>
                     </div>
                   </div>
@@ -502,7 +534,7 @@ export function UnifiedCreateAdForm({
                     <div className="text-sm text-yellow-800 dark:text-yellow-300">
                       <span className="font-bold">Usar Crédito de 7 Dias</span>
                       <span className="text-xs block opacity-80">
-                        Você tem {profile?.credits_ad_premium_7d} disponível(is)
+                        Você tem {credits7d} disponível(is)
                       </span>
                     </div>
                   </div>
