@@ -98,12 +98,6 @@ export const POST = withAuth(
       };
 
       // Chamar API da Pagou.ai
-      console.log("🔑 Enviando requisição para Pagou.ai:", {
-        url: `${PAGOUAI_API_URL}/pix`,
-        hasApiKey: !!PAGOUAI_SECRET_KEY,
-        apiKeyPrefix: PAGOUAI_SECRET_KEY?.substring(0, 10) + "...",
-      });
-
       const response = await fetch(`${PAGOUAI_API_URL}/pix`, {
         method: "POST",
         headers: {
@@ -115,12 +109,6 @@ export const POST = withAuth(
       });
 
       const pagouData = await response.json();
-
-      console.log("📡 Resposta da Pagou.ai:", {
-        status: response.status,
-        ok: response.ok,
-        data: pagouData,
-      });
 
       if (!response.ok) {
         console.error("❌ Erro na API Pagou.ai:", pagouData);
