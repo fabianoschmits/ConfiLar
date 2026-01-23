@@ -465,12 +465,12 @@ export function CheckoutModal({
       }
 
       setPaymentData({
-        qrCode: data.qrCode,
-        qrCodeImage: data.qrCodeImage,
-        paymentId: data.paymentId,
-        paymentUrl: data.paymentUrl,
-        expiresAt: data.expiresAt,
-        purchaseId: data.purchaseId, // Salvar o ID da compra para verificação
+        qrCode: data.pixCode, // O código copia e cola vem no campo pixCode
+        qrCodeImage: `data:image/png;base64,${data.qrCode}`, // O base64 vem no campo qrCode
+        paymentId: data.transactionId,
+        paymentUrl: data.pixCode,
+        expiresAt: data.expiresAt, // Se não vier, deixamos undefined
+        purchaseId: data.orderId,
       });
 
       setStep("qrcode");
