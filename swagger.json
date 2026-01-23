@@ -1,0 +1,4132 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Documentação da API do Pagou.",
+    "title": "Pagou API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {},
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "0.0.1"
+  },
+  "host": "https://sandbox-api.pagou.com.br",
+  "basePath": "/",
+  "paths": {
+    "/auth/customers/refresh-token": {
+      "post": {
+        "description": "This endpoint allows a customer to refresh an authenticated token and obtain a new one.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["auth.customers"],
+        "summary": "Customer auth",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.AuthResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/customers/token": {
+      "post": {
+        "description": "This endpoint allows a customer to verify your account.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["auth.customers"],
+        "summary": "Customer auth",
+        "parameters": [
+          {
+            "description": "Login credentials",
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.AuthRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.AuthResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/users/refresh-token": {
+      "post": {
+        "description": "This endpoint allows a user to refresh an authenticated token and obtain a new one.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["auth.users"],
+        "summary": "User auth",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.AuthResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/users/token": {
+      "post": {
+        "description": "This endpoint allows a user to authenticate and obtain an access token.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["auth.users"],
+        "summary": "User auth",
+        "parameters": [
+          {
+            "description": "Login credentials",
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.AuthRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.AuthResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/business/balance": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get the business balance",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["core"],
+        "summary": "Get the business balance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.GetBalanceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get all customers",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get all customers",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/customer.Entity"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "This endpoint creates a new customer with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Create a customer",
+        "parameters": [
+          {
+            "description": "Customer data",
+            "name": "customer",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateCustomerRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/access-token": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint it will generate an access token to be used for reset password.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Request an access token for reset password",
+        "parameters": [
+          {
+            "description": "AccessToken data",
+            "name": "withdraw",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.GenerateAccessTokenResponse"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Withdraw"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/reset-password": {
+      "patch": {
+        "description": "This endpoint updates the password of a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update a customer's reset password",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get a customer by ID",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Entity"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/addresses": {
+      "patch": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint updates the addresses of a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update a customer's address",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Address data",
+            "name": "address",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.UpdateCustomerAddressRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/balance": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get a customer balance by ID",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer balance",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.GetCustomerBalanceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/charges/{chargeID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a charge by id and customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get customer's charge",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Charge ID",
+            "name": "chargeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/charge.Charge"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/charges/{chargeID}/events": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested charge events by a customer and charge id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's charge events by id",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Charge ID",
+            "name": "chargeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/charge.Charge"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/credentials": {
+      "patch": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint updates the password of a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update a customer's credentials",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/documents": {
+      "patch": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "// This endpoint updates the documents of a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update a customer's documents",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Documents data",
+            "name": "documents",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.UpdateCustomerDocumentsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/operations": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested qrcodes by a customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's qrcodes",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/pixgateway.QRCode"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/operations/{operationID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a list of operations by customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get customer's operations",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Operation ID",
+            "name": "operationID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Operation"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/password": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Update the password for a customer",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update customer password",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Password object",
+            "name": "Password",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.UpdateCustomerPasswordRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/paymentlinks": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested payment links by a customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's payment links",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/paymentlink.PaymentLink"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated customer to create a payment link.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Create a payment link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Validation data",
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreatePaymentLinkRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/paymentlink.PaymentLink"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/paymentlinks/{paymentLinkID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a paymnent link by id and customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get customer's paymnent link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Payment Link ID",
+            "name": "paymentLinkID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/paymentlink.PaymentLink"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/paymentlinks/{paymentLinkID}/payments": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated customer to create a payment link.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Create a payment link",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "PaymentLink ID",
+            "name": "paymentLinkID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Validation data",
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreatePaymentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/paymentlink.PaymentLink"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/pix": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated user to get a pix data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get all customer's pix",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/customer.Pix"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated user to delete a pix.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Delete a pix",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/pix/{pixID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated user to get a pix data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a pix",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Pix ID",
+            "name": "pixID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Pix"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "This endpoint allows an authenticated user to create a pix.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Create a pix",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Pix ID",
+            "name": "pixID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/plans": {
+      "patch": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint updates the plan of a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Update a customer's plan",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Customer plan data",
+            "name": "plan",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.UpdateCustomerPlanRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/qrcodes/{qrcodeID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a qrcode by id and customer id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get customer's qrcode",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "QRCode ID",
+            "name": "qrcodeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/pixgateway.QRCode"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/qrcodes/{qrcodeID}/events": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested qrcode events by a customer and qrcode id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's qrcode events by id",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "QRCode ID",
+            "name": "qrcodeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/pixgateway.QRCode"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/reports/sales-amount": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get a customer sales amount by ID",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer sales amount",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.GetCustomerBalanceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/withdraws": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested withdraw by a customer and withdraw id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's withdraws",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/customer.Withdraw"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint send a withdrawal request for the customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Create a customer's withdraws",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Withdraw data",
+            "name": "withdraw",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateCustomerWithdrawRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/customer.Withdraw"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customerID}/withdraws/{withdrawID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested withdraw by a customer and withdraw id.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer's withdraws",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Withdraw ID",
+            "name": "withdrawID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Withdraw"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to cancel a previous requested withdraw by a customer.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Cancel a customer's withdraws",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Customer ID",
+            "name": "customerID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Withdraw ID",
+            "name": "withdrawID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Withdraw data",
+            "name": "withdraw",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CancelCustomerWithdrawRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/customer.Withdraw"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get all events",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["events"],
+        "summary": "Get all events",
+        "parameters": [
+          {
+            "maximum": 500,
+            "minimum": 10,
+            "type": "integer",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/events.EventModel"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/plans": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get all plans",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["plans"],
+        "summary": "Get all plans",
+        "parameters": [
+          {
+            "maximum": 500,
+            "minimum": 10,
+            "type": "integer",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/plan.Plan"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/plans/{planID}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get plans by ID",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["plans"],
+        "summary": "Get plans by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Plan ID",
+            "name": "planID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/plan.Plan"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/reports/count-transactions": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested number of transactions.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get report for number of transactions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/reports/total-fees": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested sales amount.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get report for sales amount",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/reports/total-signups": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint is to return a requested total of signups.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get report for total signups",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/charges": {
+      "get": {
+        "description": "This endpoint return a charges list.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["charges"],
+        "summary": "Get the Charges list",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/models.Charge"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "This endpoint creates a new charge with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["charges"],
+        "summary": "Create a Charge",
+        "parameters": [
+          {
+            "description": "Charge data",
+            "name": "charge",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateChargeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/charges/{chargeID}": {
+      "get": {
+        "description": "This endpoint return a charge.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["charges"],
+        "summary": "Get a Charge",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Charge ID",
+            "name": "chargeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "This endpoint requests a cancellation for an active charge with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["charges"],
+        "summary": "Cancel a Charge",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Charge ID",
+            "name": "chargeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/balance": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "Get a customer balance",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["customers"],
+        "summary": "Get a customer balance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.GetCustomerBalanceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pix": {
+      "get": {
+        "description": "This endpoint return a qrcode list.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Get a list of QRCode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/models.QRCode"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "This endpoint creates a new qrcode with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Create a QRCode",
+        "parameters": [
+          {
+            "description": "QRCode data",
+            "name": "qrcode",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateQRCodeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pix/due": {
+      "post": {
+        "description": "This endpoint creates a new qrcode due with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Create a QRCode with due",
+        "parameters": [
+          {
+            "description": "QRCode data",
+            "name": "qrcode",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateQRCodeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pix/{qrcodeID}": {
+      "get": {
+        "description": "This endpoint return a qrcode.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Get a QRCode",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "QRCode ID",
+            "name": "qrcodeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "This endpoint requests a cancellation for an active qrcode with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Cancel a QRCode",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "QRCode ID",
+            "name": "qrcodeID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/pix/{qrcodeID}/refund": {
+      "delete": {
+        "description": "This endpoint requests a refund for a qrcode with the provided data.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["pix"],
+        "summary": "Refund a QRCode",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "QRCode ID",
+            "name": "qrcodeID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Refund data",
+            "name": "qrcode",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.RefundQRCodeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/withdraws": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "description": "This endpoint send a withdrawal request for core.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["core"],
+        "summary": "Create a core's withdraws",
+        "parameters": [
+          {
+            "description": "Withdraw data",
+            "name": "withdraw",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CreateCoreWithdrawRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/customer.Withdraw"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "charge.Address": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "neighborhood": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "reference": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "charge.BankDetails": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "agency": {
+          "type": "string"
+        },
+        "assignor": {
+          "type": "string"
+        },
+        "issuer": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        }
+      }
+    },
+    "charge.Charge": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "due_at": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "number"
+        },
+        "financial_charges": {
+          "$ref": "#/definitions/charge.FinancialCharge"
+        },
+        "grace_period": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "paid_at": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/charge.Payer"
+        },
+        "payload": {
+          "$ref": "#/definitions/charge.Payload"
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "charge.FinancialCharge": {
+      "type": "object",
+      "properties": {
+        "discount": {
+          "type": "number"
+        },
+        "fine": {
+          "type": "number"
+        },
+        "interest": {
+          "type": "number"
+        },
+        "limit_date": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "charge.Payer": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/charge.Address"
+        },
+        "document": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "charge.Payload": {
+      "type": "object",
+      "properties": {
+        "bank": {
+          "$ref": "#/definitions/charge.BankDetails"
+        },
+        "bar_code": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "payment_link_id": {
+          "type": "string"
+        },
+        "qrcode_id": {
+          "type": "string"
+        },
+        "qrcode_status": {
+          "type": "integer"
+        }
+      }
+    },
+    "customer.Address": {
+      "type": "object",
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "complement": {
+          "type": "string"
+        },
+        "district": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Bank": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "account_type": {
+          "type": "string"
+        },
+        "agency": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Credentials": {
+      "type": "object",
+      "properties": {
+        "api_key": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Document": {
+      "type": "object",
+      "properties": {
+        "birth_date": {
+          "type": "string"
+        },
+        "business_name": {
+          "type": "string"
+        },
+        "opening_date": {
+          "type": "string"
+        },
+        "trade_name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Entity": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/customer.Address"
+        },
+        "credentials": {
+          "$ref": "#/definitions/customer.Credentials"
+        },
+        "document": {
+          "$ref": "#/definitions/customer.Document"
+        },
+        "email": {
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "pix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/customer.Pix"
+          }
+        },
+        "plan": {
+          "$ref": "#/definitions/customer.Plan"
+        },
+        "settings": {
+          "$ref": "#/definitions/customer.Settings"
+        },
+        "verification_token": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Operation": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reference_id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.PartnerPlan": {
+      "type": "object",
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        },
+        "id": {
+          "type": "string"
+        },
+        "qr_code_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        }
+      }
+    },
+    "customer.Payload": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        },
+        "e2e_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Pix": {
+      "type": "object",
+      "properties": {
+        "bank": {
+          "$ref": "#/definitions/customer.Bank"
+        },
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "customer.Plan": {
+      "type": "object",
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "partner": {
+          "$ref": "#/definitions/customer.PartnerPlan"
+        },
+        "qrcode_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        }
+      }
+    },
+    "customer.Settings": {
+      "type": "object",
+      "properties": {
+        "cross_border": {
+          "type": "boolean"
+        },
+        "partner": {
+          "type": "boolean"
+        }
+      }
+    },
+    "customer.Withdraw": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "payload": {
+          "$ref": "#/definitions/customer.Payload"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "to": {
+          "$ref": "#/definitions/customer.Pix"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "events.EventModel": {
+      "type": "object",
+      "properties": {
+        "api_key": {
+          "type": "string"
+        },
+        "attempts": {
+          "type": "integer"
+        },
+        "event_data": {},
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "next_attempts": {
+          "type": "integer"
+        },
+        "response_data": {
+          "$ref": "#/definitions/events.ResponseData"
+        },
+        "responses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/events.ResponseData"
+          }
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "events.ResponseData": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "description": "Body    []byte `json:\"body\" bson:\"body\"`",
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.AuthRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+    "models.AuthResponse": {
+      "type": "object",
+      "properties": {
+        "customer": {
+          "$ref": "#/definitions/customer.Entity"
+        },
+        "token": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/user.User"
+        }
+      }
+    },
+    "models.CancelCustomerWithdrawRequest": {
+      "type": "object"
+    },
+    "models.Charge": {
+      "type": "object",
+      "required": [
+        "amount",
+        "description",
+        "due_date",
+        "fine",
+        "grace_period",
+        "interest",
+        "payer"
+      ],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 5
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "discount": {
+          "$ref": "#/definitions/models.Discount"
+        },
+        "due_date": {
+          "type": "string"
+        },
+        "fine": {
+          "type": "number",
+          "maximum": 100,
+          "minimum": 0.1
+        },
+        "grace_period": {
+          "type": "integer",
+          "maximum": 30
+        },
+        "interest": {
+          "type": "number",
+          "maximum": 100,
+          "minimum": 0.1
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/models.ChargeMetadata"
+          }
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/models.ChargePayer"
+        }
+      }
+    },
+    "models.ChargeMetadata": {
+      "type": "object",
+      "required": ["key", "value"],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "models.ChargePayer": {
+      "type": "object",
+      "required": [
+        "city",
+        "document",
+        "name",
+        "neighborhood",
+        "number",
+        "state",
+        "street",
+        "zip"
+      ],
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "neighborhood": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "models.CreateChargeRequest": {
+      "type": "object",
+      "required": [
+        "amount",
+        "description",
+        "due_date",
+        "fine",
+        "grace_period",
+        "interest",
+        "payer"
+      ],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 5
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "discount": {
+          "$ref": "#/definitions/models.Discount"
+        },
+        "due_date": {
+          "type": "string"
+        },
+        "fine": {
+          "type": "number",
+          "maximum": 100,
+          "minimum": 0.1
+        },
+        "grace_period": {
+          "type": "integer",
+          "maximum": 30
+        },
+        "interest": {
+          "type": "number",
+          "maximum": 100,
+          "minimum": 0.1
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/models.ChargeMetadata"
+          }
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/models.ChargePayer"
+        }
+      }
+    },
+    "models.CreateCoreWithdrawRequest": {
+      "type": "object",
+      "required": ["amount", "version"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.CreateCustomerRequest": {
+      "type": "object",
+      "required": ["confirm_password", "email", "full_name", "password"],
+      "properties": {
+        "confirm_password": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "full_name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+    "models.CreateCustomerWithdrawRequest": {
+      "type": "object",
+      "required": ["amount", "pix_id", "version"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "pix_id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.CreatePaymentLinkRequest": {
+      "type": "object",
+      "required": ["amount", "payment_methods"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "expiry_at": {
+          "type": "string"
+        },
+        "max_payments": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string"
+        },
+        "payment_methods": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": ["qrcode", "charge"]
+          }
+        }
+      }
+    },
+    "models.CreatePaymentRequest": {
+      "type": "object",
+      "required": [
+        "city",
+        "document",
+        "document",
+        "name",
+        "name",
+        "neighborhood",
+        "payment_method",
+        "state",
+        "street",
+        "zip"
+      ],
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "document": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "neighborhood": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "payment_method": {
+          "type": "string",
+          "enum": ["qrcode", "charge"]
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "models.CreateQRCodeRequest": {
+      "type": "object",
+      "required": ["amount", "description", "expiration", "payer"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "expiration": {
+          "type": "integer",
+          "minimum": 60
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/models.QRCodeMetadata"
+          }
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/models.QRCodePayer"
+        }
+      }
+    },
+    "models.Discount": {
+      "type": "object",
+      "required": ["amount", "limit_date", "type"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "limit_date": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["fixed", "percentage"]
+        }
+      }
+    },
+    "models.ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "models.GenerateAccessTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        }
+      }
+    },
+    "models.GetBalanceResponse": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "number"
+        },
+        "last_update": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.GetCustomerBalanceResponse": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "number"
+        },
+        "last_update": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.PlanFeeRate": {
+      "type": "object",
+      "required": ["type", "value"],
+      "properties": {
+        "additional_value": {
+          "type": "number",
+          "minimum": 0.1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["fixed", "percentage"]
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0.1
+        }
+      }
+    },
+    "models.PlanPartner": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/models.PlanFeeRate"
+        },
+        "id": {
+          "type": "string"
+        },
+        "qrcode_fee": {
+          "$ref": "#/definitions/models.PlanFeeRate"
+        }
+      }
+    },
+    "models.QRCode": {
+      "type": "object",
+      "required": ["amount", "description", "expiration", "payer"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "expiration": {
+          "type": "integer",
+          "minimum": 60
+        },
+        "metadata": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/models.QRCodeMetadata"
+          }
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/models.QRCodePayer"
+        }
+      }
+    },
+    "models.QRCodeMetadata": {
+      "type": "object",
+      "required": ["key", "value"],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "models.QRCodePayer": {
+      "type": "object",
+      "required": ["document", "name"],
+      "properties": {
+        "document": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "models.RefundQRCodeRequest": {
+      "type": "object",
+      "required": ["amount", "description", "reason"],
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "integer"
+        }
+      }
+    },
+    "models.UpdateCustomerAddressRequest": {
+      "type": "object",
+      "required": ["city", "district", "state", "street", "zip_code"],
+      "properties": {
+        "city": {
+          "type": "string"
+        },
+        "complement": {
+          "type": "string"
+        },
+        "district": {
+          "type": "string"
+        },
+        "number": {
+          "type": "integer"
+        },
+        "state": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "zip_code": {
+          "type": "string"
+        }
+      }
+    },
+    "models.UpdateCustomerDocumentsRequest": {
+      "type": "object",
+      "required": ["type", "value"],
+      "properties": {
+        "birth_date": {
+          "type": "string"
+        },
+        "business_name": {
+          "description": "Legal Entity",
+          "type": "string"
+        },
+        "opening_date": {
+          "type": "string"
+        },
+        "trade_name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["individual", "legal_entity"]
+        },
+        "value": {
+          "description": "Individual",
+          "type": "string"
+        }
+      }
+    },
+    "models.UpdateCustomerPasswordRequest": {
+      "type": "object",
+      "required": ["confirm_password", "current_password", "new_password"],
+      "properties": {
+        "confirm_password": {
+          "type": "string",
+          "minLength": 8
+        },
+        "current_password": {
+          "type": "string"
+        },
+        "new_password": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+    "models.UpdateCustomerPlanRequest": {
+      "type": "object",
+      "required": ["name", "plan_id"],
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/models.PlanFeeRate"
+        },
+        "name": {
+          "type": "string"
+        },
+        "partner": {
+          "$ref": "#/definitions/models.PlanPartner"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "qrcode_fee": {
+          "$ref": "#/definitions/models.PlanFeeRate"
+        }
+      }
+    },
+    "models.ValidateCustomerPixRequest": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "paymentlink.Config": {
+      "type": "object",
+      "properties": {
+        "allowed_payment_methods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["qrcode", "charge"]
+          }
+        },
+        "max_payments": {
+          "type": "integer"
+        }
+      }
+    },
+    "paymentlink.PaymentLink": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "config": {
+          "$ref": "#/definitions/paymentlink.Config"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "expiry_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "pixgateway.Payee": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/customer.Address"
+        },
+        "document": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "pixgateway.Payer": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "type": "string"
+        },
+        "document_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "pixgateway.Payload": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "image": {
+          "type": "string"
+        },
+        "payment_link_id": {
+          "type": "string"
+        }
+      }
+    },
+    "pixgateway.QRCode": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "customer_code": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "due_info": {
+          "$ref": "#/definitions/pixgateway.QRCodeDueInfo"
+        },
+        "expiration": {
+          "type": "integer"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "number"
+        },
+        "id": {
+          "type": "string"
+        },
+        "notification_url": {
+          "type": "string"
+        },
+        "paid_at": {
+          "type": "string"
+        },
+        "payer": {
+          "$ref": "#/definitions/pixgateway.Payer"
+        },
+        "payload": {
+          "$ref": "#/definitions/pixgateway.Payload"
+        },
+        "pix_key": {
+          "type": "string"
+        },
+        "pix_type": {
+          "type": "string"
+        },
+        "refund": {
+          "$ref": "#/definitions/pixgateway.Refund"
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "pixgateway.QRCodeDueFinancialCharge": {
+      "type": "object",
+      "properties": {
+        "limit_date": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "pixgateway.QRCodeDueInfo": {
+      "type": "object",
+      "properties": {
+        "discount": {
+          "$ref": "#/definitions/pixgateway.QRCodeDueFinancialCharge"
+        },
+        "due_at": {
+          "type": "string"
+        },
+        "fine": {
+          "$ref": "#/definitions/pixgateway.QRCodeDueFinancialCharge"
+        },
+        "interest": {
+          "$ref": "#/definitions/pixgateway.QRCodeDueFinancialCharge"
+        },
+        "payee": {
+          "$ref": "#/definitions/pixgateway.Payee"
+        }
+      }
+    },
+    "pixgateway.Refund": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "integer"
+        }
+      }
+    },
+    "plan.FeeRate": {
+      "type": "object",
+      "properties": {
+        "additional_value": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "plan.PartnerFeeRate": {
+      "type": "object",
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        },
+        "qr_code_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        }
+      }
+    },
+    "plan.Plan": {
+      "type": "object",
+      "properties": {
+        "charge_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        },
+        "default": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "partner_fee": {
+          "$ref": "#/definitions/plan.PartnerFeeRate"
+        },
+        "partner_id": {
+          "type": "string"
+        },
+        "qrcode_fee": {
+          "$ref": "#/definitions/plan.FeeRate"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "user.User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    },
+    "BearerAuth": {
+      "description": "\u003e Provide your Bearer token in the Authorization header using the format: \"Bearer {token}\".",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

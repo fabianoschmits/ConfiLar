@@ -4,15 +4,24 @@ import { withAuth } from "@/lib/authenticatedRoute";
 /**
  * POST /api/payment/pagouai/create
  *
- * Cria um pagamento PIX via nova API Pagou.ai (Skeleton)
+ * Cria um pagamento PIX via API Pagou.ai (Plataforma Nova/AI - Full Spec)
+ * Doc: https://developer.pagou.ai/api-reference/pagamentos/criar-pagamento
  */
 export const POST = withAuth(
   async (request: NextRequest, supabaseAuth, user) => {
     try {
       const body = await request.json();
-      const { package_id } = body;
+      const { package_id, customer } = body;
 
-      // 1. Buscar pacote no banco
+      // 1. Validar CPF e Nome do pagador
+      if (!customer?.cpf || !customer?.name) {
+        return NextResponse.json(
+          { error: "Dados do pagador (Nome e CPF) são obrigatórios para PIX." },
+          { status: 400 },
+        );
+      }
+
+      // 2. Buscar pacote
       const { data: pack } = await supabaseAuth
         .from("point_packages")
         .select("*")
@@ -20,12 +29,7 @@ export const POST = withAuth(
         .single();
 
       if (!pack) {
-        // Fallback para pacotes hardcoded se a tabela estiver vazia ou ID não bater
-        // Isso garante compatibilidade com o front antigo se os IDs não baterem
-        console.warn(
-          "Pacote não encontrado no banco, usando valores do request se disponíveis",
-        );
-        if (!body.amount || !body.points) {
+        if (!body.amount) {
           return NextResponse.json(
             { error: "Pacote inválido" },
             { status: 400 },
@@ -33,14 +37,15 @@ export const POST = withAuth(
         }
       }
 
+      // Normalizar valores
       const amountInCentavos = pack
         ? pack.price
         : Math.round(body.amount * 100);
       const pointsAmount = pack ? pack.points : body.points;
+      const amountInReais = amountInCentavos / 100;
 
-      // 2. Criar Ordem Interna
+      // 3. Criar Ordem Interna
       const orderId = crypto.randomUUID();
-
       const { error: orderError } = await supabaseAuth
         .from("point_orders")
         .insert({
@@ -59,52 +64,118 @@ export const POST = withAuth(
         );
       }
 
-      // 3. Chamar API Pagou.ai (Skeleton)
-      console.log("🚀 Enviando para api.pagou.ai:", {
-        amount: amountInCentavos,
-        external_id: orderId,
-      });
-
-      const response = await fetch(
-        `${process.env.PAGOUAI_API_URL}/pix/cash-in`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${process.env.PAGOUAI_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: amountInCentavos, // em centavos
-            description: `Compra de ${pointsAmount} pontos ConfiLar`,
-            external_id: orderId, // ID interno
-            expires_in: 3600,
-          }),
+      // 4. Montar Payload conforme developer.pagou.ai (Full Detail)
+      // Nota: A doc usa o termo "neighboor" (com dois 'o')
+      const pagouPayload = {
+        type: "PIX",
+        transaction: {
+          value: amountInReais,
+          description: `Compra de ${pointsAmount} pontos ConfiLar`,
+          expirationTime: 3600,
+          externalId: orderId,
         },
+        payer: {
+          fullName: customer.name,
+          document: customer.cpf.replace(/\D/g, ""),
+          contact: {
+            // Formato exigido na doc: +55DDDNNNNNNNN
+            phone: customer.phone
+              ? `+55${customer.phone.replace(/\D/g, "")}`
+              : "",
+            mail: customer.email || "",
+          },
+          address: {
+            zipCode:
+              customer.address?.zipCode?.replace(/\D/g, "") || "00000000",
+            street: customer.address?.street || "Não informado",
+            neighboor: customer.address?.neighborhood || "Não informado", // Usando o termo da doc
+            number: customer.address?.number || "S/N",
+            city: customer.address?.city || "Não informado",
+            state: customer.address?.state || "UF",
+            country: "BR",
+          },
+        },
+      };
+
+      console.log(
+        "🚀 Payload Pagou.ai (Full Spec):",
+        JSON.stringify(pagouPayload, null, 2),
       );
 
-      const data = await response.json();
+      // 5. Enviar Requisição
+      const pagouUrl = `https://api.pagou.ai/pix/v1/payment`;
+
+      const response = await fetch(pagouUrl, {
+        method: "POST",
+        headers: {
+          apiKey: process.env.PAGOUAI_SECRET_KEY!, // Header exato da doc
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(pagouPayload),
+      });
+
+      const text = await response.text();
+      console.log(`🧾 Status: ${response.status} | Resposta:`, text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        return NextResponse.json(
+          { error: "Erro de comunicação com Gateway", details: text },
+          { status: 502 },
+        );
+      }
 
       if (!response.ok) {
         console.error("❌ Erro Pagou.ai:", data);
-        return NextResponse.json({ error: data }, { status: 400 });
+        // O erro 403 aqui é explicitamente "API Key inválida" segundo a doc
+        const errorMessage = data.message || data.error || JSON.stringify(data);
+        const userMessage =
+          response.status === 403
+            ? "Chave de API inválida ou conta não autorizada. Verifique no painel da Pagou.ai."
+            : errorMessage;
+
+        return NextResponse.json(
+          { error: userMessage, details: data },
+          { status: response.status },
+        );
       }
 
-      // 4. Atualizar Ordem com ID da transação
+      // 6. Sucesso - Resposta: { transactionId, status, pixQrCode, pixCode, ... }
+      const transactionId = data.transactionId;
+      const pixCode = data.pixCode;
+      const pixQrCodeBase64 = data.pixQrCode;
+
+      if (!transactionId || !pixCode) {
+        console.error("❌ Resposta incompleta:", data);
+        return NextResponse.json(
+          { error: "QR Code não retornado pelo gateway" },
+          { status: 502 },
+        );
+      }
+
+      // 7. Atualizar Ordem
       await supabaseAuth
         .from("point_orders")
-        .update({ transaction_id: data.id })
+        .update({ transaction_id: transactionId })
         .eq("id", orderId);
 
-      // 5. Retornar dados para o Front
       return NextResponse.json({
         orderId,
-        qrCode: data.qr_code_base64,
-        pixCode: data.pix_code,
-        transactionId: data.id,
+        qrCode: pixQrCodeBase64,
+        pixCode: pixCode,
+        transactionId: transactionId,
+        expiresAt:
+          data.expirationDate ||
+          new Date(Date.now() + 3600 * 1000).toISOString(),
       });
-    } catch (error) {
-      console.error("❌ Erro interno:", error);
-      return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    } catch (error: any) {
+      console.error("🔥 Erro interno:", error);
+      return NextResponse.json(
+        { error: "Erro interno no servidor", detail: error.message },
+        { status: 500 },
+      );
     }
   },
 );
