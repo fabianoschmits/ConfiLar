@@ -522,7 +522,7 @@ export default function ComprasPage() {
                                     setIsCheckingPayment(purchase.id);
                                     try {
                                       const response = await fetch(
-                                        `/api/payment/abacatepay/check?id=${purchase.payment_id}&purchase_id=${purchase.id}`,
+                                        `/api/payment/pagouai/check?id=${purchase.payment_id}&purchase_id=${purchase.id}`,
                                         {
                                           method: "GET",
                                           headers: {

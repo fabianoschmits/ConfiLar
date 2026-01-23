@@ -239,7 +239,7 @@ export function CheckoutModal({
         );
 
         const response = await fetch(
-          `/api/payment/abacatepay/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+          `/api/payment/pagouai/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
           {
             method: "GET",
             headers: {
@@ -430,7 +430,7 @@ export function CheckoutModal({
     setError(null);
 
     try {
-      const response = await fetch("/api/payment/abacatepay/create", {
+      const response = await fetch("/api/payment/pagouai/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -511,7 +511,7 @@ export function CheckoutModal({
 
     try {
       const response = await fetch(
-        `/api/payment/abacatepay/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
+        `/api/payment/pagouai/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
         {
           method: "GET",
           headers: {
