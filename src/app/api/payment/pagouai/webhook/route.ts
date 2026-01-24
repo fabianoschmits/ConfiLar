@@ -19,8 +19,6 @@ export async function POST(request: NextRequest) {
       headers["x-webhook-signature"] ||
       headers["signature"];
 
-    console.log("🔔 Webhook Headers:", JSON.stringify(headers, null, 2));
-
     // Segredo do Webhook (Dica: No Pagou.ai moderno, pode ser diferente da Secret Key)
     const webhookSecret =
       process.env.PAGOUAI_WEBHOOK_SECRET || process.env.PAGOUAI_SECRET_KEY;
@@ -50,15 +48,10 @@ export async function POST(request: NextRequest) {
       ) {
         console.error("❌ Assinatura inválida no webhook");
         // return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-      } else {
-        console.log("✅ Assinatura verificada com sucesso!");
       }
-    } else {
-      console.warn("⚠️ Webhook recebido sem assinatura configurada.");
     }
 
     const payload = JSON.parse(rawBody);
-    console.log("📦 Payload recebido:", JSON.stringify(payload, null, 2));
 
     /**
      * Normalização de Status e IDs (Suportando CamelCase do Pagou.ai .ai e snake_case do .com.br)
@@ -95,8 +88,6 @@ export async function POST(request: NextRequest) {
 
       // Idempotência
       if (order.status !== "paid") {
-        console.log(`🚀 Processando pagamento aprovado para ordem ${orderId}`);
-
         // 1. Incrementar pontos
         const { error: incrementError } = await supabase.rpc(
           "increment_points",
@@ -123,15 +114,7 @@ export async function POST(request: NextRequest) {
             transaction_id: transactionId,
           })
           .eq("id", orderId);
-
-        console.log("🎉 Sucesso! Pontos creditados.");
-      } else {
-        console.log("ℹ️ Ordem já estava marcada como paga.");
       }
-    } else {
-      console.log(
-        `⏭️ Webhook ignorado (Status: ${status}, OrderId: ${orderId})`,
-      );
     }
 
     return NextResponse.json({ received: true });

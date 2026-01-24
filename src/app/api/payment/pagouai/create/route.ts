@@ -98,11 +98,6 @@ export const POST = withAuth(
         },
       };
 
-      console.log(
-        "🚀 Payload Pagou.ai (Full Spec):",
-        JSON.stringify(pagouPayload, null, 2),
-      );
-
       // 5. Enviar Requisição
       const pagouUrl = `https://api.pagou.ai/pix/v1/payment`;
 
@@ -116,7 +111,6 @@ export const POST = withAuth(
       });
 
       const text = await response.text();
-      console.log(`🧾 Status: ${response.status} | Resposta:`, text);
 
       let data;
       try {

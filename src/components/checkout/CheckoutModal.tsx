@@ -128,16 +128,8 @@ export function CheckoutModal({
   // Carregar dados da compra existente quando o modal abrir
   React.useEffect(() => {
     if (isOpen && existingPurchase) {
-      console.log(
-        "📦 Carregando dados da compra existente:",
-        existingPurchase.id,
-      );
-      console.log("📦 Status da compra:", existingPurchase.status);
-      console.log("📦 Payment data:", existingPurchase.payment_data);
-
       // Se a compra já foi aprovada, mostrar tela de sucesso
       if (existingPurchase.status === "approved") {
-        console.log("✅ Compra aprovada, mostrando tela de sucesso");
         setStep("success");
       } else if (
         existingPurchase.payment_id ||
@@ -145,7 +137,6 @@ export function CheckoutModal({
         existingPurchase.payment_data
       ) {
         // Se tem QR Code, mostrar tela do QR Code
-        console.log("📱 Compra tem QR Code, mostrando tela do QR Code");
         setStep("qrcode");
 
         // Extrair dados do QR Code do payment_data
@@ -192,13 +183,6 @@ export function CheckoutModal({
           }
         }
 
-        console.log("📱 QR Code extraído:", {
-          qrCode: qrCode ? `${qrCode.substring(0, 50)}...` : "não encontrado",
-          qrCodeImage: qrCodeImage ? "encontrado" : "não encontrado",
-          expiresAt,
-          paymentId: existingPurchase.payment_id,
-        });
-
         setPaymentData({
           qrCode: qrCode || existingPurchase.payment_url || "",
           qrCodeImage: qrCodeImage,
@@ -209,12 +193,10 @@ export function CheckoutModal({
         });
       } else {
         // Se não tem QR Code ainda, mostrar formulário
-        console.log("📝 Compra sem QR Code, mostrando formulário");
         setStep("form");
       }
     } else if (isOpen && !existingPurchase && packageData) {
       // Se não tem compra existente mas tem packageData, começar do formulário
-      console.log("🆕 Nova compra, mostrando formulário");
       setStep("form");
     }
   }, [isOpen, existingPurchase, packageData]);
@@ -234,10 +216,6 @@ export function CheckoutModal({
     // Intervalo de verificação: a cada 5 segundos
     const checkInterval = setInterval(async () => {
       try {
-        console.log(
-          `🔄 Verificando status do pagamento ${paymentData.paymentId}...`,
-        );
-
         const response = await fetch(
           `/api/payment/pagouai/check?id=${paymentData.paymentId}&purchase_id=${paymentData.purchaseId}`,
           {
@@ -251,19 +229,12 @@ export function CheckoutModal({
         const data = await response.json();
 
         if (response.ok) {
-          console.log(
-            `📊 Status do pagamento: ${data.status} (paymentStatus: ${data.paymentStatus})`,
-          );
-
           // Se pagamento aprovado, ir automaticamente para o modal de sucesso
           if (
             data.status === "approved" ||
             data.paymentStatus === "PAID" ||
             data.paymentStatus === "paid"
           ) {
-            console.log(
-              "✅ Pagamento aprovado! Parando verificação e mostrando tela de sucesso.",
-            );
             clearInterval(checkInterval);
             setStep("success");
             toast.success(
