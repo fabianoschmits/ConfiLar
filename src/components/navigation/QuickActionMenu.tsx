@@ -167,6 +167,7 @@ export function QuickActionMenu() {
             return isContact ? (
               <a
                 key={action.id}
+                id={`nav-item-${action.id}`}
                 href={action.href}
                 className={containerClasses}
                 aria-label={action.label}
@@ -176,6 +177,7 @@ export function QuickActionMenu() {
             ) : (
               <Link
                 key={action.id}
+                id={`nav-item-${action.id}`}
                 href={action.href}
                 className={containerClasses}
                 aria-label={action.label}

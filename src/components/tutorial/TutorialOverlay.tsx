@@ -40,6 +40,10 @@ export function TutorialOverlay() {
       if (element) {
         const rect = element.getBoundingClientRect();
         const padding = 8;
+
+        // Auto-scroll to target with a small delay for page stability
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+
         setTargetRect(
           DOMRect.fromRect({
             x: rect.x - padding,
@@ -72,18 +76,18 @@ export function TutorialOverlay() {
   const isFirst = currentStepIndex === 0;
   const isLast = currentStepIndex === currentSteps.length - 1;
 
-  // Calculate position style
+  // Calculate position style with boundary checks
   const getPositionStyle = (): React.CSSProperties => {
     if (isMobile) {
-      // Mobile: always bottom-center
       return {
-        bottom: "1rem",
+        bottom: "20px",
         left: "50%",
         transform: "translateX(-50%)",
+        width: "calc(100% - 32px)",
+        maxWidth: "400px",
       };
     }
 
-    // Desktop: position based on target
     if (!targetRect) {
       return {
         top: "50%",
@@ -92,29 +96,86 @@ export function TutorialOverlay() {
       };
     }
 
-    const style: React.CSSProperties = {};
+    const modalWidth = 400;
+    const modalHeight = 200; // Estimated
+    const margin = 20;
+    const style: React.CSSProperties = {
+      position: "fixed",
+    };
 
+    // Preferred positions
     switch (step.position) {
-      case "bottom":
-        style.top = `${targetRect.bottom + 20}px`;
-        style.left = `${targetRect.left + targetRect.width / 2}px`;
+      case "bottom": {
+        let top = targetRect.bottom + margin;
+        let left = targetRect.left + targetRect.width / 2;
+
+        // Boundary checks
+        if (top + modalHeight > window.innerHeight) {
+          top = targetRect.top - modalHeight - margin;
+        }
+        const leftBound = left - modalWidth / 2;
+        if (leftBound < margin) left = modalWidth / 2 + margin;
+        if (leftBound + modalWidth > window.innerWidth - margin) {
+          left = window.innerWidth - modalWidth / 2 - margin;
+        }
+
+        style.top = `${top}px`;
+        style.left = `${left}px`;
         style.transform = "translateX(-50%)";
         break;
-      case "top":
-        style.bottom = `${window.innerHeight - targetRect.top + 20}px`;
-        style.left = `${targetRect.left + targetRect.width / 2}px`;
+      }
+      case "top": {
+        let top = targetRect.top - modalHeight - margin;
+        let left = targetRect.left + targetRect.width / 2;
+
+        if (top < margin) {
+          top = targetRect.bottom + margin;
+        }
+        const leftBound = left - modalWidth / 2;
+        if (leftBound < margin) left = modalWidth / 2 + margin;
+        if (leftBound + modalWidth > window.innerWidth - margin) {
+          left = window.innerWidth - modalWidth / 2 - margin;
+        }
+
+        style.top = `${top}px`;
+        style.left = `${left}px`;
         style.transform = "translateX(-50%)";
         break;
-      case "right":
-        style.top = `${targetRect.top + targetRect.height / 2}px`;
-        style.left = `${targetRect.right + 20}px`;
+      }
+      case "right": {
+        let left = targetRect.right + margin;
+        let top = targetRect.top + targetRect.height / 2;
+
+        if (left + modalWidth > window.innerWidth - margin) {
+          left = targetRect.left - modalWidth - margin;
+        }
+        if (top - modalHeight / 2 < margin) top = modalHeight / 2 + margin;
+        if (top + modalHeight / 2 > window.innerHeight - margin) {
+          top = window.innerHeight - modalHeight / 2 - margin;
+        }
+
+        style.left = `${left}px`;
+        style.top = `${top}px`;
         style.transform = "translateY(-50%)";
         break;
-      case "left":
-        style.top = `${targetRect.top + targetRect.height / 2}px`;
-        style.right = `${window.innerWidth - targetRect.left + 20}px`;
+      }
+      case "left": {
+        let left = targetRect.left - modalWidth - margin;
+        let top = targetRect.top + targetRect.height / 2;
+
+        if (left < margin) {
+          left = targetRect.right + margin;
+        }
+        if (top - modalHeight / 2 < margin) top = modalHeight / 2 + margin;
+        if (top + modalHeight / 2 > window.innerHeight - margin) {
+          top = window.innerHeight - modalHeight / 2 - margin;
+        }
+
+        style.left = `${left}px`;
+        style.top = `${top}px`;
         style.transform = "translateY(-50%)";
         break;
+      }
       default:
         style.top = "50%";
         style.left = "50%";
@@ -135,18 +196,45 @@ export function TutorialOverlay() {
         {/* Backdrop with hole */}
         <div className="absolute inset-0 bg-black/60 pointer-events-auto transition-all duration-300">
           {targetRect && (
-            <div
-              style={{
-                position: "absolute",
-                left: targetRect.left,
-                top: targetRect.top,
-                width: targetRect.width,
-                height: targetRect.height,
-                boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
-                borderRadius: "8px",
-                transition: "all 0.3s ease-out",
-              }}
-            />
+            <>
+              {/* Target Hole */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: targetRect.left,
+                  top: targetRect.top,
+                  width: targetRect.width,
+                  height: targetRect.height,
+                  boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)",
+                  borderRadius: "8px",
+                  transition: "all 0.3s ease-out",
+                }}
+              />
+              {/* Visual Pulse for Mobile and Highlights */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.2, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                style={{
+                  position: "absolute",
+                  left: targetRect.left - 4,
+                  top: targetRect.top - 4,
+                  width: targetRect.width + 8,
+                  height: targetRect.height + 8,
+                  border: "4px solid #3b82f6",
+                  borderRadius: "12px",
+                  pointerEvents: "none",
+                  zIndex: 101,
+                }}
+              />
+            </>
           )}
         </div>
 
@@ -157,10 +245,7 @@ export function TutorialOverlay() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className={cn(
-            "fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl",
-            isMobile && "!left-1/2 !-translate-x-1/2 !bottom-4",
-          )}
+          className="fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
           style={getPositionStyle()}
         >
           {/* Header */}

@@ -73,6 +73,7 @@ export const POST = withAuth(
           description: `Compra de ${pointsAmount} pontos ConfiLar`,
           expirationTime: 3600,
           externalId: orderId,
+          dueDate: new Date().toISOString().split("T")[0],
         },
         payer: {
           fullName: customer.name,
@@ -87,11 +88,11 @@ export const POST = withAuth(
           address: {
             zipCode:
               customer.address?.zipCode?.replace(/\D/g, "") || "00000000",
-            street: customer.address?.street || "Não informado",
-            neighboor: customer.address?.neighborhood || "Não informado", // Usando o termo da doc
+            street: customer.address?.street || "",
+            neighboor: customer.address?.neighborhood || "",
             number: customer.address?.number || "S/N",
-            city: customer.address?.city || "Não informado",
-            state: customer.address?.state || "UF",
+            city: customer.address?.city || "",
+            state: customer.address?.state || "",
             country: "BR",
           },
         },
@@ -128,8 +129,10 @@ export const POST = withAuth(
       }
 
       if (!response.ok) {
-        console.error("❌ Erro Pagou.ai:", data);
-        // O erro 403 aqui é explicitamente "API Key inválida" segundo a doc
+        console.error(
+          "❌ Erro Completo Pagou.ai:",
+          JSON.stringify(data, null, 2),
+        );
         const errorMessage = data.message || data.error || JSON.stringify(data);
         const userMessage =
           response.status === 403
