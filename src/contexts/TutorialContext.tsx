@@ -103,6 +103,15 @@ export function TutorialProvider({ children }: { children: ReactNode }) {
         "true",
       );
     }
+    // Auto-redirection flow
+    if (currentPage === "feed") {
+      router.push("/classificados");
+    } else if (currentPage === "classificados") {
+      router.push("/buscar");
+    } else if (currentPage === "busca") {
+      router.push("/feed");
+    }
+
     setIsActive(false);
     setCurrentPage(null);
 

@@ -24,8 +24,15 @@ export const tutorialSteps: TutorialStep[] = [
     targetId: "create-post-button",
     title: "Criar Publicação",
     content:
-      "Precisa de um serviço ou quer oferecer o seu? Clique aqui para criar um novo post ou anúncio rapidamente.",
+      "Procurando algum serviço diferente? Crie um post com fotos ou vídeos do YouTube sobre ele, ou divulgue ideias e trabalhos que você já realizou para a comunidade.",
     position: "bottom",
+  },
+  {
+    targetId: "nav-item-feed", // Repurposing or choosing a generic target if needed
+    title: "Recompensas e Posts Premium",
+    content:
+      "Sabia que você pode ganhar ConfiPoints? Ao receber 'Likes Premium' em suas publicações, você acumula pontos que podem ser usados para destacar seus próprios posts e anúncios como Premium!",
+    position: "center",
   },
   {
     targetId: "nav-item-profile",
