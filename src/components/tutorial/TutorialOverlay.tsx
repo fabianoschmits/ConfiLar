@@ -76,13 +76,10 @@ export function TutorialOverlay() {
   const isFirst = currentStepIndex === 0;
   const isLast = currentStepIndex === currentSteps.length - 1;
 
-  // Calculate position style - Always centered as requested
+  // Calculate position style - Simplified for Flexbox centering
   const getPositionStyle = (): React.CSSProperties => {
     return {
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      width: "calc(100% - 32px)",
+      width: "100%",
       maxWidth: "400px",
       zIndex: 102,
     };
@@ -94,7 +91,7 @@ export function TutorialOverlay() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] overflow-hidden pointer-events-none"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden pointer-events-none"
       >
         {/* Backdrop with hole */}
         <div className="absolute inset-0 bg-black/60 pointer-events-auto transition-all duration-300">
@@ -144,11 +141,11 @@ export function TutorialOverlay() {
         {/* Content Card */}
         <motion.div
           key={currentStepIndex}
-          initial={{ opacity: 0, x: "-50%", y: "-40%", scale: 0.95 }}
-          animate={{ opacity: 1, x: "-50%", y: "-50%", scale: 1 }}
-          exit={{ opacity: 0, x: "-50%", y: "-60%", scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
+          className="relative pointer-events-auto p-4 md:p-6 w-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
           style={getPositionStyle()}
         >
           {/* Header */}
