@@ -76,113 +76,16 @@ export function TutorialOverlay() {
   const isFirst = currentStepIndex === 0;
   const isLast = currentStepIndex === currentSteps.length - 1;
 
-  // Calculate position style with boundary checks
+  // Calculate position style - Always centered as requested
   const getPositionStyle = (): React.CSSProperties => {
-    if (isMobile) {
-      return {
-        bottom: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "calc(100% - 32px)",
-        maxWidth: "400px",
-      };
-    }
-
-    if (!targetRect) {
-      return {
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-      };
-    }
-
-    const modalWidth = 400;
-    const modalHeight = 200; // Estimated
-    const margin = 20;
-    const style: React.CSSProperties = {
+    return {
       position: "fixed",
+      top: "50%",
+      left: "50%",
+      width: "calc(100% - 32px)",
+      maxWidth: "400px",
+      zIndex: 102,
     };
-
-    // Preferred positions
-    switch (step.position) {
-      case "bottom": {
-        let top = targetRect.bottom + margin;
-        let left = targetRect.left + targetRect.width / 2;
-
-        // Boundary checks
-        if (top + modalHeight > window.innerHeight) {
-          top = targetRect.top - modalHeight - margin;
-        }
-        const leftBound = left - modalWidth / 2;
-        if (leftBound < margin) left = modalWidth / 2 + margin;
-        if (leftBound + modalWidth > window.innerWidth - margin) {
-          left = window.innerWidth - modalWidth / 2 - margin;
-        }
-
-        style.top = `${top}px`;
-        style.left = `${left}px`;
-        style.transform = "translateX(-50%)";
-        break;
-      }
-      case "top": {
-        let top = targetRect.top - modalHeight - margin;
-        let left = targetRect.left + targetRect.width / 2;
-
-        if (top < margin) {
-          top = targetRect.bottom + margin;
-        }
-        const leftBound = left - modalWidth / 2;
-        if (leftBound < margin) left = modalWidth / 2 + margin;
-        if (leftBound + modalWidth > window.innerWidth - margin) {
-          left = window.innerWidth - modalWidth / 2 - margin;
-        }
-
-        style.top = `${top}px`;
-        style.left = `${left}px`;
-        style.transform = "translateX(-50%)";
-        break;
-      }
-      case "right": {
-        let left = targetRect.right + margin;
-        let top = targetRect.top + targetRect.height / 2;
-
-        if (left + modalWidth > window.innerWidth - margin) {
-          left = targetRect.left - modalWidth - margin;
-        }
-        if (top - modalHeight / 2 < margin) top = modalHeight / 2 + margin;
-        if (top + modalHeight / 2 > window.innerHeight - margin) {
-          top = window.innerHeight - modalHeight / 2 - margin;
-        }
-
-        style.left = `${left}px`;
-        style.top = `${top}px`;
-        style.transform = "translateY(-50%)";
-        break;
-      }
-      case "left": {
-        let left = targetRect.left - modalWidth - margin;
-        let top = targetRect.top + targetRect.height / 2;
-
-        if (left < margin) {
-          left = targetRect.right + margin;
-        }
-        if (top - modalHeight / 2 < margin) top = modalHeight / 2 + margin;
-        if (top + modalHeight / 2 > window.innerHeight - margin) {
-          top = window.innerHeight - modalHeight / 2 - margin;
-        }
-
-        style.left = `${left}px`;
-        style.top = `${top}px`;
-        style.transform = "translateY(-50%)";
-        break;
-      }
-      default:
-        style.top = "50%";
-        style.left = "50%";
-        style.transform = "translate(-50%, -50%)";
-    }
-
-    return style;
   };
 
   return (
@@ -241,9 +144,9 @@ export function TutorialOverlay() {
         {/* Content Card */}
         <motion.div
           key={currentStepIndex}
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+          initial={{ opacity: 0, x: "-50%", y: "-40%", scale: 0.95 }}
+          animate={{ opacity: 1, x: "-50%", y: "-50%", scale: 1 }}
+          exit={{ opacity: 0, x: "-50%", y: "-60%", scale: 0.95 }}
           transition={{ duration: 0.3 }}
           className="fixed pointer-events-auto p-4 md:p-6 w-[90vw] md:w-[400px] max-w-[400px] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl"
           style={getPositionStyle()}
