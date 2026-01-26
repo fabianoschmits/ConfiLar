@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useSupabaseNotifications } from "@/hooks/useSupabaseNotifications";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { useHelpChat } from "@/contexts/HelpChatContext";
 import { BrandLogo } from "@/components/common/BrandLogo";
 
 interface SidebarItem {
@@ -69,6 +70,7 @@ export function ModernSidebar() {
   const { user, profile } = useAuthContext();
   const { unreadCount } = useSupabaseNotifications();
   const { openChat } = useFloatingChat();
+  const { openChat: openHelpChat } = useHelpChat();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
@@ -273,6 +275,14 @@ export function ModernSidebar() {
           href: "/ajuda",
           icon: <HelpCircle className="h-4 w-4" />,
           description: "Tire suas dúvidas",
+        },
+        {
+          id: "help-chat",
+          title: "Chat de Ajuda",
+          href: "#",
+          icon: <MessageCircle className="h-4 w-4" />,
+          description: "Ajuda instantânea",
+          onClick: () => openHelpChat(),
         },
         {
           id: "contact",

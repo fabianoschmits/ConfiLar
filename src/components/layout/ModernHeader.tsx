@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { useHelpChat } from "@/contexts/HelpChatContext";
 import { supabase } from "@/lib/supabase";
 import { StarRating } from "@/components/ui/StarRating";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ export function ModernHeader({
   const router = useRouter();
   const { user, profile, signOut } = useAuthContext();
   const { openChat } = useFloatingChat();
+  const { openChat: openHelpChat } = useHelpChat();
   const { getTotalUnreadCount } = useMessages();
   const { isAvailable } = useAvailability();
   const t = useTranslations("header");
@@ -884,6 +886,18 @@ export function ModernHeader({
                               <span className="truncate">
                                 {t("helpCenter")}
                               </span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                openHelpChat();
+                                setIsMenuExpanded(false);
+                              }}
+                              className="flex items-center gap-1 text-xs py-1 h-7 justify-start"
+                            >
+                              <MessageCircle className="h-3 w-3" />
+                              <span className="truncate">Chat de Ajuda</span>
                             </Button>
                             <Button
                               variant="ghost"
