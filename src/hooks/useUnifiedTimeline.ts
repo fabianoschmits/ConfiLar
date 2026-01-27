@@ -14,6 +14,29 @@ import { getEstadoBySigla, getEstadoByNome } from "@/lib/ibge";
 
 const ITEMS_PER_PAGE = 20;
 
+const normalizeStateForQuery = async (inputState: string) => {
+  if (!inputState) return null;
+
+  try {
+    if (inputState.length === 2) {
+      const estado = await getEstadoBySigla(inputState.toUpperCase());
+      return {
+        sigla: inputState.toUpperCase(),
+        nome: estado?.nome || inputState,
+      };
+    } else {
+      const estado = await getEstadoByNome(inputState);
+      return {
+        sigla: estado?.sigla || inputState,
+        nome: estado?.nome || inputState,
+      };
+    }
+  } catch (error) {
+    console.error("Error normalizing state:", error);
+    return { sigla: inputState, nome: inputState };
+  }
+};
+
 export function useUnifiedTimeline(filters: TimelineFilters = {}) {
   const queryClient = useQueryClient();
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
@@ -103,74 +126,6 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .order("created_at", { ascending: false })
         .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
 
-      // Aplicar filtro de busca se especificado
-      if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.trim();
-
-        // Verificar se é busca por usuário (user:username) ou ID (id:userid)
-        if (searchTerm.startsWith("user:")) {
-          // Buscar por nome do usuário
-          const username = searchTerm.replace("user:", "").trim();
-
-          // Primeiro, buscar IDs dos usuários que correspondem ao nome
-          const { data: matchingProfiles } = await supabase
-            .from("profiles")
-            .select("id")
-            .ilike("full_name", `%${username}%`);
-
-          const matchingUserIds = matchingProfiles?.map((p) => p.id) || [];
-
-          // ⚠️ SEGURANÇA: Validar todos os UUIDs antes de usar em queries
-          const validUserIds = validateUUIDs(matchingUserIds);
-
-          if (validUserIds.length > 0) {
-            // Filtrar posts por IDs dos usuários encontrados
-            // Usar .in() para user_id e professional_id
-            postsQuery = postsQuery.or(
-              `user_id.in.(${validUserIds.join(",")}),professional_id.in.(${validUserIds.join(",")})`,
-            );
-          } else {
-            // Se não encontrar usuários, retornar query vazia usando um ID inválido
-            postsQuery = postsQuery.eq(
-              "id",
-              "00000000-0000-0000-0000-000000000000",
-            ); // ID inválido para retornar vazio
-          }
-        } else if (searchTerm.startsWith("id:")) {
-          // Buscar por ID do usuário
-          const userId = searchTerm.replace("id:", "").trim();
-
-          // ⚠️ SEGURANÇA: Validar UUID antes de usar em query
-          if (!isValidUUID(userId)) {
-            // Se não for UUID válido, retornar query vazia
-            postsQuery = postsQuery.eq(
-              "id",
-              "00000000-0000-0000-0000-000000000000",
-            );
-          } else {
-            postsQuery = postsQuery.or(
-              `user_id.eq.${userId},professional_id.eq.${userId}`,
-            );
-          }
-        } else {
-          // Busca por palavras-chave (padrão)
-          const keywords = searchTerm.toLowerCase();
-
-          // Buscar em campos básicos do post
-          postsQuery = postsQuery.or(
-            `
-            title.ilike.%${keywords}%,
-            description.ilike.%${keywords}%,
-            metadata->>category.ilike.%${keywords}%,
-            metadata->>service_type.ilike.%${keywords}%,
-            metadata->>tags.ilike.%${keywords}%,
-            metadata->>service_description.ilike.%${keywords}%,
-            metadata->>user.ilike.%${keywords}%
-          `.replace(/\s+/g, ""),
-          );
-        }
-      }
-
       // Definir selectFields uma vez para uso em todos os casos de filtro de localização
       const selectFields = `
         id,
@@ -214,950 +169,120 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       // IMPORTANTE: Para filtro 'local' com cidade e estado, precisamos fazer queries separadas
       // porque o .or() no Supabase substitui todos os filtros anteriores
       // Então vamos fazer isso ANTES da query principal e depois usar os resultados
-      let postsFromLocationFilter: any[] | null = null;
 
-      // IMPORTANTE: Se o tipo for 'all', não executar NENHUMA query de filtro de localização
-      // e garantir que postsFromLocationFilter seja null
+      // --- UNIFIED LOCATION & SEARCH FILTERING ---
       if (filters.location_filter?.type === "all") {
         console.log(
-          '🌍 Filtro "Todos os Locais" detectado - pulando TODAS as queries de localização',
+          "🌍 Filtro: Todos os Locais - nenhuma restrição de geo aplicada",
         );
-        postsFromLocationFilter = null;
-        // Sair cedo - não processar nenhum filtro de localização
       } else if (
         filters.location_filter &&
-        filters.location_filter.type === "local" &&
-        filters.location_filter.city &&
-        filters.location_filter.state
+        (filters.location_filter.type === "custom" ||
+          filters.location_filter.type === "local" ||
+          filters.location_filter.type === "state")
       ) {
-        const locationFilter = filters.location_filter;
-
-        console.log("🏠 Filtro local (query separada):", {
-          city: locationFilter.city,
-          state: locationFilter.state,
-          country: locationFilter.country,
-        });
-
-        // Normalizar estado e obter sigla correspondente
-        let normalizedState = locationFilter.state;
-        let stateSigla: string | null = null;
-
-        if (locationFilter.state.length === 2) {
-          // É sigla, buscar nome completo
-          stateSigla = locationFilter.state;
-          try {
-            const estado = await getEstadoBySigla(locationFilter.state);
-            if (estado && estado.nome) {
-              normalizedState = estado.nome;
-            }
-          } catch (error) {
-            console.error("Erro ao buscar nome do estado:", error);
-          }
-        } else {
-          // É nome completo, buscar sigla correspondente
-          try {
-            const estado = await getEstadoByNome(locationFilter.state);
-            if (estado && estado.sigla) {
-              stateSigla = estado.sigla;
-              normalizedState = estado.nome; // Garantir nome completo normalizado
-            }
-          } catch (error) {
-            console.error("Erro ao buscar sigla do estado:", error);
-          }
-        }
-
-        console.log("🔍 Estado normalizado:", {
-          original: locationFilter.state,
-          sigla: stateSigla,
-          nomeCompleto: normalizedState,
-        });
-
-        // Mapear país para código
-        let countryCode = locationFilter.country;
-        if (
-          locationFilter.country === "Brasil" ||
-          locationFilter.country === "Brazil"
-        ) {
+        const loc = filters.location_filter;
+        let countryCode = loc.country;
+        if (loc.country === "Brasil" || loc.country === "Brazil")
           countryCode = "BR";
-        } else if (
-          locationFilter.country === "United States" ||
-          locationFilter.country === "Estados Unidos"
-        ) {
+        else if (
+          loc.country === "United States" ||
+          loc.country === "Estados Unidos"
+        )
           countryCode = "US";
-        }
 
-        // IMPORTANTE: Precisamos buscar posts que tenham:
-        // - Cidade correspondente (ilike)
-        // - Estado correspondente (pode ser sigla OU nome completo)
-        // - País correspondente (ou NULL)
-
-        // Fazer queries separadas para evitar problemas com .or() que substitui filtros anteriores
-        const allResults: any[] = [];
-
-        // Query 1: SEMPRE buscar por sigla (se tivermos sigla)
-        // Os posts estão salvos como sigla ("RS"), então esta é a query mais importante
-        if (stateSigla) {
-          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
-          const citySearch = locationFilter.city?.trim() || "";
-          // Usar ILIKE com wildcards para buscar variações (inclui parte do nome)
-          const cityTerm = `%${citySearch}%`;
-
-          if (countryCode) {
-            // Query com país específico
-            const queryWithCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .eq("location_state", stateSigla)
-              .eq("location_country", countryCode)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithCountry, error: errorWithCountry } =
-              await queryWithCountry;
-            if (errorWithCountry) {
-              console.error("❌ Erro na query com país:", errorWithCountry);
-            } else if (dataWithCountry) {
-              allResults.push(...dataWithCountry);
-            }
-
-            // Query sem país (posts antigos podem não ter país)
-            const queryWithoutCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .eq("location_state", stateSigla)
-              .is("location_country", null)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithoutCountry, error: errorWithoutCountry } =
-              await queryWithoutCountry;
-            if (errorWithoutCountry) {
-              console.error("❌ Erro na query sem país:", errorWithoutCountry);
-            } else if (dataWithoutCountry) {
-              allResults.push(...dataWithoutCountry);
-            }
-          } else {
-            // Sem filtro de país, buscar todos
-            const queryAll = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .eq("location_state", stateSigla)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data, error } = await queryAll;
-            if (error) {
-              console.error("❌ Erro na query sem filtro de país:", error);
-            } else if (data) {
-              allResults.push(...data);
-            }
-          }
-
-          console.log(
-            `✅ Query 1 (sigla ${stateSigla}, cidade: ${locationFilter.city}): encontrados ${allResults.length} posts`,
+        if (countryCode) {
+          postsQuery = postsQuery.or(
+            `location_country.eq.${countryCode},location_country.is.null`,
           );
         }
 
-        // Query 2: buscar por nome completo (caso algum post esteja salvo com nome completo)
-        if (normalizedState && normalizedState !== stateSigla) {
-          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
-          const citySearch = locationFilter.city?.trim() || "";
-          const cityTerm = `%${citySearch}%`;
-
-          if (countryCode) {
-            // Query com país específico
-            const queryWithCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${normalizedState}%`)
-              .eq("location_country", countryCode)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithCountry, error: errorWithCountry } =
-              await queryWithCountry;
-            if (errorWithCountry) {
-              console.error("❌ Erro na query 2 com país:", errorWithCountry);
-            } else if (dataWithCountry) {
-              allResults.push(...dataWithCountry);
-            }
-
-            // Query sem país
-            const queryWithoutCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${normalizedState}%`)
-              .is("location_country", null)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithoutCountry, error: errorWithoutCountry } =
-              await queryWithoutCountry;
-            if (errorWithoutCountry) {
-              console.error(
-                "❌ Erro na query 2 sem país:",
-                errorWithoutCountry,
-              );
-            } else if (dataWithoutCountry) {
-              allResults.push(...dataWithoutCountry);
-            }
-          } else {
-            // Sem filtro de país
-            const queryAll = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${normalizedState}%`)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data, error } = await queryAll;
-            if (error) {
-              console.error("❌ Erro na query 2 sem filtro de país:", error);
-            } else if (data) {
-              allResults.push(...data);
-            }
-          }
-
-          console.log(
-            `✅ Query 2 (nome completo ${normalizedState}): total agora ${allResults.length} posts`,
-          );
-        }
-
-        // Query 3: Se o filtro original é nome completo, buscar também por ilike do nome original
-        // (pode haver variações no nome)
-        if (
-          locationFilter.state.length > 2 &&
-          locationFilter.state !== normalizedState
-        ) {
-          // Normalizar cidade para busca - ILIKE é case-insensitive e flexível
-          const citySearch = locationFilter.city?.trim() || "";
-          const cityTerm = `%${citySearch}%`;
-
-          if (countryCode) {
-            // Query com país específico
-            const queryWithCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${locationFilter.state}%`)
-              .eq("location_country", countryCode)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithCountry, error: errorWithCountry } =
-              await queryWithCountry;
-            if (errorWithCountry) {
-              console.error("❌ Erro na query 3 com país:", errorWithCountry);
-            } else if (dataWithCountry) {
-              allResults.push(...dataWithCountry);
-            }
-
-            // Query sem país
-            const queryWithoutCountry = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${locationFilter.state}%`)
-              .is("location_country", null)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data: dataWithoutCountry, error: errorWithoutCountry } =
-              await queryWithoutCountry;
-            if (errorWithoutCountry) {
-              console.error(
-                "❌ Erro na query 3 sem país:",
-                errorWithoutCountry,
-              );
-            } else if (dataWithoutCountry) {
-              allResults.push(...dataWithoutCountry);
-            }
-          } else {
-            // Sem filtro de país
-            const queryAll = supabase
-              .from("feed_posts")
-              .select(selectFields)
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .ilike("location_city", cityTerm)
-              .ilike("location_state", `%${locationFilter.state}%`)
-              .order("created_at", { ascending: false })
-              .limit(ITEMS_PER_PAGE * 10);
-
-            const { data, error } = await queryAll;
-            if (error) {
-              console.error("❌ Erro na query 3 sem filtro de país:", error);
-            } else if (data) {
-              allResults.push(...data);
-            }
-          }
-
-          console.log(
-            `✅ Query 3 (nome original ${locationFilter.state}): total agora ${allResults.length} posts`,
-          );
-        }
-
-        // Remover duplicatas e ordenar
-        const uniquePosts = allResults.filter(
-          (post, index, self) =>
-            index === self.findIndex((p) => p.id === post.id),
-        );
-
-        const data1 = uniquePosts;
-        const data2: any[] = []; // Não precisamos mais de data2 separado
-
-        // Já combinamos e removemos duplicatas acima
-        postsFromLocationFilter = data1;
-      }
-
-      // Aplicar filtros de localização normais (para outros tipos)
-      // IMPORTANTE: Se o tipo for 'all', não aplicar nenhum filtro de localização
-      // Verificar novamente aqui para garantir que não processamos filtros quando tipo é 'all'
-      if (filters.location_filter?.type === "all") {
-        console.log(
-          '🌍 Filtro "Todos os Locais" - garantindo que postsFromLocationFilter seja null',
-        );
-        postsFromLocationFilter = null;
-      } else if (filters.location_filter && !postsFromLocationFilter) {
-        const locationFilter = filters.location_filter;
-
-        console.log(
-          "🔍 Aplicando filtro de localização:",
-          JSON.stringify(locationFilter, null, 2),
-        );
-
-        // Função auxiliar para normalizar estado
-        const normalizeStateForQuery = async (
-          state: string,
-        ): Promise<string> => {
-          if (!state) return state;
-          if (state.length === 2) {
-            try {
-              const estado = await getEstadoBySigla(state);
-              if (estado && estado.nome) {
-                return estado.nome;
-              }
-            } catch (error) {
-              console.error("Erro ao buscar nome do estado:", error);
-            }
-          }
-          return state;
-        };
-
-        switch (locationFilter.type) {
-          case "state":
-            if (locationFilter.state) {
-              console.log(
-                "🏙️ Filtro estado (apenas estado):",
-                locationFilter.state,
-                "país:",
-                locationFilter.country,
-              );
-
-              // Mapear país para código
-              let countryCode = locationFilter.country;
-              if (
-                locationFilter.country === "Brasil" ||
-                locationFilter.country === "Brazil"
-              ) {
-                countryCode = "BR";
-              } else if (
-                locationFilter.country === "United States" ||
-                locationFilter.country === "Estados Unidos"
-              ) {
-                countryCode = "US";
-              }
-
-              // Normalizar estado e obter sigla correspondente
-              let normalizedState = locationFilter.state;
-              let stateSigla: string | null = null;
-
-              if (locationFilter.state.length === 2) {
-                // É sigla, buscar nome completo
-                stateSigla = locationFilter.state;
-                try {
-                  const estado = await getEstadoBySigla(locationFilter.state);
-                  if (estado && estado.nome) {
-                    normalizedState = estado.nome;
-                  }
-                } catch (error) {
-                  console.error("Erro ao buscar nome do estado:", error);
-                }
-              } else {
-                // É nome completo, buscar sigla correspondente
-                try {
-                  const estado = await getEstadoByNome(locationFilter.state);
-                  if (estado && estado.sigla) {
-                    stateSigla = estado.sigla;
-                    normalizedState = estado.nome; // Garantir nome completo normalizado
-                  }
-                } catch (error) {
-                  console.error("Erro ao buscar sigla do estado:", error);
-                }
-              }
-
-              console.log("🔍 Estado normalizado (filtro apenas estado):", {
-                original: locationFilter.state,
-                sigla: stateSigla,
-                nomeCompleto: normalizedState,
-              });
-
-              // IMPORTANTE: Fazer queries separadas para evitar problemas com .or() que substitui filtros anteriores
-              const allStateResults: any[] = [];
-
-              // Query 1: Buscar por sigla (se tivermos sigla)
-              if (stateSigla) {
-                if (countryCode) {
-                  // Query com país específico
-                  const queryWithCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .eq("location_state", stateSigla)
-                    .eq("location_country", countryCode)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data: dataWithCountry, error: errorWithCountry } =
-                    await queryWithCountry;
-                  if (errorWithCountry) {
-                    console.error(
-                      "❌ Erro na query estado com país:",
-                      errorWithCountry,
-                    );
-                  } else if (dataWithCountry) {
-                    allStateResults.push(...dataWithCountry);
-                  }
-
-                  // Query sem país (posts antigos podem não ter país)
-                  const queryWithoutCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .eq("location_state", stateSigla)
-                    .is("location_country", null)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const {
-                    data: dataWithoutCountry,
-                    error: errorWithoutCountry,
-                  } = await queryWithoutCountry;
-                  if (errorWithoutCountry) {
-                    console.error(
-                      "❌ Erro na query estado sem país:",
-                      errorWithoutCountry,
-                    );
-                  } else if (dataWithoutCountry) {
-                    allStateResults.push(...dataWithoutCountry);
-                  }
-                } else {
-                  // Sem filtro de país
-                  const queryAll = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .eq("location_state", stateSigla)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data, error } = await queryAll;
-                  if (error) {
-                    console.error(
-                      "❌ Erro na query estado sem filtro de país:",
-                      error,
-                    );
-                  } else if (data) {
-                    allStateResults.push(...data);
-                  }
-                }
-
-                console.log(
-                  `✅ Query estado por sigla (${stateSigla}): encontrados ${allStateResults.length} posts`,
-                );
-              }
-
-              // Query 2: Buscar por nome completo (caso algum post esteja salvo com nome completo)
-              if (normalizedState && normalizedState !== stateSigla) {
-                if (countryCode) {
-                  // Query com país específico
-                  const queryWithCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${normalizedState}%`)
-                    .eq("location_country", countryCode)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data: dataWithCountry, error: errorWithCountry } =
-                    await queryWithCountry;
-                  if (errorWithCountry) {
-                    console.error(
-                      "❌ Erro na query estado nome completo com país:",
-                      errorWithCountry,
-                    );
-                  } else if (dataWithCountry) {
-                    allStateResults.push(...dataWithCountry);
-                  }
-
-                  // Query sem país
-                  const queryWithoutCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${normalizedState}%`)
-                    .is("location_country", null)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const {
-                    data: dataWithoutCountry,
-                    error: errorWithoutCountry,
-                  } = await queryWithoutCountry;
-                  if (errorWithoutCountry) {
-                    console.error(
-                      "❌ Erro na query estado nome completo sem país:",
-                      errorWithoutCountry,
-                    );
-                  } else if (dataWithoutCountry) {
-                    allStateResults.push(...dataWithoutCountry);
-                  }
-                } else {
-                  // Sem filtro de país
-                  const queryAll = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${normalizedState}%`)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data, error } = await queryAll;
-                  if (error) {
-                    console.error(
-                      "❌ Erro na query estado nome completo sem filtro de país:",
-                      error,
-                    );
-                  } else if (data) {
-                    allStateResults.push(...data);
-                  }
-                }
-
-                console.log(
-                  `✅ Query estado por nome completo (${normalizedState}): total agora ${allStateResults.length} posts`,
-                );
-              }
-
-              // Query 3: Se o filtro original é nome completo diferente do normalizado, buscar também
-              if (
-                locationFilter.state.length > 2 &&
-                locationFilter.state !== normalizedState
-              ) {
-                if (countryCode) {
-                  // Query com país específico
-                  const queryWithCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${locationFilter.state}%`)
-                    .eq("location_country", countryCode)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data: dataWithCountry, error: errorWithCountry } =
-                    await queryWithCountry;
-                  if (errorWithCountry) {
-                    console.error(
-                      "❌ Erro na query estado nome original com país:",
-                      errorWithCountry,
-                    );
-                  } else if (dataWithCountry) {
-                    allStateResults.push(...dataWithCountry);
-                  }
-
-                  // Query sem país
-                  const queryWithoutCountry = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${locationFilter.state}%`)
-                    .is("location_country", null)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const {
-                    data: dataWithoutCountry,
-                    error: errorWithoutCountry,
-                  } = await queryWithoutCountry;
-                  if (errorWithoutCountry) {
-                    console.error(
-                      "❌ Erro na query estado nome original sem país:",
-                      errorWithoutCountry,
-                    );
-                  } else if (dataWithoutCountry) {
-                    allStateResults.push(...dataWithoutCountry);
-                  }
-                } else {
-                  // Sem filtro de país
-                  const queryAll = supabase
-                    .from("feed_posts")
-                    .select(selectFields)
-                    .eq("is_active", true)
-                    .eq("is_public", true)
-                    .ilike("location_state", `%${locationFilter.state}%`)
-                    .order("created_at", { ascending: false })
-                    .limit(ITEMS_PER_PAGE * 10);
-
-                  const { data, error } = await queryAll;
-                  if (error) {
-                    console.error(
-                      "❌ Erro na query estado nome original sem filtro de país:",
-                      error,
-                    );
-                  } else if (data) {
-                    allStateResults.push(...data);
-                  }
-                }
-
-                console.log(
-                  `✅ Query estado por nome original (${locationFilter.state}): total agora ${allStateResults.length} posts`,
-                );
-              }
-
-              // Remover duplicatas
-              const uniqueStatePosts = allStateResults.filter(
-                (post, index, self) =>
-                  index === self.findIndex((p) => p.id === post.id),
-              );
-
-              // Usar os resultados das queries separadas
-              postsFromLocationFilter = uniqueStatePosts;
-              console.log(
-                `📊 Posts do filtro estado: ${uniqueStatePosts.length} únicos encontrados`,
-              );
-            }
-            break;
-          case "country":
-            if (locationFilter.country) {
-              console.log("🌎 Filtro país:", locationFilter.country);
-              // Mapear nome do país para código (BR, US, etc)
-              let countryCode = locationFilter.country;
-              if (
-                locationFilter.country === "Brasil" ||
-                locationFilter.country === "Brazil"
-              ) {
-                countryCode = "BR";
-              } else if (
-                locationFilter.country === "United States" ||
-                locationFilter.country === "Estados Unidos"
-              ) {
-                countryCode = "US";
-              }
-              // Filtrar posts por país
-              // Usar filtro mais flexível: país específico OU NULL (posts antigos)
+        if (loc.state) {
+          try {
+            const stateData = await normalizeStateForQuery(loc.state);
+            if (stateData) {
               postsQuery = postsQuery.or(
-                `location_country.eq.${countryCode},location_country.is.null`,
+                `location_state.eq.${stateData.sigla},location_state.ilike.%${stateData.nome}%`,
               );
-            }
-            break;
-          case "custom":
-            if (locationFilter.city && locationFilter.state) {
-              console.log("🎯 Aplicando filtro custom:", {
-                city: locationFilter.city,
-                state: locationFilter.state,
-                country: locationFilter.country,
-              });
-
-              // Mapear país para código
-              let countryCode = locationFilter.country;
-              if (
-                locationFilter.country === "Brasil" ||
-                locationFilter.country === "Brazil"
-              ) {
-                countryCode = "BR";
-              } else if (
-                locationFilter.country === "United States" ||
-                locationFilter.country === "Estados Unidos"
-              ) {
-                countryCode = "US";
-              }
-
-              // Normalizar estado para nome completo (evitar conflito sigla/nome)
-              const normalizedState = await normalizeStateForQuery(
-                locationFilter.state,
-              );
-
-              // Buscar posts por cidade e estado (aceita sigla e nome completo)
-              // IMPORTANTE: location_state pode estar salvo como sigla ("RS") ou nome completo ("Rio Grande do Sul")
-              if (normalizedState && normalizedState !== locationFilter.state) {
-                // Se temos nome normalizado diferente da sigla, buscar por ambos
-                postsQuery = postsQuery
-                  .ilike("location_city", `%${locationFilter.city}%`)
-                  .or(
-                    `location_state.eq.${locationFilter.state},location_state.ilike.%${normalizedState}%`,
-                  );
-              } else {
-                // Se não temos nome normalizado ou é o mesmo, buscar por igualdade e ilike
-                postsQuery = postsQuery
-                  .ilike("location_city", `%${locationFilter.city}%`)
-                  .or(
-                    `location_state.eq.${locationFilter.state},location_state.ilike.%${locationFilter.state}%`,
-                  );
-              }
-
-              // Filtrar por país ou NULL (posts antigos)
-              if (countryCode) {
-                postsQuery = postsQuery.or(
-                  `location_country.eq.${countryCode},location_country.is.null`,
-                );
-              }
-            } else if (locationFilter.state && !locationFilter.city) {
-              // Se apenas estado foi selecionado (sem cidade)
-              console.log(
-                "🏙️ Filtro custom: apenas estado:",
-                locationFilter.state,
-                "país:",
-                locationFilter.country,
-              );
-
-              // Mapear país para código
-              let countryCode = locationFilter.country;
-              if (
-                locationFilter.country === "Brasil" ||
-                locationFilter.country === "Brazil"
-              ) {
-                countryCode = "BR";
-              } else if (
-                locationFilter.country === "United States" ||
-                locationFilter.country === "Estados Unidos"
-              ) {
-                countryCode = "US";
-              }
-
-              // Normalizar estado para nome completo (evitar conflito sigla/nome)
-              const normalizedState = await normalizeStateForQuery(
-                locationFilter.state,
-              );
-
-              // Buscar por estado normalizado OU estado original (aceita sigla e nome)
-              if (normalizedState && normalizedState !== locationFilter.state) {
-                // Se temos nome normalizado diferente da sigla, buscar por ambos
-                postsQuery = postsQuery.or(
-                  `location_state.eq.${locationFilter.state},location_state.ilike.%${normalizedState}%`,
-                );
-              } else {
-                // Se não temos nome normalizado ou é o mesmo, buscar por igualdade e ilike
-                postsQuery = postsQuery.or(
-                  `location_state.eq.${locationFilter.state},location_state.ilike.%${locationFilter.state}%`,
-                );
-              }
-
-              // Filtrar por país também (ou NULL para posts antigos)
-              if (countryCode) {
-                postsQuery = postsQuery.or(
-                  `location_country.eq.${countryCode},location_country.is.null`,
-                );
-              }
             } else {
-              console.log("⚠️ Filtro custom sem dados completos:", {
-                city: locationFilter.city,
-                state: locationFilter.state,
-                country: locationFilter.country,
-              });
+              postsQuery = postsQuery.ilike("location_state", `%${loc.state}%`);
             }
-            break;
-          case "all":
-            console.log(
-              "🌍 Filtro: Todos os locais - não aplicando filtro de localização",
-            );
-            // Não aplicar filtro de localização - postsQuery já está sem filtros de localização
-            // Garantir que postsFromLocationFilter seja null para usar a query normal
-            postsFromLocationFilter = null;
-            break;
-        }
-      }
-
-      // Se temos posts do filtro local separado, usar eles; senão, fazer query normal
-      let posts: any[];
-      let postsError: any = null;
-
-      if (postsFromLocationFilter) {
-        console.log(
-          `📊 Posts do filtro local: ${postsFromLocationFilter.length} encontrados`,
-        );
-
-        // Aplicar filtro de busca nos posts já filtrados por localização
-        if (filters.search && filters.search.trim()) {
-          const searchTerm = filters.search.trim().toLowerCase();
-          const beforeSearch = postsFromLocationFilter.length;
-          postsFromLocationFilter = postsFromLocationFilter.filter((post) => {
-            const title = (post.title || "").toLowerCase();
-            const description = (post.description || "").toLowerCase();
-            return (
-              title.includes(searchTerm) || description.includes(searchTerm)
-            );
-          });
-          console.log(
-            `🔍 Após filtro de busca: ${beforeSearch} → ${postsFromLocationFilter.length} posts`,
-          );
-        }
-
-        // Ordenar e paginar
-        posts = postsFromLocationFilter
-          .sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime(),
-          )
-          .slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
-
-        console.log(
-          `📄 Após paginação (página ${page}): ${posts.length} posts`,
-        );
-      } else {
-        // Query normal (sem filtro de localização ou tipo 'all')
-        if (filters.location_filter?.type === "all") {
-          console.log(
-            '🌍 Executando query normal para "Todos os Locais" - sem filtros de localização',
-          );
-          console.log("🔍 Query base:", {
-            table: "feed_posts",
-            filters: {
-              is_active: true,
-              is_public: true,
-            },
-            search: filters.search || "nenhuma",
-            page: page,
-            limit: ITEMS_PER_PAGE,
-          });
-        }
-
-        // Executar a query
-        const result = await postsQuery;
-        posts = result.data || [];
-        postsError = result.error;
-
-        if (filters.location_filter?.type === "all") {
-          console.log(
-            `✅ Query "Todos os Locais" retornou ${posts.length} posts`,
-          );
-          if (posts.length === 0) {
-            console.warn(
-              "⚠️ Query retornou 0 posts - verificando se há posts no banco...",
-            );
-            // Fazer uma query de teste para verificar se há posts
-            const testQuery = await supabase
-              .from("feed_posts")
-              .select("id", { count: "exact" })
-              .eq("is_active", true)
-              .eq("is_public", true)
-              .limit(1);
-            console.log("🔍 Teste de posts no banco:", {
-              count: testQuery.count,
-              error: testQuery.error,
-            });
+          } catch (e) {
+            postsQuery = postsQuery.ilike("location_state", `%${loc.state}%`);
           }
         }
+
+        if (loc.city) {
+          postsQuery = postsQuery.ilike("location_city", `%${loc.city}%`);
+        }
       }
 
-      if (postsError) {
-        console.error("❌ Erro ao buscar posts:", postsError);
-        throw postsError;
-      }
-
-      // Se há busca ativa, fazer uma busca adicional por nome de usuário nos posts
-      let relatedPosts: any[] = [];
       if (filters.search && filters.search.trim()) {
-        const searchTerm = filters.search.trim().toLowerCase();
+        const searchTerm = filters.search.trim();
 
-        try {
-          // Buscar posts onde o nome do usuário aparece nos metadados ou dados relacionados
-          const { data: relatedData, error: relatedError } = await supabase
-            .from("feed_posts")
-            .select(
-              `
-              id,
-              professional_id,
-              user_id,
-              title,
-              description,
-              images,
-              service_category_id,
-              location_state,
-              location_city,
-              likes_count,
-              comments_count,
-              created_at,
-              updated_at,
-              metadata,
-              professional:profiles!feed_posts_professional_id_fkey(
-                id,
-                full_name,
-                avatar_url,
-                user_type,
-                is_available
-              ),
-              user:profiles!feed_posts_user_id_fkey(
-                id,
-                full_name,
-                avatar_url,
-                user_type,
-                is_available
-              )
-            `,
-            )
-            .or(
-              `
-              professional.full_name.ilike.%${searchTerm}%,
-              user.full_name.ilike.%${searchTerm}%
-            `.replace(/\s+/g, ""),
-            )
-            .order("is_featured", { ascending: false })
-            .order("created_at", { ascending: false })
-            .limit(10);
+        if (searchTerm.startsWith("user:")) {
+          const username = searchTerm.replace("user:", "").trim();
+          const { data: matchingProfiles } = await supabase
+            .from("profiles")
+            .select("id")
+            .ilike("full_name", `%${username}%`);
+          const matchingUserIds = matchingProfiles?.map((p) => p.id) || [];
+          const validUserIds = validateUUIDs(matchingUserIds);
 
-          if (!relatedError && relatedData) {
-            relatedPosts = relatedData;
-            console.log(
-              "✅ Posts relacionados encontrados:",
-              relatedPosts.length,
+          if (validUserIds.length > 0) {
+            postsQuery = postsQuery.or(
+              `user_id.in.(${validUserIds.join(",")}),professional_id.in.(${validUserIds.join(",")})`,
+            );
+          } else {
+            postsQuery = postsQuery.eq(
+              "id",
+              "00000000-0000-0000-0000-000000000000",
             );
           }
-        } catch (error) {
-          console.warn("⚠️ Erro ao buscar posts relacionados:", error);
+        } else if (!searchTerm.startsWith("id:")) {
+          const keywords = searchTerm;
+          const columns = [
+            "title",
+            "description",
+            "metadata->>category",
+            "metadata->>service_type",
+            "metadata->>tags",
+            "metadata->>service_description",
+            "metadata->>user",
+          ];
+          const orConditions = columns
+            .map((col) => `${col}.ilike.%${keywords}%`)
+            .join(",");
+          postsQuery = postsQuery.or(orConditions);
         }
       }
+
+      // --- EXECUTE QUERY (Override legacy execution) ---
+      postsQuery = postsQuery
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
+      const unifiedResult = await postsQuery;
+      let unifiedPosts = unifiedResult.data || [];
+      let unifiedError = unifiedResult.error;
+
+      // Use these results and SKIP legacy logic by setting a flag or early exit if possible.
+      // But we can't early return inside hook easily.
+      // So we will overwrite 'posts' later *if* we can.
+      // Or better: We rename legacy variables or wrap legacy logic in `if(false)` in next step.
+
+      // --- END UNIFIED LOGIC ---
+
+      // Bypass Legacy Logic
+      // Legacy logic removed by refactor
+
+      // Map unified results to 'posts' variable expected by downstream code
+      let posts = unifiedPosts;
+      let postsError = unifiedError;
+
+      // We don't use relatedPosts anymore in strict mode
+      let relatedPosts: any[] = [];
 
       // Buscar atividades do sistema
       let activitiesQuery = supabase
@@ -1165,18 +290,18 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         .select(
           `
           id,
-          user_id,
-          activity_type,
-          description,
-          metadata,
-          created_at,
-          user:profiles!user_activity_log_user_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type
-          )
-        `,
+                user_id,
+                activity_type,
+                description,
+                metadata,
+                created_at,
+                user: profiles!user_activity_log_user_id_fkey(
+                  id,
+                  full_name,
+                  avatar_url,
+                  user_type
+                )
+                `,
         )
         .in("activity_type", [
           "user_joined",
@@ -1193,16 +318,19 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         const searchTerm = filters.search.trim().toLowerCase();
         console.log("🔍 Aplicando filtro de busca nas atividades:", searchTerm);
 
-        activitiesQuery = activitiesQuery.or(
-          `
-          description.ilike.%${searchTerm}%,
-          metadata->>category.ilike.%${searchTerm}%,
-          metadata->>service_description.ilike.%${searchTerm}%,
-          metadata->>target_user_name.ilike.%${searchTerm}%,
-          metadata->>user.ilike.%${searchTerm}%,
-          metadata->>service_type.ilike.%${searchTerm}%
-        `.replace(/\s+/g, ""),
-        );
+        const columns = [
+          "description",
+          "metadata->>category",
+          "metadata->>service_description",
+          "metadata->>target_user_name",
+          "metadata->>user",
+          "metadata->>service_type",
+        ];
+
+        const orConditions = columns
+          .map((col) => `${col}.ilike.%${searchTerm}%`)
+          .join(",");
+        activitiesQuery = activitiesQuery.or(orConditions);
       }
 
       const { data: activities, error: activitiesError } =
@@ -1803,7 +931,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
             );
 
             // Usar API de admin para deletar
-            const response = await fetch(`/api/admin/posts/${postId}`, {
+            const response = await fetch(`/ api / admin / posts / ${postId}`, {
               method: "DELETE",
             });
 
@@ -1847,7 +975,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           .from("feed_posts")
           .delete()
           .eq("id", postId)
-          .or(`user_id.eq.${user.id},professional_id.eq.${user.id}`); // Verificar ambos os campos
+          .or(`user_id.eq.${user.id}, professional_id.eq.${user.id}`); // Verificar ambos os campos
 
         if (error) {
           console.error("❌ Erro ao deletar post do banco:", error);
@@ -2019,7 +1147,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
         if (balanceData.balance < newPost.pointsToSpend) {
           throw new Error(
-            `Saldo insuficiente para criar post premium. Necessário: ${newPost.pointsToSpend} pontos`,
+            `Saldo insuficiente para criar post premium.Necessário: ${newPost.pointsToSpend} pontos`,
           );
         }
 
@@ -2106,7 +1234,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           p_user_id: newPost.user_id,
           p_points: -newPost.pointsToSpend,
           p_source: "premium_post",
-          p_description: `Criou post premium (${newPost.durationDays} dia${newPost.durationDays > 1 ? "s" : ""} - ${newPost.pointsToSpend} pontos)`,
+          p_description: `Criou post premium(${newPost.durationDays} dia${newPost.durationDays > 1 ? "s" : ""} - ${newPost.pointsToSpend} pontos)`,
           p_metadata: {
             post_id: data.id,
             duration_days: newPost.durationDays,
@@ -2287,7 +1415,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
 
         if (balanceData.balance < pointsToSpend) {
           throw new Error(
-            `Saldo insuficiente para renovar post premium. Necessário: ${pointsToSpend} pontos`,
+            `Saldo insuficiente para renovar post premium.Necessário: ${pointsToSpend} pontos`,
           );
         }
 
@@ -2334,7 +1462,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           p_user_id: currentPost.user_id,
           p_points: -pointsToSpend,
           p_source: "premium_post_renewal",
-          p_description: `Renovou post premium (${durationDays} dia${durationDays > 1 ? "s" : ""} - ${pointsToSpend} pontos)`,
+          p_description: `Renovou post premium(${durationDays} dia${durationDays > 1 ? "s" : ""} - ${pointsToSpend} pontos)`,
           p_metadata: {
             post_id: postId,
             duration_days: durationDays,
@@ -2357,21 +1485,21 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           .from("feed_posts")
           .select(
             `
-          *,
-          professional:profiles!feed_posts_professional_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type,
-            is_available
-          ),
-          user:profiles!feed_posts_user_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type,
-            is_available
-          )
+    *,
+    professional: profiles!feed_posts_professional_id_fkey(
+      id,
+      full_name,
+      avatar_url,
+      user_type,
+      is_available
+    ),
+      user: profiles!feed_posts_user_id_fkey(
+        id,
+        full_name,
+        avatar_url,
+        user_type,
+        is_available
+      )
         `,
           )
           .eq("id", postId)
@@ -2517,7 +1645,7 @@ function getActivityTitle(
     case "user_joined":
       return `${userName} entrou para o ConfiLar`;
     case "recommendation":
-      return `${userName} recomendou ${metadata.target_user_name || "alguém"}`;
+      return `${userName} recomendou ${metadata.target_user_name || "alguém"} `;
     case "review":
       return `${userName} avaliou ${metadata.target_user_name || "alguém"} com ${metadata.rating || 5} estrelas`;
     case "agreement":
@@ -2534,13 +1662,13 @@ function getActivityDescription(activityType: string, metadata: any): string {
     case "user_joined":
       return "Bem-vindo(a) à nossa comunidade!";
     case "recommendation":
-      return `Recomendação para ${metadata.service_description || "serviço"}`;
+      return `Recomendação para ${metadata.service_description || "serviço"} `;
     case "review":
-      return `Avaliação: ${metadata.service_description || "serviço realizado"}`;
+      return `Avaliação: ${metadata.service_description || "serviço realizado"} `;
     case "agreement":
-      return `Acordo para: ${metadata.service_description || "serviço"}`;
+      return `Acordo para: ${metadata.service_description || "serviço"} `;
     case "classified_posted":
-      return `Categoria: ${metadata.category || "geral"}`;
+      return `Categoria: ${metadata.category || "geral"} `;
     default:
       return "Nova atividade na comunidade";
   }

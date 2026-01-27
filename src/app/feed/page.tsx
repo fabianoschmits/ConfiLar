@@ -30,7 +30,6 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { NewPostForm } from "@/components/timeline/NewPostForm";
 import { PremiumPostForm } from "@/components/timeline/PremiumPostForm";
 import { Modal } from "@/components/ui/modal";
-import { useLocationFilters } from "@/hooks/useLocationFilters";
 import { InstagramPostSkeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +54,8 @@ import { detectYouTubeUrls, removeYouTubeUrls } from "@/utils/youtube";
 import { PremiumTimeRemaining } from "@/components/timeline/PremiumTimeRemaining";
 import { MentionText } from "@/components/ui/MentionText";
 import { MentionInput } from "@/components/ui/MentionInput";
-import { FeedSettingsModal } from "@/components/timeline/FeedSettingsModal";
+import { FeedSearchHeader } from "@/components/feed/FeedSearchHeader";
+import { useFeedSearch } from "@/hooks/useFeedSearch";
 import { supabase } from "@/lib/supabase";
 import { LocationFilter } from "@/hooks/useLocationFilters";
 import { usePremiumNotifications } from "@/hooks/usePremiumNotifications";
@@ -81,62 +81,33 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<"all" | "posts" | "notifications">(
     "posts",
   );
+
+  // New Search Hook
+  const { searchQuery, locationFilter, setSearchQuery, setLocationFilter } =
+    useFeedSearch();
+
   const [showNewPost, setShowNewPost] = useState(false);
   const [showPremiumPost, setShowPremiumPost] = useState(false);
-  const [showFeedSettings, setShowFeedSettings] = useState(false);
-  const [search, setSearch] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [postStatus, setPostStatus] = useState<"idle" | "sending" | "sent">(
     "idle",
   );
-  const feedSettingsRef = useRef<HTMLDivElement>(null);
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [showStoryViewer, setShowStoryViewer] = useState(false);
   const [selectedStoryGroupIndex, setSelectedStoryGroupIndex] = useState(0);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
 
-  const { currentFilter, setFilter } = useLocationFilters();
+  // State for toggling search visibility
+  const [showSearch, setShowSearch] = useState(false);
+
   const {
     storyGroups,
     isLoading: storiesLoading,
     refetch: refetchStories,
   } = useStories();
 
-  // Fechar dropdown quando clicar fora (mas não quando clicar dentro do modal)
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      // Verificar se o clique foi fora do modal e do botão que abre o modal
-      if (
-        feedSettingsRef.current &&
-        !feedSettingsRef.current.contains(target) &&
-        !(
-          target instanceof Element &&
-          target.closest("[data-feed-settings-modal]")
-        )
-      ) {
-        setShowFeedSettings(false);
-      }
-    };
-
-    if (showFeedSettings) {
-      // Usar um pequeno delay para evitar fechar imediatamente ao abrir
-      setTimeout(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-      }, 100);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showFeedSettings]);
-
   // Atalhos de teclado para navegação
   useNavigationShortcuts();
-
-  // NÃO carregar preferências de pesquisa salvas
-  // A pesquisa (keywords, username, userid) é apenas temporária
-  // Se o usuário atualizar a página, a pesquisa volta vazia
 
   const {
     items,
@@ -152,7 +123,10 @@ export default function FeedPage() {
     editPost,
     deletePost,
     refetch,
-  } = useUnifiedTimeline({ search, location_filter: currentFilter });
+  } = useUnifiedTimeline({
+    search: searchQuery,
+    location_filter: locationFilter,
+  });
 
   const [editingPost, setEditingPost] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -324,118 +298,62 @@ export default function FeedPage() {
       )}
 
       <div className="min-h-screen bg-white dark:bg-black">
-        {/* HEADER FIXO */}
+        {/* HEADER FIXO NOVO */}
         <header className="sticky top-0 z-30 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900">
-          <div className="max-w-2xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
+          <div className="max-w-2xl mx-auto">
+            {/* Top Bar with Logo and Actions */}
+            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-black">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 ConfiLar
               </h1>
               <div className="flex items-center gap-2">
                 <button
-                  id="create-post-button"
                   onClick={() => setShowNewPost(true)}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
                   title={t("createPost")}
                 >
-                  <Plus className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  <Plus className="h-5 w-5 text-gray-900 dark:text-white" />
                 </button>
-                <div className="relative" ref={feedSettingsRef}>
-                  <button
-                    onClick={() => setShowFeedSettings(!showFeedSettings)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                    title={t("title")}
-                  >
-                    <Search className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-                  </button>
-
-                  {/* Dropdown de Configurações */}
-                  {showFeedSettings && (
-                    <FeedSettingsModal
-                      isOpen={showFeedSettings}
-                      onClose={() => setShowFeedSettings(false)}
-                      currentSearch={search}
-                      currentLocationFilter={currentFilter}
-                      onSearchChange={(newSearch) => {
-                        setSearch(newSearch);
-                      }}
-                      onLocationFilterChange={(newFilter) => {
-                        setFilter(newFilter);
-                      }}
-                      onReset={async () => {
-                        // Resetar para estado original (estado do usuário)
-                        const resetFilter: LocationFilter = {
-                          type: "state",
-                          city: profile?.location_city || "",
-                          state: profile?.location_state || "",
-                          country: "Brasil",
-                        };
-
-                        // Normalizar estado se for sigla
-                        if (
-                          resetFilter.state &&
-                          resetFilter.state.length === 2
-                        ) {
-                          try {
-                            const { getEstadoBySigla } =
-                              await import("@/lib/ibge");
-                            const estado = await getEstadoBySigla(
-                              resetFilter.state,
-                            );
-                            if (estado) {
-                              resetFilter.state = estado.nome;
-                            }
-                          } catch (error) {
-                            console.error(
-                              "Erro ao normalizar estado no reset:",
-                              error,
-                            );
-                          }
-                        }
-
-                        setSearch("");
-                        setFilter(resetFilter);
-
-                        // Salvar APENAS localização resetada no perfil
-                        // NÃO salvar pesquisa (keywords, username, userid)
-                        if (profile?.id) {
-                          try {
-                            await supabase
-                              .from("profiles")
-                              .update({
-                                feed_location_filter_type: "state",
-                                feed_location_filter_city:
-                                  resetFilter.city || null,
-                                feed_location_filter_state:
-                                  resetFilter.state || null,
-                                updated_at: new Date().toISOString(),
-                              })
-                              .eq("id", profile.id);
-                          } catch (error) {
-                            console.error("Erro ao salvar reset:", error);
-                          }
-                        }
-                      }}
-                    />
-                  )}
-                </div>
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className={`p-2 rounded-full transition-colors ${
+                    showSearch || searchQuery
+                      ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-900 dark:text-white"
+                  }`}
+                  title={t("title")} // Using translation key for search/title
+                >
+                  <Search className="h-5 w-5" />
+                </button>
                 <button
                   onClick={() => openChat()}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors"
-                  title="Abrir chat"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-full transition-colors relative"
                 >
-                  <MessageCircle className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  <MessageCircle className="h-5 w-5 text-gray-900 dark:text-white" />
+                  {/* Chat badge placeholder if needed */}
                 </button>
               </div>
             </div>
 
-            {/* ABAS */}
-            <div className="flex gap-6">
+            {/* Search & Filter Component - INTEGRATED */}
+            {(showSearch || searchQuery) && (
+              <div className="animate-in slide-in-from-top-2 fade-in duration-300 border-b border-gray-100 dark:border-gray-900">
+                <FeedSearchHeader
+                  currentSearch={searchQuery}
+                  currentFilter={locationFilter}
+                  onSearch={setSearchQuery}
+                  onFilterChange={setLocationFilter}
+                />
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="flex px-4 pt-1">
               {(["all", "posts", "notifications"] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
+                  className={`mr-6 pb-2 border-b-2 transition-all font-medium text-sm capitalize ${
                     activeTab === tab
                       ? "border-primary-600 text-primary-600 dark:text-primary-400"
                       : "border-transparent text-gray-500 dark:text-gray-400"
@@ -594,11 +512,11 @@ export default function FeedPage() {
                 Nenhum post encontrado
               </h3>
               <p className="text-gray-500 dark:text-gray-400 text-center mb-4">
-                {search || currentFilter.type !== "all"
+                {searchQuery || locationFilter.type !== "all"
                   ? "Não encontramos posts com os filtros selecionados."
                   : "Seja o primeiro a compartilhar algo!"}
               </p>
-              {(search || currentFilter.type !== "all") && (
+              {(searchQuery || locationFilter.type !== "all") && (
                 <div className="mt-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800 max-w-md">
                   <p className="text-sm text-primary-900 dark:text-primary-200 font-medium mb-2">
                     💡 Dicas para encontrar mais posts:
