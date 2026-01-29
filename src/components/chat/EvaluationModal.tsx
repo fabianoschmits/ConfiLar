@@ -4,15 +4,10 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Star, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 
 interface EvaluationModalProps {
   isOpen: boolean;
@@ -222,95 +217,88 @@ export function EvaluationModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-            <Star className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
-            {isMutual
-              ? `Avaliar ${targetUserName} (Avaliação Mútua)`
-              : `Avaliar ${targetUserName}`}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          {/* Rating */}
-          <div>
-            <Label
-              htmlFor="rating"
-              className="text-gray-700 dark:text-gray-300"
-            >
-              Avaliação (1-5 estrelas)
-            </Label>
-            <div className="flex items-center space-x-2 mt-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  className={`p-1 rounded-full transition-colors ${
-                    star <= rating
-                      ? "text-yellow-400 hover:text-yellow-500 dark:text-yellow-400 dark:hover:text-yellow-300"
-                      : "text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500"
-                  }`}
-                  disabled={isSubmitting}
-                >
-                  <Star className="h-6 w-6 fill-current" />
-                </button>
-              ))}
-              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                {rating} de 5 estrelas
-              </span>
-            </div>
-          </div>
-
-          {/* Comment */}
-          <div>
-            <Label
-              htmlFor="comment"
-              className="text-gray-700 dark:text-gray-300"
-            >
-              Comentário (opcional)
-            </Label>
-            <Textarea
-              id="comment"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Deixe um comentário sobre sua experiência..."
-              rows={4}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="min-w-[120px]"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Star className="h-4 w-4 mr-2" />
-                  Enviar Avaliação
-                </>
-              )}
-            </Button>
+    <ResponsiveModal
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+      title={
+        isMutual
+          ? `Avaliar ${targetUserName} (Avaliação Mútua)`
+          : `Avaliar ${targetUserName}`
+      }
+      className="max-sm:max-h-[85vh]"
+      footer={
+        <>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="flex-1 min-w-[120px]"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              <>
+                <Star className="h-4 w-4 mr-2" />
+                Avaliar
+              </>
+            )}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4 pb-4">
+        {/* Rating */}
+        <div>
+          <Label htmlFor="rating" className="text-gray-700 dark:text-gray-300">
+            Avaliação (1-5 estrelas)
+          </Label>
+          <div className="flex items-center space-x-2 mt-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                className={`p-1 rounded-full transition-colors ${
+                  star <= rating
+                    ? "text-yellow-400 hover:text-yellow-500 dark:text-yellow-400 dark:hover:text-yellow-300"
+                    : "text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500"
+                }`}
+                disabled={isSubmitting}
+              >
+                <Star className="h-6 w-6 fill-current" />
+              </button>
+            ))}
+            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+              {rating} de 5 estrelas
+            </span>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        {/* Comment */}
+        <div>
+          <Label htmlFor="comment" className="text-gray-700 dark:text-gray-300">
+            Comentário (opcional)
+          </Label>
+          <Textarea
+            id="comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Deixe um comentário sobre sua experiência..."
+            rows={4}
+            disabled={isSubmitting}
+          />
+        </div>
+      </div>
+    </ResponsiveModal>
   );
 }

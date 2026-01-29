@@ -4,14 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -175,81 +168,144 @@ export function PortfolioDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {projectToEdit ? "Editar Projeto" : "Novo Projeto"}
-          </DialogTitle>
-          <DialogDescription>
-            {projectToEdit
-              ? "Faça alterações no seu projeto do portfólio."
-              : "Adicione um novo trabalho ao seu portfólio."}
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Upload de Imagem */}
-            <div className="space-y-2">
-              <FormLabel>Imagem do Projeto</FormLabel>
-              <div className="flex items-center justify-center w-full">
-                {imagePreview ? (
-                  <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 group">
-                    <Image
-                      src={imagePreview}
-                      alt="Preview"
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="rounded-full"
-                        onClick={() => {
-                          setImagePreview(null);
-                          setSelectedImage(null);
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+    <ResponsiveModal
+      isOpen={open}
+      onOpenChange={onOpenChange}
+      title={projectToEdit ? "Editar Projeto" : "Novo Projeto"}
+      description={
+        projectToEdit
+          ? "Faça alterações no seu projeto do portfólio."
+          : "Adicione um novo trabalho ao seu portfólio."
+      }
+      className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 w-full gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <LoadingButton
+            type="submit"
+            form="portfolio-form"
+            isLoading={isSubmitting}
+            loadingText={projectToEdit ? "Salvando..." : "Criando..."}
+          >
+            {projectToEdit ? "Salvar Alterações" : "Criar Projeto"}
+          </LoadingButton>
+        </div>
+      }
+    >
+      <Form {...form}>
+        <form
+          id="portfolio-form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          {/* Upload de Imagem */}
+          <div className="space-y-2">
+            <FormLabel>Imagem do Projeto</FormLabel>
+            <div className="flex items-center justify-center w-full">
+              {imagePreview ? (
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 group">
+                  <Image
+                    src={imagePreview}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="rounded-full"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setSelectedImage(null);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImagePlus className="w-10 h-10 mb-3 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">
-                          Clique para enviar
-                        </span>
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG ou WEBP (Max. 5MB)
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                    />
-                  </label>
-                )}
-              </div>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <ImagePlus className="w-10 h-10 mb-3 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Clique para enviar</span>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG ou WEBP (Max. 5MB)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                  />
+                </label>
+              )}
             </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Título</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Reforma Cozinha Moderna" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
-              name="title"
+              name="tags_string"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Título</FormLabel>
+                  <FormLabel>Tags (separadas por vírgula)</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ex: Reforma Cozinha Moderna"
+                      placeholder="Ex: moderno, madeira, luxo"
                       {...field}
                     />
                   </FormControl>
@@ -257,92 +313,27 @@ export function PortfolioDialog({
                 </FormItem>
               )}
             />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Categoria</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione uma categoria" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tags_string"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tags (separadas por vírgula)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ex: moderno, madeira, luxo"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Descreva os detalhes do projeto..."
-                      className="resize-none h-24"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <LoadingButton
-                type="submit"
-                isLoading={isSubmitting}
-                loadingText={projectToEdit ? "Salvando..." : "Criando..."}
-              >
-                {projectToEdit ? "Salvar Alterações" : "Criar Projeto"}
-              </LoadingButton>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Descrição</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Descreva os detalhes do projeto..."
+                    className="resize-none h-24"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </ResponsiveModal>
   );
 }

@@ -1,185 +1,214 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import { SimpleTable } from '@/components/admin/shared/SimpleTable'
-import { SearchBar } from '@/components/admin/shared/SearchBar'
-import { PageHeader } from '@/components/admin/shared/PageHeader'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import Link from 'next/link'
-import { toast } from 'sonner'
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { SimpleTable } from "@/components/admin/shared/SimpleTable";
+import { SearchBar } from "@/components/admin/shared/SearchBar";
+import { PageHeader } from "@/components/admin/shared/PageHeader";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
+import { toast } from "sonner";
 
 interface Ban {
-  id: string
-  user_id: string
-  reason: string
-  ban_type: string
-  duration_days?: number
-  is_active: boolean
-  created_at: string
-  expires_at?: string
+  id: string;
+  user_id: string;
+  reason: string;
+  ban_type: string;
+  duration_days?: number;
+  is_active: boolean;
+  created_at: string;
+  expires_at?: string;
   profiles: {
-    full_name: string
-    email: string
-  }
+    full_name: string;
+    email: string;
+  };
 }
 
 export default function AdminBansPage() {
-  const [bans, setBans] = useState<Ban[]>([])
-  const [loading, setLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [showBanModal, setShowBanModal] = useState(false)
+  const [bans, setBans] = useState<Ban[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({
-    user_id: '',
-    reason: '',
-    ban_type: 'temporary' as 'temporary' | 'permanent',
-    duration_days: 7
-  })
+    user_id: "",
+    reason: "",
+    ban_type: "temporary" as "temporary" | "permanent",
+    duration_days: 7,
+  });
 
   useEffect(() => {
-    fetchBans()
-  }, [statusFilter])
+    fetchBans();
+  }, [statusFilter]);
 
   const fetchBans = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       // Usar a tabela correta: user_bans
       let query = supabase
-        .from('user_bans')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("user_bans")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (statusFilter === 'active') {
-        query = query.eq('is_active', true)
-      } else if (statusFilter === 'inactive') {
-        query = query.eq('is_active', false)
+      if (statusFilter === "active") {
+        query = query.eq("is_active", true);
+      } else if (statusFilter === "inactive") {
+        query = query.eq("is_active", false);
       }
 
-      const { data: bansData, error } = await query
+      const { data: bansData, error } = await query;
 
       if (error) {
         // Se a tabela não existir ou houver erro de RLS, retornar array vazio
-        if (error.code === 'PGRST116' || error.code === 'PGRST205' || error.message.includes('relation') || error.message.includes('does not exist')) {
-          console.warn('Tabela user_bans não existe ou não há permissão para acessar')
-          setBans([])
-          return
+        if (
+          error.code === "PGRST116" ||
+          error.code === "PGRST205" ||
+          error.message.includes("relation") ||
+          error.message.includes("does not exist")
+        ) {
+          console.warn(
+            "Tabela user_bans não existe ou não há permissão para acessar",
+          );
+          setBans([]);
+          return;
         }
-        throw error
+        throw error;
       }
 
       // Buscar dados dos usuários separadamente
       const bansWithUsers = await Promise.all(
         (bansData || []).map(async (ban) => {
           const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', ban.user_id)
-            .single()
+            .from("profiles")
+            .select("full_name, email")
+            .eq("id", ban.user_id)
+            .single();
 
           return {
             ...ban,
-            profiles: profile || { full_name: 'Usuário não encontrado', email: '' }
-          }
-        })
-      )
+            profiles: profile || {
+              full_name: "Usuário não encontrado",
+              email: "",
+            },
+          };
+        }),
+      );
 
-      setBans(bansWithUsers)
+      setBans(bansWithUsers);
     } catch (error) {
-      console.error('Erro ao buscar banimentos:', error)
-      toast.error('Erro ao carregar banimentos')
+      console.error("Erro ao buscar banimentos:", error);
+      toast.error("Erro ao carregar banimentos");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const createBan = async () => {
     try {
-      const { error } = await supabase
-        .from('user_bans')
-        .insert({
-          user_id: banForm.user_id,
-          reason: banForm.reason,
-          ban_type: banForm.ban_type,
-          duration_days: banForm.ban_type === 'temporary' ? banForm.duration_days : null,
-          is_active: true
-        })
+      const { error } = await supabase.from("user_bans").insert({
+        user_id: banForm.user_id,
+        reason: banForm.reason,
+        ban_type: banForm.ban_type,
+        duration_days:
+          banForm.ban_type === "temporary" ? banForm.duration_days : null,
+        is_active: true,
+      });
 
-      if (error) throw error
-      toast.success('Usuário banido com sucesso')
-      setShowBanModal(false)
-      setBanForm({ user_id: '', reason: '', ban_type: 'temporary', duration_days: 7 })
-      fetchBans()
+      if (error) throw error;
+      toast.success("Usuário banido com sucesso");
+      setShowBanModal(false);
+      setBanForm({
+        user_id: "",
+        reason: "",
+        ban_type: "temporary",
+        duration_days: 7,
+      });
+      fetchBans();
     } catch (error) {
-      console.error('Erro ao banir usuário:', error)
-      toast.error('Erro ao banir usuário')
+      console.error("Erro ao banir usuário:", error);
+      toast.error("Erro ao banir usuário");
     }
-  }
+  };
 
   const unbanUser = async (banId: string) => {
     try {
       const { error } = await supabase
-        .from('user_bans')
+        .from("user_bans")
         .update({ is_active: false })
-        .eq('id', banId)
+        .eq("id", banId);
 
-      if (error) throw error
-      toast.success('Usuário desbanido')
-      fetchBans()
+      if (error) throw error;
+      toast.success("Usuário desbanido");
+      fetchBans();
     } catch (error) {
-      console.error('Erro ao desbanir usuário:', error)
-      toast.error('Erro ao desbanir usuário')
+      console.error("Erro ao desbanir usuário:", error);
+      toast.error("Erro ao desbanir usuário");
     }
-  }
+  };
 
   const columns = [
     {
-      key: 'user',
-      label: 'Usuário',
+      key: "user",
+      label: "Usuário",
       render: (ban: Ban) => (
         <div>
-          <div className="font-medium">{ban.profiles.full_name || ban.profiles.email}</div>
+          <div className="font-medium">
+            {ban.profiles.full_name || ban.profiles.email}
+          </div>
           <div className="text-xs text-gray-500">{ban.profiles.email}</div>
         </div>
-      )
+      ),
     },
     {
-      key: 'reason',
-      label: 'Motivo',
-      render: (ban: Ban) => <span className="truncate max-w-xs">{ban.reason}</span>
-    },
-    {
-      key: 'ban_type',
-      label: 'Tipo',
+      key: "reason",
+      label: "Motivo",
       render: (ban: Ban) => (
-        <Badge variant={ban.ban_type === 'permanent' ? 'destructive' : 'default'}>
-          {ban.ban_type === 'permanent' ? 'Permanente' : `Temporário (${ban.duration_days}d)`}
-        </Badge>
-      )
+        <span className="truncate max-w-xs">{ban.reason}</span>
+      ),
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "ban_type",
+      label: "Tipo",
       render: (ban: Ban) => (
-        <Badge variant={ban.is_active ? 'destructive' : 'outline'}>
-          {ban.is_active ? 'Ativo' : 'Inativo'}
+        <Badge
+          variant={ban.ban_type === "permanent" ? "destructive" : "default"}
+        >
+          {ban.ban_type === "permanent"
+            ? "Permanente"
+            : `Temporário (${ban.duration_days}d)`}
         </Badge>
-      )
+      ),
     },
     {
-      key: 'created_at',
-      label: 'Data',
-      render: (ban: Ban) => new Date(ban.created_at).toLocaleDateString('pt-BR')
+      key: "status",
+      label: "Status",
+      render: (ban: Ban) => (
+        <Badge variant={ban.is_active ? "destructive" : "outline"}>
+          {ban.is_active ? "Ativo" : "Inativo"}
+        </Badge>
+      ),
     },
     {
-      key: 'actions',
-      label: 'Ações',
+      key: "created_at",
+      label: "Data",
+      render: (ban: Ban) =>
+        new Date(ban.created_at).toLocaleDateString("pt-BR"),
+    },
+    {
+      key: "actions",
+      label: "Ações",
       render: (ban: Ban) => (
         <div className="flex gap-2">
           <Link
@@ -199,31 +228,32 @@ export default function AdminBansPage() {
             </Button>
           )}
         </div>
-      )
-    }
-  ]
+      ),
+    },
+  ];
 
   return (
     <div>
-      <PageHeader 
-        title="Banimentos" 
-        onRefresh={fetchBans} 
+      <PageHeader
+        title="Banimentos"
+        onRefresh={fetchBans}
         loading={loading}
         actions={
-          <Dialog open={showBanModal} onOpenChange={setShowBanModal}>
-            <DialogTrigger asChild>
-              <Button>Banir Usuário</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Banir Usuário</DialogTitle>
-              </DialogHeader>
+          <>
+            <Button onClick={() => setShowBanModal(true)}>Banir Usuário</Button>
+            <ResponsiveModal
+              isOpen={showBanModal}
+              onOpenChange={setShowBanModal}
+              title="Banir Usuário"
+            >
               <div className="space-y-4 py-4">
                 <div>
                   <Label>ID do Usuário</Label>
                   <Input
                     value={banForm.user_id}
-                    onChange={(e) => setBanForm({ ...banForm, user_id: e.target.value })}
+                    onChange={(e) =>
+                      setBanForm({ ...banForm, user_id: e.target.value })
+                    }
                     placeholder="UUID do usuário"
                   />
                 </div>
@@ -231,7 +261,9 @@ export default function AdminBansPage() {
                   <Label>Motivo</Label>
                   <Textarea
                     value={banForm.reason}
-                    onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })}
+                    onChange={(e) =>
+                      setBanForm({ ...banForm, reason: e.target.value })
+                    }
                     placeholder="Motivo do banimento"
                   />
                 </div>
@@ -239,7 +271,7 @@ export default function AdminBansPage() {
                   <Label>Tipo de Banimento</Label>
                   <Select
                     value={banForm.ban_type}
-                    onValueChange={(value: 'temporary' | 'permanent') => 
+                    onValueChange={(value: "temporary" | "permanent") =>
                       setBanForm({ ...banForm, ban_type: value })
                     }
                   >
@@ -252,13 +284,18 @@ export default function AdminBansPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                {banForm.ban_type === 'temporary' && (
+                {banForm.ban_type === "temporary" && (
                   <div>
                     <Label>Duração (dias)</Label>
                     <Input
                       type="number"
                       value={banForm.duration_days}
-                      onChange={(e) => setBanForm({ ...banForm, duration_days: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setBanForm({
+                          ...banForm,
+                          duration_days: parseInt(e.target.value),
+                        })
+                      }
                       min="1"
                     />
                   </div>
@@ -267,11 +304,11 @@ export default function AdminBansPage() {
                   Banir Usuário
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
+            </ResponsiveModal>
+          </>
         }
       />
-      
+
       <div className="flex gap-4 mb-4">
         <div className="flex-1">
           <SearchBar
@@ -300,6 +337,5 @@ export default function AdminBansPage() {
         emptyMessage="Nenhum banimento encontrado"
       />
     </div>
-  )
+  );
 }
-

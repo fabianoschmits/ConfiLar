@@ -37,13 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Label } from "@/components/ui/label";
 
 // Interfaces para tipagem
@@ -824,298 +818,287 @@ export function ReportsManagement() {
       </Card>
 
       {/* Modal de detalhes da denúncia */}
-      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Denúncia</DialogTitle>
-          </DialogHeader>
-
-          {selectedReport && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Tipo</Label>
-                  <p className="text-sm text-gray-600">
-                    {getTypeLabel(selectedReport.type)}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Badge className={getStatusColor(selectedReport.status)}>
-                    {selectedReport.status}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Prioridade</Label>
-                  <Badge className={getPriorityColor(selectedReport.priority)}>
-                    {selectedReport.priority}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Criado em</Label>
-                  <p className="text-sm text-gray-600">
-                    {new Date(selectedReport.created_at).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
+      <ResponsiveModal
+        isOpen={showReportModal}
+        onOpenChange={setShowReportModal}
+        title="Detalhes da Denúncia"
+        className="max-w-2xl"
+      >
+        {selectedReport && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium">Descrição</Label>
-                <p className="text-sm text-gray-600 mt-1">
-                  {selectedReport.description}
+                <Label className="text-sm font-medium">Tipo</Label>
+                <p className="text-sm text-gray-600">
+                  {getTypeLabel(selectedReport.type)}
                 </p>
               </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <Badge className={getStatusColor(selectedReport.status)}>
+                  {selectedReport.status}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Prioridade</Label>
+                <Badge className={getPriorityColor(selectedReport.priority)}>
+                  {selectedReport.priority}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Criado em</Label>
+                <p className="text-sm text-gray-600">
+                  {new Date(selectedReport.created_at).toLocaleString()}
+                </p>
+              </div>
+            </div>
 
-              {selectedReport.reporter && (
-                <div>
-                  <Label className="text-sm font-medium">Denunciante</Label>
-                  <p className="text-sm text-gray-600">
-                    {selectedReport.reporter.full_name} (
-                    {selectedReport.reporter.email})
-                  </p>
-                </div>
-              )}
+            <div>
+              <Label className="text-sm font-medium">Descrição</Label>
+              <p className="text-sm text-gray-600 mt-1">
+                {selectedReport.description}
+              </p>
+            </div>
 
-              {selectedReport.reported_user && (
+            {selectedReport.reporter && (
+              <div>
+                <Label className="text-sm font-medium">Denunciante</Label>
+                <p className="text-sm text-gray-600">
+                  {selectedReport.reporter.full_name} (
+                  {selectedReport.reporter.email})
+                </p>
+              </div>
+            )}
+
+            {selectedReport.reported_user && (
+              <div>
+                <Label className="text-sm font-medium">
+                  Usuário Denunciado
+                </Label>
+                <p className="text-sm text-gray-600">
+                  {selectedReport.reported_user.full_name} (
+                  {selectedReport.reported_user.email})
+                </p>
+              </div>
+            )}
+
+            {/* Conversa completa para denúncias de chat */}
+            {selectedReport.conversation_messages &&
+              selectedReport.conversation_messages.length > 0 && (
                 <div>
                   <Label className="text-sm font-medium">
-                    Usuário Denunciado
+                    💬 Conversa Completa
                   </Label>
-                  <p className="text-sm text-gray-600">
-                    {selectedReport.reported_user.full_name} (
-                    {selectedReport.reported_user.email})
-                  </p>
+                  <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto mt-2">
+                    {selectedReport.conversation_messages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`mb-3 p-2 rounded ${
+                          msg.sender_id === selectedReport.reporter_id
+                            ? "bg-blue-100 ml-8"
+                            : "bg-gray-100 mr-8"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium">
+                            {msg.profiles.full_name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(msg.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm">{msg.content}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Conversa completa para denúncias de chat */}
-              {selectedReport.conversation_messages &&
-                selectedReport.conversation_messages.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium">
-                      💬 Conversa Completa
-                    </Label>
-                    <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto mt-2">
-                      {selectedReport.conversation_messages.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={`mb-3 p-2 rounded ${
-                            msg.sender_id === selectedReport.reporter_id
-                              ? "bg-blue-100 ml-8"
-                              : "bg-gray-100 mr-8"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium">
-                              {msg.profiles.full_name}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(msg.created_at).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-sm">{msg.content}</p>
-                        </div>
-                      ))}
+            {/* Detalhes da avaliação */}
+            {selectedReport.review_details && (
+              <div>
+                <Label className="text-sm font-medium">
+                  ⭐ Avaliação Denunciada
+                </Label>
+                <div className="bg-yellow-50 p-4 rounded-lg mt-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium">
+                        Nota: {selectedReport.review_details.rating_person}/5
+                      </p>
+                      <p className="text-sm font-medium">
+                        Avaliador:{" "}
+                        {selectedReport.review_details.profiles.full_name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        Data:{" "}
+                        {new Date(
+                          selectedReport.review_details.created_at,
+                        ).toLocaleString()}
+                      </p>
                     </div>
                   </div>
-                )}
+                  <div className="mt-2">
+                    <p className="text-sm font-medium">Comentário:</p>
+                    <p className="text-sm text-gray-600">
+                      {selectedReport.review_details.comment}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-              {/* Detalhes da avaliação */}
-              {selectedReport.review_details && (
-                <div>
-                  <Label className="text-sm font-medium">
-                    ⭐ Avaliação Denunciada
-                  </Label>
-                  <div className="bg-yellow-50 p-4 rounded-lg mt-2">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium">
-                          Nota: {selectedReport.review_details.rating_person}/5
-                        </p>
-                        <p className="text-sm font-medium">
-                          Avaliador:{" "}
-                          {selectedReport.review_details.profiles.full_name}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">
-                          Data:{" "}
-                          {new Date(
-                            selectedReport.review_details.created_at,
-                          ).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <p className="text-sm font-medium">Comentário:</p>
+            {/* Detalhes do anúncio classificado */}
+            {selectedReport.classified_ad && (
+              <div>
+                <Label className="text-sm font-medium">
+                  📢 Anúncio Classificado Denunciado
+                </Label>
+                <div className="bg-purple-50 p-4 rounded-lg mt-2">
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-sm font-medium">Título:</p>
                       <p className="text-sm text-gray-600">
-                        {selectedReport.review_details.comment}
+                        {selectedReport.classified_ad.title}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Descrição:</p>
+                      <p className="text-sm text-gray-600">
+                        {selectedReport.classified_ad.description}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Anunciante:</p>
+                      <p className="text-sm text-gray-600">
+                        {selectedReport.classified_ad.user_name}
                       </p>
                     </div>
                   </div>
                 </div>
-              )}
-
-              {/* Detalhes do anúncio classificado */}
-              {selectedReport.classified_ad && (
-                <div>
-                  <Label className="text-sm font-medium">
-                    📢 Anúncio Classificado Denunciado
-                  </Label>
-                  <div className="bg-purple-50 p-4 rounded-lg mt-2">
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-sm font-medium">Título:</p>
-                        <p className="text-sm text-gray-600">
-                          {selectedReport.classified_ad.title}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Descrição:</p>
-                        <p className="text-sm text-gray-600">
-                          {selectedReport.classified_ad.description}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Anunciante:</p>
-                        <p className="text-sm text-gray-600">
-                          {selectedReport.classified_ad.user_name}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() =>
-                    handleReportAction(selectedReport.id, "review")
-                  }
-                  disabled={selectedReport.status === "reviewing"}
-                >
-                  Marcar como Revisando
-                </Button>
-                <Button
-                  onClick={() =>
-                    handleReportAction(selectedReport.id, "resolve")
-                  }
-                  disabled={selectedReport.status === "resolved"}
-                >
-                  Resolver
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    handleReportAction(selectedReport.id, "dismiss")
-                  }
-                  disabled={selectedReport.status === "dismissed"}
-                >
-                  Dispensar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() =>
-                    handleReportAction(selectedReport.id, "delete")
-                  }
-                >
-                  Deletar
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de banimento */}
-      <Dialog open={showBanModal} onOpenChange={setShowBanModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Banir Usuário</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="ban-reason">Motivo do Banimento</Label>
-              <Textarea
-                id="ban-reason"
-                value={banForm.reason}
-                onChange={(e) =>
-                  setBanForm({ ...banForm, reason: e.target.value })
-                }
-                placeholder="Descreva o motivo do banimento..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="ban-type">Tipo de Banimento</Label>
-              <Select
-                value={banForm.ban_type}
-                onValueChange={(value: "temporary" | "permanent") =>
-                  setBanForm({ ...banForm, ban_type: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="temporary">Temporário</SelectItem>
-                  <SelectItem value="permanent">Permanente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {banForm.ban_type === "temporary" && (
-              <div>
-                <Label htmlFor="ban-duration">Duração (dias)</Label>
-                <Input
-                  id="ban-duration"
-                  type="number"
-                  value={banForm.duration_days}
-                  onChange={(e) =>
-                    setBanForm({
-                      ...banForm,
-                      duration_days: parseInt(e.target.value),
-                    })
-                  }
-                  min="1"
-                  max="365"
-                />
               </div>
             )}
 
-            <div>
-              <Label htmlFor="ban-notes">Notas Administrativas</Label>
-              <Textarea
-                id="ban-notes"
-                value={banForm.admin_notes}
-                onChange={(e) =>
-                  setBanForm({ ...banForm, admin_notes: e.target.value })
-                }
-                placeholder="Notas internas sobre o banimento..."
-                rows={2}
-              />
-            </div>
-
             <div className="flex gap-2">
               <Button
-                onClick={() => {
-                  if (selectedReport?.reported_user_id) {
-                    banUser(selectedReport.reported_user_id);
-                  }
-                }}
-                disabled={!banForm.reason.trim()}
+                onClick={() => handleReportAction(selectedReport.id, "review")}
+                disabled={selectedReport.status === "reviewing"}
               >
-                Confirmar Banimento
+                Marcar como Revisando
               </Button>
-              <Button variant="outline" onClick={() => setShowBanModal(false)}>
-                Cancelar
+              <Button
+                onClick={() => handleReportAction(selectedReport.id, "resolve")}
+                disabled={selectedReport.status === "resolved"}
+              >
+                Resolver
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleReportAction(selectedReport.id, "dismiss")}
+                disabled={selectedReport.status === "dismissed"}
+              >
+                Dispensar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleReportAction(selectedReport.id, "delete")}
+              >
+                Deletar
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+      </ResponsiveModal>
+
+      {/* Modal de banimento */}
+      <ResponsiveModal
+        isOpen={showBanModal}
+        onOpenChange={setShowBanModal}
+        title="Banir Usuário"
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="ban-reason">Motivo do Banimento</Label>
+            <Textarea
+              id="ban-reason"
+              value={banForm.reason}
+              onChange={(e) =>
+                setBanForm({ ...banForm, reason: e.target.value })
+              }
+              placeholder="Descreva o motivo do banimento..."
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="ban-type">Tipo de Banimento</Label>
+            <Select
+              value={banForm.ban_type}
+              onValueChange={(value: "temporary" | "permanent") =>
+                setBanForm({ ...banForm, ban_type: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="temporary">Temporário</SelectItem>
+                <SelectItem value="permanent">Permanente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {banForm.ban_type === "temporary" && (
+            <div>
+              <Label htmlFor="ban-duration">Duração (dias)</Label>
+              <Input
+                id="ban-duration"
+                type="number"
+                value={banForm.duration_days}
+                onChange={(e) =>
+                  setBanForm({
+                    ...banForm,
+                    duration_days: parseInt(e.target.value),
+                  })
+                }
+                min="1"
+                max="365"
+              />
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="ban-notes">Notas Administrativas</Label>
+            <Textarea
+              id="ban-notes"
+              value={banForm.admin_notes}
+              onChange={(e) =>
+                setBanForm({ ...banForm, admin_notes: e.target.value })
+              }
+              placeholder="Notas internas sobre o banimento..."
+              rows={2}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                if (selectedReport?.reported_user_id) {
+                  banUser(selectedReport.reported_user_id);
+                }
+              }}
+              disabled={!banForm.reason.trim()}
+            >
+              Confirmar Banimento
+            </Button>
+            <Button variant="outline" onClick={() => setShowBanModal(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </ResponsiveModal>
     </div>
   );
 }

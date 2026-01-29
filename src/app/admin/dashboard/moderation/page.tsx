@@ -20,13 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SimpleTable } from "@/components/admin/shared/SimpleTable";
 import { toast } from "sonner";
@@ -1841,8 +1835,17 @@ export default function ModerationPage() {
                   <SelectItem value="inactive">Inativos</SelectItem>
                 </SelectContent>
               </Select>
-              <Dialog
-                open={showBanModal}
+              <Button
+                disabled={!adminSupabase}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+                onClick={() => setShowBanModal(true)}
+              >
+                <Ban className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Novo Banimento</span>
+                <span className="sm:hidden">Novo</span>
+              </Button>
+              <ResponsiveModal
+                isOpen={showBanModal}
                 onOpenChange={(open) => {
                   setShowBanModal(open);
                   if (!open) {
@@ -1856,152 +1859,139 @@ export default function ModerationPage() {
                     });
                   }
                 }}
+                title="Banir Usuário"
+                className="max-w-md"
               >
-                <DialogTrigger asChild>
-                  <Button
-                    disabled={!adminSupabase}
-                    className="w-full sm:w-auto text-xs sm:text-sm"
-                  >
-                    <Ban className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    <span className="hidden sm:inline">Novo Banimento</span>
-                    <span className="sm:hidden">Novo</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Banir Usuário</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="user_id">ID do Usuário</Label>
+                    <Input
+                      id="user_id"
+                      value={banForm.user_id}
+                      onChange={(e) =>
+                        setBanForm({ ...banForm, user_id: e.target.value })
+                      }
+                      placeholder="UUID do usuário"
+                      className="font-mono text-xs sm:text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Cole o UUID do usuário que será banido
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="reason">Motivo do Banimento</Label>
+                    <Textarea
+                      id="reason"
+                      value={banForm.reason}
+                      onChange={(e) =>
+                        setBanForm({ ...banForm, reason: e.target.value })
+                      }
+                      placeholder="Descreva o motivo do banimento"
+                      rows={3}
+                      className="resize-none"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ban_type">Tipo de Banimento</Label>
+                    <Select
+                      value={banForm.ban_type}
+                      onValueChange={(value: "temporary" | "permanent") => {
+                        setBanForm({
+                          ...banForm,
+                          ban_type: value,
+                          duration_days:
+                            value === "temporary" ? banForm.duration_days : 7,
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="temporary">
+                          <div className="flex flex-col">
+                            <span>Temporário</span>
+                            <span className="text-xs text-gray-500">
+                              O banimento expira após um período
+                            </span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="permanent">
+                          <div className="flex flex-col">
+                            <span>Permanente</span>
+                            <span className="text-xs text-gray-500">
+                              O banimento não expira
+                            </span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {banForm.ban_type === "temporary" && (
                     <div>
-                      <Label htmlFor="user_id">ID do Usuário</Label>
+                      <Label htmlFor="duration_days">
+                        Duração do Banimento (dias)
+                      </Label>
                       <Input
-                        id="user_id"
-                        value={banForm.user_id}
-                        onChange={(e) =>
-                          setBanForm({ ...banForm, user_id: e.target.value })
-                        }
-                        placeholder="UUID do usuário"
-                        className="font-mono text-xs sm:text-sm"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Cole o UUID do usuário que será banido
-                      </p>
-                    </div>
-                    <div>
-                      <Label htmlFor="reason">Motivo do Banimento</Label>
-                      <Textarea
-                        id="reason"
-                        value={banForm.reason}
-                        onChange={(e) =>
-                          setBanForm({ ...banForm, reason: e.target.value })
-                        }
-                        placeholder="Descreva o motivo do banimento"
-                        rows={3}
-                        className="resize-none"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="ban_type">Tipo de Banimento</Label>
-                      <Select
-                        value={banForm.ban_type}
-                        onValueChange={(value: "temporary" | "permanent") => {
+                        id="duration_days"
+                        type="number"
+                        value={banForm.duration_days}
+                        onChange={(e) => {
+                          const days = parseInt(e.target.value) || 1;
                           setBanForm({
                             ...banForm,
-                            ban_type: value,
-                            duration_days:
-                              value === "temporary" ? banForm.duration_days : 7,
+                            duration_days: Math.max(1, days),
                           });
                         }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="temporary">
-                            <div className="flex flex-col">
-                              <span>Temporário</span>
-                              <span className="text-xs text-gray-500">
-                                O banimento expira após um período
-                              </span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="permanent">
-                            <div className="flex flex-col">
-                              <span>Permanente</span>
-                              <span className="text-xs text-gray-500">
-                                O banimento não expira
-                              </span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                        min={1}
+                        max={3650}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        O banimento expirará automaticamente após{" "}
+                        {banForm.duration_days} dia
+                        {banForm.duration_days !== 1 ? "s" : ""}
+                      </p>
                     </div>
-                    {banForm.ban_type === "temporary" && (
-                      <div>
-                        <Label htmlFor="duration_days">
-                          Duração do Banimento (dias)
-                        </Label>
-                        <Input
-                          id="duration_days"
-                          type="number"
-                          value={banForm.duration_days}
-                          onChange={(e) => {
-                            const days = parseInt(e.target.value) || 1;
-                            setBanForm({
-                              ...banForm,
-                              duration_days: Math.max(1, days),
-                            });
-                          }}
-                          min={1}
-                          max={3650}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          O banimento expirará automaticamente após{" "}
-                          {banForm.duration_days} dia
-                          {banForm.duration_days !== 1 ? "s" : ""}
-                        </p>
-                      </div>
-                    )}
-                    {banForm.ban_type === "permanent" && (
-                      <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                          <div className="text-xs text-red-800 dark:text-red-300">
-                            <strong>Atenção:</strong> Um banimento permanente
-                            não expira automaticamente. O usuário precisará ser
-                            desbanido manualmente por um administrador.
-                          </div>
+                  )}
+                  {banForm.ban_type === "permanent" && (
+                    <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-xs text-red-800 dark:text-red-300">
+                          <strong>Atenção:</strong> Um banimento permanente não
+                          expira automaticamente. O usuário precisará ser
+                          desbanido manualmente por um administrador.
                         </div>
                       </div>
-                    )}
-                    <div className="flex justify-end gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowBanModal(false);
-                          setBanForm({
-                            user_id: "",
-                            reason: "",
-                            ban_type: "temporary",
-                            duration_days: 7,
-                            related_report_id: null,
-                          });
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        onClick={createBan}
-                        disabled={!banForm.user_id || !banForm.reason}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        <Ban className="h-4 w-4 mr-2" />
-                        Banir Usuário
-                      </Button>
                     </div>
+                  )}
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowBanModal(false);
+                        setBanForm({
+                          user_id: "",
+                          reason: "",
+                          ban_type: "temporary",
+                          duration_days: 7,
+                          related_report_id: null,
+                        });
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={createBan}
+                      disabled={!banForm.user_id || !banForm.reason}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      <Ban className="h-4 w-4 mr-2" />
+                      Banir Usuário
+                    </Button>
                   </div>
-                </DialogContent>
-              </Dialog>
+                </div>
+              </ResponsiveModal>
             </div>
           </div>
 
@@ -2312,316 +2302,312 @@ export default function ModerationPage() {
       </Tabs>
 
       {/* Modal de detalhes da denúncia */}
-      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalhes da Denúncia</DialogTitle>
-          </DialogHeader>
-
-          {selectedReport && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Tipo</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {getTypeLabel(selectedReport.type)}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Status</Label>
-                  <Badge className={getStatusColor(selectedReport.status)}>
-                    {getStatusLabel(selectedReport.status)}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Prioridade</Label>
-                  <Badge className={getPriorityColor(selectedReport.priority)}>
-                    {getPriorityLabel(selectedReport.priority)}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Data</Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {new Date(selectedReport.created_at).toLocaleString(
-                      "pt-BR",
-                    )}
-                  </p>
-                </div>
-              </div>
-
+      {/* Modal de detalhes da denúncia */}
+      <ResponsiveModal
+        isOpen={showReportModal}
+        onOpenChange={setShowReportModal}
+        title="Detalhes da Denúncia"
+        className="max-w-3xl max-h-[90vh] overflow-y-auto"
+      >
+        {selectedReport && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-sm font-medium">Descrição</Label>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {selectedReport.description}
+                <Label className="text-sm font-medium">Tipo</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {getTypeLabel(selectedReport.type)}
                 </p>
               </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <Badge className={getStatusColor(selectedReport.status)}>
+                  {getStatusLabel(selectedReport.status)}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Prioridade</Label>
+                <Badge className={getPriorityColor(selectedReport.priority)}>
+                  {getPriorityLabel(selectedReport.priority)}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Data</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {new Date(selectedReport.created_at).toLocaleString("pt-BR")}
+                </p>
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium">Descrição</Label>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {selectedReport.description}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Denunciante</Label>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedReport.reporter?.full_name || "N/A"}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {selectedReport.reporter?.email}
+                </p>
+              </div>
+              {selectedReport.reported_user && (
                 <div>
-                  <Label className="text-sm font-medium">Denunciante</Label>
+                  <Label className="text-sm font-medium">Denunciado</Label>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {selectedReport.reporter?.full_name || "N/A"}
+                    {selectedReport.reported_user.full_name}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {selectedReport.reporter?.email}
-                  </p>
-                </div>
-                {selectedReport.reported_user && (
-                  <div>
-                    <Label className="text-sm font-medium">Denunciado</Label>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {selectedReport.reported_user.full_name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {selectedReport.reported_user.email}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {selectedReport.reported_post && (
-                <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                  <Label className="text-sm font-medium">Post Denunciado</Label>
-                  <p className="text-sm font-medium mt-1">
-                    {selectedReport.reported_post.title}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {selectedReport.reported_post.content}
+                    {selectedReport.reported_user.email}
                   </p>
                 </div>
               )}
-
-              <div>
-                <Label htmlFor="admin_notes">Notas do Admin</Label>
-                <Textarea
-                  id="admin_notes"
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="Adicione notas sobre esta denúncia..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="resolution">Resolução</Label>
-                <Textarea
-                  id="resolution"
-                  value={resolution}
-                  onChange={(e) => setResolution(e.target.value)}
-                  placeholder="Descreva a resolução desta denúncia..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowReportModal(false)}
-                >
-                  Fechar
-                </Button>
-                <Button
-                  onClick={() =>
-                    updateReportStatus(
-                      selectedReport.id,
-                      selectedReport.status,
-                      adminNotes,
-                      resolution,
-                    )
-                  }
-                >
-                  Salvar Alterações
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    if (
-                      confirm("Tem certeza que deseja deletar esta denúncia?")
-                    ) {
-                      deleteReport(selectedReport.id);
-                    }
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Deletar
-                </Button>
-              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Modal de Resolver Denúncia com Notificação */}
-      <Dialog open={showResolveModal} onOpenChange={setShowResolveModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw] sm:w-full">
-          <DialogHeader>
-            <DialogTitle className="text-base sm:text-lg break-words">
-              Resolver Denúncia e Notificar Denunciante
-            </DialogTitle>
-          </DialogHeader>
-
-          {reportToResolve && (
-            <div className="space-y-3 sm:space-y-4 overflow-x-hidden">
-              <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-3 rounded-lg overflow-x-hidden">
-                <Label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
-                  Informações da Denúncia
-                </Label>
-                <div className="text-xs sm:text-sm space-y-1 break-words overflow-wrap-anywhere">
-                  <div className="break-words overflow-wrap-anywhere">
-                    <strong>Tipo:</strong> {getTypeLabel(reportToResolve.type)}
-                  </div>
-                  <div className="break-words overflow-wrap-anywhere">
-                    <strong>Denunciante:</strong>{" "}
-                    {reportToResolve.reporter?.full_name || "N/A"}
-                  </div>
-                  <div className="break-words overflow-wrap-anywhere">
-                    <strong>Motivo:</strong> {reportToResolve.reason}
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-x-hidden">
-                <Label
-                  htmlFor="template"
-                  className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block break-words"
-                >
-                  Mensagem Padrão (Opcional)
-                </Label>
-                <Select
-                  value={selectedTemplate}
-                  onValueChange={setSelectedTemplate}
-                >
-                  <SelectTrigger className="text-xs sm:text-sm w-full max-w-full overflow-hidden">
-                    <SelectValue
-                      placeholder="Selecione uma mensagem padrão..."
-                      className="truncate"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="max-w-[calc(95vw-2rem)] sm:max-w-md">
-                    <SelectItem
-                      value="resolved_action_taken"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Sua denúncia foi analisada e as medidas apropriadas foram
-                      tomadas. Agradecemos sua colaboração em manter nossa
-                      comunidade segura.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_no_violation"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Analisamos sua denúncia e não encontramos violação de
-                      nossas políticas. Caso tenha mais informações, por favor,
-                      entre em contato.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_content_removed"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Sua denúncia foi analisada e o conteúdo denunciado foi
-                      removido. Obrigado por nos ajudar a manter a qualidade da
-                      plataforma.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_user_warned"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Sua denúncia foi analisada e o usuário foi advertido sobre
-                      o comportamento inadequado. Continuaremos monitorando a
-                      situação.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_user_banned"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Sua denúncia foi analisada e o usuário foi banido da
-                      plataforma devido à violação de nossas políticas. Obrigado
-                      por reportar.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_under_review"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Sua denúncia está sendo analisada em mais detalhes.
-                      Entraremos em contato se precisarmos de mais informações.
-                    </SelectItem>
-                    <SelectItem
-                      value="resolved_thanks"
-                      className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
-                    >
-                      Agradecemos sua denúncia. Nossa equipe de moderação
-                      analisou o caso e tomou as medidas necessárias.
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="overflow-x-hidden">
-                <Label
-                  htmlFor="custom_message"
-                  className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block break-words"
-                >
-                  Mensagem Personalizada
-                </Label>
-                <Textarea
-                  id="custom_message"
-                  value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Digite uma mensagem personalizada para o denunciante (opcional). Se preenchida, esta mensagem será enviada em vez da mensagem padrão."
-                  rows={4}
-                  className="resize-none text-xs sm:text-sm min-h-[80px] sm:min-h-[100px] w-full max-w-full overflow-x-hidden break-words overflow-wrap-anywhere"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words overflow-wrap-anywhere">
-                  Se você preencher uma mensagem personalizada, ela terá
-                  prioridade sobre a mensagem padrão selecionada.
+            {selectedReport.reported_post && (
+              <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                <Label className="text-sm font-medium">Post Denunciado</Label>
+                <p className="text-sm font-medium mt-1">
+                  {selectedReport.reported_post.title}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {selectedReport.reported_post.content}
                 </p>
               </div>
+            )}
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-2 sm:p-3 rounded-lg overflow-x-hidden">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-xs sm:text-sm text-blue-800 dark:text-blue-300 flex-1 min-w-0 overflow-x-hidden">
-                    <strong className="block mb-1.5 sm:mb-2 break-words">
-                      Pré-visualização da mensagem:
-                    </strong>
-                    <div className="mt-1 sm:mt-2 p-2 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-800 break-words whitespace-pre-wrap overflow-wrap-anywhere text-xs sm:text-sm overflow-x-hidden">
-                      {customMessage.trim() ||
-                        (selectedTemplate
-                          ? getTemplateMessage(selectedTemplate)
-                          : "Sua denúncia foi analisada e resolvida pela nossa equipe de moderação.")}
-                    </div>
+            <div>
+              <Label htmlFor="admin_notes">Notas do Admin</Label>
+              <Textarea
+                id="admin_notes"
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Adicione notas sobre esta denúncia..."
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="resolution">Resolução</Label>
+              <Textarea
+                id="resolution"
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+                placeholder="Descreva a resolução desta denúncia..."
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowReportModal(false)}
+              >
+                Fechar
+              </Button>
+              <Button
+                onClick={() =>
+                  updateReportStatus(
+                    selectedReport.id,
+                    selectedReport.status,
+                    adminNotes,
+                    resolution,
+                  )
+                }
+              >
+                Salvar Alterações
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (
+                    confirm("Tem certeza que deseja deletar esta denúncia?")
+                  ) {
+                    deleteReport(selectedReport.id);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Deletar
+              </Button>
+            </div>
+          </div>
+        )}
+      </ResponsiveModal>
+
+      {/* Modal de Resolver Denúncia com Notificação */}
+      {/* Modal de Resolver Denúncia com Notificação */}
+      <ResponsiveModal
+        isOpen={showResolveModal}
+        onOpenChange={setShowResolveModal}
+        title="Resolver Denúncia e Notificar Denunciante"
+        className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw] sm:w-full"
+      >
+        {reportToResolve && (
+          <div className="space-y-3 sm:space-y-4 overflow-x-hidden">
+            <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-3 rounded-lg overflow-x-hidden">
+              <Label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
+                Informações da Denúncia
+              </Label>
+              <div className="text-xs sm:text-sm space-y-1 break-words overflow-wrap-anywhere">
+                <div className="break-words overflow-wrap-anywhere">
+                  <strong>Tipo:</strong> {getTypeLabel(reportToResolve.type)}
+                </div>
+                <div className="break-words overflow-wrap-anywhere">
+                  <strong>Denunciante:</strong>{" "}
+                  {reportToResolve.reporter?.full_name || "N/A"}
+                </div>
+                <div className="break-words overflow-wrap-anywhere">
+                  <strong>Motivo:</strong> {reportToResolve.reason}
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-hidden">
+              <Label
+                htmlFor="template"
+                className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block break-words"
+              >
+                Mensagem Padrão (Opcional)
+              </Label>
+              <Select
+                value={selectedTemplate}
+                onValueChange={setSelectedTemplate}
+              >
+                <SelectTrigger className="text-xs sm:text-sm w-full max-w-full overflow-hidden">
+                  <SelectValue
+                    placeholder="Selecione uma mensagem padrão..."
+                    className="truncate"
+                  />
+                </SelectTrigger>
+                <SelectContent className="max-w-[calc(95vw-2rem)] sm:max-w-md">
+                  <SelectItem
+                    value="resolved_action_taken"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Sua denúncia foi analisada e as medidas apropriadas foram
+                    tomadas. Agradecemos sua colaboração em manter nossa
+                    comunidade segura.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_no_violation"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Analisamos sua denúncia e não encontramos violação de nossas
+                    políticas. Caso tenha mais informações, por favor, entre em
+                    contato.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_content_removed"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Sua denúncia foi analisada e o conteúdo denunciado foi
+                    removido. Obrigado por nos ajudar a manter a qualidade da
+                    plataforma.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_user_warned"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Sua denúncia foi analisada e o usuário foi advertido sobre o
+                    comportamento inadequado. Continuaremos monitorando a
+                    situação.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_user_banned"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Sua denúncia foi analisada e o usuário foi banido da
+                    plataforma devido à violação de nossas políticas. Obrigado
+                    por reportar.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_under_review"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Sua denúncia está sendo analisada em mais detalhes.
+                    Entraremos em contato se precisarmos de mais informações.
+                  </SelectItem>
+                  <SelectItem
+                    value="resolved_thanks"
+                    className="text-xs sm:text-sm break-words whitespace-normal overflow-wrap-anywhere"
+                  >
+                    Agradecemos sua denúncia. Nossa equipe de moderação analisou
+                    o caso e tomou as medidas necessárias.
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="overflow-x-hidden">
+              <Label
+                htmlFor="custom_message"
+                className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block break-words"
+              >
+                Mensagem Personalizada
+              </Label>
+              <Textarea
+                id="custom_message"
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Digite uma mensagem personalizada para o denunciante (opcional). Se preenchida, esta mensagem será enviada em vez da mensagem padrão."
+                rows={4}
+                className="resize-none text-xs sm:text-sm min-h-[80px] sm:min-h-[100px] w-full max-w-full overflow-x-hidden break-words overflow-wrap-anywhere"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words overflow-wrap-anywhere">
+                Se você preencher uma mensagem personalizada, ela terá
+                prioridade sobre a mensagem padrão selecionada.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 sm:p-3 rounded-lg overflow-x-hidden">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="text-xs sm:text-sm text-blue-800 dark:text-blue-300 flex-1 min-w-0 overflow-x-hidden">
+                  <strong className="block mb-1.5 sm:mb-2 break-words">
+                    Pré-visualização da mensagem:
+                  </strong>
+                  <div className="mt-1 sm:mt-2 p-2 bg-white dark:bg-gray-800 rounded border border-blue-200 dark:border-blue-800 break-words whitespace-pre-wrap overflow-wrap-anywhere text-xs sm:text-sm overflow-x-hidden">
+                    {customMessage.trim() ||
+                      (selectedTemplate
+                        ? getTemplateMessage(selectedTemplate)
+                        : "Sua denúncia foi analisada e resolvida pela nossa equipe de moderação.")}
                   </div>
                 </div>
               </div>
-
-              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 border-t overflow-x-hidden">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowResolveModal(false);
-                    setReportToResolve(null);
-                    setSelectedTemplate("");
-                    setCustomMessage("");
-                  }}
-                  className="w-full sm:w-auto text-xs sm:text-sm"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={confirmResolveReport}
-                  className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
-                >
-                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">
-                    Resolver e Enviar Notificação
-                  </span>
-                  <span className="sm:hidden">Resolver</span>
-                </Button>
-              </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 sm:pt-4 border-t overflow-x-hidden">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowResolveModal(false);
+                  setReportToResolve(null);
+                  setSelectedTemplate("");
+                  setCustomMessage("");
+                }}
+                className="w-full sm:w-auto text-xs sm:text-sm"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmResolveReport}
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
+              >
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">
+                  Resolver e Enviar Notificação
+                </span>
+                <span className="sm:hidden">Resolver</span>
+              </Button>
+            </div>
+          </div>
+        )}
+      </ResponsiveModal>
     </div>
   );
 }

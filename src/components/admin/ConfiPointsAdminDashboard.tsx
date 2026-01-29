@@ -58,14 +58,7 @@ import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 
 interface AdminStats {
   total_users_with_points: number;
@@ -1741,127 +1734,25 @@ export function ConfiPointsAdminDashboard() {
         </TabsContent>
       </Tabs>
 
-      {/* Dialog de Gerenciamento de Pontos */}
-      <Dialog open={showManageDialog} onOpenChange={setShowManageDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Gerenciar Pontos</DialogTitle>
-            <DialogDescription>
-              {selectedUser && (
-                <>
-                  Usuário: <strong>{selectedUser.full_name}</strong>
-                  <br />
-                  Saldo atual:{" "}
-                  <strong className="text-yellow-600 dark:text-yellow-400">
-                    {formatCurrency(selectedUser.balance)} pontos
-                  </strong>
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Seleção de ação */}
-            <div className="space-y-2">
-              <Label>Ação</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={manageAction === "add" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => setManageAction("add")}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Pontos
-                </Button>
-                <Button
-                  type="button"
-                  variant={
-                    manageAction === "remove" ? "destructive" : "outline"
-                  }
-                  className="flex-1"
-                  onClick={() => setManageAction("remove")}
-                >
-                  <Minus className="h-4 w-4 mr-2" />
-                  Remover Pontos
-                </Button>
-              </div>
-            </div>
-
-            {/* Quantidade */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">
-                Quantidade de Pontos{" "}
-                {manageAction === "remove" &&
-                  `(máximo: ${formatCurrency(selectedUser?.balance || 0)})`}
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                min="1"
-                max={
-                  manageAction === "remove" ? selectedUser?.balance : undefined
-                }
-                value={manageAmount}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (
-                    value === "" ||
-                    (!isNaN(Number(value)) && Number(value) >= 0)
-                  ) {
-                    if (manageAction === "remove" && selectedUser) {
-                      const maxAmount = selectedUser.balance;
-                      const numValue = Number(value);
-                      if (
-                        value === "" ||
-                        (numValue >= 0 && numValue <= maxAmount)
-                      ) {
-                        setManageAmount(value);
-                      }
-                    } else {
-                      setManageAmount(value);
-                    }
-                  }
-                }}
-                placeholder="Digite a quantidade"
-              />
-            </div>
-
-            {/* Motivo (opcional) */}
-            <div className="space-y-2">
-              <Label htmlFor="reason">Motivo (opcional)</Label>
-              <Textarea
-                id="reason"
-                value={manageReason}
-                onChange={(e) => setManageReason(e.target.value)}
-                placeholder="Descreva o motivo do ajuste de pontos..."
-                rows={3}
-              />
-            </div>
-
-            {/* Aviso se for remover */}
-            {manageAction === "remove" &&
-              selectedUser &&
-              Number(manageAmount) > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                  <p className="text-sm text-red-800 dark:text-red-200">
-                    <strong>Atenção:</strong> Você está removendo{" "}
-                    <strong>
-                      {formatCurrency(Number(manageAmount))} pontos
-                    </strong>
-                    . O novo saldo será:{" "}
-                    <strong>
-                      {formatCurrency(
-                        selectedUser.balance - Number(manageAmount),
-                      )}{" "}
-                      pontos
-                    </strong>
-                  </p>
-                </div>
-              )}
-          </div>
-
-          <DialogFooter>
+      {/* Modal de Gerenciamento de Pontos */}
+      <ResponsiveModal
+        isOpen={showManageDialog}
+        onOpenChange={setShowManageDialog}
+        title="Gerenciar Pontos"
+        description={
+          selectedUser && (
+            <>
+              Usuário: <strong>{selectedUser.full_name}</strong>
+              <br />
+              Saldo atual:{" "}
+              <strong className="text-yellow-600 dark:text-yellow-400">
+                {formatCurrency(selectedUser.balance)} pontos
+              </strong>
+            </>
+          )
+        }
+        footer={
+          <div className="flex gap-2 w-full justify-end">
             <Button
               variant="outline"
               onClick={() => {
@@ -1926,9 +1817,106 @@ export function ConfiPointsAdminDashboard() {
                 </>
               )}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        }
+      >
+        <div className="space-y-4 py-4">
+          {/* Seleção de ação */}
+          <div className="space-y-2">
+            <Label>Ação</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={manageAction === "add" ? "default" : "outline"}
+                className="flex-1"
+                onClick={() => setManageAction("add")}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Pontos
+              </Button>
+              <Button
+                type="button"
+                variant={manageAction === "remove" ? "destructive" : "outline"}
+                className="flex-1"
+                onClick={() => setManageAction("remove")}
+              >
+                <Minus className="h-4 w-4 mr-2" />
+                Remover Pontos
+              </Button>
+            </div>
+          </div>
+
+          {/* Quantidade */}
+          <div className="space-y-2">
+            <Label htmlFor="amount">
+              Quantidade de Pontos{" "}
+              {manageAction === "remove" &&
+                `(máximo: ${formatCurrency(selectedUser?.balance || 0)})`}
+            </Label>
+            <Input
+              id="amount"
+              type="number"
+              min="1"
+              max={
+                manageAction === "remove" ? selectedUser?.balance : undefined
+              }
+              value={manageAmount}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (
+                  value === "" ||
+                  (!isNaN(Number(value)) && Number(value) >= 0)
+                ) {
+                  if (manageAction === "remove" && selectedUser) {
+                    const maxAmount = selectedUser.balance;
+                    const numValue = Number(value);
+                    if (
+                      value === "" ||
+                      (numValue >= 0 && numValue <= maxAmount)
+                    ) {
+                      setManageAmount(value);
+                    }
+                  } else {
+                    setManageAmount(value);
+                  }
+                }
+              }}
+              placeholder="Digite a quantidade"
+            />
+          </div>
+
+          {/* Motivo (opcional) */}
+          <div className="space-y-2">
+            <Label htmlFor="reason">Motivo (opcional)</Label>
+            <Textarea
+              id="reason"
+              value={manageReason}
+              onChange={(e) => setManageReason(e.target.value)}
+              placeholder="Descreva o motivo do ajuste de pontos..."
+              rows={3}
+            />
+          </div>
+
+          {/* Aviso se for remover */}
+          {manageAction === "remove" &&
+            selectedUser &&
+            Number(manageAmount) > 0 && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  <strong>Atenção:</strong> Você está removendo{" "}
+                  <strong>{formatCurrency(Number(manageAmount))} pontos</strong>
+                  . O novo saldo será:{" "}
+                  <strong>
+                    {formatCurrency(
+                      selectedUser.balance - Number(manageAmount),
+                    )}{" "}
+                    pontos
+                  </strong>
+                </p>
+              </div>
+            )}
+        </div>
+      </ResponsiveModal>
     </div>
   );
 }

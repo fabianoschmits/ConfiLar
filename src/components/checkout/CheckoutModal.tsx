@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -570,9 +564,120 @@ export function CheckoutModal({
   // Se não tem packageData nem existingPurchase, não mostrar modal
   if (!packageData && !existingPurchase) return null;
 
+  const getFooter = () => {
+    if (step === "form") {
+      return (
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
+          <Button
+            onClick={handleGenerateQRCode}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Gerando QR Code...
+              </>
+            ) : (
+              <>
+                <QrCode className="w-4 h-4 mr-2" />
+                Gerar QR Code PIX
+              </>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1 sm:flex-none"
+          >
+            Cancelar
+          </Button>
+        </div>
+      );
+    }
+
+    if (step === "qrcode" && paymentData) {
+      return (
+        <div className="flex flex-col gap-3 w-full">
+          <Button
+            onClick={checkPaymentStatus}
+            disabled={isCheckingPayment}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isCheckingPayment ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Verificando pagamento...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Verificar Pagamento
+              </>
+            )}
+          </Button>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setStep("form")}
+              className="flex-1"
+              disabled={isCheckingPayment}
+            >
+              Voltar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+              disabled={isCheckingPayment}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (step === "success" && (packageData || existingPurchase)) {
+      return (
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
+          <Button
+            onClick={() => {
+              onClose();
+              window.location.href = "/confipoints/compras";
+            }}
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+          >
+            Ver Minhas Compras
+          </Button>
+          <Button
+            onClick={() => {
+              onClose();
+              window.location.href = "/confipoints/dashboard";
+            }}
+            variant="outline"
+            className="flex-1"
+          >
+            Ver Meus Pontos
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 sm:hidden"
+          >
+            Fechar
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <Dialog
-      open={isOpen}
+    <ResponsiveModal
+      isOpen={isOpen}
       onOpenChange={(open) => {
         // Só permitir fechar manualmente se não estiver no step de sucesso
         // ou se o usuário clicar explicitamente no botão de fechar
@@ -582,494 +687,388 @@ export function CheckoutModal({
         }
         onClose();
       }}
+      className="max-w-2xl max-h-[90vh] overflow-y-auto"
+      title={
+        <span className="flex items-center gap-2">
+          <CreditCard className="w-5 h-5" />
+          {existingPurchase
+            ? existingPurchase.status === "approved"
+              ? "Compra Aprovada"
+              : "QR Code de Pagamento"
+            : `Finalizar Compra - ${packageData?.name || ""}`}
+        </span>
+      }
+      description={
+        existingPurchase
+          ? existingPurchase.status === "approved"
+            ? "Seus ConfiPoints foram creditados com sucesso"
+            : "Escaneie o QR Code ou copie o código PIX para pagar"
+          : "Complete seus dados para gerar o QR Code de pagamento"
+      }
+      footer={getFooter()}
     >
-      <DialogContent
-        className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto"
-        onInteractOutside={(e) => {
-          // Prevenir fechamento ao clicar fora quando estiver no step de sucesso
-          if (step === "success") {
-            e.preventDefault();
-          }
-        }}
-        onEscapeKeyDown={(e) => {
-          // Prevenir fechamento com ESC quando estiver no step de sucesso
-          if (step === "success") {
-            e.preventDefault();
-          }
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            {existingPurchase
-              ? existingPurchase.status === "approved"
-                ? "Compra Aprovada"
-                : "QR Code de Pagamento"
-              : `Finalizar Compra - ${packageData?.name || ""}`}
-          </DialogTitle>
-          <DialogDescription>
-            {existingPurchase
-              ? existingPurchase.status === "approved"
-                ? "Seus ConfiPoints foram creditados com sucesso"
-                : "Escaneie o QR Code ou copie o código PIX para pagar"
-              : "Complete seus dados para gerar o QR Code de pagamento"}
-          </DialogDescription>
-        </DialogHeader>
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="w-4 h-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="w-4 h-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {step === "form" && (
-          <div className="space-y-6">
-            {/* Resumo da Compra */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
-                Resumo da Compra
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-blue-700 dark:text-blue-300">
-                    Pacote:
-                  </span>
-                  <span className="font-semibold text-blue-900 dark:text-blue-100">
-                    {packageData.name}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-blue-700 dark:text-blue-300">
-                    Pontos:
-                  </span>
-                  <span className="font-semibold text-blue-900 dark:text-blue-100">
-                    {packageData.points.toLocaleString("pt-BR")} ConfiPoints
-                  </span>
-                </div>
-                {packageData.bonus > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-green-700 dark:text-green-300">
-                      Bônus:
-                    </span>
-                    <span className="font-semibold text-green-900 dark:text-green-100">
-                      +{packageData.bonus.toLocaleString("pt-BR")} pontos
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
-                  <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
-                    Total:
-                  </span>
-                  <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                    {packageData.price}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Dados Pessoais */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Dados Pessoais
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome Completo *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Seu nome completo"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="seu@email.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      handleInputChange("phone", formatPhone(e.target.value))
-                    }
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF *</Label>
-                  <Input
-                    id="cpf"
-                    value={formData.cpf}
-                    onChange={(e) =>
-                      handleInputChange("cpf", formatCPF(e.target.value))
-                    }
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Endereço */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-white">
-                Endereço
-              </h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 space-y-2">
-                  <Label htmlFor="street">Rua *</Label>
-                  <Input
-                    id="street"
-                    value={formData.address.street}
-                    onChange={(e) =>
-                      handleInputChange("address.street", e.target.value)
-                    }
-                    placeholder="Nome da rua"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="number">Número *</Label>
-                  <Input
-                    id="number"
-                    value={formData.address.number}
-                    onChange={(e) =>
-                      handleInputChange("address.number", e.target.value)
-                    }
-                    placeholder="123"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="complement">Complemento</Label>
-                  <Input
-                    id="complement"
-                    value={formData.address.complement}
-                    onChange={(e) =>
-                      handleInputChange("address.complement", e.target.value)
-                    }
-                    placeholder="Apto, Bloco, etc"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="neighborhood">Bairro *</Label>
-                  <Input
-                    id="neighborhood"
-                    value={formData.address.neighborhood}
-                    onChange={(e) =>
-                      handleInputChange("address.neighborhood", e.target.value)
-                    }
-                    placeholder="Nome do bairro"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="city">Cidade *</Label>
-                  <Input
-                    id="city"
-                    value={formData.address.city}
-                    onChange={(e) =>
-                      handleInputChange("address.city", e.target.value)
-                    }
-                    placeholder="Nome da cidade"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="state">Estado (UF) *</Label>
-                  <Input
-                    id="state"
-                    value={formData.address.state}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "address.state",
-                        e.target.value.toUpperCase(),
-                      )
-                    }
-                    placeholder="SP"
-                    maxLength={2}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode">CEP *</Label>
-                  <Input
-                    id="zipCode"
-                    value={formData.address.zipCode}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "address.zipCode",
-                        formatCEP(e.target.value),
-                      )
-                    }
-                    placeholder="00000-000"
-                    maxLength={9}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={handleGenerateQRCode}
-                disabled={isLoading}
-                className="flex-1"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Gerando QR Code...
-                  </>
-                ) : (
-                  <>
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Gerar QR Code PIX
-                  </>
-                )}
-              </Button>
-              <Button variant="outline" onClick={onClose} disabled={isLoading}>
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === "qrcode" && paymentData && (
-          <div className="space-y-6">
-            <Alert>
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>
-                Escaneie o QR Code com o app do seu banco ou copie o código PIX
-                para pagar. O pagamento expira em{" "}
-                {paymentData.expiresAt
-                  ? new Date(paymentData.expiresAt).toLocaleString("pt-BR")
-                  : "alguns minutos"}
-                .
-                <br />
-                <span className="text-xs text-gray-600 dark:text-gray-400 mt-2 block">
-                  🔄 Verificando pagamento automaticamente...
+      {step === "form" && (
+        <div className="space-y-6">
+          {/* Resumo da Compra */}
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3">
+              Resumo da Compra
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-blue-700 dark:text-blue-300">
+                  Pacote:
                 </span>
-              </AlertDescription>
-            </Alert>
+                <span className="font-semibold text-blue-900 dark:text-blue-100">
+                  {packageData.name}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-blue-700 dark:text-blue-300">
+                  Pontos:
+                </span>
+                <span className="font-semibold text-blue-900 dark:text-blue-100">
+                  {packageData.points.toLocaleString("pt-BR")} ConfiPoints
+                </span>
+              </div>
+              {packageData.bonus > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">
+                    Bônus:
+                  </span>
+                  <span className="font-semibold text-green-900 dark:text-green-100">
+                    +{packageData.bonus.toLocaleString("pt-BR")} pontos
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
+                <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                  Total:
+                </span>
+                <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                  {packageData.price}
+                </span>
+              </div>
+            </div>
+          </div>
 
-            <div className="flex flex-col items-center space-y-4">
-              {paymentData.qrCodeImage && (
-                <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-                  <img
-                    src={paymentData.qrCodeImage}
-                    alt="QR Code PIX"
-                    className="w-64 h-64"
-                    onError={(e) => {
-                      // Se a imagem falhar, tentar gerar QR Code do código PIX
-                      console.warn("Erro ao carregar imagem do QR Code");
-                    }}
+          {/* Dados Pessoais */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Dados Pessoais
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome Completo *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="Seu nome completo"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="seu@email.com"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    handleInputChange("phone", formatPhone(e.target.value))
+                  }
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF *</Label>
+                <Input
+                  id="cpf"
+                  value={formData.cpf}
+                  onChange={(e) =>
+                    handleInputChange("cpf", formatCPF(e.target.value))
+                  }
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Endereço */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Endereço
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2 space-y-2">
+                <Label htmlFor="street">Rua *</Label>
+                <Input
+                  id="street"
+                  value={formData.address.street}
+                  onChange={(e) =>
+                    handleInputChange("address.street", e.target.value)
+                  }
+                  placeholder="Nome da rua"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="number">Número *</Label>
+                <Input
+                  id="number"
+                  value={formData.address.number}
+                  onChange={(e) =>
+                    handleInputChange("address.number", e.target.value)
+                  }
+                  placeholder="123"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="complement">Complemento</Label>
+                <Input
+                  id="complement"
+                  value={formData.address.complement}
+                  onChange={(e) =>
+                    handleInputChange("address.complement", e.target.value)
+                  }
+                  placeholder="Apto, Bloco, etc"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood">Bairro *</Label>
+                <Input
+                  id="neighborhood"
+                  value={formData.address.neighborhood}
+                  onChange={(e) =>
+                    handleInputChange("address.neighborhood", e.target.value)
+                  }
+                  placeholder="Nome do bairro"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade *</Label>
+                <Input
+                  id="city"
+                  value={formData.address.city}
+                  onChange={(e) =>
+                    handleInputChange("address.city", e.target.value)
+                  }
+                  placeholder="Nome da cidade"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="state">Estado (UF) *</Label>
+                <Input
+                  id="state"
+                  value={formData.address.state}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "address.state",
+                      e.target.value.toUpperCase(),
+                    )
+                  }
+                  placeholder="SP"
+                  maxLength={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="zipCode">CEP *</Label>
+                <Input
+                  id="zipCode"
+                  value={formData.address.zipCode}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "address.zipCode",
+                      formatCEP(e.target.value),
+                    )
+                  }
+                  placeholder="00000-000"
+                  maxLength={9}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === "qrcode" && paymentData && (
+        <div className="space-y-6">
+          <Alert>
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription>
+              Escaneie o QR Code com o app do seu banco ou copie o código PIX
+              para pagar. O pagamento expira em{" "}
+              {paymentData.expiresAt
+                ? new Date(paymentData.expiresAt).toLocaleString("pt-BR")
+                : "alguns minutos"}
+              .
+              <br />
+              <span className="text-xs text-gray-600 dark:text-gray-400 mt-2 block">
+                🔄 Verificando pagamento automaticamente...
+              </span>
+            </AlertDescription>
+          </Alert>
+
+          <div className="flex flex-col items-center space-y-4">
+            {paymentData.qrCodeImage && (
+              <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                <img
+                  src={paymentData.qrCodeImage}
+                  alt="QR Code PIX"
+                  className="w-64 h-64"
+                  onError={(e) => {
+                    // Se a imagem falhar, tentar gerar QR Code do código PIX
+                    console.warn("Erro ao carregar imagem do QR Code");
+                  }}
+                />
+              </div>
+            )}
+
+            {paymentData.qrCode && (
+              <div className="w-full space-y-2">
+                <Label>Código PIX (Copiar e Colar)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={paymentData.qrCode}
+                    readOnly
+                    className="font-mono text-xs"
                   />
-                </div>
-              )}
-
-              {paymentData.qrCode && (
-                <div className="w-full space-y-2">
-                  <Label>Código PIX (Copiar e Colar)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={paymentData.qrCode}
-                      readOnly
-                      className="font-mono text-xs"
-                    />
-                    <Button variant="outline" size="icon" onClick={copyQRCode}>
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {paymentData.paymentUrl && (
-                <div className="w-full space-y-2">
-                  <Label>Link de Pagamento</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={paymentData.paymentUrl}
-                      readOnly
-                      className="text-xs"
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={copyPaymentUrl}
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() =>
-                        window.open(paymentData.paymentUrl, "_blank")
-                      }
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-3 w-full">
-                <Button
-                  onClick={checkPaymentStatus}
-                  disabled={isCheckingPayment}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
-                >
-                  {isCheckingPayment ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Verificando pagamento...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Verificar Pagamento
-                    </>
-                  )}
-                </Button>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setStep("form")}
-                    className="flex-1"
-                    disabled={isCheckingPayment}
-                  >
-                    Voltar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="flex-1"
-                    disabled={isCheckingPayment}
-                  >
-                    Fechar
+                  <Button variant="outline" size="icon" onClick={copyQRCode}>
+                    <Copy className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {step === "success" && (packageData || existingPurchase) && (
-          <div className="text-center space-y-6 py-8">
-            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                Pagamento Confirmado! 🎉
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Seus ConfiPoints foram creditados com sucesso.
-              </p>
-            </div>
-
-            {/* Resumo da Compra */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
-              <h4 className="font-semibold text-green-900 dark:text-green-100 mb-4">
-                Resumo da Compra
-              </h4>
-              <div className="space-y-3 text-left">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Pacote:
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {packageData.name}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Valor Pago:
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {packageData.price}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700 dark:text-gray-300">
-                    Pontos Base:
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {packageData.points.toLocaleString("pt-BR")} ConfiPoints
-                  </span>
-                </div>
-                {packageData.bonus > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-green-700 dark:text-green-300">
-                      Bônus:
-                    </span>
-                    <span className="font-semibold text-green-900 dark:text-green-100">
-                      +{packageData.bonus.toLocaleString("pt-BR")} pontos
-                    </span>
-                  </div>
-                )}
-                <div className="pt-3 border-t border-green-200 dark:border-green-800 flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Total Creditado:
-                  </span>
-                  <span className="text-xl font-bold text-green-900 dark:text-green-100">
-                    {(packageData.points + packageData.bonus).toLocaleString(
-                      "pt-BR",
-                    )}{" "}
-                    ConfiPoints
-                  </span>
+            {paymentData.paymentUrl && (
+              <div className="w-full space-y-2">
+                <Label>Link de Pagamento</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={paymentData.paymentUrl}
+                    readOnly
+                    className="text-xs"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={copyPaymentUrl}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() =>
+                      window.open(paymentData.paymentUrl, "_blank")
+                    }
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
+        </div>
+      )}
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                onClick={() => {
-                  onClose();
-                  window.location.href = "/confipoints/compras";
-                }}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                Ver Minhas Compras
-              </Button>
-              <Button
-                onClick={() => {
-                  onClose();
-                  window.location.href = "/confipoints/dashboard";
-                }}
-                variant="outline"
-                className="flex-1"
-              >
-                Ver Meus Pontos
-              </Button>
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="flex-1 sm:hidden"
-              >
-                Fechar
-              </Button>
+      {step === "success" && (packageData || existingPurchase) && (
+        <div className="text-center space-y-6 py-8">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+          </div>
+
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Pagamento Confirmado! 🎉
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Seus ConfiPoints foram creditados com sucesso.
+            </p>
+          </div>
+
+          {/* Resumo da Compra */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-6 border border-green-200 dark:border-green-800">
+            <h4 className="font-semibold text-green-900 dark:text-green-100 mb-4">
+              Resumo da Compra
+            </h4>
+            <div className="space-y-3 text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Pacote:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {packageData.name}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Valor Pago:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {packageData.price}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700 dark:text-gray-300">
+                  Pontos Base:
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {packageData.points.toLocaleString("pt-BR")} ConfiPoints
+                </span>
+              </div>
+              {packageData.bonus > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-green-700 dark:text-green-300">
+                    Bônus:
+                  </span>
+                  <span className="font-semibold text-green-900 dark:text-green-100">
+                    +{packageData.bonus.toLocaleString("pt-BR")} pontos
+                  </span>
+                </div>
+              )}
+              <div className="pt-3 border-t border-green-200 dark:border-green-800 flex justify-between items-center">
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Total Creditado:
+                </span>
+                <span className="text-xl font-bold text-green-900 dark:text-green-100">
+                  {(packageData.points + packageData.bonus).toLocaleString(
+                    "pt-BR",
+                  )}{" "}
+                  ConfiPoints
+                </span>
+              </div>
             </div>
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        </div>
+      )}
+    </ResponsiveModal>
   );
 }

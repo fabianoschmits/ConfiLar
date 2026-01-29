@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -174,11 +168,16 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-hidden p-0">
-        <DialogHeader className="p-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <DialogTitle className="flex items-center justify-between text-gray-900 dark:text-white">
+    <>
+      <span onClick={() => setIsOpen(true)} className="cursor-pointer">
+        {children}
+      </span>
+      <ResponsiveModal
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        className="w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-hidden"
+        title={
+          <div className="flex items-center justify-between text-gray-900 dark:text-white w-full">
             <div className="flex items-center gap-2">
               <Flag className="h-5 w-5 text-blue-500 dark:text-blue-400" />
               <span>Minhas Denúncias</span>
@@ -189,7 +188,10 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
               )}
             </div>
             <Button
-              onClick={fetchUserReports}
+              onClick={(e) => {
+                e.stopPropagation();
+                fetchUserReports();
+              }}
               disabled={isLoading}
               variant="outline"
               size="sm"
@@ -199,9 +201,29 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
               />
               Atualizar
             </Button>
-          </DialogTitle>
-        </DialogHeader>
-
+          </div>
+        }
+        footer={
+          reports.length > 0 ? (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Flag className="h-4 w-4" />
+                <span>Mostrando as 10 denúncias mais recentes</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsOpen(false);
+                }}
+                className="text-xs"
+              >
+                Ver Todas
+              </Button>
+            </div>
+          ) : null
+        }
+      >
         <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
           {reports.length === 0 ? (
             <div className="text-center py-12">
@@ -299,29 +321,7 @@ export function UserReportsModal({ children }: UserReportsModalProps) {
             </div>
           )}
         </div>
-
-        {reports.length > 0 && (
-          <div className="p-6 pt-4 border-t bg-gray-50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Flag className="h-4 w-4" />
-                <span>Mostrando as 10 denúncias mais recentes</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsOpen(false);
-                  // Navegar para página completa se necessário
-                }}
-                className="text-xs"
-              >
-                Ver Todas
-              </Button>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      </ResponsiveModal>
+    </>
   );
 }

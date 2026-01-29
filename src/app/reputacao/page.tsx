@@ -1,21 +1,32 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { StarRating } from '@/components/ui/StarRating'
-import { 
-  Star, 
-  ThumbsUp, 
-  Users, 
+import { useState, useEffect, useCallback } from "react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { StarRating } from "@/components/ui/StarRating";
+import {
+  Star,
+  ThumbsUp,
+  Users,
   CheckCircle,
   Award,
   TrendingUp,
@@ -31,401 +42,454 @@ import {
   AlertCircle,
   BarChart3,
   Target,
-  Zap
-} from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { ReviewListSkeleton } from '@/components/ui/skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { ErrorState } from '@/components/ui/ErrorState'
-import { useFloatingChat } from '@/contexts/FloatingChatContextSimple'
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
-import { ClientOnly } from '@/components/ClientOnly'
-import { useTranslations } from 'next-intl'
+  Zap,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { ReviewListSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { ClientOnly } from "@/components/ClientOnly";
+import { useTranslations } from "next-intl";
 
 interface UserReview {
-  id: string
-  reviewer_id: string
-  reviewed_id: string
-  rating_person: number
-  comment_person?: string
-  review_type: 'client_to_professional' | 'professional_to_client'
-  created_at: string
+  id: string;
+  reviewer_id: string;
+  reviewed_id: string;
+  rating_person: number;
+  comment_person?: string;
+  review_type: "client_to_professional" | "professional_to_client";
+  created_at: string;
   reviewer: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
   reviewed?: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
 }
 
 interface UserRecommendation {
-  id: string
-  recommender_id: string
-  recommended_id: string
-  recommendation_type: 'client_to_professional' | 'professional_to_client'
-  created_at: string
+  id: string;
+  recommender_id: string;
+  recommended_id: string;
+  recommendation_type: "client_to_professional" | "professional_to_client";
+  created_at: string;
   recommender: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
   recommended?: {
-    id: string
-    full_name: string
-    avatar_url?: string
-    user_type: 'client' | 'professional'
-  }
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+    user_type: "client" | "professional";
+  };
 }
 
-
 export default function ReputacaoPage() {
-  const t = useTranslations('reputation')
-  const tCommon = useTranslations('common')
-  const [mounted, setMounted] = useState(false)
-  const [reviews, setReviews] = useState<UserReview[]>([])
-  const [recommendations, setRecommendations] = useState<UserRecommendation[]>([])
-  const [givenReviews, setGivenReviews] = useState<UserReview[]>([])
-  const [givenRecommendations, setGivenRecommendations] = useState<UserRecommendation[]>([])
-  const [viewStats, setViewStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'recommendations' | 'analytics'>('overview')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'professional' | 'client'>('all')
-  const [showAddReviewDialog, setShowAddReviewDialog] = useState(false)
-  const [showAddRecommendationDialog, setShowAddRecommendationDialog] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [reviewsSubTab, setReviewsSubTab] = useState<'received' | 'given'>('received')
-  const [recommendationsSubTab, setRecommendationsSubTab] = useState<'received' | 'given'>('received')
-  
+  const t = useTranslations("reputation");
+  const tCommon = useTranslations("common");
+  const [mounted, setMounted] = useState(false);
+  const [reviews, setReviews] = useState<UserReview[]>([]);
+  const [recommendations, setRecommendations] = useState<UserRecommendation[]>(
+    [],
+  );
+  const [givenReviews, setGivenReviews] = useState<UserReview[]>([]);
+  const [givenRecommendations, setGivenRecommendations] = useState<
+    UserRecommendation[]
+  >([]);
+  const [viewStats, setViewStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "reviews" | "recommendations" | "analytics"
+  >("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<
+    "all" | "professional" | "client"
+  >("all");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviewsSubTab, setReviewsSubTab] = useState<"received" | "given">(
+    "received",
+  );
+  const [recommendationsSubTab, setRecommendationsSubTab] = useState<
+    "received" | "given"
+  >("received");
+
   // Estados para formulários
   const [reviewForm, setReviewForm] = useState({
-    reviewed_id: '',
+    reviewed_id: "",
     rating: 5,
-    comment: '',
-    review_type: 'client_to_professional' as 'client_to_professional' | 'professional_to_client'
-  })
-  
+    comment: "",
+    review_type: "client_to_professional" as
+      | "client_to_professional"
+      | "professional_to_client",
+  });
+
   const [recommendationForm, setRecommendationForm] = useState({
-    recommended_id: '',
-    recommendation_type: 'client_to_professional' as 'client_to_professional' | 'professional_to_client'
-  })
-  
-  const { user, profile: currentUser } = useAuthContext()
-  const { openChat } = useFloatingChat()
+    recommended_id: "",
+    recommendation_type: "client_to_professional" as
+      | "client_to_professional"
+      | "professional_to_client",
+  });
+
+  const { user, profile: currentUser } = useAuthContext();
+  const { openChat } = useFloatingChat();
 
   const loadUserReputation = useCallback(async () => {
-    if (!currentUser?.id) return
+    if (!currentUser?.id) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       // Carregar avaliações recebidas
       const { data: reviewsData, error: reviewsError } = await supabase
-        .from('reviews')
-        .select(`
+        .from("reviews")
+        .select(
+          `
           *,
           reviewer:profiles!reviews_reviewer_id_fkey(
             id, full_name, avatar_url, user_type
           )
-        `)
-        .eq('reviewed_id', currentUser.id)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("reviewed_id", currentUser.id)
+        .order("created_at", { ascending: false });
 
-      if (reviewsError) throw reviewsError
+      if (reviewsError) throw reviewsError;
 
       // Carregar recomendações
-      const { data: recommendationsData, error: recommendationsError } = await supabase
-        .from('user_recommendations')
-        .select(`
+      const { data: recommendationsData, error: recommendationsError } =
+        await supabase
+          .from("user_recommendations")
+          .select(
+            `
           *,
           recommender:profiles!user_recommendations_recommender_id_fkey(
             id, full_name, avatar_url, user_type
           )
-        `)
-        .eq('recommended_id', currentUser.id)
-        .order('created_at', { ascending: false })
+        `,
+          )
+          .eq("recommended_id", currentUser.id)
+          .order("created_at", { ascending: false });
 
       if (recommendationsError) {
-        console.error('Erro ao carregar recomendações:', recommendationsError)
+        console.error("Erro ao carregar recomendações:", recommendationsError);
       }
 
       // Mapear recomendações
-      const mappedRecommendations = recommendationsData?.map(rec => ({
-        id: rec.id,
-        recommender_id: rec.recommender_id,
-        recommended_id: rec.recommended_id,
-        recommendation_type: rec.recommendation_type as 'client_to_professional' | 'professional_to_client',
-        created_at: rec.created_at || new Date().toISOString(),
-        recommender: {
-          id: rec.recommender?.id || '',
-          full_name: rec.recommender?.full_name || '',
-          avatar_url: rec.recommender?.avatar_url || '',
-          user_type: rec.recommender?.user_type || 'client'
-        }
-      })) || []
+      const mappedRecommendations =
+        recommendationsData?.map((rec) => ({
+          id: rec.id,
+          recommender_id: rec.recommender_id,
+          recommended_id: rec.recommended_id,
+          recommendation_type: rec.recommendation_type as
+            | "client_to_professional"
+            | "professional_to_client",
+          created_at: rec.created_at || new Date().toISOString(),
+          recommender: {
+            id: rec.recommender?.id || "",
+            full_name: rec.recommender?.full_name || "",
+            avatar_url: rec.recommender?.avatar_url || "",
+            user_type: rec.recommender?.user_type || "client",
+          },
+        })) || [];
 
       // Carregar estatísticas de visualização
       const { data: viewStatsData, error: viewStatsError } = await supabase
-        .from('profile_views')
-        .select('id')
-        .eq('viewed_profile_id', currentUser.id)
+        .from("profile_views")
+        .select("id")
+        .eq("viewed_profile_id", currentUser.id);
 
       if (viewStatsError) {
-        console.error('Erro ao carregar visualizações:', viewStatsError)
+        console.error("Erro ao carregar visualizações:", viewStatsError);
       }
 
       // Carregar avaliações que o usuário fez
-      const { data: givenReviewsData, error: givenReviewsError } = await supabase
-        .from('reviews')
-        .select(`
+      const { data: givenReviewsData, error: givenReviewsError } =
+        await supabase
+          .from("reviews")
+          .select(
+            `
           *,
           reviewed:profiles!reviews_reviewed_id_fkey(
             id, full_name, avatar_url, user_type
           )
-        `)
-        .eq('reviewer_id', currentUser.id)
-        .order('created_at', { ascending: false })
+        `,
+          )
+          .eq("reviewer_id", currentUser.id)
+          .order("created_at", { ascending: false });
 
       if (givenReviewsError) {
-        console.error('Erro ao carregar avaliações feitas:', givenReviewsError)
+        console.error("Erro ao carregar avaliações feitas:", givenReviewsError);
       }
 
       // Carregar recomendações que o usuário fez
-      const { data: givenRecommendationsData, error: givenRecommendationsError } = await supabase
-        .from('user_recommendations')
-        .select(`
+      const {
+        data: givenRecommendationsData,
+        error: givenRecommendationsError,
+      } = await supabase
+        .from("user_recommendations")
+        .select(
+          `
           *,
           recommended:profiles!user_recommendations_recommended_id_fkey(
             id, full_name, avatar_url, user_type
           )
-        `)
-        .eq('recommender_id', currentUser.id)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("recommender_id", currentUser.id)
+        .order("created_at", { ascending: false });
 
       if (givenRecommendationsError) {
-        console.error('Erro ao carregar recomendações feitas:', givenRecommendationsError)
+        console.error(
+          "Erro ao carregar recomendações feitas:",
+          givenRecommendationsError,
+        );
       }
 
       // Mapear recomendações feitas
-      const mappedGivenRecommendations = givenRecommendationsData?.map(rec => ({
-        id: rec.id,
-        recommender_id: rec.recommender_id,
-        recommended_id: rec.recommended_id,
-        recommendation_type: rec.recommendation_type as 'client_to_professional' | 'professional_to_client',
-        created_at: rec.created_at || new Date().toISOString(),
-        recommender: {
-          id: rec.recommender?.id || '',
-          full_name: rec.recommender?.full_name || '',
-          avatar_url: rec.recommender?.avatar_url || '',
-          user_type: rec.recommender?.user_type || 'client'
-        },
-        recommended: {
-          id: rec.recommended?.id || '',
-          full_name: rec.recommended?.full_name || '',
-          avatar_url: rec.recommended?.avatar_url || '',
-          user_type: rec.recommended?.user_type || 'client'
-        }
-      })) || []
+      const mappedGivenRecommendations =
+        givenRecommendationsData?.map((rec) => ({
+          id: rec.id,
+          recommender_id: rec.recommender_id,
+          recommended_id: rec.recommended_id,
+          recommendation_type: rec.recommendation_type as
+            | "client_to_professional"
+            | "professional_to_client",
+          created_at: rec.created_at || new Date().toISOString(),
+          recommender: {
+            id: rec.recommender?.id || "",
+            full_name: rec.recommender?.full_name || "",
+            avatar_url: rec.recommender?.avatar_url || "",
+            user_type: rec.recommender?.user_type || "client",
+          },
+          recommended: {
+            id: rec.recommended?.id || "",
+            full_name: rec.recommended?.full_name || "",
+            avatar_url: rec.recommended?.avatar_url || "",
+            user_type: rec.recommended?.user_type || "client",
+          },
+        })) || [];
 
-      setReviews(reviewsData || [])
-      setRecommendations(mappedRecommendations)
-      setGivenReviews(givenReviewsData || [])
-      setGivenRecommendations(mappedGivenRecommendations)
-      setViewStats({ total_views: viewStatsData?.length || 0 })
+      setReviews(reviewsData || []);
+      setRecommendations(mappedRecommendations);
+      setGivenReviews(givenReviewsData || []);
+      setGivenRecommendations(mappedGivenRecommendations);
+      setViewStats({ total_views: viewStatsData?.length || 0 });
     } catch (error) {
-      console.error('Erro ao carregar reputação:', error)
+      console.error("Erro ao carregar reputação:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [currentUser?.id])
+  }, [currentUser?.id]);
 
   // Adicionar avaliação
   const handleAddReview = async () => {
     if (!user || !reviewForm.reviewed_id) {
-      toast.error('Selecione um usuário para avaliar')
-      return
+      toast.error("Selecione um usuário para avaliar");
+      return;
     }
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
-      const { error } = await supabase
-        .from('reviews')
-        .insert([{
+      const { error } = await supabase.from("reviews").insert([
+        {
           reviewer_id: user.id,
           reviewed_id: reviewForm.reviewed_id,
           rating_person: reviewForm.rating,
           comment_person: reviewForm.comment || null,
-          review_type: reviewForm.review_type
-        }])
+          review_type: reviewForm.review_type,
+        },
+      ]);
 
-      if (error) throw error
+      if (error) throw error;
 
-      toast.success(t('reviewAddedSuccess'))
-      setShowAddReviewDialog(false)
+      toast.success(t("reviewAddedSuccess"));
       setReviewForm({
-        reviewed_id: '',
+        reviewed_id: "",
         rating: 5,
-        comment: '',
-        review_type: 'client_to_professional'
-      })
-      loadUserReputation()
+        comment: "",
+        review_type: "client_to_professional",
+      });
+      loadUserReputation();
     } catch (error) {
-      console.error('Erro ao adicionar avaliação:', error)
-      toast.error(t('errorAddingReview'))
+      console.error("Erro ao adicionar avaliação:", error);
+      toast.error(t("errorAddingReview"));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Adicionar recomendação
   const handleAddRecommendation = async () => {
     if (!user || !recommendationForm.recommended_id) {
-      toast.error(t('selectUserToRecommend'))
-      return
+      toast.error(t("selectUserToRecommend"));
+      return;
     }
 
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
-      const { error } = await supabase
-        .from('user_recommendations')
-        .insert([{
+      const { error } = await supabase.from("user_recommendations").insert([
+        {
           recommender_id: user.id,
           recommended_id: recommendationForm.recommended_id,
-          recommendation_type: recommendationForm.recommendation_type
-        }])
+          recommendation_type: recommendationForm.recommendation_type,
+        },
+      ]);
 
-      if (error) throw error
+      if (error) throw error;
 
-      toast.success(t('recommendationAddedSuccess'))
-      setShowAddRecommendationDialog(false)
+      toast.success(t("recommendationAddedSuccess"));
       setRecommendationForm({
-        recommended_id: '',
-        recommendation_type: 'client_to_professional'
-      })
-      loadUserReputation()
+        recommended_id: "",
+        recommendation_type: "client_to_professional",
+      });
+      loadUserReputation();
     } catch (error) {
-      console.error('Erro ao adicionar recomendação:', error)
-      toast.error(t('errorAddingRecommendation'))
+      console.error("Erro ao adicionar recomendação:", error);
+      toast.error(t("errorAddingRecommendation"));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Buscar usuários para avaliar/recomendar
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const searchUsers = async (query: string) => {
     if (!query.trim()) {
-      setSearchResults([])
-      return
+      setSearchResults([]);
+      return;
     }
 
-    setIsSearching(true)
+    setIsSearching(true);
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, avatar_url, user_type')
-        .ilike('full_name', `%${query}%`)
-        .neq('id', user?.id) // Excluir o próprio usuário
-        .limit(10)
+        .from("profiles")
+        .select("id, full_name, avatar_url, user_type")
+        .ilike("full_name", `%${query}%`)
+        .neq("id", user?.id) // Excluir o próprio usuário
+        .limit(10);
 
-      if (error) throw error
-      setSearchResults(data || [])
+      if (error) throw error;
+      setSearchResults(data || []);
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error)
+      console.error("Erro ao buscar usuários:", error);
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
-  }
+  };
 
   // Abrir chat com usuário
   const handleContactUser = (userId: string, userName?: string) => {
     if (!user) {
-      toast.error('Você precisa estar logado para entrar em contato')
-      return
+      toast.error("Você precisa estar logado para entrar em contato");
+      return;
     }
-    
+
     if (userId === user.id) {
-      toast.error('Você não pode entrar em contato consigo mesmo')
-      return
+      toast.error("Você não pode entrar em contato consigo mesmo");
+      return;
     }
-    
-    openChat(userId, userName || 'Usuário')
-    toast.success('Iniciando conversa...')
-  }
+
+    openChat(userId, userName || "Usuário");
+    toast.success("Iniciando conversa...");
+  };
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   // Carregar dados da reputação do usuário
   useEffect(() => {
     if (currentUser?.id && mounted) {
-      loadUserReputation()
+      loadUserReputation();
     }
-  }, [currentUser, mounted, loadUserReputation])
+  }, [currentUser, mounted, loadUserReputation]);
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   // Calcular estatísticas
   const stats = {
-    averageRating: reviews.length > 0
-      ? parseFloat((reviews.reduce((sum, r) => sum + (r.rating_person || 0), 0) / reviews.length).toFixed(1))
-      : 0,
+    averageRating:
+      reviews.length > 0
+        ? parseFloat(
+            (
+              reviews.reduce((sum, r) => sum + (r.rating_person || 0), 0) /
+              reviews.length
+            ).toFixed(1),
+          )
+        : 0,
     totalReviews: reviews.length,
     totalRecommendations: recommendations.length,
     totalViews: viewStats?.total_views || 0,
     givenReviews: givenReviews.length,
-    givenRecommendations: givenRecommendations.length
-  }
+    givenRecommendations: givenRecommendations.length,
+  };
 
-  const isProfessional = currentUser?.user_type === 'professional'
+  const isProfessional = currentUser?.user_type === "professional";
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
+    return new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   // Filtrar dados baseado na busca e filtro
   const getFilteredReviews = () => {
-    const reviewsToFilter = reviewsSubTab === 'received' ? reviews : givenReviews
-    return reviewsToFilter.filter(review => {
-      const user = reviewsSubTab === 'received' ? review.reviewer : review.reviewed
-      if (!user) return false
-      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesFilter = filterType === 'all' || user.user_type === filterType
-      return matchesSearch && matchesFilter
-    })
-  }
+    const reviewsToFilter =
+      reviewsSubTab === "received" ? reviews : givenReviews;
+    return reviewsToFilter.filter((review) => {
+      const user =
+        reviewsSubTab === "received" ? review.reviewer : review.reviewed;
+      if (!user) return false;
+      const matchesSearch = user.full_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesFilter =
+        filterType === "all" || user.user_type === filterType;
+      return matchesSearch && matchesFilter;
+    });
+  };
 
   const getFilteredRecommendations = () => {
-    const recommendationsToFilter = recommendationsSubTab === 'received' ? recommendations : givenRecommendations
-    return recommendationsToFilter.filter(rec => {
-      const user = recommendationsSubTab === 'received' ? rec.recommender : rec.recommended
-      if (!user) return false
-      const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesFilter = filterType === 'all' || user.user_type === filterType
-      return matchesSearch && matchesFilter
-    })
-  }
+    const recommendationsToFilter =
+      recommendationsSubTab === "received"
+        ? recommendations
+        : givenRecommendations;
+    return recommendationsToFilter.filter((rec) => {
+      const user =
+        recommendationsSubTab === "received"
+          ? rec.recommender
+          : rec.recommended;
+      if (!user) return false;
+      const matchesSearch = user.full_name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesFilter =
+        filterType === "all" || user.user_type === filterType;
+      return matchesSearch && matchesFilter;
+    });
+  };
 
-  const filteredReviews = getFilteredReviews()
-  const filteredRecommendations = getFilteredRecommendations()
+  const filteredReviews = getFilteredReviews();
+  const filteredRecommendations = getFilteredRecommendations();
 
   if (!mounted || loading) {
     return (
@@ -438,7 +502,7 @@ export default function ReputacaoPage() {
           </div>
         </MainLayout>
       </ClientOnly>
-    )
+    );
   }
 
   return (
@@ -454,10 +518,10 @@ export default function ReputacaoPage() {
                 </div>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                {t('title')}
+                {t("title")}
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                {t('manageReputation')}
+                {t("manageReputation")}
               </p>
             </div>
 
@@ -466,59 +530,67 @@ export default function ReputacaoPage() {
               <div className="border-b border-gray-200">
                 <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                   <button
-                    onClick={() => setActiveTab('overview')}
+                    onClick={() => setActiveTab("overview")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                      activeTab === 'overview'
-                        ? 'border-gray-500 text-gray-900 dark:text-white'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      activeTab === "overview"
+                        ? "border-gray-500 text-gray-900 dark:text-white"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{t('overview')}</span>
-                      <span className="sm:hidden">{t('general')}</span>
+                      <span className="hidden sm:inline">{t("overview")}</span>
+                      <span className="sm:hidden">{t("general")}</span>
                     </div>
                   </button>
                   <button
-                    onClick={() => setActiveTab('reviews')}
+                    onClick={() => setActiveTab("reviews")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                      activeTab === 'reviews'
-                        ? 'border-gray-700 text-gray-900 dark:text-white'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                      activeTab === "reviews"
+                        ? "border-gray-700 text-gray-900 dark:text-white"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                     }`}
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <Star className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{t('reviews')} ({stats.totalReviews})</span>
-                      <span className="sm:hidden">Aval. ({stats.totalReviews})</span>
+                      <span className="hidden sm:inline">
+                        {t("reviews")} ({stats.totalReviews})
+                      </span>
+                      <span className="sm:hidden">
+                        Aval. ({stats.totalReviews})
+                      </span>
                     </div>
                   </button>
                   <button
-                    onClick={() => setActiveTab('recommendations')}
+                    onClick={() => setActiveTab("recommendations")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                      activeTab === 'recommendations'
-                        ? 'border-gray-500 text-gray-700'
-                        : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
+                      activeTab === "recommendations"
+                        ? "border-gray-500 text-gray-700"
+                        : "border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{t('recommendations')} ({stats.totalRecommendations})</span>
-                      <span className="sm:hidden">Rec. ({stats.totalRecommendations})</span>
+                      <span className="hidden sm:inline">
+                        {t("recommendations")} ({stats.totalRecommendations})
+                      </span>
+                      <span className="sm:hidden">
+                        Rec. ({stats.totalRecommendations})
+                      </span>
                     </div>
                   </button>
                   <button
-                    onClick={() => setActiveTab('analytics')}
+                    onClick={() => setActiveTab("analytics")}
                     className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                      activeTab === 'analytics'
-                        ? 'border-gray-500 text-gray-700'
-                        : 'border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300'
+                      activeTab === "analytics"
+                        ? "border-gray-500 text-gray-700"
+                        : "border-transparent text-gray-500 hover:text-gray-600 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex items-center gap-1 sm:gap-2">
                       <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="hidden sm:inline">{t('analytics')}</span>
-                      <span className="sm:hidden">{t('analytics')}</span>
+                      <span className="hidden sm:inline">{t("analytics")}</span>
+                      <span className="sm:hidden">{t("analytics")}</span>
                     </div>
                   </button>
                 </nav>
@@ -526,7 +598,7 @@ export default function ReputacaoPage() {
             </div>
 
             {/* Conteúdo das Abas */}
-            {activeTab === 'overview' && (
+            {activeTab === "overview" && (
               <>
                 {/* Estatísticas Compactas */}
                 <Card className="mb-6 sm:mb-8 hover:shadow-xl transition-all duration-300">
@@ -535,30 +607,46 @@ export default function ReputacaoPage() {
                       {/* Visualizações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">{t('views')}</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalViews}</p>
+                        <p className="text-xs text-gray-500 text-center">
+                          {t("views")}
+                        </p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                          {stats.totalViews}
+                        </p>
                       </div>
-                      
+
                       {/* Recomendações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">{t('recommendations')}</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalRecommendations}</p>
+                        <p className="text-xs text-gray-500 text-center">
+                          {t("recommendations")}
+                        </p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                          {stats.totalRecommendations}
+                        </p>
                       </div>
-                      
+
                       {/* Avaliações */}
                       <div className="flex flex-col items-center min-w-0 flex-1">
                         <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                        <p className="text-xs text-gray-500 text-center">{t('reviews')}</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.totalReviews}</p>
+                        <p className="text-xs text-gray-500 text-center">
+                          {t("reviews")}
+                        </p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                          {stats.totalReviews}
+                        </p>
                       </div>
-                      
+
                       {/* Nota Média */}
                       {isProfessional && stats.averageRating > 0 && (
                         <div className="flex flex-col items-center min-w-0 flex-1">
                           <Target className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 mb-0.5" />
-                          <p className="text-xs text-gray-500 text-center">{t('averageRating')}</p>
-                          <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats.averageRating.toFixed(1)}</p>
+                          <p className="text-xs text-gray-500 text-center">
+                            {t("averageRating")}
+                          </p>
+                          <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                            {stats.averageRating.toFixed(1)}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -568,35 +656,35 @@ export default function ReputacaoPage() {
                 {/* Como Funciona */}
                 <Card className="mb-8">
                   <CardHeader>
-                    <CardTitle>Como Funciona Nosso Sistema de Reputação</CardTitle>
-                    <CardDescription>
-                      {t('description')}
-                    </CardDescription>
+                    <CardTitle>
+                      Como Funciona Nosso Sistema de Reputação
+                    </CardTitle>
+                    <CardDescription>{t("description")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h4 className="font-semibold mb-3 flex items-center">
                           <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                          {t('transparency')}
+                          {t("transparency")}
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-600">
-                          <li>• {t('fullName')}</li>
-                          <li>• {t('profilePhoto')}</li>
-                          <li>• {t('clearDate')}</li>
-                          <li>• {t('fullHistory')}</li>
+                          <li>• {t("fullName")}</li>
+                          <li>• {t("profilePhoto")}</li>
+                          <li>• {t("clearDate")}</li>
+                          <li>• {t("fullHistory")}</li>
                         </ul>
                       </div>
                       <div>
                         <h4 className="font-semibold mb-3 flex items-center">
                           <Star className="h-5 w-5 text-yellow-600 mr-2" />
-                          {t('simpleSystem')}
+                          {t("simpleSystem")}
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-600">
-                          <li>• {t('starRating')}</li>
-                          <li>• {t('optionalComment')}</li>
-                          <li>• {t('recommendationSystem')}</li>
-                          <li>• {t('noComplexity')}</li>
+                          <li>• {t("starRating")}</li>
+                          <li>• {t("optionalComment")}</li>
+                          <li>• {t("recommendationSystem")}</li>
+                          <li>• {t("noComplexity")}</li>
                         </ul>
                       </div>
                     </div>
@@ -605,19 +693,18 @@ export default function ReputacaoPage() {
               </>
             )}
 
-            {activeTab === 'reviews' && (
+            {activeTab === "reviews" && (
               <Card className="mb-8">
                 <CardHeader>
                   <div>
                     <CardTitle className="flex items-center">
                       <Star className="h-5 w-5 mr-2" />
-                      {t('reviews')}
+                      {t("reviews")}
                     </CardTitle>
                     <CardDescription>
-                      {reviewsSubTab === 'received' 
-                        ? `${t('reviewsReceived')} (${stats.totalReviews})`
-                        : `${t('reviewsGiven')} (${stats.givenReviews})`
-                      }
+                      {reviewsSubTab === "received"
+                        ? `${t("reviewsReceived")} (${stats.totalReviews})`
+                        : `${t("reviewsGiven")} (${stats.givenReviews})`}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -627,31 +714,39 @@ export default function ReputacaoPage() {
                     <div className="border-b border-gray-200">
                       <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
-                          onClick={() => setReviewsSubTab('received')}
+                          onClick={() => setReviewsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                            reviewsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900 dark:text-white'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            reviewsSubTab === "received"
+                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <Star className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">{t('received')} ({stats.totalReviews})</span>
-                            <span className="sm:hidden">{t('receivedShort')} ({stats.totalReviews})</span>
+                            <span className="hidden sm:inline">
+                              {t("received")} ({stats.totalReviews})
+                            </span>
+                            <span className="sm:hidden">
+                              {t("receivedShort")} ({stats.totalReviews})
+                            </span>
                           </div>
                         </button>
                         <button
-                          onClick={() => setReviewsSubTab('given')}
+                          onClick={() => setReviewsSubTab("given")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                            reviewsSubTab === 'given'
-                              ? 'border-gray-700 text-gray-900 dark:text-white'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                            reviewsSubTab === "given"
+                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">{t('given')} ({stats.givenReviews})</span>
-                            <span className="sm:hidden">{t('given')} ({stats.givenReviews})</span>
+                            <span className="hidden sm:inline">
+                              {t("given")} ({stats.givenReviews})
+                            </span>
+                            <span className="sm:hidden">
+                              {t("given")} ({stats.givenReviews})
+                            </span>
                           </div>
                         </button>
                       </nav>
@@ -671,13 +766,20 @@ export default function ReputacaoPage() {
                         />
                       </div>
                     </div>
-                    <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
+                    <Select
+                      value={filterType}
+                      onValueChange={(
+                        value: "all" | "professional" | "client",
+                      ) => setFilterType(value)}
+                    >
                       <SelectTrigger className="w-full sm:w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="professional">Profissionais</SelectItem>
+                        <SelectItem value="professional">
+                          Profissionais
+                        </SelectItem>
                         <SelectItem value="client">Clientes</SelectItem>
                       </SelectContent>
                     </Select>
@@ -686,24 +788,47 @@ export default function ReputacaoPage() {
                   {filteredReviews.length > 0 ? (
                     <div className="space-y-4">
                       {filteredReviews.map((review) => (
-                        <div key={review.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                        <div
+                          key={review.id}
+                          className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+                        >
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <AvatarImage src={reviewsSubTab === 'received' ? review.reviewer.avatar_url || '' : review.reviewed.avatar_url || ''} alt={`Avatar de ${reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}`} />
+                              <AvatarImage
+                                src={
+                                  reviewsSubTab === "received"
+                                    ? review.reviewer.avatar_url || ""
+                                    : review.reviewed.avatar_url || ""
+                                }
+                                alt={`Avatar de ${reviewsSubTab === "received" ? review.reviewer.full_name : review.reviewed.full_name}`}
+                              />
                               <AvatarFallback className="bg-blue-100 text-blue-600">
-                                {(reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name).charAt(0)}
+                                {(reviewsSubTab === "received"
+                                  ? review.reviewer.full_name
+                                  : review.reviewed.full_name
+                                ).charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            
+
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
                                   <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                    {reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name}
+                                    {reviewsSubTab === "received"
+                                      ? review.reviewer.full_name
+                                      : review.reviewed.full_name}
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
-                                    <Badge variant="outline" className="text-xs">
-                                      {(reviewsSubTab === 'received' ? review.reviewer.user_type : review.reviewed.user_type) === 'professional' ? t('professional') : t('client')}
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {(reviewsSubTab === "received"
+                                        ? review.reviewer.user_type
+                                        : review.reviewed.user_type) ===
+                                      "professional"
+                                        ? t("professional")
+                                        : t("client")}
                                     </Badge>
                                     <span className="text-xs text-gray-500">
                                       {formatDate(review.created_at)}
@@ -712,7 +837,7 @@ export default function ReputacaoPage() {
                                 </div>
                                 <div className="flex items-center space-x-2 flex-wrap">
                                   <StarRating
-                                    rating={review.rating_person || 0}        
+                                    rating={review.rating_person || 0}
                                     size="sm"
                                     variant="compact"
                                     showValue={true}
@@ -720,16 +845,27 @@ export default function ReputacaoPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleContactUser(reviewsSubTab === 'received' ? review.reviewer.id : review.reviewed.id, reviewsSubTab === 'received' ? review.reviewer.full_name : review.reviewed.full_name)}
+                                    onClick={() =>
+                                      handleContactUser(
+                                        reviewsSubTab === "received"
+                                          ? review.reviewer.id
+                                          : review.reviewed.id,
+                                        reviewsSubTab === "received"
+                                          ? review.reviewer.full_name
+                                          : review.reviewed.full_name,
+                                      )
+                                    }
                                     className="text-xs sm:text-sm"
                                   >
                                     <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                    <span className="hidden sm:inline">Contatar</span>
+                                    <span className="hidden sm:inline">
+                                      Contatar
+                                    </span>
                                     <span className="sm:hidden">Chat</span>
                                   </Button>
                                 </div>
                               </div>
-                              
+
                               {review.comment_person && (
                                 <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-md break-words">
                                   "{review.comment_person}"
@@ -743,11 +879,15 @@ export default function ReputacaoPage() {
                   ) : (
                     <EmptyState
                       icon={<Star className="h-16 w-16 text-gray-400" />}
-                      title={searchTerm || filterType !== 'all' ? t('noReviewsFound') : t('noReviews')}
+                      title={
+                        searchTerm || filterType !== "all"
+                          ? t("noReviewsFound")
+                          : t("noReviews")
+                      }
                       description={
-                        searchTerm || filterType !== 'all'
-                          ? 'Tente ajustar os filtros de busca.'
-                          : 'Você ainda não recebeu avaliações. Continue usando a plataforma!'
+                        searchTerm || filterType !== "all"
+                          ? "Tente ajustar os filtros de busca."
+                          : "Você ainda não recebeu avaliações. Continue usando a plataforma!"
                       }
                       variant="minimal"
                     />
@@ -756,7 +896,7 @@ export default function ReputacaoPage() {
               </Card>
             )}
 
-            {activeTab === 'recommendations' && (
+            {activeTab === "recommendations" && (
               <Card className="mb-8">
                 <CardHeader>
                   <div>
@@ -765,10 +905,9 @@ export default function ReputacaoPage() {
                       Recomendações
                     </CardTitle>
                     <CardDescription>
-                      {recommendationsSubTab === 'received' 
+                      {recommendationsSubTab === "received"
                         ? `Recomendações que você recebeu (${stats.totalRecommendations})`
-                        : `Recomendações que você fez (${stats.givenRecommendations})`
-                      }
+                        : `Recomendações que você fez (${stats.givenRecommendations})`}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -778,31 +917,39 @@ export default function ReputacaoPage() {
                     <div className="border-b border-gray-200">
                       <nav className="-mb-px flex flex-wrap gap-2 sm:gap-4 lg:gap-8">
                         <button
-                          onClick={() => setRecommendationsSubTab('received')}
+                          onClick={() => setRecommendationsSubTab("received")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                            recommendationsSubTab === 'received'
-                              ? 'border-gray-500 text-gray-900 dark:text-white'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            recommendationsSubTab === "received"
+                              ? "border-gray-500 text-gray-900 dark:text-white"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                           }`}
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Recebidas ({stats.totalRecommendations})</span>
-                            <span className="sm:hidden">Rec. ({stats.totalRecommendations})</span>
+                            <span className="hidden sm:inline">
+                              Recebidas ({stats.totalRecommendations})
+                            </span>
+                            <span className="sm:hidden">
+                              Rec. ({stats.totalRecommendations})
+                            </span>
                           </div>
                         </button>
                         <button
-                          onClick={() => setRecommendationsSubTab('given')}
+                          onClick={() => setRecommendationsSubTab("given")}
                           className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors duration-200 ${
-                            recommendationsSubTab === 'given'
-                              ? 'border-gray-700 text-gray-900 dark:text-white'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400'
+                            recommendationsSubTab === "given"
+                              ? "border-gray-700 text-gray-900 dark:text-white"
+                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-400"
                           }`}
                         >
                           <div className="flex items-center gap-1 sm:gap-2">
                             <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Feitas ({stats.givenRecommendations})</span>
-                            <span className="sm:hidden">Feitas ({stats.givenRecommendations})</span>
+                            <span className="hidden sm:inline">
+                              Feitas ({stats.givenRecommendations})
+                            </span>
+                            <span className="sm:hidden">
+                              Feitas ({stats.givenRecommendations})
+                            </span>
                           </div>
                         </button>
                       </nav>
@@ -822,13 +969,20 @@ export default function ReputacaoPage() {
                         />
                       </div>
                     </div>
-                    <Select value={filterType} onValueChange={(value: 'all' | 'professional' | 'client') => setFilterType(value)}>
+                    <Select
+                      value={filterType}
+                      onValueChange={(
+                        value: "all" | "professional" | "client",
+                      ) => setFilterType(value)}
+                    >
                       <SelectTrigger className="w-full sm:w-40">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="professional">Profissionais</SelectItem>
+                        <SelectItem value="professional">
+                          Profissionais
+                        </SelectItem>
                         <SelectItem value="client">Clientes</SelectItem>
                       </SelectContent>
                     </Select>
@@ -837,44 +991,80 @@ export default function ReputacaoPage() {
                   {filteredRecommendations.length > 0 ? (
                     <div className="space-y-4">
                       {filteredRecommendations.map((rec) => (
-                        <div key={rec.id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
+                        <div
+                          key={rec.id}
+                          className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors"
+                        >
                           <div className="flex items-start space-x-3 sm:space-x-4">
                             <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <AvatarImage src={recommendationsSubTab === 'received' ? rec.recommender.avatar_url || '' : rec.recommended.avatar_url || ''} alt={`Avatar de ${recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}`} />
+                              <AvatarImage
+                                src={
+                                  recommendationsSubTab === "received"
+                                    ? rec.recommender.avatar_url || ""
+                                    : rec.recommended.avatar_url || ""
+                                }
+                                alt={`Avatar de ${recommendationsSubTab === "received" ? rec.recommender.full_name : rec.recommended.full_name}`}
+                              />
                               <AvatarFallback className="bg-green-100 text-green-600">
-                                {(recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name).charAt(0)}
+                                {(recommendationsSubTab === "received"
+                                  ? rec.recommender.full_name
+                                  : rec.recommended.full_name
+                                ).charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            
+
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                                 <div className="min-w-0">
                                   <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                    {recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name}
+                                    {recommendationsSubTab === "received"
+                                      ? rec.recommender.full_name
+                                      : rec.recommended.full_name}
                                   </h4>
                                   <div className="flex items-center space-x-2 flex-wrap">
-                                    <Badge variant="outline" className="text-xs">
-                                      {(recommendationsSubTab === 'received' ? rec.recommender.user_type : rec.recommended.user_type) === 'professional' ? 'Profissional' : 'Cliente'}
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {(recommendationsSubTab === "received"
+                                        ? rec.recommender.user_type
+                                        : rec.recommended.user_type) ===
+                                      "professional"
+                                        ? "Profissional"
+                                        : "Cliente"}
                                     </Badge>
                                     <span className="text-xs text-gray-500">
                                       {formatDate(rec.created_at)}
                                     </span>
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex items-center space-x-2 flex-wrap">
                                   <ThumbsUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
                                   <span className="text-xs sm:text-sm text-green-600 font-medium">
-                                    {recommendationsSubTab === 'received' ? 'Recomendou' : 'Recomendado'}
+                                    {recommendationsSubTab === "received"
+                                      ? "Recomendou"
+                                      : "Recomendado"}
                                   </span>
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleContactUser(recommendationsSubTab === 'received' ? rec.recommender.id : rec.recommended.id, recommendationsSubTab === 'received' ? rec.recommender.full_name : rec.recommended.full_name)}
+                                    onClick={() =>
+                                      handleContactUser(
+                                        recommendationsSubTab === "received"
+                                          ? rec.recommender.id
+                                          : rec.recommended.id,
+                                        recommendationsSubTab === "received"
+                                          ? rec.recommender.full_name
+                                          : rec.recommended.full_name,
+                                      )
+                                    }
                                     className="text-xs sm:text-sm"
                                   >
                                     <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                    <span className="hidden sm:inline">Contatar</span>
+                                    <span className="hidden sm:inline">
+                                      Contatar
+                                    </span>
                                     <span className="sm:hidden">Chat</span>
                                   </Button>
                                 </div>
@@ -888,13 +1078,14 @@ export default function ReputacaoPage() {
                     <div className="text-center py-8">
                       <ThumbsUp className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                        {searchTerm || filterType !== 'all' ? t('noRecommendationsFound') : t('noRecommendations')}
+                        {searchTerm || filterType !== "all"
+                          ? t("noRecommendationsFound")
+                          : t("noRecommendations")}
                       </h3>
                       <p className="text-gray-600">
-                        {searchTerm || filterType !== 'all' 
-                          ? 'Tente ajustar os filtros de busca.'
-                          : 'Continue se destacando para receber recomendações!'
-                        }
+                        {searchTerm || filterType !== "all"
+                          ? "Tente ajustar os filtros de busca."
+                          : "Continue se destacando para receber recomendações!"}
                       </p>
                     </div>
                   )}
@@ -902,7 +1093,7 @@ export default function ReputacaoPage() {
               </Card>
             )}
 
-            {activeTab === 'analytics' && (
+            {activeTab === "analytics" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -914,16 +1105,28 @@ export default function ReputacaoPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Avaliações este mês</span>
-                        <span className="font-semibold">{stats.totalReviews}</span>
+                        <span className="text-sm text-gray-600">
+                          Avaliações este mês
+                        </span>
+                        <span className="font-semibold">
+                          {stats.totalReviews}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Recomendações este mês</span>
-                        <span className="font-semibold">{stats.totalRecommendations}</span>
+                        <span className="text-sm text-gray-600">
+                          Recomendações este mês
+                        </span>
+                        <span className="font-semibold">
+                          {stats.totalRecommendations}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Visualizações este mês</span>
-                        <span className="font-semibold">{stats.totalViews}</span>
+                        <span className="text-sm text-gray-600">
+                          Visualizações este mês
+                        </span>
+                        <span className="font-semibold">
+                          {stats.totalViews}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -941,22 +1144,32 @@ export default function ReputacaoPage() {
                       <div className="flex items-start space-x-3">
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                         <div>
-                          <p className="font-medium text-sm">Seja ativo na plataforma</p>
-                          <p className="text-xs text-gray-600">Interaja com outros usuários</p>
+                          <p className="font-medium text-sm">
+                            Seja ativo na plataforma
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            Interaja com outros usuários
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-3">
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                         <div>
-                          <p className="font-medium text-sm">Complete seu perfil</p>
-                          <p className="text-xs text-gray-600">Adicione informações detalhadas</p>
+                          <p className="font-medium text-sm">
+                            Complete seu perfil
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            Adicione informações detalhadas
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-3">
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                         <div>
                           <p className="font-medium text-sm">Seja responsivo</p>
-                          <p className="text-xs text-gray-600">Responda mensagens rapidamente</p>
+                          <p className="text-xs text-gray-600">
+                            Responda mensagens rapidamente
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -968,5 +1181,5 @@ export default function ReputacaoPage() {
         </div>
       </MainLayout>
     </ClientOnly>
-  )
+  );
 }

@@ -21,13 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -526,84 +520,81 @@ export default function AdminPostsPage() {
       />
 
       {/* Modal de Detalhes */}
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedPost?.title || "Post sem título"}
-            </DialogTitle>
-            <DialogDescription>Detalhes do post</DialogDescription>
-          </DialogHeader>
-          {selectedPost && (
-            <div className="space-y-4">
+      {/* Modal de Detalhes */}
+      <ResponsiveModal
+        isOpen={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        title={selectedPost?.title || "Post sem título"}
+        description="Detalhes do post"
+        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+      >
+        {selectedPost && (
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-2">Autor</h4>
+              <p className="text-sm text-gray-600">
+                {selectedPost.profiles?.full_name || "Desconhecido"} (
+                {selectedPost.profiles?.email || "N/A"})
+              </p>
+            </div>
+            {selectedPost.content && (
               <div>
-                <h4 className="font-semibold mb-2">Autor</h4>
-                <p className="text-sm text-gray-600">
-                  {selectedPost.profiles?.full_name || "Desconhecido"} (
-                  {selectedPost.profiles?.email || "N/A"})
+                <h4 className="font-semibold mb-2">Conteúdo</h4>
+                <p className="text-sm whitespace-pre-wrap">
+                  {selectedPost.content}
                 </p>
               </div>
-              {selectedPost.content && (
-                <div>
-                  <h4 className="font-semibold mb-2">Conteúdo</h4>
-                  <p className="text-sm whitespace-pre-wrap">
-                    {selectedPost.content}
-                  </p>
+            )}
+            <div>
+              <h4 className="font-semibold mb-2">Estatísticas</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-red-500">
+                    {selectedPost.stats?.likes_count || 0}
+                  </div>
+                  <div className="text-xs text-gray-500">Curtidas</div>
                 </div>
-              )}
-              <div>
-                <h4 className="font-semibold mb-2">Estatísticas</h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-red-500">
-                      {selectedPost.stats?.likes_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Curtidas</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-500">
+                    {selectedPost.stats?.comments_count || 0}
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-500">
-                      {selectedPost.stats?.comments_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-500">Comentários</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-500">
-                      {selectedPost.stats?.shares_count || 0}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Compartilhamentos
-                    </div>
-                  </div>
+                  <div className="text-xs text-gray-500">Comentários</div>
                 </div>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Informações</h4>
-                <div className="space-y-1 text-sm">
-                  <p>
-                    <strong>ID:</strong> {selectedPost.id}
-                  </p>
-                  <p>
-                    <strong>Criado em:</strong>{" "}
-                    {new Date(selectedPost.created_at).toLocaleString("pt-BR")}
-                  </p>
-                  <p>
-                    <strong>Atualizado em:</strong>{" "}
-                    {new Date(selectedPost.updated_at).toLocaleString("pt-BR")}
-                  </p>
-                  <p>
-                    <strong>Premium:</strong>{" "}
-                    {selectedPost.is_premium ? "Sim" : "Não"}
-                  </p>
-                  <p>
-                    <strong>Destaque:</strong>{" "}
-                    {selectedPost.is_featured ? "Sim" : "Não"}
-                  </p>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-500">
+                    {selectedPost.stats?.shares_count || 0}
+                  </div>
+                  <div className="text-xs text-gray-500">Compartilhamentos</div>
                 </div>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            <div>
+              <h4 className="font-semibold mb-2">Informações</h4>
+              <div className="space-y-1 text-sm">
+                <p>
+                  <strong>ID:</strong> {selectedPost.id}
+                </p>
+                <p>
+                  <strong>Criado em:</strong>{" "}
+                  {new Date(selectedPost.created_at).toLocaleString("pt-BR")}
+                </p>
+                <p>
+                  <strong>Atualizado em:</strong>{" "}
+                  {new Date(selectedPost.updated_at).toLocaleString("pt-BR")}
+                </p>
+                <p>
+                  <strong>Premium:</strong>{" "}
+                  {selectedPost.is_premium ? "Sim" : "Não"}
+                </p>
+                <p>
+                  <strong>Destaque:</strong>{" "}
+                  {selectedPost.is_featured ? "Sim" : "Não"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </ResponsiveModal>
 
       {/* Dialog de Confirmação de Deleção */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

@@ -12,13 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1010,772 +1004,743 @@ export default function ClassificadosPage() {
               <div className="flex items-center gap-1 sm:gap-4">
                 {user && (
                   <>
-                    <Dialog
-                      open={showCreateDialog}
+                    <Button
+                      id="create-ad-button"
+                      size="sm"
+                      variant="outline"
+                      className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
+                      onClick={handleOpenCreateDialog}
+                    >
+                      <Plus className="h-3 w-3 sm:mr-1 text-gray-700 dark:text-gray-300" />
+                      <span className="hidden sm:inline text-gray-900 dark:text-gray-100">
+                        Novo Anúncio
+                      </span>
+                      <span className="sm:hidden ml-0.5 text-gray-900 dark:text-gray-100">
+                        Novo
+                      </span>
+                    </Button>
+                    <ResponsiveModal
+                      isOpen={showCreateDialog}
                       onOpenChange={setShowCreateDialog}
+                      title="Criar Novo Anúncio"
                     >
-                      <DialogTrigger asChild>
-                        <Button
-                          id="create-ad-button"
-                          size="sm"
-                          variant="outline"
-                          className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 text-[10px] sm:text-xs px-2 py-1.5 sm:px-3 sm:py-2 h-7 sm:h-8 whitespace-nowrap"
-                          onClick={handleOpenCreateDialog}
-                        >
-                          <Plus className="h-3 w-3 sm:mr-1 text-gray-700 dark:text-gray-300" />
-                          <span className="hidden sm:inline text-gray-900 dark:text-gray-100">
-                            Novo Anúncio
-                          </span>
-                          <span className="sm:hidden ml-0.5 text-gray-900 dark:text-gray-100">
-                            Novo
-                          </span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] bg-white dark:bg-black border-gray-200 dark:border-gray-800 p-0 overflow-hidden flex flex-col">
-                        <DialogHeader className="p-4 sm:p-6 pb-2 flex-shrink-0">
-                          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                            Criar Novo Anúncio
-                          </DialogTitle>
-                        </DialogHeader>
-                        <div className="flex-1 overflow-y-auto">
-                          <UnifiedCreateAdForm
-                            onSubmit={handleCreateUnifiedAd}
-                            onCancel={() => setShowCreateDialog(false)}
-                            isLoading={isCreatingAd}
-                          />
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                      <UnifiedCreateAdForm
+                        onSubmit={handleCreateUnifiedAd}
+                        onCancel={() => setShowCreateDialog(false)}
+                        isLoading={isCreatingAd}
+                      />
+                    </ResponsiveModal>
 
-                    {/* Dialog de Renovar Premium */}
-                    <Dialog
-                      open={showRenewPremiumDialog}
+                    {/* Modal de Renovar Premium */}
+                    <ResponsiveModal
+                      isOpen={showRenewPremiumDialog}
                       onOpenChange={setShowRenewPremiumDialog}
+                      title={
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
+                          <span>Renovar Anúncio Premium</span>
+                        </div>
+                      }
                     >
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black border-gray-200 dark:border-gray-800">
-                        <DialogHeader>
-                          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <Crown className="h-5 w-5 text-yellow-600 dark:text-yellow-500" />
-                            Renovar Anúncio Premium
-                          </DialogTitle>
-                        </DialogHeader>
-                        {renewingAdId && (
-                          <RenewPremiumAdForm
-                            adId={renewingAdId}
-                            adTitle={
-                              selectedAd?.title ||
-                              classifiedAds.find((ad) => ad.id === renewingAdId)
-                                ?.title ||
-                              "Anúncio"
-                            }
-                            onSubmit={() => {
-                              setShowRenewPremiumDialog(false);
-                              setRenewingAdId(null);
-                              setSelectedAd(null);
-                              // Recarregar anúncios
-                              loadClassifiedAds();
-                            }}
-                            onCancel={() => {
-                              setShowRenewPremiumDialog(false);
-                              setRenewingAdId(null);
-                            }}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
+                      {renewingAdId && (
+                        <RenewPremiumAdForm
+                          adId={renewingAdId}
+                          adTitle={
+                            selectedAd?.title ||
+                            classifiedAds.find((ad) => ad.id === renewingAdId)
+                              ?.title ||
+                            "Anúncio"
+                          }
+                          onSubmit={() => {
+                            setShowRenewPremiumDialog(false);
+                            setRenewingAdId(null);
+                            setSelectedAd(null);
+                            // Recarregar anúncios
+                            loadClassifiedAds();
+                          }}
+                          onCancel={() => {
+                            setShowRenewPremiumDialog(false);
+                            setRenewingAdId(null);
+                          }}
+                        />
+                      )}
+                    </ResponsiveModal>
                   </>
                 )}
 
                 {/* Dialog de Edição */}
-                <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                  <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-                    <DialogHeader>
-                      <DialogTitle className="text-gray-900 dark:text-white">
-                        {t("editAd")}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
+                <ResponsiveModal
+                  isOpen={showEditDialog}
+                  onOpenChange={setShowEditDialog}
+                  title={t("editAd")}
+                  footer={
+                    <div className="flex justify-end space-x-2 w-full">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowEditDialog(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button onClick={handleSaveEdit} disabled={isEditingAd}>
+                        {isEditingAd ? "Salvando..." : "Salvar Alterações"}
+                      </Button>
+                    </div>
+                  }
+                >
+                  <div className="space-y-4 py-4">
+                    <div>
+                      <Label htmlFor="edit-title">Título *</Label>
+                      <Input
+                        id="edit-title"
+                        value={formData.title}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
+                        placeholder="Ex: Preciso de um pedreiro"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-description">Descrição *</Label>
+                      <Textarea
+                        id="edit-description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                        placeholder="Descreva o que você precisa ou oferece..."
+                        rows={4}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="edit-ad_type">Tipo de Anúncio *</Label>
+                      <Select
+                        value={formData.ad_type}
+                        onValueChange={(value: "offer" | "request") =>
+                          setFormData((prev) => ({ ...prev, ad_type: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de anúncio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="offer">
+                            <div className="flex items-center gap-2">
+                              <ShoppingCart className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                              <span>Oferta - Estou oferecendo um serviço</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="request">
+                            <div className="flex items-center gap-2">
+                              <HandHeart className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                              <span>Solicitação - Preciso de um serviço</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="edit-title">Título *</Label>
-                        <Input
-                          id="edit-title"
-                          value={formData.title}
-                          onChange={(e) =>
+                        <Label htmlFor="edit-category">Serviços *</Label>
+                        <Combobox
+                          options={categoryOptions}
+                          value={formData.category}
+                          onValueChange={(value) =>
                             setFormData((prev) => ({
                               ...prev,
-                              title: e.target.value,
+                              category: value,
                             }))
                           }
-                          placeholder="Ex: Preciso de um pedreiro"
+                          placeholder="Selecione"
+                          searchPlaceholder="Buscar categoria..."
+                          emptyMessage="Nenhuma categoria encontrada."
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="edit-description">Descrição *</Label>
-                        <Textarea
-                          id="edit-description"
-                          value={formData.description}
-                          onChange={(e) =>
+                        <Label htmlFor="edit-state">Estado</Label>
+                        <EstadoCombobox
+                          value={formData.location_state}
+                          onValueChange={(value) => {
                             setFormData((prev) => ({
                               ...prev,
-                              description: e.target.value,
-                            }))
-                          }
-                          placeholder="Descreva o que você precisa ou oferece..."
-                          rows={4}
+                              location_state: value,
+                              location_city: "",
+                            }));
+                            if (value) loadCidades(value);
+                          }}
                         />
                       </div>
+                    </div>
 
+                    {formData.location_state && (
                       <div>
-                        <Label htmlFor="edit-ad_type">Tipo de Anúncio *</Label>
-                        <Select
-                          value={formData.ad_type}
-                          onValueChange={(value: "offer" | "request") =>
-                            setFormData((prev) => ({ ...prev, ad_type: value }))
+                        <Label htmlFor="edit-city">Cidade</Label>
+                        <CidadeCombobox
+                          value={formData.location_city}
+                          onValueChange={(value) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              location_city: value,
+                            }))
                           }
+                          estadoSigla={formData.location_state}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </ResponsiveModal>
+
+                {/* Modal de Visualização do Anúncio */}
+                <ResponsiveModal
+                  isOpen={showAdModal}
+                  onOpenChange={setShowAdModal}
+                  title={selectedAd?.title}
+                  footer={
+                    selectedAd && (
+                      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4 w-full border-t border-gray-200 dark:border-gray-700 pt-3 mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAdModal(false)}
+                          className="w-full sm:w-auto order-2 sm:order-1 text-sm"
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o tipo de anúncio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="offer">
-                              <div className="flex items-center gap-2">
-                                <ShoppingCart className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-                                <span>
-                                  Oferta - Estou oferecendo um serviço
-                                </span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="request">
-                              <div className="flex items-center gap-2">
-                                <HandHeart className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                <span>Solicitação - Preciso de um serviço</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                          Fechar
+                        </Button>
+                        <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto order-1 sm:order-2">
+                          {/* Menu de ações com 3 pontinhos */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0 flex-shrink-0"
+                              >
+                                <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {/* Ações do dono do anúncio */}
+                              {user && selectedAd.user_id === user.id && (
+                                <>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShowAdModal(false);
+                                      setEditingAdId(selectedAd.id);
+                                      setFormData({
+                                        title: selectedAd.title,
+                                        description: selectedAd.description,
+                                        category: selectedAd.category,
+                                        location_state:
+                                          selectedAd.location_state,
+                                        location_city: selectedAd.location_city,
+                                        price_range: "",
+                                        urgency_level: "normal",
+                                        ad_type:
+                                          selectedAd.ad_type === "oferecer"
+                                            ? "offer"
+                                            : "request",
+                                      });
+                                      setShowEditDialog(true);
+                                    }}
+                                    className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    {t("editAd")}
+                                  </DropdownMenuItem>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="edit-category">Serviços *</Label>
-                          <Combobox
-                            options={categoryOptions}
-                            value={formData.category}
-                            onValueChange={(value) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                category: value,
-                              }))
-                            }
-                            placeholder="Selecione"
-                            searchPlaceholder="Buscar categoria..."
-                            emptyMessage="Nenhuma categoria encontrada."
-                          />
-                        </div>
+                                  {/* Botão de renovar premium se o anúncio expirou */}
+                                  {selectedAd.is_premium &&
+                                    selectedAd.premium_expires_at &&
+                                    new Date(selectedAd.premium_expires_at) <
+                                      new Date() && (
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setShowAdModal(false);
+                                          setRenewingAdId(selectedAd.id);
+                                          setShowRenewPremiumDialog(true);
+                                        }}
+                                        className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
+                                      >
+                                        <Crown className="h-4 w-4 mr-2" />
+                                        {t("renewPremium")}
+                                      </DropdownMenuItem>
+                                    )}
 
-                        <div>
-                          <Label htmlFor="edit-state">Estado</Label>
-                          <EstadoCombobox
-                            value={formData.location_state}
-                            onValueChange={(value) => {
-                              setFormData((prev) => ({
-                                ...prev,
-                                location_state: value,
-                                location_city: "",
-                              }));
-                              if (value) loadCidades(value);
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShowAdModal(false);
+                                      handleDeleteClick(selectedAd.id);
+                                    }}
+                                    className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {t("deleteAd")}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+
+                              {/* Ações para super_admin (mesmo quando não são donos) */}
+                              {user &&
+                                isSuperAdmin &&
+                                selectedAd.user_id !== user.id && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setShowAdModal(false);
+                                      handleDeleteClick(selectedAd.id);
+                                    }}
+                                    className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Deletar Anúncio (Super Admin)
+                                  </DropdownMenuItem>
+                                )}
+
+                              {/* Botão de denunciar (para usuários que não são donos do anúncio e não são super_admin) */}
+                              {user &&
+                                selectedAd.user_id !== user.id &&
+                                !isSuperAdmin && (
+                                  <DropdownMenuItem asChild>
+                                    <ReportButton
+                                      type="classified"
+                                      targetId={selectedAd.id}
+                                      targetName={selectedAd.title}
+                                      asDropdownItem={true}
+                                      className="w-full justify-start text-gray-700 hover:text-error-600 hover:bg-error-50"
+                                    />
+                                  </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          <Button
+                            onClick={() => {
+                              setShowAdModal(false);
+                              handleContactUser(
+                                selectedAd.user_id,
+                                selectedAd.user_name,
+                              );
                             }}
-                          />
+                            className={`flex-1 sm:flex-initial text-xs sm:text-sm px-3 py-2 sm:px-4 h-8 sm:h-9 ${
+                              selectedAd.ad_type === "oferecer"
+                                ? "bg-gray-700 hover:bg-gray-800"
+                                : "bg-gray-500 hover:bg-gray-600"
+                            } text-white`}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                            <span className="hidden sm:inline">
+                              {t("contact")}
+                            </span>
+                            <span className="sm:hidden">{t("contact")}</span>
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  }
+                >
+                  {selectedAd && (
+                    <div className="space-y-3 sm:space-y-6 py-4">
+                      {/* Header com Avatar e Info do Usuário */}
+                      <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <div className="self-center sm:self-start">
+                          <Link href={`/perfil/${selectedAd.user_id}`}>
+                            <UserAvatar
+                              src={selectedAd.user_avatar_url}
+                              alt={selectedAd.user_name}
+                              fallback={selectedAd.user_name
+                                .charAt(0)
+                                .toUpperCase()}
+                              size="md"
+                              userId={selectedAd.user_id}
+                              showReferralBadge={true}
+                              className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer"
+                            />
+                          </Link>
+                        </div>
+                        <div className="flex-1 w-full text-center sm:text-left">
+                          <Link
+                            href={`/perfil/${selectedAd.user_id}`}
+                            className="block"
+                          >
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer">
+                              {selectedAd.user_name}
+                            </h3>
+                          </Link>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                selectedAd.ad_type === "oferecer"
+                                  ? "border-gray-400 text-gray-800 bg-gray-100"
+                                  : "border-gray-300 text-gray-600 bg-gray-50"
+                              }`}
+                            >
+                              {selectedAd.ad_type === "oferecer"
+                                ? "Oferta"
+                                : "Solicitação"}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                selectedAd.ad_type === "oferecer"
+                                  ? "border-gray-400 text-gray-800 bg-gray-100"
+                                  : "border-gray-300 text-gray-600 bg-gray-50"
+                              }`}
+                            >
+                              {getCategoryIcon(selectedAd.category)}{" "}
+                              {selectedAd.category}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600">
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            {selectedAd.location_city},{" "}
+                            {selectedAd.location_state}
+                          </div>
                         </div>
                       </div>
 
-                      {formData.location_state && (
-                        <div>
-                          <Label htmlFor="edit-city">Cidade</Label>
-                          <CidadeCombobox
-                            value={formData.location_city}
-                            onValueChange={(value) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                location_city: value,
-                              }))
-                            }
-                            estadoSigla={formData.location_state}
-                          />
+                      {/* Descrição Completa */}
+                      <div className="space-y-2 sm:space-y-3">
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                          Descrição
+                        </h4>
+                        <div className="prose max-w-none">
+                          <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                            {selectedAd.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Galeria de Imagens */}
+                      {selectedAd.images && selectedAd.images.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                            Fotos do Serviço
+                          </h4>
+                          {expandedImage ? (
+                            /* Imagem Expandida - Centralizada */
+                            <div
+                              className="fixed inset-0 z-50 bg-black/90 dark:bg-black/95 flex items-center justify-center p-4"
+                              onClick={() => setExpandedImage(null)}
+                            >
+                              <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedImage(null);
+                                  }}
+                                  className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur-sm transition-all"
+                                >
+                                  <X className="h-6 w-6" />
+                                </button>
+                                <img
+                                  src={expandedImage}
+                                  alt={`${selectedAd.title} - Imagem expandida`}
+                                  className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            /* Grid de Miniaturas */
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                              {selectedAd.images.map(
+                                (image: string, index: number) => (
+                                  <div
+                                    key={index}
+                                    className="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 hover:border-amber-400 dark:hover:border-amber-600 transition-all"
+                                    onClick={() => setExpandedImage(image)}
+                                  >
+                                    <img
+                                      src={image}
+                                      alt={`${selectedAd.title} - Foto ${index + 1}`}
+                                      className="w-full h-32 sm:h-40 object-cover hover:scale-105 transition-transform duration-300"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = "none";
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
+                                      <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+                                        Clique para expandir
+                                      </span>
+                                    </div>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowEditDialog(false)}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button onClick={handleSaveEdit} disabled={isEditingAd}>
-                          {isEditingAd ? "Salvando..." : "Salvar Alterações"}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Modal de Visualização do Anúncio */}
-                <Dialog open={showAdModal} onOpenChange={setShowAdModal}>
-                  <DialogContent className="w-[95vw] max-w-4xl max-h-[75vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-                    <DialogHeader className="pb-3 sm:pb-4">
-                      <DialogTitle className="text-base sm:text-lg md:text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                        {selectedAd?.title}
-                      </DialogTitle>
-                    </DialogHeader>
-
-                    {selectedAd && (
-                      <div className="space-y-3 sm:space-y-6">
-                        {/* Header com Avatar e Info do Usuário */}
-                        <div className="flex flex-col sm:flex-row items-start space-y-2 sm:space-y-0 sm:space-x-4 p-2.5 sm:p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                          <div className="self-center sm:self-start">
-                            <Link href={`/perfil/${selectedAd.user_id}`}>
-                              <UserAvatar
-                                src={selectedAd.user_avatar_url}
-                                alt={selectedAd.user_name}
-                                fallback={selectedAd.user_name
-                                  .charAt(0)
-                                  .toUpperCase()}
-                                size="md"
-                                userId={selectedAd.user_id}
-                                showReferralBadge={true}
-                                className="w-12 h-12 sm:w-16 sm:h-16 ring-2 ring-white shadow-md hover:ring-blue-500 transition-all duration-200 cursor-pointer"
-                              />
-                            </Link>
-                          </div>
-                          <div className="flex-1 w-full text-center sm:text-left">
-                            <Link
-                              href={`/perfil/${selectedAd.user_id}`}
-                              className="block"
-                            >
-                              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer">
-                                {selectedAd.user_name}
-                              </h3>
-                            </Link>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${
-                                  selectedAd.ad_type === "oferecer"
-                                    ? "border-gray-400 text-gray-800 bg-gray-100"
-                                    : "border-gray-300 text-gray-600 bg-gray-50"
-                                }`}
-                              >
-                                {selectedAd.ad_type === "oferecer"
-                                  ? "Oferta"
-                                  : "Solicitação"}
-                              </Badge>
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${
-                                  selectedAd.ad_type === "oferecer"
-                                    ? "border-gray-400 text-gray-800 bg-gray-100"
-                                    : "border-gray-300 text-gray-600 bg-gray-50"
-                                }`}
-                              >
-                                {getCategoryIcon(selectedAd.category)}{" "}
-                                {selectedAd.category}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center justify-center sm:justify-start text-xs sm:text-sm text-gray-600">
-                              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                              {selectedAd.location_city},{" "}
-                              {selectedAd.location_state}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Descrição Completa */}
-                        <div className="space-y-2 sm:space-y-3">
-                          <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-                            Descrição
-                          </h4>
-                          <div className="prose max-w-none">
-                            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                              {selectedAd.description}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Galeria de Imagens */}
-                        {selectedAd.images && selectedAd.images.length > 0 && (
-                          <div className="space-y-3">
-                            <h4 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
-                              Fotos do Serviço
+                      {/* Informações de Contato (apenas para premium) */}
+                      {selectedAd.is_premium &&
+                        !(selectedAd.premium_expires_at
+                          ? new Date(selectedAd.premium_expires_at) < new Date()
+                          : false) &&
+                        (selectedAd.contact_phone ||
+                          selectedAd.contact_email) && (
+                          <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                            <h4 className="text-sm sm:text-base font-semibold text-amber-900 dark:text-amber-200 mb-2">
+                              Informações de Contato
                             </h4>
-                            {expandedImage ? (
-                              /* Imagem Expandida - Centralizada */
-                              <div
-                                className="fixed inset-0 z-50 bg-black/90 dark:bg-black/95 flex items-center justify-center p-4"
-                                onClick={() => setExpandedImage(null)}
-                              >
-                                <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setExpandedImage(null);
-                                    }}
-                                    className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur-sm transition-all"
-                                  >
-                                    <X className="h-6 w-6" />
-                                  </button>
-                                  <img
-                                    src={expandedImage}
-                                    alt={`${selectedAd.title} - Imagem expandida`}
-                                    className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </div>
-                              </div>
-                            ) : (
-                              /* Grid de Miniaturas */
-                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                                {selectedAd.images.map(
-                                  (image: string, index: number) => (
-                                    <div
-                                      key={index}
-                                      className="relative group cursor-pointer overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 hover:border-amber-400 dark:hover:border-amber-600 transition-all"
-                                      onClick={() => setExpandedImage(image)}
-                                    >
-                                      <img
-                                        src={image}
-                                        alt={`${selectedAd.title} - Foto ${index + 1}`}
-                                        className="w-full h-32 sm:h-40 object-cover hover:scale-105 transition-transform duration-300"
-                                        onError={(e) => {
-                                          e.currentTarget.style.display =
-                                            "none";
-                                        }}
-                                      />
-                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
-                                        <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
-                                          Clique para expandir
-                                        </span>
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Informações de Contato (apenas para premium) */}
-                        {selectedAd.is_premium &&
-                          !(selectedAd.premium_expires_at
-                            ? new Date(selectedAd.premium_expires_at) <
-                              new Date()
-                            : false) &&
-                          (selectedAd.contact_phone ||
-                            selectedAd.contact_email) && (
-                            <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                              <h4 className="text-sm sm:text-base font-semibold text-amber-900 dark:text-amber-200 mb-2">
-                                Informações de Contato
-                              </h4>
-                              <div className="space-y-2">
-                                {selectedAd.contact_phone && (
-                                  <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
-                                    <span className="font-semibold">
-                                      📞 Telefone:
-                                    </span>
-                                    <span>{selectedAd.contact_phone}</span>
-                                  </div>
-                                )}
-                                {selectedAd.contact_email && (
-                                  <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
-                                    <span className="font-semibold">
-                                      ✉️ Email:
-                                    </span>
-                                    <span>{selectedAd.contact_email}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                        {/* Faixa de Preço (se houver) */}
-                        {selectedAd.price_range && (
-                          <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                            <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                              <span className="font-semibold mr-2">
-                                💰 Faixa de Preço:
-                              </span>
-                              <span>{selectedAd.price_range}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Informações do Anunciante */}
-                        {(selectedAd as any).user_profile && (
-                          <div className="p-3 sm:p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
-                            <h4 className="text-sm sm:text-base font-semibold text-primary-900 dark:text-primary-200 mb-3">
-                              📋 Sobre o Anunciante
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
-                              {(selectedAd as any).user_profile.idade && (
-                                <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                  <span className="font-semibold">Idade:</span>
-                                  <span>
-                                    {(selectedAd as any).user_profile.idade}{" "}
-                                    anos
+                            <div className="space-y-2">
+                              {selectedAd.contact_phone && (
+                                <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                                  <span className="font-semibold">
+                                    📞 Telefone:
                                   </span>
+                                  <span>{selectedAd.contact_phone}</span>
                                 </div>
                               )}
-                              {(selectedAd as any).user_profile
-                                .escolaridade && (
-                                <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                              {selectedAd.contact_email && (
+                                <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
                                   <span className="font-semibold">
-                                    Escolaridade:
+                                    ✉️ Email:
                                   </span>
-                                  <span>
-                                    {(selectedAd as any).user_profile
-                                      .escolaridade ===
-                                    "ensino_fundamental_incompleto"
-                                      ? "Ensino Fundamental Incompleto"
+                                  <span>{selectedAd.contact_email}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Faixa de Preço (se houver) */}
+                      {selectedAd.price_range && (
+                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                          <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                            <span className="font-semibold mr-2">
+                              💰 Faixa de Preço:
+                            </span>
+                            <span>{selectedAd.price_range}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Informações do Anunciante */}
+                      {(selectedAd as any).user_profile && (
+                        <div className="p-3 sm:p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+                          <h4 className="text-sm sm:text-base font-semibold text-primary-900 dark:text-primary-200 mb-3">
+                            📋 Sobre o Anunciante
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                            {(selectedAd as any).user_profile.idade && (
+                              <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                <span className="font-semibold">Idade:</span>
+                                <span>
+                                  {(selectedAd as any).user_profile.idade} anos
+                                </span>
+                              </div>
+                            )}
+                            {(selectedAd as any).user_profile.escolaridade && (
+                              <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                <span className="font-semibold">
+                                  Escolaridade:
+                                </span>
+                                <span>
+                                  {(selectedAd as any).user_profile
+                                    .escolaridade ===
+                                  "ensino_fundamental_incompleto"
+                                    ? "Ensino Fundamental Incompleto"
+                                    : (selectedAd as any).user_profile
+                                          .escolaridade ===
+                                        "ensino_fundamental_completo"
+                                      ? "Ensino Fundamental Completo"
                                       : (selectedAd as any).user_profile
                                             .escolaridade ===
-                                          "ensino_fundamental_completo"
-                                        ? "Ensino Fundamental Completo"
+                                          "ensino_medio_incompleto"
+                                        ? "Ensino Médio Incompleto"
                                         : (selectedAd as any).user_profile
                                               .escolaridade ===
-                                            "ensino_medio_incompleto"
-                                          ? "Ensino Médio Incompleto"
+                                            "ensino_medio_completo"
+                                          ? "Ensino Médio Completo"
                                           : (selectedAd as any).user_profile
                                                 .escolaridade ===
-                                              "ensino_medio_completo"
-                                            ? "Ensino Médio Completo"
+                                              "ensino_superior_incompleto"
+                                            ? "Ensino Superior Incompleto"
                                             : (selectedAd as any).user_profile
                                                   .escolaridade ===
-                                                "ensino_superior_incompleto"
-                                              ? "Ensino Superior Incompleto"
+                                                "ensino_superior_completo"
+                                              ? "Ensino Superior Completo"
                                               : (selectedAd as any).user_profile
                                                     .escolaridade ===
-                                                  "ensino_superior_completo"
-                                                ? "Ensino Superior Completo"
+                                                  "pos_graduacao"
+                                                ? "Pós-Graduação"
                                                 : (selectedAd as any)
                                                       .user_profile
                                                       .escolaridade ===
-                                                    "pos_graduacao"
-                                                  ? "Pós-Graduação"
+                                                    "mestrado"
+                                                  ? "Mestrado"
                                                   : (selectedAd as any)
                                                         .user_profile
                                                         .escolaridade ===
-                                                      "mestrado"
-                                                    ? "Mestrado"
+                                                      "doutorado"
+                                                    ? "Doutorado"
                                                     : (selectedAd as any)
-                                                          .user_profile
-                                                          .escolaridade ===
-                                                        "doutorado"
-                                                      ? "Doutorado"
-                                                      : (selectedAd as any)
-                                                          .user_profile
-                                                          .escolaridade}
-                                  </span>
-                                </div>
-                              )}
-                              {(selectedAd as any).user_profile
-                                .estado_civil && (
-                                <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                  <span className="font-semibold">
-                                    Estado Civil:
-                                  </span>
-                                  <span>
-                                    {(selectedAd as any).user_profile
-                                      .estado_civil === "solteiro"
-                                      ? "Solteiro(a)"
-                                      : (selectedAd as any).user_profile
-                                            .estado_civil === "casado"
-                                        ? "Casado(a)"
-                                        : (selectedAd as any).user_profile
-                                              .estado_civil === "divorciado"
-                                          ? "Divorciado(a)"
-                                          : (selectedAd as any).user_profile
-                                                .estado_civil === "viuvo"
-                                            ? "Viúvo(a)"
-                                            : (selectedAd as any).user_profile
-                                                  .estado_civil ===
-                                                "uniao_estavel"
-                                              ? "União Estável"
-                                              : (selectedAd as any).user_profile
-                                                    .estado_civil === "outro"
-                                                ? "Outro"
-                                                : (selectedAd as any)
-                                                    .user_profile.estado_civil}
-                                  </span>
-                                </div>
-                              )}
-                              {(selectedAd as any).user_profile.filhos !==
-                                undefined &&
-                                (selectedAd as any).user_profile.filhos > 0 && (
-                                  <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                    <span className="font-semibold">
-                                      Filhos:
-                                    </span>
-                                    <span>
-                                      {(selectedAd as any).user_profile.filhos}{" "}
-                                      {(selectedAd as any).user_profile
-                                        .filhos === 1
-                                        ? "filho"
-                                        : "filhos"}
-                                    </span>
-                                  </div>
-                                )}
-                              {(selectedAd as any).user_profile.user_type ===
-                                "professional" && (
-                                <>
-                                  {(selectedAd as any).user_profile
-                                    .turno_trabalho && (
-                                    <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                      <span className="font-semibold">
-                                        Turno de Trabalho:
-                                      </span>
-                                      <span>
-                                        {(selectedAd as any).user_profile
-                                          .turno_trabalho === "manha"
-                                          ? "Manhã"
-                                          : (selectedAd as any).user_profile
-                                                .turno_trabalho === "tarde"
-                                            ? "Tarde"
-                                            : (selectedAd as any).user_profile
-                                                  .turno_trabalho === "noite"
-                                              ? "Noite"
-                                              : (selectedAd as any).user_profile
-                                                    .turno_trabalho ===
-                                                  "integral"
-                                                ? "Turno Integral"
-                                                : (selectedAd as any)
-                                                      .user_profile
-                                                      .turno_trabalho ===
-                                                    "flexivel"
-                                                  ? "Horário Flexível"
-                                                  : (selectedAd as any)
-                                                      .user_profile
-                                                      .turno_trabalho}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {(selectedAd as any).user_profile
-                                    .professional_experience_years !==
-                                    undefined &&
-                                    (selectedAd as any).user_profile
-                                      .professional_experience_years !== null &&
-                                    (selectedAd as any).user_profile
-                                      .professional_experience_years > 0 && (
-                                      <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
-                                        <span className="font-semibold">
-                                          Experiência:
-                                        </span>
-                                        <span>
-                                          {
-                                            (selectedAd as any).user_profile
-                                              .professional_experience_years
-                                          }{" "}
-                                          {(selectedAd as any).user_profile
-                                            .professional_experience_years === 1
-                                            ? "ano"
-                                            : "anos"}
-                                        </span>
-                                      </div>
-                                    )}
-                                  {(selectedAd as any).user_profile
-                                    .referencia_profissional && (
-                                    <div className="sm:col-span-2 mt-2">
-                                      <p className="text-xs font-semibold text-primary-900 dark:text-primary-200 mb-1">
-                                        Referência Profissional:
-                                      </p>
-                                      <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
-                                        {
-                                          (selectedAd as any).user_profile
-                                            .referencia_profissional
-                                        }
-                                      </p>
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Informações Adicionais */}
-                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                          <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                            <span>
-                              Publicado em {formatDate(selectedAd.created_at)}
-                            </span>
-                          </div>
-                          {/* Duração do anúncio premium (apenas para o criador) */}
-                          {user &&
-                            selectedAd.user_id === user.id &&
-                            selectedAd.is_premium &&
-                            selectedAd.premium_expires_at && (
-                              <div className="mt-2">
-                                {new Date(selectedAd.premium_expires_at) <
-                                new Date() ? (
-                                  <div className="p-2 bg-error-50 dark:bg-error-900/20 rounded-lg border border-error-200 dark:border-error-800">
-                                    <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium">
-                                      ⚠️ Seu anúncio premium expirou. Renove
-                                      para continuar em destaque!
-                                    </p>
-                                  </div>
-                                ) : (
-                                  <PremiumTimeRemaining
-                                    expiresAt={selectedAd.premium_expires_at}
-                                    isOwner={true}
-                                  />
-                                )}
+                                                        .user_profile
+                                                        .escolaridade}
+                                </span>
                               </div>
                             )}
-                        </div>
-
-                        {/* Botões de Ação */}
-                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
-                          <Button
-                            variant="outline"
-                            onClick={() => setShowAdModal(false)}
-                            className="w-full sm:w-auto order-2 sm:order-1 text-sm"
-                          >
-                            Fechar
-                          </Button>
-                          <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto order-1 sm:order-2">
-                            {/* Menu de ações com 3 pontinhos */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 sm:h-9 sm:w-9 p-0 flex-shrink-0"
-                                >
-                                  <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                {/* Ações do dono do anúncio */}
-                                {user && selectedAd.user_id === user.id && (
-                                  <>
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        setShowAdModal(false);
-                                        setEditingAdId(selectedAd.id);
-                                        setFormData({
-                                          title: selectedAd.title,
-                                          description: selectedAd.description,
-                                          category: selectedAd.category,
-                                          location_state:
-                                            selectedAd.location_state,
-                                          location_city:
-                                            selectedAd.location_city,
-                                          price_range: "",
-                                          urgency_level: "normal",
-                                          ad_type:
-                                            selectedAd.ad_type === "oferecer"
-                                              ? "offer"
-                                              : "request",
-                                        });
-                                        setShowEditDialog(true);
-                                      }}
-                                      className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                                    >
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      {t("editAd")}
-                                    </DropdownMenuItem>
-
-                                    {/* Botão de renovar premium se o anúncio expirou */}
-                                    {selectedAd.is_premium &&
-                                      selectedAd.premium_expires_at &&
-                                      new Date(selectedAd.premium_expires_at) <
-                                        new Date() && (
-                                        <DropdownMenuItem
-                                          onClick={() => {
-                                            setShowAdModal(false);
-                                            setRenewingAdId(selectedAd.id);
-                                            setShowRenewPremiumDialog(true);
-                                          }}
-                                          className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/30"
-                                        >
-                                          <Crown className="h-4 w-4 mr-2" />
-                                          {t("renewPremium")}
-                                        </DropdownMenuItem>
-                                      )}
-
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        setShowAdModal(false);
-                                        handleDeleteClick(selectedAd.id);
-                                      }}
-                                      className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      {t("deleteAd")}
-                                    </DropdownMenuItem>
-                                  </>
+                            {(selectedAd as any).user_profile.estado_civil && (
+                              <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                <span className="font-semibold">
+                                  Estado Civil:
+                                </span>
+                                <span>
+                                  {(selectedAd as any).user_profile
+                                    .estado_civil === "solteiro"
+                                    ? "Solteiro(a)"
+                                    : (selectedAd as any).user_profile
+                                          .estado_civil === "casado"
+                                      ? "Casado(a)"
+                                      : (selectedAd as any).user_profile
+                                            .estado_civil === "divorciado"
+                                        ? "Divorciado(a)"
+                                        : (selectedAd as any).user_profile
+                                              .estado_civil === "viuvo"
+                                          ? "Viúvo(a)"
+                                          : (selectedAd as any).user_profile
+                                                .estado_civil ===
+                                              "uniao_estavel"
+                                            ? "União Estável"
+                                            : (selectedAd as any).user_profile
+                                                  .estado_civil === "outro"
+                                              ? "Outro"
+                                              : (selectedAd as any).user_profile
+                                                  .estado_civil}
+                                </span>
+                              </div>
+                            )}
+                            {(selectedAd as any).user_profile.filhos !==
+                              undefined &&
+                              (selectedAd as any).user_profile.filhos > 0 && (
+                                <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                  <span className="font-semibold">Filhos:</span>
+                                  <span>
+                                    {(selectedAd as any).user_profile.filhos}{" "}
+                                    {(selectedAd as any).user_profile.filhos ===
+                                    1
+                                      ? "filho"
+                                      : "filhos"}
+                                  </span>
+                                </div>
+                              )}
+                            {(selectedAd as any).user_profile.user_type ===
+                              "professional" && (
+                              <>
+                                {(selectedAd as any).user_profile
+                                  .turno_trabalho && (
+                                  <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                    <span className="font-semibold">
+                                      Turno de Trabalho:
+                                    </span>
+                                    <span>
+                                      {(selectedAd as any).user_profile
+                                        .turno_trabalho === "manha"
+                                        ? "Manhã"
+                                        : (selectedAd as any).user_profile
+                                              .turno_trabalho === "tarde"
+                                          ? "Tarde"
+                                          : (selectedAd as any).user_profile
+                                                .turno_trabalho === "noite"
+                                            ? "Noite"
+                                            : (selectedAd as any).user_profile
+                                                  .turno_trabalho === "integral"
+                                              ? "Turno Integral"
+                                              : (selectedAd as any).user_profile
+                                                    .turno_trabalho ===
+                                                  "flexivel"
+                                                ? "Horário Flexível"
+                                                : (selectedAd as any)
+                                                    .user_profile
+                                                    .turno_trabalho}
+                                    </span>
+                                  </div>
                                 )}
-
-                                {/* Ações para super_admin (mesmo quando não são donos) */}
-                                {user &&
-                                  isSuperAdmin &&
-                                  selectedAd.user_id !== user.id && (
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        setShowAdModal(false);
-                                        handleDeleteClick(selectedAd.id);
-                                      }}
-                                      className="text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-                                    >
-                                      <Shield className="h-4 w-4 mr-2" />
-                                      Deletar Anúncio (Super Admin)
-                                    </DropdownMenuItem>
+                                {(selectedAd as any).user_profile
+                                  .professional_experience_years !==
+                                  undefined &&
+                                  (selectedAd as any).user_profile
+                                    .professional_experience_years !== null &&
+                                  (selectedAd as any).user_profile
+                                    .professional_experience_years > 0 && (
+                                    <div className="flex items-center gap-2 text-primary-800 dark:text-primary-300">
+                                      <span className="font-semibold">
+                                        Experiência:
+                                      </span>
+                                      <span>
+                                        {
+                                          (selectedAd as any).user_profile
+                                            .professional_experience_years
+                                        }{" "}
+                                        {(selectedAd as any).user_profile
+                                          .professional_experience_years === 1
+                                          ? "ano"
+                                          : "anos"}
+                                      </span>
+                                    </div>
                                   )}
-
-                                {/* Botão de denunciar (para usuários que não são donos do anúncio e não são super_admin) */}
-                                {user &&
-                                  selectedAd.user_id !== user.id &&
-                                  !isSuperAdmin && (
-                                    <DropdownMenuItem asChild>
-                                      <ReportButton
-                                        type="classified"
-                                        targetId={selectedAd.id}
-                                        targetName={selectedAd.title}
-                                        asDropdownItem={true}
-                                        className="w-full justify-start text-gray-700 hover:text-error-600 hover:bg-error-50"
-                                      />
-                                    </DropdownMenuItem>
-                                  )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-
-                            <Button
-                              onClick={() => {
-                                setShowAdModal(false);
-                                handleContactUser(
-                                  selectedAd.user_id,
-                                  selectedAd.user_name,
-                                );
-                              }}
-                              className={`flex-1 sm:flex-initial text-xs sm:text-sm px-3 py-2 sm:px-4 h-8 sm:h-9 ${
-                                selectedAd.ad_type === "oferecer"
-                                  ? "bg-gray-700 hover:bg-gray-800"
-                                  : "bg-gray-500 hover:bg-gray-600"
-                              } text-white`}
-                            >
-                              <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                              <span className="hidden sm:inline">
-                                {t("contact")}
-                              </span>
-                              <span className="sm:hidden">{t("contact")}</span>
-                            </Button>
+                                {(selectedAd as any).user_profile
+                                  .referencia_profissional && (
+                                  <div className="sm:col-span-2 mt-2">
+                                    <p className="text-xs font-semibold text-primary-900 dark:text-primary-200 mb-1">
+                                      Referência Profissional:
+                                    </p>
+                                    <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
+                                      {
+                                        (selectedAd as any).user_profile
+                                          .referencia_profissional
+                                      }
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         </div>
+                      )}
+
+                      {/* Informações Adicionais */}
+                      <div className="p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                          <span>
+                            Publicado em {formatDate(selectedAd.created_at)}
+                          </span>
+                        </div>
+                        {/* Duração do anúncio premium (apenas para o criador) */}
+                        {user &&
+                          selectedAd.user_id === user.id &&
+                          selectedAd.is_premium &&
+                          selectedAd.premium_expires_at && (
+                            <div className="mt-2">
+                              {new Date(selectedAd.premium_expires_at) <
+                              new Date() ? (
+                                <div className="p-2 bg-error-50 dark:bg-error-900/20 rounded-lg border border-error-200 dark:border-error-800">
+                                  <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 font-medium">
+                                    ⚠️ Seu anúncio premium expirou. Renove para
+                                    continuar em destaque!
+                                  </p>
+                                </div>
+                              ) : (
+                                <PremiumTimeRemaining
+                                  expiresAt={selectedAd.premium_expires_at}
+                                  isOwner={true}
+                                />
+                              )}
+                            </div>
+                          )}
                       </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
+                    </div>
+                  )}
+                </ResponsiveModal>
               </div>
             </div>
 

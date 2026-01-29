@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
   Select,
   SelectContent,
@@ -133,25 +127,27 @@ export function ConversationReportModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant={variant}
-          size={size}
-          className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
-        >
-          <Flag className="h-3 w-3" />
-          <span className="text-xs">Denunciar Conversa</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <>
+      <Button
+        variant={variant}
+        size={size}
+        className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
+        onClick={() => setIsOpen(true)}
+      >
+        <Flag className="h-3 w-3" />
+        <span className="text-xs">Denunciar Conversa</span>
+      </Button>
+      <ResponsiveModal
+        isOpen={isOpen}
+        onOpenChange={setIsOpen}
+        className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto"
+        title={
+          <div className="flex items-center gap-2">
             <Flag className="h-5 w-5 text-red-500" />
-            Denunciar Conversa Completa
-          </DialogTitle>
-        </DialogHeader>
-
+            <span>Denunciar Conversa Completa</span>
+          </div>
+        }
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="text-sm font-medium">
@@ -240,7 +236,7 @@ export function ConversationReportModal({
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveModal>
+    </>
   );
 }
