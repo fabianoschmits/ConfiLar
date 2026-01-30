@@ -75,7 +75,13 @@ export function ResponsiveModal({
 
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
-      <DrawerContent className={cn("max-h-[96vh] flex flex-col", className)}>
+      <DrawerContent
+        className={cn(
+          "max-h-[96vh] flex flex-col",
+          fullContent && "h-[100dvh] max-h-screen",
+          className,
+        )}
+      >
         {fullContent ? (
           <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
         ) : (

@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { LoadingButton } from "@/components/ui/LoadingButton";
+import { X } from "lucide-react";
 
 interface BanInfo {
   id: string;
@@ -777,130 +779,138 @@ export function BansManagement() {
       <ResponsiveModal
         isOpen={showBanModal}
         onOpenChange={setShowBanModal}
-        title={
-          <div className="flex items-center gap-2">
-            <UserX className="h-5 w-5 text-red-500" />
-            <span>Banir Usuário</span>
-          </div>
-        }
-        className="max-w-md"
+        fullContent={true}
+        showCloseButton={false}
+        className="max-sm:max-h-[100dvh]"
       >
-        <div ref={textareaWrapperRef} className="space-y-4">
-          <div>
-            <Label htmlFor="user_id" className="text-sm font-medium">
-              ID do Usuário *
-            </Label>
-            <Input
-              id="user_id"
-              placeholder="UUID do usuário"
-              value={banForm.user_id}
-              onChange={(e) =>
-                setBanForm({ ...banForm, user_id: e.target.value })
-              }
-              className="mt-1"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="reason" className="text-sm font-medium">
-              Motivo do Banimento *
-            </Label>
-            <Textarea
-              id="reason"
-              placeholder="Descreva o motivo do banimento..."
-              value={banForm.reason}
-              onChange={(e) =>
-                setBanForm({ ...banForm, reason: e.target.value })
-              }
-              className="mt-1"
-              rows={3}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="ban_type" className="text-sm font-medium">
-              Tipo de Banimento
-            </Label>
-            <Select
-              value={banForm.ban_type}
-              onValueChange={(value: "temporary" | "permanent") =>
-                setBanForm({ ...banForm, ban_type: value })
-              }
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="temporary">Temporário</SelectItem>
-                <SelectItem value="permanent">Permanente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {banForm.ban_type === "temporary" && (
-            <div>
-              <Label htmlFor="duration_days" className="text-sm font-medium">
-                Duração (dias)
-              </Label>
-              <Input
-                id="duration_days"
-                type="number"
-                min="1"
-                max="365"
-                value={banForm.duration_days}
-                onChange={(e) =>
-                  setBanForm({
-                    ...banForm,
-                    duration_days: parseInt(e.target.value) || 7,
-                  })
-                }
-                className="mt-1"
-              />
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor="admin_notes" className="text-sm font-medium">
-              Notas do Administrador
-            </Label>
-            <Textarea
-              id="admin_notes"
-              placeholder="Notas adicionais (opcional)..."
-              value={banForm.admin_notes}
-              onChange={(e) =>
-                setBanForm({ ...banForm, admin_notes: e.target.value })
-              }
-              className="mt-1"
-              rows={2}
-            />
-          </div>
-
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Atenção:</strong> Esta ação é irreversível. O usuário será
-              banido imediatamente.
-            </AlertDescription>
-          </Alert>
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
+        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+          {/* HEADER FIXO */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+            <button
               onClick={() => setShowBanModal(false)}
-              className="flex-1"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              disabled={isLoading}
             >
-              Cancelar
-            </Button>
-            <Button
-              onClick={banUser}
-              disabled={!banForm.user_id || !banForm.reason}
-              className="flex-1 bg-red-600 hover:bg-red-700"
-            >
+              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
               Banir Usuário
-            </Button>
+            </h2>
+            <LoadingButton
+              onClick={banUser}
+              isLoading={isLoading}
+              disabled={!banForm.user_id || !banForm.reason || isLoading}
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white min-w-[80px] transition-colors"
+            >
+              Banir
+            </LoadingButton>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-10">
+            <div ref={textareaWrapperRef} className="space-y-4">
+              <div>
+                <Label htmlFor="user_id" className="text-sm font-medium">
+                  ID do Usuário *
+                </Label>
+                <Input
+                  id="user_id"
+                  placeholder="UUID do usuário"
+                  value={banForm.user_id}
+                  onChange={(e) =>
+                    setBanForm({ ...banForm, user_id: e.target.value })
+                  }
+                  className="mt-1"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="reason" className="text-sm font-medium">
+                  Motivo do Banimento *
+                </Label>
+                <Textarea
+                  id="reason"
+                  placeholder="Descreva o motivo do banimento..."
+                  value={banForm.reason}
+                  onChange={(e) =>
+                    setBanForm({ ...banForm, reason: e.target.value })
+                  }
+                  className="mt-1"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ban_type" className="text-sm font-medium">
+                  Tipo de Banimento
+                </Label>
+                <Select
+                  value={banForm.ban_type}
+                  onValueChange={(value: "temporary" | "permanent") =>
+                    setBanForm({ ...banForm, ban_type: value })
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="temporary">Temporário</SelectItem>
+                    <SelectItem value="permanent">Permanente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {banForm.ban_type === "temporary" && (
+                <div>
+                  <Label
+                    htmlFor="duration_days"
+                    className="text-sm font-medium"
+                  >
+                    Duração (dias)
+                  </Label>
+                  <Input
+                    id="duration_days"
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={banForm.duration_days}
+                    onChange={(e) =>
+                      setBanForm({
+                        ...banForm,
+                        duration_days: parseInt(e.target.value) || 7,
+                      })
+                    }
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label htmlFor="admin_notes" className="text-sm font-medium">
+                  Notas do Administrador
+                </Label>
+                <Textarea
+                  id="admin_notes"
+                  placeholder="Notas adicionais (opcional)..."
+                  value={banForm.admin_notes}
+                  onChange={(e) =>
+                    setBanForm({ ...banForm, admin_notes: e.target.value })
+                  }
+                  className="mt-1"
+                  rows={2}
+                />
+              </div>
+
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  <strong>Atenção:</strong> Esta ação é irreversível. O usuário
+                  será banido imediatamente.
+                </AlertDescription>
+              </Alert>
+            </div>
           </div>
         </div>
       </ResponsiveModal>
@@ -910,65 +920,73 @@ export function BansManagement() {
       <ResponsiveModal
         isOpen={showUnbanModal}
         onOpenChange={setShowUnbanModal}
-        title={
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            <span>Desbanir Usuário</span>
-          </div>
-        }
-        className="max-w-md"
+        fullContent={true}
+        showCloseButton={false}
+        className="max-sm:max-h-[100dvh]"
       >
-        {selectedBan && (
-          <div ref={textareaWrapperRef} className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">
-                Usuário: {selectedBan.banned_user_name}
-              </h4>
-              <p className="text-sm text-gray-600 mb-4">
-                Motivo do banimento: {selectedBan.reason}
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="unban_notes" className="text-sm font-medium">
-                Motivo do Desbanimento
-              </Label>
-              <Textarea
-                id="unban_notes"
-                placeholder="Explique por que o usuário está sendo desbanido..."
-                value={unbanNotes}
-                onChange={(e) => setUnbanNotes(e.target.value)}
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                O usuário será desbanido e poderá acessar a plataforma
-                novamente.
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowUnbanModal(false)}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
+        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+          {/* HEADER FIXO */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+            <button
+              onClick={() => setShowUnbanModal(false)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              disabled={isLoading}
+            >
+              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+              Desbanir Usuário
+            </h2>
+            {selectedBan && (
+              <LoadingButton
                 onClick={() => unbanUser(selectedBan.user_id)}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                isLoading={isLoading}
+                disabled={isLoading}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white min-w-[80px] transition-colors"
               >
-                Desbanir Usuário
-              </Button>
-            </div>
+                Desbanir
+              </LoadingButton>
+            )}
           </div>
-        )}
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 pb-10">
+            {selectedBan && (
+              <div ref={textareaWrapperRef} className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">
+                    Usuário: {selectedBan.banned_user_name}
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Motivo do banimento: {selectedBan.reason}
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="unban_notes" className="text-sm font-medium">
+                    Motivo do Desbanimento
+                  </Label>
+                  <Textarea
+                    id="unban_notes"
+                    placeholder="Explique por que o usuário está sendo desbanido..."
+                    value={unbanNotes}
+                    onChange={(e) => setUnbanNotes(e.target.value)}
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    O usuário será desbanido e poderá acessar a plataforma
+                    novamente.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </div>
+        </div>
       </ResponsiveModal>
 
       {/* Modal para Revisar Banimento Pendente */}
@@ -976,197 +994,223 @@ export function BansManagement() {
       <ResponsiveModal
         isOpen={showReviewModal}
         onOpenChange={setShowReviewModal}
-        title={
-          <div className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-blue-500" />
-            <span>Revisar Banimento Pendente</span>
-          </div>
-        }
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        fullContent={true}
+        showCloseButton={false}
+        className="max-sm:max-h-[100dvh]"
       >
-        {selectedBan && (
-          <div ref={textareaWrapperRef} className="space-y-6">
-            {/* Informações do Usuário */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <User className="h-5 w-5 text-gray-600" />
-                Usuário Denunciado
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p>
-                    <strong className="text-gray-700">Nome:</strong>{" "}
-                    {selectedBan.banned_user_name}
-                  </p>
-                  <p>
-                    <strong className="text-gray-700">Email:</strong>{" "}
-                    {selectedBan.banned_user_email}
-                  </p>
-                </div>
-                <div>
-                  <p>
-                    <strong className="text-gray-700">Tipo:</strong>{" "}
-                    {selectedBan.banned_user_type}
-                  </p>
-                  <p>
-                    <strong className="text-gray-700">ID:</strong>{" "}
-                    <code className="bg-gray-200 px-2 py-1 rounded text-xs">
-                      {selectedBan.user_id}
-                    </code>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Informações da Denúncia */}
-            {selectedBan.related_report_id && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <Flag className="h-5 w-5 text-blue-600" />
-                  Denúncia Relacionada
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
-                  <div>
-                    <p>
-                      <strong className="text-blue-800">ID da Denúncia:</strong>{" "}
-                      <code className="bg-blue-100 px-2 py-1 rounded text-xs">
-                        {selectedBan.related_report_id}
-                      </code>
-                    </p>
-                    <p>
-                      <strong className="text-blue-800">Tipo:</strong>{" "}
-                      <span className="capitalize">{selectedBan.type}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <p>
-                      <strong className="text-blue-800">Status:</strong>{" "}
-                      <span className="text-blue-600">Em Revisão</span>
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p>
-                    <strong className="text-blue-800">
-                      Descrição da Denúncia:
-                    </strong>
-                  </p>
-                  <p className="text-blue-700 bg-white p-3 rounded border mt-1 text-sm">
-                    {selectedBan.report_description ||
-                      "Descrição não disponível"}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Motivo do Banimento */}
-            <div className="bg-orange-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
-                Motivo do Banimento
-              </h4>
-              <p className="text-orange-700 bg-white p-3 rounded border text-sm">
-                {selectedBan.reason}
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="final_ban_type" className="text-sm font-medium">
-                Decisão Final
-              </Label>
-              <Select
-                value={reviewForm.final_ban_type}
-                onValueChange={(value: "temporary" | "permanent") =>
-                  setReviewForm({ ...reviewForm, final_ban_type: value })
-                }
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="temporary">
-                    Banimento Temporário
-                  </SelectItem>
-                  <SelectItem value="permanent">
-                    Banimento Permanente
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {reviewForm.final_ban_type === "temporary" && (
-              <div>
-                <Label htmlFor="duration_days" className="text-sm font-medium">
-                  Duração (dias)
-                </Label>
-                <Input
-                  id="duration_days"
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={reviewForm.duration_days}
-                  onChange={(e) =>
-                    setReviewForm({
-                      ...reviewForm,
-                      duration_days: parseInt(e.target.value) || 7,
-                    })
-                  }
-                  className="mt-1"
-                />
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="admin_notes" className="text-sm font-medium">
-                Notas do Administrador
-              </Label>
-              <Textarea
-                id="admin_notes"
-                placeholder="Adicione suas observações sobre a decisão..."
-                value={reviewForm.admin_notes}
-                onChange={(e) =>
-                  setReviewForm({ ...reviewForm, admin_notes: e.target.value })
-                }
-                className="mt-1"
-                rows={3}
-              />
-            </div>
-
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                <strong>Decisão Final:</strong> Escolha se o usuário deve ser
-                banido ou se a denúncia não tem fundamento.
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowReviewModal(false)}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => rejectPendingBan(selectedBan.id)}
-                variant="destructive"
-                className="flex-1"
-              >
-                <XCircle className="h-4 w-4 mr-1" />
-                Rejeitar
-              </Button>
-              <Button
-                onClick={() => approvePendingBan(selectedBan.id)}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-1" />
-                Aprovar
-              </Button>
+        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+          {/* HEADER FIXO */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+            <button
+              onClick={() => setShowReviewModal(false)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              disabled={isLoading}
+            >
+              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <h2 className="text-xs sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+              {selectedBan?.ban_status === "Pendente"
+                ? "Revisar Banimento"
+                : "Detalhes do Banimento"}
+            </h2>
+            <div className="flex gap-2">
+              {selectedBan?.ban_status === "Pendente" && (
+                <>
+                  <LoadingButton
+                    onClick={() => rejectPendingBan(selectedBan.id)}
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                    size="sm"
+                    variant="destructive"
+                    className="min-w-[70px]"
+                  >
+                    Rejeitar
+                  </LoadingButton>
+                  <LoadingButton
+                    onClick={() => approvePendingBan(selectedBan.id)}
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white min-w-[70px]"
+                  >
+                    Aprovar
+                  </LoadingButton>
+                </>
+              )}
             </div>
           </div>
-        )}
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-10">
+            {selectedBan && (
+              <div ref={textareaWrapperRef} className="space-y-6">
+                {/* Informações do Usuário */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                    <User className="h-5 w-5 text-gray-600" />
+                    Usuário Denunciado
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p>
+                        <strong className="text-gray-700">Nome:</strong>{" "}
+                        {selectedBan.banned_user_name}
+                      </p>
+                      <p>
+                        <strong className="text-gray-700">Email:</strong>{" "}
+                        {selectedBan.banned_user_email}
+                      </p>
+                    </div>
+                    <div>
+                      <p>
+                        <strong className="text-gray-700">Tipo:</strong>{" "}
+                        {selectedBan.banned_user_type}
+                      </p>
+                      <p>
+                        <strong className="text-gray-700">ID:</strong>{" "}
+                        <code className="bg-gray-200 px-2 py-1 rounded text-xs">
+                          {selectedBan.user_id}
+                        </code>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Informações da Denúncia */}
+                {selectedBan.related_report_id && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Flag className="h-5 w-5 text-blue-600" />
+                      Denúncia Relacionada
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm mb-3">
+                      <div>
+                        <p>
+                          <strong className="text-blue-800">
+                            ID da Denúncia:
+                          </strong>{" "}
+                          <code className="bg-blue-100 px-2 py-1 rounded text-xs">
+                            {selectedBan.related_report_id}
+                          </code>
+                        </p>
+                        <p>
+                          <strong className="text-blue-800">Tipo:</strong>{" "}
+                          <span className="capitalize">{selectedBan.type}</span>
+                        </p>
+                      </div>
+                      <div>
+                        <p>
+                          <strong className="text-blue-800">Status:</strong>{" "}
+                          <span className="text-blue-600">Em Revisão</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p>
+                        <strong className="text-blue-800">
+                          Descrição da Denúncia:
+                        </strong>
+                      </p>
+                      <p className="text-blue-700 bg-white p-3 rounded border mt-1 text-sm">
+                        {selectedBan.report_description ||
+                          "Descrição não disponível"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Motivo do Banimento */}
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
+                    Motivo do Banimento
+                  </h4>
+                  <p className="text-orange-700 bg-white p-3 rounded border text-sm">
+                    {selectedBan.reason}
+                  </p>
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="final_ban_type"
+                    className="text-sm font-medium"
+                  >
+                    Decisão Final
+                  </Label>
+                  <Select
+                    value={reviewForm.final_ban_type}
+                    onValueChange={(value: "temporary" | "permanent") =>
+                      setReviewForm({ ...reviewForm, final_ban_type: value })
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="temporary">
+                        Banimento Temporário
+                      </SelectItem>
+                      <SelectItem value="permanent">
+                        Banimento Permanente
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {reviewForm.final_ban_type === "temporary" && (
+                  <div>
+                    <Label
+                      htmlFor="duration_days"
+                      className="text-sm font-medium"
+                    >
+                      Duração (dias)
+                    </Label>
+                    <Input
+                      id="duration_days"
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={reviewForm.duration_days}
+                      onChange={(e) =>
+                        setReviewForm({
+                          ...reviewForm,
+                          duration_days: parseInt(e.target.value) || 7,
+                        })
+                      }
+                      className="mt-1"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <Label htmlFor="admin_notes" className="text-sm font-medium">
+                    Notas do Administrador
+                  </Label>
+                  <Textarea
+                    id="admin_notes"
+                    placeholder="Adicione suas observações sobre a decisão..."
+                    value={reviewForm.admin_notes}
+                    onChange={(e) =>
+                      setReviewForm({
+                        ...reviewForm,
+                        admin_notes: e.target.value,
+                      })
+                    }
+                    className="mt-1"
+                    rows={3}
+                  />
+                </div>
+
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    <strong>Decisão Final:</strong> Escolha se o usuário deve
+                    ser banido ou se a denúncia não tem fundamento.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </div>
+        </div>
       </ResponsiveModal>
     </div>
   );

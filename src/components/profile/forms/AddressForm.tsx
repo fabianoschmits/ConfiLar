@@ -137,7 +137,11 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <div ref={wrapperRef}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        id="address-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Estado</Label>
@@ -246,7 +250,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
             </div>
           </div>
         </div>
-        <div className="flex justify-end pt-4">
+        <div className="hidden sm:flex justify-end pt-4">
           <LoadingButton
             type="submit"
             isLoading={isLoading}

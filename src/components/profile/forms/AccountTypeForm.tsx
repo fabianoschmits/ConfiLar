@@ -122,7 +122,11 @@ export function AccountTypeForm({ onSuccess }: AccountTypeFormProps) {
 
   return (
     <div ref={wrapperRef}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        id="type-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         <div className="space-y-4">
           <Label className="text-sm font-medium">
             Como você usará o ConfiLar?
@@ -182,7 +186,7 @@ export function AccountTypeForm({ onSuccess }: AccountTypeFormProps) {
           </div>
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="hidden sm:flex justify-end pt-4">
           <LoadingButton
             type="submit"
             isLoading={isLoading}

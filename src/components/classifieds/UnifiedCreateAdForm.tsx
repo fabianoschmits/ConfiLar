@@ -413,13 +413,34 @@ export function UnifiedCreateAdForm({
         >
           <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
         </button>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+        <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
           {title}
         </h2>
-        <div className="w-9" />
+        <LoadingButton
+          onClick={handleSubmit}
+          isLoading={isLoading}
+          disabled={
+            !formData.title ||
+            !formData.description ||
+            !formData.category ||
+            (formData.isPremium && !canAfford)
+          }
+          size="sm"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] sm:min-w-[120px] transition-colors"
+        >
+          {isLoading
+            ? initialData
+              ? "Salvando..."
+              : "Criando..."
+            : formData.isPremium
+              ? "Destacar"
+              : initialData
+                ? "Salvar"
+                : "Criar"}
+        </LoadingButton>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6 pb-10">
         {/* TYPE SELECTION */}
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -703,38 +724,6 @@ export function UnifiedCreateAdForm({
             </div>
           )}
         </div>
-      </div>
-
-      {/* FOOTER ACTIONS - FIXO */}
-      <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 flex-shrink-0">
-        <Button
-          variant="outline"
-          onClick={() => {
-            localStorage.removeItem("confilar_draft_ad");
-            onCancel();
-          }}
-          disabled={isLoading}
-          className="hidden sm:inline-flex"
-        >
-          Cancelar
-        </Button>
-        <LoadingButton
-          onClick={handleSubmit}
-          isLoading={isLoading}
-          disabled={
-            !formData.title ||
-            !formData.description ||
-            !formData.category ||
-            (formData.isPremium && !canAfford)
-          }
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors flex-1 sm:flex-none"
-        >
-          {isLoading
-            ? "Criando..."
-            : formData.isPremium
-              ? "Criar & Destacar"
-              : t("createAd")}
-        </LoadingButton>
       </div>
     </div>
   );

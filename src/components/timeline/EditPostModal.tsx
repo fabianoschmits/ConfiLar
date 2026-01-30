@@ -184,10 +184,18 @@ export function EditPostModal({
           >
             <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+          <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
             Editar Post
           </h2>
-          <div className="w-9" />
+          <LoadingButton
+            onClick={handleSave}
+            disabled={!editedPost.description.trim() || isLoading}
+            isLoading={isLoading}
+            size="sm"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
+          >
+            {isLoading ? "Salvando..." : "Salvar"}
+          </LoadingButton>
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
@@ -274,26 +282,6 @@ export function EditPostModal({
               disabled={isLoading}
             />
           </div>
-        </div>
-
-        {/* FOOTER ACTIONS - FIXO */}
-        <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 flex-shrink-0">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-            className="hidden sm:inline-flex"
-          >
-            Cancelar
-          </Button>
-          <LoadingButton
-            onClick={handleSave}
-            disabled={!editedPost.description.trim() || isLoading}
-            isLoading={isLoading}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors flex-1 sm:flex-none"
-          >
-            {isLoading ? "Salvando..." : "Salvar Alterações"}
-          </LoadingButton>
         </div>
       </div>
     </ResponsiveModal>

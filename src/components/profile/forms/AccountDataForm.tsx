@@ -216,7 +216,11 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <div ref={wrapperRef}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        id="account-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         {/* Email Section */}
         <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
@@ -301,7 +305,7 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
           />
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="hidden sm:flex justify-end pt-4">
           <LoadingButton
             type="submit"
             isLoading={isLoading}

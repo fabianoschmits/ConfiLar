@@ -2,9 +2,10 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Star, Loader2 } from "lucide-react";
+import { Star, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
@@ -260,14 +261,22 @@ export function EvaluationModal({
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             disabled={isSubmitting}
           >
-            <Star className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+          <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
             {isMutual
-              ? `Avaliar ${targetUserName} (Avaliação Mútua)`
+              ? `Avaliar ${targetUserName}`
               : `Avaliar ${targetUserName}`}
           </h2>
-          <div className="w-9" />
+          <LoadingButton
+            onClick={handleSubmit}
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+            size="sm"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
+          >
+            Avaliar
+          </LoadingButton>
         </div>
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
@@ -320,35 +329,6 @@ export function EvaluationModal({
               />
             </div>
           </div>
-        </div>
-
-        {/* FOOTER ACTIONS - FIXO */}
-        <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 flex-shrink-0">
-          <Button
-            variant="outline"
-            className="hidden sm:inline-flex"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors flex-1 sm:flex-none"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Enviando...
-              </>
-            ) : (
-              <>
-                <Star className="h-4 w-4 mr-2" />
-                Avaliar
-              </>
-            )}
-          </Button>
         </div>
       </div>
     </ResponsiveModal>

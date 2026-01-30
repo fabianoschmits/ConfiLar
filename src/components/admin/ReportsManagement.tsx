@@ -39,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
 
 // Interfaces para tipagem
 interface Report {
@@ -849,195 +850,250 @@ export function ReportsManagement() {
       <ResponsiveModal
         isOpen={showReportModal}
         onOpenChange={setShowReportModal}
-        title="Detalhes da Denúncia"
+        fullContent={true}
+        showCloseButton={false}
         className="max-w-2xl"
       >
-        {selectedReport && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Tipo</Label>
-                <p className="text-sm text-gray-600">
-                  {getTypeLabel(selectedReport.type)}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Status</Label>
-                <Badge className={getStatusColor(selectedReport.status)}>
-                  {selectedReport.status}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Prioridade</Label>
-                <Badge className={getPriorityColor(selectedReport.priority)}>
-                  {selectedReport.priority}
-                </Badge>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Criado em</Label>
-                <p className="text-sm text-gray-600">
-                  {new Date(selectedReport.created_at).toLocaleString()}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">Descrição</Label>
-              <p className="text-sm text-gray-600 mt-1">
-                {selectedReport.description}
-              </p>
-            </div>
-
-            {selectedReport.reporter && (
-              <div>
-                <Label className="text-sm font-medium">Denunciante</Label>
-                <p className="text-sm text-gray-600">
-                  {selectedReport.reporter.full_name} (
-                  {selectedReport.reporter.email})
-                </p>
-              </div>
-            )}
-
-            {selectedReport.reported_user && (
-              <div>
-                <Label className="text-sm font-medium">
-                  Usuário Denunciado
-                </Label>
-                <p className="text-sm text-gray-600">
-                  {selectedReport.reported_user.full_name} (
-                  {selectedReport.reported_user.email})
-                </p>
-              </div>
-            )}
-
-            {/* Conversa completa para denúncias de chat */}
-            {selectedReport.conversation_messages &&
-              selectedReport.conversation_messages.length > 0 && (
-                <div>
-                  <Label className="text-sm font-medium">
-                    💬 Conversa Completa
-                  </Label>
-                  <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto mt-2">
-                    {selectedReport.conversation_messages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`mb-3 p-2 rounded ${
-                          msg.sender_id === selectedReport.reporter_id
-                            ? "bg-blue-100 ml-8"
-                            : "bg-gray-100 mr-8"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-medium">
-                            {msg.profiles.full_name}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(msg.created_at).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="text-sm">{msg.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+        <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+          {/* HEADER FIXO */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            >
+              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            </button>
+            <h2 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+              Detalhes da Denúncia
+            </h2>
+            <div className="flex gap-2">
+              {selectedReport && selectedReport.status === "pending" && (
+                <Button
+                  onClick={() =>
+                    handleReportAction(selectedReport.id, "review")
+                  }
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Revisar
+                </Button>
               )}
+              {selectedReport && selectedReport.status === "reviewing" && (
+                <Button
+                  onClick={() =>
+                    handleReportAction(selectedReport.id, "resolve")
+                  }
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  Resolver
+                </Button>
+              )}
+            </div>
+          </div>
 
-            {/* Detalhes da avaliação */}
-            {selectedReport.review_details && (
-              <div>
-                <Label className="text-sm font-medium">
-                  ⭐ Avaliação Denunciada
-                </Label>
-                <div className="bg-yellow-50 p-4 rounded-lg mt-2">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium">
-                        Nota: {selectedReport.review_details.rating_person}/5
-                      </p>
-                      <p className="text-sm font-medium">
-                        Avaliador:{" "}
-                        {selectedReport.review_details.profiles.full_name}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Data:{" "}
-                        {new Date(
-                          selectedReport.review_details.created_at,
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-sm font-medium">Comentário:</p>
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 pb-20">
+            {selectedReport && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Tipo</Label>
                     <p className="text-sm text-gray-600">
-                      {selectedReport.review_details.comment}
+                      {getTypeLabel(selectedReport.type)}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Status</Label>
+                    <Badge className={getStatusColor(selectedReport.status)}>
+                      {selectedReport.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Prioridade</Label>
+                    <Badge
+                      className={getPriorityColor(selectedReport.priority)}
+                    >
+                      {selectedReport.priority}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Criado em</Label>
+                    <p className="text-sm text-gray-600">
+                      {new Date(selectedReport.created_at).toLocaleString()}
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {/* Detalhes do anúncio classificado */}
-            {selectedReport.classified_ad && (
-              <div>
-                <Label className="text-sm font-medium">
-                  📢 Anúncio Classificado Denunciado
-                </Label>
-                <div className="bg-purple-50 p-4 rounded-lg mt-2">
-                  <div className="space-y-2">
+                <div>
+                  <Label className="text-sm font-medium">Descrição</Label>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {selectedReport.description}
+                  </p>
+                </div>
+
+                {selectedReport.reporter && (
+                  <div>
+                    <Label className="text-sm font-medium">Denunciante</Label>
+                    <p className="text-sm text-gray-600">
+                      {selectedReport.reporter.full_name} (
+                      {selectedReport.reporter.email})
+                    </p>
+                  </div>
+                )}
+
+                {selectedReport.reported_user && (
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Usuário Denunciado
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {selectedReport.reported_user.full_name} (
+                      {selectedReport.reported_user.email})
+                    </p>
+                  </div>
+                )}
+
+                {/* Conversa completa para denúncias de chat */}
+                {selectedReport.conversation_messages &&
+                  selectedReport.conversation_messages.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium">Título:</p>
-                      <p className="text-sm text-gray-600">
-                        {selectedReport.classified_ad.title}
-                      </p>
+                      <Label className="text-sm font-medium">
+                        💬 Conversa Completa
+                      </Label>
+                      <div className="bg-gray-50 p-4 rounded-lg max-h-60 overflow-y-auto mt-2">
+                        {selectedReport.conversation_messages.map(
+                          (msg, idx) => (
+                            <div
+                              key={idx}
+                              className={`mb-3 p-2 rounded ${
+                                msg.sender_id === selectedReport.reporter_id
+                                  ? "bg-blue-100 ml-8"
+                                  : "bg-gray-100 mr-8"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium">
+                                  {msg.profiles.full_name}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(msg.created_at).toLocaleString()}
+                                </span>
+                              </div>
+                              <p className="text-sm">{msg.content}</p>
+                            </div>
+                          ),
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">Descrição:</p>
-                      <p className="text-sm text-gray-600">
-                        {selectedReport.classified_ad.description}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Anunciante:</p>
-                      <p className="text-sm text-gray-600">
-                        {selectedReport.classified_ad.user_name}
-                      </p>
+                  )}
+
+                {/* Detalhes da avaliação */}
+                {selectedReport.review_details && (
+                  <div>
+                    <Label className="text-sm font-medium">
+                      ⭐ Avaliação Denunciada
+                    </Label>
+                    <div className="bg-yellow-50 p-4 rounded-lg mt-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium">
+                            Nota: {selectedReport.review_details.rating_person}
+                            /5
+                          </p>
+                          <p className="text-sm font-medium">
+                            Avaliador:{" "}
+                            {selectedReport.review_details.profiles.full_name}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">
+                            Data:{" "}
+                            {new Date(
+                              selectedReport.review_details.created_at,
+                            ).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm font-medium">Comentário:</p>
+                        <p className="text-sm text-gray-600">
+                          {selectedReport.review_details.comment}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                )}
+
+                {/* Detalhes do anúncio classificado */}
+                {selectedReport.classified_ad && (
+                  <div>
+                    <Label className="text-sm font-medium">
+                      📢 Anúncio Classificado Denunciado
+                    </Label>
+                    <div className="bg-purple-50 p-4 rounded-lg mt-2">
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-sm font-medium">Título:</p>
+                          <p className="text-sm text-gray-600">
+                            {selectedReport.classified_ad.title}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Descrição:</p>
+                          <p className="text-sm text-gray-600">
+                            {selectedReport.classified_ad.description}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Anunciante:</p>
+                          <p className="text-sm text-gray-600">
+                            {selectedReport.classified_ad.user_name}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() =>
+                      handleReportAction(selectedReport.id, "review")
+                    }
+                    disabled={selectedReport.status === "reviewing"}
+                  >
+                    Marcar como Revisando
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      handleReportAction(selectedReport.id, "resolve")
+                    }
+                    disabled={selectedReport.status === "resolved"}
+                  >
+                    Resolver
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      handleReportAction(selectedReport.id, "dismiss")
+                    }
+                    disabled={selectedReport.status === "dismissed"}
+                  >
+                    Dispensar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() =>
+                      handleReportAction(selectedReport.id, "delete")
+                    }
+                  >
+                    Deletar
+                  </Button>
                 </div>
               </div>
             )}
-
-            <div className="flex gap-2">
-              <Button
-                onClick={() => handleReportAction(selectedReport.id, "review")}
-                disabled={selectedReport.status === "reviewing"}
-              >
-                Marcar como Revisando
-              </Button>
-              <Button
-                onClick={() => handleReportAction(selectedReport.id, "resolve")}
-                disabled={selectedReport.status === "resolved"}
-              >
-                Resolver
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleReportAction(selectedReport.id, "dismiss")}
-                disabled={selectedReport.status === "dismissed"}
-              >
-                Dispensar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => handleReportAction(selectedReport.id, "delete")}
-              >
-                Deletar
-              </Button>
-            </div>
           </div>
-        )}
+        </div>
       </ResponsiveModal>
 
       {/* Modal de banimento */}

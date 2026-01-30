@@ -94,55 +94,67 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
 
   return (
     <div ref={wrapperRef} className="space-y-6">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-32 h-32 rounded-full border-4 border-purple-100 overflow-hidden bg-gray-50">
-          {preview ? (
-            <img src={preview} className="w-full h-full object-cover" />
-          ) : (
-            <Camera className="w-full h-full p-8 text-gray-300" />
-          )}
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upload">
-            <Upload className="w-4 h-4 mr-2" /> Foto
-          </TabsTrigger>
-          <TabsTrigger value="dicebear">
-            <RefreshCw className="w-4 h-4 mr-2" /> Avatar
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="upload" className="pt-4">
-          <label className="flex flex-col items-center p-8 border-2 border-dashed rounded-xl cursor-pointer hover:bg-gray-50">
-            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm">Clique para subir foto</span>
-            <input
-              type="file"
-              className="hidden"
-              onChange={handleFile}
-              accept="image/*"
-            />
-          </label>
-        </TabsContent>
-        <TabsContent value="dicebear" className="pt-4">
-          <Button
-            variant="outline"
-            onClick={generateAvatar}
-            className="w-full h-12"
-          >
-            <Sparkles className="w-4 h-4 mr-2" /> Gerar Aleatório
-          </Button>
-        </TabsContent>
-      </Tabs>
-
-      <Button
-        onClick={handleSave}
-        disabled={isLoading || !preview}
-        className="w-full h-12 bg-purple-600 hover:bg-purple-700"
+      <form
+        id="avatar-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSave();
+        }}
+        className="space-y-6"
       >
-        {isLoading ? "Salvando..." : "Salvar Foto"}
-      </Button>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-32 h-32 rounded-full border-4 border-purple-100 overflow-hidden bg-gray-50">
+            {preview ? (
+              <img src={preview} className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="w-full h-full p-8 text-gray-300" />
+            )}
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload">
+              <Upload className="w-4 h-4 mr-2" /> Foto
+            </TabsTrigger>
+            <TabsTrigger value="dicebear">
+              <RefreshCw className="w-4 h-4 mr-2" /> Avatar
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="upload" className="pt-4">
+            <label className="flex flex-col items-center p-8 border-2 border-dashed rounded-xl cursor-pointer hover:bg-gray-50">
+              <Upload className="w-8 h-8 text-gray-400 mb-2" />
+              <span className="text-sm">Clique para subir foto</span>
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleFile}
+                accept="image/*"
+              />
+            </label>
+          </TabsContent>
+          <TabsContent value="dicebear" className="pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={generateAvatar}
+              className="w-full h-12"
+            >
+              <Sparkles className="w-4 h-4 mr-2" /> Gerar Aleatório
+            </Button>
+          </TabsContent>
+        </Tabs>
+
+        <div className="hidden sm:block">
+          <Button
+            type="submit"
+            disabled={isLoading || !preview}
+            className="w-full h-12 bg-purple-600 hover:bg-purple-700"
+          >
+            {isLoading ? "Salvando..." : "Salvar Foto"}
+          </Button>
+        </div>
+      </form>
       {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
       <div className="h-40 sm:h-0" />
     </div>
