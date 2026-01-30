@@ -248,17 +248,85 @@ export function EvaluationModal({
     <ResponsiveModal
       isOpen={isOpen}
       onOpenChange={(open) => !open && handleClose()}
-      title={
-        isMutual
-          ? `Avaliar ${targetUserName} (Avaliação Mútua)`
-          : `Avaliar ${targetUserName}`
-      }
-      className="max-sm:max-h-[85vh]"
-      footer={
-        <>
+      fullContent={true}
+      showCloseButton={false}
+      className="max-sm:max-h-[96vh]"
+    >
+      <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+        {/* HEADER FIXO */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+          <button
+            onClick={handleClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            disabled={isSubmitting}
+          >
+            <Star className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+          </button>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+            {isMutual
+              ? `Avaliar ${targetUserName} (Avaliação Mútua)`
+              : `Avaliar ${targetUserName}`}
+          </h2>
+          <div className="w-9" />
+        </div>
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
+          <div ref={textareaWrapperRef} className="space-y-4 pb-4">
+            {/* Rating */}
+            <div>
+              <Label
+                htmlFor="rating"
+                className="text-gray-700 dark:text-gray-300"
+              >
+                Avaliação (1-5 estrelas)
+              </Label>
+              <div className="flex items-center space-x-2 mt-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className={`p-1 rounded-full transition-colors ${
+                      star <= rating
+                        ? "text-yellow-400 hover:text-yellow-500 dark:text-yellow-400 dark:hover:text-yellow-300"
+                        : "text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500"
+                    }`}
+                    disabled={isSubmitting}
+                  >
+                    <Star className="h-6 w-6 fill-current" />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                  {rating} de 5 estrelas
+                </span>
+              </div>
+            </div>
+
+            {/* Comment */}
+            <div>
+              <Label
+                htmlFor="comment"
+                className="text-gray-700 dark:text-gray-300"
+              >
+                Comentário (opcional)
+              </Label>
+              <Textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Deixe um comentário sobre sua experiência..."
+                rows={4}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* FOOTER ACTIONS - FIXO */}
+        <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 flex-shrink-0">
           <Button
             variant="outline"
-            className="flex-1"
+            className="hidden sm:inline-flex"
             onClick={handleClose}
             disabled={isSubmitting}
           >
@@ -267,7 +335,7 @@ export function EvaluationModal({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex-1 min-w-[120px]"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors flex-1 sm:flex-none"
           >
             {isSubmitting ? (
               <>
@@ -281,50 +349,6 @@ export function EvaluationModal({
               </>
             )}
           </Button>
-        </>
-      }
-    >
-      <div ref={textareaWrapperRef} className="space-y-4 pb-4">
-        {/* Rating */}
-        <div>
-          <Label htmlFor="rating" className="text-gray-700 dark:text-gray-300">
-            Avaliação (1-5 estrelas)
-          </Label>
-          <div className="flex items-center space-x-2 mt-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                className={`p-1 rounded-full transition-colors ${
-                  star <= rating
-                    ? "text-yellow-400 hover:text-yellow-500 dark:text-yellow-400 dark:hover:text-yellow-300"
-                    : "text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500"
-                }`}
-                disabled={isSubmitting}
-              >
-                <Star className="h-6 w-6 fill-current" />
-              </button>
-            ))}
-            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-              {rating} de 5 estrelas
-            </span>
-          </div>
-        </div>
-
-        {/* Comment */}
-        <div>
-          <Label htmlFor="comment" className="text-gray-700 dark:text-gray-300">
-            Comentário (opcional)
-          </Label>
-          <Textarea
-            id="comment"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Deixe um comentário sobre sua experiência..."
-            rows={4}
-            disabled={isSubmitting}
-          />
         </div>
       </div>
     </ResponsiveModal>

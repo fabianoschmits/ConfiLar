@@ -78,6 +78,7 @@ interface UnifiedCreateAdFormProps {
     location_state?: string;
     location_city?: string;
   };
+  title?: string;
 }
 
 export function UnifiedCreateAdForm({
@@ -85,18 +86,16 @@ export function UnifiedCreateAdForm({
   onCancel,
   isLoading = false,
   initialData,
+  title = "Criar Novo Anúncio",
 }: UnifiedCreateAdFormProps) {
   const { profile } = useAuthContext();
   const { balance } = usePoints(profile?.id);
-  const { country: contextCountry } = useLocale();
+  const { country: contextCountry, t } = useLocale();
   const { estados, loadCidades } = useIBGE();
 
   // Initial State from Profile
   const [selectedCountry, setSelectedCountry] = useState<string>(
-    initialData?.location_country ||
-      (profile as any)?.country ||
-      contextCountry ||
-      "BR",
+    initialData?.location_country || profile?.country || contextCountry || "BR",
   );
   const [selectedState, setSelectedState] = useState<string>(
     initialData?.location_state || profile?.location_state || "",
@@ -405,14 +404,20 @@ export function UnifiedCreateAdForm({
       ref={textareaWrapperRef}
       className="flex flex-col h-full bg-white dark:bg-black overflow-hidden"
     >
-      {/* Helper Header for Modal context if needed, but Dialog usually has header. 
-      {/* Helper Header for Modal context if needed, but Dialog usually has header. 
-            However, we might want this component to own its header/footer for consistent spacing if reused directly. 
-            Since it's used inside a DialogContent, we'll keep it cleaner, maybe just content. 
-            Wait, existing dialogs have DialogHeader. We'll skip header here and assume parent renders title.
-            But we need a Cancel button somewhere if not in header? 
-            Let's stick to content body style.
-        */}
+      {/* HEADER FIXO */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-10">
+        <button
+          onClick={onCancel}
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+          disabled={isLoading}
+        >
+          <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+        </button>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white truncate px-2">
+          {title}
+        </h2>
+        <div className="w-9" />
+      </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6">
         {/* TYPE SELECTION */}
@@ -697,13 +702,11 @@ export function UnifiedCreateAdForm({
               )}
             </div>
           )}
-          {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
-          <div className="h-40 sm:h-0" />
         </div>
       </div>
 
-      {/* FOOTER ACTIONS */}
-      <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 rounded-b-lg">
+      {/* FOOTER ACTIONS - FIXO */}
+      <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 flex-shrink-0">
         <Button
           variant="outline"
           onClick={() => {
@@ -711,6 +714,7 @@ export function UnifiedCreateAdForm({
             onCancel();
           }}
           disabled={isLoading}
+          className="hidden sm:inline-flex"
         >
           Cancelar
         </Button>
@@ -723,13 +727,13 @@ export function UnifiedCreateAdForm({
             !formData.category ||
             (formData.isPremium && !canAfford)
           }
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[120px] transition-colors flex-1 sm:flex-none"
         >
           {isLoading
             ? "Criando..."
             : formData.isPremium
               ? "Criar & Destacar"
-              : "Criar Anúncio"}
+              : t("createAd")}
         </LoadingButton>
       </div>
     </div>

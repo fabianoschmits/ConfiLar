@@ -590,7 +590,9 @@ export default function FeedPage() {
         <ResponsiveModal
           isOpen={showNewPost}
           onOpenChange={setShowNewPost}
-          title={t("createPost")}
+          fullContent={true}
+          showCloseButton={false}
+          className="max-sm:max-h-[96vh]"
         >
           <NewPostForm
             onSubmit={async (data) => {

@@ -1023,7 +1023,8 @@ export default function ClassificadosPage() {
                     <ResponsiveModal
                       isOpen={showCreateDialog}
                       onOpenChange={setShowCreateDialog}
-                      title="Criar Novo Anúncio"
+                      fullContent={true}
+                      showCloseButton={false}
                     >
                       <UnifiedCreateAdForm
                         onSubmit={handleCreateUnifiedAd}
@@ -1073,7 +1074,8 @@ export default function ClassificadosPage() {
                 <ResponsiveModal
                   isOpen={showEditDialog}
                   onOpenChange={setShowEditDialog}
-                  title={t("editAd")}
+                  fullContent={true}
+                  showCloseButton={false}
                 >
                   <UnifiedCreateAdForm
                     initialData={{

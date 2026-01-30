@@ -29,6 +29,8 @@ interface ResponsiveModalProps {
   description?: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  showCloseButton?: boolean;
+  fullContent?: boolean;
 }
 
 export function ResponsiveModal({
@@ -39,6 +41,8 @@ export function ResponsiveModal({
   description,
   footer,
   className,
+  showCloseButton = true,
+  fullContent = false,
 }: ResponsiveModalProps) {
   const { isMobile } = useMobile();
 
@@ -72,22 +76,33 @@ export function ResponsiveModal({
   return (
     <Drawer open={isOpen} onOpenChange={onOpenChange}>
       <DrawerContent className={cn("max-h-[96vh] flex flex-col", className)}>
-        <DrawerHeader className="text-left border-b pb-4">
-          {title && <DrawerTitle>{title}</DrawerTitle>}
-          {description && <DrawerDescription>{description}</DrawerDescription>}
-        </DrawerHeader>
-        <div
-          className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth overscroll-contain"
-          style={{ scrollPaddingBottom: "50vh" }}
-        >
-          {children}
-        </div>
-        <DrawerFooter className="pt-2 border-t">
-          {footer}
-          <DrawerClose asChild>
-            <Button variant="outline">Fechar</Button>
-          </DrawerClose>
-        </DrawerFooter>
+        {fullContent ? (
+          <div className="flex-1 overflow-hidden flex flex-col">{children}</div>
+        ) : (
+          <>
+            {(title || description) && (
+              <DrawerHeader className="text-left border-b pb-4 flex-shrink-0">
+                {title && <DrawerTitle>{title}</DrawerTitle>}
+                {description && (
+                  <DrawerDescription>{description}</DrawerDescription>
+                )}
+              </DrawerHeader>
+            )}
+            <div className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth overscroll-contain">
+              {children}
+            </div>
+            {(footer || showCloseButton) && (
+              <DrawerFooter className="pt-2 border-t flex-shrink-0">
+                {footer}
+                {showCloseButton && (
+                  <DrawerClose asChild>
+                    <Button variant="outline">Fechar</Button>
+                  </DrawerClose>
+                )}
+              </DrawerFooter>
+            )}
+          </>
+        )}
       </DrawerContent>
     </Drawer>
   );
