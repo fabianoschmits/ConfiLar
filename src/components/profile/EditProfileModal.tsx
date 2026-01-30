@@ -126,18 +126,7 @@ export function EditProfileModal({
               {currentTab.label}
             </h2>
           </div>
-          <div className="flex items-center gap-2">
-            {activeTab !== "security" && (
-              <LoadingButton
-                type="submit"
-                form={`${activeTab}-form`}
-                size="sm"
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-white dark:hover:bg-gray-200 dark:text-black min-w-[80px] transition-colors"
-              >
-                Salvar
-              </LoadingButton>
-            )}
-          </div>
+          <div className="flex items-center gap-2" />
         </div>
 
         <div className="flex flex-col flex-1 sm:flex-row overflow-hidden">
