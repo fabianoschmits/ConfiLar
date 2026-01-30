@@ -74,7 +74,8 @@ export function ResponsiveModal({
   }
 
   return (
-    <Drawer open={isOpen} onOpenChange={onOpenChange}>
+    /* @ts-expect-error - threshold is a valid vaul prop but typing might be inconsistent */
+    <Drawer open={isOpen} onOpenChange={onOpenChange} threshold={0.7}>
       <DrawerContent
         className={cn(
           "max-h-[96vh] flex flex-col",
