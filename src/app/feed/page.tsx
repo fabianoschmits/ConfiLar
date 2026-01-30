@@ -29,7 +29,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { NewPostForm } from "@/components/timeline/NewPostForm";
 import { PremiumPostForm } from "@/components/timeline/PremiumPostForm";
-import { Modal } from "@/components/ui/modal";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { InstagramPostSkeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -587,132 +587,112 @@ export default function FeedPage() {
         </div>
 
         {/* MODAIS */}
-        {/* Modal de Novo Post */}
-        {showNewPost && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-            {/* Backdrop */}
-            <div
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setShowNewPost(false)}
-            />
+        <ResponsiveModal
+          isOpen={showNewPost}
+          onOpenChange={setShowNewPost}
+          title={t("createPost")}
+        >
+          <NewPostForm
+            onSubmit={async (data) => {
+              if (!profile?.id) {
+                toast.error("Erro: Usuário não autenticado");
+                return;
+              }
 
-            {/* Modal Content - Usando o próprio componente como modal */}
-            <div className="relative w-full max-w-2xl h-[90vh] sm:h-auto sm:max-h-[90vh] bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-              <NewPostForm
-                onSubmit={async (data) => {
-                  if (!profile?.id) {
-                    toast.error("Erro: Usuário não autenticado");
-                    return;
-                  }
+              setIsPosting(true);
+              setPostStatus("sending");
 
-                  setIsPosting(true);
-                  setPostStatus("sending");
+              try {
+                // Se for post premium, usar addPremiumPost
+                if (data.isPremium && data.pointsToSpend && data.durationDays) {
+                  const finalCityPremium =
+                    data.location_city !== undefined
+                      ? data.location_city
+                      : profile.location_city;
+                  const finalStatePremium =
+                    data.location_state !== undefined
+                      ? data.location_state
+                      : profile.location_state;
 
-                  try {
-                    // Se for post premium, usar addPremiumPost
-                    if (
-                      data.isPremium &&
-                      data.pointsToSpend &&
-                      data.durationDays
-                    ) {
-                      // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
-                      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
-                      const finalCityPremium =
-                        data.location_city !== undefined
-                          ? data.location_city
-                          : profile.location_city;
-                      const finalStatePremium =
-                        data.location_state !== undefined
-                          ? data.location_state
-                          : profile.location_state;
+                  await addPremiumPost({
+                    type: "post",
+                    user_id: profile.id,
+                    user_name: profile.full_name || "Usuário",
+                    user_avatar: profile.avatar_url,
+                    user_type: profile.user_type,
+                    title: data.description.trim().slice(0, 100),
+                    description: data.description,
+                    images: data.images,
+                    service_category_id: data.service,
+                    location_state: finalStatePremium,
+                    location_city: finalCityPremium,
+                    location_country:
+                      data.location_country ||
+                      (profile as any)?.country ||
+                      "BR",
+                    pointsToSpend: data.pointsToSpend,
+                    durationDays: data.durationDays,
+                    likes_count: 0,
+                    comments_count: 0,
+                    is_liked: false,
+                  } as any);
+                } else {
+                  const finalCity =
+                    data.location_city !== undefined
+                      ? data.location_city
+                      : profile.location_city;
+                  const finalState =
+                    data.location_state !== undefined
+                      ? data.location_state
+                      : profile.location_state;
 
-                      await addPremiumPost({
-                        type: "post",
-                        user_id: profile.id,
-                        user_name: profile.full_name || "Usuário",
-                        user_avatar: profile.avatar_url,
-                        user_type: profile.user_type,
-                        title: data.description.trim().slice(0, 100), // Título gerado da descrição
-                        description: data.description,
-                        images: data.images,
-                        service_category_id: data.service,
-                        location_state: finalStatePremium,
-                        location_city: finalCityPremium,
-                        location_country:
-                          data.location_country ||
-                          (profile as any)?.country ||
-                          "BR",
-                        pointsToSpend: data.pointsToSpend,
-                        durationDays: data.durationDays,
-                        likes_count: 0,
-                        comments_count: 0,
-                        is_liked: false,
-                      } as any);
-                    } else {
-                      // Post normal
-                      // IMPORTANTE: Se location_city foi enviado (mesmo que vazio), usar ele
-                      // Isso garante que quando o usuário seleciona uma cidade, ela seja salva
-                      const finalCity =
-                        data.location_city !== undefined
-                          ? data.location_city
-                          : profile.location_city;
-                      const finalState =
-                        data.location_state !== undefined
-                          ? data.location_state
-                          : profile.location_state;
+                  await addPost({
+                    type: "post",
+                    user_id: profile.id,
+                    user_name: profile.full_name || "Usuário",
+                    user_avatar: profile.avatar_url,
+                    user_type: profile.user_type,
+                    title: data.description.trim().slice(0, 100),
+                    description: data.description,
+                    images: data.images,
+                    service_category_id: data.service,
+                    location_state: finalState,
+                    location_city: finalCity,
+                    location_country:
+                      data.location_country ||
+                      (profile as any)?.country ||
+                      "BR",
+                    likes_count: 0,
+                    comments_count: 0,
+                    is_liked: false,
+                  });
+                }
 
-                      await addPost({
-                        type: "post",
-                        user_id: profile.id,
-                        user_name: profile.full_name || "Usuário",
-                        user_avatar: profile.avatar_url,
-                        user_type: profile.user_type,
-                        title: data.description.trim().slice(0, 100), // Título gerado da descrição
-                        description: data.description,
-                        images: data.images,
-                        service_category_id: data.service,
-                        location_state: finalState,
-                        location_city: finalCity,
-                        location_country:
-                          data.location_country ||
-                          (profile as any)?.country ||
-                          "BR",
-                        likes_count: 0,
-                        comments_count: 0,
-                        is_liked: false,
-                      });
-                    }
+                setPostStatus("sent");
+                setTimeout(async () => {
+                  setShowNewPost(false);
+                  setPostStatus("idle");
+                  await new Promise((resolve) => setTimeout(resolve, 500));
+                  await refetch();
+                }, 1000);
+              } catch (error: any) {
+                console.error("Erro ao criar post:", error);
+                const errorMessage = error?.message || "Erro ao criar post";
+                toast.error(`Erro ao criar post: ${errorMessage}`);
+                setPostStatus("idle");
+              } finally {
+                setIsPosting(false);
+              }
+            }}
+            onCancel={() => setShowNewPost(false)}
+            isLoading={isPosting}
+            postStatus={postStatus}
+          />
+        </ResponsiveModal>
 
-                    // Mostrar "Enviado!" por 1 segundo antes de fechar
-                    setPostStatus("sent");
-                    setTimeout(async () => {
-                      setShowNewPost(false);
-                      setPostStatus("idle");
-                      // Aguardar um pouco antes de refetch para garantir que o post foi salvo
-                      await new Promise((resolve) => setTimeout(resolve, 500));
-                      await refetch();
-                    }, 1000);
-                  } catch (error: any) {
-                    console.error("Erro ao criar post:", error);
-                    const errorMessage = error?.message || "Erro ao criar post";
-                    toast.error(`Erro ao criar post: ${errorMessage}`);
-                    setPostStatus("idle");
-                  } finally {
-                    setIsPosting(false);
-                  }
-                }}
-                onCancel={() => setShowNewPost(false)}
-                isLoading={isPosting}
-                postStatus={postStatus}
-              />
-            </div>
-          </div>
-        )}
-
-        <Modal
+        <ResponsiveModal
           isOpen={showPremiumPost}
-          onClose={() => setShowPremiumPost(false)}
-          size="lg"
+          onOpenChange={setShowPremiumPost}
           title={t("premiumPost")}
         >
           <PremiumPostForm
@@ -739,7 +719,7 @@ export default function FeedPage() {
             isLoading={false}
             postStatus="idle"
           />
-        </Modal>
+        </ResponsiveModal>
 
         {/* Modal de edição de post */}
         {editingPost && (
@@ -778,13 +758,14 @@ export default function FeedPage() {
 
         {/* Modal de renovação premium */}
         {renewingPostId && (
-          <Modal
+          <ResponsiveModal
             isOpen={showRenewPremiumModal}
-            onClose={() => {
-              setShowRenewPremiumModal(false);
-              setRenewingPostId(null);
+            onOpenChange={(open) => {
+              if (!open) {
+                setShowRenewPremiumModal(false);
+                setRenewingPostId(null);
+              }
             }}
-            size="lg"
             title={t("renewPremium")}
           >
             <PremiumPostForm
@@ -823,7 +804,7 @@ export default function FeedPage() {
               isLoading={isPosting}
               postStatus={postStatus}
             />
-          </Modal>
+          </ResponsiveModal>
         )}
 
         {/* Botão Voltar ao Topo */}
