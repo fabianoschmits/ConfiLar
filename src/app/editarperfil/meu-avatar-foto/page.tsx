@@ -364,7 +364,7 @@ export default function MeuAvatarFotoPage() {
                             <label className="text-sm font-medium text-gray-700 mb-2 block">
                               Enviar Foto Própria
                             </label>
-                            <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors">
+                            <div className="w-full">
                               <input
                                 type="file"
                                 accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
@@ -374,16 +374,24 @@ export default function MeuAvatarFotoPage() {
                               />
                               <label
                                 htmlFor="avatar-upload"
-                                className="cursor-pointer flex flex-col items-center gap-4"
+                                className="group flex flex-col items-center justify-center p-12 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
                               >
-                                <Upload className="h-12 w-12 text-purple-600" />
-                                <div>
-                                  <p className="text-sm font-medium text-gray-700">
-                                    Clique para selecionar ou arraste uma imagem
+                                <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
+                                  <Upload className="h-10 w-10 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                                </div>
+                                <div className="mt-4 text-center">
+                                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Clique para selecionar uma foto
                                   </p>
-                                  <p className="text-xs text-gray-500 mt-1">
+                                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
                                     JPG, PNG, WebP ou GIF (máx. 5MB)
                                   </p>
+                                </div>
+                                <div className="mt-6">
+                                  <span className="inline-flex items-center px-6 py-3 rounded-xl bg-primary-600 text-white text-sm font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
+                                    <Camera className="w-4 h-4 mr-2" />
+                                    Selecionar Foto
+                                  </span>
                                 </div>
                               </label>
                             </div>

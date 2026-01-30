@@ -595,6 +595,7 @@ export default function ClassificadosPage() {
 
   // Editar anúncio
   const handleEditAd = (ad: any) => {
+    setSelectedAd(ad); // Use selectedAd to store the full object being edited
     setEditingAdId(ad.id);
     setFormData({
       title: ad.title,
@@ -602,7 +603,7 @@ export default function ClassificadosPage() {
       category: ad.category,
       location_state: ad.location_state,
       location_city: ad.location_city,
-      price_range: "",
+      price_range: ad.price_range || "",
       urgency_level: "normal",
       ad_type: ad.ad_type === "oferecer" ? "offer" : "request",
     });
@@ -1073,130 +1074,62 @@ export default function ClassificadosPage() {
                   isOpen={showEditDialog}
                   onOpenChange={setShowEditDialog}
                   title={t("editAd")}
-                  footer={
-                    <div className="flex justify-end space-x-2 w-full">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowEditDialog(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button onClick={handleSaveEdit} disabled={isEditingAd}>
-                        {isEditingAd ? "Salvando..." : "Salvar Alterações"}
-                      </Button>
-                    </div>
-                  }
                 >
-                  <div className="space-y-4 py-4">
-                    <div>
-                      <Label htmlFor="edit-title">Título *</Label>
-                      <Input
-                        id="edit-title"
-                        value={formData.title}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            title: e.target.value,
-                          }))
-                        }
-                        placeholder="Ex: Preciso de um pedreiro"
-                      />
-                    </div>
+                  <UnifiedCreateAdForm
+                    initialData={{
+                      title: selectedAd?.title,
+                      description: selectedAd?.description,
+                      category: selectedAd?.category,
+                      ad_type:
+                        selectedAd?.ad_type === "oferecer"
+                          ? "offer"
+                          : "request",
+                      price: selectedAd?.price_range,
+                      images: selectedAd?.images,
+                      location_state: selectedAd?.location_state,
+                      location_city: selectedAd?.location_city,
+                    }}
+                    onSubmit={async (data) => {
+                      if (!user || !editingAdId) return;
+                      try {
+                        setIsEditingAd(true);
+                        const updateData = {
+                          title: data.title,
+                          description: data.description,
+                          category: data.category,
+                          location_state: data.location_state,
+                          location_city: data.location_city,
+                          ad_type:
+                            data.ad_type === "offer" ? "oferecer" : "procurar",
+                          images: data.images,
+                          price_range: data.price
+                            ? data.price.toString()
+                            : null,
+                        };
 
-                    <div>
-                      <Label htmlFor="edit-description">Descrição *</Label>
-                      <Textarea
-                        id="edit-description"
-                        value={formData.description}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            description: e.target.value,
-                          }))
-                        }
-                        placeholder="Descreva o que você precisa ou oferece..."
-                        rows={4}
-                      />
-                    </div>
+                        const { error } = await supabase
+                          .from("classified_ads")
+                          .update(updateData)
+                          .eq("id", editingAdId)
+                          .eq("user_id", user.id);
 
-                    <div>
-                      <Label htmlFor="edit-ad_type">Tipo de Anúncio *</Label>
-                      <Select
-                        value={formData.ad_type}
-                        onValueChange={(value: "offer" | "request") =>
-                          setFormData((prev) => ({ ...prev, ad_type: value }))
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo de anúncio" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="offer">
-                            <div className="flex items-center gap-2">
-                              <ShoppingCart className="h-4 w-4 text-gray-700 dark:text-gray-300" />
-                              <span>Oferta - Estou oferecendo um serviço</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="request">
-                            <div className="flex items-center gap-2">
-                              <HandHeart className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                              <span>Solicitação - Preciso de um serviço</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        if (error) throw error;
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="edit-category">Serviços *</Label>
-                        <Combobox
-                          options={categoryOptions}
-                          value={formData.category}
-                          onValueChange={(value) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              category: value,
-                            }))
-                          }
-                          placeholder="Selecione"
-                          searchPlaceholder="Buscar categoria..."
-                          emptyMessage="Nenhuma categoria encontrada."
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="edit-state">Estado</Label>
-                        <EstadoCombobox
-                          value={formData.location_state}
-                          onValueChange={(value) => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              location_state: value,
-                              location_city: "",
-                            }));
-                            if (value) loadCidades(value);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {formData.location_state && (
-                      <div>
-                        <Label htmlFor="edit-city">Cidade</Label>
-                        <CidadeCombobox
-                          value={formData.location_city}
-                          onValueChange={(value) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              location_city: value,
-                            }))
-                          }
-                          estadoSigla={formData.location_state}
-                        />
-                      </div>
-                    )}
-                  </div>
+                        toast.success("Anúncio atualizado com sucesso!");
+                        setShowEditDialog(false);
+                        setEditingAdId(null);
+                        setSelectedAd(null);
+                        await loadClassifiedAds();
+                      } catch (error) {
+                        console.error("Erro ao editar anúncio:", error);
+                        toast.error("Erro ao editar anúncio");
+                      } finally {
+                        setIsEditingAd(false);
+                      }
+                    }}
+                    onCancel={() => setShowEditDialog(false)}
+                    isLoading={isEditingAd}
+                  />
                 </ResponsiveModal>
 
                 {/* Modal de Visualização do Anúncio */}

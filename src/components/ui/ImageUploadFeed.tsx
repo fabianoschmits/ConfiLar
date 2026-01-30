@@ -23,6 +23,9 @@ export function ImageUploadFeed({
 }: ImageUploadFeedProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const fileInputId = useRef(
+    `file-upload-${Math.random().toString(36).substring(2, 9)}`,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuthContext();
   const { compressImage, isCompressing, compressionProgress } =
@@ -157,69 +160,113 @@ export function ImageUploadFeed({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Preview das imagens atuais - Versão Compacta */}
+      <input
+        id={fileInputId.current}
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/jpg"
+        multiple
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      {/* Preview das imagens atuais - Grid Premium */}
       {currentImages.length > 0 && (
-        <div className="flex justify-center">
-          <div className="inline-flex gap-2 flex-wrap justify-center max-w-md">
-            {currentImages.map((imageUrl, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={imageUrl}
-                  alt={`Imagem ${index + 1}`}
-                  className="w-32 h-32 object-cover rounded border border-gray-300"
-                />
-                <button
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                  title="Remover"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {currentImages.map((imageUrl, index) => (
+            <div
+              key={index}
+              className="relative group aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm transition-all hover:shadow-md"
+            >
+              <img
+                src={imageUrl}
+                alt={`Imagem ${index + 1}`}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveImage(index);
+                }}
+                className="absolute top-1 right-1 p-1 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                title="Remover"
+              >
+                <X className="w-5 h-5" strokeWidth={3} />
+              </button>
+            </div>
+          ))}
+
+          {/* Slot de Adição Rápida (Estilo Card) */}
+          {canAddMore && !isUploading && !isCompressing && (
+            <label
+              htmlFor={fileInputId.current}
+              className="flex flex-col items-center justify-center aspect-square rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all cursor-pointer group"
+            >
+              <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 transition-colors">
+                <Camera className="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
               </div>
-            ))}
-          </div>
+              <span className="mt-2 text-[10px] font-medium text-gray-500 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                Adicionar
+              </span>
+            </label>
+          )}
         </div>
       )}
 
-      {/* Botão de upload compacto e centralizado */}
-      {canAddMore && (
-        <div className="flex justify-center">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-
+      {currentImages.length === 0 && (
+        <div className="w-full">
           {isUploading || isCompressing ? (
-            <div className="flex items-center gap-2 text-sm text-blue-600">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>
+            <div className="flex flex-col items-center justify-center p-8 rounded-xl bg-gray-50/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800">
+              <div className="relative">
+                <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-600">
+                  {compressionProgress > 0 ? `${compressionProgress}%` : ""}
+                </div>
+              </div>
+              <span className="mt-3 text-sm font-medium text-gray-600 dark:text-gray-400">
                 {isCompressing
-                  ? `Comprimindo... ${compressionProgress}%`
-                  : "Enviando..."}
+                  ? "Otimizando imagens..."
+                  : "Enviando para o servidor..."}
               </span>
             </div>
           ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                openFileDialog();
-              }}
-              className="text-xs"
+            <label
+              htmlFor={fileInputId.current}
+              className="group flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
             >
-              <Camera className="w-3.5 h-3.5 mr-1.5" />
-              {currentImages.length > 0
-                ? `Adicionar Fotos (${currentImages.length}/${maxImages})`
-                : "Selecionar Fotos"}
-            </Button>
+              <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
+                <ImageIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Clique para selecionar fotos
+                </p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                  Arraste e solte até {maxImages} imagens aqui
+                </p>
+              </div>
+              <div className="mt-6">
+                <span className="inline-flex items-center px-4 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
+                  <Camera className="w-4 h-4 mr-2" />
+                  Selecionar Fotos
+                </span>
+              </div>
+            </label>
           )}
+        </div>
+      )}
+
+      {/* Barra de Progresso de Carregamento (quando já tem imagens) */}
+      {currentImages.length > 0 && (isUploading || isCompressing) && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-primary-50/50 dark:bg-primary-950/30 border border-primary-100 dark:border-primary-900/50 animate-pulse">
+          <Loader2 className="w-4 h-4 text-primary-500 animate-spin" />
+          <span className="text-xs font-medium text-primary-700 dark:text-primary-400">
+            {isCompressing
+              ? `Otimizando novas fotos... ${compressionProgress}%`
+              : "Subindo fotos selecionadas..."}
+          </span>
         </div>
       )}
 

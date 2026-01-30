@@ -173,12 +173,18 @@ export function AvatarUpload({
                   alt="Preview"
                   className="w-24 h-24 rounded-full object-cover border-4 border-black"
                 />
-                <Button
-                  onClick={handleRemoveFile}
-                  className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full bg-red-500 text-white border-2 border-black hover:bg-red-600"
+                <button
+                  type="button"
+                  className="absolute top-1 right-1 p-1 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleRemoveFile();
+                  }}
+                  title="Remover"
                 >
-                  <X className="w-3 h-3" />
-                </Button>
+                  <X className="h-5 w-5" strokeWidth={3} />
+                </button>
               </div>
               <p className="text-xs text-black font-bold text-center">
                 {selectedFile.name.toUpperCase()}

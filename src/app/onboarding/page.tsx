@@ -1405,19 +1405,38 @@ export default function OnboardingPage() {
                             />
                             <label
                               htmlFor="avatar-upload"
-                              className={cn(
-                                "block w-full p-4 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all text-center",
-                                selectedAvatar?.type === "upload" &&
-                                  "border-blue-500 bg-blue-50/50",
-                              )}
+                              className="group flex flex-col items-center justify-center w-full p-6 py-8 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
                             >
-                              <div className="font-medium text-gray-700">
-                                {selectedAvatar?.type === "upload"
-                                  ? "✅ Foto Selecionada"
-                                  : "📁 Escolher Arquivo"}
+                              <div className="p-3 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
+                                {selectedAvatar?.type === "upload" ? (
+                                  <Check className="h-8 w-8 text-green-500" />
+                                ) : (
+                                  <Upload className="h-8 w-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                                )}
                               </div>
-                              <div className="text-sm text-gray-500 mt-1">
-                                JPG, PNG ou GIF
+                              <div className="mt-4 text-center">
+                                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                  {selectedAvatar?.type === "upload"
+                                    ? "Foto Selecionada"
+                                    : "Clique para selecionar foto"}
+                                </p>
+                                <p className="mt-1 text-xs text-gray-500">
+                                  JPG, PNG ou GIF (máx. 5MB)
+                                </p>
+                              </div>
+                              <div className="mt-4">
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95 shadow-lg",
+                                    selectedAvatar?.type === "upload"
+                                      ? "bg-green-500 text-white shadow-green-500/30"
+                                      : "bg-primary-600 text-white shadow-primary-500/30 hover:bg-primary-700",
+                                  )}
+                                >
+                                  {selectedAvatar?.type === "upload"
+                                    ? "Trocar Foto"
+                                    : "Selecionar Foto"}
+                                </span>
                               </div>
                             </label>
                           </div>

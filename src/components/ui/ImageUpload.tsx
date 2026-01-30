@@ -18,8 +18,10 @@ import { toast } from "sonner";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 
 interface ImageUploadProps {
-  onImageUploaded?: (url: string) => void;
-  currentImageUrl?: string | null;
+  onImageUploaded?: (urls: string[]) => void;
+  currentImageUrl?: string | string[] | null;
+  multiple?: boolean;
+  maxFiles?: number;
   bucket?: "avatars" | "service-images" | "feed-images";
   folder?: string;
   maxSize?: number; // em MB
@@ -31,102 +33,109 @@ interface ImageUploadProps {
 export function ImageUpload({
   onImageUploaded,
   currentImageUrl,
+  multiple = false,
+  maxFiles = 5,
   bucket = "avatars",
   folder = "avatars",
   maxSize = 5,
-  acceptedTypes = ["image/jpeg", "image/png", "image/webp"],
+  acceptedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"],
   title = "Upload de Imagem",
   description = "Clique para selecionar ou arraste uma imagem",
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    currentImageUrl || null,
+  const [previewUrls, setPreviewUrls] = useState<string[]>(
+    Array.isArray(currentImageUrl)
+      ? currentImageUrl
+      : currentImageUrl
+        ? [currentImageUrl]
+        : [],
+  );
+  const fileInputId = useRef(
+    `image-upload-${Math.random().toString(36).substring(2, 9)}`,
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { profile } = useAuthContext();
   const { compressImage, isCompressing, compressionProgress } =
     useImageCompression();
 
-  const handleFileSelect = async (file: File) => {
+  const handleFilesSelect = async (files: FileList) => {
+    if (files.length === 0) return;
+
     if (!profile?.id) {
       toast.error("Usuário não autenticado");
       return;
     }
 
-    // ⚠️ SEGURANÇA: Validação completa de arquivo (tipo, tamanho e magic bytes)
-    const { validateImageFile } = await import("@/lib/fileValidation");
-    const validation = await validateImageFile(file, {
-      allowedTypes: acceptedTypes,
-      maxSizeMB: maxSize,
-      validateMagicBytes: true,
-    });
-
-    if (!validation.valid) {
-      toast.error(validation.error || "Arquivo inválido");
+    if (previewUrls.length + files.length > (multiple ? maxFiles : 1)) {
+      toast.error(
+        `Você pode selecionar no máximo ${multiple ? maxFiles : 1} imagem(ns).`,
+      );
       return;
     }
 
     setIsUploading(true);
+    const uploadedUrls: string[] = [];
 
     try {
-      // Comprimir imagem antes do upload
-      console.log("🗜️ Comprimindo imagem...");
-      const compressedFile = await compressImage(file, {
-        maxSizeMB: 0.5, // 500KB máximo para avatares
-        maxWidthOrHeight: 512, // 512px máximo
-        useWebWorker: true,
-      });
+      const { validateImageFile } = await import("@/lib/fileValidation");
 
-      console.log("✅ Imagem comprimida:", {
-        original: `${(file.size / 1024).toFixed(1)}KB`,
-        compressed: `${(compressedFile.size / 1024).toFixed(1)}KB`,
-        reduction: `${Math.round((1 - compressedFile.size / file.size) * 100)}%`,
-      });
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-      // Gerar nome único para o arquivo
-      const fileExtension = compressedFile.name.split(".").pop();
-      const fileName = `${profile.id}/${Date.now()}.${fileExtension}`;
-
-      console.log("🚀 Iniciando upload...");
-      console.log("📁 Bucket:", bucket);
-      console.log("📄 Nome do arquivo:", fileName);
-      console.log("👤 User ID:", profile.id);
-
-      // Fazer upload para o Supabase Storage
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, compressedFile, {
-          cacheControl: "3600",
-          upsert: false,
+        // ⚠️ SEGURANÇA: Validação completa de arquivo (tipo, tamanho e magic bytes)
+        const validation = await validateImageFile(file, {
+          allowedTypes: acceptedTypes,
+          maxSizeMB: maxSize,
+          validateMagicBytes: true,
         });
 
-      if (error) {
-        console.error("❌ Erro no upload:", error);
-        throw error;
+        if (!validation.valid) {
+          toast.error(validation.error || `Arquivo ${file.name} inválido`);
+          continue;
+        }
+
+        // Comprimir imagem antes do upload
+        const compressedFile = await compressImage(file, {
+          maxSizeMB: bucket === "avatars" ? 0.3 : 0.8,
+          maxWidthOrHeight: bucket === "avatars" ? 512 : 1200,
+          useWebWorker: true,
+        });
+
+        // Gerar nome único para o arquivo
+        const fileExtension = compressedFile.name.split(".").pop();
+        const fileName = `${profile.id}/${Date.now()}-${i}.${fileExtension}`;
+
+        // Fazer upload para o Supabase Storage
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(fileName, compressedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) throw error;
+
+        // Obter URL pública da imagem
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(urlData.publicUrl);
       }
 
-      console.log("✅ Upload realizado com sucesso:", data);
+      const allUrls = [...previewUrls, ...uploadedUrls];
+      setPreviewUrls(allUrls);
 
-      // Obter URL pública da imagem
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(fileName);
-
-      const publicUrl = urlData.publicUrl;
-      console.log("🔗 URL pública:", publicUrl);
-
-      // Atualizar preview
-      setPreviewUrl(publicUrl);
-
-      // Chamar callback se fornecido
       if (onImageUploaded) {
-        onImageUploaded(publicUrl);
+        onImageUploaded(allUrls);
       }
 
-      toast.success("Imagem comprimida e enviada com sucesso!");
+      toast.success(
+        uploadedUrls.length > 1 ? "Imagens enviadas!" : "Imagem enviada!",
+      );
     } catch (error) {
-      console.error("💥 Erro no upload:", error);
+      console.error("Erro no upload:", error);
       toast.error("Erro ao enviar imagem. Tente novamente.");
     } finally {
       setIsUploading(false);
@@ -148,29 +157,35 @@ export function ImageUpload({
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files) {
+      handleFilesSelect(e.dataTransfer.files);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
+    if (e.target.files) {
+      handleFilesSelect(e.target.files);
     }
   };
 
-  const removeImage = () => {
-    setPreviewUrl(null);
+  const removeImage = (index: number) => {
+    const newUrls = previewUrls.filter((_, i) => i !== index);
+    setPreviewUrls(newUrls);
     if (onImageUploaded) {
-      onImageUploaded("");
+      onImageUploaded(newUrls);
+    }
+  };
+
+  const clearImages = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPreviewUrls([]);
+    if (onImageUploaded) {
+      onImageUploaded([]);
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
-
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
   };
 
   return (
@@ -195,76 +210,95 @@ export function ImageUpload({
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          {previewUrl ? (
-            <div className="relative">
-              <img
-                src={previewUrl}
-                alt="Preview"
-                className="mx-auto max-h-48 rounded-lg object-cover"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={removeImage}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+          {previewUrls.length > 0 ? (
+            <div
+              className={`grid gap-3 ${multiple ? "grid-cols-2 sm:grid-cols-3" : "grid-cols-1"}`}
+            >
+              {previewUrls.map((url, index) => (
+                <div
+                  key={index}
+                  className="relative group aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:shadow-md"
+                >
+                  <img
+                    src={url}
+                    alt="Preview"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+                  <button
+                    type="button"
+                    className="absolute top-1 right-1 p-1 text-white drop-shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeImage(index);
+                    }}
+                  >
+                    <X className="h-5 w-5" strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+              {multiple && previewUrls.length < maxFiles && (
+                <label
+                  htmlFor={fileInputId.current}
+                  className="flex flex-col items-center justify-center aspect-square rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all cursor-pointer group"
+                >
+                  <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 transition-colors">
+                    <Upload className="h-5 w-5 text-gray-400 group-hover:text-primary-500 transition-colors" />
+                  </div>
+                  <span className="mt-2 text-[10px] font-medium text-gray-500 group-hover:text-primary-600">
+                    Adicionar
+                  </span>
+                </label>
+              )}
             </div>
           ) : (
-            <div className="space-y-2">
-              <Upload className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="text-sm text-gray-600">
-                Arraste uma imagem aqui ou{" "}
-                <button
-                  type="button"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                  onClick={openFileDialog}
-                >
-                  clique para selecionar
-                </button>
-              </p>
-              <p className="text-xs text-gray-500">
-                Tipos aceitos: {acceptedTypes.join(", ")} | Máximo: {maxSize}MB
-              </p>
-            </div>
+            <label
+              htmlFor={fileInputId.current}
+              className="group flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
+            >
+              <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
+                <Upload className="mx-auto h-8 w-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+              </div>
+              <div className="mt-4 text-center">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {description}
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Tipos aceitos: JPEG, PNG, WEBP | Máximo: {maxSize}MB
+                </p>
+              </div>
+              <div className="mt-6">
+                <span className="inline-flex items-center px-4 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Selecionar Imagem
+                </span>
+              </div>
+            </label>
           )}
         </div>
 
         {/* Input de arquivo oculto */}
-        <Input
+        <input
+          id={fileInputId.current}
           ref={fileInputRef}
           type="file"
           accept={acceptedTypes.join(",")}
+          multiple={multiple}
           onChange={handleInputChange}
           className="hidden"
         />
 
-        {/* Botão de upload */}
-        {!previewUrl && (
+        {/* Botão de upload/limpar */}
+        {previewUrls.length > 0 && !multiple && (
           <Button
             type="button"
-            onClick={openFileDialog}
-            disabled={isUploading || isCompressing}
+            variant="outline"
+            size="sm"
+            onClick={clearImages}
             className="w-full"
           >
-            {isUploading || isCompressing ? (
-              <>
-                <div
-                  className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"
-                  style={{ animationDuration: "0.6s" }}
-                />
-                {isCompressing
-                  ? `Comprimindo... ${compressionProgress}%`
-                  : "Enviando..."}
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                Selecionar Imagem
-              </>
-            )}
+            Trocar Imagem
           </Button>
         )}
 

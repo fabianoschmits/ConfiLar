@@ -48,12 +48,25 @@ interface UnifiedCreateAdFormProps {
   }) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
+  initialData?: {
+    title?: string;
+    description?: string;
+    category?: string;
+    ad_type?: "offer" | "request";
+    price?: number | string;
+    images?: string[];
+    isPremium?: boolean;
+    location_country?: string;
+    location_state?: string;
+    location_city?: string;
+  };
 }
 
 export function UnifiedCreateAdForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  initialData,
 }: UnifiedCreateAdFormProps) {
   const { profile } = useAuthContext();
   const { balance } = usePoints(profile?.id);
@@ -62,14 +75,21 @@ export function UnifiedCreateAdForm({
 
   // Initial State from Profile
   const [selectedCountry, setSelectedCountry] = useState<string>(
-    (profile as any)?.country || contextCountry || "BR",
+    initialData?.location_country ||
+      (profile as any)?.country ||
+      contextCountry ||
+      "BR",
   );
   const [selectedState, setSelectedState] = useState<string>(
-    profile?.location_state || "",
+    initialData?.location_state || profile?.location_state || "",
   );
-  const [selectedStateSigla, setSelectedStateSigla] = useState<string>("");
+  const [selectedStateSigla, setSelectedStateSigla] = useState<string>(
+    initialData?.location_state && initialData.location_state.length === 2
+      ? initialData.location_state
+      : "",
+  );
   const [selectedCity, setSelectedCity] = useState<string>(
-    profile?.location_city || "",
+    initialData?.location_city || profile?.location_city || "",
   );
 
   // States for fresh credits
@@ -132,13 +152,13 @@ export function UnifiedCreateAdForm({
 
   // Form Data
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    ad_type: "offer" as "offer" | "request",
-    price: "",
-    images: [] as string[],
-    isPremium: false,
+    title: initialData?.title || "",
+    description: initialData?.description || "",
+    category: initialData?.category || "",
+    ad_type: (initialData?.ad_type as "offer" | "request") || "offer",
+    price: initialData?.price ? initialData.price.toString() : "",
+    images: initialData?.images || ([] as string[]),
+    isPremium: initialData?.isPremium || false,
     pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS as number,
     durationDays: 1 as number,
     useCreditType: undefined as "1d" | "7d" | undefined,
