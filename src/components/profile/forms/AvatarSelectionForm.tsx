@@ -33,7 +33,7 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
           ) {
             activeElement.scrollIntoView({
               behavior: "smooth",
-              block: "center",
+              block: "nearest",
             });
           }
         }, 300);
@@ -106,7 +106,7 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
 
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upload ml-2">
+          <TabsTrigger value="upload">
             <Upload className="w-4 h-4 mr-2" /> Foto
           </TabsTrigger>
           <TabsTrigger value="dicebear">
@@ -143,6 +143,8 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
       >
         {isLoading ? "Salvando..." : "Salvar Foto"}
       </Button>
+      {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
+      <div className="h-40 sm:h-0" />
     </div>
   );
 }

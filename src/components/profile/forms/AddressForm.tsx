@@ -62,7 +62,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
           ) {
             activeElement.scrollIntoView({
               behavior: "smooth",
-              block: "center",
+              block: "nearest",
             });
           }
         }, 300);
@@ -255,6 +255,8 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
             <Save className="w-4 h-4 mr-2" /> Salvar Endereço
           </LoadingButton>
         </div>
+        {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
+        <div className="h-40 sm:h-0" />
       </form>
     </div>
   );

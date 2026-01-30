@@ -25,7 +25,7 @@ export function SecurityForm() {
           ) {
             activeElement.scrollIntoView({
               behavior: "smooth",
-              block: "center",
+              block: "nearest",
             });
           }
         }, 300);
@@ -46,6 +46,8 @@ export function SecurityForm() {
       <div className="pt-4">
         <DeleteAccountForm userEmail={user?.email || ""} />
       </div>
+      {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
+      <div className="h-40 sm:h-0" />
     </div>
   );
 }

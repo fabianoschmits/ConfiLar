@@ -56,7 +56,9 @@ export function ResponsiveModal({
               )}
             </DialogHeader>
           )}
-          <div className="flex-1 overflow-y-auto p-6 pt-0">{children}</div>
+          <div className="flex-1 overflow-y-auto p-6 pt-0 scroll-smooth">
+            {children}
+          </div>
           {footer && (
             <div className="p-6 pt-2 border-t flex justify-end gap-2">
               {footer}
@@ -74,7 +76,12 @@ export function ResponsiveModal({
           {title && <DrawerTitle>{title}</DrawerTitle>}
           {description && <DrawerDescription>{description}</DrawerDescription>}
         </DrawerHeader>
-        <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
+        <div
+          className="flex-1 overflow-y-auto px-4 py-4 scroll-smooth overscroll-contain"
+          style={{ scrollPaddingBottom: "50vh" }}
+        >
+          {children}
+        </div>
         <DrawerFooter className="pt-2 border-t">
           {footer}
           <DrawerClose asChild>

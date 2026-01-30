@@ -263,7 +263,7 @@ export function UnifiedCreateAdForm({
           if (activeElement && wrapper.contains(activeElement)) {
             activeElement.scrollIntoView({
               behavior: "smooth",
-              block: "center",
+              block: "nearest",
               inline: "nearest",
             });
           }
@@ -697,6 +697,8 @@ export function UnifiedCreateAdForm({
               )}
             </div>
           )}
+          {/* Espaçador extra para evitar que o teclado cubra os campos finais no mobile */}
+          <div className="h-40 sm:h-0" />
         </div>
       </div>
 
