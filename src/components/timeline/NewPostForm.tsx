@@ -317,7 +317,7 @@ export function NewPostForm({
     }
   };
 
-  // Scroll automático para manter textarea visível no mobile quando teclado aparecer
+  // Scroll automático para manter campos visíveis no mobile quando teclado aparecer
   useEffect(() => {
     const wrapper = textareaWrapperRef.current;
     if (!wrapper) return;
@@ -327,11 +327,14 @@ export function NewPostForm({
       if (window.innerWidth < 768) {
         // Aguardar um pouco para o teclado aparecer
         setTimeout(() => {
-          wrapper.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest",
-          });
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
         }, 300);
       }
     };
@@ -367,7 +370,11 @@ export function NewPostForm({
   ]);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+    <div
+      ref={textareaWrapperRef}
+      className="flex flex-col h-full bg-white dark:bg-black overflow-hidden"
+    >
+      {/* HEADER FIXO */}
       {/* HEADER FIXO */}
       <div className="flex-shrink-0 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between p-3 sm:p-4">
@@ -399,7 +406,7 @@ export function NewPostForm({
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-4 pb-4 sm:pb-6 bg-white dark:bg-black">
         <div className="space-y-4 sm:space-y-5 pt-3 sm:pt-4">
           {/* DESCRIÇÃO COM CONTADOR */}
-          <div className="relative" ref={textareaWrapperRef}>
+          <div className="relative">
             <MentionInput
               value={post.description}
               onChange={(v) => setPost((prev) => ({ ...prev, description: v }))}

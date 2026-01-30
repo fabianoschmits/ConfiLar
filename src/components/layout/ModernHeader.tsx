@@ -64,6 +64,10 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { cn } from "@/lib/utils";
+import {
+  EditProfileModal,
+  ProfileTab,
+} from "@/components/profile/EditProfileModal";
 
 interface ModernHeaderProps {
   showBackButton?: boolean;
@@ -92,6 +96,9 @@ export function ModernHeader({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(),
   );
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [activeProfileTab, setActiveProfileTab] =
+    useState<ProfileTab>("account");
 
   // Verificar se o usuário é admin
   const { isAdmin } = useAdmin();
@@ -206,6 +213,12 @@ export function ModernHeader({
       // Fallback para window.location
       window.location.href = path;
     }
+  };
+
+  const openProfileModal = (tab: ProfileTab) => {
+    setActiveProfileTab(tab);
+    setIsProfileModalOpen(true);
+    setIsMenuExpanded(false);
   };
 
   // Função para alternar seções
@@ -787,11 +800,7 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleNavigation(
-                                  "/editarperfil/meu-avatar-foto",
-                                )
-                              }
+                              onClick={() => openProfileModal("avatar")}
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Camera className="h-3 w-3" />
@@ -800,9 +809,7 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleNavigation("/editarperfil/dados-da-conta")
-                              }
+                              onClick={() => openProfileModal("account")}
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <User className="h-3 w-3" />
@@ -811,9 +818,7 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleNavigation("/editarperfil/seguranca")
-                              }
+                              onClick={() => openProfileModal("security")}
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Shield className="h-3 w-3" />
@@ -822,9 +827,7 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleNavigation("/editarperfil/endereco")
-                              }
+                              onClick={() => openProfileModal("address")}
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <MapPin className="h-3 w-3" />
@@ -833,9 +836,7 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() =>
-                                handleNavigation("/editarperfil/tipo-conta")
-                              }
+                              onClick={() => openProfileModal("type")}
                               className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                             >
                               <Briefcase className="h-3 w-3" />
@@ -845,11 +846,7 @@ export function ModernHeader({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() =>
-                                  handleNavigation(
-                                    "/editarperfil/dados-profissionais",
-                                  )
-                                }
+                                onClick={() => openProfileModal("professional")}
                                 className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
                               >
                                 <Briefcase className="h-3 w-3" />
@@ -1043,6 +1040,13 @@ export function ModernHeader({
           onClick={() => setIsMenuExpanded(false)}
         />
       )}
+
+      {/* Modal de Perfil Unificado */}
+      <EditProfileModal
+        isOpen={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+        initialTab={activeProfileTab}
+      />
     </>
   );
 }

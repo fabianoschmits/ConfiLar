@@ -249,7 +249,7 @@ export function UnifiedCreateAdForm({
     showLocation,
   ]);
 
-  // Scroll automático para manter textarea visível no mobile quando teclado aparecer
+  // Scroll automático para manter campos visíveis no mobile quando teclado aparecer
   useEffect(() => {
     const wrapper = textareaWrapperRef.current;
     if (!wrapper) return;
@@ -259,11 +259,14 @@ export function UnifiedCreateAdForm({
       if (window.innerWidth < 768) {
         // Aguardar um pouco para o teclado aparecer
         setTimeout(() => {
-          wrapper.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest",
-          });
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
         }, 300);
       }
     };
@@ -398,7 +401,11 @@ export function UnifiedCreateAdForm({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
+    <div
+      ref={textareaWrapperRef}
+      className="flex flex-col h-full bg-white dark:bg-black overflow-hidden"
+    >
+      {/* Helper Header for Modal context if needed, but Dialog usually has header. 
       {/* Helper Header for Modal context if needed, but Dialog usually has header. 
             However, we might want this component to own its header/footer for consistent spacing if reused directly. 
             Since it's used inside a DialogContent, we'll keep it cleaner, maybe just content. 
@@ -488,7 +495,7 @@ export function UnifiedCreateAdForm({
             {/* Could add urgency level here if needed, keeping it simple for now */}
           </div>
 
-          <div className="space-y-2" ref={textareaWrapperRef}>
+          <div className="space-y-2">
             <Label className="text-sm font-medium">Descrição *</Label>
             <Textarea
               value={formData.description}

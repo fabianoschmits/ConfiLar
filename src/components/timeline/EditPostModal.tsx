@@ -113,7 +113,7 @@ export function EditPostModal({
     });
   }, [post]);
 
-  // Scroll automático para manter textarea visível no mobile quando teclado aparecer
+  // Scroll automático para manter campos visíveis no mobile quando teclado aparecer
   useEffect(() => {
     const wrapper = textareaWrapperRef.current;
     if (!wrapper) return;
@@ -121,11 +121,14 @@ export function EditPostModal({
     const handleFocusIn = () => {
       if (window.innerWidth < 768) {
         setTimeout(() => {
-          wrapper.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest",
-          });
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
         }, 300);
       }
     };
@@ -187,9 +190,9 @@ export function EditPostModal({
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-4" ref={textareaWrapperRef}>
         {/* DESCRIÇÃO COM CONTADOR */}
-        <div className="relative" ref={textareaWrapperRef}>
+        <div className="relative">
           <MentionInput
             value={editedPost.description}
             onChange={(v) =>
