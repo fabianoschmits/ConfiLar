@@ -115,7 +115,7 @@ export function EditProfileModal({
       <div className="flex flex-col bg-white dark:bg-black overflow-hidden h-[90vh] sm:h-auto">
         <div className="flex flex-col flex-1 sm:flex-row overflow-hidden">
           {/* Sidebar - Desktop */}
-          <div className="hidden sm:flex w-64 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800">
+          <div className="hidden sm:flex w-64 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800 flex-shrink-0">
             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Meu Perfil
@@ -158,70 +158,75 @@ export function EditProfileModal({
               })}
             </nav>
           </div>
-        </div>
 
-        {/* Mobile Navigation */}
-        <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-2 flex-shrink-0">
-          <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as ProfileTab)}
-                  className={cn(
-                    "flex-none flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all",
-                    isActive
-                      ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
-                      : "bg-white dark:bg-gray-900 text-gray-500 border-gray-200 dark:border-gray-800",
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-black min-h-0">
-          <div className="hidden sm:block p-8 border-b border-gray-50 dark:border-gray-900">
-            <div className="flex items-center gap-4">
-              <div className={cn("p-3 rounded-2xl", currentTab.bgColor)}>
-                {(() => {
-                  const Icon = currentTab.icon;
-                  return <Icon className={cn("w-6 h-6", currentTab.color)} />;
-                })()}
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {currentTab.label}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Edite as informações correspondentes a esta seção
-                </p>
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white dark:bg-black">
+            {/* Mobile Navigation */}
+            <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-2 flex-shrink-0">
+              <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as ProfileTab)}
+                      className={cn(
+                        "flex-none flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold border transition-all",
+                        isActive
+                          ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white"
+                          : "bg-white dark:bg-gray-900 text-gray-500 border-gray-200 dark:border-gray-800",
+                      )}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
 
-          <ScrollArea className="flex-1 px-4 sm:px-8 py-6">
-            <div className="max-w-2xl mx-auto pb-8">
-              {activeTab === "account" && (
-                <AccountDataForm onSuccess={() => {}} />
-              )}
-              {activeTab === "avatar" && (
-                <AvatarSelectionForm onSuccess={() => {}} />
-              )}
-              {activeTab === "address" && <AddressForm onSuccess={() => {}} />}
-              {activeTab === "type" && <AccountTypeForm onSuccess={() => {}} />}
-              {activeTab === "professional" && (
-                <ProfessionalDataForm onSuccess={() => {}} />
-              )}
-              {activeTab === "security" && <SecurityForm />}
+            {/* Section Header - Desktop Only */}
+            <div className="hidden sm:block p-8 border-b border-gray-50 dark:border-gray-900">
+              <div className="flex items-center gap-4">
+                <div className={cn("p-3 rounded-2xl", currentTab.bgColor)}>
+                  {(() => {
+                    const Icon = currentTab.icon;
+                    return <Icon className={cn("w-6 h-6", currentTab.color)} />;
+                  })()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {currentTab.label}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Edite as informações correspondentes a esta seção
+                  </p>
+                </div>
+              </div>
             </div>
-          </ScrollArea>
+
+            <ScrollArea className="flex-1 px-4 sm:px-8 py-6">
+              <div className="max-w-2xl mx-auto pb-8">
+                {activeTab === "account" && (
+                  <AccountDataForm onSuccess={() => {}} />
+                )}
+                {activeTab === "avatar" && (
+                  <AvatarSelectionForm onSuccess={() => {}} />
+                )}
+                {activeTab === "address" && (
+                  <AddressForm onSuccess={() => {}} />
+                )}
+                {activeTab === "type" && (
+                  <AccountTypeForm onSuccess={() => {}} />
+                )}
+                {activeTab === "professional" && (
+                  <ProfessionalDataForm onSuccess={() => {}} />
+                )}
+                {activeTab === "security" && <SecurityForm />}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </div>
     </ResponsiveModal>
