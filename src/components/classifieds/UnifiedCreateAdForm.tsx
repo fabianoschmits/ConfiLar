@@ -492,36 +492,6 @@ export function UnifiedCreateAdForm({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Categoria *</Label>
-            <Combobox
-              options={categoryOptions}
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData((prev) => ({ ...prev, category: value }))
-              }
-              placeholder="Selecione uma categoria"
-              searchPlaceholder="Buscar categoria..."
-              emptyMessage="Nenhuma categoria encontrada."
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Valor (Opcional)</Label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <Input
-                  value={formData.price}
-                  onChange={handlePriceChange}
-                  placeholder="0,00"
-                  className="pl-9 bg-white dark:bg-gray-900"
-                />
-              </div>
-            </div>
-            {/* Could add urgency level here if needed, keeping it simple for now */}
-          </div>
-
-          <div className="space-y-2">
             <Label className="text-sm font-medium">Descrição *</Label>
             <Textarea
               value={formData.description}
@@ -541,6 +511,35 @@ export function UnifiedCreateAdForm({
                 {formData.description.length}/2000
               </span>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Valor (Opcional)</Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  value={formData.price}
+                  onChange={handlePriceChange}
+                  placeholder="0,00"
+                  className="pl-9 bg-white dark:bg-gray-900"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Categoria *</Label>
+            <Combobox
+              options={categoryOptions}
+              value={formData.category}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, category: value }))
+              }
+              placeholder="Selecione uma categoria"
+              searchPlaceholder="Buscar categoria..."
+              emptyMessage="Nenhuma categoria encontrada."
+            />
           </div>
         </div>
 
