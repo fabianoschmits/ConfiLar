@@ -108,27 +108,11 @@ export function EditProfileModal({
     <ResponsiveModal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      fullContent={true}
-      showCloseButton={false}
+      title={currentTab.label}
+      description="Gerencie suas informações"
       className="max-w-4xl p-0 overflow-hidden"
     >
-      <div className="flex flex-col h-full bg-white dark:bg-black overflow-hidden">
-        {/* HEADER FIXO - MOBILE & DESKTOP */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black flex-shrink-0 z-20">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onOpenChange(false)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            >
-              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            </button>
-            <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">
-              {currentTab.label}
-            </h2>
-          </div>
-          <div className="flex items-center gap-2" />
-        </div>
-
+      <div className="flex flex-col bg-white dark:bg-black overflow-hidden h-[90vh] sm:h-auto">
         <div className="flex flex-col flex-1 sm:flex-row overflow-hidden">
           {/* Sidebar - Desktop */}
           <div className="hidden sm:flex w-64 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800">
