@@ -30,6 +30,24 @@ import { useIBGE } from "@/hooks/useIBGE";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 
+interface AdDraft {
+  title: string;
+  description: string;
+  category: string;
+  ad_type: "offer" | "request";
+  price: string;
+  images: string[];
+  isPremium: boolean;
+  pointsToSpend: number;
+  durationDays: number;
+  useCreditType?: "1d" | "7d";
+  selectedCountry?: string;
+  selectedState?: string;
+  selectedStateSigla?: string;
+  selectedCity?: string;
+  showLocation?: boolean;
+}
+
 interface UnifiedCreateAdFormProps {
   onSubmit: (data: {
     title: string;
@@ -91,6 +109,7 @@ export function UnifiedCreateAdForm({
   const [selectedCity, setSelectedCity] = useState<string>(
     initialData?.location_city || profile?.location_city || "",
   );
+  const [showLocation, setShowLocation] = useState(false);
 
   // States for fresh credits
   const [credits1d, setCredits1d] = useState(
@@ -164,7 +183,70 @@ export function UnifiedCreateAdForm({
     useCreditType: undefined as "1d" | "7d" | undefined,
   });
 
-  const [showLocation, setShowLocation] = useState(false);
+  // Restaurar draft do localStorage ao montar
+  useEffect(() => {
+    if (!initialData) {
+      // Só restaurar se não houver dados iniciais
+      const savedDraft = localStorage.getItem("confilar_draft_ad");
+      if (savedDraft) {
+        try {
+          const draft: AdDraft = JSON.parse(savedDraft);
+          setFormData({
+            title: draft.title,
+            description: draft.description,
+            category: draft.category,
+            ad_type: draft.ad_type,
+            price: draft.price,
+            images: draft.images,
+            isPremium: draft.isPremium,
+            pointsToSpend: draft.pointsToSpend,
+            durationDays: draft.durationDays,
+            useCreditType: draft.useCreditType,
+          });
+          // Restaurar localização
+          if (draft.selectedCountry) setSelectedCountry(draft.selectedCountry);
+          if (draft.selectedState) setSelectedState(draft.selectedState);
+          if (draft.selectedStateSigla)
+            setSelectedStateSigla(draft.selectedStateSigla);
+          if (draft.selectedCity) setSelectedCity(draft.selectedCity);
+          if (draft.showLocation !== undefined)
+            setShowLocation(draft.showLocation);
+        } catch (error) {
+          console.error("Erro ao restaurar draft de anúncio:", error);
+        }
+      }
+    }
+  }, []);
+
+  // Auto-save: Salvar draft no localStorage com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (
+        formData.title ||
+        formData.description ||
+        formData.images.length > 0
+      ) {
+        const draft: AdDraft = {
+          ...formData,
+          selectedCountry,
+          selectedState,
+          selectedStateSigla,
+          selectedCity,
+          showLocation,
+        };
+        localStorage.setItem("confilar_draft_ad", JSON.stringify(draft));
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [
+    formData,
+    selectedCountry,
+    selectedState,
+    selectedStateSigla,
+    selectedCity,
+    showLocation,
+  ]);
 
   // Categories for Combobox
   const categoryOptions = services.map((service) => ({
@@ -237,6 +319,9 @@ export function UnifiedCreateAdForm({
       location_state: finalState,
       location_city: finalCity,
     });
+
+    // Limpar draft após publicação bem-sucedida
+    localStorage.removeItem("confilar_draft_ad");
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -586,7 +671,14 @@ export function UnifiedCreateAdForm({
 
       {/* FOOTER ACTIONS */}
       <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-black/50 flex justify-end gap-3 rounded-b-lg">
-        <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            localStorage.removeItem("confilar_draft_ad");
+            onCancel();
+          }}
+          disabled={isLoading}
+        >
           Cancelar
         </Button>
         <LoadingButton

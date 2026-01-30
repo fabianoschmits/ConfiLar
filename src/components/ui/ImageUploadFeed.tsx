@@ -172,7 +172,7 @@ export function ImageUploadFeed({
 
       {/* Preview das imagens atuais - Grid Premium */}
       {currentImages.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
           {currentImages.map((imageUrl, index) => (
             <div
               key={index}
@@ -234,10 +234,10 @@ export function ImageUploadFeed({
           ) : (
             <label
               htmlFor={fileInputId.current}
-              className="group flex flex-col items-center justify-center p-8 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
+              className="group flex flex-col items-center justify-center p-6 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-primary-500 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/5 transition-all cursor-pointer bg-white dark:bg-gray-950"
             >
-              <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
-                <ImageIcon className="w-8 h-8 text-gray-400 group-hover:text-primary-500 transition-colors" />
+              <div className="p-3 rounded-full bg-gray-50 dark:bg-gray-900 group-hover:bg-primary-50 dark:group-hover:bg-primary-900/20 transition-all duration-300">
+                <ImageIcon className="w-7 h-7 text-gray-400 group-hover:text-primary-500 transition-colors" />
               </div>
               <div className="mt-4 text-center">
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -247,7 +247,7 @@ export function ImageUploadFeed({
                   Arraste e solte até {maxImages} imagens aqui
                 </p>
               </div>
-              <div className="mt-6">
+              <div className="mt-4">
                 <span className="inline-flex items-center px-4 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition-all active:scale-95">
                   <Camera className="w-4 h-4 mr-2" />
                   Selecionar Fotos

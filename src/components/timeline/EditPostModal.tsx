@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Info, AlertCircle } from "lucide-react";
 import { ImageUploadFeed } from "@/components/ui/ImageUploadFeed";
 import { ServiceAutocomplete } from "@/components/ui/ServiceAutocomplete";
@@ -44,6 +44,7 @@ export function EditPostModal({
     images: post.images || [],
     service: post.service || "",
   });
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
 
   // Detectar vídeos do YouTube
   const youtubeVideos = detectYouTubeUrls(editedPost.description || "");
@@ -112,6 +113,27 @@ export function EditPostModal({
     });
   }, [post]);
 
+  // Scroll automático para manter textarea visível no mobile quando teclado aparecer
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      if (window.innerWidth < 768) {
+        setTimeout(() => {
+          wrapper.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest",
+          });
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
+
   const handleSave = async () => {
     if (!editedPost.description.trim()) {
       return;
@@ -166,25 +188,8 @@ export function EditPostModal({
       }
     >
       <div className="space-y-4">
-        {/* IMAGENS - CARROSSEL GRANDE */}
-        <div>
-          <ImageUploadFeed
-            currentImages={editedPost.images}
-            onImagesUpload={(images) =>
-              setEditedPost((prev) => ({ ...prev, images }))
-            }
-            maxImages={5}
-            className="rounded-xl overflow-hidden"
-          />
-          {editedPost.images.length > 0 && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 text-center">
-              {editedPost.images.length}/5 fotos • Arraste para reordenar
-            </p>
-          )}
-        </div>
-
         {/* DESCRIÇÃO COM CONTADOR */}
-        <div className="relative">
+        <div className="relative" ref={textareaWrapperRef}>
           <MentionInput
             value={editedPost.description}
             onChange={(v) =>
@@ -247,6 +252,23 @@ export function EditPostModal({
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
+        {/* IMAGENS - CARROSSEL GRANDE */}
+        <div>
+          <ImageUploadFeed
+            currentImages={editedPost.images}
+            onImagesUpload={(images) =>
+              setEditedPost((prev) => ({ ...prev, images }))
+            }
+            maxImages={5}
+            className="rounded-xl overflow-hidden"
+          />
+          {editedPost.images.length > 0 && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 text-center">
+              {editedPost.images.length}/5 fotos • Arraste para reordenar
+            </p>
           )}
         </div>
 
