@@ -186,7 +186,7 @@ export function AccountTypeForm({ onSuccess }: AccountTypeFormProps) {
           </div>
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="hidden sm:flex justify-end pt-4">
           <LoadingButton
             type="submit"
             isLoading={isLoading}

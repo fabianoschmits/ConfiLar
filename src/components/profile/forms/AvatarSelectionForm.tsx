@@ -145,7 +145,7 @@ export function AvatarSelectionForm({ onSuccess }: { onSuccess?: () => void }) {
           </TabsContent>
         </Tabs>
 
-        <div className="block">
+        <div className="hidden sm:block">
           <Button
             type="submit"
             disabled={isLoading || !preview}

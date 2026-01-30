@@ -250,7 +250,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
             </div>
           </div>
         </div>
-        <div className="flex justify-end pt-4">
+        <div className="hidden sm:flex justify-end pt-4">
           <LoadingButton
             type="submit"
             isLoading={isLoading}
