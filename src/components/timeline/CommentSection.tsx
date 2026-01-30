@@ -1,22 +1,30 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Heart, MessageCircle, Reply, MoreHorizontal, ChevronDown, Check, X } from 'lucide-react'
-import { useComments } from '@/hooks/useComments'
-import { Comment as CommentType } from '@/types/comments'
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
-import { CommentOptionsMenu } from './CommentOptionsMenu'
-import { MentionInput } from '@/components/ui/MentionInput'
-import { MentionText } from '@/components/ui/MentionText'
-import { cn } from '@/lib/utils'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Heart,
+  MessageCircle,
+  Reply,
+  MoreHorizontal,
+  ChevronDown,
+  Check,
+  X,
+} from "lucide-react";
+import { useComments } from "@/hooks/useComments";
+import { Comment as CommentType } from "@/types/comments";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CommentOptionsMenu } from "./CommentOptionsMenu";
+import { MentionInput } from "@/components/ui/MentionInput";
+import { MentionText } from "@/components/ui/MentionText";
+import { cn } from "@/lib/utils";
 
 // CSS para animação de batida do coração
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style')
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
   style.textContent = `
     @keyframes heartBeat {
       0%, 100% {
@@ -32,29 +40,61 @@ if (typeof document !== 'undefined') {
         transform: scale(1.15) rotate(-3deg);
       }
     }
-  `
-  if (!document.head.querySelector('#comment-like-animations')) {
-    style.id = 'comment-like-animations'
-    document.head.appendChild(style)
+  `;
+  if (!document.head.querySelector("#comment-like-animations")) {
+    style.id = "comment-like-animations";
+    document.head.appendChild(style);
   }
 }
 
 interface CommentSectionProps {
-  postId: string
-  postOwnerId?: string
-  postOwnerName?: string
-  className?: string
+  postId: string;
+  postOwnerId?: string;
+  postOwnerName?: string;
+  className?: string;
 }
 
-export function CommentSection({ postId, postOwnerId, postOwnerName, className }: CommentSectionProps) {
-  const [newComment, setNewComment] = useState('')
-  const [visibleComments, setVisibleComments] = useState(3)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [editingComment, setEditingComment] = useState<string | null>(null)
-  const [editContent, setEditContent] = useState('')
-  const [replyingToUser, setReplyingToUser] = useState<string | null>(null)
-  const observerRef = useRef<HTMLDivElement>(null)
-  
+export function CommentSection({
+  postId,
+  postOwnerId,
+  postOwnerName,
+  className,
+}: CommentSectionProps) {
+  const [newComment, setNewComment] = useState("");
+  const [visibleComments, setVisibleComments] = useState(3);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [replyingToUser, setReplyingToUser] = useState<string | null>(null);
+  const observerRef = useRef<HTMLDivElement>(null);
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
+
   const {
     comments,
     isLoading,
@@ -68,104 +108,104 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
     isAddingComment,
     isLikingComment,
     isEditingComment,
-    isDeletingComment
-  } = useComments({ 
-    post_id: postId, 
+    isDeletingComment,
+  } = useComments({
+    post_id: postId,
     postOwnerId,
     postOwnerName,
-    limit: 50 
-  }) // Carregar mais comentários
+    limit: 50,
+  }); // Carregar mais comentários
 
   const handleSubmitComment = () => {
     if (newComment.trim()) {
-      addComment(newComment, replyTo || undefined)
-      setNewComment('')
+      addComment(newComment, replyTo || undefined);
+      setNewComment("");
       // Limpar replyTo após enviar
       if (replyTo) {
-        cancelReply()
-        setReplyingToUser(null)
+        cancelReply();
+        setReplyingToUser(null);
       }
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmitComment()
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitComment();
     }
-  }
+  };
 
   const handleEditComment = (commentId: string, currentContent: string) => {
-    setEditingComment(commentId)
-    setEditContent(currentContent)
-  }
+    setEditingComment(commentId);
+    setEditContent(currentContent);
+  };
 
   const handleSaveEdit = () => {
     if (editingComment && editContent.trim()) {
-      editComment(editingComment, editContent)
-      setEditingComment(null)
-      setEditContent('')
+      editComment(editingComment, editContent);
+      setEditingComment(null);
+      setEditContent("");
     }
-  }
+  };
 
   const handleCancelEdit = () => {
-    setEditingComment(null)
-    setEditContent('')
-  }
+    setEditingComment(null);
+    setEditContent("");
+  };
 
   const handleDeleteComment = (commentId: string) => {
-    if (confirm('Tem certeza que deseja deletar este comentário?')) {
-      deleteComment(commentId)
+    if (confirm("Tem certeza que deseja deletar este comentário?")) {
+      deleteComment(commentId);
     }
-  }
+  };
 
   // Função para carregar mais comentários
   const loadMoreComments = useCallback(() => {
-    if (isLoadingMore || visibleComments >= comments.length) return
-    
-    setIsLoadingMore(true)
+    if (isLoadingMore || visibleComments >= comments.length) return;
+
+    setIsLoadingMore(true);
     setTimeout(() => {
-      setVisibleComments(prev => Math.min(prev + 10, comments.length))
-      setIsLoadingMore(false)
-    }, 500)
-  }, [visibleComments, comments.length, isLoadingMore])
+      setVisibleComments((prev) => Math.min(prev + 10, comments.length));
+      setIsLoadingMore(false);
+    }, 500);
+  }, [visibleComments, comments.length, isLoadingMore]);
 
   // Observer para scroll infinito
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && visibleComments < comments.length) {
-          loadMoreComments()
+          loadMoreComments();
         }
       },
-      { threshold: 0.1 }
-    )
+      { threshold: 0.1 },
+    );
 
     if (observerRef.current) {
-      observer.observe(observerRef.current)
+      observer.observe(observerRef.current);
     }
 
-    return () => observer.disconnect()
-  }, [loadMoreComments, visibleComments, comments.length])
+    return () => observer.disconnect();
+  }, [loadMoreComments, visibleComments, comments.length]);
 
   const formatTimeAgo = (dateString: string) => {
-    return formatDistanceToNow(new Date(dateString), { 
-      addSuffix: true, 
-      locale: ptBR 
-    })
-  }
+    return formatDistanceToNow(new Date(dateString), {
+      addSuffix: true,
+      locale: ptBR,
+    });
+  };
 
   // Componente para botão de like dos comentários
   const CommentLikeButton = ({ comment }: { comment: CommentType }) => {
-    const [isAnimating, setIsAnimating] = useState(false)
+    const [isAnimating, setIsAnimating] = useState(false);
 
     const handleLikeComment = () => {
       // Ativar animação
-      setIsAnimating(true)
-      setTimeout(() => setIsAnimating(false), 600) // Duração da animação
-      
-      likeComment(comment.id)
-    }
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 600); // Duração da animação
+
+      likeComment(comment.id);
+    };
 
     return (
       <button
@@ -173,29 +213,31 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
         disabled={isLikingComment}
         className={cn(
           "flex items-center space-x-1 text-sm transition-all duration-200 relative overflow-visible",
-          comment.is_liked 
-            ? 'text-red-500 hover:text-red-600' 
-            : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400',
-          isAnimating && 'scale-110'
+          comment.is_liked
+            ? "text-red-500 hover:text-red-600"
+            : "text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400",
+          isAnimating && "scale-110",
         )}
       >
-        <Heart 
+        <Heart
           className={cn(
             "w-4 h-4 transition-all duration-300",
-            comment.is_liked && 'fill-current',
-            isAnimating && 'animate-[heartBeat_0.6s_ease-in-out]'
+            comment.is_liked && "fill-current",
+            isAnimating && "animate-[heartBeat_0.6s_ease-in-out]",
           )}
           style={{
-            animation: isAnimating ? 'heartBeat 0.6s ease-in-out' : undefined
+            animation: isAnimating ? "heartBeat 0.6s ease-in-out" : undefined,
           }}
         />
-        <span className={cn(
-          "text-sm font-medium transition-all duration-300",
-          isAnimating && "scale-110 font-bold"
-        )}>
+        <span
+          className={cn(
+            "text-sm font-medium transition-all duration-300",
+            isAnimating && "scale-110 font-bold",
+          )}
+        >
           {comment.likes_count || 0}
         </span>
-        
+
         {/* Efeito de partículas ao clicar */}
         {isAnimating && comment.is_liked && (
           <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -205,37 +247,49 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
           </span>
         )}
       </button>
-    )
-  }
+    );
+  };
 
   const renderComment = (comment: CommentType, isReply = false) => {
-
     return (
-      <div key={comment.id} className={`${isReply ? 'relative' : ''}`}>
-        <Card className={`${isReply ? 'px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-blue-50/30' : 'px-3 pt-1 pb-0'}`}>
+      <div key={comment.id} className={`${isReply ? "relative" : ""}`}>
+        <Card
+          className={`${isReply ? "px-3 pt-1 pb-0 border-l-2 border-blue-200 bg-blue-50/30" : "px-3 pt-1 pb-0"}`}
+        >
           <div className="flex items-start space-x-3">
             <Avatar className="w-9 h-9">
-              <AvatarImage src={comment.user.avatar_url} alt={`Avatar de ${comment.user.full_name}`} />
+              <AvatarImage
+                src={comment.user.avatar_url}
+                alt={`Avatar de ${comment.user.full_name}`}
+              />
               <AvatarFallback>
                 {comment.user.full_name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
-                <span className="font-semibold text-base dark:text-white">{comment.user.full_name}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {comment.user.user_type === 'professional' ? 'Profissional' : 'Cliente'}
+                <span className="font-semibold text-base dark:text-white">
+                  {comment.user.full_name}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {comment.user.user_type === "professional"
+                    ? "Profissional"
+                    : "Cliente"}
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  •
+                </span>
                 <span className="text-xs text-gray-400 dark:text-gray-500">
                   {formatTimeAgo(comment.created_at)}
                 </span>
-                
+
                 {/* Indicador de resposta */}
                 {isReply && (
                   <>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      •
+                    </span>
                     <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
                       <Reply className="w-3 h-3" />
                       Resposta
@@ -243,7 +297,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                   </>
                 )}
               </div>
-              
+
               {/* Conteúdo do comentário - modo edição ou visualização */}
               {editingComment === comment.id ? (
                 <div className="mb-2">
@@ -280,16 +334,16 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                   <MentionText text={comment.content} />
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <CommentLikeButton comment={comment} />
-                
+
                   {!isReply && (
                     <button
                       onClick={() => {
-                        startReply(comment.id)
-                        setReplyingToUser(comment.user.full_name)
+                        startReply(comment.id);
+                        setReplyingToUser(comment.user.full_name);
                       }}
                       className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors"
                     >
@@ -298,7 +352,7 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                     </button>
                   )}
                 </div>
-                
+
                 {/* Menu de opções */}
                 <CommentOptionsMenu
                   commentId={comment.id}
@@ -311,13 +365,13 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
             </div>
           </div>
         </Card>
-        
+
         {/* Renderizar respostas */}
         {comment.replies && comment.replies.length > 0 && (
           <div className="mt-2 ml-10 relative">
             {/* Linha vertical principal para conectar todas as respostas */}
             <div className="absolute -left-10 top-0 bottom-0 w-px bg-gray-200"></div>
-            
+
             {/* Container das respostas */}
             <div className="space-y-2">
               {comment.replies.map((reply, index) => (
@@ -331,11 +385,11 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
-    <div className={`w-full ${className}`}>
+    <div ref={textareaWrapperRef} className={`w-full ${className}`}>
       {/* Lista de comentários */}
       <div className="space-y-3 w-full">
         {isLoading ? (
@@ -344,10 +398,10 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
           </div>
         ) : (
           <>
-            {comments.slice(0, visibleComments).map(comment => 
-              renderComment(comment)
-            )}
-            
+            {comments
+              .slice(0, visibleComments)
+              .map((comment) => renderComment(comment))}
+
             {/* Botão para carregar mais comentários */}
             {visibleComments < comments.length && (
               <div ref={observerRef} className="text-center py-4">
@@ -361,7 +415,8 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
                     className="text-blue-600 hover:text-blue-700"
                   >
                     <ChevronDown className="h-4 w-4 mr-2" />
-                    Carregar mais comentários ({comments.length - visibleComments} restantes)
+                    Carregar mais comentários (
+                    {comments.length - visibleComments} restantes)
                   </Button>
                 )}
               </div>
@@ -376,14 +431,17 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
           <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-100 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-700 dark:text-blue-300">
-                Respondendo a <span className="font-medium">{replyingToUser || 'usuário'}</span>
+                Respondendo a{" "}
+                <span className="font-medium">
+                  {replyingToUser || "usuário"}
+                </span>
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  cancelReply()
-                  setReplyingToUser(null)
+                  cancelReply();
+                  setReplyingToUser(null);
                 }}
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
               >
@@ -392,10 +450,14 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
             </div>
           </div>
         )}
-        
+
         <div className="w-full">
           <MentionInput
-            placeholder={replyTo ? "Responder ao comentário... Digite @ para mencionar" : "Adicione um comentário... Digite @ para mencionar"}
+            placeholder={
+              replyTo
+                ? "Responder ao comentário... Digite @ para mencionar"
+                : "Adicione um comentário... Digite @ para mencionar"
+            }
             value={newComment}
             onChange={(value) => setNewComment(value)}
             onKeyPress={handleKeyPress}
@@ -414,11 +476,11 @@ export function CommentSection({ postId, postOwnerId, postOwnerName, className }
             </Button>
           </div>
         </div>
-        
+
         <div className="mt-2 text-xs text-gray-500">
           💡 Use @nome para mencionar alguém • Use #hashtag para categorizar
         </div>
       </div>
     </div>
-  )
+  );
 }

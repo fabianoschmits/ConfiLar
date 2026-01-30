@@ -1,20 +1,39 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, User, Send, X, Check, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { toast } from 'sonner';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Send,
+  X,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface AppointmentRequestProps {
   professionalId: string;
@@ -35,43 +54,91 @@ export interface AppointmentRequestData {
 }
 
 const timeSlots = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
-  '17:00', '17:30', '18:00', '18:30', '19:00', '19:30'
+  "08:00",
+  "08:30",
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "12:00",
+  "12:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+  "17:30",
+  "18:00",
+  "18:30",
+  "19:00",
+  "19:30",
 ];
 
 const durationOptions = [
-  { value: '1', label: '1 hora' },
-  { value: '1.5', label: '1 hora e 30 min' },
-  { value: '2', label: '2 horas' },
-  { value: '2.5', label: '2 horas e 30 min' },
-  { value: '3', label: '3 horas' },
-  { value: '3.5', label: '3 horas e 30 min' },
-  { value: '4', label: '4 horas' },
-  { value: '4.5', label: '4 horas e 30 min' },
-  { value: '5', label: '5 horas' },
-  { value: '6', label: '6 horas' },
-  { value: '8', label: '8 horas (dia completo)' }
+  { value: "1", label: "1 hora" },
+  { value: "1.5", label: "1 hora e 30 min" },
+  { value: "2", label: "2 horas" },
+  { value: "2.5", label: "2 horas e 30 min" },
+  { value: "3", label: "3 horas" },
+  { value: "3.5", label: "3 horas e 30 min" },
+  { value: "4", label: "4 horas" },
+  { value: "4.5", label: "4 horas e 30 min" },
+  { value: "5", label: "5 horas" },
+  { value: "6", label: "6 horas" },
+  { value: "8", label: "8 horas (dia completo)" },
 ];
 
 export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
   professionalId,
   professionalName,
   onSendRequest,
-  onCancel
+  onCancel,
 }) => {
   const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState<string>('');
-  const [duration, setDuration] = useState<string>('2');
-  const [serviceDescription, setServiceDescription] = useState('');
-  const [address, setAddress] = useState('');
-  const [specialRequirements, setSpecialRequirements] = useState('');
+  const [time, setTime] = useState<string>("");
+  const [duration, setDuration] = useState<string>("2");
+  const [serviceDescription, setServiceDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [specialRequirements, setSpecialRequirements] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   const handleSubmit = async () => {
     if (!date || !time || !serviceDescription || !address) {
-      toast.error('POR FAVOR, PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS');
+      toast.error("POR FAVOR, PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS");
       return;
     }
 
@@ -85,13 +152,13 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
         duration,
         serviceDescription,
         address,
-        specialRequirements
+        specialRequirements,
       };
 
       await onSendRequest(requestData);
-      toast.success('SOLICITAÇÃO DE AGENDAMENTO ENVIADA COM SUCESSO!');
+      toast.success("SOLICITAÇÃO DE AGENDAMENTO ENVIADA COM SUCESSO!");
     } catch (error) {
-      toast.error('ERRO AO ENVIAR SOLICITAÇÃO DE AGENDAMENTO');
+      toast.error("ERRO AO ENVIAR SOLICITAÇÃO DE AGENDAMENTO");
     } finally {
       setIsSubmitting(false);
     }
@@ -128,11 +195,13 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <User className="h-4 w-4" />
-          <span>Profissional: <strong>{professionalName}</strong></span>
+          <span>
+            Profissional: <strong>{professionalName}</strong>
+          </span>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent ref={textareaWrapperRef} className="space-y-6">
         {/* Data e Hora */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Seleção de Data */}
@@ -146,11 +215,13 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
+                    !date && "text-muted-foreground",
                   )}
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP', { locale: ptBR }) : 'Selecione uma data'}
+                  {date
+                    ? format(date, "PPP", { locale: ptBR })
+                    : "Selecione uma data"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -263,11 +334,22 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
               Resumo da Solicitação
             </h4>
             <div className="space-y-1 text-sm text-blue-800">
-              <p><strong>Data:</strong> {format(date, 'PPP', { locale: ptBR })}</p>
-              <p><strong>Horário:</strong> {time}</p>
-              <p><strong>Duração:</strong> {durationOptions.find(d => d.value === duration)?.label}</p>
-              <p><strong>Serviço:</strong> {serviceDescription}</p>
-              <p><strong>Endereço:</strong> {address}</p>
+              <p>
+                <strong>Data:</strong> {format(date, "PPP", { locale: ptBR })}
+              </p>
+              <p>
+                <strong>Horário:</strong> {time}
+              </p>
+              <p>
+                <strong>Duração:</strong>{" "}
+                {durationOptions.find((d) => d.value === duration)?.label}
+              </p>
+              <p>
+                <strong>Serviço:</strong> {serviceDescription}
+              </p>
+              <p>
+                <strong>Endereço:</strong> {address}
+              </p>
             </div>
           </div>
         )}
@@ -284,7 +366,9 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!date || !time || !serviceDescription || !address || isSubmitting}
+            disabled={
+              !date || !time || !serviceDescription || !address || isSubmitting
+            }
             className="flex-1"
           >
             {isSubmitting ? (
@@ -308,9 +392,17 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
             <div className="text-sm text-yellow-800">
               <p className="font-medium mb-1">Informações Importantes:</p>
               <ul className="space-y-1 text-xs">
-                <li>• O profissional receberá sua solicitação e responderá em até 24h</li>
-                <li>• Você será notificado quando o agendamento for confirmado ou recusado</li>
-                <li>• Mantenha os dados atualizados para facilitar o contato</li>
+                <li>
+                  • O profissional receberá sua solicitação e responderá em até
+                  24h
+                </li>
+                <li>
+                  • Você será notificado quando o agendamento for confirmado ou
+                  recusado
+                </li>
+                <li>
+                  • Mantenha os dados atualizados para facilitar o contato
+                </li>
               </ul>
             </div>
           </div>
@@ -319,7 +411,3 @@ export const AppointmentRequest: React.FC<AppointmentRequestProps> = ({
     </Card>
   );
 };
-
-
-
-

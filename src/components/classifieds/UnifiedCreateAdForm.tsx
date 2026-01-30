@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X,
   MapPin,
@@ -110,6 +110,7 @@ export function UnifiedCreateAdForm({
     initialData?.location_city || profile?.location_city || "",
   );
   const [showLocation, setShowLocation] = useState(false);
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
 
   // States for fresh credits
   const [credits1d, setCredits1d] = useState(
@@ -247,6 +248,29 @@ export function UnifiedCreateAdForm({
     selectedCity,
     showLocation,
   ]);
+
+  // Scroll automático para manter textarea visível no mobile quando teclado aparecer
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          wrapper.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest",
+          });
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   // Categories for Combobox
   const categoryOptions = services.map((service) => ({
@@ -464,7 +488,7 @@ export function UnifiedCreateAdForm({
             {/* Could add urgency level here if needed, keeping it simple for now */}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2" ref={textareaWrapperRef}>
             <Label className="text-sm font-medium">Descrição *</Label>
             <Textarea
               value={formData.description}

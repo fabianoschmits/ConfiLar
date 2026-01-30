@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -82,6 +82,34 @@ export function PortfolioDialog({
       tags_string: "",
     },
   });
+
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -201,6 +229,7 @@ export function PortfolioDialog({
     >
       <Form {...form}>
         <form
+          ref={textareaWrapperRef as any}
           id="portfolio-form"
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6"

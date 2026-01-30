@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,34 @@ export function PremiumPostForm({
     pointsToSpend: PREMIUM_PRICES.POST_1_DAY.POINTS,
     durationDays: 1,
   });
+
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +145,7 @@ export function PremiumPostForm({
   const canAfford = balance?.balance >= formData.pointsToSpend;
 
   return (
-    <div className="space-y-6">
+    <div ref={textareaWrapperRef} className="space-y-6">
       {/* Header Premium */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">

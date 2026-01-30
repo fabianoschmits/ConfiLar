@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,34 @@ export function BansManagement() {
     duration_days: 7,
     admin_notes: "",
   });
+
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   const fetchBans = async () => {
     setIsLoading(true);
@@ -757,7 +785,7 @@ export function BansManagement() {
         }
         className="max-w-md"
       >
-        <div className="space-y-4">
+        <div ref={textareaWrapperRef} className="space-y-4">
           <div>
             <Label htmlFor="user_id" className="text-sm font-medium">
               ID do Usuário *
@@ -891,7 +919,7 @@ export function BansManagement() {
         className="max-w-md"
       >
         {selectedBan && (
-          <div className="space-y-4">
+          <div ref={textareaWrapperRef} className="space-y-4">
             <div>
               <h4 className="font-medium mb-2">
                 Usuário: {selectedBan.banned_user_name}
@@ -957,7 +985,7 @@ export function BansManagement() {
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
       >
         {selectedBan && (
-          <div className="space-y-6">
+          <div ref={textareaWrapperRef} className="space-y-6">
             {/* Informações do Usuário */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import {
@@ -48,6 +48,34 @@ export function ConversationReportModal({
     priority: "medium",
   });
   const { user } = useAuthContext();
+
+  const textareaWrapperRef = useRef<HTMLFormElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +176,11 @@ export function ConversationReportModal({
           </div>
         }
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          ref={textareaWrapperRef}
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div>
             <Label className="text-sm font-medium">
               Você está denunciando uma conversa completa

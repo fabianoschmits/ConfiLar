@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,33 @@ export function SharePostModal({
     "idle",
   );
   const [linkCopied, setLinkCopied] = useState(false);
+  const textareaWrapperRef = useRef<HTMLDivElement>(null);
+
+  // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
+  useEffect(() => {
+    const wrapper = textareaWrapperRef.current;
+    if (!wrapper) return;
+
+    const handleFocusIn = () => {
+      // Detectar se é mobile (largura < 768px)
+      if (window.innerWidth < 768) {
+        // Aguardar um pouco para o teclado aparecer
+        setTimeout(() => {
+          const activeElement = document.activeElement;
+          if (activeElement && wrapper.contains(activeElement)) {
+            activeElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+              inline: "nearest",
+            });
+          }
+        }, 300);
+      }
+    };
+
+    wrapper.addEventListener("focusin", handleFocusIn);
+    return () => wrapper.removeEventListener("focusin", handleFocusIn);
+  }, []);
 
   // Gerar URL do post
   const getPostUrl = () => {
@@ -266,7 +293,7 @@ export function SharePostModal({
         </div>
       }
     >
-      <div className="space-y-4">
+      <div ref={textareaWrapperRef} className="space-y-4">
         {/* Informações do post */}
         <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-lg border border-primary-100 dark:border-primary-800">
           <h4 className="font-semibold text-sm text-primary-900 dark:text-primary-100 mb-1">
