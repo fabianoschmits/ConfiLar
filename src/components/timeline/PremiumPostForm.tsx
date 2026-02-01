@@ -56,6 +56,7 @@ export function PremiumPostForm({
   });
 
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
   useEffect(() => {
@@ -82,6 +83,16 @@ export function PremiumPostForm({
     wrapper.addEventListener("focusin", handleFocusIn);
     return () => wrapper.removeEventListener("focusin", handleFocusIn);
   }, []);
+
+  // Foco automático no título ao abrir
+  useEffect(() => {
+    if (!isRenewal) {
+      const timer = setTimeout(() => {
+        titleInputRef.current?.focus();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isRenewal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,6 +300,7 @@ export function PremiumPostForm({
               </Label>
               <Input
                 id="title"
+                ref={titleInputRef}
                 value={formData.title}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))

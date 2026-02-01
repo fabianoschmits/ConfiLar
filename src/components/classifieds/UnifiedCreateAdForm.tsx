@@ -110,6 +110,7 @@ export function UnifiedCreateAdForm({
   );
   const [showLocation, setShowLocation] = useState(false);
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   // States for fresh credits
   const [credits1d, setCredits1d] = useState(
@@ -247,6 +248,15 @@ export function UnifiedCreateAdForm({
     selectedCity,
     showLocation,
   ]);
+
+  // Foco automático no título ao abrir
+  useEffect(() => {
+    // Pequeno delay para garantir que o modal terminou de abrir
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Scroll automático para manter campos visíveis no mobile quando teclado aparecer
   useEffect(() => {
@@ -478,6 +488,7 @@ export function UnifiedCreateAdForm({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Título do Anúncio *</Label>
             <Input
+              ref={titleInputRef}
               value={formData.title}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, title: e.target.value }))

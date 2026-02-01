@@ -69,6 +69,7 @@ export function NewPostForm({
   const { country: contextCountry } = useLocale();
   const { estados, loadCidades } = useIBGE();
   const textareaWrapperRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<any>(null);
   const [showLocation, setShowLocation] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>(
     (profile as any)?.country || contextCountry || "BR",
@@ -343,6 +344,14 @@ export function NewPostForm({
     return () => wrapper.removeEventListener("focusin", handleFocusIn);
   }, []);
 
+  // Foco automático na descrição ao abrir
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      descriptionRef.current?.focus();
+    }, 400);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Auto-save: Salvar draft no localStorage com debounce
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -408,6 +417,7 @@ export function NewPostForm({
           {/* DESCRIÇÃO COM CONTADOR */}
           <div className="relative">
             <MentionInput
+              ref={descriptionRef}
               value={post.description}
               onChange={(v) => setPost((prev) => ({ ...prev, description: v }))}
               placeholder={
