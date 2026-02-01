@@ -984,7 +984,7 @@ export function ModernHeader({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() =>
-                                  handleNavigation("/admin/dashboard")
+                                  handleNavigation("/gestao-confi/dashboard")
                                 }
                                 className="flex items-center gap-1 text-xs py-1 h-7 bg-gray-100 hover:bg-gray-200"
                               >
