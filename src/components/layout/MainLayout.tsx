@@ -83,7 +83,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* <ModernBottomNavigation /> */}
 
       {/* Quick Action Menu para mobile - NOVO MENU EM TESTE - FLUTUANTE ACIMA DO TICKER */}
-      <QuickActionMenu />
+      {!pathname?.startsWith("/gestao-confi") && <QuickActionMenu />}
     </>
   );
 };
