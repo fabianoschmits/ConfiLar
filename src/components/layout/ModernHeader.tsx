@@ -723,9 +723,9 @@ export function ModernHeader({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() =>
-                                  handleNavigation("/confipoints/admin")
+                                  handleNavigation("/gestao-confi/confipoints")
                                 }
-                                className="flex items-center gap-1 text-xs py-1 h-7 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800"
+                                className="flex items-center gap-1 text-xs py-1 h-7 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-green-900/30 border border-red-200 dark:border-red-800"
                               >
                                 <BarChart3 className="h-3 w-3 text-red-600 dark:text-red-400" />
                                 <span className="truncate text-red-700 dark:text-red-300">
@@ -851,6 +851,19 @@ export function ModernHeader({
                               >
                                 <Briefcase className="h-3 w-3" />
                                 <span>{t("professionalData")}</span>
+                              </Button>
+                            )}
+                            {profile?.user_type === "professional" && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleNavigation("/gestao-confi/dashboard")
+                                }
+                                className="flex items-center gap-2 text-xs py-2 w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Shield className="h-4 w-4" />
+                                <span>Painel Admin</span>
                               </Button>
                             )}
                           </div>

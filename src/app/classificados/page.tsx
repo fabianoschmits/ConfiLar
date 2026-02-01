@@ -549,9 +549,12 @@ export default function ClassificadosPage() {
 
       if (isSuperAdminCheck) {
         // Usar API de admin para deletar
-        const response = await fetch(`/api/admin/classified-ads/${adId}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(
+          `/api/gestao-confi/classified-ads/${adId}`,
+          {
+            method: "DELETE",
+          },
+        );
 
         if (!response.ok) {
           const errorData = await response

@@ -1,30 +1,36 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
-import { 
-  Bell, 
-  Smartphone, 
-  Settings, 
-  Shield, 
-  Trash2, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import {
+  Bell,
+  Smartphone,
+  Settings,
+  Shield,
+  Trash2,
   RefreshCw,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Info
-} from 'lucide-react'
-import { useAuth } from '@/hooks/useUnifiedAuth'
-import { usePushNotifications } from '@/hooks/usePushNotifications'
+  Info,
+} from "lucide-react";
+import { useAuth } from "@/hooks/useUnifiedAuth";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export function NotificationSettings() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const {
     isSupported,
     isSubscribed,
@@ -32,50 +38,50 @@ export function NotificationSettings() {
     isDenied,
     requestPermission,
     subscribe,
-    unsubscribe
-  } = usePushNotifications()
+    unsubscribe,
+  } = usePushNotifications();
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [testNotification, setTestNotification] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
+  const [testNotification, setTestNotification] = useState("");
 
   const handleRequestPermission = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await requestPermission()
+      await requestPermission();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSubscribe = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await subscribe()
+      await subscribe();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleUnsubscribe = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await unsubscribe()
+      await unsubscribe();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const sendTestNotification = () => {
-    if (!testNotification.trim()) return
+    if (!testNotification.trim()) return;
 
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Teste - ConfiLar', {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Teste - ConfiLar", {
         body: testNotification,
-        icon: '/icon-192x192.png',
-        badge: '/icon-96x96.png'
-      })
+        icon: "/icon-192x192.png",
+        badge: "/icon-96x96.png",
+      });
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -97,16 +103,18 @@ export function NotificationSettings() {
                 <Shield className="w-4 h-4 text-gray-500" />
                 <div>
                   <Label>Suporte a Notificações</Label>
-                  <p className="text-sm text-gray-500">Navegador suporta notificações</p>
+                  <p className="text-sm text-gray-500">
+                    Navegador suporta notificações
+                  </p>
                 </div>
               </div>
-              <Badge variant={isSupported ? 'default' : 'destructive'}>
+              <Badge variant={isSupported ? "default" : "destructive"}>
                 {isSupported ? (
                   <CheckCircle className="w-3 h-3 mr-1" />
                 ) : (
                   <XCircle className="w-3 h-3 mr-1" />
                 )}
-                {isSupported ? 'Suportado' : 'Não suportado'}
+                {isSupported ? "Suportado" : "Não suportado"}
               </Badge>
             </div>
 
@@ -118,11 +126,9 @@ export function NotificationSettings() {
                   <p className="text-sm text-gray-500">Status da permissão</p>
                 </div>
               </div>
-              <Badge 
+              <Badge
                 variant={
-                  isGranted ? 'default' : 
-                  isDenied ? 'destructive' : 
-                  'secondary'
+                  isGranted ? "default" : isDenied ? "destructive" : "secondary"
                 }
               >
                 {isGranted ? (
@@ -132,7 +138,11 @@ export function NotificationSettings() {
                 ) : (
                   <AlertCircle className="w-3 h-3 mr-1" />
                 )}
-                {isGranted ? 'Concedida' : isDenied ? 'Negada' : 'Não solicitada'}
+                {isGranted
+                  ? "Concedida"
+                  : isDenied
+                    ? "Negada"
+                    : "Não solicitada"}
               </Badge>
             </div>
           </div>
@@ -146,16 +156,16 @@ export function NotificationSettings() {
             <Settings className="w-5 h-5" />
             Configurações de Notificação
           </CardTitle>
-          <CardDescription>
-            Gerencie suas notificações push
-          </CardDescription>
+          <CardDescription>Gerencie suas notificações push</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {!isSupported ? (
             <div className="text-center py-8 text-gray-500">
               <XCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>Seu navegador não suporta notificações push</p>
-              <p className="text-sm">Use Chrome, Firefox ou Edge para ativar notificações</p>
+              <p className="text-sm">
+                Use Chrome, Firefox ou Edge para ativar notificações
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -164,16 +174,20 @@ export function NotificationSettings() {
                   <div className="flex items-center gap-3">
                     <Bell className="w-5 h-5 text-blue-600" />
                     <div>
-                      <p className="font-medium text-blue-900">Ativar Notificações</p>
-                      <p className="text-sm text-blue-700">Solicite permissão para receber notificações</p>
+                      <p className="font-medium text-blue-900">
+                        Ativar Notificações
+                      </p>
+                      <p className="text-sm text-blue-700">
+                        Solicite permissão para receber notificações
+                      </p>
                     </div>
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleRequestPermission}
                     disabled={isLoading}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
-                    {isLoading ? 'Solicitando...' : 'Solicitar Permissão'}
+                    {isLoading ? "Solicitando..." : "Solicitar Permissão"}
                   </Button>
                 </div>
               )}
@@ -183,16 +197,20 @@ export function NotificationSettings() {
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="font-medium text-green-900">Inscrever em Notificações</p>
-                      <p className="text-sm text-green-700">Configure para receber notificações push</p>
+                      <p className="font-medium text-green-900">
+                        Inscrever em Notificações
+                      </p>
+                      <p className="text-sm text-green-700">
+                        Configure para receber notificações push
+                      </p>
                     </div>
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleSubscribe}
                     disabled={isLoading}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    {isLoading ? 'Configurando...' : 'Inscrever'}
+                    {isLoading ? "Configurando..." : "Inscrever"}
                   </Button>
                 </div>
               )}
@@ -202,16 +220,20 @@ export function NotificationSettings() {
                   <div className="flex items-center gap-3">
                     <CheckCircle className="w-5 h-5 text-gray-600" />
                     <div>
-                      <p className="font-medium text-gray-900">Notificações Ativas</p>
-                      <p className="text-sm text-gray-700">Você está recebendo notificações push</p>
+                      <p className="font-medium text-gray-900">
+                        Notificações Ativas
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        Você está recebendo notificações push
+                      </p>
                     </div>
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleUnsubscribe}
                     disabled={isLoading}
                     variant="outline"
                   >
-                    {isLoading ? 'Desinscrevendo...' : 'Desativar'}
+                    {isLoading ? "Desinscrevendo..." : "Desativar"}
                   </Button>
                 </div>
               )}
@@ -221,12 +243,22 @@ export function NotificationSettings() {
                   <div className="flex items-center gap-3">
                     <XCircle className="w-5 h-5 text-red-600" />
                     <div>
-                      <p className="font-medium text-red-900">Permissão Negada</p>
-                      <p className="text-sm text-red-700">As notificações foram negadas. Ative nas configurações do navegador</p>
+                      <p className="font-medium text-red-900">
+                        Permissão Negada
+                      </p>
+                      <p className="text-sm text-red-700">
+                        As notificações foram negadas. Ative nas configurações
+                        do navegador
+                      </p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => window.open('chrome://settings/content/notifications', '_blank')}
+                  <Button
+                    onClick={() =>
+                      window.open(
+                        "chrome://settings/content/notifications",
+                        "_blank",
+                      )
+                    }
                     variant="outline"
                   >
                     Abrir Configurações
@@ -258,7 +290,7 @@ export function NotificationSettings() {
                 onChange={(e) => setTestNotification(e.target.value)}
                 className="flex-1"
               />
-              <Button 
+              <Button
                 onClick={sendTestNotification}
                 disabled={!testNotification.trim()}
                 variant="outline"
@@ -288,23 +320,25 @@ export function NotificationSettings() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <Label className="font-medium">Navegador</Label>
-              <p className="text-gray-600">{navigator.userAgent.split(' ')[0]}</p>
+              <p className="text-gray-600">
+                {navigator.userAgent.split(" ")[0]}
+              </p>
             </div>
             <div>
               <Label className="font-medium">Service Worker</Label>
               <p className="text-gray-600">
-                {('serviceWorker' in navigator) ? 'Suportado' : 'Não suportado'}
+                {"serviceWorker" in navigator ? "Suportado" : "Não suportado"}
               </p>
             </div>
             <div>
               <Label className="font-medium">Push Manager</Label>
               <p className="text-gray-600">
-                {('PushManager' in window) ? 'Suportado' : 'Não suportado'}
+                {"PushManager" in window ? "Suportado" : "Não suportado"}
               </p>
             </div>
             <div>
               <Label className="font-medium">Usuário</Label>
-              <p className="text-gray-600">{user?.email || 'Não logado'}</p>
+              <p className="text-gray-600">{user?.email || "Não logado"}</p>
             </div>
           </div>
         </CardContent>
@@ -325,17 +359,21 @@ export function NotificationSettings() {
           <div className="flex items-center justify-between">
             <div>
               <Label>Limpar Cache de Notificações</Label>
-              <p className="text-sm text-gray-500">Remove dados temporários de notificação</p>
+              <p className="text-sm text-gray-500">
+                Remove dados temporários de notificação
+              </p>
             </div>
             <Button variant="outline" size="sm">
               Limpar Cache
             </Button>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label>Resetar Configurações</Label>
-              <p className="text-sm text-gray-500">Volta às configurações padrão</p>
+              <p className="text-sm text-gray-500">
+                Volta às configurações padrão
+              </p>
             </div>
             <Button variant="outline" size="sm">
               Resetar
@@ -344,5 +382,5 @@ export function NotificationSettings() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

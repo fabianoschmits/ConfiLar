@@ -1,48 +1,48 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { 
-  MessageCircle, 
-  Shield, 
-  Users, 
-  Star, 
-  Award, 
-  Settings, 
-  Zap, 
-  TrendingUp, 
-  BarChart3, 
-  Info, 
-  Check, 
-  AlertCircle, 
-  FileText, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  CreditCard, 
-  Smartphone, 
-  Home, 
-  Building, 
-  Globe, 
-  ChevronsDown, 
-  Image, 
-  Layout, 
-  Bold, 
-  Italic, 
-  Underline, 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { MainLayout } from "@/components/layout/MainLayout";
+import {
+  MessageCircle,
+  Shield,
+  Users,
+  Star,
+  Award,
+  Settings,
+  Zap,
+  TrendingUp,
+  BarChart3,
+  Info,
+  Check,
+  AlertCircle,
+  FileText,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  CreditCard,
+  Smartphone,
+  Home,
+  Building,
+  Globe,
+  ChevronsDown,
+  Image,
+  Layout,
+  Bold,
+  Italic,
+  Underline,
   LogOut,
-  Instagram
-} from 'lucide-react'
-import { ClientOnly } from '@/components/ClientOnly'
-import { useTranslations } from 'next-intl'
+  Instagram,
+} from "lucide-react";
+import { ClientOnly } from "@/components/ClientOnly";
+import { useTranslations } from "next-intl";
 
 export default function AjudaPage() {
-  const t = useTranslations('help')
-  const tCommon = useTranslations('common')
-  
+  const t = useTranslations("help");
+  const tCommon = useTranslations("common");
+
   return (
     <ClientOnly>
       <MainLayout requireAuth={true}>
@@ -56,11 +56,9 @@ export default function AjudaPage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {t('title')}
+                    {t("title")}
                   </h1>
-                  <p className="text-gray-600 mt-1">
-                    {t('description')}
-                  </p>
+                  <p className="text-gray-600 mt-1">{t("description")}</p>
                 </div>
               </div>
             </div>
@@ -73,12 +71,12 @@ export default function AjudaPage() {
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Info className="h-6 w-6 text-blue-600" />
                     </div>
-                    {t('howItWorks')}
+                    {t("howItWorks")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 mb-6">
-                    {t('howItWorksDescription')}
+                    {t("howItWorksDescription")}
                   </p>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="flex items-start gap-4">
@@ -86,9 +84,11 @@ export default function AjudaPage() {
                         <Users className="h-6 w-6 text-green-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('forClients')}</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("forClients")}
+                        </h4>
                         <p className="text-sm text-gray-600">
-                          {t('forClientsDescription')}
+                          {t("forClientsDescription")}
                         </p>
                       </div>
                     </div>
@@ -97,9 +97,11 @@ export default function AjudaPage() {
                         <Star className="h-6 w-6 text-purple-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('forProfessionals')}</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("forProfessionals")}
+                        </h4>
                         <p className="text-sm text-gray-600">
-                          {t('forProfessionalsDescription')}
+                          {t("forProfessionalsDescription")}
                         </p>
                       </div>
                     </div>
@@ -114,7 +116,7 @@ export default function AjudaPage() {
                     <div className="p-2 bg-yellow-100 rounded-lg">
                       <Zap className="h-6 w-6 text-yellow-600" />
                     </div>
-                    {t('mainFeatures')}
+                    {t("mainFeatures")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -122,37 +124,37 @@ export default function AjudaPage() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature1')}</span>
+                        <span className="text-gray-700">{t("feature1")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature2')}</span>
+                        <span className="text-gray-700">{t("feature2")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature3')}</span>
+                        <span className="text-gray-700">{t("feature3")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature4')}</span>
+                        <span className="text-gray-700">{t("feature4")}</span>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature5')}</span>
+                        <span className="text-gray-700">{t("feature5")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature6')}</span>
+                        <span className="text-gray-700">{t("feature6")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature7')}</span>
+                        <span className="text-gray-700">{t("feature7")}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Check className="h-5 w-5 text-green-600" />
-                        <span className="text-gray-700">{t('feature8')}</span>
+                        <span className="text-gray-700">{t("feature8")}</span>
                       </div>
                     </div>
                   </div>
@@ -166,53 +168,61 @@ export default function AjudaPage() {
                     <div className="p-2 bg-green-100 rounded-lg">
                       <MessageCircle className="h-6 w-6 text-green-600" />
                     </div>
-                    {t('howToUse')}
+                    {t("howToUse")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-600">1</span>
+                        <span className="text-sm font-semibold text-blue-600">
+                          1
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('step1Title')}</h4>
-                        <p className="text-gray-600">
-                          {t('step1Description')}
-                        </p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("step1Title")}
+                        </h4>
+                        <p className="text-gray-600">{t("step1Description")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-600">2</span>
+                        <span className="text-sm font-semibold text-blue-600">
+                          2
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('step2Title')}</h4>
-                        <p className="text-gray-600">
-                          {t('step2Description')}
-                        </p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("step2Title")}
+                        </h4>
+                        <p className="text-gray-600">{t("step2Description")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-600">3</span>
+                        <span className="text-sm font-semibold text-blue-600">
+                          3
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('step3Title')}</h4>
-                        <p className="text-gray-600">
-                          {t('step3Description')}
-                        </p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("step3Title")}
+                        </h4>
+                        <p className="text-gray-600">{t("step3Description")}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-blue-600">4</span>
+                        <span className="text-sm font-semibold text-blue-600">
+                          4
+                        </span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">{t('step4Title')}</h4>
-                        <p className="text-gray-600">
-                          {t('step4Description')}
-                        </p>
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                          {t("step4Title")}
+                        </h4>
+                        <p className="text-gray-600">{t("step4Description")}</p>
                       </div>
                     </div>
                   </div>
@@ -226,26 +236,42 @@ export default function AjudaPage() {
                     <div className="p-2 bg-orange-100 rounded-lg">
                       <MessageCircle className="h-6 w-6 text-orange-600" />
                     </div>
-                    {t('needMoreHelp')}
+                    {t("needMoreHelp")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-700 mb-6">
-                    {t('contactDescription')}
+                    {t("contactDescription")}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="mailto:suporte@appconfilar.com.br" className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <a
+                      href="mailto:suporte@appconfilar.com.br"
+                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
                       <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{t('emailSupport')}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">suporte@appconfilar.com.br</p>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {t("emailSupport")}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          suporte@appconfilar.com.br
+                        </p>
                       </div>
                     </a>
-                    <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <a
+                      href="https://www.instagram.com/appconfilar"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
                       <Instagram className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{t('instagram')}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">@appconfilar</p>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {t("instagram")}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          @appconfilar
+                        </p>
                       </div>
                     </a>
                   </div>
@@ -256,5 +282,5 @@ export default function AjudaPage() {
         </div>
       </MainLayout>
     </ClientOnly>
-  )
+  );
 }

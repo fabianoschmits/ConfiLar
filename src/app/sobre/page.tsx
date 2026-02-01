@@ -1,30 +1,39 @@
-'use client'
+"use client";
 
-import { Shield, Users, Zap, MapPin, Phone, Mail, CheckCircle, Instagram } from 'lucide-react'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { BrandLogo } from '@/components/common/BrandLogo'
-import { useTranslations } from 'next-intl'
+import {
+  Shield,
+  Users,
+  Zap,
+  MapPin,
+  Phone,
+  Mail,
+  CheckCircle,
+  Instagram,
+} from "lucide-react";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { DashboardSkeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/common/BrandLogo";
+import { useTranslations } from "next-intl";
 
 // Desabilitar SSG para esta página
-export const dynamic = 'force-dynamic'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
+export const dynamic = "force-dynamic";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function SobrePage() {
-  const [mounted, setMounted] = useState(false)
-  const { user } = useAuthContext()
-  const t = useTranslations('about')
+  const [mounted, setMounted] = useState(false);
+  const { user } = useAuthContext();
+  const t = useTranslations("about");
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
-    return null
+    return null;
   }
 
   // Se o usuário estiver logado, usar MainLayout
@@ -36,27 +45,32 @@ export default function SobrePage() {
             {/* Header da Página */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight">
-                {t('title')}
+                {t("title")}
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                {t('subtitle')}
+                {t("subtitle")}
               </p>
             </div>
 
             {/* Benefícios */}
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-                {t('whyChoose')}
+                {t("whyChoose")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card className="p-8 text-center hover:shadow-lg transition-shadow">
                   <CardContent>
                     <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Shield size={32} className="text-blue-600 dark:text-blue-400" />
+                      <Shield
+                        size={32}
+                        className="text-blue-600 dark:text-blue-400"
+                      />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('security.title')}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                      {t("security.title")}
+                    </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {t('security.description')}
+                      {t("security.description")}
                     </p>
                   </CardContent>
                 </Card>
@@ -64,11 +78,16 @@ export default function SobrePage() {
                 <Card className="p-8 text-center hover:shadow-lg transition-shadow">
                   <CardContent>
                     <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Users size={32} className="text-green-600 dark:text-green-400" />
+                      <Users
+                        size={32}
+                        className="text-green-600 dark:text-green-400"
+                      />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('qualified.title')}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                      {t("qualified.title")}
+                    </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {t('qualified.description')}
+                      {t("qualified.description")}
                     </p>
                   </CardContent>
                 </Card>
@@ -76,11 +95,16 @@ export default function SobrePage() {
                 <Card className="p-8 text-center hover:shadow-lg transition-shadow">
                   <CardContent>
                     <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Zap size={32} className="text-purple-600 dark:text-purple-400" />
+                      <Zap
+                        size={32}
+                        className="text-purple-600 dark:text-purple-400"
+                      />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('fast.title')}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                      {t("fast.title")}
+                    </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      {t('fast.description')}
+                      {t("fast.description")}
                     </p>
                   </CardContent>
                 </Card>
@@ -90,24 +114,63 @@ export default function SobrePage() {
             {/* Serviços */}
             <div className="mb-16">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
-                {t('services')}
+                {t("services")}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
-                  { icon: '🏠', title: 'Limpeza', desc: 'Limpeza residencial e comercial' },
-                  { icon: '🔧', title: 'Manutenção', desc: 'Reparos e manutenção geral' },
-                  { icon: '🌱', title: 'Jardinagem', desc: 'Cuidados com plantas e jardins' },
-                  { icon: '📱', title: 'Tecnologia', desc: 'Suporte técnico e instalações' },
-                  { icon: '🎨', title: 'Decoração', desc: 'Design e organização de espaços' },
-                  { icon: '🚗', title: 'Transporte', desc: 'Serviços de mobilidade' },
-                  { icon: '📚', title: 'Educação', desc: 'Aulas particulares e cursos' },
-                  { icon: '💼', title: 'Consultoria', desc: 'Orientações profissionais' }
+                  {
+                    icon: "🏠",
+                    title: "Limpeza",
+                    desc: "Limpeza residencial e comercial",
+                  },
+                  {
+                    icon: "🔧",
+                    title: "Manutenção",
+                    desc: "Reparos e manutenção geral",
+                  },
+                  {
+                    icon: "🌱",
+                    title: "Jardinagem",
+                    desc: "Cuidados com plantas e jardins",
+                  },
+                  {
+                    icon: "📱",
+                    title: "Tecnologia",
+                    desc: "Suporte técnico e instalações",
+                  },
+                  {
+                    icon: "🎨",
+                    title: "Decoração",
+                    desc: "Design e organização de espaços",
+                  },
+                  {
+                    icon: "🚗",
+                    title: "Transporte",
+                    desc: "Serviços de mobilidade",
+                  },
+                  {
+                    icon: "📚",
+                    title: "Educação",
+                    desc: "Aulas particulares e cursos",
+                  },
+                  {
+                    icon: "💼",
+                    title: "Consultoria",
+                    desc: "Orientações profissionais",
+                  },
                 ].map((service, index) => (
-                  <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
+                  <Card
+                    key={index}
+                    className="p-6 text-center hover:shadow-lg transition-shadow"
+                  >
                     <CardContent>
                       <div className="text-4xl mb-4">{service.icon}</div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{service.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{service.desc}</p>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        {service.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {service.desc}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -133,7 +196,11 @@ export default function SobrePage() {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="px-6 py-3">
-                  <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://www.instagram.com/appconfilar"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Instagram className="h-5 w-5 mr-2" />
                     @appconfilar
                   </a>
@@ -143,7 +210,7 @@ export default function SobrePage() {
           </div>
         </div>
       </MainLayout>
-    )
+    );
   }
 
   // Se o usuário não estiver logado, mostrar página pública
@@ -157,10 +224,16 @@ export default function SobrePage() {
               <BrandLogo width={160} height={40} className="object-contain" />
             </div>
             <div className="flex space-x-3">
-              <Link href="/auth" className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <Link
+                href="/auth"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
                 Entrar
               </Link>
-              <Link href="/auth?tab=register" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Link
+                href="/auth?tab=register"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Criar conta
               </Link>
             </div>
@@ -175,13 +248,20 @@ export default function SobrePage() {
             Conectando profissionais e clientes
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed mb-8">
-            A plataforma que facilita a contratação de serviços domésticos e comerciais de forma segura e confiável
+            A plataforma que facilita a contratação de serviços domésticos e
+            comerciais de forma segura e confiável
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth?tab=register" className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors">
+            <Link
+              href="/auth?tab=register"
+              className="px-8 py-4 bg-blue-600 text-white rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
+            >
               Começar agora
             </Link>
-            <Link href="/buscar" className="px-8 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <Link
+              href="/buscar"
+              className="px-8 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
               Buscar profissionais
             </Link>
           </div>
@@ -197,11 +277,17 @@ export default function SobrePage() {
           <Card className="p-8 text-center hover:shadow-lg transition-shadow">
             <CardContent>
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Shield size={32} className="text-blue-600 dark:text-blue-400" />
+                <Shield
+                  size={32}
+                  className="text-blue-600 dark:text-blue-400"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Segurança garantida</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Segurança garantida
+              </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Todos os profissionais são verificados e as transações são protegidas para sua tranquilidade
+                Todos os profissionais são verificados e as transações são
+                protegidas para sua tranquilidade
               </p>
             </CardContent>
           </Card>
@@ -209,11 +295,17 @@ export default function SobrePage() {
           <Card className="p-8 text-center hover:shadow-lg transition-shadow">
             <CardContent>
               <div className="w-16 h-16 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users size={32} className="text-green-600 dark:text-green-400" />
+                <Users
+                  size={32}
+                  className="text-green-600 dark:text-green-400"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Profissionais qualificados</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Profissionais qualificados
+              </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Acesso a uma rede de profissionais experientes e bem avaliados pelos clientes
+                Acesso a uma rede de profissionais experientes e bem avaliados
+                pelos clientes
               </p>
             </CardContent>
           </Card>
@@ -221,11 +313,17 @@ export default function SobrePage() {
           <Card className="p-8 text-center hover:shadow-lg transition-shadow">
             <CardContent>
               <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Zap size={32} className="text-purple-600 dark:text-purple-400" />
+                <Zap
+                  size={32}
+                  className="text-purple-600 dark:text-purple-400"
+                />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Processo rápido</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                Processo rápido
+              </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Cadastro simples e navegação intuitiva para encontrar o que você precisa rapidamente
+                Cadastro simples e navegação intuitiva para encontrar o que você
+                precisa rapidamente
               </p>
             </CardContent>
           </Card>
@@ -239,20 +337,55 @@ export default function SobrePage() {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { icon: '🏠', title: 'Limpeza', desc: 'Limpeza residencial e comercial' },
-            { icon: '🔧', title: 'Manutenção', desc: 'Reparos e manutenção geral' },
-            { icon: '🌱', title: 'Jardinagem', desc: 'Cuidados com plantas e jardins' },
-            { icon: '📱', title: 'Tecnologia', desc: 'Suporte técnico e instalações' },
-            { icon: '🎨', title: 'Decoração', desc: 'Design e organização de espaços' },
-            { icon: '🚗', title: 'Transporte', desc: 'Serviços de mobilidade' },
-            { icon: '📚', title: 'Educação', desc: 'Aulas particulares e cursos' },
-            { icon: '💼', title: 'Consultoria', desc: 'Orientações profissionais' }
+            {
+              icon: "🏠",
+              title: "Limpeza",
+              desc: "Limpeza residencial e comercial",
+            },
+            {
+              icon: "🔧",
+              title: "Manutenção",
+              desc: "Reparos e manutenção geral",
+            },
+            {
+              icon: "🌱",
+              title: "Jardinagem",
+              desc: "Cuidados com plantas e jardins",
+            },
+            {
+              icon: "📱",
+              title: "Tecnologia",
+              desc: "Suporte técnico e instalações",
+            },
+            {
+              icon: "🎨",
+              title: "Decoração",
+              desc: "Design e organização de espaços",
+            },
+            { icon: "🚗", title: "Transporte", desc: "Serviços de mobilidade" },
+            {
+              icon: "📚",
+              title: "Educação",
+              desc: "Aulas particulares e cursos",
+            },
+            {
+              icon: "💼",
+              title: "Consultoria",
+              desc: "Orientações profissionais",
+            },
           ].map((service, index) => (
-            <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
+            <Card
+              key={index}
+              className="p-6 text-center hover:shadow-lg transition-shadow"
+            >
               <CardContent>
                 <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{service.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{service.desc}</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {service.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {service.desc}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -265,20 +398,31 @@ export default function SobrePage() {
           Entre em contato
         </h2>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/ajuda" className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center">
+          <Link
+            href="/ajuda"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
+          >
             <Mail className="h-5 w-5 mr-2" />
             Central de Ajuda
           </Link>
-          <Link href="/buscar" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center">
+          <Link
+            href="/buscar"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center"
+          >
             <Users className="h-5 w-5 mr-2" />
             Buscar Profissionais
           </Link>
-          <a href="https://www.instagram.com/appconfilar" target="_blank" rel="noopener noreferrer" className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center">
+          <a
+            href="https://www.instagram.com/appconfilar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors inline-flex items-center"
+          >
             <Instagram className="h-5 w-5 mr-2" />
             @appconfilar
           </a>
         </div>
       </div>
     </div>
-  )
+  );
 }

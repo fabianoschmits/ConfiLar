@@ -152,7 +152,7 @@ export async function middleware(request: NextRequest) {
 
   // Rotas de API que exigem autenticação (Proteção no Middleware)
   const protectedApiRoutes = [
-    "/api/admin",
+    "/api/gestao-confi",
     "/api/notifications",
     "/api/payment",
     "/api/economy",

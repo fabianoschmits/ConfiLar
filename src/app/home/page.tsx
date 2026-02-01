@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
 // Desabilitar SSG para esta página
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { MainLayout } from '@/components/layout/MainLayout'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { useAdvancedSearch } from '@/hooks/useAdvancedSearch'
-import { ReferralBadge } from '@/components/referral/ReferralBadge'
-import { DashboardSkeleton } from '@/components/ui/skeleton'
-import { 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useAdvancedSearch } from "@/hooks/useAdvancedSearch";
+import { ReferralBadge } from "@/components/referral/ReferralBadge";
+import { DashboardSkeleton } from "@/components/ui/skeleton";
+import {
   Users,
   UserCheck,
   ArrowRight,
@@ -34,97 +34,132 @@ import {
   MessageCircle,
   UserPlus,
   Gift,
-  Zap
-} from 'lucide-react'
-import { useTranslations } from 'next-intl'
+  Zap,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function HomePage() {
-  const [mounted, setMounted] = useState(false)
-  const router = useRouter()
-  const { user, profile } = useAuthContext()
-  const t = useTranslations('home')
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const { user, profile } = useAuthContext();
+  const t = useTranslations("home");
 
   // Hook para busca avançada para obter estatísticas reais
-  const {
-    stats,
-    executeSearch
-  } = useAdvancedSearch()
+  const { stats, executeSearch } = useAdvancedSearch();
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true);
     // Executar busca para carregar estatísticas
-    executeSearch()
-  }, [executeSearch])
+    executeSearch();
+  }, [executeSearch]);
 
   if (!mounted) {
-    return <DashboardSkeleton />
+    return <DashboardSkeleton />;
   }
-
-
 
   // Passos para clientes
   const clientSteps = [
     {
       step: 1,
-      title: 'Complete seu perfil',
-      description: 'Crie um perfil completo para ser encontrado facilmente',
+      title: "Complete seu perfil",
+      description: "Crie um perfil completo para ser encontrado facilmente",
       icon: UserCheck,
-      details: ['Dados pessoais', 'Foto de perfil', 'Localização', 'Preferências de serviço']
+      details: [
+        "Dados pessoais",
+        "Foto de perfil",
+        "Localização",
+        "Preferências de serviço",
+      ],
     },
     {
       step: 2,
-      title: 'Busque profissionais',
-      description: 'Encontre profissionais qualificados na sua região',
+      title: "Busque profissionais",
+      description: "Encontre profissionais qualificados na sua região",
       icon: Search,
-      details: ['Filtre por localização', 'Escolha categoria de serviço', 'Veja avaliações reais', 'Compare perfis']
+      details: [
+        "Filtre por localização",
+        "Escolha categoria de serviço",
+        "Veja avaliações reais",
+        "Compare perfis",
+      ],
     },
     {
       step: 3,
-      title: 'Entre em contato',
-      description: 'Converse diretamente com o profissional escolhido',
+      title: "Entre em contato",
+      description: "Converse diretamente com o profissional escolhido",
       icon: MessageCircle,
-      details: ['Chat seguro', 'Troca de informações', 'Negocie valores', 'Agende o serviço']
+      details: [
+        "Chat seguro",
+        "Troca de informações",
+        "Negocie valores",
+        "Agende o serviço",
+      ],
     },
     {
       step: 4,
-      title: 'Avalie o serviço',
-      description: 'Deixe sua avaliação honesta após o serviço',
+      title: "Avalie o serviço",
+      description: "Deixe sua avaliação honesta após o serviço",
       icon: Star,
-      details: ['Avalie qualidade', 'Compartilhe experiência', 'Ajude outros clientes', 'Construa confiança']
-    }
-  ]
+      details: [
+        "Avalie qualidade",
+        "Compartilhe experiência",
+        "Ajude outros clientes",
+        "Construa confiança",
+      ],
+    },
+  ];
 
   // Passos para profissionais
   const professionalSteps = [
     {
       step: 1,
-      title: 'Crie seu portfólio',
-      description: 'Mostre seu trabalho e experiência profissional',
+      title: "Crie seu portfólio",
+      description: "Mostre seu trabalho e experiência profissional",
       icon: FileText,
-      details: ['Adicione fotos do trabalho', 'Descreva seus serviços', 'Defina preços justos', 'Mostre especialidades']
+      details: [
+        "Adicione fotos do trabalho",
+        "Descreva seus serviços",
+        "Defina preços justos",
+        "Mostre especialidades",
+      ],
     },
     {
       step: 2,
-      title: 'Seja encontrado',
-      description: 'Apareça nas buscas dos clientes interessados',
+      title: "Seja encontrado",
+      description: "Apareça nas buscas dos clientes interessados",
       icon: Eye,
-      details: ['Otimize seu perfil', 'Use palavras-chave relevantes', 'Mantenha disponibilidade', 'Responda rapidamente']
+      details: [
+        "Otimize seu perfil",
+        "Use palavras-chave relevantes",
+        "Mantenha disponibilidade",
+        "Responda rapidamente",
+      ],
     },
     {
       step: 3,
-      title: 'Receba propostas',
-      description: 'Clientes entrarão em contato com você',
+      title: "Receba propostas",
+      description: "Clientes entrarão em contato com você",
       icon: MessageCircle,
-      details: ['Responda mensagens', 'Negocie valores', 'Agende serviços', 'Mantenha comunicação clara']
+      details: [
+        "Responda mensagens",
+        "Negocie valores",
+        "Agende serviços",
+        "Mantenha comunicação clara",
+      ],
     },
     {
       step: 4,
-      title: 'Construa reputação',
-      description: 'Receba avaliações e cresça na plataforma',
+      title: "Construa reputação",
+      description: "Receba avaliações e cresça na plataforma",
       icon: Award,
-      details: ['Entregue qualidade', 'Seja pontual', 'Comunique-se bem', 'Peça avaliações honestas']
-    }
-  ]
+      details: [
+        "Entregue qualidade",
+        "Seja pontual",
+        "Comunique-se bem",
+        "Peça avaliações honestas",
+      ],
+    },
+  ];
 
   return (
     <MainLayout requireAuth={false}>
@@ -134,13 +169,13 @@ export default function HomePage() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-800 rounded-full text-sm font-medium mb-6">
               <Shield className="h-4 w-4 mr-2" />
-              {t('platform')}
+              {t("platform")}
             </div>
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              {t('welcome')}
+              {t("welcome")}
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              {t('description')}
+              {t("description")}
             </p>
           </div>
 
@@ -151,29 +186,45 @@ export default function HomePage() {
                 {/* Total de Usuários */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.total')}</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.totalUsers || 0}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    {t("stats.total")}
+                  </p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    {stats?.totalUsers || 0}
+                  </p>
                 </div>
-                
+
                 {/* Profissionais */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.professionals')}</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.professionalsCount || 0}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    {t("stats.professionals")}
+                  </p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    {stats?.professionalsCount || 0}
+                  </p>
                 </div>
-                
+
                 {/* Clientes */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.clients')}</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.clientsCount || 0}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    {t("stats.clients")}
+                  </p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    {stats?.clientsCount || 0}
+                  </p>
                 </div>
-                
+
                 {/* Verificados */}
                 <div className="flex flex-col items-center min-w-0 flex-1">
                   <Star className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 dark:text-gray-400 mb-0.5" />
-                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">{t('stats.verified')}</p>
-                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{stats?.verifiedCount || 0}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    {t("stats.verified")}
+                  </p>
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    {stats?.verifiedCount || 0}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -195,15 +246,16 @@ export default function HomePage() {
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex items-center gap-3 justify-center lg:justify-start mb-3">
                       <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                        {t('referralProgram.title')}
+                        {t("referralProgram.title")}
                       </h2>
                       <Badge className="bg-green-600 hover:bg-green-700 text-white">
-                        {t('referralProgram.new')}
+                        {t("referralProgram.new")}
                       </Badge>
                     </div>
                     <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
-                      {t('referralProgram.description')} 
-                      Quanto mais pessoas você indicar, mais badges e benefícios você desbloqueia.
+                      {t("referralProgram.description")}
+                      Quanto mais pessoas você indicar, mais badges e benefícios
+                      você desbloqueia.
                     </p>
 
                     {/* Benefícios em Grid */}
@@ -252,7 +304,7 @@ export default function HomePage() {
                     </div>
 
                     <Button
-                      onClick={() => router.push('/indicacoes')}
+                      onClick={() => router.push("/indicacoes")}
                       size="lg"
                       className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all"
                     >
@@ -270,13 +322,16 @@ export default function HomePage() {
                       </p>
                       <div className="flex gap-2">
                         {[
-                          { tier: 'bronze' as const, refs: 1 },
-                          { tier: 'silver' as const, refs: 5 },
-                          { tier: 'gold' as const, refs: 10 },
-                          { tier: 'platinum' as const, refs: 25 },
-                          { tier: 'diamond' as const, refs: 50 }
+                          { tier: "bronze" as const, refs: 1 },
+                          { tier: "silver" as const, refs: 5 },
+                          { tier: "gold" as const, refs: 10 },
+                          { tier: "platinum" as const, refs: 25 },
+                          { tier: "diamond" as const, refs: 50 },
                         ].map((level) => (
-                          <div key={level.tier} className="flex flex-col items-center">
+                          <div
+                            key={level.tier}
+                            className="flex flex-col items-center"
+                          >
                             <ReferralBadge
                               tier={level.tier}
                               totalReferrals={level.refs}
@@ -299,27 +354,42 @@ export default function HomePage() {
                 <Users className="h-4 w-4 mr-2" />
                 Para Clientes
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Como Encontrar um Profissional</h2>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Como Encontrar um Profissional
+              </h2>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Siga estes passos para encontrar o profissional ideal para seu projeto
+                Siga estes passos para encontrar o profissional ideal para seu
+                projeto
               </p>
             </div>
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {clientSteps.map((step, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow duration-200">
+                <Card
+                  key={index}
+                  className="hover:shadow-md transition-shadow duration-200"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                         <step.icon className="h-6 w-6 text-blue-600" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">0{step.step}</div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        0{step.step}
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{step.description}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {step.description}
+                    </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
-                        <li key={detailIndex} className="flex items-center text-sm text-gray-600">
+                        <li
+                          key={detailIndex}
+                          className="flex items-center text-sm text-gray-600"
+                        >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                           {detail}
                         </li>
@@ -338,7 +408,9 @@ export default function HomePage() {
                 <Briefcase className="h-4 w-4 mr-2" />
                 Para Profissionais
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Como Oferecer Seus Serviços</h2>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Como Oferecer Seus Serviços
+              </h2>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                 Transforme sua experiência em oportunidades de negócio
               </p>
@@ -346,19 +418,31 @@ export default function HomePage() {
 
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
               {professionalSteps.map((step, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow duration-200">
+                <Card
+                  key={index}
+                  className="hover:shadow-md transition-shadow duration-200"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center mb-4">
                       <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                         <step.icon className="h-6 w-6 text-green-600" />
                       </div>
-                      <div className="text-2xl font-bold text-gray-900 dark:text-white">0{step.step}</div>
+                      <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                        0{step.step}
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{step.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{step.description}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {step.description}
+                    </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, detailIndex) => (
-                        <li key={detailIndex} className="flex items-center text-sm text-gray-600">
+                        <li
+                          key={detailIndex}
+                          className="flex items-center text-sm text-gray-600"
+                        >
                           <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                           {detail}
                         </li>
@@ -369,9 +453,8 @@ export default function HomePage() {
               ))}
             </div>
           </section>
-
         </div>
       </div>
     </MainLayout>
-  )
+  );
 }
