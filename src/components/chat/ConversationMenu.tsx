@@ -27,8 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ReportButton } from "@/components/ReportButton";
-import { ConversationReportModal } from "./ConversationReportModal";
+import { ConversationReportDialog } from "./ConversationReportModal";
 import { toast } from "sonner";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
@@ -54,6 +53,7 @@ export function ConversationMenu({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   useCloseOnScroll(isOpen, setIsOpen);
 
@@ -142,24 +142,14 @@ export function ConversationMenu({
           {/* Botão de Denunciar Conversa */}
           {conversationData && messages && (
             <DropdownMenuItem
-              onSelect={(e) => {
-                // Allow default behavior to close the menu
+              onClick={(e) => {
+                // e.stopPropagation(); // Não precisa de stopPropagation se quisermos fechar o menu
+                setShowReportDialog(true);
               }}
-              asChild
+              className="flex items-center gap-2 cursor-pointer hover:bg-red-50 focus:bg-red-50 text-gray-700 hover:text-red-600 text-sm rounded-md px-2 py-1.5"
             >
-              <ConversationReportModal
-                conversationId={conversationId}
-                clientId={conversationData.client_id}
-                clientName={conversationData.client?.full_name || "Usuário"}
-                professionalId={conversationData.professional_id}
-                professionalName={
-                  conversationData.professional?.full_name || "Usuário"
-                }
-                messages={messages}
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-red-50 border-0"
-              />
+              <Flag className="h-3.5 w-3.5" />
+              Denunciar Conversa
             </DropdownMenuItem>
           )}
 
@@ -218,6 +208,22 @@ export function ConversationMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de Denúncia */}
+      {conversationData && messages && (
+        <ConversationReportDialog
+          isOpen={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          conversationId={conversationId}
+          clientId={conversationData.client_id}
+          clientName={conversationData.client?.full_name || "Usuário"}
+          professionalId={conversationData.professional_id}
+          professionalName={
+            conversationData.professional?.full_name || "Usuário"
+          }
+          messages={messages}
+        />
+      )}
     </>
   );
 }

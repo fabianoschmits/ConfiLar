@@ -29,11 +29,27 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
 
-interface ReportButtonProps {
-  type: "user" | "post" | "message" | "review" | "classified";
+export type ReportType =
+  | "user"
+  | "post"
+  | "message"
+  | "review"
+  | "classified"
+  | "comment";
+
+interface ReportDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  type: ReportType;
   targetId: string;
   targetName?: string;
   reportedUserId?: string;
+}
+
+interface ReportButtonProps extends Omit<
+  ReportDialogProps,
+  "isOpen" | "onOpenChange"
+> {
   className?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "sm" | "default" | "lg";
@@ -80,19 +96,43 @@ const REPORT_REASONS = {
     "Serviço não prestado",
     "Outros",
   ],
+  comment: [
+    "Comentário ofensivo",
+    "Spam ou propaganda",
+    "Assédio ou bullying",
+    "Conteúdo inapropriado",
+    "Informações falsas",
+    "Outros",
+  ],
 };
 
-export function ReportButton({
+const getTypeLabel = (type: ReportType) => {
+  switch (type) {
+    case "user":
+      return "Usuário";
+    case "post":
+      return "Post";
+    case "message":
+      return "Mensagem";
+    case "review":
+      return "Avaliação";
+    case "classified":
+      return "Anúncio";
+    case "comment":
+      return "Comentário";
+    default:
+      return "Item";
+  }
+};
+
+export function ReportDialog({
+  isOpen,
+  onOpenChange,
   type,
   targetId,
   targetName,
   reportedUserId,
-  className,
-  variant = "ghost",
-  size = "sm",
-  asDropdownItem = false,
-}: ReportButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
+}: ReportDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
@@ -100,6 +140,13 @@ export function ReportButton({
   });
   const { user } = useAuthContext();
   const textareaWrapperRef = useRef<HTMLFormElement>(null);
+
+  // Reset form when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({ description: "", priority: "medium" });
+    }
+  }, [isOpen]);
 
   // Efeito para scroll automático em dispositivos móveis quando o teclado aparece
   useEffect(() => {
@@ -200,8 +247,7 @@ export function ReportButton({
       toast.success(
         "Denúncia enviada com sucesso! Nossa equipe irá analisá-la.",
       );
-      setIsOpen(false);
-      setFormData({ description: "", priority: "medium" });
+      onOpenChange(false);
     } catch (error) {
       console.error("Erro ao enviar denúncia:", error);
       toast.error("Erro ao enviar denúncia. Tente novamente.");
@@ -210,160 +256,136 @@ export function ReportButton({
     }
   };
 
-  const getTypeIcon = () => {
-    switch (type) {
-      case "user":
-        return <User className="h-4 w-4" />;
-      case "post":
-        return <FileText className="h-4 w-4" />;
-      case "message":
-        return <MessageCircle className="h-4 w-4" />;
-      case "review":
-        return <Star className="h-4 w-4" />;
-      case "classified":
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <Flag className="h-4 w-4" />;
-    }
-  };
+  return (
+    <ResponsiveModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      className="w-[95vw] max-w-lg p-0 overflow-hidden"
+      title={
+        <div className="flex items-center gap-2">
+          <Flag className="h-5 w-5 text-red-500" />
+          <span>Denunciar {getTypeLabel(type)}</span>
+        </div>
+      }
+    >
+      <form
+        ref={textareaWrapperRef}
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
+        <div>
+          <Label className="text-sm font-medium">
+            Você está denunciando:{" "}
+            <span className="text-gray-600">
+              {targetName || getTypeLabel(type)}
+            </span>
+          </Label>
+        </div>
 
-  const getTypeLabel = () => {
-    switch (type) {
-      case "user":
-        return "Usuário";
-      case "post":
-        return "Post";
-      case "message":
-        return "Mensagem";
-      case "review":
-        return "Avaliação";
-      case "classified":
-        return "Anúncio";
-      default:
-        return "Item";
-    }
-  };
+        <div>
+          <Label htmlFor="description" className="text-sm font-medium">
+            Descrição detalhada *
+          </Label>
+          <Textarea
+            id="description"
+            placeholder="Descreva o problema encontrado..."
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            className="mt-1"
+            rows={4}
+            required
+          />
+        </div>
 
-  const handleButtonClick = () => {
-    setIsOpen(true);
-  };
+        <div>
+          <Label htmlFor="priority" className="text-sm font-medium">
+            Prioridade
+          </Label>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) =>
+              setFormData({ ...formData, priority: value })
+            }
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="medium">Média</SelectItem>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="urgent">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-  // Se for usado como item de dropdown, renderizar botão + Dialog
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>Importante:</strong> Denúncias falsas podem resultar em
+            suspensão da sua conta. Use este recurso com responsabilidade.
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1"
+          >
+            Cancelar
+          </Button>
+          <LoadingButton
+            type="submit"
+            disabled={isSubmitting || !formData.description.trim()}
+            className="flex-1 bg-red-600 hover:bg-red-700"
+            isLoading={isSubmitting}
+            loadingText="Enviando..."
+          >
+            Enviar Denúncia
+          </LoadingButton>
+        </div>
+      </form>
+    </ResponsiveModal>
+  );
+}
+
+export function ReportButton({
+  type,
+  targetId,
+  targetName,
+  reportedUserId,
+  className,
+  variant = "ghost",
+  size = "sm",
+  asDropdownItem = false,
+}: ReportButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Se for usado como item de dropdown, renderizar apenas o botão
+  // O componente pai DEVE controlar o modal usando ReportDialog
+  // Mas para retrocompatibilidade, se não tiver asDropdownItem, funciona como antes
   if (asDropdownItem) {
     return (
-      <>
-        <button
-          onClick={() => {
-            handleButtonClick();
-          }}
-          className={cn(
-            "flex items-center gap-2 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-2 transition-colors",
-            className,
-          )}
-        >
-          <Flag className="h-4 w-4" />
-          <span>Denunciar</span>
-        </button>
-
-        <ResponsiveModal
-          isOpen={isOpen}
-          onOpenChange={setIsOpen}
-          className="w-[95vw] max-w-lg p-0 overflow-hidden"
-          title={
-            <div className="flex items-center gap-2">
-              <Flag className="h-5 w-5 text-red-500" />
-              <span>Denunciar {getTypeLabel()}</span>
-            </div>
-          }
-        >
-          <form
-            ref={textareaWrapperRef}
-            onSubmit={handleSubmit}
-            className="space-y-4"
-          >
-            <div>
-              <Label className="text-sm font-medium">
-                Você está denunciando um {getTypeLabel().toLowerCase()}
-              </Label>
-              <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                <div className="text-sm text-gray-600">
-                  <p>
-                    <strong>ID:</strong> {targetId}
-                  </p>
-                  <p>
-                    <strong>Nome:</strong> {targetName}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-sm font-medium">
-                Descrição detalhada do problema *
-              </Label>
-              <Textarea
-                id="description"
-                placeholder="Descreva o problema encontrado..."
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className="mt-1"
-                rows={4}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="priority" className="text-sm font-medium">
-                Prioridade
-              </Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, priority: value })
-                }
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Baixa</SelectItem>
-                  <SelectItem value="medium">Média</SelectItem>
-                  <SelectItem value="high">Alta</SelectItem>
-                  <SelectItem value="urgent">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                <strong>Importante:</strong> Denúncias falsas podem resultar em
-                suspensão da sua conta.
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !formData.description.trim()}
-                className="flex-1 bg-red-600 hover:bg-red-700"
-              >
-                {isSubmitting ? "Enviando..." : "Enviar Denúncia"}
-              </Button>
-            </div>
-          </form>
-        </ResponsiveModal>
-      </>
+      <button
+        onClick={() => {
+          // Em um mundo ideal, aqui chamaríamos uma prop `onOpen` passada pelo pai
+          // Mas como estamos refatorando, vamos assumir que o pai vai usar o ReportDialog diretamente
+          // e o ReportButton dentro de dropdown será apenas visual ou disparador de evento
+          // Por enquanto, vamos manter como um botão simples que não faz nada além de ser clicado
+          // O Pai deve capturar o evento de clique na DropdownMenuItem
+        }}
+        className={cn(
+          "flex items-center gap-2 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-2 transition-colors",
+          className,
+        )}
+      >
+        <Flag className="h-4 w-4" />
+        <span>Denunciar</span>
+      </button>
     );
   }
 
@@ -376,107 +398,20 @@ export function ReportButton({
           "flex items-center gap-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors",
           className,
         )}
-        onClick={() => {
-          handleButtonClick();
-        }}
+        onClick={() => setIsOpen(true)}
       >
         <Flag className="h-3.5 w-3.5" />
         <span className="text-xs">Denunciar</span>
       </Button>
 
-      <ResponsiveModal
+      <ReportDialog
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="w-[95vw] max-w-lg p-0 overflow-hidden"
-        title={
-          <div className="flex items-center gap-2">
-            <Flag className="h-5 w-5 text-red-500" />
-            <span>Denunciar {getTypeLabel()}</span>
-          </div>
-        }
-      >
-        <form
-          ref={textareaWrapperRef}
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
-          <div>
-            <Label className="text-sm font-medium">
-              Você está denunciando:{" "}
-              <span className="text-gray-600">
-                {targetName || getTypeLabel()}
-              </span>
-            </Label>
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="text-sm font-medium">
-              Descrição detalhada *
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Descreva o problema encontrado..."
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="mt-1"
-              rows={4}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="priority" className="text-sm font-medium">
-              Prioridade
-            </Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value) =>
-                setFormData({ ...formData, priority: value })
-              }
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Baixa</SelectItem>
-                <SelectItem value="medium">Média</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="urgent">Urgente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Importante:</strong> Denúncias falsas podem resultar em
-              suspensão da sua conta. Use este recurso com responsabilidade.
-            </AlertDescription>
-          </Alert>
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <LoadingButton
-              type="submit"
-              disabled={isSubmitting || !formData.description.trim()}
-              className="flex-1 bg-red-600 hover:bg-red-700"
-              isLoading={isSubmitting}
-              loadingText="Enviando..."
-            >
-              Enviar Denúncia
-            </LoadingButton>
-          </div>
-        </form>
-      </ResponsiveModal>
+        type={type}
+        targetId={targetId}
+        targetName={targetName}
+        reportedUserId={reportedUserId}
+      />
     </>
   );
 }

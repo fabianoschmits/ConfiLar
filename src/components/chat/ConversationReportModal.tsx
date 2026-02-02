@@ -31,18 +31,21 @@ interface ConversationReportModalProps {
   size?: "sm" | "default" | "lg";
 }
 
-export function ConversationReportModal({
+interface ConversationReportDialogProps extends ConversationReportModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function ConversationReportDialog({
   conversationId,
   clientId,
   clientName,
   professionalId,
   professionalName,
   messages,
-  className,
-  variant = "ghost",
-  size = "sm",
-}: ConversationReportModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  isOpen,
+  onOpenChange,
+}: ConversationReportDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     description: "",
@@ -149,7 +152,7 @@ export function ConversationReportModal({
       toast.success(
         "Denúncia de conversa enviada com sucesso! Nossa equipe irá analisá-la.",
       );
-      setIsOpen(false);
+      onOpenChange(false);
       setFormData({ description: "", priority: "medium" });
     } catch (error) {
       console.error("Erro ao enviar denúncia:", error);
@@ -158,6 +161,127 @@ export function ConversationReportModal({
       setIsSubmitting(false);
     }
   };
+
+  return (
+    <ResponsiveModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      className="w-[95vw] max-w-lg p-0 overflow-hidden"
+      title={
+        <div className="flex items-center gap-2">
+          <Flag className="h-5 w-5 text-red-500" />
+          <span>Denunciar Conversa Completa</span>
+        </div>
+      }
+    >
+      <form
+        ref={textareaWrapperRef}
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
+        <div>
+          <Label className="text-sm font-medium">
+            Você está denunciando uma conversa completa
+          </Label>
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+            <div className="text-sm text-gray-600">
+              <p>
+                <strong>Conversa entre:</strong> {clientName} e{" "}
+                {professionalName}
+              </p>
+              <p>
+                <strong>Total de mensagens:</strong> {messages.length}
+              </p>
+              <p>
+                <strong>IDs dos usuários:</strong> Cliente: {clientId} |
+                Profissional: {professionalId}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="description" className="text-sm font-medium">
+            Descrição detalhada do problema *
+          </Label>
+          <Textarea
+            id="description"
+            placeholder="Descreva o problema encontrado na conversa..."
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            className="mt-1"
+            rows={4}
+            required
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="priority" className="text-sm font-medium">
+            Prioridade
+          </Label>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) =>
+              setFormData({ ...formData, priority: value })
+            }
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="medium">Média</SelectItem>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="urgent">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>Importante:</strong> Esta denúncia enviará toda a conversa
+            para análise da administração. Denúncias falsas podem resultar em
+            suspensão da sua conta.
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting || !formData.description.trim()}
+            className="flex-1 bg-red-600 hover:bg-red-700"
+          >
+            {isSubmitting ? "Enviando..." : "Enviar Denúncia"}
+          </Button>
+        </div>
+      </form>
+    </ResponsiveModal>
+  );
+}
+
+export function ConversationReportModal({
+  conversationId,
+  clientId,
+  clientName,
+  professionalId,
+  professionalName,
+  messages,
+  className,
+  variant = "ghost",
+  size = "sm",
+}: ConversationReportModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
@@ -175,110 +299,16 @@ export function ConversationReportModal({
         <Flag className="h-4 w-4" />
         <span className="text-sm">Denunciar Conversa</span>
       </Button>
-      <ResponsiveModal
+      <ConversationReportDialog
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="w-[95vw] max-w-lg p-0 overflow-hidden"
-        title={
-          <div className="flex items-center gap-2">
-            <Flag className="h-5 w-5 text-red-500" />
-            <span>Denunciar Conversa Completa</span>
-          </div>
-        }
-      >
-        <form
-          ref={textareaWrapperRef}
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
-          <div>
-            <Label className="text-sm font-medium">
-              Você está denunciando uma conversa completa
-            </Label>
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm text-gray-600">
-                <p>
-                  <strong>Conversa entre:</strong> {clientName} e{" "}
-                  {professionalName}
-                </p>
-                <p>
-                  <strong>Total de mensagens:</strong> {messages.length}
-                </p>
-                <p>
-                  <strong>IDs dos usuários:</strong> Cliente: {clientId} |
-                  Profissional: {professionalId}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="text-sm font-medium">
-              Descrição detalhada do problema *
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Descreva o problema encontrado na conversa..."
-              value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
-              className="mt-1"
-              rows={4}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="priority" className="text-sm font-medium">
-              Prioridade
-            </Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value) =>
-                setFormData({ ...formData, priority: value })
-              }
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Baixa</SelectItem>
-                <SelectItem value="medium">Média</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="urgent">Urgente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Importante:</strong> Esta denúncia enviará toda a conversa
-              para análise da administração. Denúncias falsas podem resultar em
-              suspensão da sua conta.
-            </AlertDescription>
-          </Alert>
-
-          <div className="flex gap-2 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || !formData.description.trim()}
-              className="flex-1 bg-red-600 hover:bg-red-700"
-            >
-              {isSubmitting ? "Enviando..." : "Enviar Denúncia"}
-            </Button>
-          </div>
-        </form>
-      </ResponsiveModal>
+        conversationId={conversationId}
+        clientId={clientId}
+        clientName={clientName}
+        professionalId={professionalId}
+        professionalName={professionalName}
+        messages={messages}
+      />
     </>
   );
 }

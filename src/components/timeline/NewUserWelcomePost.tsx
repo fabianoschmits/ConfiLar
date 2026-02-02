@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ReportButton } from "@/components/ReportButton";
+import { ReportButton, ReportDialog } from "@/components/ReportButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +73,7 @@ export function NewUserWelcomePost({
   const { openChat } = useFloatingChat();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   useCloseOnScroll(isOpen, setIsOpen);
 
@@ -245,19 +244,32 @@ export function NewUserWelcomePost({
                     </DropdownMenuItem>
                   ) : (
                     // Opções para outros usuários
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem
+                      onClick={() => setShowReportDialog(true)}
+                      asChild
+                    >
                       <ReportButton
                         type="post"
                         targetId={post.id}
                         targetName={post.title}
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        asDropdownItem={true}
+                        className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 pointer-events-none"
                       />
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <ReportDialog
+                isOpen={showReportDialog}
+                onOpenChange={setShowReportDialog}
+                type="post"
+                targetId={post.id}
+                targetName={post.title}
+                reportedUserId={post.user_id}
+              />
             </div>
           </div>
 
@@ -299,7 +311,6 @@ export function NewUserWelcomePost({
           </div>
         </CardContent>
       </Card>
-
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

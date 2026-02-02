@@ -18,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import {
   MoreHorizontal,
   Edit,
@@ -28,7 +29,7 @@ import {
   Shield,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { ReportButton } from "@/components/ReportButton";
+import { ReportButton, ReportDialog } from "@/components/ReportButton";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
@@ -58,6 +59,7 @@ export function PostOptionsMenu({
   const { user } = useAuthContext();
   const { isSuperAdmin } = useIsSuperAdmin();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   // Fecha o menu ao rolar a página (UX Mobile)
@@ -69,7 +71,6 @@ export function PostOptionsMenu({
   }
 
   const isOwner = user.id === postUserId;
-  const canDelete = isOwner || isSuperAdmin; // Apenas dono ou super_admin podem deletar
 
   const handleDelete = () => {
     onDelete(postId);
@@ -141,13 +142,10 @@ export function PostOptionsMenu({
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
-                onSelect={(e) => {
-                  // Prevenir que o menu feche imediatamente se necessário,
-                  // mas aqui queremos que ele feche e abra o modal.
-                  // Radix fechará o menu por padrão no select.
-                }}
+                onClick={() => setShowReportDialog(true)}
                 asChild
               >
+                {/* O ReportButton aqui age apenas como o visual do botão */}
                 <ReportButton
                   type="post"
                   targetId={postId}
@@ -211,6 +209,15 @@ export function PostOptionsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ReportDialog
+        isOpen={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        type="post"
+        targetId={postId}
+        targetName={postTitle || "Post"}
+        reportedUserId={postUserId}
+      />
     </>
   );
 }
