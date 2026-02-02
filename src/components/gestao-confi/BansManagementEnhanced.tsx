@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 interface Ban {
   id: string;
   user_id: string;
+  banned_by: string;
   reason: string;
   ban_type: "temporary" | "permanent";
   duration_days?: number;
@@ -87,6 +88,9 @@ export function BansManagementEnhanced() {
   const [showBanModal, setShowBanModal] = useState(false);
   const [showUnbanModal, setShowUnbanModal] = useState(false);
   const [banToUnban, setBanToUnban] = useState<Ban | null>(null);
+  const [showBanDetailsModal, setShowBanDetailsModal] = useState(false);
+  const [selectedBan, setSelectedBan] = useState<Ban | null>(null);
+  const [banAdminInfo, setBanAdminInfo] = useState<any>(null);
   const [banForm, setBanForm] = useState({
     reason: "",
     ban_type: "temporary" as "temporary" | "permanent",
@@ -192,6 +196,32 @@ export function BansManagementEnhanced() {
     }
   };
 
+  const handleBanClick = async (ban: Ban) => {
+    setSelectedBan(ban);
+    setShowBanDetailsModal(true);
+
+    // Fetch admin info who created the ban
+    if (ban.banned_by) {
+      try {
+        const response = await fetch(
+          `/api/gestao-confi/bans?adminId=${ban.banned_by}`,
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setBanAdminInfo(data.admin);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar informações do admin:", error);
+      }
+    }
+  };
+
+  const handleCloseBanDetails = () => {
+    setShowBanDetailsModal(false);
+    setSelectedBan(null);
+    setBanAdminInfo(null);
+  };
+
   const handleUnbanClick = (ban: Ban) => {
     setBanToUnban(ban);
     setShowUnbanModal(true);
@@ -245,6 +275,12 @@ export function BansManagementEnhanced() {
     fetchBans();
     fetchInvestigations();
   }, []);
+
+  useEffect(() => {
+    console.log("🔍 Total de banimentos:", bans.length);
+    console.log("🔍 Banimentos filtrados:", filteredBans.length);
+    console.log("🔍 Dados dos banimentos:", bans);
+  }, [bans, filteredBans]);
 
   return (
     <div className="space-y-6">
@@ -477,94 +513,114 @@ export function BansManagementEnhanced() {
               ) : (
                 <div className="space-y-4">
                   {filteredBans.map((ban) => (
-                    <Card key={ban.id} className="border-l-4 border-l-red-500">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <UserX className="h-4 w-4" />
-                              <span className="font-medium">
-                                {ban.profiles.full_name}
+                    <div
+                      key={ban.id}
+                      className="border-l-4 border-l-red-500 bg-white dark:bg-gray-900 rounded-lg shadow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors p-4"
+                      onClick={() => {
+                        console.log("Card clicked:", ban.id);
+                        handleBanClick(ban);
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <UserX className="h-4 w-4" />
+                            <span className="font-medium">
+                              {ban.profiles.full_name}
+                            </span>
+                            <Badge variant="outline">
+                              {ban.profiles.user_type}
+                            </Badge>
+                            <Badge className={getStatusColor(ban.is_active)}>
+                              {getStatusText(ban.is_active)}
+                            </Badge>
+                            <Badge className={getBanTypeColor(ban.ban_type)}>
+                              {ban.ban_type}
+                            </Badge>
+                          </div>
+
+                          <p className="text-sm text-gray-600 mb-2">
+                            {ban.profiles.email}
+                          </p>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-2">
+                            <div>
+                              <span className="font-medium">Motivo:</span>
+                              <span className="ml-2">{ban.reason}</span>
+                            </div>
+                            <div>
+                              <span className="font-medium">Banido em:</span>
+                              <span className="ml-2">
+                                {new Date(ban.created_at).toLocaleString()}
                               </span>
-                              <Badge variant="outline">
-                                {ban.profiles.user_type}
-                              </Badge>
-                              <Badge className={getStatusColor(ban.is_active)}>
-                                {getStatusText(ban.is_active)}
-                              </Badge>
-                              <Badge className={getBanTypeColor(ban.ban_type)}>
-                                {ban.ban_type}
-                              </Badge>
                             </div>
-
-                            <p className="text-sm text-gray-600 mb-2">
-                              {ban.profiles.email}
-                            </p>
-
-                            <div className="grid grid-cols-2 gap-4 text-sm mb-2">
+                            {ban.expires_at && (
                               <div>
-                                <span className="font-medium">Motivo:</span>
-                                <span className="ml-2">{ban.reason}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Banido em:</span>
+                                <span className="font-medium">Expira em:</span>
                                 <span className="ml-2">
-                                  {new Date(ban.created_at).toLocaleString()}
+                                  {new Date(ban.expires_at).toLocaleString()}
                                 </span>
                               </div>
-                              {ban.expires_at && (
-                                <div>
-                                  <span className="font-medium">
-                                    Expira em:
-                                  </span>
-                                  <span className="ml-2">
-                                    {new Date(ban.expires_at).toLocaleString()}
-                                  </span>
-                                </div>
-                              )}
-                              {ban.duration_days && (
-                                <div>
-                                  <span className="font-medium">Duração:</span>
-                                  <span className="ml-2">
-                                    {ban.duration_days} dias
-                                  </span>
-                                </div>
-                              )}
+                            )}
+                            {ban.duration_days && (
+                              <div>
+                                <span className="font-medium">Duração:</span>
+                                <span className="ml-2">
+                                  {ban.duration_days} dias
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {ban.admin_notes && (
+                            <div className="bg-gray-50 p-2 rounded text-xs">
+                              <span className="font-medium">
+                                Notas Administrativas:
+                              </span>
+                              <p className="text-gray-600">{ban.admin_notes}</p>
                             </div>
-
-                            {ban.admin_notes && (
-                              <div className="bg-gray-50 p-2 rounded text-xs">
-                                <span className="font-medium">
-                                  Notas Administrativas:
-                                </span>
-                                <p className="text-gray-600">
-                                  {ban.admin_notes}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {ban.is_active && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUnbanClick(ban)}
-                                className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Desbanir
-                              </Button>
-                            )}
-                            {!ban.is_active && (
-                              <Badge className="bg-green-100 text-green-800">
-                                Desbanido
-                              </Badge>
-                            )}
-                          </div>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
+
+                        <div
+                          className="flex items-center gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("Ver Detalhes clicked");
+                              handleBanClick(ban);
+                            }}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
+                          {ban.is_active && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUnbanClick(ban);
+                              }}
+                              className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Desbanir
+                            </Button>
+                          )}
+                          {!ban.is_active && (
+                            <Badge className="bg-green-100 text-green-800">
+                              Desbanido
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -808,6 +864,197 @@ export function BansManagementEnhanced() {
                 }}
               >
                 Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+      </ResponsiveModal>
+
+      {/* Modal de Detalhes do Banimento */}
+      <ResponsiveModal
+        isOpen={showBanDetailsModal}
+        onOpenChange={handleCloseBanDetails}
+        title={
+          <div className="flex items-center gap-2">
+            <Ban className="h-5 w-5 text-red-600" />
+            <span>Detalhes do Banimento</span>
+          </div>
+        }
+      >
+        {selectedBan && (
+          <div className="space-y-6">
+            {/* User Information */}
+            <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-3 mb-3">
+                {selectedBan.profiles.avatar_url && (
+                  <img
+                    src={selectedBan.profiles.avatar_url}
+                    alt={selectedBan.profiles.full_name}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                )}
+                <div>
+                  <h3 className="font-medium text-red-900 dark:text-red-100">
+                    {selectedBan.profiles.full_name}
+                  </h3>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    {selectedBan.profiles.email}
+                  </p>
+                  <Badge variant="outline" className="mt-1">
+                    {selectedBan.profiles.user_type}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            {/* Ban Status */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-gray-500">Status</Label>
+                <Badge className={getStatusColor(selectedBan.is_active)}>
+                  {getStatusText(selectedBan.is_active)}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500">Tipo</Label>
+                <Badge className={getBanTypeColor(selectedBan.ban_type)}>
+                  {selectedBan.ban_type === "permanent"
+                    ? "Permanente"
+                    : "Temporário"}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Ban Details */}
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500">
+                  Motivo do Banimento
+                </Label>
+                <p className="text-sm mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                  {selectedBan.reason}
+                </p>
+              </div>
+
+              {selectedBan.admin_notes && (
+                <div>
+                  <Label className="text-xs text-gray-500">
+                    Notas Administrativas
+                  </Label>
+                  <p className="text-sm mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                    {selectedBan.admin_notes}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Timeline */}
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-500">Timeline</Label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-gray-400" />
+                  <span className="font-medium">Criado em:</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {new Date(selectedBan.created_at).toLocaleString("pt-BR")}
+                  </span>
+                </div>
+
+                {selectedBan.expires_at && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                    <span className="font-medium">Expira em:</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {new Date(selectedBan.expires_at).toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                )}
+
+                {selectedBan.duration_days && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                    <span className="font-medium">Duração:</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {selectedBan.duration_days} dias
+                    </span>
+                  </div>
+                )}
+
+                {selectedBan.updated_at && !selectedBan.is_active && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <span className="font-medium">Revogado em:</span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {new Date(selectedBan.updated_at).toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Admin Info */}
+            {banAdminInfo && (
+              <div className="bg-blue-50 dark:bg-blue-900/10 p-3 rounded border border-blue-200 dark:border-blue-800">
+                <Label className="text-xs text-blue-700 dark:text-blue-300">
+                  Banido por
+                </Label>
+                <div className="mt-1">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                    {banAdminInfo.full_name}
+                  </p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {banAdminInfo.email}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-4 border-t">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedBan.id);
+                  toast.success("ID do banimento copiado!");
+                }}
+              >
+                Copiar ID
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  window.open(`/perfil/${selectedBan.user_id}`, "_blank");
+                }}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Ver Perfil
+              </Button>
+
+              {selectedBan.is_active && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleCloseBanDetails();
+                    handleUnbanClick(selectedBan);
+                  }}
+                  className="text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Desbanir
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCloseBanDetails}
+                className="ml-auto"
+              >
+                Fechar
               </Button>
             </div>
           </div>

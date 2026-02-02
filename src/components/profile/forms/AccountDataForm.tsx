@@ -256,7 +256,7 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-2">
             <Label>Nome completo</Label>
             <Input {...register("full_name")} placeholder="Seu nome" />

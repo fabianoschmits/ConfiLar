@@ -142,7 +142,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
         onSubmit={handleSubmit(onSubmit)}
         className="space-y-6"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-2">
             <Label>Estado</Label>
             <Popover open={stateOpen} onOpenChange={setStateOpen}>
@@ -242,7 +242,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
             <Label>CEP</Label>
             <Input {...register("zip_code")} />
           </div>
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2 md:col-span-2 lg:col-span-3">
             <Label>Endereço e Número</Label>
             <div className="flex gap-2">
               <Input {...register("address")} className="flex-1" />

@@ -82,7 +82,7 @@ const nextConfig = {
               "img-src 'self' data: https: blob: https://api.dicebear.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://api.dicebear.com https://servicodados.ibge.gov.br https://*.ibge.gov.br",
-              "frame-src 'self' https://*.supabase.co",
+              "frame-src 'self' https://*.supabase.co https://vercel.live",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -99,7 +99,7 @@ const nextConfig = {
   // trailingSlash: true,
   // Removido output: 'standalone' que pode causar problemas no Vercel
   // output: 'standalone',
-  
+
   // Configuração Webpack personalizada (removida configuração de debug - componentes já foram removidos)
   webpack: (config, { dev, isServer }) => {
     return config

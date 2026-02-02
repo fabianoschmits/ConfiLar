@@ -110,12 +110,12 @@ export function EditProfileModal({
       onOpenChange={onOpenChange}
       title={currentTab.label}
       description="Gerencie suas informações"
-      className="max-w-4xl p-0 overflow-hidden"
+      className="sm:max-w-[1300px] w-[95vw] p-0 overflow-hidden"
     >
       <div className="flex flex-col bg-white dark:bg-black overflow-hidden h-[90vh] sm:h-auto">
         <div className="flex flex-col flex-1 sm:flex-row overflow-hidden">
           {/* Sidebar - Desktop */}
-          <div className="hidden sm:flex w-64 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800 flex-shrink-0">
+          <div className="hidden sm:flex w-72 flex-col bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-100 dark:border-gray-800 flex-shrink-0">
             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Meu Perfil
@@ -160,7 +160,7 @@ export function EditProfileModal({
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white dark:bg-black">
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-white dark:bg-black overflow-x-hidden">
             {/* Mobile Navigation */}
             <div className="sm:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-black p-2 flex-shrink-0">
               <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar px-1">
@@ -206,8 +206,8 @@ export function EditProfileModal({
               </div>
             </div>
 
-            <ScrollArea className="flex-1 px-4 sm:px-8 py-6">
-              <div className="max-w-2xl mx-auto pb-8">
+            <ScrollArea className="flex-1 px-4 sm:px-10 py-8">
+              <div className="w-full max-w-4xl mx-auto pb-8">
                 {activeTab === "account" && (
                   <AccountDataForm onSuccess={() => {}} />
                 )}

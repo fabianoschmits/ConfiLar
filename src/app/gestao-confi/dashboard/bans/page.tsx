@@ -119,6 +119,7 @@ export default function AdminBansPage() {
     try {
       const { error } = await supabase.from("user_bans").insert({
         user_id: banForm.user_id,
+        banned_by: banForm.user_id, // TODO: Should use actual admin user ID
         reason: banForm.reason,
         ban_type: banForm.ban_type,
         duration_days:

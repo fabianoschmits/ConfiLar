@@ -22,6 +22,7 @@ interface ResponsiveTableProps<T> {
   columns: Column<T>[];
   keyExtractor: (item: T) => string;
   renderMobileCard?: (item: T) => ReactNode; // Optional custom card renderer
+  onRowClick?: (item: T) => void;
   emptyMessage?: string;
   isLoading?: boolean;
 }
@@ -31,6 +32,7 @@ export function ResponsiveTable<T>({
   columns,
   keyExtractor,
   renderMobileCard,
+  onRowClick,
   emptyMessage = "Nenhum dado encontrado.",
   isLoading = false,
 }: ResponsiveTableProps<T>) {
@@ -64,7 +66,11 @@ export function ResponsiveTable<T>({
           </TableHeader>
           <TableBody>
             {data.map((item) => (
-              <TableRow key={keyExtractor(item)}>
+              <TableRow
+                key={keyExtractor(item)}
+                onClick={() => onRowClick?.(item)}
+                className={cn(onRowClick && "cursor-pointer hover:bg-muted/50")}
+              >
                 {columns.map((col, index) => (
                   <TableCell key={index} className={col.className}>
                     {col.cell

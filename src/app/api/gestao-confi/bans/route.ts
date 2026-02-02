@@ -21,6 +21,26 @@ export const GET = withAdminAuth(
       const adminSupabase = createAdminSupabaseClient();
       const { searchParams } = new URL(request.url);
       const status = searchParams.get("status") || "all";
+      const adminId = searchParams.get("adminId");
+
+      // If adminId is provided, fetch admin profile info
+      if (adminId) {
+        const { data: adminProfile, error: adminError } = await adminSupabase
+          .from("profiles")
+          .select("id, full_name, email, avatar_url")
+          .eq("id", adminId)
+          .single();
+
+        if (adminError) {
+          console.error("Erro ao buscar perfil do admin:", adminError);
+          return NextResponse.json(
+            { error: "Erro ao buscar perfil do admin" },
+            { status: 500 },
+          );
+        }
+
+        return NextResponse.json({ admin: adminProfile });
+      }
 
       let query = adminSupabase
         .from("user_bans")
@@ -123,11 +143,11 @@ export const POST = withAdminAuth(
 
       const banData = {
         user_id: userId,
+        banned_by: user.id,
         reason,
         ban_type: banType,
         duration_days: banType === "temporary" ? durationDays : null,
         admin_notes: adminNotes || `Banido por admin ${user.id}`,
-        status: "active",
         created_at: new Date().toISOString(),
       };
 
