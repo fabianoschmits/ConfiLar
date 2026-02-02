@@ -1,0 +1,42 @@
+name: Cron Jobs
+
+on:
+  schedule:
+    # Run every 8 hours (3 times a day)
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+    # Allow manual triggering from GitHub UI
+
+jobs:
+  run-cron-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Inactive Users Availability
+        run: |
+          curl -X GET ${{ secrets.APP_URL }}/api/cron/inactive-users-availability \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"
+
+      - name: Call Premium Posts Notifications & Demotion
+        run: |
+          curl -X GET ${{ secrets.APP_URL }}/api/cron/premium-posts-notifications \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"
+
+      - name: Call Process Email Queue
+        run: |
+          curl -X GET ${{ secrets.APP_URL }}/api/cron/process-email-queue \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"
+
+      - name: Call Expired Premium Classifieds & Demotion
+        run: |
+          curl -X GET ${{ secrets.APP_URL }}/api/cron/expired-premium-classifieds \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"
+
+      - name: Call Cleanup Stories
+        run: |
+          curl -X GET ${{ secrets.APP_URL }}/api/cron/cleanup-stories \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          -H "Content-Type: application/json"
