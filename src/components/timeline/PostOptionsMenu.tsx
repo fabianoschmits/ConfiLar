@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu'
-import { 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,59 +17,67 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { MoreHorizontal, Edit, Trash2, Loader2, Flag, Crown, Shield } from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
-import { ReportButton } from '@/components/ReportButton'
-import { useIsSuperAdmin } from '@/hooks/useAdmin'
+} from "@/components/ui/alert-dialog";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Loader2,
+  Flag,
+  Crown,
+  Shield,
+} from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { ReportButton } from "@/components/ReportButton";
+import { useIsSuperAdmin } from "@/hooks/useAdmin";
 
 interface PostOptionsMenuProps {
-  postId: string
-  postUserId: string
-  postTitle?: string
-  onEdit: (postId: string) => void
-  onDelete: (postId: string) => void
-  onRenewPremium?: (postId: string) => void
-  isDeleting?: boolean
-  isPremium?: boolean
-  premiumExpired?: boolean
+  postId: string;
+  postUserId: string;
+  postTitle?: string;
+  onEdit: (postId: string) => void;
+  onDelete: (postId: string) => void;
+  onRenewPremium?: (postId: string) => void;
+  isDeleting?: boolean;
+  isPremium?: boolean;
+  premiumExpired?: boolean;
 }
 
-export function PostOptionsMenu({ 
-  postId, 
-  postUserId, 
+export function PostOptionsMenu({
+  postId,
+  postUserId,
   postTitle,
-  onEdit, 
+  onEdit,
   onDelete,
   onRenewPremium,
   isDeleting = false,
   isPremium = false,
-  premiumExpired = false
+  premiumExpired = false,
 }: PostOptionsMenuProps) {
-  const { user } = useAuthContext()
-  const { isSuperAdmin } = useIsSuperAdmin()
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const { user } = useAuthContext();
+  const { isSuperAdmin } = useIsSuperAdmin();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Se não há usuário logado, não mostrar menu
   if (!user) {
-    return null
+    return null;
   }
 
-  const isOwner = user.id === postUserId
-  const canDelete = isOwner || isSuperAdmin // Apenas dono ou super_admin podem deletar
+  const isOwner = user.id === postUserId;
+  const canDelete = isOwner || isSuperAdmin; // Apenas dono ou super_admin podem deletar
 
   const handleDelete = () => {
-    onDelete(postId)
-    setShowDeleteDialog(false)
-  }
+    onDelete(postId);
+    setShowDeleteDialog(false);
+  };
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="h-6 w-6 sm:h-7 sm:w-7 p-0 text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-400 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-900 border-0 shadow-none transition-colors"
             disabled={isDeleting}
             onClick={(e) => e.stopPropagation()}
@@ -79,11 +87,14 @@ export function PostOptionsMenu({
             <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
+        <DropdownMenuContent
+          align="end"
+          className="w-48 bg-white dark:bg-black border border-gray-200 dark:border-gray-900"
+        >
           {isOwner ? (
             // Opções para o dono do post
             <>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => onEdit(postId)}
                 className="cursor-pointer transition-smooth text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900"
                 aria-label="Editar post"
@@ -92,7 +103,7 @@ export function PostOptionsMenu({
                 Editar Post
               </DropdownMenuItem>
               {isPremium && premiumExpired && onRenewPremium && (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => onRenewPremium(postId)}
                   className="cursor-pointer text-yellow-600 dark:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
                   aria-label="Renovar post premium"
@@ -101,7 +112,7 @@ export function PostOptionsMenu({
                   Tornar Premium Novamente
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
                 aria-label="Deletar post"
@@ -115,7 +126,7 @@ export function PostOptionsMenu({
             <>
               {isSuperAdmin && (
                 // Apenas super_admin pode deletar posts de outros usuários
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => setShowDeleteDialog(true)}
                   className="cursor-pointer text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 transition-smooth"
                   aria-label="Deletar post (super admin)"
@@ -124,13 +135,21 @@ export function PostOptionsMenu({
                   Deletar Post (Super Admin)
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem asChild>
-                <ReportButton 
-                  type="post" 
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  // Prevenir que o menu feche imediatamente se necessário,
+                  // mas aqui queremos que ele feche e abra o modal.
+                  // Radix fechará o menu por padrão no select.
+                }}
+                asChild
+              >
+                <ReportButton
+                  type="post"
                   targetId={postId}
-                  targetName={postTitle || 'Post'}
+                  targetName={postTitle || "Post"}
+                  reportedUserId={postUserId}
                   asDropdownItem={true}
-                  className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900"
+                  className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 border-0"
                 />
               </DropdownMenuItem>
             </>
@@ -142,24 +161,32 @@ export function PostOptionsMenu({
         <AlertDialogContent className="bg-white dark:bg-black border border-gray-200 dark:border-gray-900">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-gray-900 dark:text-white">
-              {isSuperAdmin && !isOwner ? 'Deletar Post (Super Admin)' : 'Deletar Post'}
+              {isSuperAdmin && !isOwner
+                ? "Deletar Post (Super Admin)"
+                : "Deletar Post"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600 dark:text-gray-400">
               {isSuperAdmin && !isOwner ? (
                 <>
-                  Você está deletando este post como <strong>Super Administrador</strong>. Esta ação não pode ser desfeita.
-                  O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
+                  Você está deletando este post como{" "}
+                  <strong>Super Administrador</strong>. Esta ação não pode ser
+                  desfeita. O post e todas as suas interações (curtidas,
+                  comentários) serão removidas permanentemente.
                 </>
               ) : (
                 <>
-                  Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.
-                  O post e todas as suas interações (curtidas, comentários) serão removidas permanentemente.
+                  Tem certeza que deseja deletar este post? Esta ação não pode
+                  ser desfeita. O post e todas as suas interações (curtidas,
+                  comentários) serão removidas permanentemente.
                 </>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting} className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700"
+            >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
@@ -173,12 +200,12 @@ export function PostOptionsMenu({
                   Deletando...
                 </>
               ) : (
-                'Deletar'
+                "Deletar"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

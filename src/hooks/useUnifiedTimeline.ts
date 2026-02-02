@@ -57,76 +57,7 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
     queryFn: async ({ pageParam = 0 }) => {
       const page = pageParam as number;
 
-      // Debug: Log do filtro recebido
-      if (filters.location_filter) {
-        console.log(
-          "🔍 [useUnifiedTimeline] Filtro recebido:",
-          JSON.stringify(filters.location_filter, null, 2),
-        );
-
-        // IMPORTANTE: Se o tipo for 'all', garantir que city, state e country sejam undefined
-        if (filters.location_filter.type === "all") {
-          filters.location_filter = {
-            type: "all",
-            city: undefined,
-            state: undefined,
-            country: undefined,
-          };
-          console.log(
-            '✅ [useUnifiedTimeline] Filtro "all" normalizado - removidos city, state e country',
-          );
-        }
-      }
-
-      // Buscar posts de trabalhos
-      // Nota: A ordenação por is_featured é feita no frontend após verificar se premium expirou
-      let postsQuery = supabase
-        .from("feed_posts")
-        .select(
-          `
-          id,
-          professional_id,
-          user_id,
-          title,
-          description,
-          images,
-          service_category_id,
-          location_state,
-          location_city,
-          location_country,
-          likes_count,
-          comments_count,
-          created_at,
-          updated_at,
-          metadata,
-          is_featured,
-          is_premium,
-          premium_points_spent,
-          premium_expires_at,
-          premium_highlight_color,
-          tags,
-          professional:profiles!feed_posts_professional_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type,
-            is_available
-          ),
-          user:profiles!feed_posts_user_id_fkey(
-            id,
-            full_name,
-            avatar_url,
-            user_type,
-            is_available
-          )
-        `,
-        )
-        .eq("is_active", true)
-        .eq("is_public", true)
-        .order("created_at", { ascending: false })
-        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
-
-      // Definir selectFields uma vez para uso em todos os casos de filtro de localização
+      // Definir selectFields uma vez para uso em todos os casos
       const selectFields = `
         id,
         professional_id,
@@ -164,6 +95,56 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           is_available
         )
       `;
+
+      const pinPostId = filters.pinPostId;
+
+      // Se for a primeira página e houver um pinPostId, buscar esse post especificamente
+      let pinnedPost: any = null;
+      if (page === 0 && pinPostId && isValidUUID(pinPostId)) {
+        try {
+          const { data: specificPost, error: specificError } = await supabase
+            .from("feed_posts")
+            .select(selectFields)
+            .eq("id", pinPostId)
+            .single();
+
+          if (!specificError && specificPost) {
+            pinnedPost = specificPost;
+          }
+        } catch (e) {
+          console.error("Error fetching pinned post:", e);
+        }
+      }
+
+      // Debug: Log do filtro recebido
+      if (filters.location_filter) {
+        console.log(
+          "🔍 [useUnifiedTimeline] Filtro recebido:",
+          JSON.stringify(filters.location_filter, null, 2),
+        );
+
+        // IMPORTANTE: Se o tipo for 'all', garantir que city, state e country sejam undefined
+        if (filters.location_filter.type === "all") {
+          filters.location_filter = {
+            type: "all",
+            city: undefined,
+            state: undefined,
+            country: undefined,
+          };
+          console.log(
+            '✅ [useUnifiedTimeline] Filtro "all" normalizado - removidos city, state e country',
+          );
+        }
+      }
+
+      // Buscar posts de trabalhos
+      let postsQuery = supabase
+        .from("feed_posts")
+        .select(selectFields)
+        .eq("is_active", true)
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
 
       // Aplicar filtros de localização
       // IMPORTANTE: Para filtro 'local' com cidade e estado, precisamos fazer queries separadas
@@ -257,6 +238,11 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
         }
       }
 
+      // Evitar duplicata se já carregamos o pinned post
+      if (pinPostId && isValidUUID(pinPostId)) {
+        postsQuery = postsQuery.neq("id", pinPostId);
+      }
+
       // --- EXECUTE QUERY (Override legacy execution) ---
       postsQuery = postsQuery
         .order("is_featured", { ascending: false })
@@ -346,7 +332,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
       const notifications: any[] = [];
 
       // Combinar posts principais com posts relacionados, removendo duplicatas
-      const allPosts = [...(posts || []), ...relatedPosts];
+      let allPosts = [...(posts || []), ...relatedPosts];
+
+      // Se houver um pinned post, garantir que ele esteja no início (apenas na página 0)
+      if (page === 0 && pinnedPost) {
+        allPosts = [pinnedPost, ...allPosts];
+      }
+
       const uniquePosts = allPosts.filter(
         (post, index, self) =>
           index === self.findIndex((p) => p.id === post.id),
@@ -474,6 +466,13 @@ export function useUnifiedTimeline(filters: TimelineFilters = {}) {
           // Priorizar posts destacados (is_featured) que não expiraram
           if (aIsFeatured && !bIsFeatured) return -1;
           if (!aIsFeatured && bIsFeatured) return 1;
+
+          // SE houver um pinPostId, ele deve ficar no topo ABSOLUTO
+          const currentPinPostId = filters.pinPostId;
+          if (currentPinPostId) {
+            if (a.id === currentPinPostId) return -1;
+            if (b.id === currentPinPostId) return 1;
+          }
 
           // Se ambos são destacados ou ambos não são, ordenar por data
           return (

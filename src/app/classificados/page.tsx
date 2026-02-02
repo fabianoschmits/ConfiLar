@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,7 @@ import { useClassifiedSearch } from "@/hooks/useClassifiedSearch";
 import { usePremiumNotifications } from "@/hooks/usePremiumNotifications";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { ShareAdModal } from "@/components/classifieds/ShareAdModal";
 import { services } from "@/data/services";
 import { ClassifiedsListSkeleton } from "@/components/ui/skeleton";
 import { ClassifiedsCard } from "@/components/classifieds/ClassifiedsCard";
@@ -147,6 +149,23 @@ export default function ClassificadosPage() {
     urgency_level: "normal",
     ad_type: "offer" as "offer" | "request",
   });
+
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [adToShare, setAdToShare] = useState<any>(null);
+
+  const searchParams = useSearchParams();
+  const highlightAdId = searchParams.get("ad");
+
+  useEffect(() => {
+    if (highlightAdId && mounted) {
+      setTimeout(() => {
+        const el = document.getElementById(`ad-${highlightAdId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 800);
+    }
+  }, [highlightAdId, mounted]);
 
   const { estados, cidades, loading: loadingIBGE, loadCidades } = useIBGE();
   const { openChat } = useFloatingChat();
@@ -1714,17 +1733,23 @@ export default function ClassificadosPage() {
                 className={`grid gap-5 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}
               >
                 {paginatedAds.map((ad, index) => (
-                  <ClassifiedsCard
-                    key={ad.id}
-                    ad={ad}
-                    onEdit={handleEditAd}
-                    onDelete={handleDeleteClick}
-                    onRenewPremium={(adId) => {
-                      setRenewingAdId(adId);
-                      setShowRenewPremiumDialog(true);
-                    }}
-                    isDeleting={isDeleting && deletingAdId === ad.id}
-                  />
+                  <div key={ad.id} id={`ad-${ad.id}`}>
+                    <ClassifiedsCard
+                      ad={ad}
+                      onEdit={handleEditAd}
+                      onDelete={handleDeleteClick}
+                      onRenewPremium={(adId) => {
+                        setRenewingAdId(adId);
+                        setShowRenewPremiumDialog(true);
+                      }}
+                      isDeleting={isDeleting && deletingAdId === ad.id}
+                      isHighlighted={ad.id === highlightAdId}
+                      onShare={(ad) => {
+                        setAdToShare(ad);
+                        setShareModalOpen(true);
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -1861,6 +1886,18 @@ export default function ClassificadosPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Modal de Compartilhamento */}
+      {adToShare && (
+        <ShareAdModal
+          isOpen={shareModalOpen}
+          onClose={() => {
+            setShareModalOpen(false);
+            setAdToShare(null);
+          }}
+          adId={adToShare.id}
+          adTitle={adToShare.title}
+        />
+      )}
     </ClientOnly>
   );
 }

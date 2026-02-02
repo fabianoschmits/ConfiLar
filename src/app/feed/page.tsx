@@ -126,6 +126,7 @@ export default function FeedPage() {
   } = useUnifiedTimeline({
     search: searchQuery,
     location_filter: locationFilter,
+    pinPostId: highlightPostId || undefined,
   });
 
   const [editingPost, setEditingPost] = useState<any>(null);
@@ -165,11 +166,9 @@ export default function FeedPage() {
     if (highlightPostId && mounted) {
       setTimeout(() => {
         const el = document.getElementById(`post-${highlightPostId}`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
-        el?.classList.add("animate-pulse", "ring-4", "ring-blue-500");
-        setTimeout(() => {
-          el?.classList.remove("animate-pulse", "ring-4", "ring-blue-500");
-        }, 2000);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }, 800);
     }
   }, [highlightPostId, mounted]);
@@ -562,6 +561,7 @@ export default function FeedPage() {
                         }}
                         isTrending={trendingPosts.some((t) => t.id === item.id)}
                         isDeleting={deletingPostId === item.id}
+                        isHighlighted={item.id === highlightPostId}
                       />
                     </div>
                   ),
@@ -826,6 +826,7 @@ function InstagramPost({
   onRenewPremium,
   isTrending,
   isDeleting = false,
+  isHighlighted = false,
 }: any) {
   const t = useTranslations("feed");
   const { profile, user } = useAuthContext();
@@ -1044,12 +1045,17 @@ function InstagramPost({
   return (
     <article
       id={`post-${post.id}`}
-      className={`bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 ${
-        isActivePremium
-          ? "ring-2 ring-warning-400 dark:ring-warning-500 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent"
-          : ""
+      className={`relative bg-white dark:bg-black border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 scroll-mt-24 ${
+        isHighlighted
+          ? "border-blue-400 dark:border-blue-700 z-10"
+          : isActivePremium
+            ? "ring-2 ring-warning-400 dark:ring-warning-500 border-warning-200 dark:border-warning-800 bg-gradient-to-r from-warning-50/30 to-transparent dark:from-warning-900/10 dark:to-transparent"
+            : "border-gray-200 dark:border-gray-800"
       }`}
     >
+      {isHighlighted && (
+        <div className="absolute inset-0 rounded-xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_20px_rgba(59,130,246,0.5)]" />
+      )}
       {/* HEADER */}
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">

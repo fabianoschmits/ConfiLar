@@ -17,6 +17,7 @@ import { Flag, AlertTriangle, MessageCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 interface ConversationReportModalProps {
   conversationId: string;
@@ -93,12 +94,16 @@ export function ConversationReportModal({
     setIsSubmitting(true);
 
     try {
+      // Determinar quem é o usuário denunciado (o outro participante da conversa)
+      const reportedUserId = user.id === clientId ? professionalId : clientId;
+
       const reportData = {
-        type: "other", // Campo correto no banco de dados - Usando 'other' pois não há tipo 'conversation' na tabela
+        type: "other", // Campo correto no banco de dados
         reason: "Denúncia de conversa completa",
         description: formData.description.trim(),
         priority: formData.priority,
         reporter_id: user.id,
+        reported_user_id: reportedUserId,
         status: "pending",
       };
 
@@ -159,16 +164,22 @@ export function ConversationReportModal({
       <Button
         variant={variant}
         size={size}
-        className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
-        onClick={() => setIsOpen(true)}
+        className={cn(
+          "flex items-center gap-2 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors",
+          className,
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(true);
+        }}
       >
-        <Flag className="h-3 w-3" />
-        <span className="text-xs">Denunciar Conversa</span>
+        <Flag className="h-4 w-4" />
+        <span className="text-sm">Denunciar Conversa</span>
       </Button>
       <ResponsiveModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="w-[95vw] max-w-lg max-h-[90vh] overflow-y-auto"
+        className="w-[95vw] max-w-lg p-0 overflow-hidden"
         title={
           <div className="flex items-center gap-2">
             <Flag className="h-5 w-5 text-red-500" />

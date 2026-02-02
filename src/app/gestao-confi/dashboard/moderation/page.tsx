@@ -91,7 +91,7 @@ interface Ban {
 interface ReportStats {
   total: number;
   pending: number;
-  under_review: number;
+  reviewing: number;
   resolved: number;
   dismissed: number;
 }
@@ -177,14 +177,119 @@ export default function ModerationPage() {
 
       if (reportsError) throw reportsError;
 
-      // 2. Extract user IDs
+      // 2. Extract user IDs and content IDs for enrichment
       const userIds = new Set<string>();
+      const postIds = new Set<string>();
+      const classifiedIds = new Set<string>();
+      const reviewIds = new Set<string>();
+      const messageIds = new Set<string>();
+
       reportsData?.forEach((r) => {
         if (r.reporter_id) userIds.add(r.reporter_id);
         if (r.reported_user_id) userIds.add(r.reported_user_id);
+        if (r.reported_post_id) postIds.add(r.reported_post_id);
+        if (r.reported_classified_id)
+          classifiedIds.add(r.reported_classified_id);
+        if (r.reported_message_id) {
+          if (r.type === "message") messageIds.add(r.reported_message_id);
+          else reviewIds.add(r.reported_message_id);
+        }
+        if (r.reported_comment_id) postIds.add(r.reported_comment_id);
       });
 
-      // 3. Fetch profiles
+      // 3. Fetch Authors for Content Reports
+      const contentAuthorsMap: Record<string, string> = {};
+
+      // Fetch Post Authors and Content
+      if (postIds.size > 0) {
+        const { data: posts } = await adminSupabase
+          .from("feed_posts")
+          .select("id, user_id, professional_id, content, images, title")
+          .in("id", Array.from(postIds));
+        posts?.forEach((p) => {
+          const authorId = p.user_id || p.professional_id;
+          if (authorId) {
+            contentAuthorsMap[`post_${p.id}`] = authorId;
+            userIds.add(authorId);
+          }
+          contentAuthorsMap[`post_content_${p.id}`] = JSON.stringify({
+            text: p.content || p.title,
+            media:
+              Array.isArray(p.images) && p.images.length > 0
+                ? p.images[0]
+                : null,
+            type: "post",
+          });
+        });
+      }
+
+      // Fetch Classified Ads
+      if (classifiedIds.size > 0) {
+        const { data: ads } = await adminSupabase
+          .from("classified_ads")
+          .select("id, user_id, title, description, user_name, images")
+          .in("id", Array.from(classifiedIds));
+        ads?.forEach((ad) => {
+          if (ad.user_id) {
+            contentAuthorsMap[`class_${ad.id}`] = ad.user_id;
+            userIds.add(ad.user_id);
+          }
+          contentAuthorsMap[`class_content_${ad.id}`] = JSON.stringify({
+            text: `${ad.title}: ${ad.description}`,
+            media: (ad as any).images
+              ? Array.isArray((ad as any).images)
+                ? (ad as any).images[0]
+                : (ad as any).images
+              : null,
+            type: "ad",
+          });
+        });
+      }
+
+      // Fetch Reviews
+      if (reviewIds.size > 0) {
+        const { data: reviews } = await adminSupabase
+          .from("reviews")
+          .select("id, reviewer_id, comment")
+          .in("id", Array.from(reviewIds));
+        reviews?.forEach((rev) => {
+          if (rev.reviewer_id) {
+            contentAuthorsMap[`rev_${rev.id}`] = rev.reviewer_id;
+            userIds.add(rev.reviewer_id);
+          }
+          contentAuthorsMap[`rev_content_${rev.id}`] = JSON.stringify({
+            text: rev.comment,
+            type: "review",
+          });
+        });
+      }
+
+      // Fetch Chat Messages
+      if (messageIds.size > 0) {
+        const { data: messages } = await adminSupabase
+          .from("messages")
+          .select("id, sender_id, content")
+          .in("id", Array.from(messageIds));
+        messages?.forEach((m) => {
+          if (m.sender_id) {
+            contentAuthorsMap[`mess_${m.id}`] = m.sender_id;
+            userIds.add(m.sender_id);
+          }
+          contentAuthorsMap[`mess_content_${m.id}`] = JSON.stringify({
+            text: m.content,
+            type: "message",
+          });
+        });
+      }
+
+      // Adicionar autores de conteúdo ao userIds APENAS se forem válidos
+      Object.entries(contentAuthorsMap).forEach(([key, value]) => {
+        if (!key.includes("_content_") && value) {
+          userIds.add(value);
+        }
+      });
+
+      // 4. Fetch profiles
       let profilesMap: Record<string, any> = {};
       if (userIds.size > 0) {
         const { data: profilesData } = await adminSupabase
@@ -199,20 +304,86 @@ export default function ModerationPage() {
         }
       }
 
-      // 4. Merge data
-      const enrichedReports = reportsData?.map((r) => ({
-        ...r,
-        reporter: profilesMap[r.reporter_id]
-          ? { id: r.reporter_id, ...profilesMap[r.reporter_id] }
-          : {
-              id: r.reporter_id,
-              full_name: "Desconhecido",
-              email: "-",
-            },
-        reported_user: r.reported_user_id
-          ? { id: r.reported_user_id, ...profilesMap[r.reported_user_id] }
-          : null,
-      }));
+      // 5. Merge data
+      const enrichedReports = reportsData?.map((r) => {
+        // Find reported user ID (direct or via content author)
+        let reportedUid = r.reported_user_id;
+        if (!reportedUid) {
+          if (r.reported_post_id)
+            reportedUid = contentAuthorsMap[`post_${r.reported_post_id}`];
+          else if (r.reported_classified_id)
+            reportedUid =
+              contentAuthorsMap[`class_${r.reported_classified_id}`];
+          else if (r.reported_message_id) {
+            if (r.type === "message")
+              reportedUid = contentAuthorsMap[`mess_${r.reported_message_id}`];
+            else
+              reportedUid = contentAuthorsMap[`rev_${r.reported_message_id}`];
+          } else if (r.reported_comment_id)
+            reportedUid = contentAuthorsMap[`post_${r.reported_comment_id}`];
+        }
+
+        // Content Preview Data
+        let reportedContent = null;
+        if (
+          r.reported_post_id &&
+          contentAuthorsMap[`post_content_${r.reported_post_id}`]
+        ) {
+          reportedContent = JSON.parse(
+            contentAuthorsMap[`post_content_${r.reported_post_id}`],
+          );
+          reportedContent.link = `/feed?post=${r.reported_post_id}`;
+        } else if (
+          r.reported_classified_id &&
+          contentAuthorsMap[`class_content_${r.reported_classified_id}`]
+        ) {
+          reportedContent = JSON.parse(
+            contentAuthorsMap[`class_content_${r.reported_classified_id}`],
+          );
+          reportedContent.link = `/classificados?ad=${r.reported_classified_id}`;
+        } else if (r.reported_message_id) {
+          const key =
+            r.type === "message"
+              ? `mess_content_${r.reported_message_id}`
+              : `rev_content_${r.reported_message_id}`;
+          if (contentAuthorsMap[key]) {
+            reportedContent = JSON.parse(contentAuthorsMap[key]);
+            reportedContent.link = null;
+          }
+        } else if (
+          r.reported_comment_id &&
+          contentAuthorsMap[`post_content_${r.reported_comment_id}`]
+        ) {
+          reportedContent = JSON.parse(
+            contentAuthorsMap[`post_content_${r.reported_comment_id}`],
+          );
+          reportedContent.link = `/feed?post=${r.reported_comment_id}`;
+          reportedContent.type = "review"; // Comentário é tipo uma review/avaliação do post
+        }
+
+        return {
+          ...r,
+          reporter: profilesMap[r.reporter_id]
+            ? { id: r.reporter_id, ...profilesMap[r.reporter_id] }
+            : {
+                id: r.reporter_id,
+                full_name: "Desconhecido",
+                email: "-",
+              },
+          reported_user:
+            reportedUid && profilesMap[reportedUid]
+              ? { id: reportedUid, ...profilesMap[reportedUid] }
+              : r.reported_user_id // Se não achamos no profilesMap, pelo menos tentar passar o ID se existir
+                ? {
+                    id: r.reported_user_id,
+                    full_name: "Usuário não encontrado",
+                  }
+                : reportedUid
+                  ? { id: reportedUid, full_name: "Autor não encontrado" }
+                  : null,
+          reported_content: reportedContent,
+        };
+      });
 
       setReports(enrichedReports || []);
     } catch (e: any) {
@@ -282,7 +453,7 @@ export default function ModerationPage() {
       setReportStats({
         total: data.length,
         pending: data.filter((r) => r.status === "pending").length,
-        under_review: data.filter((r) => r.status === "under_review").length,
+        reviewing: data.filter((r) => r.status === "reviewing").length,
         resolved: data.filter((r) => r.status === "resolved").length,
         dismissed: data.filter((r) => r.status === "dismissed").length,
       });
@@ -325,11 +496,29 @@ export default function ModerationPage() {
   };
 
   const handleUnderReview = (id: string) =>
-    handleUpdateReportStatus(id, "under_review");
+    handleUpdateReportStatus(id, "reviewing");
   const handleRevertToPending = (id: string) =>
     handleUpdateReportStatus(id, "pending");
   const handleArchiveReport = (id: string) =>
     handleUpdateReportStatus(id, "dismissed");
+
+  const handleDeleteReport = async (id: string) => {
+    if (!adminSupabase) return;
+    try {
+      const { error } = await adminSupabase
+        .from("reports")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Denúncia deletada permanentemente!");
+      setIsDetailsOpen(false);
+      fetchReports();
+      fetchStats();
+    } catch (e: any) {
+      toast.error("Erro ao deletar denúncia: " + e.message);
+    }
+  };
 
   const handleGlobalUserSearch = async (query: string) => {
     setUserSearchQuery(query);
@@ -382,7 +571,7 @@ export default function ModerationPage() {
     try {
       const { error } = await adminSupabase
         .from("user_bans")
-        .update({ is_active: false })
+        .update({ is_active: false, revoked_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
@@ -390,6 +579,29 @@ export default function ModerationPage() {
       fetchBans();
     } catch (e) {
       toast.error("Erro ao revogar banimento");
+    }
+  };
+
+  const handleDeleteBan = async (id: string) => {
+    if (!adminSupabase) return;
+    if (
+      !confirm(
+        "Tem certeza que deseja DELETAR permanentemente este registro de banimento? Esta ação não pode ser desfeita.",
+      )
+    )
+      return;
+    try {
+      const { error } = await adminSupabase
+        .from("user_bans")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Registro de banimento deletado!");
+      handleCloseBanDetails();
+      fetchBans();
+    } catch (e: any) {
+      toast.error("Erro ao deletar banimento: " + e.message);
     }
   };
 
@@ -483,7 +695,7 @@ export default function ModerationPage() {
   const getStatusBadge = (status: string) => {
     const labels: any = {
       pending: "Pendente",
-      under_review: "Em Análise",
+      reviewing: "Em Análise",
       resolved: "Resolvida",
       dismissed: "Arquivada",
     };
@@ -491,7 +703,7 @@ export default function ModerationPage() {
     let className = "bg-gray-100 text-gray-800";
     if (status === "pending")
       className = "bg-yellow-100 text-yellow-800 border-yellow-200";
-    if (status === "under_review")
+    if (status === "reviewing")
       className = "bg-blue-100 text-blue-800 border-blue-200";
     if (status === "resolved")
       className = "bg-green-100 text-green-800 border-green-200";
@@ -602,6 +814,23 @@ export default function ModerationPage() {
                 </DropdownMenuItem>
               </>
             )}
+            {(r.status === "resolved" || r.status === "dismissed") && (
+              <DropdownMenuItem
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Tem certeza que deseja deletar permanentemente esta denúncia?",
+                    )
+                  ) {
+                    handleDeleteReport(r.id);
+                  }
+                }}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Deletar Permanentemente
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -682,6 +911,18 @@ export default function ModerationPage() {
             >
               Copiar ID
             </DropdownMenuItem>
+            {!b.is_active && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => handleDeleteBan(b.id)}
+                  className="text-red-700 font-medium"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Deletar Permanentemente
+                </DropdownMenuItem>
+              </>
+            )}
             {b.is_active && (
               <>
                 <DropdownMenuSeparator />
@@ -735,7 +976,7 @@ export default function ModerationPage() {
             Analisar
           </Button>
         )}
-        {(r.status === "pending" || r.status === "under_review") && (
+        {(r.status === "pending" || r.status === "reviewing") && (
           <>
             <Button
               variant="outline"
@@ -832,15 +1073,14 @@ export default function ModerationPage() {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="reports">
             Denúncias
-            {reportStats &&
-              reportStats.pending + reportStats.under_review > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="ml-2 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]"
-                >
-                  {reportStats.pending + reportStats.under_review}
-                </Badge>
-              )}
+            {reportStats && reportStats.pending + reportStats.reviewing > 0 && (
+              <Badge
+                variant="destructive"
+                className="ml-2 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]"
+              >
+                {reportStats.pending + reportStats.reviewing}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="bans">Banimentos</TabsTrigger>
         </TabsList>
@@ -896,11 +1136,11 @@ export default function ModerationPage() {
                           </span>
                         )}
                       </TabsTrigger>
-                      <TabsTrigger value="under_review" className="text-xs h-7">
+                      <TabsTrigger value="reviewing" className="text-xs h-7">
                         Em Análise
-                        {reportStats && reportStats.under_review > 0 && (
+                        {reportStats && reportStats.reviewing > 0 && (
                           <span className="ml-1 opacity-60">
-                            ({reportStats.under_review})
+                            ({reportStats.reviewing})
                           </span>
                         )}
                       </TabsTrigger>
@@ -915,8 +1155,8 @@ export default function ModerationPage() {
                   data={reports.filter((r) => {
                     if (reportSubTab === "pending")
                       return r.status === "pending";
-                    if (reportSubTab === "under_review")
-                      return r.status === "under_review";
+                    if (reportSubTab === "reviewing")
+                      return r.status === "reviewing";
                     if (reportSubTab === "archived")
                       return (
                         r.status === "resolved" || r.status === "dismissed"
@@ -1024,7 +1264,7 @@ export default function ModerationPage() {
         }}
         onUnderReview={(id) => {
           handleUnderReview(id);
-          setReportSubTab("under_review");
+          setReportSubTab("reviewing");
           setIsDetailsOpen(false);
         }}
         onRevert={(id) => {
@@ -1036,6 +1276,7 @@ export default function ModerationPage() {
           // Future implementation: Open Ban Modal pre-filled
           toast.info("Funcionalidade de banimento direto em breve.");
         }}
+        onDelete={handleDeleteReport}
         onSendFeedback={handleSendFeedback}
       />
       <BanUserModal
@@ -1302,6 +1543,17 @@ export default function ModerationPage() {
                   >
                     <UserX className="h-4 w-4 mr-2" />
                     Desbanir Usuário
+                  </Button>
+                )}
+
+                {!selectedBanDetail.is_active && (
+                  <Button
+                    variant="destructive"
+                    className="col-span-2 bg-red-700 hover:bg-red-800"
+                    onClick={() => handleDeleteBan(selectedBanDetail.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Deletar Registro Permanentemente
                   </Button>
                 )}
 

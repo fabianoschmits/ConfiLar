@@ -44,6 +44,8 @@ interface ClassifiedsCardProps {
   onDelete?: (adId: string) => void;
   onRenewPremium?: (adId: string) => void;
   isDeleting?: boolean;
+  isHighlighted?: boolean;
+  onShare?: (ad: any) => void;
 }
 
 export function ClassifiedsCard({
@@ -52,6 +54,8 @@ export function ClassifiedsCard({
   onDelete,
   onRenewPremium,
   isDeleting = false,
+  isHighlighted = false,
+  onShare,
 }: ClassifiedsCardProps) {
   const { user } = useAuthContext();
   const { openChat } = useFloatingChat();
@@ -134,12 +138,18 @@ export function ClassifiedsCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col h-full overflow-hidden rounded-3xl bg-white dark:bg-black border transition-all duration-300 hover:shadow-lg",
-        isActivePremium
-          ? "border-warning-200 dark:border-warning-800 ring-1 ring-warning-100 dark:ring-warning-900 shadow-sm"
-          : "border-gray-200 dark:border-gray-800",
+        "group relative flex flex-col h-full overflow-hidden rounded-3xl bg-white dark:bg-black border transition-all duration-500",
+        isHighlighted
+          ? "border-blue-400 dark:border-blue-700 z-10 shadow-sm"
+          : isActivePremium
+            ? "border-warning-200 dark:border-warning-800 ring-1 ring-warning-100 dark:ring-warning-900 shadow-sm"
+            : "border-gray-200 dark:border-gray-800",
+        "hover:shadow-lg",
       )}
     >
+      {isHighlighted && (
+        <div className="absolute inset-0 rounded-3xl ring-4 ring-blue-500 dark:ring-blue-600 animate-pulse pointer-events-none z-10 shadow-[0_0_25px_rgba(59,130,246,0.6)]" />
+      )}
       {/* 1. Header: Tags + Location */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <div className="flex items-center gap-2 flex-wrap">
@@ -194,7 +204,7 @@ export function ClassifiedsCard({
 
         {/* Options Menu */}
         {/* Options Menu */}
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -233,16 +243,27 @@ export function ClassifiedsCard({
             )}
 
             {!isOwner && (
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  // Allow default behavior (close menu)
+                }}
+                asChild
+              >
                 <ReportButton
                   type="classified"
                   targetId={ad.id}
                   targetName={ad.title}
+                  reportedUserId={ad.user_id}
                   asDropdownItem={true}
-                  className="w-full justify-start pl-0 text-red-600 hover:text-red-700"
+                  className="w-full justify-start pl-2 text-red-600 hover:text-red-700 border-0"
                 />
               </DropdownMenuItem>
             )}
+
+            <DropdownMenuItem onClick={() => onShare && onShare(ad)}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Compartilhar
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
 import {
   Flag,
   AlertTriangle,
@@ -32,6 +33,7 @@ interface ReportButtonProps {
   type: "user" | "post" | "message" | "review" | "classified";
   targetId: string;
   targetName?: string;
+  reportedUserId?: string;
   className?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "sm" | "default" | "lg";
@@ -84,6 +86,7 @@ export function ReportButton({
   type,
   targetId,
   targetName,
+  reportedUserId,
   className,
   variant = "ghost",
   size = "sm",
@@ -141,15 +144,17 @@ export function ReportButton({
 
     try {
       const reportData = {
-        type: type, // Campo correto no banco de dados
+        type: type,
         reason: "Denúncia de conteúdo",
         description: formData.description.trim(),
         priority: formData.priority,
         reporter_id: user.id,
-        ...(type === "user" && { reported_user_id: targetId }),
+        // Usar reportedUserId se fornecido, senão usar targetId para tipo 'user'
+        reported_user_id: reportedUserId || (type === "user" ? targetId : null),
+        // IDs específicos de conteúdo
         ...(type === "post" && { reported_post_id: targetId }),
         ...(type === "message" && { reported_message_id: targetId }),
-        ...(type === "review" && { reported_user_id: targetId }), // Para reviews, usar reported_user_id
+        ...(type === "review" && { reported_message_id: targetId }),
         ...(type === "classified" && { reported_classified_id: targetId }),
       };
 
@@ -248,17 +253,23 @@ export function ReportButton({
     return (
       <>
         <button
-          onClick={handleButtonClick}
-          className={`flex items-center gap-1 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-1.5 ${className}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleButtonClick();
+          }}
+          className={cn(
+            "flex items-center gap-2 text-gray-700 hover:text-red-600 hover:bg-red-50 w-full justify-start text-sm rounded-md px-2 py-2 transition-colors",
+            className,
+          )}
         >
-          <Flag className="h-3 w-3" />
+          <Flag className="h-4 w-4" />
           <span>Denunciar</span>
         </button>
 
         <ResponsiveModal
           isOpen={isOpen}
           onOpenChange={setIsOpen}
-          className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto"
+          className="w-[95vw] max-w-lg p-0 overflow-hidden"
           title={
             <div className="flex items-center gap-2">
               <Flag className="h-5 w-5 text-red-500" />
@@ -362,17 +373,23 @@ export function ReportButton({
       <Button
         variant={variant}
         size={size}
-        className={`flex items-center gap-1 text-gray-500 hover:text-red-600 hover:bg-red-50 ${className}`}
-        onClick={handleButtonClick}
+        className={cn(
+          "flex items-center gap-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors",
+          className,
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleButtonClick();
+        }}
       >
-        <MoreVertical className="h-3 w-3" />
+        <Flag className="h-3.5 w-3.5" />
         <span className="text-xs">Denunciar</span>
       </Button>
 
       <ResponsiveModal
         isOpen={isOpen}
         onOpenChange={setIsOpen}
-        className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto"
+        className="w-[95vw] max-w-lg p-0 overflow-hidden"
         title={
           <div className="flex items-center gap-2">
             <Flag className="h-5 w-5 text-red-500" />

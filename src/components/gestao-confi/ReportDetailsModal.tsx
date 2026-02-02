@@ -24,6 +24,7 @@ import {
   Clock,
   RefreshCcw,
   Archive,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -43,6 +44,20 @@ export interface Report {
   priority: string;
   type: string;
   created_at: string;
+  reporter_id?: string;
+  reported_user_id?: string;
+  reported_post_id?: string;
+  reported_classified_id?: string;
+  reported_message_id?: string;
+  reported_comment_id?: string;
+  reported_content?: {
+    text?: string;
+    media?: string;
+    link?: string;
+    type?: "post" | "ad" | "review" | "message";
+  };
+  admin_notes?: string;
+  resolution?: string;
   reporter?: Profile;
   reported_user?: Profile;
 }
@@ -56,6 +71,7 @@ interface ReportDetailsModalProps {
   onUnderReview: (id: string) => void;
   onRevert: (id: string) => void;
   onBan?: (userId: string) => void;
+  onDelete?: (id: string) => void;
   onSendFeedback: (userId: string, message: string) => Promise<void>;
 }
 
@@ -68,6 +84,7 @@ export function ReportDetailsModal({
   onUnderReview,
   onRevert,
   onBan,
+  onDelete,
   onSendFeedback,
 }: ReportDetailsModalProps) {
   const [feedbackMessage, setFeedbackMessage] = useState("");
@@ -192,6 +209,79 @@ export function ReportDetailsModal({
           </div>
         </div>
 
+        {/* --- PRÉVIA DO CONTEÚDO --- */}
+        {(report.reported_content ||
+          report.reported_post_id ||
+          report.reported_classified_id ||
+          report.reported_message_id) && (
+          <div className="space-y-3 mt-4">
+            <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+              {report.reported_content ? (
+                <Eye className="h-4 w-4" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              {report.reported_content
+                ? "Conteúdo Denunciado"
+                : "Conteúdo Indisponível"}
+            </h4>
+
+            {report.reported_content ? (
+              <div className="flex gap-4 p-4 border rounded-xl bg-slate-50 dark:bg-slate-900/10 border-slate-100 dark:border-slate-800">
+                {report.reported_content.media && (
+                  <div className="relative h-20 w-20 shrink-0 rounded-lg overflow-hidden border bg-white">
+                    <img
+                      src={report.reported_content.media}
+                      alt="Miniatura"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase text-primary/70 mb-1 tracking-wider">
+                      {report.reported_content.type === "post"
+                        ? "Postagem no Feed"
+                        : report.reported_content.type === "ad"
+                          ? "Anúncio de Classificado"
+                          : report.reported_content.type === "message"
+                            ? "Mensagem no Chat"
+                            : "Avaliação / Comentário"}
+                    </p>
+                    <p className="text-sm line-clamp-2 italic text-gray-700 dark:text-gray-300">
+                      "
+                      {report.reported_content.text || "Sem descrição textual."}
+                      "
+                    </p>
+                  </div>
+                  {report.reported_content.link && (
+                    <div className="mt-2 text-right">
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 text-blue-600 font-bold text-xs hover:text-blue-700"
+                        onClick={() =>
+                          window.open(report.reported_content!.link, "_blank")
+                        }
+                      >
+                        <ExternalLink className="mr-1 h-3 w-3" /> Ver Conteúdo
+                        Original
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 border border-dashed rounded-xl bg-gray-50/50 dark:bg-gray-900/10">
+                <p className="text-xs text-muted-foreground italic">
+                  O conteúdo original não pôde ser encontrado. Pode ter sido
+                  removido ou o ID está inválido.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <Separator className="my-4" />
 
         {/* Feedback Section */}
@@ -228,48 +318,47 @@ export function ReportDetailsModal({
           </div>
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 border-t pt-4 mt-4">
-          <div className="flex flex-wrap gap-2 w-full">
+        <DialogFooter className="border-t pt-4 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
             {/* Primary Workflow Actions */}
             {report.status === "pending" && (
               <Button
                 variant="outline"
-                className="flex-1"
                 onClick={() => onUnderReview(report.id)}
+                className="w-full text-xs sm:text-sm px-2"
               >
-                <Clock className="mr-2 h-4 w-4" /> Iniciar Análise
+                <Clock className="mr-1.5 h-4 w-4 shrink-0" /> Iniciar Análise
               </Button>
             )}
 
-            {(report.status === "pending" ||
-              report.status === "under_review") && (
+            {(report.status === "pending" || report.status === "reviewing") && (
               <>
                 <Button
                   variant="outline"
                   onClick={() => onDismiss(report.id)}
-                  className="flex-1"
+                  className="w-full text-xs sm:text-sm px-2"
                 >
-                  <Archive className="mr-2 h-4 w-4" /> Ignorar/Arquivar
+                  <Archive className="mr-1.5 h-4 w-4 shrink-0" /> Arquivar
                 </Button>
                 <Button
                   onClick={() => onResolve(report.id)}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="w-full bg-green-600 hover:bg-green-700 text-xs sm:text-sm px-2"
                 >
-                  <CheckCircle className="mr-2 h-4 w-4" /> Resolver
+                  <CheckCircle className="mr-1.5 h-4 w-4 shrink-0" /> Resolver
                 </Button>
               </>
             )}
 
             {/* Revert Action */}
-            {(report.status === "under_review" ||
+            {(report.status === "reviewing" ||
               report.status === "resolved" ||
               report.status === "dismissed") && (
               <Button
                 variant="outline"
-                className="flex-1"
                 onClick={() => onRevert(report.id)}
+                className="w-full text-xs sm:text-sm px-2"
               >
-                <RefreshCcw className="mr-2 h-4 w-4" /> Reverter
+                <RefreshCcw className="mr-1.5 h-4 w-4 shrink-0" /> Reverter
               </Button>
             )}
 
@@ -277,12 +366,32 @@ export function ReportDetailsModal({
             {report.reported_user?.id && onBan && (
               <Button
                 variant="destructive"
-                className="flex-1"
                 onClick={() => onBan(report.reported_user!.id)}
+                className="w-full text-xs sm:text-sm px-2"
               >
-                <Trash2 className="mr-2 h-4 w-4" /> Banir
+                <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Banir
               </Button>
             )}
+
+            {/* Delete Action - Only for archived/resolved reports */}
+            {(report.status === "resolved" || report.status === "dismissed") &&
+              onDelete && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "Tem certeza que deseja DELETAR permanentemente esta denúncia? Esta ação não pode ser desfeita.",
+                      )
+                    ) {
+                      onDelete(report.id);
+                    }
+                  }}
+                  className="w-full text-xs sm:text-sm px-2 bg-red-700 hover:bg-red-800"
+                >
+                  <Trash2 className="mr-1.5 h-4 w-4 shrink-0" /> Deletar
+                </Button>
+              )}
           </div>
         </DialogFooter>
       </DialogContent>
