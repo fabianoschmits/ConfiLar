@@ -30,6 +30,7 @@ import {
 import { useAuthContext } from "@/contexts/AuthContext";
 import { ReportButton } from "@/components/ReportButton";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
 interface PostOptionsMenuProps {
   postId: string;
@@ -57,6 +58,10 @@ export function PostOptionsMenu({
   const { user } = useAuthContext();
   const { isSuperAdmin } = useIsSuperAdmin();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Fecha o menu ao rolar a página (UX Mobile)
+  useCloseOnScroll(isOpen, setIsOpen);
 
   // Se não há usuário logado, não mostrar menu
   if (!user) {
@@ -73,7 +78,7 @@ export function PostOptionsMenu({
 
   return (
     <>
-      <DropdownMenu modal={false}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"

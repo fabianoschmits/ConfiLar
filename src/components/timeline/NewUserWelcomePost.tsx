@@ -20,6 +20,7 @@ import { DynamicAvailabilityBadge } from "@/components/ui/DynamicAvailabilityBad
 import { useFloatingChat } from "@/contexts/FloatingChatContextSimple";
 import { usePostViews, usePostViewTracker } from "@/hooks/usePostViews";
 import { useCommentsCount } from "@/hooks/useCommentsCount";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +74,9 @@ export function NewUserWelcomePost({
   const { user } = useAuthContext();
   const { openChat } = useFloatingChat();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useCloseOnScroll(isOpen, setIsOpen);
 
   // Hook para gerenciar visualizações
   const { viewsCount } = usePostViews(post.id);
@@ -214,7 +218,11 @@ export function NewUserWelcomePost({
 
             {/* Menu de opções */}
             <div className="flex-shrink-0">
-              <DropdownMenu>
+              <DropdownMenu
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                modal={false}
+              >
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"

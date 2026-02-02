@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
-import { useAuthContext } from '@/contexts/AuthContext'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
 interface CommentOptionsMenuProps {
-  commentId: string
-  commentUserId: string
-  onEdit: () => void
-  onDelete: () => void
-  isDeleting?: boolean
+  commentId: string;
+  commentUserId: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  isDeleting?: boolean;
 }
 
-export function CommentOptionsMenu({ 
-  commentId, 
-  commentUserId, 
-  onEdit, 
-  onDelete, 
-  isDeleting = false 
+export function CommentOptionsMenu({
+  commentId,
+  commentUserId,
+  onEdit,
+  onDelete,
+  isDeleting = false,
 }: CommentOptionsMenuProps) {
-  const { user } = useAuthContext()
-  const [isOpen, setIsOpen] = useState(false)
+  const { user } = useAuthContext();
+  const [isOpen, setIsOpen] = useState(false);
+
+  useCloseOnScroll(isOpen, setIsOpen);
 
   // Só mostrar o menu se for o autor do comentário
   if (!user || user.id !== commentUserId) {
-    return null
+    return null;
   }
 
   return (
@@ -45,20 +48,20 @@ export function CommentOptionsMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => {
-            onEdit()
-            setIsOpen(false)
+            onEdit();
+            setIsOpen(false);
           }}
           className="cursor-pointer"
         >
           <Edit className="h-4 w-4 mr-2" />
           Editar
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => {
-            onDelete()
-            setIsOpen(false)
+            onDelete();
+            setIsOpen(false);
           }}
           className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50"
         >
@@ -67,5 +70,5 @@ export function CommentOptionsMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

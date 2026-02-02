@@ -32,6 +32,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 import { PostMedia } from "@/components/timeline/PostMedia";
 import { MentionText } from "@/components/ui/MentionText";
 import { ReportButton } from "@/components/ReportButton";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -64,6 +65,9 @@ export function ClassifiedsCard({
   const [userInfoExpanded, setUserInfoExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useCloseOnScroll(isOpen, setIsOpen);
 
   const nextImage = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -204,7 +208,7 @@ export function ClassifiedsCard({
 
         {/* Options Menu */}
         {/* Options Menu */}
-        <DropdownMenu modal={false}>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"

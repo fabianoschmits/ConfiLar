@@ -30,6 +30,7 @@ import {
 import { ReportButton } from "@/components/ReportButton";
 import { ConversationReportModal } from "./ConversationReportModal";
 import { toast } from "sonner";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
 interface ConversationMenuProps {
   conversationId: string;
@@ -52,6 +53,9 @@ export function ConversationMenu({
 }: ConversationMenuProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useCloseOnScroll(isOpen, setIsOpen);
 
   const handleDelete = async () => {
     try {
@@ -92,7 +96,7 @@ export function ConversationMenu({
 
   return (
     <>
-      <DropdownMenu modal={false}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
         <DropdownMenuTrigger asChild>
           <div
             className="p-1 cursor-pointer text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"

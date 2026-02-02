@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ReportButton } from "@/components/ReportButton";
+import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
 interface ReviewCardProps {
   review: ReviewWithProfiles;
@@ -54,6 +55,9 @@ export function ReviewCard({
   const [responseText, setResponseText] = useState("");
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [isEditingResponse, setIsEditingResponse] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useCloseOnScroll(isOpen, setIsOpen);
 
   const isOwner = currentUserId === review.reviewer.id;
   const isReviewed = currentUserId === review.reviewed.id;
@@ -228,7 +232,11 @@ export function ReviewCard({
             </div>
 
             {showActions && (
-              <DropdownMenu modal={false}>
+              <DropdownMenu
+                open={isOpen}
+                onOpenChange={setIsOpen}
+                modal={false}
+              >
                 <DropdownMenuTrigger asChild>
                   <button
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
