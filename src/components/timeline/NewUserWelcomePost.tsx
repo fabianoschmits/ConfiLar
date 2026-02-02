@@ -12,6 +12,7 @@ import {
   Loader2,
   MoreHorizontal,
   User,
+  Flag,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { DynamicAvailabilityBadge } from "@/components/ui/DynamicAvailabilityBadge";
@@ -25,7 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ReportButton, ReportDialog } from "@/components/ReportButton";
+import { ReportButton } from "@/components/ReportButton";
+import { ReportDialog } from "@/components/ReportDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -248,15 +250,10 @@ export function NewUserWelcomePost({
                       onClick={() => setShowReportDialog(true)}
                       asChild
                     >
-                      <ReportButton
-                        type="post"
-                        targetId={post.id}
-                        targetName={post.title}
-                        variant="ghost"
-                        size="sm"
-                        asDropdownItem={true}
-                        className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 pointer-events-none"
-                      />
+                      <div className="flex items-center gap-2 w-full justify-start text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500">
+                        <Flag className="h-4 w-4" />
+                        <span>Denunciar</span>
+                      </div>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>

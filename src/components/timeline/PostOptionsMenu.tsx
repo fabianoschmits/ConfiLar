@@ -29,7 +29,8 @@ import {
   Shield,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { ReportButton, ReportDialog } from "@/components/ReportButton";
+import { ReportButton } from "@/components/ReportButton";
+import { ReportDialog } from "@/components/ReportDialog";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
@@ -146,14 +147,10 @@ export function PostOptionsMenu({
                 asChild
               >
                 {/* O ReportButton aqui age apenas como o visual do botão */}
-                <ReportButton
-                  type="post"
-                  targetId={postId}
-                  targetName={postTitle || "Post"}
-                  reportedUserId={postUserId}
-                  asDropdownItem={true}
-                  className="w-full justify-start text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-900 border-0"
-                />
+                <div className="flex items-center gap-2 w-full text-gray-700 dark:text-gray-300 group-hover:text-red-600 dark:group-hover:text-red-500">
+                  <Flag className="h-4 w-4" />
+                  <span>Denunciar</span>
+                </div>
               </DropdownMenuItem>
             </>
           )}

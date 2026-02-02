@@ -32,6 +32,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 import { PostMedia } from "@/components/timeline/PostMedia";
 import { MentionText } from "@/components/ui/MentionText";
 import { ReportButton } from "@/components/ReportButton";
+import { ReportDialog } from "@/components/ReportDialog";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 import { PremiumTimeRemaining } from "@/components/classifieds/PremiumTimeRemaining";
 import { cn } from "@/lib/utils";
@@ -66,6 +67,7 @@ export function ClassifiedsCard({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   useCloseOnScroll(isOpen, setIsOpen);
 
@@ -248,19 +250,13 @@ export function ClassifiedsCard({
 
             {!isOwner && (
               <DropdownMenuItem
-                onSelect={(e) => {
-                  // Allow default behavior (close menu)
-                }}
-                asChild
+                onClick={() => setShowReportDialog(true)}
+                className="text-red-600 hover:text-red-700"
               >
-                <ReportButton
-                  type="classified"
-                  targetId={ad.id}
-                  targetName={ad.title}
-                  reportedUserId={ad.user_id}
-                  asDropdownItem={true}
-                  className="w-full justify-start pl-2 text-red-600 hover:text-red-700 border-0"
-                />
+                <div className="flex items-center w-full">
+                  <Flag className="h-4 w-4 mr-2" />
+                  Denunciar
+                </div>
               </DropdownMenuItem>
             )}
 
@@ -270,6 +266,15 @@ export function ClassifiedsCard({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <ReportDialog
+          isOpen={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          type="classified"
+          targetId={ad.id}
+          targetName={ad.title}
+          reportedUserId={ad.user_id}
+        />
       </div>
 
       {/* 2. Title */}

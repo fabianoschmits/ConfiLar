@@ -6,10 +6,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Flag } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
-import { ReportButton, ReportDialog } from "@/components/ReportButton";
+import { ReportButton } from "@/components/ReportButton";
+import { ReportDialog } from "@/components/ReportDialog";
 
 interface CommentOptionsMenuProps {
   commentId: string;
@@ -78,14 +79,10 @@ export function CommentOptionsMenu({
             </>
           ) : (
             <DropdownMenuItem onClick={() => setShowReportDialog(true)} asChild>
-              <ReportButton
-                type="comment"
-                targetId={commentId}
-                targetName="Comentário"
-                reportedUserId={commentUserId}
-                asDropdownItem={true}
-                className="w-full justify-start text-gray-700 hover:text-red-600 hover:bg-gray-50 border-0 h-8"
-              />
+              <div className="flex items-center gap-2 w-full text-gray-700 hover:text-red-600 hover:bg-gray-50 h-8 px-2 rounded-sm cursor-pointer">
+                <Flag className="h-4 w-4" />
+                <span>Denunciar</span>
+              </div>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

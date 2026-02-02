@@ -27,7 +27,8 @@ import { ReviewWithProfiles } from "@/hooks/useSupabaseReviews";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ReportButton, ReportDialog } from "@/components/ReportButton";
+import { ReportButton } from "@/components/ReportButton";
+import { ReportDialog } from "@/components/ReportDialog";
 import { useCloseOnScroll } from "@/hooks/useCloseOnScroll";
 
 interface ReviewCardProps {
@@ -332,14 +333,10 @@ export function ReviewCard({
                         onClick={() => setShowReportDialog(true)}
                         asChild
                       >
-                        <ReportButton
-                          type="review"
-                          targetId={review.id}
-                          targetName="Avaliação"
-                          reportedUserId={review.reviewer_id}
-                          asDropdownItem={true}
-                          className="w-full justify-start p-2 h-auto font-normal cursor-pointer border-0"
-                        />
+                        <div className="flex items-center gap-2 w-full justify-start p-2 h-auto font-normal cursor-pointer border-0 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400">
+                          <Flag className="h-4 w-4" />
+                          <span>Denunciar</span>
+                        </div>
                       </DropdownMenuItem>
                     )}
 
