@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { withAdminAuth } from "@/lib/authenticatedRoute";
+import { logCronExecution } from "@/lib/cron-logging";
 
 /**
  * API para marcar usuários inativos como indisponíveis
@@ -18,6 +19,8 @@ import { withAdminAuth } from "@/lib/authenticatedRoute";
  * - Ou usa CRON_SECRET (se chamado por serviço externo)
  */
 export async function GET(request: NextRequest) {
+  const JOB_NAME = "inactive-users-availability";
+
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
@@ -48,6 +51,12 @@ export async function GET(request: NextRequest) {
         .eq("is_available", true);
 
       if (fetchError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao buscar usuários disponíveis",
+          { error: fetchError.message },
+        );
         console.error(
           "❌ [Inactive Users] Erro ao buscar usuários disponíveis:",
           fetchError,
@@ -62,6 +71,11 @@ export async function GET(request: NextRequest) {
       }
 
       if (!availableUsers || availableUsers.length === 0) {
+        await logCronExecution(
+          JOB_NAME,
+          "success",
+          "Nenhum usuário disponível encontrado",
+        );
         console.log("✅ [Inactive Users] Nenhum usuário disponível encontrado");
         return NextResponse.json({
           success: true,
@@ -107,6 +121,11 @@ export async function GET(request: NextRequest) {
       });
 
       if (reallyInactiveUsers.length === 0) {
+        await logCronExecution(
+          JOB_NAME,
+          "success",
+          "Nenhum usuário realmente inativo",
+        );
         console.log(
           "✅ [Inactive Users] Nenhum usuário realmente inativo há mais de 7 dias",
         );
@@ -130,6 +149,12 @@ export async function GET(request: NextRequest) {
         .in("id", userIds);
 
       if (updateError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao marcar indisponíveis",
+          { error: updateError.message },
+        );
         console.error(
           "❌ [Inactive Users] Erro ao marcar usuários como indisponíveis:",
           updateError,
@@ -142,6 +167,17 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
+
+      const resultDetails = {
+        users_marked_unavailable: reallyInactiveUsers.length,
+        user_ids: userIds,
+      };
+      await logCronExecution(
+        JOB_NAME,
+        "success",
+        `${reallyInactiveUsers.length} usuários marcados como indisponíveis`,
+        resultDetails,
+      );
 
       console.log(
         `✅ [Inactive Users] ${reallyInactiveUsers.length} usuários marcados como indisponíveis`,
@@ -212,6 +248,12 @@ export async function GET(request: NextRequest) {
         .order("updated_at", { ascending: true });
 
       if (fetchError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao buscar usuários (Admin)",
+          { error: fetchError.message, admin_id: user.id },
+        );
         console.error(
           "❌ [Inactive Users] Erro ao buscar usuários:",
           fetchError,
@@ -223,6 +265,12 @@ export async function GET(request: NextRequest) {
       }
 
       if (!availableUsers || availableUsers.length === 0) {
+        await logCronExecution(
+          JOB_NAME,
+          "success",
+          "Nenhum usuário inativo (Admin)",
+          { admin_id: user.id },
+        );
         return NextResponse.json({
           success: true,
           message: "Nenhum usuário realmente inativo há mais de 7 dias",
@@ -262,6 +310,12 @@ export async function GET(request: NextRequest) {
       });
 
       if (reallyInactiveUsers.length === 0) {
+        await logCronExecution(
+          JOB_NAME,
+          "success",
+          "Nenhum usuário realmente inativo (Admin)",
+          { admin_id: user.id },
+        );
         return NextResponse.json({
           success: true,
           message: "Nenhum usuário realmente inativo há mais de 7 dias",
@@ -282,6 +336,12 @@ export async function GET(request: NextRequest) {
         .in("id", userIds);
 
       if (updateError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao marcar indisponíveis (Admin)",
+          { error: updateError.message, admin_id: user.id },
+        );
         console.error(
           "❌ [Inactive Users] Erro ao marcar usuários como indisponíveis:",
           updateError,
@@ -294,6 +354,17 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
+
+      await logCronExecution(
+        JOB_NAME,
+        "success",
+        `${reallyInactiveUsers.length} usuários marcados (Admin)`,
+        {
+          admin_id: user.id,
+          users_marked_unavailable: reallyInactiveUsers.length,
+          user_ids: userIds,
+        },
+      );
 
       console.log(
         `✅ [Inactive Users] ${reallyInactiveUsers.length} usuários marcados como indisponíveis por admin ${user.id}`,
@@ -308,6 +379,9 @@ export async function GET(request: NextRequest) {
       });
     })(request);
   } catch (error: any) {
+    await logCronExecution(JOB_NAME, "error", "Erro inesperado", {
+      error: error.message,
+    });
     console.error(
       "❌ [Inactive Users] Erro ao processar usuários inativos:",
       error,

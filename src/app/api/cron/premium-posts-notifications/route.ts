@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { withAdminAuth } from "@/lib/authenticatedRoute";
+import { logCronExecution } from "@/lib/cron-logging";
 
 /**
  * API para notificações e manutenção de posts premium
@@ -19,6 +20,8 @@ import { withAdminAuth } from "@/lib/authenticatedRoute";
  * - Ou usa CRON_SECRET (se chamado por serviço externo)
  */
 export async function GET(request: NextRequest) {
+  const JOB_NAME = "premium-posts-notifications";
+
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
@@ -37,6 +40,12 @@ export async function GET(request: NextRequest) {
       );
 
       if (rpcError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao executar manutenção",
+          { error: rpcError.message },
+        );
         console.error(
           "❌ Erro ao executar notificações de posts premium:",
           rpcError,
@@ -51,6 +60,9 @@ export async function GET(request: NextRequest) {
       const deactivatedIds = result?.deactivated_ids || [];
       const expiringNotifications = result?.expiring_notifications || 0;
       const expiredNotifications = result?.expired_notifications || 0;
+
+      const logMessage = `Sucesso: ${deactivatedCount} posts desativados, ${expiringNotifications} alertados, ${expiredNotifications} expirados`;
+      await logCronExecution(JOB_NAME, "success", logMessage, result);
 
       console.log(
         `✅ Manutenção de posts premium concluída (via CRON_SECRET):`,
@@ -90,6 +102,12 @@ export async function GET(request: NextRequest) {
       );
 
       if (rpcError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao executar manutenção (Admin)",
+          { error: rpcError.message, admin_id: user.id },
+        );
         console.error(
           "❌ Erro ao executar notificações de posts premium:",
           rpcError,
@@ -104,6 +122,12 @@ export async function GET(request: NextRequest) {
       const deactivatedIds = result?.deactivated_ids || [];
       const expiringNotifications = result?.expiring_notifications || 0;
       const expiredNotifications = result?.expired_notifications || 0;
+
+      const logMessage = `Sucesso (Admin): ${deactivatedCount} desativados, ${expiringNotifications} alertados`;
+      await logCronExecution(JOB_NAME, "success", logMessage, {
+        ...result,
+        admin_id: user.id,
+      });
 
       console.log(
         `✅ Manutenção de posts premium executada por admin ${user.id}:`,
@@ -132,6 +156,9 @@ export async function GET(request: NextRequest) {
       });
     })(request);
   } catch (error: any) {
+    await logCronExecution(JOB_NAME, "error", "Erro inesperado", {
+      error: error.message,
+    });
     console.error("❌ Erro inesperado no CRON job de posts premium:", error);
     return NextResponse.json(
       { error: "Erro inesperado", details: error.message },

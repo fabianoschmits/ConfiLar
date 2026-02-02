@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 import { withAdminAuth } from "@/lib/authenticatedRoute";
+import { logCronExecution } from "@/lib/cron-logging";
 
 /**
  * API para limpeza de stories antigos
@@ -16,6 +17,8 @@ import { withAdminAuth } from "@/lib/authenticatedRoute";
  * - Ou usa CRON_SECRET (se chamado por serviço externo)
  */
 export async function GET(request: NextRequest) {
+  const JOB_NAME = "cleanup-stories";
+
   try {
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
@@ -34,6 +37,9 @@ export async function GET(request: NextRequest) {
       );
 
       if (rpcError) {
+        await logCronExecution(JOB_NAME, "error", "Erro ao limpar stories", {
+          error: rpcError.message,
+        });
         console.error("❌ Erro ao limpar stories expirados:", rpcError);
         return NextResponse.json(
           { error: "Erro ao limpar stories", details: rpcError.message },
@@ -42,6 +48,12 @@ export async function GET(request: NextRequest) {
       }
 
       const storiesDeleted = result?.stories_deleted || 0;
+      await logCronExecution(
+        JOB_NAME,
+        "success",
+        `${storiesDeleted} stories deletados`,
+        result,
+      );
 
       console.log(`✅ Limpeza de stories concluída (via CRON_SECRET):`);
       console.log(`   - ${storiesDeleted} stories deletados`);
@@ -66,6 +78,12 @@ export async function GET(request: NextRequest) {
       );
 
       if (rpcError) {
+        await logCronExecution(
+          JOB_NAME,
+          "error",
+          "Erro ao limpar stories (Admin)",
+          { error: rpcError.message, admin_id: user.id },
+        );
         console.error("❌ Erro ao limpar stories expirados:", rpcError);
         return NextResponse.json(
           { error: "Erro ao limpar stories", details: rpcError.message },
@@ -74,6 +92,12 @@ export async function GET(request: NextRequest) {
       }
 
       const storiesDeleted = result?.stories_deleted || 0;
+      await logCronExecution(
+        JOB_NAME,
+        "success",
+        `${storiesDeleted} stories deletados (Admin)`,
+        { ...result, admin_id: user.id },
+      );
 
       console.log(`✅ Limpeza de stories executada por admin ${user.id}:`);
       console.log(`   - ${storiesDeleted} stories deletados`);
@@ -87,6 +111,9 @@ export async function GET(request: NextRequest) {
       });
     })(request);
   } catch (error: any) {
+    await logCronExecution(JOB_NAME, "error", "Erro inesperado", {
+      error: error.message,
+    });
     console.error("❌ Erro inesperado na limpeza de stories:", error);
     return NextResponse.json(
       { error: "Erro inesperado", details: error.message },
