@@ -168,8 +168,7 @@ export function ConversationReportModal({
           "flex items-center gap-2 text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors",
           className,
         )}
-        onClick={(e) => {
-          e.stopPropagation();
+        onClick={() => {
           setIsOpen(true);
         }}
       >

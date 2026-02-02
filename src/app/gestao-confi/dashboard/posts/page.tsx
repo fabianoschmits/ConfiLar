@@ -54,28 +54,41 @@ import { ptBR } from "date-fns/locale";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { createAdminSupabaseClient } from "@/lib/supabase";
 
-interface Post {
+type ContentType = "posts" | "classifieds" | "activities";
+
+interface ContentItem {
   id: string;
+  type: ContentType;
   title: string | null;
-  content: string | null;
+  content?: string | null;
+  description?: string | null;
   user_id: string;
-  professional_id: string | null;
-  is_premium: boolean;
-  is_featured: boolean;
+  user_name?: string | null;
+  user_type?: string | null;
+  professional_id?: string | null;
+  is_premium?: boolean;
+  is_featured?: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  category?: string;
+  price_range?: string;
+  ad_type?: string;
+  activity_type?: string;
+  metadata?: any;
   profiles?: {
     full_name: string;
     email: string;
+    avatar_url?: string;
   };
   stats?: {
     likes_count: number;
     comments_count: number;
     shares_count: number;
+    views?: number;
   };
 }
 
-interface PostStats {
+interface ContentStats {
   total: number;
   premium: number;
   featured: number;
@@ -85,18 +98,18 @@ interface PostStats {
 }
 
 export default function AdminPostsPage() {
-  const { user } = useAuthContext();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { user: authUser } = useAuthContext();
+  const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [contentType, setContentType] = useState<ContentType>("posts");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [stats, setStats] = useState<PostStats>({
+  const [stats, setStats] = useState<ContentStats>({
     total: 0,
     premium: 0,
     featured: 0,
@@ -106,9 +119,32 @@ export default function AdminPostsPage() {
   });
 
   useEffect(() => {
-    fetchPosts();
-    fetchStats();
-  }, [statusFilter, typeFilter]);
+    fetchContent();
+    if (contentType === "posts") {
+      fetchStats();
+    }
+  }, [contentType, statusFilter]);
+
+  const getActivityTitle = (
+    activityType: string,
+    userName: string,
+    metadata: any,
+  ) => {
+    switch (activityType) {
+      case "user_joined":
+        return `${userName} entrou para o ConfiLar`;
+      case "recommendation":
+        return `${userName} recomendou ${metadata?.target_user_name || "alguém"}`;
+      case "review":
+        return `${userName} avaliou ${metadata?.target_user_name || "alguém"}`;
+      case "agreement":
+        return `${userName} fechou um acordo`;
+      case "classified_posted":
+        return `${userName} publicou um anúncio`;
+      default:
+        return `${userName} realizou uma atividade`;
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -163,149 +199,159 @@ export default function AdminPostsPage() {
     }
   };
 
-  const fetchPosts = async () => {
+  const fetchContent = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from("feed_posts")
-        .select(
-          `
-          id,
-          title,
-          content,
-          user_id,
-          professional_id,
-          is_premium,
-          is_featured,
-          created_at,
-          updated_at,
-          profiles:user_id (
-            full_name,
-            email
+      let query: any;
+
+      if (contentType === "posts") {
+        query = supabase
+          .from("feed_posts")
+          .select(
+            `
+            id, title, content, user_id, professional_id, 
+            is_premium, is_featured, created_at, updated_at,
+            profiles:user_id (full_name, email, avatar_url)
+          `,
           )
-        `,
-        )
-        .order("created_at", { ascending: false })
-        .limit(100);
+          .order("created_at", { ascending: false });
 
-      // Aplicar filtros
-      if (statusFilter === "premium") {
-        query = query.eq("is_premium", true);
-      } else if (statusFilter === "featured") {
-        query = query.eq("is_featured", true);
-      } else if (statusFilter === "normal") {
-        query = query.eq("is_premium", false).eq("is_featured", false);
+        if (statusFilter === "premium") query = query.eq("is_premium", true);
+        else if (statusFilter === "featured")
+          query = query.eq("is_featured", true);
+        else if (statusFilter === "normal")
+          query = query.eq("is_premium", false).eq("is_featured", false);
+
+        if (searchQuery) {
+          query = query.or(
+            `title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`,
+          );
+        }
+      } else if (contentType === "classifieds") {
+        query = supabase
+          .from("classified_ads")
+          .select(
+            `
+            id, title, description, user_id, user_name, user_type,
+            category, ad_type, is_active, created_at, updated_at, price_range,
+            profiles:user_id (full_name, email, avatar_url)
+          `,
+          )
+          .order("created_at", { ascending: false });
+
+        if (searchQuery) {
+          query = query.or(
+            `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`,
+          );
+        }
+      } else {
+        query = supabase
+          .from("user_activity_log")
+          .select(
+            `
+            id, user_id, activity_type, description, metadata, created_at,
+            profiles:user_id (full_name, email, avatar_url)
+          `,
+          )
+          .order("created_at", { ascending: false });
+
+        if (searchQuery) {
+          query = query.or(
+            `description.ilike.%${searchQuery}%,activity_type.ilike.%${searchQuery}%`,
+          );
+        }
       }
 
-      if (typeFilter === "with_title") {
-        query = query.not("title", "is", null);
-      } else if (typeFilter === "without_title") {
-        query = query.is("title", null);
-      }
-
-      // Busca
-      if (searchQuery) {
-        query = query.or(
-          `title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`,
-        );
-      }
-
-      const { data, error } = await query;
-
+      const { data, error } = await query.limit(100);
       if (error) throw error;
 
-      // Buscar estatísticas de cada post
-      const postsWithStats = await Promise.all(
-        (data || []).map(async (post: any) => {
-          const [likesResult, commentsResult, sharesResult] = await Promise.all(
-            [
+      const itemsWithStats = await Promise.all(
+        (data || []).map(async (item: any) => {
+          const profile = Array.isArray(item.profiles)
+            ? item.profiles[0]
+            : item.profiles;
+
+          let stats = { likes_count: 0, comments_count: 0, shares_count: 0 };
+
+          if (contentType === "posts") {
+            const [likes, comments, shares] = await Promise.all([
               supabase
                 .from("post_likes")
                 .select("*", { count: "exact", head: true })
-                .eq("post_id", post.id),
+                .eq("post_id", item.id),
               supabase
                 .from("post_comments")
                 .select("*", { count: "exact", head: true })
-                .eq("post_id", post.id)
+                .eq("post_id", item.id)
                 .eq("is_deleted", false),
               supabase
                 .from("post_shares")
                 .select("*", { count: "exact", head: true })
-                .eq("post_id", post.id),
-            ],
-          );
-
-          // profiles pode vir como array ou objeto único, normalizar para objeto único
-          const profile = Array.isArray(post.profiles)
-            ? post.profiles[0]
-            : post.profiles;
+                .eq("post_id", item.id),
+            ]);
+            stats = {
+              likes_count: likes.count || 0,
+              comments_count: comments.count || 0,
+              shares_count: shares.count || 0,
+            };
+          }
 
           return {
-            ...post,
+            ...item,
+            type: contentType,
             profiles: profile || undefined,
-            stats: {
-              likes_count: likesResult.count || 0,
-              comments_count: commentsResult.count || 0,
-              shares_count: sharesResult.count || 0,
-            },
-          } as Post;
+            stats,
+          } as ContentItem;
         }),
       );
 
-      setPosts(postsWithStats);
+      setItems(itemsWithStats);
     } catch (error) {
-      console.error("Erro ao buscar posts:", error);
-      toast.error("Erro ao carregar posts");
+      console.error(`Erro ao buscar ${contentType}:`, error);
+      toast.error(`Erro ao carregar ${contentType}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteClick = (postId: string) => {
-    setDeletingPostId(postId);
+  const handleDeleteClick = (id: string) => {
+    setDeletingId(id);
     setShowDeleteDialog(true);
   };
 
-  const handleDeletePost = async () => {
-    if (!deletingPostId || !user) return;
+  const handleDeleteItem = async () => {
+    if (!deletingId || !authUser) return;
+    if (contentType !== "posts") {
+      toast.error(
+        "Exclusão direta via gestão só disponível para posts por enquanto",
+      );
+      return;
+    }
 
     setIsDeleting(true);
     try {
-      // Verificar se é super admin
       const { data: profile } = await supabase
         .from("profiles")
         .select("is_super_admin, is_owner")
-        .eq("id", user.id)
+        .eq("id", authUser.id)
         .single();
 
-      const isSuperAdmin = profile?.is_super_admin || profile?.is_owner;
-
-      if (!isSuperAdmin) {
-        toast.error("Apenas super administradores podem deletar posts");
+      if (!profile?.is_super_admin && !profile?.is_owner) {
+        toast.error("Apenas super administradores podem deletar conteúdo");
         return;
       }
 
-      // Deletar via API de admin
-      const response = await fetch(
-        `/api/gestao-confi/posts/${deletingPostId}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`/api/gestao-confi/posts/${deletingId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Erro ao deletar");
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Erro ao deletar post");
-      }
-
-      toast.success("Post deletado com sucesso");
+      toast.success("Item removido com sucesso");
       setShowDeleteDialog(false);
-      setDeletingPostId(null);
-      fetchPosts();
-      fetchStats();
+      setDeletingId(null);
+      fetchContent();
     } catch (error: any) {
-      console.error("Erro ao deletar post:", error);
-      toast.error(error.message || "Erro ao deletar post");
+      toast.error(error.message || "Erro ao deletar");
     } finally {
       setIsDeleting(false);
     }
@@ -313,84 +359,90 @@ export default function AdminPostsPage() {
 
   const columns = [
     {
-      key: "title",
-      label: "Título/Conteúdo",
-      render: (post: Post) => (
-        <div className="max-w-md">
-          <div className="font-medium truncate">
-            {post.title || "Sem título"}
+      key: "content",
+      label: "Conteúdo",
+      render: (item: ContentItem) => {
+        const title =
+          item.type === "activities"
+            ? getActivityTitle(
+                item.activity_type || "",
+                item.profiles?.full_name || "Usuário",
+                item.metadata,
+              )
+            : item.title || "Sem título";
+        const subtitle =
+          item.type === "activities"
+            ? item.description
+            : item.content || item.description;
+
+        return (
+          <div className="max-w-md">
+            <div className="font-medium truncate">{title}</div>
+            {subtitle && (
+              <div className="text-sm text-gray-500 truncate mt-1">
+                {subtitle.substring(0, 80)}...
+              </div>
+            )}
           </div>
-          {post.content && (
-            <div className="text-sm text-gray-500 truncate mt-1">
-              {post.content.substring(0, 100)}...
-            </div>
-          )}
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "author",
-      label: "Autor",
-      render: (post: Post) => (
+      label: "Autor/Usuário",
+      render: (item: ContentItem) => (
         <div className="flex items-center gap-2">
           <User className="h-4 w-4 text-gray-400" />
           <span className="text-sm">
-            {post.profiles?.full_name || "Desconhecido"}
+            {item.profiles?.full_name || item.user_name || "Desconhecido"}
           </span>
         </div>
       ),
     },
     {
+      key: "type_badge",
+      label: "Tipo",
+      render: (item: ContentItem) => (
+        <Badge variant="outline" className="capitalize">
+          {item.type === "posts"
+            ? "Post"
+            : item.type === "classifieds"
+              ? "Anúncio"
+              : "Atividade"}
+        </Badge>
+      ),
+    },
+    {
       key: "badges",
       label: "Status",
-      render: (post: Post) => (
+      render: (item: ContentItem) => (
         <div className="flex gap-1 flex-wrap">
-          {post.is_premium && (
-            <Badge variant="default" className="bg-yellow-500">
+          {item.is_premium && (
+            <Badge className="bg-yellow-500">
               <Star className="h-3 w-3 mr-1" />
               Premium
             </Badge>
           )}
-          {post.is_featured && (
-            <Badge variant="default" className="bg-blue-500">
+          {item.is_featured && (
+            <Badge className="bg-blue-500">
               <TrendingUp className="h-3 w-3 mr-1" />
               Destaque
             </Badge>
           )}
-          {!post.is_premium && !post.is_featured && (
+          {!item.is_premium && !item.is_featured && (
             <Badge variant="secondary">Normal</Badge>
           )}
         </div>
       ),
     },
     {
-      key: "stats",
-      label: "Engajamento",
-      render: (post: Post) => (
-        <div className="flex gap-3 text-sm">
-          <div className="flex items-center gap-1">
-            <Heart className="h-4 w-4 text-red-500" />
-            <span>{post.stats?.likes_count || 0}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <MessageCircle className="h-4 w-4 text-blue-500" />
-            <span>{post.stats?.comments_count || 0}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Share2 className="h-4 w-4 text-green-500" />
-            <span>{post.stats?.shares_count || 0}</span>
-          </div>
-        </div>
-      ),
-    },
-    {
       key: "created_at",
       label: "Data",
-      render: (post: Post) => (
+      render: (item: ContentItem) => (
         <div className="flex items-center gap-1 text-sm text-gray-500">
           <Calendar className="h-4 w-4" />
           <span>
-            {formatDistanceToNow(new Date(post.created_at), {
+            {formatDistanceToNow(new Date(item.created_at), {
               addSuffix: true,
               locale: ptBR,
             })}
@@ -401,26 +453,28 @@ export default function AdminPostsPage() {
     {
       key: "actions",
       label: "Ações",
-      render: (post: Post) => (
-        <div className="flex gap-2">
+      render: (item: ContentItem) => (
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              setSelectedPost(post);
+              setSelectedItem(item);
               setShowDetailsModal(true);
             }}
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDeleteClick(post.id)}
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {item.type === "posts" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteClick(item.id)}
+              className="text-red-600"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -429,9 +483,9 @@ export default function AdminPostsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Posts & Conteúdo"
+        title="Gestão de Conteúdo"
         onRefresh={() => {
-          fetchPosts();
+          fetchContent();
           fetchStats();
         }}
         loading={loading}
@@ -482,44 +536,56 @@ export default function AdminPostsPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <SearchBar
-            placeholder="Buscar por título ou conteúdo..."
+            placeholder={`Buscar em ${contentType === "posts" ? "postagens" : contentType === "classifieds" ? "classificados" : "atividades"}...`}
             value={searchQuery}
             onChange={setSearchQuery}
-            onSearch={fetchPosts}
+            onSearch={fetchContent}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filtrar por status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os status</SelectItem>
-            <SelectItem value="premium">Premium</SelectItem>
-            <SelectItem value="featured">Em Destaque</SelectItem>
-            <SelectItem value="normal">Normal</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filtrar por tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os tipos</SelectItem>
-            <SelectItem value="with_title">Com título</SelectItem>
-            <SelectItem value="without_title">Sem título</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select
+            value={contentType}
+            onValueChange={(v) => setContentType(v as ContentType)}
+          >
+            <SelectTrigger className="w-48 bg-muted/30">
+              <SelectValue placeholder="Conteúdo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="posts">Postagens</SelectItem>
+              <SelectItem value="classifieds">Classificados</SelectItem>
+              <SelectItem value="activities">Atividades</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {contentType === "posts" && (
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+                <SelectItem value="featured">Em Destaque</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {/* Tabela */}
       <SimpleTable
         columns={columns}
-        data={posts}
+        data={items}
         loading={loading}
-        emptyMessage="Nenhum post encontrado"
+        onRowClick={(item) => {
+          setSelectedItem(item);
+          setShowDetailsModal(true);
+        }}
+        emptyMessage={`Nenhum(a) ${contentType === "posts" ? "postagem" : contentType === "classifieds" ? "anúncio" : "atividade"} encontrado(a)`}
       />
 
       {/* Modal de Detalhes */}
@@ -527,74 +593,162 @@ export default function AdminPostsPage() {
       <ResponsiveModal
         isOpen={showDetailsModal}
         onOpenChange={setShowDetailsModal}
-        title={selectedPost?.title || "Post sem título"}
-        description="Detalhes do post"
-        className="max-w-2xl max-h-[80vh] overflow-y-auto"
+        title={
+          selectedItem?.type === "activities"
+            ? getActivityTitle(
+                selectedItem.activity_type || "",
+                selectedItem.profiles?.full_name || "Usuário",
+                selectedItem.metadata,
+              )
+            : selectedItem?.title || "Sem título"
+        }
+        description={`Detalhes do(a) ${selectedItem?.type === "posts" ? "postagem" : selectedItem?.type === "classifieds" ? "anúncio" : "atividade"}`}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        {selectedPost && (
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">Autor</h4>
-              <p className="text-sm text-gray-600">
-                {selectedPost.profiles?.full_name || "Desconhecido"} (
-                {selectedPost.profiles?.email || "N/A"})
-              </p>
-            </div>
-            {selectedPost.content && (
+        {selectedItem && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4 border-b pb-4">
               <div>
-                <h4 className="font-semibold mb-2">Conteúdo</h4>
-                <p className="text-sm whitespace-pre-wrap">
-                  {selectedPost.content}
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-1">
+                  Autor
+                </h4>
+                <p className="font-medium">
+                  {selectedItem.profiles?.full_name ||
+                    selectedItem.user_name ||
+                    "Desconhecido"}
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  {selectedItem.profiles?.email || "E-mail não disponível"}
+                </p>
+              </div>
+              <div className="text-right">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-1">
+                  Data
+                </h4>
+                <p className="font-medium text-sm">
+                  {new Date(selectedItem.created_at).toLocaleString("pt-BR")}
+                </p>
+              </div>
+            </div>
+
+            {(selectedItem.content || selectedItem.description) && (
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
+                  {selectedItem.type === "classifieds"
+                    ? "Descrição"
+                    : "Conteúdo"}
+                </h4>
+                <div className="bg-muted/30 p-4 rounded-lg text-sm whitespace-pre-wrap leading-relaxed">
+                  {selectedItem.content || selectedItem.description}
+                </div>
               </div>
             )}
-            <div>
-              <h4 className="font-semibold mb-2">Estatísticas</h4>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-500">
-                    {selectedPost.stats?.likes_count || 0}
-                  </div>
-                  <div className="text-xs text-gray-500">Curtidas</div>
+
+            {selectedItem.type === "classifieds" && (
+              <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-lg">
+                <div>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                    Categoria
+                  </h4>
+                  <Badge variant="outline">{selectedItem.category}</Badge>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-500">
-                    {selectedPost.stats?.comments_count || 0}
-                  </div>
-                  <div className="text-xs text-gray-500">Comentários</div>
+                <div>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                    Valor / Preço
+                  </h4>
+                  <p className="text-sm font-semibold text-green-600">
+                    {selectedItem.price_range || "Não informado"}
+                  </p>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">
-                    {selectedPost.stats?.shares_count || 0}
-                  </div>
-                  <div className="text-xs text-gray-500">Compartilhamentos</div>
+                <div className="mt-2">
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                    Tipo de Anúncio
+                  </h4>
+                  <Badge className="capitalize">
+                    {selectedItem.ad_type === "oferecer" ? "Oferta" : "Procura"}
+                  </Badge>
                 </div>
               </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Informações</h4>
-              <div className="space-y-1 text-sm">
-                <p>
-                  <strong>ID:</strong> {selectedPost.id}
-                </p>
-                <p>
-                  <strong>Criado em:</strong>{" "}
-                  {new Date(selectedPost.created_at).toLocaleString("pt-BR")}
-                </p>
-                <p>
-                  <strong>Atualizado em:</strong>{" "}
-                  {new Date(selectedPost.updated_at).toLocaleString("pt-BR")}
-                </p>
-                <p>
-                  <strong>Premium:</strong>{" "}
-                  {selectedPost.is_premium ? "Sim" : "Não"}
-                </p>
-                <p>
-                  <strong>Destaque:</strong>{" "}
-                  {selectedPost.is_featured ? "Sim" : "Não"}
-                </p>
+            )}
+
+            {selectedItem.type === "activities" && selectedItem.metadata && (
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-2">
+                  Metadados da Atividade
+                </h4>
+                <pre className="bg-muted/30 p-3 rounded-lg text-[10px] overflow-x-auto">
+                  {JSON.stringify(selectedItem.metadata, null, 2)}
+                </pre>
               </div>
+            )}
+
+            {selectedItem.type === "posts" && selectedItem.stats && (
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase mb-4 text-center">
+                  Engagement
+                </h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center group">
+                    <div className="bg-red-50 dark:bg-red-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
+                      <Heart className="h-6 w-6 text-red-500 mx-auto mb-1" />
+                      <div className="text-xl font-bold">
+                        {selectedItem.stats.likes_count}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
+                      Curtidas
+                    </div>
+                  </div>
+                  <div className="text-center group">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
+                      <MessageCircle className="h-6 w-6 text-blue-500 mx-auto mb-1" />
+                      <div className="text-xl font-bold">
+                        {selectedItem.stats.comments_count}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
+                      Comentários
+                    </div>
+                  </div>
+                  <div className="text-center group">
+                    <div className="bg-green-50 dark:bg-green-950/30 p-3 rounded-xl transition-all group-hover:scale-105">
+                      <Share2 className="h-6 w-6 text-green-500 mx-auto mb-1" />
+                      <div className="text-xl font-bold">
+                        {selectedItem.stats.shares_count}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground uppercase mt-1">
+                      Shares
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 border-t text-[10px] text-muted-foreground flex justify-between">
+              <span>ID: {selectedItem.id}</span>
+              {selectedItem.updated_at && (
+                <span>
+                  Atualizado em:{" "}
+                  {new Date(selectedItem.updated_at).toLocaleString("pt-BR")}
+                </span>
+              )}
             </div>
+
+            {selectedItem.type === "posts" && (
+              <div className="flex justify-end pt-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    handleDeleteClick(selectedItem.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remover Post
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </ResponsiveModal>
@@ -614,11 +768,11 @@ export default function AdminPostsPage() {
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeletePost}
+              onClick={handleDeleteItem}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700"
             >
-              {isDeleting ? "Deletando..." : "Deletar"}
+              {isDeleting ? "Deletando..." : "Confirmar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 interface Column<T> {
   key: string;
@@ -13,6 +14,7 @@ interface SimpleTableProps<T> {
   data: T[];
   loading?: boolean;
   emptyMessage?: string;
+  onRowClick?: (item: T) => void;
 }
 
 export function SimpleTable<T extends { id: string }>({
@@ -20,6 +22,7 @@ export function SimpleTable<T extends { id: string }>({
   data,
   loading = false,
   emptyMessage = "Nenhum item encontrado",
+  onRowClick,
 }: SimpleTableProps<T>) {
   return (
     <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
@@ -63,7 +66,11 @@ export function SimpleTable<T extends { id: string }>({
             data.map((item) => (
               <tr
                 key={item.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-900"
+                onClick={() => onRowClick?.(item)}
+                className={cn(
+                  "hover:bg-gray-50 dark:hover:bg-gray-900 border-b border-gray-100 dark:border-gray-800",
+                  onRowClick && "cursor-pointer",
+                )}
               >
                 {columns.map((column) => (
                   <td

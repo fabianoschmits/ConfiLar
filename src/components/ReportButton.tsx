@@ -253,8 +253,7 @@ export function ReportButton({
     return (
       <>
         <button
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             handleButtonClick();
           }}
           className={cn(
@@ -377,8 +376,7 @@ export function ReportButton({
           "flex items-center gap-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors",
           className,
         )}
-        onClick={(e) => {
-          e.stopPropagation();
+        onClick={() => {
           handleButtonClick();
         }}
       >
