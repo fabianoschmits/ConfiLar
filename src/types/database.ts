@@ -90,6 +90,13 @@ export interface Database {
           locale?: string | null;
           credits_ad_premium_1d?: number;
           credits_ad_premium_7d?: number;
+          instagram_url?: string | null;
+          facebook_url?: string | null;
+          linkedin_url?: string | null;
+          twitter_url?: string | null;
+          youtube_url?: string | null;
+          tiktok_url?: string | null;
+          whatsapp_number?: string | null;
         };
         Insert: {
           id: string;
@@ -153,6 +160,13 @@ export interface Database {
             | null;
           country?: string | null;
           locale?: string | null;
+          instagram_url?: string | null;
+          facebook_url?: string | null;
+          linkedin_url?: string | null;
+          twitter_url?: string | null;
+          youtube_url?: string | null;
+          tiktok_url?: string | null;
+          whatsapp_number?: string | null;
         };
         Update: {
           id?: string;
@@ -216,6 +230,13 @@ export interface Database {
             | null;
           country?: string | null;
           locale?: string | null;
+          instagram_url?: string | null;
+          facebook_url?: string | null;
+          linkedin_url?: string | null;
+          twitter_url?: string | null;
+          youtube_url?: string | null;
+          tiktok_url?: string | null;
+          whatsapp_number?: string | null;
         };
       };
 
@@ -878,6 +899,14 @@ export interface Profile {
   locale?: string | null;
   credits_ad_premium_1d?: number;
   credits_ad_premium_7d?: number;
+  // Redes Sociais
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  youtube_url?: string | null;
+  tiktok_url?: string | null;
+  whatsapp_number?: string | null;
 }
 
 export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];

@@ -23,6 +23,8 @@ import { AddressForm } from "./forms/AddressForm";
 import { AccountTypeForm } from "./forms/AccountTypeForm";
 import { SecurityForm } from "./forms/SecurityForm";
 import { ProfessionalDataForm } from "./forms/ProfessionalDataForm";
+import { SocialLinksEditor } from "./SocialLinksEditor";
+import { Link2 } from "lucide-react";
 
 export type ProfileTab =
   | "account"
@@ -30,6 +32,7 @@ export type ProfileTab =
   | "address"
   | "type"
   | "professional"
+  | "social"
   | "security";
 
 interface EditProfileModalProps {
@@ -93,6 +96,13 @@ export function EditProfileModal({
           },
         ]
       : []),
+    {
+      id: "social",
+      label: "Redes Sociais",
+      icon: Link2,
+      color: "text-cyan-500",
+      bgColor: "bg-cyan-50",
+    },
     {
       id: "security",
       label: "Segurança",
@@ -222,6 +232,9 @@ export function EditProfileModal({
                 )}
                 {activeTab === "professional" && (
                   <ProfessionalDataForm onSuccess={() => {}} />
+                )}
+                {activeTab === "social" && profile && (
+                  <SocialLinksEditor profile={profile} />
                 )}
                 {activeTab === "security" && <SecurityForm />}
               </div>

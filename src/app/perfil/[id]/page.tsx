@@ -58,6 +58,7 @@ import { useReferralStats } from "@/hooks/useReferralStats";
 import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
 import { useTranslations } from "next-intl";
 import { PortfolioProjectCard } from "@/components/portfolio/PortfolioProjectCard";
+import { SocialLinksDisplay } from "@/components/profile/SocialLinksDisplay";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
@@ -312,6 +313,9 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Redes Sociais */}
+                    <SocialLinksDisplay profile={profile} />
 
                     {/* Informações Rápidas em Grid Criativo */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
