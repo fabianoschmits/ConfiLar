@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // This import was in the original content but not in the instruction's code edit. Keeping it for completeness.
 import {
   Command,
   CommandEmpty,
@@ -27,6 +27,7 @@ interface LocationComboboxesMultiCountryProps {
   country?: string;
   stateCode?: string;
   city?: string;
+  modal?: boolean;
   onCountryChange?: (country: string) => void;
   onStateChange?: (stateCode: string) => void;
   onCityChange?: (city: string) => void;
@@ -42,6 +43,7 @@ export function LocationComboboxesMultiCountry({
   country: initialCountry,
   stateCode: initialStateCode,
   city: initialCity,
+  modal = false,
   onCountryChange,
   onStateChange,
   onCityChange,
@@ -144,7 +146,7 @@ export function LocationComboboxesMultiCountry({
   return (
     <div className={cn("grid grid-cols-1 gap-2 sm:gap-3", className)}>
       {/* País */}
-      <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+      <Popover open={countryOpen} onOpenChange={setCountryOpen} modal={modal}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -202,7 +204,7 @@ export function LocationComboboxesMultiCountry({
       </Popover>
 
       {/* Estado */}
-      <Popover open={stateOpen} onOpenChange={setStateOpen}>
+      <Popover open={stateOpen} onOpenChange={setStateOpen} modal={modal}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
@@ -261,7 +263,7 @@ export function LocationComboboxesMultiCountry({
       </Popover>
 
       {/* Cidade */}
-      <Popover open={cityOpen} onOpenChange={setCityOpen}>
+      <Popover open={cityOpen} onOpenChange={setCityOpen} modal={modal}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"

@@ -8,27 +8,15 @@ import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/LoadingButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { estadosBrasil, getCidadesByEstado } from "@/data/brazilianLocations";
 import { toast } from "sonner";
+import { LocationComboboxesMultiCountry } from "@/components/ui/LocationComboboxesMultiCountry";
 
 const addressSchema = z.object({
+  country: z.string(),
   location_state: z.string().min(1, "Estado é obrigatório"),
   location_city: z.string().min(1, "Cidade é obrigatória"),
   neighborhood: z.string().min(1, "Bairro é obrigatório"),
@@ -42,8 +30,6 @@ type AddressFormData = z.infer<typeof addressSchema>;
 export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
   const { user, refreshAuth } = useAuthContext();
   const [isLoading, setIsLoading] = useState(false);
-  const [stateOpen, setStateOpen] = useState(false);
-  const [cityOpen, setCityOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,6 +66,9 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
     formState: { errors },
   } = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
+    defaultValues: {
+      country: "BR",
+    },
   });
 
   const watchedValues = watch();
@@ -93,6 +82,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
         .eq("id", user.id)
         .single();
       if (profile) {
+        setValue("country", profile.country || "BR");
         setValue("location_state", profile.location_state || "");
         setValue("location_city", profile.location_city || "");
         setValue("neighborhood", profile.neighborhood || "");
@@ -111,6 +101,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
       await supabase
         .from("profiles")
         .update({
+          country: data.country,
           location_state: data.location_state,
           location_city: data.location_city,
           neighborhood: data.neighborhood,
@@ -121,6 +112,7 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
         .eq("id", user.id);
       await supabase.auth.updateUser({
         data: {
+          country: data.country,
           location_state: data.location_state,
           location_city: data.location_city,
         },
@@ -143,97 +135,28 @@ export function AddressForm({ onSuccess }: { onSuccess?: () => void }) {
         className="space-y-6"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label>Estado</Label>
-            <Popover open={stateOpen} onOpenChange={setStateOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between h-10"
-                >
-                  {watchedValues.location_state || "Selecione"}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0">
-                <Command>
-                  <CommandInput placeholder="Buscar..." />
-                  <CommandList>
-                    <CommandGroup>
-                      {estadosBrasil.map((e) => (
-                        <CommandItem
-                          key={e.sigla}
-                          value={e.nome}
-                          onSelect={() => {
-                            setValue("location_state", e.sigla);
-                            setValue("location_city", "");
-                            setStateOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              watchedValues.location_state === e.sigla
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />{" "}
-                          {e.nome}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+          <div className="md:col-span-2 lg:col-span-2 space-y-2">
+            <Label>Localização</Label>
+            <LocationComboboxesMultiCountry
+              country={watchedValues.country}
+              stateCode={watchedValues.location_state}
+              city={watchedValues.location_city}
+              modal={true}
+              onCountryChange={(country) => {
+                setValue("country", country);
+                setValue("location_state", "");
+                setValue("location_city", "");
+              }}
+              onStateChange={(state) => {
+                setValue("location_state", state);
+                setValue("location_city", "");
+              }}
+              onCityChange={(city) => {
+                setValue("location_city", city);
+              }}
+            />
           </div>
-          <div className="space-y-2">
-            <Label>Cidade</Label>
-            <Popover open={cityOpen} onOpenChange={setCityOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  disabled={!watchedValues.location_state}
-                  className="w-full justify-between h-10"
-                >
-                  {watchedValues.location_city || "Selecione"}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0">
-                <Command>
-                  <CommandInput placeholder="Buscar..." />
-                  <CommandList>
-                    <CommandGroup>
-                      {watchedValues.location_state &&
-                        getCidadesByEstado(watchedValues.location_state).map(
-                          (c) => (
-                            <CommandItem
-                              key={c}
-                              value={c}
-                              onSelect={() => {
-                                setValue("location_city", c);
-                                setCityOpen(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  watchedValues.location_city === c
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />{" "}
-                              {c}
-                            </CommandItem>
-                          ),
-                        )}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+
           <div className="space-y-2">
             <Label>Bairro</Label>
             <Input {...register("neighborhood")} />

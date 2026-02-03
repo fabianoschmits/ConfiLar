@@ -32,38 +32,6 @@ import { ChangeEmailForm } from "@/components/forms/ChangeEmailForm";
 import { ValidationUtils } from "@/lib/validation";
 import { Badge } from "@/components/ui/badge";
 
-const validateCPF = (cpf: string): boolean => {
-  cpf = cpf.replace(/[^\d]+/g, "");
-  if (cpf.length !== 11) return false;
-  const invalidCPFs = [
-    "00000000000",
-    "11111111111",
-    "22222222222",
-    "33333333333",
-    "44444444444",
-    "55555555555",
-    "66666666666",
-    "77777777777",
-    "88888888888",
-    "99999999999",
-    "12345678901",
-    "12345678909",
-  ];
-  if (invalidCPFs.includes(cpf)) return false;
-  if (/^(\d)\1+$/.test(cpf)) return false;
-  let soma = 0;
-  for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
-  let resto = soma % 11;
-  const primeiroDigito = resto < 2 ? 0 : 11 - resto;
-  if (parseInt(cpf.charAt(9)) !== primeiroDigito) return false;
-  soma = 0;
-  for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
-  resto = soma % 11;
-  const segundoDigito = resto < 2 ? 0 : 11 - resto;
-  if (parseInt(cpf.charAt(10)) !== segundoDigito) return false;
-  return true;
-};
-
 const accountDataSchema = z.object({
   full_name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   phone: z.string().min(10, "Telefone inválido"),
@@ -72,7 +40,7 @@ const accountDataSchema = z.object({
     .min(11, "CPF/CNPJ deve ter pelo menos 11 dígitos")
     .refine((value) => {
       const cleanValue = value.replace(/\D/g, "");
-      if (cleanValue.length === 11) return validateCPF(value);
+      if (cleanValue.length === 11) return ValidationUtils.isValidCPF(value);
       if (cleanValue.length === 14) return true;
       return false;
     }, "CPF/CNPJ inválido"),
@@ -259,11 +227,32 @@ export function AccountDataForm({ onSuccess }: { onSuccess?: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-2">
             <Label>Nome completo</Label>
-            <Input {...register("full_name")} placeholder="Seu nome" />
+            <Input
+              {...register("full_name")}
+              placeholder="Seu nome"
+              onBlur={(e) => {
+                const hookFormOnBlur = register("full_name").onBlur;
+                if (hookFormOnBlur) hookFormOnBlur(e);
+
+                const formatted = ValidationUtils.formatFullName(
+                  e.target.value,
+                );
+                setValue("full_name", formatted, {
+                  shouldValidate: true,
+                });
+              }}
+            />
           </div>
           <div className="space-y-2">
             <Label>Telefone</Label>
-            <Input {...register("phone")} placeholder="(00) 00000-0000" />
+            <Input
+              {...register("phone")}
+              placeholder="(00) 00000-0000"
+              onChange={(e) => {
+                const formatted = ValidationUtils.formatPhone(e.target.value);
+                setValue("phone", formatted);
+              }}
+            />
           </div>
           <div className="space-y-2">
             <Label>CPF</Label>
