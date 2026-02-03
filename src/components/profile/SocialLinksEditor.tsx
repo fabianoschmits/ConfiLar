@@ -31,43 +31,49 @@ const socialFields = [
     key: "instagram_url" as keyof CompleteProfileData,
     icon: Instagram,
     label: "Instagram",
-    placeholder: "https://instagram.com/seu_usuario",
-    pattern: "^https?://(www\\.)?(instagram\\.com|instagr\\.am)/",
+    placeholder: "@seu_usuario",
+    baseUrl: "https://instagram.com/",
+    pattern: "^@?[a-zA-Z0-9._]+$",
   },
   {
     key: "facebook_url" as keyof CompleteProfileData,
     icon: Facebook,
     label: "Facebook",
-    placeholder: "https://facebook.com/seu_perfil",
-    pattern: "^https?://(www\\.)?facebook\\.com/",
+    placeholder: "seu_perfil",
+    baseUrl: "https://facebook.com/",
+    pattern: "^[a-zA-Z0-9.]+$",
   },
   {
     key: "linkedin_url" as keyof CompleteProfileData,
     icon: Linkedin,
     label: "LinkedIn",
-    placeholder: "https://linkedin.com/in/seu_perfil",
-    pattern: "^https?://(www\\.)?linkedin\\.com/",
+    placeholder: "seu_perfil",
+    baseUrl: "https://linkedin.com/in/",
+    pattern: "^[a-zA-Z0-9-]+$",
   },
   {
     key: "twitter_url" as keyof CompleteProfileData,
     icon: Twitter,
     label: "Twitter/X",
-    placeholder: "https://twitter.com/seu_usuario ou https://x.com/seu_usuario",
-    pattern: "^https?://(www\\.)?(twitter\\.com|x\\.com)/",
+    placeholder: "@seu_usuario",
+    baseUrl: "https://x.com/",
+    pattern: "^@?[a-zA-Z0-9_]+$",
   },
   {
     key: "youtube_url" as keyof CompleteProfileData,
     icon: Youtube,
     label: "YouTube",
-    placeholder: "https://youtube.com/@seu_canal",
-    pattern: "^https?://(www\\.)?youtube\\.com/",
+    placeholder: "@seu_canal",
+    baseUrl: "https://youtube.com/@",
+    pattern: "^@?[a-zA-Z0-9._-]+$",
   },
   {
     key: "tiktok_url" as keyof CompleteProfileData,
     icon: Music2,
     label: "TikTok",
-    placeholder: "https://tiktok.com/@seu_usuario",
-    pattern: "^https?://(www\\.)?tiktok\\.com/",
+    placeholder: "@seu_usuario",
+    baseUrl: "https://tiktok.com/@",
+    pattern: "^@?[a-zA-Z0-9._-]+$",
   },
 ];
 
@@ -88,14 +94,47 @@ export function SocialLinksEditor({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  const validateUrl = (url: string, pattern: string): boolean => {
-    if (!url || url.trim() === "") return true; // URLs vazias são válidas
-    const regex = new RegExp(pattern);
-    return regex.test(url);
+  const extractHandle = (value: string, baseUrl: string): string => {
+    if (!value) return "";
+    let cleanValue = value.trim();
+
+    // Se for uma URL completa, tentar extrair o username
+    if (cleanValue.includes("http")) {
+      try {
+        const url = new URL(cleanValue);
+        const path = url.pathname.split("/").filter(Boolean);
+
+        if (cleanValue.includes("linkedin.com/in/")) {
+          return path[path.indexOf("in") + 1] || path[path.length - 1] || "";
+        }
+
+        // Para a maioria das redes, o username é o último segmento do path
+        let handle = path[path.length - 1] || "";
+        // Remover o @ se existir para padronizar (vamos adicionar se necessário no display)
+        if (handle.startsWith("@")) handle = handle.substring(1);
+        return handle;
+      } catch (e) {
+        return cleanValue;
+      }
+    }
+
+    // Remover @ inicial se o usuário digitou
+    if (cleanValue.startsWith("@")) {
+      return cleanValue.substring(1);
+    }
+
+    return cleanValue;
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string, baseUrl?: string) => {
+    let finalValue = value;
+    if (baseUrl && value.includes("http")) {
+      finalValue = extractHandle(value, baseUrl);
+    } else if (baseUrl && value.startsWith("@")) {
+      finalValue = value.substring(1);
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: finalValue }));
     // Limpar erro ao digitar
     if (errors[field]) {
       setErrors((prev) => {
@@ -111,9 +150,9 @@ export function SocialLinksEditor({
     const newErrors: Record<string, string> = {};
 
     socialFields.forEach((field) => {
-      const value = formData[field.key] as string;
-      if (value && !validateUrl(value, field.pattern)) {
-        newErrors[field.key] = `URL inválida para ${field.label}`;
+      const value = formData[field.key as keyof typeof formData] as string;
+      if (value && !new RegExp(field.pattern).test(value)) {
+        newErrors[field.key] = `Formato inválido para ${field.label}`;
       }
     });
 
@@ -180,14 +219,20 @@ export function SocialLinksEditor({
                 {field.label}
               </Label>
               <div className="flex gap-2">
-                <Input
-                  id={field.key}
-                  type="url"
-                  value={value}
-                  onChange={(e) => handleChange(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  className={errors[field.key] ? "border-red-500" : ""}
-                />
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    @
+                  </span>
+                  <Input
+                    id={field.key}
+                    value={value || ""}
+                    onChange={(e) =>
+                      handleChange(field.key, e.target.value, field.baseUrl)
+                    }
+                    placeholder={field.placeholder.replace("@", "")}
+                    className={`pl-8 ${errors[field.key] ? "border-red-500" : ""}`}
+                  />
+                </div>
                 {value && (
                   <Button
                     type="button"
@@ -197,7 +242,7 @@ export function SocialLinksEditor({
                     disabled={!!errors[field.key]}
                   >
                     <a
-                      href={value}
+                      href={`${field.baseUrl}${value}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Visualizar"
