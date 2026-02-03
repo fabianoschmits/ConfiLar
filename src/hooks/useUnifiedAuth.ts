@@ -57,6 +57,7 @@ export interface AuthActions {
     newEmail: string,
   ) => Promise<{ error: { message: string } | null }>;
   requireReauthentication: (action: "password" | "email" | "general") => void;
+  refreshProfile: () => Promise<void>;
   isMockMode: boolean;
 }
 
@@ -1299,6 +1300,7 @@ export function useAuth(
     updateProfile,
     uploadAvatar,
     refreshAuth,
+    refreshProfile: refreshAuth,
     resetPassword,
     updatePassword,
     updateEmail,

@@ -11,6 +11,7 @@ import { useAutoRedirect } from "@/hooks/useAutoRedirect";
 import { useProfileCheck } from "@/hooks/useProfileCheck";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { AIAnnouncement } from "@/components/profile/AIAnnouncement";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -84,6 +85,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Quick Action Menu para mobile - NOVO MENU EM TESTE - FLUTUANTE ACIMA DO TICKER */}
       {!pathname?.startsWith("/gestao-confi") && <QuickActionMenu />}
+
+      {/* Anúncio de IA para Profissionais */}
+      <AIAnnouncement />
     </>
   );
 };

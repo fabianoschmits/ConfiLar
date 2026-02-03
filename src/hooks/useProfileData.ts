@@ -92,6 +92,7 @@ export interface CompleteProfileData {
   // Campos adicionais do Profile
   address_number: string | null;
   zip_code: string | null;
+  allow_ai_indexing: boolean | null;
 }
 
 export function useProfileData(userId: string) {
@@ -165,7 +166,8 @@ export function useProfileData(userId: string) {
             tiktok_url,
             whatsapp_number,
             address_number,
-            zip_code
+            zip_code,
+            allow_ai_indexing
           `,
           )
           .eq("id", userId)

@@ -754,7 +754,11 @@
       "cityRequired": "Cidade é obrigatória",
       "neighborhoodRequired": "Bairro é obrigatório",
       "addressRequired": "Endereço é obrigatório"
-    }
+    },
+    "aiIndexingTitle": "Privacidade e IA",
+    "allowAiIndexing": "Permitir indexação por IA",
+    "aiIndexingDescription": "Permite que assistentes de IA (como ChatGPT e Perplexity) encontrem seu perfil para recomendações de serviços. Seus dados profissionais (Nome, Cidade, Serviços e Telefone) serão compartilhados de forma estruturada.",
+    "aiIndexingHelp": "Ao ativar esta opção, seus dados profissionais básicos tornam-se legíveis por robôs de busca especializados em inteligência artificial."
   },
   "help": {
     "title": "Central de Ajuda",
@@ -1031,7 +1035,8 @@
       "right2": "Correção de dados incorretos",
       "right3": "Exclusão de dados (direito ao esquecimento)",
       "right4": "Portabilidade de dados",
-      "right5": "Revogação de consentimento"
+      "right5": "Revogação de consentimento",
+      "aiIndexing": "Indexação por IA: O Usuário Profissional pode optar por permitir que seu perfil seja indexado por assistentes de IA de terceiros para aumentar sua visibilidade profissional. Ao ativar esta opção, o usuário concorda com a exibição de seus dados profissionais (Nome, Cidade, Serviços e Telefone) em buscas realizadas por agentes de inteligência artificial."
     },
     "section8": {
       "title": "Limitação de Responsabilidade",
@@ -1150,7 +1155,8 @@
       "item1": "Com outros usuários: Informações do perfil para conexão",
       "item2": "Prestadores de serviço: Empresas que nos auxiliam (hosting, email)",
       "item3": "Autoridades: Quando exigido por lei ou ordem judicial",
-      "item4": "Proteção de direitos: Para proteger nossos direitos legais"
+      "item4": "Proteção de direitos: Para proteger nossos direitos legais",
+      "item5": "Agentes de Inteligência Artificial: Dados profissionais (Nome, Cidade, Serviços e Telefone) para fins de recomendação de serviços, mediante autorização ativa (Opt-in) do usuário."
     },
     "section6": {
       "title": "Segurança dos Dados",

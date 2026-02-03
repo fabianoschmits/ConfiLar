@@ -12,6 +12,7 @@ import {
   Settings,
   ChevronRight,
   LogOut,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -25,6 +26,7 @@ import { SecurityForm } from "./forms/SecurityForm";
 import { ProfessionalDataForm } from "./forms/ProfessionalDataForm";
 import { SocialLinksEditor } from "./SocialLinksEditor";
 import { Link2 } from "lucide-react";
+import { PrivacyAIForm } from "./forms/PrivacyAIForm";
 
 export type ProfileTab =
   | "account"
@@ -33,7 +35,8 @@ export type ProfileTab =
   | "type"
   | "professional"
   | "social"
-  | "security";
+  | "security"
+  | "privacy";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -109,6 +112,13 @@ export function EditProfileModal({
       icon: Shield,
       color: "text-red-500",
       bgColor: "bg-red-50",
+    },
+    {
+      id: "privacy",
+      label: "Privacidade e IA",
+      icon: Bot,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
     },
   ];
 
@@ -236,6 +246,7 @@ export function EditProfileModal({
                 {activeTab === "social" && profile && (
                   <SocialLinksEditor profile={profile} />
                 )}
+                {activeTab === "privacy" && <PrivacyAIForm />}
                 {activeTab === "security" && <SecurityForm />}
               </div>
             </ScrollArea>

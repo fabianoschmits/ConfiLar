@@ -59,6 +59,7 @@ import { ReferralBadgeLarge } from "@/components/referral/ReferralBadge";
 import { useTranslations } from "next-intl";
 import { PortfolioProjectCard } from "@/components/portfolio/PortfolioProjectCard";
 import { SocialLinksDisplay } from "@/components/profile/SocialLinksDisplay";
+import { AIProfileSchema } from "@/components/profile/AIProfileSchema";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
@@ -197,6 +198,7 @@ export default function ProfilePage() {
 
   return (
     <MainLayout requireAuth={false}>
+      {profile && <AIProfileSchema profile={profile} />}
       <div className="min-h-screen bg-gradient-to-br from-primary-50 via-primary-100 to-primary-50 dark:from-gray-950 dark:via-primary-950 dark:to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header Criativo Portfolio Style */}

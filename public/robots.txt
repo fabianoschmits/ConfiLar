@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /gestao-confi/
+Disallow: /api/
+
+# AI Crawler Rules
+User-agent: GPTBot
+Allow: /perfil/
+Disallow: /
+
+User-agent: ChatGPT-User
+Allow: /perfil/
+Disallow: /
+
+User-agent: ClaudeBot
+Allow: /perfil/
+Disallow: /
+
+User-agent: PerplexityBot
+Allow: /perfil/
+Disallow: /
+
+Sitemap: https://appconfilar.com.br/sitemap.xml

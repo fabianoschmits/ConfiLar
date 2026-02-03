@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-// Inicializar cliente Supabase com chave de serviço para operações administrativas
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
+// Forçar rota dinâmica para evitar análise estática no build
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  // Inicializar cliente Supabase com chave de serviço dentro do handler
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+
   try {
     const rawBody = await request.text();
     const headers = Object.fromEntries(request.headers.entries());
