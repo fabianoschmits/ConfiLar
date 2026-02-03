@@ -49,7 +49,7 @@ jobs:
     - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20' # Atualizado para v20 (mais estável para Next.js 15)
         cache: 'npm'
         
     - name: 🔧 Install Dependencies
@@ -57,6 +57,7 @@ jobs:
       
     - name: 🏗️ Build Application
       env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         NEXT_PUBLIC_APP_URL: ${{ secrets.APP_URL }}
