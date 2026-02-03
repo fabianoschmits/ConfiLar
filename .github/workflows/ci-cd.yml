@@ -22,16 +22,20 @@ jobs:
     - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         
     - name: 🔧 Install Dependencies
       run: npm ci
       
     - name: 🧹 ESLint Check
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
       run: npm run lint
       
     - name: 🎨 Prettier Check
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
       run: npm run format:check
 
   # ===================================
@@ -49,7 +53,7 @@ jobs:
     - name: 📦 Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # Atualizado para v20 (mais estável para Next.js 15)
+        node-version: '20'
         cache: 'npm'
         
     - name: 🔧 Install Dependencies
@@ -57,7 +61,7 @@ jobs:
       
     - name: 🏗️ Build Application
       env:
-        NODE_OPTIONS: "--max-old-space-size=4096"
+        NODE_OPTIONS: "--max-old-space-size=6144"
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         NEXT_PUBLIC_APP_URL: ${{ secrets.APP_URL }}
@@ -85,10 +89,12 @@ jobs:
     - name: 🔧 Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
         
     - name: 🔒 NPM Audit
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
       run: npm audit --audit-level=moderate
       continue-on-error: true
 
