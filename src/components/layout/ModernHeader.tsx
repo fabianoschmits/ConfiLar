@@ -829,7 +829,7 @@ export function ModernHeader({
                               </div>
                             </Button>
 
-                            {profile?.user_type === "professional" && (
+                            {isAdmin && (
                               <Button
                                 variant="ghost"
                                 size="sm"
