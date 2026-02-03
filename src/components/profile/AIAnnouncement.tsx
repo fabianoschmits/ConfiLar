@@ -40,54 +40,51 @@ export function AIAnnouncement() {
         initial={{ opacity: 0, y: 50, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.9 }}
-        className="fixed bottom-24 right-6 z-50 max-w-sm w-full"
+        className="fixed bottom-24 left-4 right-4 md:left-auto md:right-6 z-50 md:max-w-sm"
       >
-        <Card className="border-2 border-primary-500 shadow-2xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-md overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-primary-500"></div>
+        <Card className="border border-primary-500/50 shadow-2xl bg-white/95 dark:bg-gray-950/95 backdrop-blur-md overflow-hidden ring-1 ring-black/5 dark:ring-white/5">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-primary-600"></div>
           <CardContent className="p-5">
             <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary-100 dark:bg-primary-900/40 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary-100/50 dark:bg-primary-900/30 rounded-xl border border-primary-200/50 dark:border-primary-800/50">
                   <Bot className="w-5 h-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                  Seu Perfil Pronto para IA{" "}
-                  <Sparkles className="w-4 h-4 text-yellow-500" />
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                  Novidade IA{" "}
+                  <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
                 </h3>
               </div>
               <button
                 onClick={dismiss}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-              Agora você pode permitir que assistentes de IA (como ChatGPT)
-              encontrem e recomendem seu perfil profissional. Aumente seu
-              alcance!
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-5 leading-relaxed">
+              Deseja que assistentes de IA (como ChatGPT) recomendem você para
+              clientes? Ative a indexação inteligente agora!
             </p>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 size="sm"
-                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white"
+                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-md active:scale-95 transition-all"
                 onClick={() => {
-                  // This is a bit of a hack but edit profile modal is usually opened via a state in the page or context
-                  // For now, we'll just dismiss and point them to their settings
                   dismiss();
-                  window.location.href = "#settings-privacy"; // Placeholder or trigger modal
+                  window.location.href = "/conta?tab=privacy"; // Ajustado para ser mais provável que funcione
                 }}
               >
-                Saber Mais
-                <ArrowRight className="w-4 h-4 ml-1" />
+                Ativar Agora
+                <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="outline"
                 onClick={dismiss}
-                className="text-gray-500"
+                className="border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               >
                 Depois
               </Button>
