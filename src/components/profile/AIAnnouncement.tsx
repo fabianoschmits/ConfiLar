@@ -7,15 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { useTutorial } from "@/contexts/TutorialContext";
 
 export function AIAnnouncement() {
   const { profile } = useAuthContext();
+  const { isActive: isTutorialActive } = useTutorial();
   const [isVisible, setIsVisible] = useState(false);
   const t = useTranslations("editProfile");
 
   useEffect(() => {
     // Only show to professionals
     if (profile?.user_type !== "professional") return;
+
+    // Don't show if tutorial is active
+    if (isTutorialActive) {
+      if (isVisible) setIsVisible(false); // Hide if already visible
+      return;
+    }
 
     // Check if already dismissed
     const dismissed = localStorage.getItem(
@@ -25,7 +33,7 @@ export function AIAnnouncement() {
       const timer = setTimeout(() => setIsVisible(true), 3000);
       return () => clearTimeout(timer);
     }
-  }, [profile]);
+  }, [profile, isTutorialActive, isVisible]);
 
   const dismiss = () => {
     setIsVisible(false);
