@@ -35,7 +35,7 @@ interface SupabaseLog {
   level: string
   message: string
   metadata?: Record<string, any>
-  service: 'api' | 'auth' | 'storage' | 'realtime' | 'postgres' | 'edge-function'
+  service: string
 }
 
 export default function AdminLogsPage() {
@@ -169,14 +169,42 @@ export default function AdminLogsPage() {
       case 'storage':
         return <Database className="h-4 w-4" />
       case 'postgres':
+      case 'database':
         return <Database className="h-4 w-4" />
       case 'realtime':
         return <Server className="h-4 w-4" />
       case 'edge-function':
         return <Bug className="h-4 w-4" />
+      case 'all':
+        return <Search className="h-4 w-4" />
       default:
         return <Info className="h-4 w-4" />
     }
+  }
+
+  const getServiceBadge = (service: string) => {
+    const s = service?.toLowerCase() || ''
+    let colorClass = 'bg-gray-100 text-gray-800'
+
+    if (s === 'api') colorClass = 'bg-blue-100 text-blue-800 border-blue-200'
+    if (s === 'auth') colorClass = 'bg-purple-100 text-purple-800 border-purple-200'
+    if (s === 'database' || s === 'postgres') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-200'
+    if (s === 'storage') colorClass = 'bg-amber-100 text-amber-800 border-amber-200'
+    if (s === 'realtime') colorClass = 'bg-rose-100 text-rose-800 border-rose-200'
+    if (s === 'edge-function') colorClass = 'bg-indigo-100 text-indigo-800 border-indigo-200'
+    if (s === 'admin') colorClass = 'bg-orange-100 text-orange-800 border-orange-200'
+    if (s === 'system') colorClass = 'bg-slate-100 text-slate-800 border-slate-200'
+    if (s === 'posts') colorClass = 'bg-pink-100 text-pink-800 border-pink-200'
+    if (s === 'classifieds') colorClass = 'bg-lime-100 text-lime-800 border-lime-200'
+    if (s === 'points') colorClass = 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    if (s === 'referrals') colorClass = 'bg-cyan-100 text-cyan-800 border-cyan-200'
+    if (s === 'users') colorClass = 'bg-teal-100 text-teal-800 border-teal-200'
+
+    return (
+      <Badge variant="outline" className={`capitalize ${colorClass}`}>
+        {service}
+      </Badge>
+    )
   }
 
   const exportLogs = () => {
@@ -225,12 +253,19 @@ export default function AdminLogsPage() {
                 <SelectValue placeholder="Serviço" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">Todos os serviços</SelectItem>
                 <SelectItem value="api">API</SelectItem>
                 <SelectItem value="auth">Autenticação</SelectItem>
                 <SelectItem value="storage">Storage</SelectItem>
                 <SelectItem value="postgres">PostgreSQL</SelectItem>
                 <SelectItem value="realtime">Realtime</SelectItem>
                 <SelectItem value="edge-function">Edge Functions</SelectItem>
+                <SelectItem value="admin">Administração</SelectItem>
+                <SelectItem value="system">Sistema</SelectItem>
+                <SelectItem value="posts">Posts</SelectItem>
+                <SelectItem value="classifieds">Classificados</SelectItem>
+                <SelectItem value="points">Pontos</SelectItem>
+                <SelectItem value="referrals">Indicações</SelectItem>
               </SelectContent>
             </Select>
             <Select value={selectedLevel} onValueChange={setSelectedLevel}>
@@ -242,6 +277,7 @@ export default function AdminLogsPage() {
                 <SelectItem value="error">Erro</SelectItem>
                 <SelectItem value="warning">Aviso</SelectItem>
                 <SelectItem value="info">Info</SelectItem>
+                <SelectItem value="success">Sucesso</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex gap-2">
@@ -297,7 +333,7 @@ export default function AdminLogsPage() {
             <CardDescription className="text-xs md:text-sm">Serviço</CardDescription>
             <CardTitle className="text-base md:text-lg flex items-center gap-2 truncate">
               {getServiceIcon(selectedService)}
-              <span className="truncate">{selectedService.toUpperCase()}</span>
+              <span className="truncate">{selectedService === 'all' ? 'TODOS' : selectedService.toUpperCase()}</span>
             </CardTitle>
           </CardHeader>
         </Card>
@@ -319,15 +355,21 @@ export default function AdminLogsPage() {
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="text-center py-8 text-gray-500 px-4">
-              <Info className="h-8 w-8 mx-auto mb-4" />
-              <p>Nenhum log encontrado</p>
-              <p className="text-sm mt-2 break-words">
-                {projectId ? (
-                  <>Project ID: {projectId}</>
-                ) : (
-                  <>Configure o Project ID para visualizar logs</>
+              <Info className="h-8 w-8 mx-auto mb-4 text-blue-500" />
+              <p className="font-medium">Nenhum log encontrado nas últimas 24 horas</p>
+              <div className="text-sm mt-3 space-y-2 max-w-md mx-auto">
+                <p>
+                  Os logs de infraestrutura (API interna, Auth, Banco) do Supabase não são espelhados automaticamente nesta tabela.
+                </p>
+                <p>
+                  Esta página exibe eventos registrados manualmente pela aplicação (Logins, Erros, Ações de Admin, etc).
+                </p>
+                {projectId && (
+                  <p className="text-xs pt-2 border-t font-mono">
+                    Project ID: {projectId}
+                  </p>
                 )}
-              </p>
+              </div>
             </div>
           ) : (
             <div className="divide-y max-h-[600px] overflow-y-auto">
@@ -340,7 +382,7 @@ export default function AdminLogsPage() {
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {getLevelIcon(log.level)}
                       {getLevelBadge(log.level)}
-                      <Badge variant="outline" className="hidden sm:inline-flex">{log.service}</Badge>
+                      {getServiceBadge(log.service)}
                       <span className="text-xs text-gray-500 ml-auto">
                         {log.timestamp ? formatDistanceToNow(new Date(log.timestamp), {
                           addSuffix: true,
@@ -366,7 +408,7 @@ export default function AdminLogsPage() {
                         ) : (
                           <>
                             <ChevronDown className="h-3 w-3 mr-1" />
-                            <span className="text-xs">Mostrar detalhes</span>
+                            <span className="text-xs">Ver detalhes {log.metadata && Object.keys(log.metadata).length > 0 && `(${Object.keys(log.metadata).length})`}</span>
                           </>
                         )}
                       </Button>

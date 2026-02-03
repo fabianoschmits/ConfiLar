@@ -11,6 +11,7 @@ import { useAutoNotifications } from "./useAutoNotifications";
 import { getBioOrDefault } from "@/utils/autoBioGenerator";
 import { checkAndUpdate30DaysActive } from "./useReferralTracking";
 import { checkAndUpdateInactiveAvailability } from "./useAutoAvailability";
+import { logUserLogin, logUserLogout, logError } from "@/lib/logs";
 
 // ===================================
 // TIPOS E INTERFACES
@@ -481,6 +482,13 @@ export function useAuth(
               context: "post-login-profile-fetch",
             });
           });
+
+          // Registrar log de login
+          logUserLogin(data.user.id, "Usuário", data.user.email!).catch(
+            (err) => {
+              console.error("Erro ao registrar log de login:", err);
+            },
+          );
         }
 
         return { error: null };
@@ -968,6 +976,9 @@ export function useAuth(
 
       if (userId) {
         logger.info("User logged out", "logout", { userId });
+        logUserLogout(userId, "Usuário").catch((err) => {
+          console.error("Erro ao registrar log de logout:", err);
+        });
       }
 
       dispatch({ type: "RESET_AUTH" });

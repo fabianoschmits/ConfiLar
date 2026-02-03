@@ -28,8 +28,10 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
     }
 
     // Validar serviço
-    const validServices = ['api', 'auth', 'storage', 'realtime', 'postgres', 'edge-function']
-    if (!validServices.includes(service)) {
+    const validServices = ['all', 'api', 'auth', 'storage', 'realtime', 'postgres', 'edge-function', 'posts', 'classifieds', 'users', 'points', 'referrals', 'system', 'admin']
+    const serviceLower = service.toLowerCase()
+
+    if (!validServices.includes(serviceLower)) {
       return NextResponse.json(
         { error: 'Serviço inválido' },
         { status: 400 }
@@ -39,29 +41,39 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
     const adminSupabase = createAdminSupabaseClient()
 
     // Buscar logs da tabela system_logs do banco
-    // Filtrar por categoria que corresponde ao serviço
     const categoryMap: Record<string, string> = {
       'api': 'API',
       'auth': 'AUTH',
       'storage': 'STORAGE',
       'realtime': 'REALTIME',
       'postgres': 'DATABASE',
-      'edge-function': 'EDGE_FUNCTION'
+      'edge-function': 'EDGE_FUNCTION',
+      'posts': 'POSTS',
+      'classifieds': 'CLASSIFIEDS',
+      'users': 'USERS',
+      'points': 'POINTS',
+      'referrals': 'REFERRALS',
+      'system': 'SYSTEM',
+      'admin': 'ADMIN'
     }
-
-    const category = categoryMap[service] || 'API'
 
     // Buscar logs das últimas 24 horas
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
 
-    const { data: systemLogs, error: logsError } = await adminSupabase
+    let query = adminSupabase
       .from('system_logs')
       .select('*')
-      .eq('category', category)
       .gte('created_at', yesterday.toISOString())
       .order('created_at', { ascending: false })
       .limit(500)
+
+    if (serviceLower !== 'all') {
+      const category = categoryMap[serviceLower] || 'API'
+      query = query.eq('category', category)
+    }
+
+    const { data: systemLogs, error: logsError } = await query
 
     if (logsError) {
       console.error('Erro ao buscar logs:', logsError)
@@ -91,7 +103,7 @@ export const GET = withAdminAuth(async (request: NextRequest, supabaseAuth, user
         status_code: log.status_code,
         user_id: log.user_id
       },
-      service: service as 'api' | 'auth' | 'storage' | 'realtime' | 'postgres' | 'edge-function'
+      service: (log.category?.toLowerCase() || 'api') as any
     }))
 
     return NextResponse.json({

@@ -16,7 +16,15 @@ interface LogDetails {
  */
 async function createLog(
   level: "INFO" | "WARNING" | "ERROR" | "SUCCESS",
-  category: string,
+  category:
+    | "auth"
+    | "posts"
+    | "classifieds"
+    | "users"
+    | "points"
+    | "referrals"
+    | "system"
+    | "admin",
   action: string,
   message: string,
   details?: LogDetails,
@@ -26,8 +34,8 @@ async function createLog(
 ) {
   try {
     const { error } = await supabase.rpc("create_system_log", {
-      p_level: level,
-      p_category: category,
+      p_level: level.toUpperCase(),
+      p_category: category.toLowerCase(),
       p_action: action,
       p_message: message,
       p_details: details || {},
