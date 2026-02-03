@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Bot, Sparkles, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -111,10 +113,14 @@ export function AIAnnouncement() {
             <div className="flex gap-3">
               <Button
                 size="sm"
-                className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-md active:scale-95 transition-all"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md active:scale-95 transition-all dark:bg-primary-600 dark:hover:bg-primary-700"
                 onClick={() => {
                   dismissTemporarily();
-                  window.location.href = "/conta?tab=privacy"; // Ajustado para ser mais provável que funcione
+                  // Disparar evento para abrir o modal de perfil na aba de privacidade
+                  const event = new CustomEvent("confilar:open-profile-modal", {
+                    detail: { tab: "privacy" },
+                  });
+                  window.dispatchEvent(event);
                 }}
               >
                 Ativar Agora
@@ -130,13 +136,25 @@ export function AIAnnouncement() {
               </Button>
             </div>
 
-            <button
-              onClick={dismissPermanently}
-              disabled={isUpdating}
-              className="mt-4 text-[10px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors w-full text-center hover:underline"
-            >
-              {isUpdating ? "Salvando..." : "Não mostrar este aviso novamente"}
-            </button>
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <div className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 px-3 py-2 rounded-full border border-gray-200 dark:border-gray-800">
+                <Switch
+                  id="dont-show"
+                  checked={false}
+                  onCheckedChange={(checked) => {
+                    if (checked) dismissPermanently();
+                  }}
+                  disabled={isUpdating}
+                  className="data-[state=checked]:bg-primary-600"
+                />
+                <Label
+                  htmlFor="dont-show"
+                  className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer"
+                >
+                  {isUpdating ? "Salvando..." : "Não mostrar novamente"}
+                </Label>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
