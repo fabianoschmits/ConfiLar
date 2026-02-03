@@ -117,7 +117,24 @@ export function ModernHeader({
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Listener para abrir o modal de perfil de qualquer lugar
+    const handleOpenProfile = (e: any) => {
+      if (e.detail?.tab) {
+        openProfileModal(e.detail.tab);
+      } else {
+        openProfileModal("account");
+      }
+    };
+    window.addEventListener("confilar:open-profile-modal", handleOpenProfile);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "confilar:open-profile-modal",
+        handleOpenProfile,
+      );
+    };
   }, []);
 
   // Carregar estatísticas de reputação
@@ -800,59 +817,18 @@ export function ModernHeader({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => openProfileModal("avatar")}
-                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
-                            >
-                              <Camera className="h-3 w-3" />
-                              <span>Meu Avatar/Foto</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
                               onClick={() => openProfileModal("account")}
-                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
+                              className="flex items-center gap-2 text-xs py-2.5 h-auto w-full justify-start font-semibold text-[#00b0b0] bg-[#00b0b0]/5 hover:bg-[#00b0b0]/10 rounded-lg transition-colors"
                             >
-                              <User className="h-3 w-3" />
-                              <span>{t("accountData")}</span>
+                              <Settings className="h-4 w-4" />
+                              <div className="flex flex-col items-start">
+                                <span>Gerenciar Meu Perfil</span>
+                                <span className="text-[10px] font-normal text-gray-500">
+                                  Editar dados, foto, endereço e mais
+                                </span>
+                              </div>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openProfileModal("security")}
-                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
-                            >
-                              <Shield className="h-3 w-3" />
-                              <span>{t("security")}</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openProfileModal("address")}
-                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
-                            >
-                              <MapPin className="h-3 w-3" />
-                              <span>{t("address")}</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openProfileModal("type")}
-                              className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
-                            >
-                              <Briefcase className="h-3 w-3" />
-                              <span>{t("accountType")}</span>
-                            </Button>
-                            {profile?.user_type === "professional" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openProfileModal("professional")}
-                                className="flex items-center gap-2 text-xs py-2 h-auto w-full justify-start"
-                              >
-                                <Briefcase className="h-3 w-3" />
-                                <span>{t("professionalData")}</span>
-                              </Button>
-                            )}
+
                             {profile?.user_type === "professional" && (
                               <Button
                                 variant="ghost"

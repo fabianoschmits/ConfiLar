@@ -268,30 +268,22 @@ export const FloatingProfile: React.FC = () => {
                   Minha Conta
                 </h3>
                 <div className="space-y-1">
-                  <Link
-                    href={`/perfil/${profile?.id}`}
-                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
+                  <button
+                    className="flex items-center space-x-2 px-2 py-2 w-full text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                    onClick={() => {
+                      window.dispatchEvent(
+                        new CustomEvent("confilar:open-profile-modal", {
+                          detail: { tab: "account" },
+                        }),
+                      );
+                      setIsExpanded(false);
+                    }}
                   >
-                    <EyePhosphor
-                      size={14}
-                      weight="light"
-                      className="text-blue-600"
-                    />
-                    <span>Ver Meu Perfil</span>
-                  </Link>
-                  <Link
-                    href="/editarperfil/dados-da-conta"
-                    className="flex items-center space-x-2 px-2 py-1.5 text-xs text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
-                    onClick={() => setIsExpanded(false)}
-                  >
-                    <PencilSimple
-                      size={14}
-                      weight="light"
-                      className="text-green-600"
-                    />
-                    <span>Editar Perfil</span>
-                  </Link>
+                    <Gear size={14} weight="light" className="text-[#00b0b0]" />
+                    <span className="font-semibold text-[#00b0b0]">
+                      Gerenciar Perfil
+                    </span>
+                  </button>
                   {profile?.user_type === "professional" && (
                     <>
                       <Link

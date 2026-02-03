@@ -323,25 +323,25 @@ export function ModernSidebar() {
             color: "gray",
             items: [
               {
-                id: "profile",
-                title: "Meu Perfil",
+                id: "manage-profile",
+                title: "Gerenciar Perfil",
+                href: "#",
+                icon: <Settings className="h-4 w-4" />,
+                description: "Dados, Meta e mais",
+                onClick: () => {
+                  window.dispatchEvent(
+                    new CustomEvent("confilar:open-profile-modal", {
+                      detail: { tab: "account" },
+                    }),
+                  );
+                },
+              },
+              {
+                id: "public-profile",
+                title: "Ver Perfil Público",
                 href: "/perfil",
                 icon: <User className="h-4 w-4" />,
-                description: "Editar perfil",
-              },
-              {
-                id: "edit-profile",
-                title: "Editar Perfil",
-                href: "/editarperfil/dados-da-conta",
-                icon: <Settings className="h-4 w-4" />,
-                description: "Atualizar informações",
-              },
-              {
-                id: "referrals",
-                title: "Indicações",
-                href: "/indicacoes",
-                icon: <UserPlus className="h-4 w-4" />,
-                description: "Indique amigos e ganhe recompensas",
+                description: "Como os outros te veem",
               },
               {
                 id: "privacy-settings",
